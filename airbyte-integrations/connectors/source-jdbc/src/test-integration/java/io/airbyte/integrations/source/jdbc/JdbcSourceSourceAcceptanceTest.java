@@ -41,25 +41,33 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-            container.getHost(),
-            container.getFirstMappedPort(),
-            container.getDatabaseName()))
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("username", container.getUsername())
+                .put("password", container.getPassword())
+                .put(
+                    "jdbc_url",
+                    String.format(
+                        "jdbc:postgresql://%s:%s/%s",
+                        container.getHost(),
+                        container.getFirstMappedPort(),
+                        container.getDatabaseName()))
+                .build());
 
-    database = Databases.createPostgresDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        config.get("jdbc_url").asText());
+    database =
+        Databases.createPostgresDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            config.get("jdbc_url").asText());
 
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      return null;
-    });
+    database.query(
+        ctx -> {
+          ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+          ctx.fetch(
+              "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+          return null;
+        });
   }
 
   @Override
@@ -101,5 +109,4 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
   protected List<String> getRegexTests() throws Exception {
     return new ArrayList<>();
   }
-
 }

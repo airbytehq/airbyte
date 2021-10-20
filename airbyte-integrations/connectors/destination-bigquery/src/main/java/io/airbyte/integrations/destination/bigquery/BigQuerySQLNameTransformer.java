@@ -17,5 +17,4 @@ public class BigQuerySQLNameTransformer extends StandardNameTransformer {
     }
     return result;
   }
-
 }

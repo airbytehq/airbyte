@@ -64,5 +64,4 @@ public class ScaffoldJavaJdbcSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

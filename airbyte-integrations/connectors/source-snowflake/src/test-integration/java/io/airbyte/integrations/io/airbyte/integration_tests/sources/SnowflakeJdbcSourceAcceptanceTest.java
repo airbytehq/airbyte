@@ -22,8 +22,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeAll
   static void init() {
-    snConfig = Jsons
-        .deserialize(IOs.readFile(Path.of("secrets/config.json")));
+    snConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @BeforeEach
@@ -76,5 +75,4 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public AbstractJdbcSource getJdbcSource() {
     return new SnowflakeSource();
   }
-
 }

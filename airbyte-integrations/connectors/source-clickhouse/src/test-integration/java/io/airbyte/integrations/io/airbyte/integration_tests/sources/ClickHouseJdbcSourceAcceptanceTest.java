@@ -38,12 +38,19 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   }
 
   @Override
-  public String createTableQuery(final String tableName, final String columnClause, final String primaryKeyClause) {
+  public String createTableQuery(
+      final String tableName, final String columnClause, final String primaryKeyClause) {
     // ClickHouse requires Engine to be mentioned as part of create table query.
     // Refer : https://clickhouse.tech/docs/en/engines/table-engines/ for more information
-    return String.format("CREATE TABLE %s(%s) %s",
-        tableName, columnClause, primaryKeyClause.equals("") ? "Engine = TinyLog"
-            : "ENGINE = MergeTree() ORDER BY " + primaryKeyClause + " PRIMARY KEY "
+    return String.format(
+        "CREATE TABLE %s(%s) %s",
+        tableName,
+        columnClause,
+        primaryKeyClause.equals("")
+            ? "Engine = TinyLog"
+            : "ENGINE = MergeTree() ORDER BY "
+                + primaryKeyClause
+                + " PRIMARY KEY "
                 + primaryKeyClause);
   }
 
@@ -79,13 +86,15 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     db = new ClickHouseContainer("yandex/clickhouse-server:21.3.10.1-alpine");
     db.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("database", SCHEMA_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", db.getHost())
+                .put("port", db.getFirstMappedPort())
+                .put("database", SCHEMA_NAME)
+                .put("username", db.getUsername())
+                .put("password", db.getPassword())
+                .build());
 
     super.setup();
   }
@@ -94,5 +103,4 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   public AbstractJdbcSource getJdbcSource() {
     return new ClickHouseSource();
   }
-
 }

@@ -14,5 +14,4 @@ public class KeenCharactersStripper {
   public static String stripSpecialCharactersFromStreamName(final String streamName) {
     return StringUtils.stripAccents(streamName).replaceAll("[^A-Za-z0-9 -._]", "");
   }
-
 }

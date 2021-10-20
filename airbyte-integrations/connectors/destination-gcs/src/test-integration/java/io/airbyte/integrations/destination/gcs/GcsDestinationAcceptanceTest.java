@@ -31,18 +31,18 @@ import org.slf4j.LoggerFactory;
 
 /**
  * When adding a new GCS destination acceptance test, extend this class and do the following:
- * <li>Implement {@link #getFormatConfig} that returns a {@link S3FormatConfig}</li>
- * <li>Implement {@link #retrieveRecords} that returns the Json records for the test</li>
- *
- * Under the hood, a {@link io.airbyte.integrations.destination.gcs.GcsDestinationConfig} is
- * constructed as follows:
- * <li>Retrieve the secrets from "secrets/config.json"</li>
- * <li>Get the GCS bucket path from the constructor</li>
- * <li>Get the format config from {@link #getFormatConfig}</li>
+ * <li>Implement {@link #getFormatConfig} that returns a {@link S3FormatConfig}
+ * <li>Implement {@link #retrieveRecords} that returns the Json records for the test Under the hood,
+ *     a {@link io.airbyte.integrations.destination.gcs.GcsDestinationConfig} is constructed as
+ *     follows:
+ * <li>Retrieve the secrets from "secrets/config.json"
+ * <li>Get the GCS bucket path from the constructor
+ * <li>Get the format config from {@link #getFormatConfig}
  */
 public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(GcsDestinationAcceptanceTest.class);
+  protected static final Logger LOGGER =
+      LoggerFactory.getLogger(GcsDestinationAcceptanceTest.class);
   protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   protected final String secretFilePath = "secrets/config.json";
@@ -79,22 +79,21 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     return failCheckJson;
   }
 
-  /**
-   * Helper method to retrieve all synced objects inside the configured bucket path.
-   */
-  protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
-    final String outputPrefix = S3OutputPathHelper
-        .getOutputPrefix(config.getBucketPath(), namespace, streamName);
-    final List<S3ObjectSummary> objectSummaries = s3Client
-        .listObjects(config.getBucketName(), outputPrefix)
-        .getObjectSummaries()
-        .stream()
-        .filter(o -> o.getKey().contains(NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
-        .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
-        .collect(Collectors.toList());
+  /** Helper method to retrieve all synced objects inside the configured bucket path. */
+  protected List<S3ObjectSummary> getAllSyncedObjects(
+      final String streamName, final String namespace) {
+    final String outputPrefix =
+        S3OutputPathHelper.getOutputPrefix(config.getBucketPath(), namespace, streamName);
+    final List<S3ObjectSummary> objectSummaries =
+        s3Client.listObjects(config.getBucketName(), outputPrefix).getObjectSummaries().stream()
+            .filter(o -> o.getKey().contains(NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
+            .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
+            .collect(Collectors.toList());
     LOGGER.info(
         "All objects: {}",
-        objectSummaries.stream().map(o -> String.format("%s/%s", o.getBucketName(), o.getKey())).collect(Collectors.toList()));
+        objectSummaries.stream()
+            .map(o -> String.format("%s/%s", o.getBucketName(), o.getKey()))
+            .collect(Collectors.toList()));
     return objectSummaries;
   }
 
@@ -102,18 +101,18 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
 
   /**
    * This method does the following:
-   * <li>Construct the GCS destination config.</li>
-   * <li>Construct the GCS client.</li>
+   * <li>Construct the GCS destination config.
+   * <li>Construct the GCS client.
    */
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
     final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random GCS bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);
-    final String testBucketPath = String.format(
-        "%s_test_%s",
-        outputFormat.name().toLowerCase(Locale.ROOT),
-        RandomStringUtils.randomAlphanumeric(5));
+    final String testBucketPath =
+        String.format(
+            "%s_test_%s",
+            outputFormat.name().toLowerCase(Locale.ROOT), RandomStringUtils.randomAlphanumeric(5));
     ((ObjectNode) configJson)
         .put("gcs_bucket_path", testBucketPath)
         .set("format", getFormatConfig());
@@ -124,22 +123,19 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     this.s3Client = GcsS3Helper.getGcsS3Client(config);
   }
 
-  /**
-   * Remove all the S3 output from the tests.
-   */
+  /** Remove all the S3 output from the tests. */
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     final List<KeyVersion> keysToDelete = new LinkedList<>();
-    final List<S3ObjectSummary> objects = s3Client
-        .listObjects(config.getBucketName(), config.getBucketPath())
-        .getObjectSummaries();
+    final List<S3ObjectSummary> objects =
+        s3Client.listObjects(config.getBucketName(), config.getBucketPath()).getObjectSummaries();
     for (final S3ObjectSummary object : objects) {
       keysToDelete.add(new KeyVersion(object.getKey()));
     }
 
     if (keysToDelete.size() > 0) {
-      LOGGER.info("Tearing down test bucket path: {}/{}", config.getBucketName(),
-          config.getBucketPath());
+      LOGGER.info(
+          "Tearing down test bucket path: {}/{}", config.getBucketName(), config.getBucketPath());
       // Google Cloud Storage doesn't accept request to delete multiple objects
       for (final KeyVersion keyToDelete : keysToDelete) {
         s3Client.deleteObject(config.getBucketName(), keyToDelete.getKey());
@@ -147,5 +143,4 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
       LOGGER.info("Deleted {} file(s).", keysToDelete.size());
     }
   }
-
 }

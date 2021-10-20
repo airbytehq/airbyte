@@ -48,37 +48,46 @@ public class PubsubDestination extends BaseConnector implements Destination {
       final String projectId = config.get(CONFIG_PROJECT_ID).asText();
       final String topicId = config.get(CONFIG_TOPIC_ID).asText();
       final String credentialsString =
-          config.get(CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(CONFIG_CREDS))
+          config.get(CONFIG_CREDS).isObject()
+              ? Jsons.serialize(config.get(CONFIG_CREDS))
               : config.get(CONFIG_CREDS).asText();
-      final ServiceAccountCredentials credentials = ServiceAccountCredentials
-          .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
+      final ServiceAccountCredentials credentials =
+          ServiceAccountCredentials.fromStream(
+              new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
 
-      final TopicAdminClient adminClient = TopicAdminClient
-          .create(TopicAdminSettings.newBuilder().setCredentialsProvider(
-              FixedCredentialsProvider.create(credentials)).build());
+      final TopicAdminClient adminClient =
+          TopicAdminClient.create(
+              TopicAdminSettings.newBuilder()
+                  .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+                  .build());
 
       // check if topic is present and the service account has necessary permissions on it
       final TopicName topicName = TopicName.of(projectId, topicId);
       final List<String> requiredPermissions = List.of("pubsub.topics.publish");
-      final TestIamPermissionsResponse response = adminClient.testIamPermissions(
-          TestIamPermissionsRequest.newBuilder().setResource(topicName.toString())
-              .addAllPermissions(requiredPermissions).build());
-      Preconditions.checkArgument(response.getPermissionsList().containsAll(requiredPermissions),
+      final TestIamPermissionsResponse response =
+          adminClient.testIamPermissions(
+              TestIamPermissionsRequest.newBuilder()
+                  .setResource(topicName.toString())
+                  .addAllPermissions(requiredPermissions)
+                  .build());
+      Preconditions.checkArgument(
+          response.getPermissionsList().containsAll(requiredPermissions),
           "missing required permissions " + requiredPermissions);
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.info("Check failed.", e);
-      return new AirbyteConnectionStatus().withStatus(Status.FAILED)
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
           .withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
     }
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog configuredCatalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     return new PubsubConsumer(config, configuredCatalog, outputRecordCollector);
   }
-
 }

@@ -53,25 +53,33 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(
+            Lists.newArrayList(
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("id"))
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                String.format(
+                                    "%s.%s", config.get("database").asText(), STREAM_NAME),
+                                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("id"))
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                String.format(
+                                    "%s.%s", config.get("database").asText(), STREAM_NAME2),
+                                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -89,40 +97,56 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
     db = new ClickHouseContainer("yandex/clickhouse-server:21.3.10.1-alpine");
     db.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("database", SCHEMA_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", db.getHost())
+                .put("port", db.getFirstMappedPort())
+                .put("database", SCHEMA_NAME)
+                .put("username", db.getUsername())
+                .put("password", db.getPassword())
+                .build());
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:clickhouse://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        ClickHouseSource.DRIVER_CLASS);
+    final JdbcDatabase database =
+        Databases.createJdbcDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:clickhouse://%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()),
+            ClickHouseSource.DRIVER_CLASS);
 
     final String table1 = JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME, STREAM_NAME);
     final String createTable1 =
-        String.format("CREATE TABLE IF NOT EXISTS %s (id INTEGER, name VARCHAR(200)) ENGINE = TinyLog \n", table1);
+        String.format(
+            "CREATE TABLE IF NOT EXISTS %s (id INTEGER, name VARCHAR(200)) ENGINE = TinyLog \n",
+            table1);
     final String table2 = JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME, STREAM_NAME2);
     final String createTable2 =
-        String.format("CREATE TABLE IF NOT EXISTS %s (id INTEGER, name VARCHAR(200)) ENGINE = TinyLog \n", table2);
-    database.execute(connection -> {
-      connection.createStatement().execute(createTable1);
-      connection.createStatement().execute(createTable2);
-    });
+        String.format(
+            "CREATE TABLE IF NOT EXISTS %s (id INTEGER, name VARCHAR(200)) ENGINE = TinyLog \n",
+            table2);
+    database.execute(
+        connection -> {
+          connection.createStatement().execute(createTable1);
+          connection.createStatement().execute(createTable2);
+        });
 
-    final String insertTestData = String.format("INSERT INTO %s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');\n", table1);
-    final String insertTestData2 = String.format("INSERT INTO %s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');\n", table2);
-    database.execute(connection -> {
-      connection.createStatement().execute(insertTestData);
-      connection.createStatement().execute(insertTestData2);
-    });
+    final String insertTestData =
+        String.format(
+            "INSERT INTO %s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');\n",
+            table1);
+    final String insertTestData2 =
+        String.format(
+            "INSERT INTO %s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');\n",
+            table2);
+    database.execute(
+        connection -> {
+          connection.createStatement().execute(insertTestData);
+          connection.createStatement().execute(insertTestData2);
+        });
 
     database.close();
   }
@@ -131,7 +155,5 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void tearDown(final TestDestinationEnv testEnv) {
     db.close();
     db.stop();
-
   }
-
 }

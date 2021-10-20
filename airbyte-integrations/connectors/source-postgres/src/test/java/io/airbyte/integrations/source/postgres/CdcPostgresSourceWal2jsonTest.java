@@ -10,5 +10,4 @@ class CdcPostgresSourceWal2jsonTest extends CdcPostgresSourceTest {
   protected String getPluginName() {
     return "wal2json";
   }
-
 }

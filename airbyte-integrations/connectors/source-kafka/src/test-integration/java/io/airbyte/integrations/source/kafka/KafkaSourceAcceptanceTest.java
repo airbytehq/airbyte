@@ -56,16 +56,17 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
     subscriptionConfig.put("subscription_type", "subscribe");
     subscriptionConfig.put("topic_pattern", TOPIC_NAME);
 
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("bootstrap_servers", KAFKA.getBootstrapServers())
-        .put("subscription", subscriptionConfig)
-        .put("client_dns_lookup", "use_all_dns_ips")
-        .put("enable_auto_commit", false)
-        .put("group_id", "groupid")
-        .put("repeated_calls", 3)
-        .put("protocol", protocolConfig)
-        .put("auto_offset_reset", "earliest")
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("bootstrap_servers", KAFKA.getBootstrapServers())
+            .put("subscription", subscriptionConfig)
+            .put("client_dns_lookup", "use_all_dns_ips")
+            .put("enable_auto_commit", false)
+            .put("group_id", "groupid")
+            .put("repeated_calls", 3)
+            .put("protocol", protocolConfig)
+            .put("auto_offset_reset", "earliest")
+            .build());
   }
 
   @Override
@@ -78,25 +79,33 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void sendEvent() throws ExecutionException, InterruptedException {
-    final Map<String, Object> props = ImmutableMap.<String, Object>builder()
-        .put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers())
-        .put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName())
-        .put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName())
-        .build();
+    final Map<String, Object> props =
+        ImmutableMap.<String, Object>builder()
+            .put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers())
+            .put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName())
+            .put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName())
+            .build();
     final KafkaProducer<String, JsonNode> producer = new KafkaProducer<>(props);
 
     final ObjectNode event = mapper.createObjectNode();
     event.put("test", "value");
 
-    producer.send(new ProducerRecord<>(TOPIC_NAME, event), (recordMetadata, exception) -> {
-      if (exception != null) {
-        throw new RuntimeException("Cannot send message to Kafka. Error: " + exception.getMessage(), exception);
-      }
-    }).get();
+    producer
+        .send(
+            new ProducerRecord<>(TOPIC_NAME, event),
+            (recordMetadata, exception) -> {
+              if (exception != null) {
+                throw new RuntimeException(
+                    "Cannot send message to Kafka. Error: " + exception.getMessage(), exception);
+              }
+            })
+        .get();
   }
 
   private void createTopic() throws Exception {
-    try (final var admin = AdminClient.create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers()))) {
+    try (final var admin =
+        AdminClient.create(
+            Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers()))) {
       final NewTopic topic = new NewTopic(TOPIC_NAME, 1, (short) 1);
       admin.createTopics(Collections.singletonList(topic)).all().get();
     }
@@ -115,7 +124,8 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
     final ConfiguredAirbyteStream streams =
-        CatalogHelpers.createConfiguredAirbyteStream(TOPIC_NAME, null, Field.of("value", JsonSchemaPrimitive.STRING));
+        CatalogHelpers.createConfiguredAirbyteStream(
+            TOPIC_NAME, null, Field.of("value", JsonSchemaPrimitive.STRING));
     streams.setSyncMode(SyncMode.FULL_REFRESH);
     return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(streams));
   }
@@ -129,5 +139,4 @@ public class KafkaSourceAcceptanceTest extends SourceAcceptanceTest {
   protected List<String> getRegexTests() throws Exception {
     return Collections.emptyList();
   }
-
 }

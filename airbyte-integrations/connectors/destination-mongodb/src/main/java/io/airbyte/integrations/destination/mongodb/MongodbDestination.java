@@ -40,8 +40,10 @@ public class MongodbDestination extends BaseConnector implements Destination {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongodbDestination.class);
 
   private static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/?authSource=%s&ssl=%s";
-  private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?authSource=%s&retryWrites=true&w=majority&tls=true";
-  private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=%s&directConnection=false&ssl=true";
+  private static final String MONGODB_CLUSTER_URL =
+      "mongodb+srv://%s%s/%s?authSource=%s&retryWrites=true&w=majority&tls=true";
+  private static final String MONGODB_REPLICA_URL =
+      "mongodb://%s%s/%s?authSource=%s&directConnection=false&ssl=true";
   private static final String INSTANCE_TYPE = "instance_type";
   private static final String INSTANCE = "instance";
   private static final String CLUSTER_URL = "cluster_url";
@@ -83,15 +85,17 @@ public class MongodbDestination extends BaseConnector implements Destination {
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final RuntimeException e) {
       LOGGER.error("Check failed.", e);
-      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
     }
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     final var database = getDatabase(config);
 
     final Map<AirbyteStreamNameNamespacePair, MongodbWriteConfig> writeConfigs = new HashMap<>();
@@ -105,16 +109,24 @@ public class MongodbDestination extends BaseConnector implements Destination {
         database.getCollection(collectionName).drop();
       }
 
-      final MongoCollection<Document> collection = database.getOrCreateNewCollection(tmpCollectionName);
+      final MongoCollection<Document> collection =
+          database.getOrCreateNewCollection(tmpCollectionName);
       final Set<String> documentsHash = new HashSet<>();
-      try (final MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
+      try (final MongoCursor<Document> cursor =
+          collection.find().projection(excludeId()).iterator()) {
         while (cursor.hasNext()) {
           documentsHash.add(cursor.next().get(AIRBYTE_DATA_HASH, String.class));
         }
       }
 
-      writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-          new MongodbWriteConfig(collectionName, tmpCollectionName, configStream.getDestinationSyncMode(), collection, documentsHash));
+      writeConfigs.put(
+          AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+          new MongodbWriteConfig(
+              collectionName,
+              tmpCollectionName,
+              configStream.getDestinationSyncMode(),
+              collection,
+              documentsHash));
     }
     return new MongodbRecordConsumer(writeConfigs, database, catalog, outputRecordCollector);
   }
@@ -127,9 +139,13 @@ public class MongodbDestination extends BaseConnector implements Destination {
 
   @VisibleForTesting
   String getConnectionString(final JsonNode config) {
-    final var credentials = config.get(AUTH_TYPE).get(AUTHORIZATION).asText().equals(LOGIN_AND_PASSWORD)
-        ? String.format("%s:%s@", config.get(AUTH_TYPE).get(USERNAME).asText(), config.get(AUTH_TYPE).get(PASSWORD).asText())
-        : StringUtils.EMPTY;
+    final var credentials =
+        config.get(AUTH_TYPE).get(AUTHORIZATION).asText().equals(LOGIN_AND_PASSWORD)
+            ? String.format(
+                "%s:%s@",
+                config.get(AUTH_TYPE).get(USERNAME).asText(),
+                config.get(AUTH_TYPE).get(PASSWORD).asText())
+            : StringUtils.EMPTY;
 
     // backward compatibility check
     // the old mongo db spec only includes host, port, database, and auth_type
@@ -137,8 +153,13 @@ public class MongodbDestination extends BaseConnector implements Destination {
     if (config.has(INSTANCE_TYPE)) {
       return buildConnectionString(config, credentials);
     } else {
-      return String.format(MONGODB_SERVER_URL, credentials, config.get(HOST).asText(),
-          config.get(PORT).asText(), config.get(DATABASE).asText(), false);
+      return String.format(
+          MONGODB_SERVER_URL,
+          credentials,
+          config.get(HOST).asText(),
+          config.get(PORT).asText(),
+          config.get(DATABASE).asText(),
+          false);
     }
   }
 
@@ -146,30 +167,44 @@ public class MongodbDestination extends BaseConnector implements Destination {
     final StringBuilder connectionStrBuilder = new StringBuilder();
 
     final JsonNode instanceConfig = config.get(INSTANCE_TYPE);
-    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(INSTANCE).asText());
+    final MongoInstanceType instance =
+        MongoInstanceType.fromValue(instanceConfig.get(INSTANCE).asText());
 
     switch (instance) {
       case STANDALONE -> {
         connectionStrBuilder.append(
-            String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText(),
-                config.get(DATABASE).asText(), instanceConfig.get(TLS).asBoolean()));
+            String.format(
+                MONGODB_SERVER_URL,
+                credentials,
+                instanceConfig.get(HOST).asText(),
+                instanceConfig.get(PORT).asText(),
+                config.get(DATABASE).asText(),
+                instanceConfig.get(TLS).asBoolean()));
       }
       case REPLICA -> {
         connectionStrBuilder.append(
-            String.format(MONGODB_REPLICA_URL, credentials, instanceConfig.get(SERVER_ADDRESSES).asText(), config.get(DATABASE).asText(),
+            String.format(
+                MONGODB_REPLICA_URL,
+                credentials,
+                instanceConfig.get(SERVER_ADDRESSES).asText(),
+                config.get(DATABASE).asText(),
                 config.get(DATABASE).asText()));
         if (instanceConfig.has(REPLICA_SET)) {
-          connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(REPLICA_SET).asText()));
+          connectionStrBuilder.append(
+              String.format("&replicaSet=%s", instanceConfig.get(REPLICA_SET).asText()));
         }
       }
       case ATLAS -> {
         connectionStrBuilder.append(
-            String.format(MONGODB_CLUSTER_URL, credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(DATABASE).asText(),
+            String.format(
+                MONGODB_CLUSTER_URL,
+                credentials,
+                instanceConfig.get(CLUSTER_URL).asText(),
+                config.get(DATABASE).asText(),
                 config.get(DATABASE).asText()));
       }
       default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);
     }
     return connectionStrBuilder.toString();
   }
-
 }

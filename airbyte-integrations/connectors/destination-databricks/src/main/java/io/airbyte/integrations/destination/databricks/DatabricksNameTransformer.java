@@ -32,5 +32,4 @@ public class DatabricksNameTransformer extends ExtendedNameTransformer {
   protected String applyDefaultCase(final String input) {
     return input.toLowerCase();
   }
-
 }

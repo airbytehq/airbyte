@@ -42,24 +42,28 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("replication_method", MySqlSource.ReplicationMethod.CDC)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", container.getHost())
+                .put("port", container.getFirstMappedPort())
+                .put("database", container.getDatabaseName())
+                .put("username", container.getUsername())
+                .put("password", container.getPassword())
+                .put("replication_method", MySqlSource.ReplicationMethod.CDC)
+                .build());
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL);
+    final Database database =
+        Databases.createDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:mysql://%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()),
+            "com.mysql.cj.jdbc.Driver",
+            SQLDialect.MYSQL);
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
@@ -83,22 +87,21 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   private void grantCorrectPermissions() {
     executeQuery(
         "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO "
-            + container.getUsername() + "@'%';");
+            + container.getUsername()
+            + "@'%';");
   }
 
   private void executeQuery(final String query) {
-    try (final Database database = Databases.createDatabase(
-        "root",
-        "test",
-        String.format("jdbc:mysql://%s:%s/%s",
-            container.getHost(),
-            container.getFirstMappedPort(),
-            container.getDatabaseName()),
-        MySqlSource.DRIVER_CLASS,
-        SQLDialect.MYSQL)) {
-      database.query(
-          ctx -> ctx
-              .execute(query));
+    try (final Database database =
+        Databases.createDatabase(
+            "root",
+            "test",
+            String.format(
+                "jdbc:mysql://%s:%s/%s",
+                container.getHost(), container.getFirstMappedPort(), container.getDatabaseName()),
+            MySqlSource.DRIVER_CLASS,
+            SQLDialect.MYSQL)) {
+      database.query(ctx -> ctx.execute(query));
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -195,7 +198,11 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("double")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "power(10, 308)", "1/power(10, 45)", "10.5")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)), String.valueOf(1 / Math.pow(10, 45)), "10.5")
+            .addExpectedValues(
+                null,
+                String.valueOf(Math.pow(10, 308)),
+                String.valueOf(1 / Math.pow(10, 45)),
+                "10.5")
             .build());
 
     addDataTypeTestData(
@@ -356,7 +363,6 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addInsertValues("null", "1", "0")
             .addExpectedValues(null, "true", "false")
             .build());
-
   }
 
   private String getLogString(final int length) {
@@ -369,5 +375,4 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     stringBuilder.append("lpad('0', ").append(length % maxLpadLength).append(", '0'))");
     return stringBuilder.toString();
   }
-
 }

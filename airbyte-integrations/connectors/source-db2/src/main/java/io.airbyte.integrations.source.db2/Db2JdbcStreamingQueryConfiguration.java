@@ -9,8 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class Db2JdbcStreamingQueryConfiguration implements
-    JdbcStreamingQueryConfiguration {
+public class Db2JdbcStreamingQueryConfiguration implements JdbcStreamingQueryConfiguration {
 
   @Override
   public void accept(final Connection connection, final PreparedStatement preparedStatement)
@@ -18,5 +17,4 @@ public class Db2JdbcStreamingQueryConfiguration implements
     connection.setAutoCommit(false);
     preparedStatement.setFetchSize(1000);
   }
-
 }

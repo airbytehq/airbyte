@@ -19,11 +19,12 @@ class MongodbWriteConfig {
   private final MongoCollection<Document> collection;
   private final Set<String> documentsHash = new HashSet<>();
 
-  MongodbWriteConfig(final String collectionName,
-                     final String tmpCollectionName,
-                     final DestinationSyncMode syncMode,
-                     final MongoCollection<Document> collection,
-                     final Collection<String> documentsHash) {
+  MongodbWriteConfig(
+      final String collectionName,
+      final String tmpCollectionName,
+      final DestinationSyncMode syncMode,
+      final MongoCollection<Document> collection,
+      final Collection<String> documentsHash) {
     this.collectionName = collectionName;
     this.tmpCollectionName = tmpCollectionName;
     this.syncMode = syncMode;
@@ -50,5 +51,4 @@ class MongodbWriteConfig {
   public Set<String> getDocumentsHash() {
     return documentsHash;
   }
-
 }

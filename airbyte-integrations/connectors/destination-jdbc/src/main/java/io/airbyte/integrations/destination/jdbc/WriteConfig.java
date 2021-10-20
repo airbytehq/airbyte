@@ -6,9 +6,7 @@ package io.airbyte.integrations.destination.jdbc;
 
 import io.airbyte.protocol.models.DestinationSyncMode;
 
-/**
- * Write configuration POJO for all destinations extending {@link AbstractJdbcDestination}.
- */
+/** Write configuration POJO for all destinations extending {@link AbstractJdbcDestination}. */
 public class WriteConfig {
 
   private final String streamName;
@@ -20,12 +18,13 @@ public class WriteConfig {
   private final String outputTableName;
   private final DestinationSyncMode syncMode;
 
-  public WriteConfig(final String streamName,
-                     final String namespace,
-                     final String outputSchemaName,
-                     final String tmpTableName,
-                     final String outputTableName,
-                     final DestinationSyncMode syncMode) {
+  public WriteConfig(
+      final String streamName,
+      final String namespace,
+      final String outputSchemaName,
+      final String tmpTableName,
+      final String outputTableName,
+      final DestinationSyncMode syncMode) {
     this.streamName = streamName;
     this.namespace = namespace;
     this.outputSchemaName = outputSchemaName;
@@ -60,14 +59,19 @@ public class WriteConfig {
 
   @Override
   public String toString() {
-    return "WriteConfig{" +
-        "streamName=" + streamName +
-        ", namespace=" + namespace +
-        ", outputSchemaName=" + outputSchemaName +
-        ", tmpTableName=" + tmpTableName +
-        ", outputTableName=" + outputTableName +
-        ", syncMode=" + syncMode +
-        '}';
+    return "WriteConfig{"
+        + "streamName="
+        + streamName
+        + ", namespace="
+        + namespace
+        + ", outputSchemaName="
+        + outputSchemaName
+        + ", tmpTableName="
+        + tmpTableName
+        + ", outputTableName="
+        + outputTableName
+        + ", syncMode="
+        + syncMode
+        + '}';
   }
-
 }

@@ -61,24 +61,26 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("database", db.getDatabaseName())
-        .put("port", db.getFirstMappedPort())
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", db.getHost())
+            .put("username", db.getUsername())
+            .put("password", db.getPassword())
+            .put("database", db.getDatabaseName())
+            .put("port", db.getFirstMappedPort())
+            .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", "wrong password")
-        .put("database", db.getDatabaseName())
-        .put("port", db.getFirstMappedPort())
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", db.getHost())
+            .put("username", db.getUsername())
+            .put("password", "wrong password")
+            .put("database", db.getDatabaseName())
+            .put("port", db.getFirstMappedPort())
+            .build());
   }
 
   @Override
@@ -90,38 +92,43 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
     return Databases.createDatabase(
-        db.getUsername(),
-        db.getPassword(),
-        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL).query(
-            ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(r -> r.formatJSON(JSON_FORMAT))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList()));
+            db.getUsername(),
+            db.getPassword(),
+            String.format(
+                "jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+                db.getHost(), db.getFirstMappedPort(), db.getDatabaseName()),
+            "com.mysql.cj.jdbc.Driver",
+            SQLDialect.MYSQL)
+        .query(
+            ctx ->
+                ctx
+                    .fetch(
+                        String.format(
+                            "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                            schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                    .stream()
+                    .map(r -> r.formatJSON(JSON_FORMAT))
+                    .map(Jsons::deserialize)
+                    .collect(Collectors.toList()));
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
@@ -158,22 +165,21 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   private void grantCorrectPermissions() {
-    executeQuery("GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+    executeQuery(
+        "GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
   }
 
   private void executeQuery(final String query) {
     try {
       Databases.createDatabase(
-          "root",
-          "test",
-          String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-              db.getHost(),
-              db.getFirstMappedPort(),
-              db.getDatabaseName()),
-          "com.mysql.cj.jdbc.Driver",
-          SQLDialect.MYSQL).query(
-              ctx -> ctx
-                  .execute(query));
+              "root",
+              "test",
+              String.format(
+                  "jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+                  db.getHost(), db.getFirstMappedPort(), db.getDatabaseName()),
+              "com.mysql.cj.jdbc.Driver",
+              SQLDialect.MYSQL)
+          .query(ctx -> ctx.execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
@@ -194,39 +200,49 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
 
   @Test
   public void testJsonSync() throws Exception {
-    final String catalogAsText = "{\n"
-        + "  \"streams\": [\n"
-        + "    {\n"
-        + "      \"name\": \"exchange_rate\",\n"
-        + "      \"json_schema\": {\n"
-        + "        \"properties\": {\n"
-        + "          \"id\": {\n"
-        + "            \"type\": \"integer\"\n"
-        + "          },\n"
-        + "          \"data\": {\n"
-        + "            \"type\": \"string\"\n"
-        + "          }"
-        + "        }\n"
-        + "      }\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}\n";
+    final String catalogAsText =
+        "{\n"
+            + "  \"streams\": [\n"
+            + "    {\n"
+            + "      \"name\": \"exchange_rate\",\n"
+            + "      \"json_schema\": {\n"
+            + "        \"properties\": {\n"
+            + "          \"id\": {\n"
+            + "            \"type\": \"integer\"\n"
+            + "          },\n"
+            + "          \"data\": {\n"
+            + "            \"type\": \"string\"\n"
+            + "          }"
+            + "        }\n"
+            + "      }\n"
+            + "    }\n"
+            + "  ]\n"
+            + "}\n";
 
     final AirbyteCatalog catalog = Jsons.deserialize(catalogAsText, AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> messages = Lists.newArrayList(
-        new AirbyteMessage()
-            .withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage()
-                .withStream(catalog.getStreams().get(0).getName())
-                .withEmittedAt(Instant.now().toEpochMilli())
-                .withData(Jsons.jsonNode(ImmutableMap.builder()
-                    .put("id", 1)
-                    .put("data", "{\"name\":\"Conferência Faturamento - Custo - Taxas - Margem - Resumo ano inicial até -2\",\"description\":null}")
-                    .build()))),
-        new AirbyteMessage()
-            .withType(Type.STATE)
-            .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages =
+        Lists.newArrayList(
+            new AirbyteMessage()
+                .withType(Type.RECORD)
+                .withRecord(
+                    new AirbyteRecordMessage()
+                        .withStream(catalog.getStreams().get(0).getName())
+                        .withEmittedAt(Instant.now().toEpochMilli())
+                        .withData(
+                            Jsons.jsonNode(
+                                ImmutableMap.builder()
+                                    .put("id", 1)
+                                    .put(
+                                        "data",
+                                        "{\"name\":\"Conferência Faturamento - Custo - Taxas - Margem - Resumo ano inicial até -2\",\"description\":null}")
+                                    .build()))),
+            new AirbyteMessage()
+                .withType(Type.STATE)
+                .withState(
+                    new AirbyteStateMessage()
+                        .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
@@ -248,5 +264,4 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
       assertEquals(expectedValue, actualValue);
     }
   }
-
 }

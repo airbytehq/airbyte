@@ -30,16 +30,21 @@ class StateDecoratingIteratorTest {
 
   private static final String NAMESPACE = "public";
   private static final String STREAM_NAME = "shoes";
-  private static final AirbyteStreamNameNamespacePair NAME_NAMESPACE_PAIR = new AirbyteStreamNameNamespacePair(STREAM_NAME, NAMESPACE);
+  private static final AirbyteStreamNameNamespacePair NAME_NAMESPACE_PAIR =
+      new AirbyteStreamNameNamespacePair(STREAM_NAME, NAMESPACE);
   private static final String UUID_FIELD_NAME = "ascending_inventory_uuid";
-  private static final AirbyteMessage RECORD_MESSAGE1 = new AirbyteMessage()
-      .withType(Type.RECORD)
-      .withRecord(new AirbyteRecordMessage()
-          .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, "abc"))));
-  private static final AirbyteMessage RECORD_MESSAGE2 = new AirbyteMessage()
-      .withType(Type.RECORD)
-      .withRecord(new AirbyteRecordMessage()
-          .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, "def"))));
+  private static final AirbyteMessage RECORD_MESSAGE1 =
+      new AirbyteMessage()
+          .withType(Type.RECORD)
+          .withRecord(
+              new AirbyteRecordMessage()
+                  .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, "abc"))));
+  private static final AirbyteMessage RECORD_MESSAGE2 =
+      new AirbyteMessage()
+          .withType(Type.RECORD)
+          .withRecord(
+              new AirbyteRecordMessage()
+                  .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, "def"))));
 
   private static Iterator<AirbyteMessage> messageIterator;
   private StateManager stateManager;
@@ -60,13 +65,14 @@ class StateDecoratingIteratorTest {
   void testWithoutInitialCursor() {
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, "def")).thenReturn(stateMessage);
 
-    final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        messageIterator,
-        stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        null,
-        JsonSchemaPrimitive.STRING);
+    final StateDecoratingIterator iterator =
+        new StateDecoratingIterator(
+            messageIterator,
+            stateManager,
+            NAME_NAMESPACE_PAIR,
+            UUID_FIELD_NAME,
+            null,
+            JsonSchemaPrimitive.STRING);
 
     assertEquals(RECORD_MESSAGE1, iterator.next());
     assertEquals(RECORD_MESSAGE2, iterator.next());
@@ -78,13 +84,14 @@ class StateDecoratingIteratorTest {
   void testWithInitialCursor() {
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, "xyz")).thenReturn(stateMessage);
 
-    final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        messageIterator,
-        stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        "xyz",
-        JsonSchemaPrimitive.STRING);
+    final StateDecoratingIterator iterator =
+        new StateDecoratingIterator(
+            messageIterator,
+            stateManager,
+            NAME_NAMESPACE_PAIR,
+            UUID_FIELD_NAME,
+            "xyz",
+            JsonSchemaPrimitive.STRING);
 
     assertEquals(RECORD_MESSAGE1, iterator.next());
     assertEquals(RECORD_MESSAGE2, iterator.next());
@@ -100,13 +107,14 @@ class StateDecoratingIteratorTest {
 
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, "xyz")).thenReturn(stateMessage);
 
-    final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        messageStream,
-        stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        null,
-        JsonSchemaPrimitive.STRING);
+    final StateDecoratingIterator iterator =
+        new StateDecoratingIterator(
+            messageStream,
+            stateManager,
+            NAME_NAMESPACE_PAIR,
+            UUID_FIELD_NAME,
+            null,
+            JsonSchemaPrimitive.STRING);
 
     assertEquals(recordMessage, iterator.next());
     // null because no records with a cursor field were replicated for the stream.
@@ -118,16 +126,16 @@ class StateDecoratingIteratorTest {
   void testEmptyStream() {
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, null)).thenReturn(stateMessage);
 
-    final StateDecoratingIterator iterator = new StateDecoratingIterator(
-        Collections.emptyIterator(),
-        stateManager,
-        NAME_NAMESPACE_PAIR,
-        UUID_FIELD_NAME,
-        null,
-        JsonSchemaPrimitive.STRING);
+    final StateDecoratingIterator iterator =
+        new StateDecoratingIterator(
+            Collections.emptyIterator(),
+            stateManager,
+            NAME_NAMESPACE_PAIR,
+            UUID_FIELD_NAME,
+            null,
+            JsonSchemaPrimitive.STRING);
 
     assertEquals(stateMessage, iterator.next().getState());
     assertFalse(iterator.hasNext());
   }
-
 }

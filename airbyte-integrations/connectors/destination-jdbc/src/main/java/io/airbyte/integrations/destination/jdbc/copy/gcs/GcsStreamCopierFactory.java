@@ -20,48 +20,57 @@ import java.io.InputStream;
 
 public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsConfig> {
 
-  /**
-   * Used by the copy consumer.
-   */
+  /** Used by the copy consumer. */
   @Override
-  public StreamCopier create(final String configuredSchema,
-                             final GcsConfig gcsConfig,
-                             final String stagingFolder,
-                             final ConfiguredAirbyteStream configuredStream,
-                             final ExtendedNameTransformer nameTransformer,
-                             final JdbcDatabase db,
-                             final SqlOperations sqlOperations) {
+  public StreamCopier create(
+      final String configuredSchema,
+      final GcsConfig gcsConfig,
+      final String stagingFolder,
+      final ConfiguredAirbyteStream configuredStream,
+      final ExtendedNameTransformer nameTransformer,
+      final JdbcDatabase db,
+      final SqlOperations sqlOperations) {
     try {
       final AirbyteStream stream = configuredStream.getStream();
       final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
-      final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      final String schema =
+          StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
 
-      final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
+      final InputStream credentialsInputStream =
+          new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
       final GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
-      final Storage storageClient = StorageOptions.newBuilder()
-          .setCredentials(credentials)
-          .setProjectId(gcsConfig.getProjectId())
-          .build()
-          .getService();
+      final Storage storageClient =
+          StorageOptions.newBuilder()
+              .setCredentials(credentials)
+              .setProjectId(gcsConfig.getProjectId())
+              .build()
+              .getService();
 
-      return create(stagingFolder, syncMode, schema, stream.getName(), storageClient, db, gcsConfig, nameTransformer, sqlOperations);
+      return create(
+          stagingFolder,
+          syncMode,
+          schema,
+          stream.getName(),
+          storageClient,
+          db,
+          gcsConfig,
+          nameTransformer,
+          sqlOperations);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  /**
-   * For specific copier suppliers to implement.
-   */
-  public abstract StreamCopier create(String stagingFolder,
-                                      DestinationSyncMode syncMode,
-                                      String schema,
-                                      String streamName,
-                                      Storage storageClient,
-                                      JdbcDatabase db,
-                                      GcsConfig gcsConfig,
-                                      ExtendedNameTransformer nameTransformer,
-                                      SqlOperations sqlOperations)
+  /** For specific copier suppliers to implement. */
+  public abstract StreamCopier create(
+      String stagingFolder,
+      DestinationSyncMode syncMode,
+      String schema,
+      String streamName,
+      Storage storageClient,
+      JdbcDatabase db,
+      GcsConfig gcsConfig,
+      ExtendedNameTransformer nameTransformer,
+      SqlOperations sqlOperations)
       throws Exception;
-
 }

@@ -33,32 +33,35 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"Parquet\",\n"
-        + "  \"compression_codec\": \"GZIP\"\n"
-        + "}");
+    return Jsons.deserialize(
+        "{\n" + "  \"format_type\": \"Parquet\",\n" + "  \"compression_codec\": \"GZIP\"\n" + "}");
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws IOException, URISyntaxException {
-    final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
+    final JsonFieldNameUpdater nameUpdater =
+        AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
     final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
     final List<JsonNode> jsonRecords = new LinkedList<>();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
-      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      final URI uri = new URI(String.format("s3a://%s/%s", object.getBucketName(), object.getKey()));
+      final S3Object object =
+          s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      final URI uri =
+          new URI(String.format("s3a://%s/%s", object.getBucketName(), object.getKey()));
       final var path = new org.apache.hadoop.fs.Path(uri);
       final Configuration hadoopConfig = S3ParquetWriter.getHadoopConfig(config);
 
-      try (final ParquetReader<GenericData.Record> parquetReader = ParquetReader.<GenericData.Record>builder(new AvroReadSupport<>(), path)
-          .withConf(hadoopConfig)
-          .build()) {
+      try (final ParquetReader<GenericData.Record> parquetReader =
+          ParquetReader.<GenericData.Record>builder(new AvroReadSupport<>(), path)
+              .withConf(hadoopConfig)
+              .build()) {
         final ObjectReader jsonReader = MAPPER.reader();
         GenericData.Record record;
         while ((record = parquetReader.read()) != null) {
@@ -72,5 +75,4 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
 
     return jsonRecords;
   }
-
 }

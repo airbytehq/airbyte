@@ -28,9 +28,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The base implementation takes care of the following:
- * <li>Create shared instance variables.</li>
- * <li>Create the bucket and prepare the bucket path.</li>
- * <li>Log and close the write.</li>
+ * <li>Create shared instance variables.
+ * <li>Create the bucket and prepare the bucket path.
+ * <li>Log and close the write.
  */
 public abstract class BaseS3Writer implements S3Writer {
 
@@ -42,9 +42,10 @@ public abstract class BaseS3Writer implements S3Writer {
   protected final DestinationSyncMode syncMode;
   protected final String outputPrefix;
 
-  protected BaseS3Writer(final S3DestinationConfig config,
-                         final AmazonS3 s3Client,
-                         final ConfiguredAirbyteStream configuredStream) {
+  protected BaseS3Writer(
+      final S3DestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
@@ -57,8 +58,9 @@ public abstract class BaseS3Writer implements S3Writer {
   }
 
   /**
-   * <li>1. Create bucket if necessary.</li>
-   * <li>2. Under OVERWRITE mode, delete all objects with the output prefix.</li>
+   *
+   * <li>1. Create bucket if necessary.
+   * <li>2. Under OVERWRITE mode, delete all objects with the output prefix.
    */
   @Override
   public void initialize() {
@@ -72,26 +74,27 @@ public abstract class BaseS3Writer implements S3Writer {
     if (syncMode == DestinationSyncMode.OVERWRITE) {
       LOGGER.info("Overwrite mode");
       final List<KeyVersion> keysToDelete = new LinkedList<>();
-      final List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
-          .getObjectSummaries();
+      final List<S3ObjectSummary> objects =
+          s3Client.listObjects(bucket, outputPrefix).getObjectSummaries();
       for (final S3ObjectSummary object : objects) {
         keysToDelete.add(new KeyVersion(object.getKey()));
       }
 
       if (keysToDelete.size() > 0) {
-        LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...",
+        LOGGER.info(
+            "Purging non-empty output path for stream '{}' under OVERWRITE mode...",
             stream.getName());
-        final DeleteObjectsResult result = s3Client
-            .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
-        LOGGER.info("Deleted {} file(s) for stream '{}'.", result.getDeletedObjects().size(),
+        final DeleteObjectsResult result =
+            s3Client.deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
+        LOGGER.info(
+            "Deleted {} file(s) for stream '{}'.",
+            result.getDeletedObjects().size(),
             stream.getName());
       }
     }
   }
 
-  /**
-   * Log and close the write.
-   */
+  /** Log and close the write. */
   @Override
   public void close(final boolean hasFailed) throws IOException {
     if (hasFailed) {
@@ -105,29 +108,22 @@ public abstract class BaseS3Writer implements S3Writer {
     }
   }
 
-  /**
-   * Operations that will run when the write succeeds.
-   */
+  /** Operations that will run when the write succeeds. */
   protected void closeWhenSucceed() throws IOException {
     // Do nothing by default
   }
 
-  /**
-   * Operations that will run when the write fails.
-   */
+  /** Operations that will run when the write fails. */
   protected void closeWhenFail() throws IOException {
     // Do nothing by default
   }
 
   // Filename: <upload-date>_<upload-millis>_0.<format-extension>
   public static String getOutputFilename(final Timestamp timestamp, final S3Format format) {
-    final DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+    final DateFormat formatter =
+        new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String.format(
-        "%s_%d_0.%s",
-        formatter.format(timestamp),
-        timestamp.getTime(),
-        format.getFileExtension());
+        "%s_%d_0.%s", formatter.format(timestamp), timestamp.getTime(), format.getFileExtension());
   }
-
 }

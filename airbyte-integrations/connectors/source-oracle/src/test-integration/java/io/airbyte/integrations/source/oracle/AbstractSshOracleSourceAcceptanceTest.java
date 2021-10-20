@@ -37,34 +37,61 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     startTestContainers();
-    config = sshBastionContainer.getTunnelConfig(getTunnelMethod(), getBasicOracleDbConfigBuider(db));
+    config =
+        sshBastionContainer.getTunnelConfig(getTunnelMethod(), getBasicOracleDbConfigBuider(db));
     populateDatabaseTestData();
   }
 
   private void populateDatabaseTestData() throws Exception {
-    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver");
+    final JdbcDatabase database =
+        Databases.createJdbcDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:oracle:thin:@//%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("sid").asText()),
+            "oracle.jdbc.driver.OracleDriver");
 
-    database.execute(connection -> {
-      connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
-      connection.createStatement().execute("CREATE TABLE jdbc_space.id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power BINARY_DOUBLE)");
-      connection.createStatement().execute("INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (1,'goku', BINARY_DOUBLE_INFINITY)");
-      connection.createStatement().execute("INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1)");
-      connection.createStatement().execute("INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (NULL, 'piccolo', -BINARY_DOUBLE_INFINITY)");
-      connection.createStatement().execute("CREATE TABLE jdbc_space.starships(id INTEGER, name VARCHAR(200))");
-      connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (1,'enterprise-d')");
-      connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (2, 'defiant')");
-      connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (3, 'yamato')");
-    });
+    database.execute(
+        connection -> {
+          connection
+              .createStatement()
+              .execute(
+                  "CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
+          connection
+              .createStatement()
+              .execute(
+                  "CREATE TABLE jdbc_space.id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power BINARY_DOUBLE)");
+          connection
+              .createStatement()
+              .execute(
+                  "INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (1,'goku', BINARY_DOUBLE_INFINITY)");
+          connection
+              .createStatement()
+              .execute(
+                  "INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1)");
+          connection
+              .createStatement()
+              .execute(
+                  "INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (NULL, 'piccolo', -BINARY_DOUBLE_INFINITY)");
+          connection
+              .createStatement()
+              .execute("CREATE TABLE jdbc_space.starships(id INTEGER, name VARCHAR(200))");
+          connection
+              .createStatement()
+              .execute("INSERT INTO jdbc_space.starships (id, name) VALUES (1,'enterprise-d')");
+          connection
+              .createStatement()
+              .execute("INSERT INTO jdbc_space.starships (id, name) VALUES (2, 'defiant')");
+          connection
+              .createStatement()
+              .execute("INSERT INTO jdbc_space.starships (id, name) VALUES (3, 'yamato')");
+        });
 
     database.close();
   }
-
   ;
 
   @Override
@@ -78,8 +105,9 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
   }
 
   private void initAndStartJdbcContainer() {
-    db = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-        .withNetwork(sshBastionContainer.getNetWork());
+    db =
+        new OracleContainer("epiclabs/docker-oracle-xe-11g")
+            .withNetwork(sshBastionContainer.getNetWork());
     db.start();
   }
 
@@ -93,20 +121,25 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
     return SshHelpers.getSpecAndInjectSsh();
   }
 
-  public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuider(final OracleContainer db) {
+  public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuider(
+      final OracleContainer db) {
     return ImmutableMap.builder()
-        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
-            .getNetworks()
-            .get(((Network.NetworkImpl) sshBastionContainer.getNetWork()).getName())
-            .getIpAddress()))
+        .put(
+            "host",
+            Objects.requireNonNull(
+                db.getContainerInfo()
+                    .getNetworkSettings()
+                    .getNetworks()
+                    .get(((Network.NetworkImpl) sshBastionContainer.getNetWork()).getName())
+                    .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("port", db.getExposedPorts().get(0))
         .put("sid", db.getSid())
         .put("schemas", List.of("JDBC_SPACE"))
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-            .put("encryption_method", "unencrypted")
-            .build()));
+        .put(
+            "encryption",
+            Jsons.jsonNode(ImmutableMap.builder().put("encryption_method", "unencrypted").build()));
   }
 
   @Override
@@ -116,24 +149,30 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("ID"))
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING),
-                Field.of("POWER", JsonSchemaPrimitive.NUMBER))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("ID"))
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(
+            Lists.newArrayList(
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("ID"))
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                STREAM_NAME,
+                                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+                                Field.of("NAME", JsonSchemaPrimitive.STRING),
+                                Field.of("POWER", JsonSchemaPrimitive.NUMBER))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("ID"))
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                STREAM_NAME2,
+                                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+                                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -145,5 +184,4 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

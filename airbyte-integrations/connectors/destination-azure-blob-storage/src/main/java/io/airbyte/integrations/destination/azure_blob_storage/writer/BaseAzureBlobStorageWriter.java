@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The base implementation takes care of the following:
- * <li>Create shared instance variables.</li>
- * <li>Create the bucket and prepare the bucket path.</li>
- * <li>Log and close the write.</li>
+ * <li>Create shared instance variables.
+ * <li>Create the bucket and prepare the bucket path.
+ * <li>Log and close the write.
  */
 public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWriter {
 
@@ -28,18 +28,17 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
   protected final AirbyteStream stream;
   protected final DestinationSyncMode syncMode;
 
-  protected BaseAzureBlobStorageWriter(final AzureBlobStorageDestinationConfig config,
-                                       final AppendBlobClient appendBlobClient,
-                                       final ConfiguredAirbyteStream configuredStream) {
+  protected BaseAzureBlobStorageWriter(
+      final AzureBlobStorageDestinationConfig config,
+      final AppendBlobClient appendBlobClient,
+      final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.appendBlobClient = appendBlobClient;
     this.stream = configuredStream.getStream();
     this.syncMode = configuredStream.getDestinationSyncMode();
   }
 
-  /**
-   * Log and close the write.
-   */
+  /** Log and close the write. */
   @Override
   public void close(final boolean hasFailed) throws IOException {
     if (hasFailed) {
@@ -53,18 +52,13 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
     }
   }
 
-  /**
-   * Operations that will run when the write succeeds.
-   */
+  /** Operations that will run when the write succeeds. */
   protected void closeWhenSucceed() throws IOException {
     // Do nothing by default
   }
 
-  /**
-   * Operations that will run when the write fails.
-   */
+  /** Operations that will run when the write fails. */
   protected void closeWhenFail() throws IOException {
     // Do nothing by default
   }
-
 }

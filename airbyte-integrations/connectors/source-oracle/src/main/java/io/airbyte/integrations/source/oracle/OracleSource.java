@@ -55,19 +55,22 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 
-    final Protocol protocol = config.has("encryption")
-        ? obtainConnectionProtocol(config.get("encryption"), additionalParameters)
-        : Protocol.TCP;
-    final String connectionString = String.format(
-        "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))",
-        protocol,
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("sid").asText());
+    final Protocol protocol =
+        config.has("encryption")
+            ? obtainConnectionProtocol(config.get("encryption"), additionalParameters)
+            : Protocol.TCP;
+    final String connectionString =
+        String.format(
+            "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))",
+            protocol,
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("sid").asText());
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", connectionString);
+    final ImmutableMap.Builder<Object, Object> configBuilder =
+        ImmutableMap.builder()
+            .put("username", config.get("username").asText())
+            .put("jdbc_url", connectionString);
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
@@ -89,7 +92,8 @@ public class OracleSource extends AbstractJdbcSource implements Source {
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private Protocol obtainConnectionProtocol(final JsonNode encryption, final List<String> additionalParameters) {
+  private Protocol obtainConnectionProtocol(
+      final JsonNode encryption, final List<String> additionalParameters) {
     final String encryptionMethod = encryption.get("encryption_method").asText();
     switch (encryptionMethod) {
       case "unencrypted" -> {
@@ -117,27 +121,35 @@ public class OracleSource extends AbstractJdbcSource implements Source {
         "Failed to obtain connection protocol from config " + encryption.asText());
   }
 
-  private static void convertAndImportCertificate(final String certificate) throws IOException, InterruptedException {
+  private static void convertAndImportCertificate(final String certificate)
+      throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
     try (final PrintWriter out = new PrintWriter("certificate.pem")) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
     runProcess(
-        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + KEY_STORE_PASS + " -noprompt",
+        "keytool -import -alias rds-root -keystore "
+            + KEY_STORE_FILE_PATH
+            + " -file certificate.der -storepass "
+            + KEY_STORE_PASS
+            + " -noprompt",
         run);
   }
 
-  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+  private static void runProcess(final String cmd, final Runtime run)
+      throws IOException, InterruptedException {
     final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
-    } ;
+    }
+    ;
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database)
+      throws Exception {
     final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
     for (final String schema : schemas) {
       LOGGER.debug("Discovering schema: {}", schema);
@@ -166,5 +178,4 @@ public class OracleSource extends AbstractJdbcSource implements Source {
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", OracleSource.class);
   }
-
 }

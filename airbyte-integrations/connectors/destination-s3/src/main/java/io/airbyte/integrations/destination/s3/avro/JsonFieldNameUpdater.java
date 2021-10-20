@@ -56,5 +56,4 @@ public class JsonFieldNameUpdater {
   private static String quote(final String input) {
     return "\"" + input + "\"";
   }
-
 }

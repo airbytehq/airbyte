@@ -12,5 +12,4 @@ public class SshPasswordMSSQLDestinationAcceptanceTest extends SshMSSQLDestinati
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
   }
-
 }

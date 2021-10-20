@@ -17,24 +17,30 @@ class DatabricksDestinationConfigTest {
 
   @Test
   public void testConfigCreationFromJson() {
-    final ObjectNode dataSourceConfig = OBJECT_MAPPER.createObjectNode()
-        .put("data_source_type", "S3")
-        .put("s3_bucket_name", "bucket_name")
-        .put("s3_bucket_path", "bucket_path")
-        .put("s3_bucket_region", "bucket_region")
-        .put("s3_access_key_id", "access_key_id")
-        .put("s3_secret_access_key", "secret_access_key");
+    final ObjectNode dataSourceConfig =
+        OBJECT_MAPPER
+            .createObjectNode()
+            .put("data_source_type", "S3")
+            .put("s3_bucket_name", "bucket_name")
+            .put("s3_bucket_path", "bucket_path")
+            .put("s3_bucket_region", "bucket_region")
+            .put("s3_access_key_id", "access_key_id")
+            .put("s3_secret_access_key", "secret_access_key");
 
-    final ObjectNode databricksConfig = OBJECT_MAPPER.createObjectNode()
-        .put("databricks_server_hostname", "server_hostname")
-        .put("databricks_http_path", "http_path")
-        .put("databricks_personal_access_token", "pak")
-        .set("data_source", dataSourceConfig);
+    final ObjectNode databricksConfig =
+        OBJECT_MAPPER
+            .createObjectNode()
+            .put("databricks_server_hostname", "server_hostname")
+            .put("databricks_http_path", "http_path")
+            .put("databricks_personal_access_token", "pak")
+            .set("data_source", dataSourceConfig);
 
-    assertThrows(IllegalArgumentException.class, () -> DatabricksDestinationConfig.get(databricksConfig));
+    assertThrows(
+        IllegalArgumentException.class, () -> DatabricksDestinationConfig.get(databricksConfig));
 
     databricksConfig.put("accept_terms", false);
-    assertThrows(IllegalArgumentException.class, () -> DatabricksDestinationConfig.get(databricksConfig));
+    assertThrows(
+        IllegalArgumentException.class, () -> DatabricksDestinationConfig.get(databricksConfig));
 
     databricksConfig.put("accept_terms", true);
     final DatabricksDestinationConfig config1 = DatabricksDestinationConfig.get(databricksConfig);
@@ -46,5 +52,4 @@ class DatabricksDestinationConfigTest {
     assertEquals("1000", config2.getDatabricksPort());
     assertEquals("testing_schema", config2.getDatabaseSchema());
   }
-
 }

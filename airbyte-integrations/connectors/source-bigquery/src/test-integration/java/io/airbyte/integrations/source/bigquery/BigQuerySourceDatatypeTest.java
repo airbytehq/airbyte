@@ -47,15 +47,14 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-
-  }
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {}
 
   @Override
   protected Database setupDatabase() throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+          "Must provide path to a big query credentials file. By default {module-root}/"
+              + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
@@ -67,16 +66,22 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests_compr", "_", 8);
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJsonString)
-        .put(CONFIG_DATASET_ID, datasetId)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put(CONFIG_PROJECT_ID, projectId)
+                .put(CONFIG_CREDS, credentialsJsonString)
+                .put(CONFIG_DATASET_ID, datasetId)
+                .build());
 
-    database = new TempBigQueryJoolDatabaseImpl(config.get(CONFIG_PROJECT_ID).asText(), credentialsJsonString);
+    database =
+        new TempBigQueryJoolDatabaseImpl(
+            config.get(CONFIG_PROJECT_ID).asText(), credentialsJsonString);
 
     final DatasetInfo datasetInfo =
-        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(datasetLocation).build();
+        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText())
+            .setLocation(datasetLocation)
+            .build();
     dataset = database.getRealDatabase().getBigQuery().create(datasetInfo);
 
     return database;
@@ -153,8 +158,22 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .fullSourceDataType("numeric(29,9)")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .createTablePatternSql(CREATE_SQL_PATTERN)
-            .addInsertValues("null", "-128", "127", "999999999999999999", "-999999999999999999", "0.123456789", "-0.123456789")
-            .addExpectedValues(null, "-128", "127", "999999999999999999", "-999999999999999999", "0.123456789", "-0.123456789")
+            .addInsertValues(
+                "null",
+                "-128",
+                "127",
+                "999999999999999999",
+                "-999999999999999999",
+                "0.123456789",
+                "-0.123456789")
+            .addExpectedValues(
+                null,
+                "-128",
+                "127",
+                "999999999999999999",
+                "-999999999999999999",
+                "0.123456789",
+                "-0.123456789")
             .build());
 
     addDataTypeTestData(
@@ -163,8 +182,22 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .fullSourceDataType("bignumeric(76,38)")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .createTablePatternSql(CREATE_SQL_PATTERN)
-            .addInsertValues("null", "-128", "127", "999999999999999999", "-999999999999999999", "0.123456789", "-0.123456789")
-            .addExpectedValues(null, "-128", "127", "999999999999999999", "-999999999999999999", "0.123456789", "-0.123456789")
+            .addInsertValues(
+                "null",
+                "-128",
+                "127",
+                "999999999999999999",
+                "-999999999999999999",
+                "0.123456789",
+                "-0.123456789")
+            .addExpectedValues(
+                null,
+                "-128",
+                "127",
+                "999999999999999999",
+                "-999999999999999999",
+                "0.123456789",
+                "-0.123456789")
             .build());
 
     addDataTypeTestData(
@@ -173,8 +206,22 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .fullSourceDataType("decimal(29,9)")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .createTablePatternSql(CREATE_SQL_PATTERN)
-            .addInsertValues("null", "-128", "127", "999999999999999999", "-999999999999999999", "0.123456789", "-0.123456789")
-            .addExpectedValues(null, "-128", "127", "999999999999999999", "-999999999999999999", "0.123456789", "-0.123456789")
+            .addInsertValues(
+                "null",
+                "-128",
+                "127",
+                "999999999999999999",
+                "-999999999999999999",
+                "0.123456789",
+                "-0.123456789")
+            .addExpectedValues(
+                null,
+                "-128",
+                "127",
+                "999999999999999999",
+                "-999999999999999999",
+                "0.123456789",
+                "-0.123456789")
             .build());
 
     addDataTypeTestData(
@@ -183,8 +230,22 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .fullSourceDataType("bigdecimal(76,38)")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .createTablePatternSql(CREATE_SQL_PATTERN)
-            .addInsertValues("null", "-128", "127", "999999999999999999", "-999999999999999999", "0.123456789", "-0.123456789")
-            .addExpectedValues(null, "-128", "127", "999999999999999999", "-999999999999999999", "0.123456789", "-0.123456789")
+            .addInsertValues(
+                "null",
+                "-128",
+                "127",
+                "999999999999999999",
+                "-999999999999999999",
+                "0.123456789",
+                "-0.123456789")
+            .addExpectedValues(
+                null,
+                "-128",
+                "127",
+                "999999999999999999",
+                "-999999999999999999",
+                "0.123456789",
+                "-0.123456789")
             .build());
 
     addDataTypeTestData(
@@ -219,8 +280,10 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .createTablePatternSql(CREATE_SQL_PATTERN)
-            .addInsertValues("date('2021-10-20')", "date('9999-12-31')", "date('0001-01-01')", "null")
-            .addExpectedValues("2021-10-20T00:00:00Z", "9999-12-31T00:00:00Z", "0001-01-01T00:00:00Z", null)
+            .addInsertValues(
+                "date('2021-10-20')", "date('9999-12-31')", "date('0001-01-01')", "null")
+            .addExpectedValues(
+                "2021-10-20T00:00:00Z", "9999-12-31T00:00:00Z", "0001-01-01T00:00:00Z", null)
             .build());
 
     addDataTypeTestData(
@@ -228,8 +291,13 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("datetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .createTablePatternSql(CREATE_SQL_PATTERN)
-            .addInsertValues("datetime('2021-10-20 11:22:33')", "datetime('9999-12-31 11:22:33')", "datetime('0001-01-01 11:22:33')", "null")
-            .addExpectedValues("2021-10-20T11:22:33Z", "9999-12-31T11:22:33Z", "0001-01-01T11:22:33Z", null)
+            .addInsertValues(
+                "datetime('2021-10-20 11:22:33')",
+                "datetime('9999-12-31 11:22:33')",
+                "datetime('0001-01-01 11:22:33')",
+                "null")
+            .addExpectedValues(
+                "2021-10-20T11:22:33Z", "9999-12-31T11:22:33Z", "0001-01-01T11:22:33Z", null)
             .build());
 
     addDataTypeTestData(
@@ -290,11 +358,14 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("struct")
-            .fullSourceDataType("STRUCT<frst String, sec int64, obbj STRUCT<id_col int64, mega_obbj STRUCT<last_col time>>>")
+            .fullSourceDataType(
+                "STRUCT<frst String, sec int64, obbj STRUCT<id_col int64, mega_obbj STRUCT<last_col time>>>")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .createTablePatternSql(CREATE_SQL_PATTERN)
-            .addInsertValues("STRUCT('s' as frst, 1 as sec, STRUCT(555 as id_col, STRUCT(TIME(15, 30, 00) as time) as mega_obbj) as obbj)")
-            .addExpectedValues("{\"frst\":\"s\",\"sec\":1,\"obbj\":{\"id_col\":555,\"mega_obbj\":{\"last_col\":\"15:30:00\"}}}")
+            .addInsertValues(
+                "STRUCT('s' as frst, 1 as sec, STRUCT(555 as id_col, STRUCT(TIME(15, 30, 00) as time) as mega_obbj) as obbj)")
+            .addExpectedValues(
+                "{\"frst\":\"s\",\"sec\":1,\"obbj\":{\"id_col\":555,\"mega_obbj\":{\"last_col\":\"15:30:00\"}}}")
             .build());
 
     addDataTypeTestData(
@@ -310,11 +381,14 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("array")
-            .fullSourceDataType("array<STRUCT<fff String, ggg array<STRUCT<ooo String, kkk int64>>>>")
+            .fullSourceDataType(
+                "array<STRUCT<fff String, ggg array<STRUCT<ooo String, kkk int64>>>>")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .createTablePatternSql(CREATE_SQL_PATTERN)
-            .addInsertValues("[STRUCT('qqq' as fff, [STRUCT('fff' as ooo, 1 as kkk), STRUCT('hhh' as ooo, 2 as kkk)] as ggg)]")
-            .addExpectedValues("[{\"fff\":\"qqq\",\"ggg\":[{\"ooo\":\"fff\",\"kkk\":1},{\"ooo\":\"hhh\",\"kkk\":2}]}]")
+            .addInsertValues(
+                "[STRUCT('qqq' as fff, [STRUCT('fff' as ooo, 1 as kkk), STRUCT('hhh' as ooo, 2 as kkk)] as ggg)]")
+            .addExpectedValues(
+                "[{\"fff\":\"qqq\",\"ggg\":[{\"ooo\":\"fff\",\"kkk\":1},{\"ooo\":\"hhh\",\"kkk\":2}]}]")
             .build());
   }
 
@@ -339,5 +413,4 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   public void cleanTestInstance() {
     database.getRealDatabase().cleanDataSet(getNameSpace());
   }
-
 }

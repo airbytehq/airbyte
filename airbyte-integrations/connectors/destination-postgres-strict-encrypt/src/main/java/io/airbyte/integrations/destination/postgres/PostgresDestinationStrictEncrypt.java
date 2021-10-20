@@ -13,9 +13,11 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresDestinationStrictEncrypt extends SpecModifyingDestination implements Destination {
+public class PostgresDestinationStrictEncrypt extends SpecModifyingDestination
+    implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestinationStrictEncrypt.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(PostgresDestinationStrictEncrypt.class);
 
   public PostgresDestinationStrictEncrypt() {
     super(PostgresDestination.sshWrappedDestination());
@@ -34,5 +36,4 @@ public class PostgresDestinationStrictEncrypt extends SpecModifyingDestination i
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", PostgresDestinationStrictEncrypt.class);
   }
-
 }

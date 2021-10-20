@@ -34,30 +34,40 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
 
-  public S3CsvWriter(final S3DestinationConfig config,
-                     final AmazonS3 s3Client,
-                     final ConfiguredAirbyteStream configuredStream,
-                     final Timestamp uploadTimestamp)
+  public S3CsvWriter(
+      final S3DestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp)
       throws IOException {
     super(config, s3Client, configuredStream);
 
     final S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
-    this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(),
-        formatConfig);
+    this.csvSheetGenerator =
+        CsvSheetGenerator.Factory.create(
+            configuredStream.getStream().getJsonSchema(), formatConfig);
 
     final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.CSV);
     final String objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
+    LOGGER.info(
+        "Full S3 path for stream '{}': s3://{}/{}",
+        stream.getName(),
+        config.getBucketName(),
         objectKey);
 
-    this.uploadManager = S3StreamTransferManagerHelper.getDefault(
-        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
-    // We only need one output stream as we only have one input stream. This is reasonably performant.
+    this.uploadManager =
+        S3StreamTransferManagerHelper.getDefault(
+            config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
+    // We only need one output stream as we only have one input stream. This is reasonably
+    // performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
-    this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
-        CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-            .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
+    this.csvPrinter =
+        new CSVPrinter(
+            new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
+            CSVFormat.DEFAULT
+                .withQuoteMode(QuoteMode.ALL)
+                .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
   }
 
   @Override
@@ -78,5 +88,4 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
     outputStream.close();
     uploadManager.abort();
   }
-
 }

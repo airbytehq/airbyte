@@ -25,42 +25,44 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSqlOperations.class);
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName)
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
     }
 
-    database.execute(connection -> {
-      File tmpFile = null;
-      try {
-        tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
-        writeBatchToFile(tmpFile, records);
+    database.execute(
+        connection -> {
+          File tmpFile = null;
+          try {
+            tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
+            writeBatchToFile(tmpFile, records);
 
-        final var copyManager = new CopyManager(connection.unwrap(BaseConnection.class));
-        final var sql = String.format("COPY %s.%s FROM stdin DELIMITER ',' CSV", schemaName, tmpTableName);
-        final var bufferedReader = new BufferedReader(new FileReader(tmpFile));
-        copyManager.copyIn(sql, bufferedReader);
-      } catch (final Exception e) {
-        throw new RuntimeException(e);
-      } finally {
-        try {
-          if (tmpFile != null) {
-            Files.delete(tmpFile.toPath());
+            final var copyManager = new CopyManager(connection.unwrap(BaseConnection.class));
+            final var sql =
+                String.format("COPY %s.%s FROM stdin DELIMITER ',' CSV", schemaName, tmpTableName);
+            final var bufferedReader = new BufferedReader(new FileReader(tmpFile));
+            copyManager.copyIn(sql, bufferedReader);
+          } catch (final Exception e) {
+            throw new RuntimeException(e);
+          } finally {
+            try {
+              if (tmpFile != null) {
+                Files.delete(tmpFile.toPath());
+              }
+            } catch (final IOException e) {
+              throw new RuntimeException(e);
+            }
           }
-        } catch (final IOException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    });
+        });
   }
 
   @Override
   protected DataAdapter getDataAdapter() {
     return new PostgresDataAdapter();
   }
-
 }

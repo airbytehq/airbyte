@@ -29,7 +29,8 @@ import org.slf4j.LoggerFactory;
 
 public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DynamodbDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(DynamodbDestinationAcceptanceTest.class);
   protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   protected final String secretFilePath = "secrets/config.json";
@@ -61,12 +62,12 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
     return failCheckJson;
   }
 
-  /**
-   * Helper method to retrieve all synced objects inside the configured bucket path.
-   */
+  /** Helper method to retrieve all synced objects inside the configured bucket path. */
   protected List<Item> getAllSyncedObjects(final String streamName, final String namespace) {
     final var dynamodb = new DynamoDB(this.client);
-    final var tableName = DynamodbOutputTableHelper.getOutputTableName(this.config.getTableName(), streamName, namespace);
+    final var tableName =
+        DynamodbOutputTableHelper.getOutputTableName(
+            this.config.getTableName(), streamName, namespace);
     final var table = dynamodb.getTable(tableName);
     final List<Item> items = new ArrayList<Item>();
     final List<Item> resultItems = new ArrayList<Item>();
@@ -87,16 +88,19 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
     }
 
     final Long finalMaxSyncTime = maxSyncTime;
-    items.sort(Comparator.comparingLong(o -> ((BigDecimal) o.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)).longValue()));
+    items.sort(
+        Comparator.comparingLong(
+            o -> ((BigDecimal) o.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)).longValue()));
 
     return items;
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws IOException {
     final List<Item> items = getAllSyncedObjects(streamName, namespace);
     final List<JsonNode> jsonRecords = new LinkedList<>();
@@ -125,21 +129,23 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
     final var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
 
     if (endpoint.isEmpty()) {
-      this.client = AmazonDynamoDBClientBuilder.standard()
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .withRegion(config.getRegion())
-          .build();
+      this.client =
+          AmazonDynamoDBClientBuilder.standard()
+              .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+              .withRegion(config.getRegion())
+              .build();
 
     } else {
       final ClientConfiguration clientConfiguration = new ClientConfiguration();
       clientConfiguration.setSignerOverride("AWSDynamodbSignerType");
 
-      this.client = AmazonDynamoDBClientBuilder
-          .standard()
-          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
-          .withClientConfiguration(clientConfiguration)
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .build();
+      this.client =
+          AmazonDynamoDBClientBuilder.standard()
+              .withEndpointConfiguration(
+                  new AwsClientBuilder.EndpointConfiguration(endpoint, region))
+              .withClientConfiguration(clientConfiguration)
+              .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+              .build();
     }
   }
 
@@ -147,10 +153,13 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
   protected void tearDown(final TestDestinationEnv testEnv) {
     final var dynamodb = new DynamoDB(this.client);
     final List<String> tables = new ArrayList<String>();
-    dynamodb.listTables().forEach(o -> {
-      if (o.getTableName().startsWith(this.config.getTableName()))
-        tables.add(o.getTableName());
-    });
+    dynamodb
+        .listTables()
+        .forEach(
+            o -> {
+              if (o.getTableName().startsWith(this.config.getTableName()))
+                tables.add(o.getTableName());
+            });
 
     try {
       for (final var tableName : tables) {
@@ -163,5 +172,4 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
       LOGGER.error(e.getMessage());
     }
   }
-
 }

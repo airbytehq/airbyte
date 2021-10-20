@@ -28,5 +28,4 @@ public class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestina
     original.remove("secret_access_key");
     return original;
   }
-
 }

@@ -15,7 +15,8 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage>
+    implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StateDecoratingIterator.class);
 
@@ -28,12 +29,13 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   private String maxCursor;
   private boolean hasEmittedState;
 
-  public StateDecoratingIterator(final Iterator<AirbyteMessage> messageIterator,
-                                 final StateManager stateManager,
-                                 final AirbyteStreamNameNamespacePair pair,
-                                 final String cursorField,
-                                 final String initialCursor,
-                                 final JsonSchemaPrimitive cursorType) {
+  public StateDecoratingIterator(
+      final Iterator<AirbyteMessage> messageIterator,
+      final StateManager stateManager,
+      final AirbyteStreamNameNamespacePair pair,
+      final String cursorField,
+      final String initialCursor,
+      final JsonSchemaPrimitive cursorType) {
     this.messageIterator = messageIterator;
     this.stateManager = stateManager;
     this.pair = pair;
@@ -57,14 +59,17 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
       return message;
     } else if (!hasEmittedState) {
       final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, maxCursor);
-      LOGGER.info("State Report: stream name: {}, original cursor field: {}, original cursor {}, cursor field: {}, new cursor: {}",
+      LOGGER.info(
+          "State Report: stream name: {}, original cursor field: {}, original cursor {}, cursor field: {}, new cursor: {}",
           pair,
           stateManager.getOriginalCursorField(pair).orElse(null),
           stateManager.getOriginalCursor(pair).orElse(null),
           stateManager.getCursorField(pair).orElse(null),
           stateManager.getCursor(pair).orElse(null));
       if (stateManager.getCursor(pair).isEmpty()) {
-        LOGGER.warn("Cursor was for stream {} was null. This stream will replicate all records on the next run", pair);
+        LOGGER.warn(
+            "Cursor was for stream {} was null. This stream will replicate all records on the next run",
+            pair);
       }
 
       hasEmittedState = true;
@@ -73,5 +78,4 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
       return endOfData();
     }
   }
-
 }

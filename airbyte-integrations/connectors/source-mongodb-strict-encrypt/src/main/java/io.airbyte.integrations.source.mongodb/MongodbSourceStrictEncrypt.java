@@ -22,11 +22,19 @@ public class MongodbSourceStrictEncrypt extends SpecModifyingSource implements S
   }
 
   @Override
-  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) throws Exception {
+  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec)
+      throws Exception {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     // removing tls property for a standalone instance to disable possibility to switch off a tls
     // connection
-    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("instance_type").get("oneOf").get(0).get("properties")).remove("tls");
+    ((ObjectNode)
+            spec.getConnectionSpecification()
+                .get("properties")
+                .get("instance_type")
+                .get("oneOf")
+                .get(0)
+                .get("properties"))
+        .remove("tls");
     return spec;
   }
 
@@ -36,5 +44,4 @@ public class MongodbSourceStrictEncrypt extends SpecModifyingSource implements S
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MongodbSourceStrictEncrypt.class);
   }
-
 }

@@ -12,5 +12,4 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
   public Path getConfigFilePath() {
     return Path.of("secrets/ssh-pwd-config.json");
   }
-
 }

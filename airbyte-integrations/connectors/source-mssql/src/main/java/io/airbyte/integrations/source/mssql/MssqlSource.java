@@ -70,10 +70,13 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   public JsonNode toDatabaseConfig(final JsonNode mssqlConfig) {
     final List<String> additionalParameters = new ArrayList<>();
 
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-        mssqlConfig.get("host").asText(),
-        mssqlConfig.get("port").asText(),
-        mssqlConfig.get("database").asText()));
+    final StringBuilder jdbcUrl =
+        new StringBuilder(
+            String.format(
+                "jdbc:sqlserver://%s:%s;databaseName=%s;",
+                mssqlConfig.get("host").asText(),
+                mssqlConfig.get("port").asText(),
+                mssqlConfig.get("database").asText()));
 
     if (mssqlConfig.has("ssl_method")) {
       readSsl(mssqlConfig, additionalParameters);
@@ -83,11 +86,12 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
       jdbcUrl.append(String.join(";", additionalParameters));
     }
 
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", mssqlConfig.get("username").asText())
-        .put("password", mssqlConfig.get("password").asText())
-        .put("jdbc_url", jdbcUrl.toString())
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("username", mssqlConfig.get("username").asText())
+            .put("password", mssqlConfig.get("password").asText())
+            .put("jdbc_url", jdbcUrl.toString())
+            .build());
   }
 
   @Override
@@ -109,11 +113,12 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
     final AirbyteCatalog catalog = super.discover(config);
 
     if (isCdc(config)) {
-      final List<AirbyteStream> streams = catalog.getStreams().stream()
-          .map(MssqlSource::removeIncrementalWithoutPk)
-          .map(MssqlSource::setIncrementalToSourceDefined)
-          .map(MssqlSource::addCdcMetadataColumns)
-          .collect(toList());
+      final List<AirbyteStream> streams =
+          catalog.getStreams().stream()
+              .map(MssqlSource::removeIncrementalWithoutPk)
+              .map(MssqlSource::setIncrementalToSourceDefined)
+              .map(MssqlSource::addCdcMetadataColumns)
+              .collect(toList());
 
       catalog.setStreams(streams);
     }
@@ -122,8 +127,10 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
-    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
+      throws Exception {
+    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations =
+        new ArrayList<>(super.getCheckOperations(config));
 
     if (isCdc(config)) {
       checkOperations.add(database -> assertCdcEnabledInDb(config, database));
@@ -135,104 +142,163 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
     return checkOperations;
   }
 
-  protected void assertCdcEnabledInDb(final JsonNode config, final JdbcDatabase database) throws SQLException {
-    final List<JsonNode> queryResponse = database.query(connection -> {
-      final String sql = "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
-      final PreparedStatement ps = connection.prepareStatement(sql);
-      ps.setString(1, config.get("database").asText());
-      LOGGER.info(String.format("Checking that cdc is enabled on database '%s' using the query: '%s'",
-          config.get("database").asText(), sql));
-      return ps;
-    }, sourceOperations::rowToJson).collect(toList());
+  protected void assertCdcEnabledInDb(final JsonNode config, final JdbcDatabase database)
+      throws SQLException {
+    final List<JsonNode> queryResponse =
+        database
+            .query(
+                connection -> {
+                  final String sql =
+                      "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
+                  final PreparedStatement ps = connection.prepareStatement(sql);
+                  ps.setString(1, config.get("database").asText());
+                  LOGGER.info(
+                      String.format(
+                          "Checking that cdc is enabled on database '%s' using the query: '%s'",
+                          config.get("database").asText(), sql));
+                  return ps;
+                },
+                sourceOperations::rowToJson)
+            .collect(toList());
     if (queryResponse.size() < 1) {
-      throw new RuntimeException(String.format(
-          "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
-          config.get("database").asText()));
+      throw new RuntimeException(
+          String.format(
+              "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
+              config.get("database").asText()));
     }
     if (!(queryResponse.get(0).get("is_cdc_enabled").asBoolean())) {
-      throw new RuntimeException(String.format(
-          "Detected that CDC is not enabled for database '%s'. Please check the documentation on how to enable CDC on MS SQL Server.",
-          config.get("database").asText()));
+      throw new RuntimeException(
+          String.format(
+              "Detected that CDC is not enabled for database '%s'. Please check the documentation on how to enable CDC on MS SQL Server.",
+              config.get("database").asText()));
     }
   }
 
-  protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database) throws SQLException {
-    final List<JsonNode> queryResponse = database.query(connection -> {
-      final String sql = "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
-      final PreparedStatement ps = connection.prepareStatement(sql);
-      LOGGER.info(String.format("Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
-          config.get("username").asText(), sql));
-      return ps;
-    }, sourceOperations::rowToJson).collect(toList());
+  protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
+      throws SQLException {
+    final List<JsonNode> queryResponse =
+        database
+            .query(
+                connection -> {
+                  final String sql =
+                      "USE "
+                          + config.get("database").asText()
+                          + "; SELECT * FROM cdc.change_tables";
+                  final PreparedStatement ps = connection.prepareStatement(sql);
+                  LOGGER.info(
+                      String.format(
+                          "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
+                          config.get("username").asText(), sql));
+                  return ps;
+                },
+                sourceOperations::rowToJson)
+            .collect(toList());
     // Ensure at least one available CDC table
     if (queryResponse.size() < 1) {
-      throw new RuntimeException("No cdc-enabled tables found. Please check the documentation on how to enable CDC on MS SQL Server.");
+      throw new RuntimeException(
+          "No cdc-enabled tables found. Please check the documentation on how to enable CDC on MS SQL Server.");
     }
   }
 
   // todo: ensure this works for Azure managed SQL (since it uses different sql server agent)
   protected void assertSqlServerAgentRunning(final JdbcDatabase database) throws SQLException {
     try {
-      final List<JsonNode> queryResponse = database.query(connection -> {
-        final String sql = "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%'";
-        final PreparedStatement ps = connection.prepareStatement(sql);
-        LOGGER.info(String.format("Checking that the SQL Server Agent is running using the query: '%s'", sql));
-        return ps;
-      }, sourceOperations::rowToJson).collect(toList());
+      final List<JsonNode> queryResponse =
+          database
+              .query(
+                  connection -> {
+                    final String sql =
+                        "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%'";
+                    final PreparedStatement ps = connection.prepareStatement(sql);
+                    LOGGER.info(
+                        String.format(
+                            "Checking that the SQL Server Agent is running using the query: '%s'",
+                            sql));
+                    return ps;
+                  },
+                  sourceOperations::rowToJson)
+              .collect(toList());
       if (!(queryResponse.get(0).get("status_desc").toString().contains("Running"))) {
-        throw new RuntimeException(String.format(
-            "The SQL Server Agent is not running. Current state: '%s'. Please check the documentation on ensuring SQL Server Agent is running.",
-            queryResponse.get(0).get("status_desc").toString()));
+        throw new RuntimeException(
+            String.format(
+                "The SQL Server Agent is not running. Current state: '%s'. Please check the documentation on ensuring SQL Server Agent is running.",
+                queryResponse.get(0).get("status_desc").toString()));
       }
     } catch (final Exception e) {
-      if (e.getCause() != null && e.getCause().getClass().equals(com.microsoft.sqlserver.jdbc.SQLServerException.class)) {
-        LOGGER.warn(String.format("Skipping check for whether the SQL Server Agent is running, SQLServerException thrown: '%s'",
-            e.getMessage()));
+      if (e.getCause() != null
+          && e.getCause()
+              .getClass()
+              .equals(com.microsoft.sqlserver.jdbc.SQLServerException.class)) {
+        LOGGER.warn(
+            String.format(
+                "Skipping check for whether the SQL Server Agent is running, SQLServerException thrown: '%s'",
+                e.getMessage()));
       } else {
         throw e;
       }
     }
   }
 
-  protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database) throws SQLException {
-    final List<JsonNode> queryResponse = database.query(connection -> {
-      final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
-      final PreparedStatement ps = connection.prepareStatement(sql);
-      ps.setString(1, config.get("database").asText());
-      LOGGER.info(String.format("Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
-          config.get("database").asText(), sql));
-      return ps;
-    }, sourceOperations::rowToJson).collect(toList());
+  protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
+      throws SQLException {
+    final List<JsonNode> queryResponse =
+        database
+            .query(
+                connection -> {
+                  final String sql =
+                      "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
+                  final PreparedStatement ps = connection.prepareStatement(sql);
+                  ps.setString(1, config.get("database").asText());
+                  LOGGER.info(
+                      String.format(
+                          "Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
+                          config.get("database").asText(), sql));
+                  return ps;
+                },
+                sourceOperations::rowToJson)
+            .collect(toList());
     if (queryResponse.size() < 1) {
-      throw new RuntimeException(String.format(
-          "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
-          config.get("database").asText()));
+      throw new RuntimeException(
+          String.format(
+              "Couldn't find '%s' in sys.databases table. Please check the spelling and that the user has relevant permissions (see docs).",
+              config.get("database").asText()));
     }
     if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
-      throw new RuntimeException(String.format(
-          "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
-              + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
-          config.get("database").asText()));
+      throw new RuntimeException(
+          String.format(
+              "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
+                  + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
+              config.get("database").asText()));
     }
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                             final StateManager stateManager,
-                                                                             final Instant emittedAt) {
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
+      final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
-      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
-          MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get("database").asText()),
-          MssqlCdcProperties.getDebeziumProperties(), catalog, true);
-      return handler.getIncrementalIterators(new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new MssqlCdcStateHandler(stateManager), new MssqlCdcConnectorMetadataInjector(), emittedAt);
+      final AirbyteDebeziumHandler handler =
+          new AirbyteDebeziumHandler(
+              sourceConfig,
+              MssqlCdcTargetPosition.getTargetPosition(
+                  database, sourceConfig.get("database").asText()),
+              MssqlCdcProperties.getDebeziumProperties(),
+              catalog,
+              true);
+      return handler.getIncrementalIterators(
+          new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new MssqlCdcStateHandler(stateManager),
+          new MssqlCdcConnectorMetadataInjector(),
+          emittedAt);
     } else {
       LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      return super.getIncrementalIterators(
+          database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
 
@@ -243,8 +309,11 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   }
 
   private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
-    final Optional<SyncMode> any = catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
-        .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
+    final Optional<SyncMode> any =
+        catalog.getStreams().stream()
+            .map(ConfiguredAirbyteStream::getSyncMode)
+            .filter(syncMode -> syncMode == SyncMode.INCREMENTAL)
+            .findAny();
     return any.isPresent();
   }
 
@@ -292,21 +361,25 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
         additionalParameters.add("encrypt=true");
 
         // trust store location code found at https://stackoverflow.com/a/56570588
-        final String trustStoreLocation = Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
-            .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
+        final String trustStoreLocation =
+            Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
+                .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
         final File trustStoreFile = new File(trustStoreLocation);
         if (!trustStoreFile.exists()) {
           throw new RuntimeException(
               "Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
-                  + trustStoreLocation + " does not exist.");
+                  + trustStoreLocation
+                  + " does not exist.");
         }
         final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
         additionalParameters.add("trustStore=" + trustStoreLocation);
         if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
-          additionalParameters.add("trustStorePassword=" + config.get("trustStorePassword").asText());
+          additionalParameters.add(
+              "trustStorePassword=" + config.get("trustStorePassword").asText());
         }
         if (config.has("hostNameInCertificate")) {
-          additionalParameters.add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
+          additionalParameters.add(
+              "hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
         }
       }
     }
@@ -323,5 +396,4 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
     STANDARD,
     CDC
   }
-
 }

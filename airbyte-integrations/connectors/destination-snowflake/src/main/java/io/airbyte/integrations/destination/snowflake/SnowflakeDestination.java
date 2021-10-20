@@ -13,7 +13,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestination.DestinationType> {
+public class SnowflakeDestination
+    extends SwitchingDestination<SnowflakeDestination.DestinationType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestination.class);
 
@@ -38,11 +39,15 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   }
 
   public static boolean isS3Copy(final JsonNode config) {
-    return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("s3_bucket_name");
+    return config.has("loading_method")
+        && config.get("loading_method").isObject()
+        && config.get("loading_method").has("s3_bucket_name");
   }
 
   public static boolean isGcsCopy(final JsonNode config) {
-    return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("project_id");
+    return config.has("loading_method")
+        && config.get("loading_method").isObject()
+        && config.get("loading_method").has("project_id");
   }
 
   public static Map<DestinationType, Destination> getTypeToDestination() {
@@ -62,5 +67,4 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", SnowflakeDestination.class);
   }
-
 }

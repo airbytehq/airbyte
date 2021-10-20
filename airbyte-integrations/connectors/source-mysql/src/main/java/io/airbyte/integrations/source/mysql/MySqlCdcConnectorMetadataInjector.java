@@ -23,5 +23,4 @@ public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector {
   public String namespace(final JsonNode source) {
     return source.get("db").asText();
   }
-
 }

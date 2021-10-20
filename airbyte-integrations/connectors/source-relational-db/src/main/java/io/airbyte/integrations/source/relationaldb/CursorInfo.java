@@ -14,10 +14,11 @@ public class CursorInfo {
   private final String cursorField;
   private String cursor;
 
-  public CursorInfo(final String originalCursorField,
-                    final String originalCursor,
-                    final String cursorField,
-                    final String cursor) {
+  public CursorInfo(
+      final String originalCursorField,
+      final String originalCursor,
+      final String cursorField,
+      final String cursor) {
     this.originalCursorField = originalCursorField;
     this.originalCursor = originalCursor;
     this.cursorField = cursorField;
@@ -55,9 +56,10 @@ public class CursorInfo {
       return false;
     }
     final CursorInfo that = (CursorInfo) o;
-    return Objects.equals(originalCursorField, that.originalCursorField) && Objects
-        .equals(originalCursor, that.originalCursor)
-        && Objects.equals(cursorField, that.cursorField) && Objects.equals(cursor, that.cursor);
+    return Objects.equals(originalCursorField, that.originalCursorField)
+        && Objects.equals(originalCursor, that.originalCursor)
+        && Objects.equals(cursorField, that.cursorField)
+        && Objects.equals(cursor, that.cursor);
   }
 
   @Override
@@ -67,12 +69,19 @@ public class CursorInfo {
 
   @Override
   public String toString() {
-    return "CursorInfo{" +
-        "originalCursorField='" + originalCursorField + '\'' +
-        ", originalCursor='" + originalCursor + '\'' +
-        ", cursorField='" + cursorField + '\'' +
-        ", cursor='" + cursor + '\'' +
-        '}';
+    return "CursorInfo{"
+        + "originalCursorField='"
+        + originalCursorField
+        + '\''
+        + ", originalCursor='"
+        + originalCursor
+        + '\''
+        + ", cursorField='"
+        + cursorField
+        + '\''
+        + ", cursor='"
+        + cursor
+        + '\''
+        + '}';
   }
-
 }

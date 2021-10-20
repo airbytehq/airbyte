@@ -27,7 +27,8 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSqlOperations.class);
 
   @Override
-  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName)
+      throws Exception {
     database.execute(createSchemaQuery(schemaName));
   }
 
@@ -36,22 +37,30 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   @Override
-  public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
+  public void createTableIfNotExists(
+      final JdbcDatabase database, final String schemaName, final String tableName)
+      throws SQLException {
     database.execute(createTableQuery(database, schemaName, tableName));
   }
 
   @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+  public String createTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
             + "%s JSONB,\n"
             + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
             + ");\n",
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+        schemaName,
+        tableName,
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
-  protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
+  protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records)
+      throws Exception {
     PrintWriter writer = null;
     try {
       writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
@@ -75,17 +84,25 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   @Override
-  public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+  public String truncateTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
   }
 
   @Override
-  public String copyTableQuery(final JdbcDatabase database, final String schemaName, final String srcTableName, final String dstTableName) {
-    return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
+  public String copyTableQuery(
+      final JdbcDatabase database,
+      final String schemaName,
+      final String srcTableName,
+      final String dstTableName) {
+    return String.format(
+        "INSERT INTO %s.%s SELECT * FROM %s.%s;\n",
+        schemaName, dstTableName, schemaName, srcTableName);
   }
 
   @Override
-  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries)
+      throws Exception {
     final StringBuilder appendedQueries = new StringBuilder();
     appendedQueries.append("BEGIN;\n");
     for (final String query : queries) {
@@ -96,7 +113,9 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   @Override
-  public void dropTableIfExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
+  public void dropTableIfExists(
+      final JdbcDatabase database, final String schemaName, final String tableName)
+      throws SQLException {
     database.execute(dropTableIfExistsQuery(schemaName, tableName));
   }
 
@@ -115,23 +134,24 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   @Override
-  public final void insertRecords(final JdbcDatabase database,
-                                  final List<AirbyteRecordMessage> records,
-                                  final String schemaName,
-                                  final String tableName)
+  public final void insertRecords(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tableName)
       throws Exception {
     records.forEach(airbyteRecordMessage -> getDataAdapter().adapt(airbyteRecordMessage.getData()));
     insertRecordsInternal(database, records, schemaName, tableName);
   }
 
-  protected abstract void insertRecordsInternal(JdbcDatabase database,
-                                                List<AirbyteRecordMessage> records,
-                                                String schemaName,
-                                                String tableName)
+  protected abstract void insertRecordsInternal(
+      JdbcDatabase database,
+      List<AirbyteRecordMessage> records,
+      String schemaName,
+      String tableName)
       throws Exception;
 
   protected DataAdapter getDataAdapter() {
     return new DataAdapter(j -> false, c -> c);
   }
-
 }

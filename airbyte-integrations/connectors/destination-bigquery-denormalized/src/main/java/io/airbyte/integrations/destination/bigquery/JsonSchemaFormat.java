@@ -6,11 +6,8 @@ package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.StandardSQLTypeName;
 
-/**
- * Mapping of JsonSchema formats to BigQuery Standard SQL types.
- */
+/** Mapping of JsonSchema formats to BigQuery Standard SQL types. */
 public enum JsonSchemaFormat {
-
   DATE("date", StandardSQLTypeName.DATE),
   DATETIME("date-time", StandardSQLTypeName.DATETIME),
   TIME("time", StandardSQLTypeName.TIME);
@@ -44,5 +41,4 @@ public enum JsonSchemaFormat {
   public String toString() {
     return jsonSchemaFormat;
   }
-
 }

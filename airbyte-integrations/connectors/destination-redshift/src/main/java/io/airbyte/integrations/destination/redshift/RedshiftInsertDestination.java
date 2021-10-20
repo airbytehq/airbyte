@@ -37,8 +37,11 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
     return getJdbcDatabase(config);
   }
 
-  private static void readSsl(final JsonNode redshiftConfig, final List<String> additionalProperties) {
-    final boolean tls = redshiftConfig.has("tls") && redshiftConfig.get("tls").asBoolean(); // for backward compatibility
+  private static void readSsl(
+      final JsonNode redshiftConfig, final List<String> additionalProperties) {
+    final boolean tls =
+        redshiftConfig.has("tls")
+            && redshiftConfig.get("tls").asBoolean(); // for backward compatibility
     if (!tls) {
       additionalProperties.add("ssl=false");
     } else {
@@ -60,17 +63,21 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
   }
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
-    final String schema = Optional.ofNullable(redshiftConfig.get("schema")).map(JsonNode::asText).orElse("public");
+    final String schema =
+        Optional.ofNullable(redshiftConfig.get("schema")).map(JsonNode::asText).orElse("public");
 
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", redshiftConfig.get("username").asText())
-        .put("password", redshiftConfig.get("password").asText())
-        .put("jdbc_url", String.format("jdbc:redshift://%s:%s/%s",
-            redshiftConfig.get("host").asText(),
-            redshiftConfig.get("port").asText(),
-            redshiftConfig.get("database").asText()))
-        .put("schema", schema)
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("username", redshiftConfig.get("username").asText())
+            .put("password", redshiftConfig.get("password").asText())
+            .put(
+                "jdbc_url",
+                String.format(
+                    "jdbc:redshift://%s:%s/%s",
+                    redshiftConfig.get("host").asText(),
+                    redshiftConfig.get("port").asText(),
+                    redshiftConfig.get("database").asText()))
+            .put("schema", schema)
+            .build());
   }
-
 }

@@ -62,54 +62,69 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   @BeforeEach
   protected void setup() throws SQLException {
-    final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
-    container = new PostgreSQLContainer<>(myImage)
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
-        .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
+    final DockerImageName myImage =
+        DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    container =
+        new PostgreSQLContainer<>(myImage)
+            .withCopyFileToContainer(
+                MountableFile.forClasspathResource("postgresql.conf"),
+                "/etc/postgresql/postgresql.conf")
+            .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
     source = new PostgresSource();
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), container);
 
     config = getConfig(dbName);
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     database = getDatabaseFromConfig(config);
-    database.query(ctx -> {
-      ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + getPluginName() + "');");
-      ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
+    database.query(
+        ctx -> {
+          ctx.execute(
+              "SELECT pg_create_logical_replication_slot('"
+                  + fullReplicationSlot
+                  + "', '"
+                  + getPluginName()
+                  + "');");
+          ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
 
-      return null;
-    });
+          return null;
+        });
 
     super.setup();
   }
 
   private JsonNode getConfig(final String dbName) {
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
-        .put("publication", PUBLICATION)
-        .put("plugin", getPluginName())
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
+                .put("publication", PUBLICATION)
+                .put("plugin", getPluginName())
+                .build());
 
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("ssl", false)
-        .put("replication_method", replicationMethod)
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", container.getHost())
+            .put("port", container.getFirstMappedPort())
+            .put("database", dbName)
+            .put("username", container.getUsername())
+            .put("password", container.getPassword())
+            .put("ssl", false)
+            .put("replication_method", replicationMethod)
+            .build());
   }
 
   private Database getDatabaseFromConfig(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        String.format(
+            "jdbc:postgresql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
@@ -127,7 +142,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   @Test
   void testCheckWithoutReplicationSlot() throws Exception {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
-    database.query(ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
+    database.query(
+        ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
 
     final AirbyteConnectionStatus status = source.check(config);
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
@@ -137,19 +153,24 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   void testReadWithoutPublication() throws SQLException {
     database.query(ctx -> ctx.execute("DROP PUBLICATION " + PUBLICATION + ";"));
 
-    assertThrows(Exception.class, () -> {
-      source.read(config, CONFIGURED_CATALOG, null);
-    });
+    assertThrows(
+        Exception.class,
+        () -> {
+          source.read(config, CONFIGURED_CATALOG, null);
+        });
   }
 
   @Test
   void testReadWithoutReplicationSlot() throws SQLException {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
-    database.query(ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
+    database.query(
+        ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
 
-    assertThrows(Exception.class, () -> {
-      source.read(config, CONFIGURED_CATALOG, null);
-    });
+    assertThrows(
+        Exception.class,
+        () -> {
+          source.read(config, CONFIGURED_CATALOG, null);
+        });
   }
 
   @Override
@@ -160,14 +181,16 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Override
   protected CdcTargetPosition cdcLatestTargetPosition() {
-    final JdbcDatabase database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver");
+    final JdbcDatabase database =
+        Databases.createJdbcDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:postgresql://%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()),
+            "org.postgresql.Driver");
     return PostgresCdcTargetPosition.targetPosition(database);
   }
 
@@ -211,7 +234,6 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     properties.set(CDC_LSN, numberType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
-
   }
 
   @Override
@@ -233,5 +255,4 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   public String createSchemaQuery(final String schemaName) {
     return "CREATE SCHEMA " + schemaName + ";";
   }
-
 }

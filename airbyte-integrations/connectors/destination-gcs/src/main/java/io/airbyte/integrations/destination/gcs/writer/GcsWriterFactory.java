@@ -10,15 +10,13 @@ import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
 
-/**
- * Create different {@link GcsWriterFactory} based on {@link GcsDestinationConfig}.
- */
+/** Create different {@link GcsWriterFactory} based on {@link GcsDestinationConfig}. */
 public interface GcsWriterFactory {
 
-  S3Writer create(GcsDestinationConfig config,
-                  AmazonS3 s3Client,
-                  ConfiguredAirbyteStream configuredStream,
-                  Timestamp uploadTimestamp)
+  S3Writer create(
+      GcsDestinationConfig config,
+      AmazonS3 s3Client,
+      ConfiguredAirbyteStream configuredStream,
+      Timestamp uploadTimestamp)
       throws Exception;
-
 }

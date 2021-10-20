@@ -20,7 +20,8 @@ public class MssqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
   protected MssqlCdcSavedInfoFetcher(final CdcState savedState) {
     final boolean savedStatePresent = savedState != null && savedState.getState() != null;
     this.savedOffset = savedStatePresent ? savedState.getState().get(MSSQL_CDC_OFFSET) : null;
-    this.savedSchemaHistory = savedStatePresent ? savedState.getState().get(MSSQL_DB_HISTORY) : null;
+    this.savedSchemaHistory =
+        savedStatePresent ? savedState.getState().get(MSSQL_DB_HISTORY) : null;
   }
 
   @Override
@@ -32,5 +33,4 @@ public class MssqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
   public Optional<JsonNode> getSavedSchemaHistory() {
     return Optional.ofNullable(savedSchemaHistory);
   }
-
 }

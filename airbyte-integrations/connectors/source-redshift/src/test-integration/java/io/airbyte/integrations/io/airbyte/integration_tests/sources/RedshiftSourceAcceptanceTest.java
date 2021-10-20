@@ -42,33 +42,41 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     config = getStaticConfig();
 
-    database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:redshift://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        RedshiftSource.DRIVER_CLASS);
+    database =
+        Databases.createJdbcDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:redshift://%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()),
+            RedshiftSource.DRIVER_CLASS);
 
     schemaName = Strings.addRandomSuffix("integration_test", "_", 5).toLowerCase();
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
-    database.execute(connection -> {
-      connection.createStatement().execute(createSchemaQuery);
-    });
+    database.execute(
+        connection -> {
+          connection.createStatement().execute(createSchemaQuery);
+        });
 
     streamName = "customer";
     final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName, streamName);
     final String createTestTable =
-        String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", fqTableName);
-    database.execute(connection -> {
-      connection.createStatement().execute(createTestTable);
-    });
+        String.format(
+            "CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n",
+            fqTableName);
+    database.execute(
+        connection -> {
+          connection.createStatement().execute(createTestTable);
+        });
 
-    final String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
-    database.execute(connection -> {
-      connection.createStatement().execute(insertTestData);
-    });
+    final String insertTestData =
+        String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
+    database.execute(
+        connection -> {
+          connection.createStatement().execute(insertTestData);
+        });
   }
 
   @Override
@@ -111,5 +119,4 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

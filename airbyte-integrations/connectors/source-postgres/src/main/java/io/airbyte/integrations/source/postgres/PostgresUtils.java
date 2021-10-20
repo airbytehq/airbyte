@@ -13,5 +13,4 @@ public class PostgresUtils {
   public static String getPluginValue(final JsonNode field) {
     return field.has("plugin") ? field.get("plugin").asText() : PGOUTPUT_PLUGIN;
   }
-
 }

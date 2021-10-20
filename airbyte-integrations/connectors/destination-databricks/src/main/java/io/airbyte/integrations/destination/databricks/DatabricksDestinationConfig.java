@@ -27,13 +27,14 @@ public class DatabricksDestinationConfig {
   private final boolean purgeStagingData;
   private final S3DestinationConfig s3DestinationConfig;
 
-  public DatabricksDestinationConfig(final String databricksServerHostname,
-                                     final String databricksHttpPath,
-                                     final String databricksPort,
-                                     final String databricksPersonalAccessToken,
-                                     final String databaseSchema,
-                                     final boolean purgeStagingData,
-                                     final S3DestinationConfig s3DestinationConfig) {
+  public DatabricksDestinationConfig(
+      final String databricksServerHostname,
+      final String databricksHttpPath,
+      final String databricksPort,
+      final String databricksPersonalAccessToken,
+      final String databaseSchema,
+      final boolean purgeStagingData,
+      final S3DestinationConfig s3DestinationConfig) {
     this.databricksServerHostname = databricksServerHostname;
     this.databricksHttpPath = databricksHttpPath;
     this.databricksPort = databricksPort;
@@ -51,10 +52,16 @@ public class DatabricksDestinationConfig {
     return new DatabricksDestinationConfig(
         config.get("databricks_server_hostname").asText(),
         config.get("databricks_http_path").asText(),
-        config.has("databricks_port") ? config.get("databricks_port").asText() : DEFAULT_DATABRICKS_PORT,
+        config.has("databricks_port")
+            ? config.get("databricks_port").asText()
+            : DEFAULT_DATABRICKS_PORT,
         config.get("databricks_personal_access_token").asText(),
-        config.has("database_schema") ? config.get("database_schema").asText() : DEFAULT_DATABASE_SCHEMA,
-        config.has("purge_staging_data") ? config.get("purge_staging_data").asBoolean() : DEFAULT_PURGE_STAGING_DATA,
+        config.has("database_schema")
+            ? config.get("database_schema").asText()
+            : DEFAULT_DATABASE_SCHEMA,
+        config.has("purge_staging_data")
+            ? config.get("purge_staging_data").asBoolean()
+            : DEFAULT_PURGE_STAGING_DATA,
         getDataSource(config.get("data_source")));
   }
 
@@ -100,5 +107,4 @@ public class DatabricksDestinationConfig {
   public S3DestinationConfig getS3DestinationConfig() {
     return s3DestinationConfig;
   }
-
 }

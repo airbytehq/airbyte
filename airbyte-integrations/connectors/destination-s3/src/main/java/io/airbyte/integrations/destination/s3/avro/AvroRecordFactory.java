@@ -31,7 +31,8 @@ public class AvroRecordFactory {
     this.nameUpdater = nameUpdater;
   }
 
-  public GenericData.Record getAvroRecord(final UUID id, final AirbyteRecordMessage recordMessage) throws JsonProcessingException {
+  public GenericData.Record getAvroRecord(final UUID id, final AirbyteRecordMessage recordMessage)
+      throws JsonProcessingException {
     JsonNode inputData = recordMessage.getData();
     inputData = nameUpdater.getJsonWithStandardizedFieldNames(inputData);
 
@@ -42,5 +43,4 @@ public class AvroRecordFactory {
 
     return converter.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema);
   }
-
 }

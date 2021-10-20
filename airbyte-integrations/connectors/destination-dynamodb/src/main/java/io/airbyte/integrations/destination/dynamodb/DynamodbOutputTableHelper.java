@@ -15,7 +15,8 @@ public class DynamodbOutputTableHelper {
     return getOutputTableName(tableName, stream.getNamespace(), stream.getName());
   }
 
-  public static String getOutputTableName(final String tableName, final String namespace, final String streamName) {
+  public static String getOutputTableName(
+      final String tableName, final String namespace, final String streamName) {
     final List<String> paths = new LinkedList<>();
 
     if (tableName != null) {
@@ -30,5 +31,4 @@ public class DynamodbOutputTableHelper {
 
     return String.join("_", paths);
   }
-
 }

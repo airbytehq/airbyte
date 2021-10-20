@@ -11,13 +11,13 @@ import org.junit.jupiter.api.Test;
 class MySQLNameTransformerTest {
 
   private static final MySQLNameTransformer NAME_TRANSFORMER = new MySQLNameTransformer();
-  private static final String LONG_NAME = "very_very_very_long_name_that_exceeds_the_max_mysql_identifier_size";
+  private static final String LONG_NAME =
+      "very_very_very_long_name_that_exceeds_the_max_mysql_identifier_size";
 
   @Test
   public void testGetIdentifier() {
     assertEquals(
-        "very_very_very_long_n__mysql_identifier_size",
-        NAME_TRANSFORMER.getIdentifier(LONG_NAME));
+        "very_very_very_long_n__mysql_identifier_size", NAME_TRANSFORMER.getIdentifier(LONG_NAME));
   }
 
   @Test
@@ -41,5 +41,4 @@ class MySQLNameTransformerTest {
     assertEquals("1234567890", MySQLNameTransformer.truncateName("1234567890", 15));
     assertEquals("123__890", MySQLNameTransformer.truncateName("1234567890", 8));
   }
-
 }

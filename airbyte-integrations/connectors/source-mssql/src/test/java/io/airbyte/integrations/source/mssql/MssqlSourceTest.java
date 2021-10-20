@@ -31,14 +31,19 @@ class MssqlSourceTest {
 
   private static final String DB_NAME = "dbo";
   private static final String STREAM_NAME = "id_and_name";
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
-      STREAM_NAME,
-      DB_NAME,
-      Field.of("id", JsonSchemaPrimitive.NUMBER),
-      Field.of("name", JsonSchemaPrimitive.STRING),
-      Field.of("born", JsonSchemaPrimitive.STRING))
-      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-      .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+  private static final AirbyteCatalog CATALOG =
+      new AirbyteCatalog()
+          .withStreams(
+              Lists.newArrayList(
+                  CatalogHelpers.createAirbyteStream(
+                          STREAM_NAME,
+                          DB_NAME,
+                          Field.of("id", JsonSchemaPrimitive.NUMBER),
+                          Field.of("name", JsonSchemaPrimitive.STRING),
+                          Field.of("born", JsonSchemaPrimitive.STRING))
+                      .withSupportedSyncModes(
+                          Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                      .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
 
   private JsonNode configWithoutDbName;
   private JsonNode config;
@@ -60,14 +65,16 @@ class MssqlSourceTest {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     final Database database = getDatabase(configWithoutDbName);
-    database.query(ctx -> {
-      ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
-      ctx.fetch(String.format("USE %s;", dbName));
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));");
-      ctx.fetch(
-          "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
-      return null;
-    });
+    database.query(
+        ctx -> {
+          ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
+          ctx.fetch(String.format("USE %s;", dbName));
+          ctx.fetch(
+              "CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));");
+          ctx.fetch(
+              "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
+          return null;
+        });
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put("database", dbName);
@@ -79,30 +86,33 @@ class MssqlSourceTest {
     db.close();
   }
 
-  // if a column in mssql is used as a primary key and in a separate index the discover query returns
+  // if a column in mssql is used as a primary key and in a separate index the discover query
+  // returns
   // the column twice. we now de-duplicate it (pr: https://github.com/airbytehq/airbyte/pull/983).
   // this tests that this de-duplication is successful.
   @Test
   void testDiscoverWithPk() throws Exception {
     final Database database = getDatabase(configWithoutDbName);
-    database.query(ctx -> {
-      ctx.fetch(String.format("USE %s;", config.get("database")));
-      ctx.execute("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY CLUSTERED (id);");
-      ctx.execute("CREATE INDEX i1 ON id_and_name (id);");
-      return null;
-    });
+    database.query(
+        ctx -> {
+          ctx.fetch(String.format("USE %s;", config.get("database")));
+          ctx.execute("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY CLUSTERED (id);");
+          ctx.execute("CREATE INDEX i1 ON id_and_name (id);");
+          return null;
+        });
 
     final AirbyteCatalog actual = new MssqlSource().discover(config);
     assertEquals(CATALOG, actual);
   }
 
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", db.getHost())
+            .put("port", db.getFirstMappedPort())
+            .put("username", db.getUsername())
+            .put("password", db.getPassword())
+            .build());
   }
 
   public static Database getDatabase(final JsonNode config) {
@@ -111,11 +121,9 @@ class MssqlSourceTest {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asInt()),
+        String.format(
+            "jdbc:sqlserver://%s:%s", config.get("host").asText(), config.get("port").asInt()),
         "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         null);
   }
-
 }

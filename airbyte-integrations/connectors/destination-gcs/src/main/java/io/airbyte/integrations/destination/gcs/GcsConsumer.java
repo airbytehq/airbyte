@@ -32,10 +32,11 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private AirbyteMessage lastStateMessage = null;
 
-  public GcsConsumer(final GcsDestinationConfig gcsDestinationConfig,
-                     final ConfiguredAirbyteCatalog configuredCatalog,
-                     final GcsWriterFactory writerFactory,
-                     final Consumer<AirbyteMessage> outputRecordCollector) {
+  public GcsConsumer(
+      final GcsDestinationConfig gcsDestinationConfig,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final GcsWriterFactory writerFactory,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.gcsDestinationConfig = gcsDestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.writerFactory = writerFactory;
@@ -50,13 +51,13 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
     final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      final S3Writer writer = writerFactory
-          .create(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp);
+      final S3Writer writer =
+          writerFactory.create(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp);
       writer.initialize();
 
       final AirbyteStream stream = configuredStream.getStream();
-      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
-          .fromAirbyteSteam(stream);
+      final AirbyteStreamNameNamespacePair streamNamePair =
+          AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
       streamNameAndNamespaceToWriters.put(streamNamePair, writer);
     }
   }
@@ -71,8 +72,8 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
     }
 
     final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
-    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
-        .fromRecordMessage(recordMessage);
+    final AirbyteStreamNameNamespacePair pair =
+        AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
     if (!streamNameAndNamespaceToWriters.containsKey(pair)) {
       throw new IllegalArgumentException(
@@ -95,5 +96,4 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
       outputRecordCollector.accept(lastStateMessage);
     }
   }
-
 }

@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AzureBlobStorageDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  protected static final Logger LOGGER = LoggerFactory
-      .getLogger(AzureBlobStorageDestinationAcceptanceTest.class);
+  protected static final Logger LOGGER =
+      LoggerFactory.getLogger(AzureBlobStorageDestinationAcceptanceTest.class);
   protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   protected final String secretFilePath = "secrets/config.json";
@@ -56,22 +56,20 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("azure_blob_storage_account_name", "invalidAccountName")
-        .put("azure_blob_storage_account_key", "invalidAccountKey")
-        .put("azure_blob_storage_endpoint_domain_name", "InvalidDomainName")
-        .put("format", getFormatConfig())
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("azure_blob_storage_account_name", "invalidAccountName")
+            .put("azure_blob_storage_account_key", "invalidAccountKey")
+            .put("azure_blob_storage_endpoint_domain_name", "InvalidDomainName")
+            .put("format", getFormatConfig())
+            .build());
   }
 
-  /**
-   * Helper method to retrieve all synced objects inside the configured bucket path.
-   */
+  /** Helper method to retrieve all synced objects inside the configured bucket path. */
   @Deprecated
   protected String getAllSyncedObjects(final String streamName) {
-    final AppendBlobClient appendBlobClient = specializedBlobClientBuilder
-        .blobName(streamName)
-        .buildAppendBlobClient();
+    final AppendBlobClient appendBlobClient =
+        specializedBlobClientBuilder.blobName(streamName).buildAppendBlobClient();
 
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     appendBlobClient.download(outputStream);
@@ -79,50 +77,55 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
 
     LOGGER.info("All objects: " + result);
     return result;
-
   }
 
   protected abstract JsonNode getFormatConfig();
 
   /**
    * This method does the following:
-   * <li>Construct the Azure Blob destination config.</li>
-   * <li>Construct the Azure Blob client.</li>
+   * <li>Construct the Azure Blob destination config.
+   * <li>Construct the Azure Blob client.
    */
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
     final JsonNode baseConfigJson = getBaseConfigJson();
 
-    configJson = Jsons.jsonNode(ImmutableMap.builder()
-        .put("azure_blob_storage_account_name",
-            baseConfigJson.get("azure_blob_storage_account_name"))
-        .put("azure_blob_storage_account_key", baseConfigJson.get("azure_blob_storage_account_key"))
-        .put("azure_blob_storage_endpoint_domain_name",
-            baseConfigJson.get("azure_blob_storage_endpoint_domain_name"))
-        .put("azure_blob_storage_container_name",
-            baseConfigJson.get("azure_blob_storage_container_name").asText()
-                + System.currentTimeMillis())
-        .put("format", getFormatConfig())
-        .build());
+    configJson =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put(
+                    "azure_blob_storage_account_name",
+                    baseConfigJson.get("azure_blob_storage_account_name"))
+                .put(
+                    "azure_blob_storage_account_key",
+                    baseConfigJson.get("azure_blob_storage_account_key"))
+                .put(
+                    "azure_blob_storage_endpoint_domain_name",
+                    baseConfigJson.get("azure_blob_storage_endpoint_domain_name"))
+                .put(
+                    "azure_blob_storage_container_name",
+                    baseConfigJson.get("azure_blob_storage_container_name").asText()
+                        + System.currentTimeMillis())
+                .put("format", getFormatConfig())
+                .build());
 
-    this.azureBlobStorageDestinationConfig = AzureBlobStorageDestinationConfig
-        .getAzureBlobStorageConfig(configJson);
+    this.azureBlobStorageDestinationConfig =
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(configJson);
 
-    this.credential = new StorageSharedKeyCredential(
-        azureBlobStorageDestinationConfig.getAccountName(),
-        azureBlobStorageDestinationConfig.getAccountKey());
+    this.credential =
+        new StorageSharedKeyCredential(
+            azureBlobStorageDestinationConfig.getAccountName(),
+            azureBlobStorageDestinationConfig.getAccountKey());
 
-    this.specializedBlobClientBuilder = new SpecializedBlobClientBuilder()
-        .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
-        .credential(credential)
-        .containerName(
-            azureBlobStorageDestinationConfig.getContainerName());// Like user\schema in DB
-
+    this.specializedBlobClientBuilder =
+        new SpecializedBlobClientBuilder()
+            .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
+            .credential(credential)
+            .containerName(
+                azureBlobStorageDestinationConfig.getContainerName()); // Like user\schema in DB
   }
 
-  /**
-   * Remove all the Container output from the tests.
-   */
+  /** Remove all the Container output from the tests. */
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     final BlobServiceClient storageClient =
@@ -131,13 +134,12 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
             .credential(credential)
             .buildClient();
 
-    final BlobContainerClient blobContainerClient = storageClient
-        .getBlobContainerClient(azureBlobStorageDestinationConfig.getContainerName());
+    final BlobContainerClient blobContainerClient =
+        storageClient.getBlobContainerClient(azureBlobStorageDestinationConfig.getContainerName());
 
     if (blobContainerClient.exists()) {
       LOGGER.info("Deleting test env: " + azureBlobStorageDestinationConfig.getContainerName());
       blobContainerClient.delete();
     }
   }
-
 }

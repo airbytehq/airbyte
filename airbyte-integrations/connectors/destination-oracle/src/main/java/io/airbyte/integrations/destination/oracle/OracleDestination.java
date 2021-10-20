@@ -53,19 +53,22 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   public JsonNode toJdbcConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 
-    final Protocol protocol = config.has("encryption")
-        ? obtainConnectionProtocol(config.get("encryption"), additionalParameters)
-        : Protocol.TCP;
-    final String connectionString = String.format(
-        "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))",
-        protocol,
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("sid").asText());
+    final Protocol protocol =
+        config.has("encryption")
+            ? obtainConnectionProtocol(config.get("encryption"), additionalParameters)
+            : Protocol.TCP;
+    final String connectionString =
+        String.format(
+            "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))",
+            protocol,
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("sid").asText());
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", connectionString);
+    final ImmutableMap.Builder<Object, Object> configBuilder =
+        ImmutableMap.builder()
+            .put("username", config.get("username").asText())
+            .put("jdbc_url", connectionString);
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
@@ -79,8 +82,8 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private Protocol obtainConnectionProtocol(final JsonNode encryption,
-                                            final List<String> additionalParameters) {
+  private Protocol obtainConnectionProtocol(
+      final JsonNode encryption, final List<String> additionalParameters) {
     final String encryptionMethod = encryption.get("encryption_method").asText();
     switch (encryptionMethod) {
       case "unencrypted" -> {
@@ -115,11 +118,17 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
-    runProcess("keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH
-        + " -file certificate.der -storepass " + KEY_STORE_PASS + " -noprompt", run);
+    runProcess(
+        "keytool -import -alias rds-root -keystore "
+            + KEY_STORE_FILE_PATH
+            + " -file certificate.der -storepass "
+            + KEY_STORE_PASS
+            + " -noprompt",
+        run);
   }
 
-  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+  private static void runProcess(final String cmd, final Runtime run)
+      throws IOException, InterruptedException {
     final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
@@ -128,11 +137,10 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   public static void main(final String[] args) throws Exception {
-    final Destination destination = new SshWrappedDestination(new OracleDestination(), HOST_KEY,
-        PORT_KEY);
+    final Destination destination =
+        new SshWrappedDestination(new OracleDestination(), HOST_KEY, PORT_KEY);
     LOGGER.info("starting destination: {}", OracleDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", OracleDestination.class);
   }
-
 }

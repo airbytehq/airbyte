@@ -42,5 +42,4 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MySqlStrictEncryptSource.class);
   }
-
 }

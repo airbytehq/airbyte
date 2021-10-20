@@ -33,7 +33,8 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString()));
+    return Jsons.jsonNode(
+        ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString()));
   }
 
   // todo (cgardens) - it would be great if we could find a configuration here that failed. the
@@ -54,25 +55,33 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   public void testCheckConnectionInvalidCredentials() {}
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    final List<Path> allOutputs = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
+    final List<Path> allOutputs =
+        Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
 
     final Optional<Path> streamOutput =
         allOutputs.stream()
-            .filter(path -> path.getFileName().toString().endsWith(new StandardNameTransformer().getRawTableName(streamName) + ".csv"))
+            .filter(
+                path ->
+                    path.getFileName()
+                        .toString()
+                        .endsWith(
+                            new StandardNameTransformer().getRawTableName(streamName) + ".csv"))
             .findFirst();
 
     assertTrue(streamOutput.isPresent(), "could not find output file for stream: " + streamName);
 
     final FileReader in = new FileReader(streamOutput.get().toFile());
-    final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-        .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)
-        .withFirstRecordAsHeader()
-        .parse(in);
+    final Iterable<CSVRecord> records =
+        CSVFormat.DEFAULT
+            .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)
+            .withFirstRecordAsHeader()
+            .parse(in);
 
     return StreamSupport.stream(records.spliterator(), false)
         .map(record -> Jsons.deserialize(record.toMap().get(JavaBaseConstants.COLUMN_NAME_DATA)))
@@ -88,5 +97,4 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   protected void tearDown(final TestDestinationEnv testEnv) {
     // no op
   }
-
 }

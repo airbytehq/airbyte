@@ -10,5 +10,4 @@ class CdcPostgresSourcePgoutputTest extends CdcPostgresSourceTest {
   protected String getPluginName() {
     return "pgoutput";
   }
-
 }

@@ -13,7 +13,8 @@ import java.util.List;
 public class DatabricksSqlOperations extends JdbcSqlOperations {
 
   @Override
-  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries)
+      throws Exception {
     for (final String query : queries) {
       database.execute(query);
     }
@@ -24,27 +25,30 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
    * Reference: https://spark.apache.org/docs/latest/sql-ref-datatypes.html
    */
   @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+  public String createTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s (%s STRING, %s STRING, %s TIMESTAMP);",
-        schemaName, tableName,
+        schemaName,
+        tableName,
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   @Override
-  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName)
+      throws Exception {
     database.execute(String.format("create database if not exists %s;", schemaName));
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName) {
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName) {
     // Do nothing. The records are copied into the table directly from the staging parquet file.
     // So no manual insertion is needed.
   }
-
 }

@@ -34,16 +34,19 @@ class SwitchingDestinationTest {
   public void setUp() {
     insertDestination = mock(Destination.class);
     copyDestination = mock(Destination.class);
-    destinationMap = ImmutableMap.of(
-        SwitchingEnum.INSERT, insertDestination,
-        SwitchingEnum.COPY, copyDestination);
+    destinationMap =
+        ImmutableMap.of(
+            SwitchingEnum.INSERT, insertDestination,
+            SwitchingEnum.COPY, copyDestination);
   }
 
   @Test
   public void testInsert() throws Exception {
-    final var switchingDestination = new SwitchingDestination<>(SwitchingEnum.class, c -> SwitchingEnum.INSERT, destinationMap);
+    final var switchingDestination =
+        new SwitchingDestination<>(SwitchingEnum.class, c -> SwitchingEnum.INSERT, destinationMap);
 
-    switchingDestination.getConsumer(mock(JsonNode.class), mock(ConfiguredAirbyteCatalog.class), mock(Consumer.class));
+    switchingDestination.getConsumer(
+        mock(JsonNode.class), mock(ConfiguredAirbyteCatalog.class), mock(Consumer.class));
 
     verify(insertDestination, times(1)).getConsumer(any(), any(), any());
     verify(copyDestination, times(0)).getConsumer(any(), any(), any());
@@ -56,9 +59,11 @@ class SwitchingDestinationTest {
 
   @Test
   public void testCopy() throws Exception {
-    final var switchingDestination = new SwitchingDestination<>(SwitchingEnum.class, c -> SwitchingEnum.COPY, destinationMap);
+    final var switchingDestination =
+        new SwitchingDestination<>(SwitchingEnum.class, c -> SwitchingEnum.COPY, destinationMap);
 
-    switchingDestination.getConsumer(mock(JsonNode.class), mock(ConfiguredAirbyteCatalog.class), mock(Consumer.class));
+    switchingDestination.getConsumer(
+        mock(JsonNode.class), mock(ConfiguredAirbyteCatalog.class), mock(Consumer.class));
 
     verify(insertDestination, times(0)).getConsumer(any(), any(), any());
     verify(copyDestination, times(1)).getConsumer(any(), any(), any());
@@ -68,5 +73,4 @@ class SwitchingDestinationTest {
     verify(insertDestination, times(0)).check(any());
     verify(copyDestination, times(1)).check(any());
   }
-
 }

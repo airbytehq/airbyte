@@ -51,31 +51,35 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME),
-                String.format("%s", config.get("database").asText()),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME2),
-                String.format("%s", config.get("database").asText()),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(
+            Lists.newArrayList(
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                String.format("%s", STREAM_NAME),
+                                String.format("%s", config.get("database").asText()),
+                                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSourceDefinedCursor(true)
+                            .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                String.format("%s", STREAM_NAME2),
+                                String.format("%s", config.get("database").asText()),
+                                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSourceDefinedCursor(true)
+                            .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -93,14 +97,16 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("replication_method", ReplicationMethod.CDC)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", container.getHost())
+                .put("port", container.getFirstMappedPort())
+                .put("database", container.getDatabaseName())
+                .put("username", container.getUsername())
+                .put("password", container.getPassword())
+                .put("replication_method", ReplicationMethod.CDC)
+                .build());
 
     revokeAllPermissions();
     grantCorrectPermissions();
@@ -123,22 +129,21 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   private void grantCorrectPermissions() {
     executeQuery(
         "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO "
-            + container.getUsername() + "@'%';");
+            + container.getUsername()
+            + "@'%';");
   }
 
   private void executeQuery(final String query) {
-    try (final Database database = Databases.createDatabase(
-        "root",
-        "test",
-        String.format("jdbc:mysql://%s:%s/%s",
-            container.getHost(),
-            container.getFirstMappedPort(),
-            container.getDatabaseName()),
-        MySqlSource.DRIVER_CLASS,
-        SQLDialect.MYSQL)) {
-      database.query(
-          ctx -> ctx
-              .execute(query));
+    try (final Database database =
+        Databases.createDatabase(
+            "root",
+            "test",
+            String.format(
+                "jdbc:mysql://%s:%s/%s",
+                container.getHost(), container.getFirstMappedPort(), container.getDatabaseName()),
+            MySqlSource.DRIVER_CLASS,
+            SQLDialect.MYSQL)) {
+      database.query(ctx -> ctx.execute(query));
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -148,5 +153,4 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
-
 }

@@ -22,38 +22,42 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("ssl", true)
-        .put("replication_method", ReplicationMethod.STANDARD)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", container.getHost())
+                .put("port", container.getFirstMappedPort())
+                .put("database", container.getDatabaseName())
+                .put("username", container.getUsername())
+                .put("password", container.getPassword())
+                .put("ssl", true)
+                .put("replication_method", ReplicationMethod.STANDARD)
+                .build());
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s?%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText(),
-            String.join("&", SSL_PARAMETERS)),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL);
+    final Database database =
+        Databases.createDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:mysql://%s:%s/%s?%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText(),
+                String.join("&", SSL_PARAMETERS)),
+            "com.mysql.cj.jdbc.Driver",
+            SQLDialect.MYSQL);
 
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch(
-          "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.fetch(
-          "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      return null;
-    });
+    database.query(
+        ctx -> {
+          ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+          ctx.fetch(
+              "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+          ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+          ctx.fetch(
+              "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+          return null;
+        });
 
     database.close();
   }
-
 }

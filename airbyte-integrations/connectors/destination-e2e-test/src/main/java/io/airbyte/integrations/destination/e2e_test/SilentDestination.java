@@ -18,9 +18,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * This destination silently receives records.
- */
+/** This destination silently receives records. */
 public class SilentDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LoggingDestination.class);
@@ -32,9 +30,10 @@ public class SilentDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     return new SilentDestination.RecordConsumer(outputRecordCollector);
   }
 
@@ -64,7 +63,5 @@ public class SilentDestination extends BaseConnector implements Destination {
 
     @Override
     public void close() {}
-
   }
-
 }

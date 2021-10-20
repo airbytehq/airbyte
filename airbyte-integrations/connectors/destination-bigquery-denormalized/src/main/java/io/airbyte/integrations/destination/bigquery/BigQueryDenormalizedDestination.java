@@ -34,7 +34,8 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryDenormalizedDestination extends BigQueryDestination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestination.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(BigQueryDenormalizedDestination.class);
 
   protected static final String PROPERTIES_FIELD = "properties";
   protected static final String NESTED_ARRAY_FIELD = "value";
@@ -43,40 +44,52 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
 
   @Override
   protected String getTargetTableName(final String streamName) {
-    // This BigQuery destination does not write to a staging "raw" table but directly to a normalized
+    // This BigQuery destination does not write to a staging "raw" table but directly to a
+    // normalized
     // table
     return getNamingResolver().getIdentifier(streamName);
   }
 
   @Override
-  protected AirbyteMessageConsumer getRecordConsumer(final BigQuery bigquery,
-                                                     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                                     final ConfiguredAirbyteCatalog catalog,
-                                                     final Consumer<AirbyteMessage> outputRecordCollector,
-                                                     final boolean isGcsUploadingMode,
-                                                     final boolean isKeepFilesInGcs) {
-    return new BigQueryDenormalizedRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, getNamingResolver());
+  protected AirbyteMessageConsumer getRecordConsumer(
+      final BigQuery bigquery,
+      final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final boolean isGcsUploadingMode,
+      final boolean isKeepFilesInGcs) {
+    return new BigQueryDenormalizedRecordConsumer(
+        bigquery, writeConfigs, catalog, outputRecordCollector, getNamingResolver());
   }
 
   @Override
   protected Schema getBigQuerySchema(final JsonNode jsonSchema) {
     final List<Field> fieldList = getSchemaFields(getNamingResolver(), jsonSchema);
-    if (fieldList.stream().noneMatch(f -> f.getName().equals(JavaBaseConstants.COLUMN_NAME_AB_ID))) {
+    if (fieldList.stream()
+        .noneMatch(f -> f.getName().equals(JavaBaseConstants.COLUMN_NAME_AB_ID))) {
       fieldList.add(Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING));
     }
-    if (fieldList.stream().noneMatch(f -> f.getName().equals(JavaBaseConstants.COLUMN_NAME_EMITTED_AT))) {
-      fieldList.add(Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
+    if (fieldList.stream()
+        .noneMatch(f -> f.getName().equals(JavaBaseConstants.COLUMN_NAME_EMITTED_AT))) {
+      fieldList.add(
+          Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
     }
     return com.google.cloud.bigquery.Schema.of(fieldList);
   }
 
-  private static List<Field> getSchemaFields(final BigQuerySQLNameTransformer namingResolver, final JsonNode jsonSchema) {
+  private static List<Field> getSchemaFields(
+      final BigQuerySQLNameTransformer namingResolver, final JsonNode jsonSchema) {
     Preconditions.checkArgument(jsonSchema.isObject() && jsonSchema.has(PROPERTIES_FIELD));
     final ObjectNode properties = (ObjectNode) jsonSchema.get(PROPERTIES_FIELD);
-    return Jsons.keys(properties).stream().map(key -> getField(namingResolver, key, properties.get(key)).build()).collect(Collectors.toList());
+    return Jsons.keys(properties).stream()
+        .map(key -> getField(namingResolver, key, properties.get(key)).build())
+        .collect(Collectors.toList());
   }
 
-  private static Builder getField(final BigQuerySQLNameTransformer namingResolver, final String key, final JsonNode fieldDefinition) {
+  private static Builder getField(
+      final BigQuerySQLNameTransformer namingResolver,
+      final String key,
+      final JsonNode fieldDefinition) {
     final String fieldName = namingResolver.getIdentifier(key);
     final Builder builder = Field.newBuilder(fieldName, StandardSQLTypeName.STRING);
     final List<JsonSchemaType> fieldTypes = getTypes(fieldName, fieldDefinition.get(TYPE_FIELD));
@@ -100,16 +113,20 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
             if (fieldDefinition.has("items")) {
               items = fieldDefinition.get("items");
             } else {
-              LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
+              LOGGER.warn(
+                  "Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
               // this is handler for case when we get "array" without "items"
               // (https://github.com/airbytehq/airbyte/issues/5486)
               items = getTypeStringSchema();
             }
-            final Builder subField = getField(namingResolver, fieldName, items).setMode(Mode.REPEATED);
-            // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
+            final Builder subField =
+                getField(namingResolver, fieldName, items).setMode(Mode.REPEATED);
+            // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record
+            // of Array of"
             // is)
             // Turn all "Array of" into "Array of Record of" instead
-            return builder.setType(StandardSQLTypeName.STRUCT, subField.setName(NESTED_ARRAY_FIELD).build());
+            return builder.setType(
+                StandardSQLTypeName.STRUCT, subField.setName(NESTED_ARRAY_FIELD).build());
           }
           case OBJECT -> {
             final JsonNode properties;
@@ -118,10 +135,11 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
             } else {
               properties = fieldDefinition;
             }
-            final FieldList fieldList = FieldList.of(Jsons.keys(properties)
-                .stream()
-                .map(f -> getField(namingResolver, f, properties.get(f)).build())
-                .collect(Collectors.toList()));
+            final FieldList fieldList =
+                FieldList.of(
+                    Jsons.keys(properties).stream()
+                        .map(f -> getField(namingResolver, f, properties.get(f)).build())
+                        .collect(Collectors.toList()));
             if (fieldList.size() > 0) {
               builder.setType(StandardSQLTypeName.STRUCT, fieldList);
             } else {
@@ -139,7 +157,8 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     // If a specific format is defined, use their specific type instead of the JSON's one
     final JsonNode fieldFormat = fieldDefinition.get(FORMAT_FIELD);
     if (fieldFormat != null) {
-      final JsonSchemaFormat schemaFormat = JsonSchemaFormat.fromJsonSchemaFormat(fieldFormat.asText());
+      final JsonSchemaFormat schemaFormat =
+          JsonSchemaFormat.fromJsonSchemaFormat(fieldFormat.asText());
       if (schemaFormat != null) {
         builder.setType(schemaFormat.getBigQueryType());
       }
@@ -149,11 +168,8 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   }
 
   private static JsonNode getTypeStringSchema() {
-    return Jsons.deserialize("{\n"
-        + "    \"type\": [\n"
-        + "      \"string\"\n"
-        + "    ]\n"
-        + "  }");
+    return Jsons.deserialize(
+        "{\n" + "    \"type\": [\n" + "      \"string\"\n" + "    ]\n" + "  }");
   }
 
   private static List<JsonSchemaType> getTypes(final String fieldName, final JsonNode type) {
@@ -179,5 +195,4 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", BigQueryDenormalizedDestination.class);
   }
-
 }

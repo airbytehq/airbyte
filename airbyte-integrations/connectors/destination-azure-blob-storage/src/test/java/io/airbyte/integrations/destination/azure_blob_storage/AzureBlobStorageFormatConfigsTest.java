@@ -29,12 +29,12 @@ public class AzureBlobStorageFormatConfigsTest {
 
     final ObjectNode stubConfig = mapper.createObjectNode();
     stubConfig.set("format", stubFormatConfig);
-    final AzureBlobStorageFormatConfig formatConfig = AzureBlobStorageFormatConfigs
-        .getAzureBlobStorageFormatConfig(stubConfig);
+    final AzureBlobStorageFormatConfig formatConfig =
+        AzureBlobStorageFormatConfigs.getAzureBlobStorageFormatConfig(stubConfig);
     assertEquals(formatConfig.getFormat(), AzureBlobStorageFormat.CSV);
     assertTrue(formatConfig instanceof AzureBlobStorageCsvFormatConfig);
-    final AzureBlobStorageCsvFormatConfig csvFormatConfig = (AzureBlobStorageCsvFormatConfig) formatConfig;
+    final AzureBlobStorageCsvFormatConfig csvFormatConfig =
+        (AzureBlobStorageCsvFormatConfig) formatConfig;
     assertEquals(csvFormatConfig.getFlattening(), Flattening.ROOT_LEVEL);
   }
-
 }

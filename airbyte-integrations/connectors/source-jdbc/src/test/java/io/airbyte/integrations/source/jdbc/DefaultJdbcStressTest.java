@@ -47,18 +47,33 @@ class DefaultJdbcStressTest extends JdbcStressTest {
   public void setup() throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
-    config = Jsons.jsonNode(ImmutableMap.of("host", "localhost", "port", 5432, "database", "charles", "username", "postgres", "password", ""));
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.of(
+                "host",
+                "localhost",
+                "port",
+                5432,
+                "database",
+                "charles",
+                "username",
+                "postgres",
+                "password",
+                ""));
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", PSQL_DB.getHost())
-        .put("port", PSQL_DB.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", PSQL_DB.getUsername())
-        .put("password", PSQL_DB.getPassword())
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", PSQL_DB.getHost())
+                .put("port", PSQL_DB.getFirstMappedPort())
+                .put("database", dbName)
+                .put("username", PSQL_DB.getUsername())
+                .put("password", PSQL_DB.getPassword())
+                .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     super.setup();
@@ -101,12 +116,16 @@ class DefaultJdbcStressTest extends JdbcStressTest {
 
     @Override
     public JsonNode toDatabaseConfig(final JsonNode config) {
-      final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-          .put("username", config.get("username").asText())
-          .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-              config.get("host").asText(),
-              config.get("port").asText(),
-              config.get("database").asText()));
+      final ImmutableMap.Builder<Object, Object> configBuilder =
+          ImmutableMap.builder()
+              .put("username", config.get("username").asText())
+              .put(
+                  "jdbc_url",
+                  String.format(
+                      "jdbc:postgresql://%s:%s/%s",
+                      config.get("host").asText(),
+                      config.get("port").asText(),
+                      config.get("database").asText()));
 
       if (config.has("password")) {
         configBuilder.put("password", config.get("password").asText());
@@ -126,7 +145,5 @@ class DefaultJdbcStressTest extends JdbcStressTest {
       new IntegrationRunner(source).run(args);
       LOGGER.info("completed source: {}", PostgresTestSource.class);
     }
-
   }
-
 }

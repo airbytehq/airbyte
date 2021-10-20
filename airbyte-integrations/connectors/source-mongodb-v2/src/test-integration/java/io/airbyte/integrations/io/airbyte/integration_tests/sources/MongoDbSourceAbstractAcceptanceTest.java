@@ -47,19 +47,22 @@ public abstract class MongoDbSourceAbstractAcceptanceTest extends SourceAcceptan
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("_id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withCursorField(List.of("_id"))
-            .withStream(CatalogHelpers.createAirbyteStream(
-                DATABASE_NAME + "." + COLLECTION_NAME,
-                Field.of("_id", JsonSchemaPrimitive.STRING),
-                Field.of("id", JsonSchemaPrimitive.STRING),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
-                .withDefaultCursorField(List.of("_id")))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(
+            Lists.newArrayList(
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("_id"))
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withCursorField(List.of("_id"))
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                DATABASE_NAME + "." + COLLECTION_NAME,
+                                Field.of("_id", JsonSchemaPrimitive.STRING),
+                                Field.of("id", JsonSchemaPrimitive.STRING),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
+                            .withDefaultCursorField(List.of("_id")))));
   }
 
   @Override
@@ -71,5 +74,4 @@ public abstract class MongoDbSourceAbstractAcceptanceTest extends SourceAcceptan
   protected List<String> getRegexTests() throws Exception {
     return Collections.emptyList();
   }
-
 }

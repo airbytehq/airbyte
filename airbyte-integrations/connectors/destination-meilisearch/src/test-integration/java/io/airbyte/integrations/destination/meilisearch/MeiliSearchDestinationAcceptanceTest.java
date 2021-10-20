@@ -36,18 +36,24 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws IOException {
-    final Path meiliSearchDataDir = Files.createTempDirectory(Path.of("/tmp"), "meilisearch-integration-test");
+    final Path meiliSearchDataDir =
+        Files.createTempDirectory(Path.of("/tmp"), "meilisearch-integration-test");
     meiliSearchDataDir.toFile().deleteOnExit();
 
-    genericContainer = new GenericContainer<>(DockerImageName.parse("getmeili/meilisearch:latest"))
-        .withFileSystemBind(meiliSearchDataDir.toString(), "/data.ms");
-    genericContainer.setPortBindings(ImmutableList.of(EXPOSED_PORT + ":" + DEFAULT_MEILI_SEARCH_PORT));
+    genericContainer =
+        new GenericContainer<>(DockerImageName.parse("getmeili/meilisearch:latest"))
+            .withFileSystemBind(meiliSearchDataDir.toString(), "/data.ms");
+    genericContainer.setPortBindings(
+        ImmutableList.of(EXPOSED_PORT + ":" + DEFAULT_MEILI_SEARCH_PORT));
     genericContainer.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", String.format("http://%s:%s", genericContainer.getHost(), EXPOSED_PORT))
-        .put("api_key", API_KEY)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put(
+                    "host", String.format("http://%s:%s", genericContainer.getHost(), EXPOSED_PORT))
+                .put("api_key", API_KEY)
+                .build());
     meiliSearchClient = MeiliSearchDestination.getClient(config);
   }
 
@@ -74,24 +80,27 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
     final Index index = meiliSearchClient.index(Names.toAlphanumericAndUnderscore(streamName));
     final String responseString = index.getDocuments();
     final JsonNode response = Jsons.deserialize(responseString);
     return MoreStreams.toStream(response.iterator())
-        // strip out the airbyte primary key because the test cases only expect the data, no the airbyte
+        // strip out the airbyte primary key because the test cases only expect the data, no the
+        // airbyte
         // metadata column.
-        // We also sort the data by "emitted_at" and then remove that column, because the test cases only
+        // We also sort the data by "emitted_at" and then remove that column, because the test cases
+        // only
         // expect data,
         // not the airbyte metadata column.
         .peek(r -> ((ObjectNode) r).remove(MeiliSearchDestination.AB_PK_COLUMN))
-        .sorted(Comparator.comparing(o -> o.get(MeiliSearchDestination.AB_EMITTED_AT_COLUMN).asText()))
+        .sorted(
+            Comparator.comparing(o -> o.get(MeiliSearchDestination.AB_EMITTED_AT_COLUMN).asText()))
         .peek(r -> ((ObjectNode) r).remove(MeiliSearchDestination.AB_EMITTED_AT_COLUMN))
         .collect(Collectors.toList());
   }
-
 }

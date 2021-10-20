@@ -37,25 +37,29 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     db.start();
 
-    final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .build());
+    final JsonNode configWithoutDbName =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", db.getHost())
+                .put("port", db.getFirstMappedPort())
+                .put("username", db.getUsername())
+                .put("password", db.getPassword())
+                .build());
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     final Database database = getDatabase(configWithoutDbName);
-    database.query(ctx -> {
-      ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
-      ctx.fetch(String.format("USE %s;", dbName));
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
-      ctx.fetch(
-          "INSERT INTO id_and_name (id, name, born) VALUES " +
-              "(1,'picard', '2124-03-04T01:01:01Z'),  " +
-              "(2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
-      return null;
-    });
+    database.query(
+        ctx -> {
+          ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
+          ctx.fetch(String.format("USE %s;", dbName));
+          ctx.fetch(
+              "CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
+          ctx.fetch(
+              "INSERT INTO id_and_name (id, name, born) VALUES "
+                  + "(1,'picard', '2124-03-04T01:01:01Z'),  "
+                  + "(2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
+          return null;
+        });
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put("database", dbName);
@@ -106,11 +110,9 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asInt()),
+        String.format(
+            "jdbc:sqlserver://%s:%s", config.get("host").asText(), config.get("port").asInt()),
         "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         null);
   }
-
 }

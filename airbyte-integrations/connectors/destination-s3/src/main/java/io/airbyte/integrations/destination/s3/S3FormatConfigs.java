@@ -20,7 +20,8 @@ public class S3FormatConfigs {
   public static S3FormatConfig getS3FormatConfig(final JsonNode config) {
     final JsonNode formatConfig = config.get("format");
     LOGGER.info("S3 format config: {}", formatConfig.toString());
-    final S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());
+    final S3Format formatType =
+        S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());
 
     switch (formatType) {
       case AVRO -> {
@@ -40,5 +41,4 @@ public class S3FormatConfigs {
       }
     }
   }
-
 }

@@ -50,15 +50,23 @@ public class LocalJsonDestinationAcceptanceTest extends DestinationAcceptanceTes
   public void testCheckConnectionInvalidCredentials() {}
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    final List<Path> allOutputs = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
-    final Optional<Path> streamOutput = allOutputs.stream()
-        .filter(path -> path.getFileName().toString().endsWith(new StandardNameTransformer().getRawTableName(streamName) + ".jsonl"))
-        .findFirst();
+    final List<Path> allOutputs =
+        Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
+    final Optional<Path> streamOutput =
+        allOutputs.stream()
+            .filter(
+                path ->
+                    path.getFileName()
+                        .toString()
+                        .endsWith(
+                            new StandardNameTransformer().getRawTableName(streamName) + ".jsonl"))
+            .findFirst();
 
     assertTrue(streamOutput.isPresent(), "could not find output file for stream: " + streamName);
 
@@ -77,5 +85,4 @@ public class LocalJsonDestinationAcceptanceTest extends DestinationAcceptanceTes
   protected void tearDown(final TestDestinationEnv testEnv) {
     // no op
   }
-
 }

@@ -23,15 +23,17 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
   private boolean isLocalFileEnabled = false;
 
   @Override
-  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries)
+      throws Exception {
     database.executeWithinTransaction(queries);
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName)
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -49,29 +51,32 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
     }
   }
 
-  private void loadDataIntoTable(final JdbcDatabase database,
-                                 final List<AirbyteRecordMessage> records,
-                                 final String schemaName,
-                                 final String tmpTableName,
-                                 final File tmpFile)
+  private void loadDataIntoTable(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tmpTableName,
+      final File tmpFile)
       throws SQLException {
-    database.execute(connection -> {
-      try {
-        writeBatchToFile(tmpFile, records);
+    database.execute(
+        connection -> {
+          try {
+            writeBatchToFile(tmpFile, records);
 
-        final String absoluteFile = "'" + tmpFile.getAbsolutePath() + "'";
+            final String absoluteFile = "'" + tmpFile.getAbsolutePath() + "'";
 
-        final String query = String.format(
-            "LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'",
-            absoluteFile, schemaName, tmpTableName);
+            final String query =
+                String.format(
+                    "LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'",
+                    absoluteFile, schemaName, tmpTableName);
 
-        try (final Statement stmt = connection.createStatement()) {
-          stmt.execute(query);
-        }
-      } catch (final Exception e) {
-        throw new RuntimeException(e);
-      }
-    });
+            try (final Statement stmt = connection.createStatement()) {
+              stmt.execute(query);
+            }
+          } catch (final Exception e) {
+            throw new RuntimeException(e);
+          }
+        });
   }
 
   @Override
@@ -88,20 +93,25 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
   }
 
   private void tryEnableLocalFile(final JdbcDatabase database) throws SQLException {
-    database.execute(connection -> {
-      try (final Statement statement = connection.createStatement()) {
-        statement.execute("set global local_infile=true");
-      } catch (final Exception e) {
-        throw new RuntimeException(
-            "The DB user provided to airbyte was unable to switch on the local_infile attribute on the MySQL server. As an admin user, you will need to run \"SET GLOBAL local_infile = true\" before syncing data with Airbyte.",
-            e);
-      }
-    });
+    database.execute(
+        connection -> {
+          try (final Statement statement = connection.createStatement()) {
+            statement.execute("set global local_infile=true");
+          } catch (final Exception e) {
+            throw new RuntimeException(
+                "The DB user provided to airbyte was unable to switch on the local_infile attribute on the MySQL server. As an admin user, you will need to run \"SET GLOBAL local_infile = true\" before syncing data with Airbyte.",
+                e);
+          }
+        });
   }
 
   private double getVersion(final JdbcDatabase database) throws SQLException {
-    final List<String> value = database.resultSetQuery(connection -> connection.createStatement().executeQuery("select version()"),
-        resultSet -> resultSet.getString("version()")).collect(Collectors.toList());
+    final List<String> value =
+        database
+            .resultSetQuery(
+                connection -> connection.createStatement().executeQuery("select version()"),
+                resultSet -> resultSet.getString("version()"))
+            .collect(Collectors.toList());
     return Double.parseDouble(value.get(0).substring(0, 3));
   }
 
@@ -117,15 +127,23 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
 
   private boolean checkIfLocalFileIsEnabled(final JdbcDatabase database) throws SQLException {
     final List<String> value =
-        database.resultSetQuery(connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
-            resultSet -> resultSet.getString("Value")).collect(Collectors.toList());
+        database
+            .resultSetQuery(
+                connection ->
+                    connection
+                        .createStatement()
+                        .executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
+                resultSet -> resultSet.getString("Value"))
+            .collect(Collectors.toList());
 
     return value.get(0).equalsIgnoreCase("on");
   }
 
   @Override
-  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    // MySQL requires byte information with VARCHAR. Since we are using uuid as value for the column,
+  public String createTableQuery(
+      final JdbcDatabase database, final String schemaName, final String tableName) {
+    // MySQL requires byte information with VARCHAR. Since we are using uuid as value for the
+    // column,
     // 256 is enough
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
@@ -133,7 +151,11 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
             + "%s JSON,\n"
             + "%s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)\n"
             + ");\n",
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+        schemaName,
+        tableName,
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   public static class VersionCompatibility {
@@ -153,7 +175,5 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
     public boolean isCompatible() {
       return isCompatible;
     }
-
   }
-
 }

@@ -41,11 +41,15 @@ public class ExceptionAfterNSource extends BaseConnector implements Source {
 
   private static final String STREAM_NAME = "data";
   private static final String COLUMN_NAME = "column1";
-  static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
-      STREAM_NAME,
-      Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING));
+  static final AirbyteCatalog CATALOG =
+      CatalogHelpers.createAirbyteCatalog(
+          STREAM_NAME, Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING));
+
   static {
-    CATALOG.getStreams().get(0).setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+    CATALOG
+        .getStreams()
+        .get(0)
+        .setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
     CATALOG.getStreams().get(0).setSourceDefinedCursor(true);
   }
 
@@ -60,7 +64,8 @@ public class ExceptionAfterNSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
     final long throwAfterNRecords = config.get("throw_after_n_records").asLong();
 
     final AtomicLong recordsEmitted = new AtomicLong();
@@ -74,38 +79,48 @@ public class ExceptionAfterNSource extends BaseConnector implements Source {
     }
 
     final AtomicBoolean hasEmittedStateAtCount = new AtomicBoolean();
-    return AutoCloseableIterators.fromIterator(new AbstractIterator<>() {
+    return AutoCloseableIterators.fromIterator(
+        new AbstractIterator<>() {
 
-      @Override
-      protected AirbyteMessage computeNext() {
-        if (recordsEmitted.get() % 5 == 0 && !hasEmittedStateAtCount.get()) {
+          @Override
+          protected AirbyteMessage computeNext() {
+            if (recordsEmitted.get() % 5 == 0 && !hasEmittedStateAtCount.get()) {
 
-          LOGGER.info("{}: emitting state record with value {}", ExceptionAfterNSource.class, recordValue.get());
+              LOGGER.info(
+                  "{}: emitting state record with value {}",
+                  ExceptionAfterNSource.class,
+                  recordValue.get());
 
-          hasEmittedStateAtCount.set(true);
-          return new AirbyteMessage()
-              .withType(Type.STATE)
-              .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, recordValue.get()))));
-        } else if (throwAfterNRecords > recordsEmitted.get()) {
-          recordsEmitted.incrementAndGet();
-          recordValue.incrementAndGet();
-          hasEmittedStateAtCount.set(false);
+              hasEmittedStateAtCount.set(true);
+              return new AirbyteMessage()
+                  .withType(Type.STATE)
+                  .withState(
+                      new AirbyteStateMessage()
+                          .withData(
+                              Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, recordValue.get()))));
+            } else if (throwAfterNRecords > recordsEmitted.get()) {
+              recordsEmitted.incrementAndGet();
+              recordValue.incrementAndGet();
+              hasEmittedStateAtCount.set(false);
 
-          LOGGER.info("{} ExceptionAfterNSource: emitting record with value {}. record {} in sync.",
-              ExceptionAfterNSource.class, recordValue.get(), recordsEmitted.get());
+              LOGGER.info(
+                  "{} ExceptionAfterNSource: emitting record with value {}. record {} in sync.",
+                  ExceptionAfterNSource.class,
+                  recordValue.get(),
+                  recordsEmitted.get());
 
-          return new AirbyteMessage()
-              .withType(Type.RECORD)
-              .withRecord(new AirbyteRecordMessage()
-                  .withStream(STREAM_NAME)
-                  .withEmittedAt(Instant.now().toEpochMilli())
-                  .withData(Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, recordValue.get()))));
-        } else {
-          throw new IllegalStateException("Scheduled exceptional event.");
-        }
-      }
-
-    });
+              return new AirbyteMessage()
+                  .withType(Type.RECORD)
+                  .withRecord(
+                      new AirbyteRecordMessage()
+                          .withStream(STREAM_NAME)
+                          .withEmittedAt(Instant.now().toEpochMilli())
+                          .withData(
+                              Jsons.jsonNode(ImmutableMap.of(COLUMN_NAME, recordValue.get()))));
+            } else {
+              throw new IllegalStateException("Scheduled exceptional event.");
+            }
+          }
+        });
   }
-
 }

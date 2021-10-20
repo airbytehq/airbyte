@@ -12,5 +12,4 @@ public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
   protected String applyDefaultCase(final String input) {
     return input.toUpperCase();
   }
-
 }

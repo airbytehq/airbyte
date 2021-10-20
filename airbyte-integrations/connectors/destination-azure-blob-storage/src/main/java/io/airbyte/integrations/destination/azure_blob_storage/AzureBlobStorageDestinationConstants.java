@@ -12,5 +12,4 @@ public final class AzureBlobStorageDestinationConstants {
   public static final String DEFAULT_STORAGE_ENDPOINT_FORMAT = "%s://%s.%s";
 
   private AzureBlobStorageDestinationConstants() {}
-
 }

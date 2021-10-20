@@ -32,10 +32,11 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   private AirbyteMessage lastStateMessage = null;
 
-  public S3Consumer(final S3DestinationConfig s3DestinationConfig,
-                    final ConfiguredAirbyteCatalog configuredCatalog,
-                    final S3WriterFactory writerFactory,
-                    final Consumer<AirbyteMessage> outputRecordCollector) {
+  public S3Consumer(
+      final S3DestinationConfig s3DestinationConfig,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final S3WriterFactory writerFactory,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.s3DestinationConfig = s3DestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.writerFactory = writerFactory;
@@ -49,13 +50,13 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      final S3Writer writer = writerFactory
-          .create(s3DestinationConfig, s3Client, configuredStream, uploadTimestamp);
+      final S3Writer writer =
+          writerFactory.create(s3DestinationConfig, s3Client, configuredStream, uploadTimestamp);
       writer.initialize();
 
       final AirbyteStream stream = configuredStream.getStream();
-      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
-          .fromAirbyteSteam(stream);
+      final AirbyteStreamNameNamespacePair streamNamePair =
+          AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
       streamNameAndNamespaceToWriters.put(streamNamePair, writer);
     }
   }
@@ -70,8 +71,8 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     }
 
     final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
-    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
-        .fromRecordMessage(recordMessage);
+    final AirbyteStreamNameNamespacePair pair =
+        AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
     if (!streamNameAndNamespaceToWriters.containsKey(pair)) {
       throw new IllegalArgumentException(
@@ -93,5 +94,4 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
       outputRecordCollector.accept(lastStateMessage);
     }
   }
-
 }

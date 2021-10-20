@@ -37,27 +37,28 @@ public class KeenTimestampService {
   private final Parser parser;
   private final boolean timestampInferenceEnabled;
 
-  public KeenTimestampService(final ConfiguredAirbyteCatalog catalog, final boolean timestampInferenceEnabled) {
+  public KeenTimestampService(
+      final ConfiguredAirbyteCatalog catalog, final boolean timestampInferenceEnabled) {
     this.streamCursorFields = new HashMap<>();
     this.parser = new Parser();
     this.timestampInferenceEnabled = timestampInferenceEnabled;
 
     if (timestampInferenceEnabled) {
       LOGGER.info("Initializing KeenTimestampService, finding cursor fields.");
-      streamCursorFields = catalog.getStreams()
-          .stream()
-          .filter(stream -> stream.getCursorField().size() > 0)
-          .map(s -> Pair.of(s.getStream().getName(), s.getCursorField()))
-          .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+      streamCursorFields =
+          catalog.getStreams().stream()
+              .filter(stream -> stream.getCursorField().size() > 0)
+              .map(s -> Pair.of(s.getStream().getName(), s.getCursorField()))
+              .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
   }
 
   /**
    * Tries to inject keen.timestamp field to the given message data. If the stream contains cursor
-   * field, it's value is tried to be parsed to timestamp. If this procedure fails, stream is removed
-   * from timestamp-parsable stream map, so parsing is not tried for future messages in the same
-   * stream. If parsing succeeds, keen.timestamp field is put as a JSON node to the message data and
-   * whole data is returned. Otherwise, keen.timestamp is set to emittedAt value
+   * field, it's value is tried to be parsed to timestamp. If this procedure fails, stream is
+   * removed from timestamp-parsable stream map, so parsing is not tried for future messages in the
+   * same stream. If parsing succeeds, keen.timestamp field is put as a JSON node to the message
+   * data and whole data is returned. Otherwise, keen.timestamp is set to emittedAt value
    *
    * @param message AirbyteRecordMessage containing record data
    * @return Record data together with keen.timestamp field
@@ -97,18 +98,14 @@ public class KeenTimestampService {
     }
     // if timestamp is 0, then parsing it to long failed - let's try with String now
     if (numberTimestamp == 0) {
-      return parser
-          .parse(timestamp.asText())
-          .get(0).getDates()
-          .get(0)
-          .toInstant()
-          .toString();
+      return parser.parse(timestamp.asText()).get(0).getDates().get(0).toInstant().toString();
     }
     throw new IllegalStateException();
   }
 
   private String dateFromNumber(final Long timestamp) {
-    // if cursor value is above given threshold, then assume that it's Unix timestamp in milliseconds
+    // if cursor value is above given threshold, then assume that it's Unix timestamp in
+    // milliseconds
     if (timestamp > MILLIS_FROM_EPOCH_THRESHOLD) {
       return Instant.ofEpochMilli(timestamp).toString();
     }
@@ -122,5 +119,4 @@ public class KeenTimestampService {
   public Map<String, List<String>> getStreamCursorFields() {
     return streamCursorFields;
   }
-
 }

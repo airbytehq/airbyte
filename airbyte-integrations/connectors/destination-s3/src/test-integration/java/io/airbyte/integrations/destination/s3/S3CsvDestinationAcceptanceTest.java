@@ -33,15 +33,14 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"CSV\",\n"
-        + "  \"flattening\": \"Root level flattening\"\n"
-        + "}");
+    return Jsons.deserialize(
+        "{\n"
+            + "  \"format_type\": \"CSV\",\n"
+            + "  \"flattening\": \"Root level flattening\"\n"
+            + "}");
   }
 
-  /**
-   * Convert json_schema to a map from field name to field types.
-   */
+  /** Convert json_schema to a map from field name to field types. */
   private static Map<String, String> getFieldTypes(final JsonNode streamSchema) {
     final Map<String, String> fieldTypes = new HashMap<>();
     final JsonNode fieldDefinitions = streamSchema.get("properties");
@@ -53,7 +52,8 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
     return fieldTypes;
   }
 
-  private static JsonNode getJsonNode(final Map<String, String> input, final Map<String, String> fieldTypes) {
+  private static JsonNode getJsonNode(
+      final Map<String, String> input, final Map<String, String> fieldTypes) {
     final ObjectNode json = MAPPER.createObjectNode();
 
     if (input.containsKey(JavaBaseConstants.COLUMN_NAME_DATA)) {
@@ -62,8 +62,8 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
 
     for (final Map.Entry<String, String> entry : input.entrySet()) {
       final String key = entry.getKey();
-      if (key.equals(JavaBaseConstants.COLUMN_NAME_AB_ID) || key
-          .equals(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)) {
+      if (key.equals(JavaBaseConstants.COLUMN_NAME_AB_ID)
+          || key.equals(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)) {
         continue;
       }
       final String value = entry.getValue();
@@ -82,10 +82,11 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws IOException {
     final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
 
@@ -93,12 +94,15 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
     final List<JsonNode> jsonRecords = new LinkedList<>();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
-      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      try (final Reader in = new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8)) {
-        final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-            .withQuoteMode(QuoteMode.NON_NUMERIC)
-            .withFirstRecordAsHeader()
-            .parse(in);
+      final S3Object object =
+          s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      try (final Reader in =
+          new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8)) {
+        final Iterable<CSVRecord> records =
+            CSVFormat.DEFAULT
+                .withQuoteMode(QuoteMode.NON_NUMERIC)
+                .withFirstRecordAsHeader()
+                .parse(in);
         StreamSupport.stream(records.spliterator(), false)
             .forEach(r -> jsonRecords.add(getJsonNode(r.toMap(), fieldTypes)));
       }
@@ -106,5 +110,4 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
 
     return jsonRecords;
   }
-
 }

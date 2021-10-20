@@ -41,30 +41,41 @@ public class KafkaSource extends BaseConnector implements Source {
         consumer.subscribe(Pattern.compile(testTopic));
         consumer.listTopics();
         consumer.close();
-        LOGGER.info("Successfully connected to Kafka brokers for topic '{}'.", config.get("test_topic").asText());
+        LOGGER.info(
+            "Successfully connected to Kafka brokers for topic '{}'.",
+            config.get("test_topic").asText());
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to connect to the Kafka brokers: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage("Could not connect to the Kafka brokers with provided configuration. \n" + e.getMessage());
+          .withMessage(
+              "Could not connect to the Kafka brokers with provided configuration. \n"
+                  + e.getMessage());
     }
   }
 
   @Override
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
 
-    final Set<String> topicsToSubscribe = KafkaSourceConfig.getKafkaSourceConfig(config).getTopicsToSubscribe();
-    final List<AirbyteStream> streams = topicsToSubscribe.stream().map(topic -> CatalogHelpers
-        .createAirbyteStream(topic, Field.of("value", JsonSchemaPrimitive.STRING))
-        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
-        .collect(Collectors.toList());
+    final Set<String> topicsToSubscribe =
+        KafkaSourceConfig.getKafkaSourceConfig(config).getTopicsToSubscribe();
+    final List<AirbyteStream> streams =
+        topicsToSubscribe.stream()
+            .map(
+                topic ->
+                    CatalogHelpers.createAirbyteStream(
+                            topic, Field.of("value", JsonSchemaPrimitive.STRING))
+                        .withSupportedSyncModes(
+                            Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
+            .collect(Collectors.toList());
     return new AirbyteCatalog().withStreams(streams);
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final AirbyteConnectionStatus check = check(config);
     if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
@@ -78,7 +89,8 @@ public class KafkaSource extends BaseConnector implements Source {
     final int retry = config.has("repeated_calls") ? config.get("repeated_calls").intValue() : 0;
     int pollCount = 0;
     while (true) {
-      final ConsumerRecords<String, JsonNode> consumerRecords = consumer.poll(Duration.of(100, ChronoUnit.MILLIS));
+      final ConsumerRecords<String, JsonNode> consumerRecords =
+          consumer.poll(Duration.of(100, ChronoUnit.MILLIS));
       if (consumerRecords.count() == 0) {
         pollCount++;
         if (pollCount > retry) {
@@ -86,34 +98,40 @@ public class KafkaSource extends BaseConnector implements Source {
         }
       }
 
-      consumerRecords.forEach(record -> {
-        LOGGER.info("Consumer Record: key - {}, value - {}, partition - {}, offset - {}",
-            record.key(), record.value(), record.partition(), record.offset());
-        recordsList.add(record);
-      });
+      consumerRecords.forEach(
+          record -> {
+            LOGGER.info(
+                "Consumer Record: key - {}, value - {}, partition - {}, offset - {}",
+                record.key(),
+                record.value(),
+                record.partition(),
+                record.offset());
+            recordsList.add(record);
+          });
       consumer.commitAsync();
     }
     consumer.close();
     final Iterator<ConsumerRecord<String, JsonNode>> iterator = recordsList.iterator();
 
-    return AutoCloseableIterators.fromIterator(new AbstractIterator<>() {
+    return AutoCloseableIterators.fromIterator(
+        new AbstractIterator<>() {
 
-      @Override
-      protected AirbyteMessage computeNext() {
-        if (iterator.hasNext()) {
-          final ConsumerRecord<String, JsonNode> record = iterator.next();
-          return new AirbyteMessage()
-              .withType(AirbyteMessage.Type.RECORD)
-              .withRecord(new AirbyteRecordMessage()
-                  .withStream(record.topic())
-                  .withEmittedAt(Instant.now().toEpochMilli())
-                  .withData(record.value()));
-        }
+          @Override
+          protected AirbyteMessage computeNext() {
+            if (iterator.hasNext()) {
+              final ConsumerRecord<String, JsonNode> record = iterator.next();
+              return new AirbyteMessage()
+                  .withType(AirbyteMessage.Type.RECORD)
+                  .withRecord(
+                      new AirbyteRecordMessage()
+                          .withStream(record.topic())
+                          .withEmittedAt(Instant.now().toEpochMilli())
+                          .withData(record.value()));
+            }
 
-        return endOfData();
-      }
-
-    });
+            return endOfData();
+          }
+        });
   }
 
   public static void main(final String[] args) throws Exception {
@@ -122,5 +140,4 @@ public class KafkaSource extends BaseConnector implements Source {
     new IntegrationRunner(source).run(args);
     LOGGER.info("Completed source: {}", KafkaSource.class);
   }
-
 }

@@ -51,7 +51,8 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(BigQueryDenormalizedDestinationAcceptanceTest.class);
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
@@ -59,7 +60,8 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   private static final String CONFIG_PROJECT_ID = "project_id";
   private static final String CONFIG_DATASET_LOCATION = "dataset_location";
   private static final String CONFIG_CREDS = "credentials_json";
-  private static final List<String> AIRBYTE_COLUMNS = List.of(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+  private static final List<String> AIRBYTE_COLUMNS =
+      List.of(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
 
   private BigQuery bigquery;
   private Dataset dataset;
@@ -99,7 +101,8 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
@@ -107,12 +110,15 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return new ArrayList<>(retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), namingResolver.getIdentifier(namespace)));
+    return new ArrayList<>(
+        retrieveRecordsFromTable(
+            namingResolver.getIdentifier(streamName), namingResolver.getIdentifier(namespace)));
   }
 
   @Override
@@ -123,29 +129,32 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema)
+      throws InterruptedException {
     final QueryJobConfiguration queryConfig =
-        QueryJobConfiguration
-            .newBuilder(
-                String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .setUseLegacySql(false).build();
+        QueryJobConfiguration.newBuilder(
+                String.format(
+                    "SELECT * FROM `%s`.`%s` order by %s asc;",
+                    schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .setUseLegacySql(false)
+            .build();
 
-    final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
+    final TableResult queryResults =
+        executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
 
-    return StreamSupport
-        .stream(queryResults.iterateAll().spliterator(), false)
-        .map(row -> {
-          final Map<String, Object> jsonMap = Maps.newHashMap();
-          for (final Field field : fields) {
-            final Object value = getTypedFieldValue(row, field);
-            if (!isAirbyteColumn(field.getName()) && value != null) {
-              jsonMap.put(field.getName(), value);
-            }
-          }
-          return jsonMap;
-        })
+    return StreamSupport.stream(queryResults.iterateAll().spliterator(), false)
+        .map(
+            row -> {
+              final Map<String, Object> jsonMap = Maps.newHashMap();
+              for (final Field field : fields) {
+                final Object value = getTypedFieldValue(row, field);
+                if (!isAirbyteColumn(field.getName()) && value != null) {
+                  jsonMap.put(field.getName(), value);
+                }
+              }
+              return jsonMap;
+            })
         .map(Jsons::jsonNode)
         .collect(Collectors.toList());
   }
@@ -177,7 +186,8 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+          "Must provide path to a big query credentials file. By default {module-root}/"
+              + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
@@ -189,23 +199,29 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJsonString)
-        .put(CONFIG_DATASET_ID, datasetId)
-        .put(CONFIG_DATASET_LOCATION, datasetLocation)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put(CONFIG_PROJECT_ID, projectId)
+                .put(CONFIG_CREDS, credentialsJsonString)
+                .put(CONFIG_DATASET_ID, datasetId)
+                .put(CONFIG_DATASET_LOCATION, datasetLocation)
+                .build());
 
     final ServiceAccountCredentials credentials =
-        ServiceAccountCredentials.fromStream(new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes()));
-    bigquery = BigQueryOptions.newBuilder()
-        .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
-        .setCredentials(credentials)
-        .build()
-        .getService();
+        ServiceAccountCredentials.fromStream(
+            new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes()));
+    bigquery =
+        BigQueryOptions.newBuilder()
+            .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
+            .setCredentials(credentials)
+            .build()
+            .getService();
 
     final DatasetInfo datasetInfo =
-        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
+        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText())
+            .setLocation(config.get(CONFIG_DATASET_LOCATION).asText())
+            .build();
     dataset = bigquery.create(datasetInfo);
 
     tornDown = false;
@@ -240,7 +256,8 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   // todo (cgardens) - figure out how to share these helpers. they are currently copied from
   // BigQueryDestination.
-  private static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
+  private static ImmutablePair<Job, String> executeQuery(
+      final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
     final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
@@ -268,25 +285,31 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   /**
-   * Verify that the integration successfully writes normalized records successfully (without actually
-   * running the normalization module) Tests a wide variety of messages an schemas (aspirationally,
-   * anyway).
+   * Verify that the integration successfully writes normalized records successfully (without
+   * actually running the normalization module) Tests a wide variety of messages an schemas
+   * (aspirationally, anyway).
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncNormalizedWithoutNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
-    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+  public void testSyncNormalizedWithoutNormalization(
+      final String messagesFilename, final String catalogFilename) throws Exception {
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages =
+        MoreResources.readResource(messagesFilename)
+            .lines()
+            .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+            .collect(Collectors.toList());
 
     final JsonNode config = getConfig();
     // don't run normalization though
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
 
     final String defaultSchema = getDefaultSchema(config);
-    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+    final List<AirbyteRecordMessage> actualMessages =
+        retrieveNormalizedRecords(catalog, defaultSchema);
     assertSameMessages(messages, actualMessages, true);
   }
-
 }

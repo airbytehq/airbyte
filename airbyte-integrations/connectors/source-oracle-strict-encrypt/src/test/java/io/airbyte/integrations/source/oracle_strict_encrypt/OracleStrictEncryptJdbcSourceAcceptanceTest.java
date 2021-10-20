@@ -35,13 +35,15 @@ import org.testcontainers.containers.OracleContainer;
 
 class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OracleStrictEncryptJdbcSourceAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(OracleStrictEncryptJdbcSourceAcceptanceTest.class);
   private static OracleContainer ORACLE_DB;
 
   @BeforeAll
   static void init() {
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-        .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD");
+    ORACLE_DB =
+        new OracleContainer("epiclabs/docker-oracle-xe-11g")
+            .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD");
     ORACLE_DB.start();
   }
 
@@ -68,18 +70,23 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     ID_VALUE_4 = new BigDecimal(4);
     ID_VALUE_5 = new BigDecimal(5);
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", ORACLE_DB.getHost())
-        .put("port", ORACLE_DB.getFirstMappedPort())
-        .put("sid", ORACLE_DB.getSid())
-        .put("username", ORACLE_DB.getUsername())
-        .put("password", ORACLE_DB.getPassword())
-        .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-            .put("encryption_method", "client_nne")
-            .put("encryption_algorithm", "3DES168")
-            .build()))
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", ORACLE_DB.getHost())
+                .put("port", ORACLE_DB.getFirstMappedPort())
+                .put("sid", ORACLE_DB.getSid())
+                .put("username", ORACLE_DB.getUsername())
+                .put("password", ORACLE_DB.getPassword())
+                .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
+                .put(
+                    "encryption",
+                    Jsons.jsonNode(
+                        ImmutableMap.builder()
+                            .put("encryption_method", "client_nne")
+                            .put("encryption_algorithm", "3DES168")
+                            .build()))
+                .build());
 
     // Because Oracle doesn't let me create database easily I need to clean up
     cleanUpTables();
@@ -101,22 +108,26 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   }
 
   void cleanUpTables() throws SQLException {
-    final Connection conn = DriverManager.getConnection(
-        ORACLE_DB.getJdbcUrl(),
-        ORACLE_DB.getUsername(),
-        ORACLE_DB.getPassword());
+    final Connection conn =
+        DriverManager.getConnection(
+            ORACLE_DB.getJdbcUrl(), ORACLE_DB.getUsername(), ORACLE_DB.getPassword());
     for (final String schemaName : TEST_SCHEMAS) {
       final ResultSet resultSet =
-          conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
+          conn.createStatement()
+              .executeQuery(
+                  String.format(
+                      "SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
         final String tableName = resultSet.getString("TABLE_NAME");
-        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations
-            .enquoteIdentifier(conn, tableName) : tableName;
-        conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
+        final String tableNameProcessed =
+            tableName.contains(" ")
+                ? sourceOperations.enquoteIdentifier(conn, tableName)
+                : tableName;
+        conn.createStatement()
+            .executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
       }
     }
-    if (!conn.isClosed())
-      conn.close();
+    if (!conn.isClosed()) conn.close();
   }
 
   @Override
@@ -165,10 +176,9 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   }
 
   public void executeOracleStatement(final String query) throws SQLException {
-    try (final Connection conn = DriverManager.getConnection(
-        ORACLE_DB.getJdbcUrl(),
-        ORACLE_DB.getUsername(),
-        ORACLE_DB.getPassword());
+    try (final Connection conn =
+            DriverManager.getConnection(
+                ORACLE_DB.getJdbcUrl(), ORACLE_DB.getUsername(), ORACLE_DB.getPassword());
         final Statement stmt = conn.createStatement()) {
       stmt.execute(query);
     } catch (final SQLException e) {
@@ -220,8 +230,9 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
     final ConnectorSpecification expected =
-        SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
+        SshHelpers.injectSshIntoSpec(
+            Jsons.deserialize(
+                MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
     assertEquals(expected, actual);
   }
-
 }

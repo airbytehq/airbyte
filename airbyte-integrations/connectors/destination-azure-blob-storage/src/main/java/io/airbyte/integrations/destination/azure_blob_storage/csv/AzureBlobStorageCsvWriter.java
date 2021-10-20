@@ -21,8 +21,8 @@ import org.apache.commons.csv.QuoteMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AzureBlobStorageCsvWriter extends BaseAzureBlobStorageWriter implements
-    AzureBlobStorageWriter {
+public class AzureBlobStorageCsvWriter extends BaseAzureBlobStorageWriter
+    implements AzureBlobStorageWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AzureBlobStorageCsvWriter.class);
 
@@ -30,32 +30,36 @@ public class AzureBlobStorageCsvWriter extends BaseAzureBlobStorageWriter implem
   private final CSVPrinter csvPrinter;
   private final BlobOutputStream blobOutputStream;
 
-  public AzureBlobStorageCsvWriter(final AzureBlobStorageDestinationConfig config,
-                                   final AppendBlobClient appendBlobClient,
-                                   final ConfiguredAirbyteStream configuredStream,
-                                   final boolean isNewlyCreatedBlob)
+  public AzureBlobStorageCsvWriter(
+      final AzureBlobStorageDestinationConfig config,
+      final AppendBlobClient appendBlobClient,
+      final ConfiguredAirbyteStream configuredStream,
+      final boolean isNewlyCreatedBlob)
       throws IOException {
     super(config, appendBlobClient, configuredStream);
 
-    final AzureBlobStorageCsvFormatConfig formatConfig = (AzureBlobStorageCsvFormatConfig) config
-        .getFormatConfig();
+    final AzureBlobStorageCsvFormatConfig formatConfig =
+        (AzureBlobStorageCsvFormatConfig) config.getFormatConfig();
 
-    this.csvSheetGenerator = CsvSheetGenerator.Factory
-        .create(configuredStream.getStream().getJsonSchema(),
-            formatConfig);
+    this.csvSheetGenerator =
+        CsvSheetGenerator.Factory.create(
+            configuredStream.getStream().getJsonSchema(), formatConfig);
 
     this.blobOutputStream = appendBlobClient.getBlobOutputStream();
 
     if (isNewlyCreatedBlob) {
-      this.csvPrinter = new CSVPrinter(
-          new PrintWriter(blobOutputStream, true, StandardCharsets.UTF_8),
-          CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-              .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
+      this.csvPrinter =
+          new CSVPrinter(
+              new PrintWriter(blobOutputStream, true, StandardCharsets.UTF_8),
+              CSVFormat.DEFAULT
+                  .withQuoteMode(QuoteMode.ALL)
+                  .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
     } else {
       // no header required for append
-      this.csvPrinter = new CSVPrinter(
-          new PrintWriter(blobOutputStream, true, StandardCharsets.UTF_8),
-          CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL));
+      this.csvPrinter =
+          new CSVPrinter(
+              new PrintWriter(blobOutputStream, true, StandardCharsets.UTF_8),
+              CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL));
     }
   }
 
@@ -75,5 +79,4 @@ public class AzureBlobStorageCsvWriter extends BaseAzureBlobStorageWriter implem
     LOGGER.info("Closing csvPrinter when failed");
     csvPrinter.close();
   }
-
 }

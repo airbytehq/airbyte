@@ -16,41 +16,48 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 
 public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Config> {
 
-  /**
-   * Used by the copy consumer.
-   */
+  /** Used by the copy consumer. */
   @Override
-  public StreamCopier create(final String configuredSchema,
-                             final S3Config s3Config,
-                             final String stagingFolder,
-                             final ConfiguredAirbyteStream configuredStream,
-                             final ExtendedNameTransformer nameTransformer,
-                             final JdbcDatabase db,
-                             final SqlOperations sqlOperations) {
+  public StreamCopier create(
+      final String configuredSchema,
+      final S3Config s3Config,
+      final String stagingFolder,
+      final ConfiguredAirbyteStream configuredStream,
+      final ExtendedNameTransformer nameTransformer,
+      final JdbcDatabase db,
+      final SqlOperations sqlOperations) {
     try {
       final AirbyteStream stream = configuredStream.getStream();
       final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
-      final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      final String schema =
+          StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
       final AmazonS3 s3Client = S3StreamCopier.getAmazonS3(s3Config);
 
-      return create(stagingFolder, syncMode, schema, stream.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
+      return create(
+          stagingFolder,
+          syncMode,
+          schema,
+          stream.getName(),
+          s3Client,
+          db,
+          s3Config,
+          nameTransformer,
+          sqlOperations);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  /**
-   * For specific copier suppliers to implement.
-   */
-  public abstract StreamCopier create(String stagingFolder,
-                                      DestinationSyncMode syncMode,
-                                      String schema,
-                                      String streamName,
-                                      AmazonS3 s3Client,
-                                      JdbcDatabase db,
-                                      S3Config s3Config,
-                                      ExtendedNameTransformer nameTransformer,
-                                      SqlOperations sqlOperations)
+  /** For specific copier suppliers to implement. */
+  public abstract StreamCopier create(
+      String stagingFolder,
+      DestinationSyncMode syncMode,
+      String schema,
+      String streamName,
+      AmazonS3 s3Client,
+      JdbcDatabase db,
+      S3Config s3Config,
+      ExtendedNameTransformer nameTransformer,
+      SqlOperations sqlOperations)
       throws Exception;
-
 }

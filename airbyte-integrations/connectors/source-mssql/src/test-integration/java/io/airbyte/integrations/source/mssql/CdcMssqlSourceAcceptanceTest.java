@@ -55,31 +55,35 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME),
-                String.format("%s", SCHEMA_NAME),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME2),
-                String.format("%s", SCHEMA_NAME),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(
+            Lists.newArrayList(
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                String.format("%s", STREAM_NAME),
+                                String.format("%s", SCHEMA_NAME),
+                                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSourceDefinedCursor(true)
+                            .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                String.format("%s", STREAM_NAME2),
+                                String.format("%s", SCHEMA_NAME),
+                                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSourceDefinedCursor(true)
+                            .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -93,27 +97,31 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws InterruptedException {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+  protected void setupEnvironment(final TestDestinationEnv environment)
+      throws InterruptedException {
+    container =
+        new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
     container.start();
-    database = Databases.createDatabase(
-        container.getUsername(),
-        container.getPassword(),
-        String.format("jdbc:sqlserver://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        null);
+    database =
+        Databases.createDatabase(
+            container.getUsername(),
+            container.getPassword(),
+            String.format(
+                "jdbc:sqlserver://%s:%s", container.getHost(), container.getFirstMappedPort()),
+            "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+            null);
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", DB_NAME)
-        .put("username", TEST_USER_NAME)
-        .put("password", TEST_USER_PASSWORD)
-        .put("replication_method", "CDC")
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", container.getHost())
+                .put("port", container.getFirstMappedPort())
+                .put("database", DB_NAME)
+                .put("username", TEST_USER_NAME)
+                .put("password", TEST_USER_PASSWORD)
+                .put("replication_method", "CDC")
+                .build());
 
     executeQuery("CREATE DATABASE " + DB_NAME + ";");
     executeQuery("ALTER DATABASE " + DB_NAME + "\n\tSET ALLOW_SNAPSHOT_ISOLATION ON");
@@ -127,7 +135,8 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private void setupTestUser() {
     executeQuery("USE " + DB_NAME);
-    executeQuery("CREATE LOGIN " + TEST_USER_NAME + " WITH PASSWORD = '" + TEST_USER_PASSWORD + "';");
+    executeQuery(
+        "CREATE LOGIN " + TEST_USER_NAME + " WITH PASSWORD = '" + TEST_USER_PASSWORD + "';");
     executeQuery("CREATE USER " + TEST_USER_NAME + " FOR LOGIN " + TEST_USER_NAME + ";");
   }
 
@@ -137,14 +146,22 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void createAndPopulateTables() throws InterruptedException {
-    executeQuery(String.format("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));",
-        SCHEMA_NAME, STREAM_NAME));
-    executeQuery(String.format("INSERT INTO %s.%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
-        SCHEMA_NAME, STREAM_NAME));
-    executeQuery(String.format("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));",
-        SCHEMA_NAME, STREAM_NAME2));
-    executeQuery(String.format("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
-        SCHEMA_NAME, STREAM_NAME2));
+    executeQuery(
+        String.format(
+            "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));",
+            SCHEMA_NAME, STREAM_NAME));
+    executeQuery(
+        String.format(
+            "INSERT INTO %s.%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
+            SCHEMA_NAME, STREAM_NAME));
+    executeQuery(
+        String.format(
+            "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));",
+            SCHEMA_NAME, STREAM_NAME2));
+    executeQuery(
+        String.format(
+            "INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
+            SCHEMA_NAME, STREAM_NAME2));
 
     // sometimes seeing an error that we can't enable cdc on a table while sql server agent is still
     // spinning up
@@ -157,13 +174,14 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         // enabling CDC on each table
         final String[] tables = {STREAM_NAME, STREAM_NAME2};
         for (final String table : tables) {
-          executeQuery(String.format(
-              "EXEC sys.sp_cdc_enable_table\n"
-                  + "\t@source_schema = N'%s',\n"
-                  + "\t@source_name   = N'%s', \n"
-                  + "\t@role_name     = N'%s',\n"
-                  + "\t@supports_net_changes = 0",
-              SCHEMA_NAME, table, CDC_ROLE_NAME));
+          executeQuery(
+              String.format(
+                  "EXEC sys.sp_cdc_enable_table\n"
+                      + "\t@source_schema = N'%s',\n"
+                      + "\t@source_name   = N'%s', \n"
+                      + "\t@role_name     = N'%s',\n"
+                      + "\t@supports_net_changes = 0",
+                  SCHEMA_NAME, table, CDC_ROLE_NAME));
         }
         failingToStart = false;
       } catch (final Exception e) {
@@ -178,16 +196,18 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void grantCorrectPermissions() {
-    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", "db_datareader", TEST_USER_NAME));
-    executeQuery(String.format("USE %s;\n" + "GRANT SELECT ON SCHEMA :: [%s] TO %s", DB_NAME, "cdc", TEST_USER_NAME));
-    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, TEST_USER_NAME));
+    executeQuery(
+        String.format("EXEC sp_addrolemember N'%s', N'%s';", "db_datareader", TEST_USER_NAME));
+    executeQuery(
+        String.format(
+            "USE %s;\n" + "GRANT SELECT ON SCHEMA :: [%s] TO %s", DB_NAME, "cdc", TEST_USER_NAME));
+    executeQuery(
+        String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, TEST_USER_NAME));
   }
 
   private void executeQuery(final String query) {
     try {
-      database.query(
-          ctx -> ctx
-              .execute(query));
+      database.query(ctx -> ctx.execute(query));
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -197,5 +217,4 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
-
 }

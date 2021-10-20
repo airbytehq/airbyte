@@ -38,14 +38,14 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
-  // todo (cgardens) - dynamically create data by generating a database with a random name instead of
+  // todo (cgardens) - dynamically create data by generating a database with a random name instead
+  // of
   // requiring data to already be in place.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     startTestContainers();
     config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db));
     populateDatabaseTestData();
-
   }
 
   private void startTestContainers() {
@@ -59,23 +59,28 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   }
 
   private static void populateDatabaseTestData() throws Exception {
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
+    final Database database =
+        Databases.createDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:postgresql://%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()),
+            "org.postgresql.Driver",
+            SQLDialect.POSTGRES);
 
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      return null;
-    });
+    database.query(
+        ctx -> {
+          ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+          ctx.fetch(
+              "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+          ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+          ctx.fetch(
+              "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+          return null;
+        });
 
     database.close();
   }
@@ -102,25 +107,31 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(
+            Lists.newArrayList(
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("id"))
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                STREAM_NAME,
+                                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("id"))
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                STREAM_NAME2,
+                                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -132,5 +143,4 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

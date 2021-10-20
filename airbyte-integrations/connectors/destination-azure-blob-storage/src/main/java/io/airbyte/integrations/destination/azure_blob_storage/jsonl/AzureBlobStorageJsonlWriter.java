@@ -24,8 +24,8 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter implements
-    AzureBlobStorageWriter {
+public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter
+    implements AzureBlobStorageWriter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AzureBlobStorageJsonlWriter.class);
 
@@ -35,10 +35,11 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
   private final BlobOutputStream blobOutputStream;
   private final PrintWriter printWriter;
 
-  public AzureBlobStorageJsonlWriter(final AzureBlobStorageDestinationConfig config,
-                                     final AppendBlobClient appendBlobClient,
-                                     final ConfiguredAirbyteStream configuredStream,
-                                     final boolean isNewlyCreatedBlob) {
+  public AzureBlobStorageJsonlWriter(
+      final AzureBlobStorageDestinationConfig config,
+      final AppendBlobClient appendBlobClient,
+      final ConfiguredAirbyteStream configuredStream,
+      final boolean isNewlyCreatedBlob) {
     super(config, appendBlobClient, configuredStream);
     // at this moment we already receive appendBlobClient initialized
     this.blobOutputStream = appendBlobClient.getBlobOutputStream();
@@ -65,5 +66,4 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
     // this would also close the blobOutputStream
     printWriter.close();
   }
-
 }

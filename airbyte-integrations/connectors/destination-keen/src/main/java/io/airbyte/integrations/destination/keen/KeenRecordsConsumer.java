@@ -44,9 +44,10 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   private AirbyteMessage lastStateMessage;
   private Set<String> streamNames;
 
-  public KeenRecordsConsumer(final JsonNode config,
-                             final ConfiguredAirbyteCatalog catalog,
-                             final Consumer<AirbyteMessage> outputRecordCollector) {
+  public KeenRecordsConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.config = config;
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
@@ -60,9 +61,8 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void startTracked() throws IOException, InterruptedException {
     projectId = config.get(CONFIG_PROJECT_ID).textValue();
     apiKey = config.get(CONFIG_API_KEY).textValue();
-    final boolean timestampInferenceEnabled = Optional.ofNullable(config.get(INFER_TIMESTAMP))
-        .map(JsonNode::booleanValue)
-        .orElse(true);
+    final boolean timestampInferenceEnabled =
+        Optional.ofNullable(config.get(INFER_TIMESTAMP)).map(JsonNode::booleanValue).orElse(true);
     this.kafkaProducer = KeenDestination.KafkaProducerFactory.create(projectId, apiKey);
     this.streamNames = getStrippedStreamNames();
     this.timestampService = new KeenTimestampService(this.catalog, timestampInferenceEnabled);
@@ -86,8 +86,7 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   private Set<String> getStrippedStreamNames() {
-    return catalog.getStreams()
-        .stream()
+    return catalog.getStreams().stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
         .map(KeenCharactersStripper::stripSpecialCharactersFromStreamName)
@@ -98,10 +97,14 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
     final KeenHttpClient keenHttpClient = new KeenHttpClient();
     LOGGER.info("erasing streams with override options selected.");
 
-    final List<String> streamsToDelete = this.catalog.getStreams().stream()
-        .filter(stream -> stream.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE)
-        .map(stream -> KeenCharactersStripper.stripSpecialCharactersFromStreamName(stream.getStream().getName()))
-        .collect(Collectors.toList());
+    final List<String> streamsToDelete =
+        this.catalog.getStreams().stream()
+            .filter(stream -> stream.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE)
+            .map(
+                stream ->
+                    KeenCharactersStripper.stripSpecialCharactersFromStreamName(
+                        stream.getStream().getName()))
+            .collect(Collectors.toList());
 
     for (final String streamToDelete : streamsToDelete) {
       LOGGER.info("erasing stream " + streamToDelete);
@@ -132,5 +135,4 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
       outputRecordCollector.accept(lastStateMessage);
     }
   }
-
 }

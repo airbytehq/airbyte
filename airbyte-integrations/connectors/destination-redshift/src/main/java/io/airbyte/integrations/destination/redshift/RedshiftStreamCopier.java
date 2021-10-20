@@ -30,38 +30,52 @@ public class RedshiftStreamCopier extends S3StreamCopier {
   private final ObjectMapper objectMapper;
   private String manifestFilePath = null;
 
-  public RedshiftStreamCopier(final String stagingFolder,
-                              final DestinationSyncMode destSyncMode,
-                              final String schema,
-                              final String streamName,
-                              final AmazonS3 client,
-                              final JdbcDatabase db,
-                              final S3Config s3Config,
-                              final ExtendedNameTransformer nameTransformer,
-                              final SqlOperations sqlOperations) {
-    super(stagingFolder, destSyncMode, schema, streamName, Strings.addRandomSuffix("", "", FILE_PREFIX_LENGTH) + "_" + streamName,
-        client, db, s3Config, nameTransformer, sqlOperations);
+  public RedshiftStreamCopier(
+      final String stagingFolder,
+      final DestinationSyncMode destSyncMode,
+      final String schema,
+      final String streamName,
+      final AmazonS3 client,
+      final JdbcDatabase db,
+      final S3Config s3Config,
+      final ExtendedNameTransformer nameTransformer,
+      final SqlOperations sqlOperations) {
+    super(
+        stagingFolder,
+        destSyncMode,
+        schema,
+        streamName,
+        Strings.addRandomSuffix("", "", FILE_PREFIX_LENGTH) + "_" + streamName,
+        client,
+        db,
+        s3Config,
+        nameTransformer,
+        sqlOperations);
     objectMapper = new ObjectMapper();
   }
 
   @Override
   public void copyStagingFileToTemporaryTable() {
     final var possibleManifest = Optional.ofNullable(createManifest());
-    LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    possibleManifest.stream()
-        .map(this::putManifest)
-        .forEach(this::executeCopy);
-    LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
+    LOGGER.info(
+        "Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .",
+        tmpTableName,
+        streamName,
+        schemaName);
+    possibleManifest.stream().map(this::putManifest).forEach(this::executeCopy);
+    LOGGER.info(
+        "Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
   @Override
   public void copyS3CsvFileIntoTable(
-                                     final JdbcDatabase database,
-                                     final String s3FileLocation,
-                                     final String schema,
-                                     final String tableName,
-                                     final S3Config s3Config) {
-    throw new RuntimeException("Redshift Stream Copier should not copy individual files without use of a manifest");
+      final JdbcDatabase database,
+      final String s3FileLocation,
+      final String schema,
+      final String tableName,
+      final S3Config s3Config) {
+    throw new RuntimeException(
+        "Redshift Stream Copier should not copy individual files without use of a manifest");
   }
 
   @Override
@@ -87,9 +101,10 @@ public class RedshiftStreamCopier extends S3StreamCopier {
       return null;
     }
 
-    final var s3FileEntries = s3StagingFiles.stream()
-        .map(filePath -> new Entry(getFullS3Path(s3Config.getBucketName(), filePath)))
-        .collect(Collectors.toList());
+    final var s3FileEntries =
+        s3StagingFiles.stream()
+            .map(filePath -> new Entry(getFullS3Path(s3Config.getBucketName(), filePath)))
+            .collect(Collectors.toList());
     final var manifest = new Manifest(s3FileEntries);
 
     return Exceptions.toRuntime(() -> objectMapper.writeValueAsString(manifest));
@@ -103,7 +118,8 @@ public class RedshiftStreamCopier extends S3StreamCopier {
    */
   private String putManifest(final String manifestContents) {
     manifestFilePath =
-        String.join("/", stagingFolder, schemaName, String.format("%s.manifest", UUID.randomUUID()));
+        String.join(
+            "/", stagingFolder, schemaName, String.format("%s.manifest", UUID.randomUUID()));
 
     s3Client.putObject(s3Config.getBucketName(), manifestFilePath, manifestContents);
 
@@ -116,20 +132,20 @@ public class RedshiftStreamCopier extends S3StreamCopier {
    * @param manifestPath the path in S3 to the manifest file
    */
   private void executeCopy(final String manifestPath) {
-    final var copyQuery = String.format(
-        "COPY %s.%s FROM '%s'\n"
-            + "CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'\n"
-            + "CSV REGION '%s' TIMEFORMAT 'auto'\n"
-            + "STATUPDATE OFF\n"
-            + "MANIFEST;",
-        schemaName,
-        tmpTableName,
-        getFullS3Path(s3Config.getBucketName(), manifestPath),
-        s3Config.getAccessKeyId(),
-        s3Config.getSecretAccessKey(),
-        s3Config.getRegion());
+    final var copyQuery =
+        String.format(
+            "COPY %s.%s FROM '%s'\n"
+                + "CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'\n"
+                + "CSV REGION '%s' TIMEFORMAT 'auto'\n"
+                + "STATUPDATE OFF\n"
+                + "MANIFEST;",
+            schemaName,
+            tmpTableName,
+            getFullS3Path(s3Config.getBucketName(), manifestPath),
+            s3Config.getAccessKeyId(),
+            s3Config.getSecretAccessKey(),
+            s3Config.getRegion());
 
     Exceptions.toRuntime(() -> db.execute(copyQuery));
   }
-
 }

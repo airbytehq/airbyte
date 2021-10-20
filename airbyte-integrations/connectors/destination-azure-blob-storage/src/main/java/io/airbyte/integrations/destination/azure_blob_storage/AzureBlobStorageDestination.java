@@ -30,8 +30,9 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final AzureBlobStorageConnectionChecker client = new AzureBlobStorageConnectionChecker(
-          AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config));
+      final AzureBlobStorageConnectionChecker client =
+          new AzureBlobStorageConnectionChecker(
+              AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config));
       client.attemptWriteAndDelete();
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
@@ -39,19 +40,21 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage(
-              "Could not connect to the azure blob storage with the provided configuration. \n" + e
-                  .getMessage());
+              "Could not connect to the azure blob storage with the provided configuration. \n"
+                  + e.getMessage());
     }
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog configuredCatalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     final AzureBlobStorageWriterFactory formatterFactory = new ProductionWriterFactory();
     return new AzureBlobStorageConsumer(
-        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config), configuredCatalog,
-        formatterFactory, outputRecordCollector);
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config),
+        configuredCatalog,
+        formatterFactory,
+        outputRecordCollector);
   }
-
 }

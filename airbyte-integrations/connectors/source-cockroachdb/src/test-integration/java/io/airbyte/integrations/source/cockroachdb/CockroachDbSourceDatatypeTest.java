@@ -23,34 +23,37 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
 
   private CockroachContainer container;
   private JsonNode config;
-  private static final Logger LOGGER = LoggerFactory
-      .getLogger(CockroachDbSourceDatatypeTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSourceDatatypeTest.class);
 
   @Override
   protected Database setupDatabase() throws SQLException {
     container = new CockroachContainer("cockroachdb/cockroach");
     container.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        // by some reason it return not a port number as exposed and mentioned in logs
-        .put("port", container.getFirstMappedPort() - 1)
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("ssl", false)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", container.getHost())
+                // by some reason it return not a port number as exposed and mentioned in logs
+                .put("port", container.getFirstMappedPort() - 1)
+                .put("database", container.getDatabaseName())
+                .put("username", container.getUsername())
+                .put("password", container.getPassword())
+                .put("ssl", false)
+                .build());
     LOGGER.warn("PPP:config:" + config);
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
+    final Database database =
+        Databases.createDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:postgresql://%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()),
+            "org.postgresql.Driver",
+            SQLDialect.POSTGRES);
 
     database.query(ctx -> ctx.fetch("CREATE SCHEMA TEST;"));
     database.query(ctx -> ctx.fetch("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');"));
@@ -186,10 +189,22 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("varchar")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "'Миші йдуть на південь, не питай чому;'", "'櫻花分店'",
-                "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
-            .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
-                null, "\\xF0\\x9F\\x9A\\x80")
+            .addInsertValues(
+                "'a'",
+                "'abc'",
+                "'Миші йдуть на південь, не питай чому;'",
+                "'櫻花分店'",
+                "''",
+                "null",
+                "'\\xF0\\x9F\\x9A\\x80'")
+            .addExpectedValues(
+                "a",
+                "abc",
+                "Миші йдуть на південь, не питай чому;",
+                "櫻花分店",
+                "",
+                null,
+                "\\xF0\\x9F\\x9A\\x80")
             .build());
 
     addDataTypeTestData(
@@ -197,10 +212,14 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .sourceType("varchar")
             .fullSourceDataType("character(12)")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
-                "''", "null")
-            .addExpectedValues("a           ", "abc         ", "Миші йдуть; ", "櫻花分店        ",
-                "            ", null)
+            .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'", "''", "null")
+            .addExpectedValues(
+                "a           ",
+                "abc         ",
+                "Миші йдуть; ",
+                "櫻花分店        ",
+                "            ",
+                null)
             .build());
 
     // TODO https://github.com/airbytehq/airbyte/issues/4408
@@ -217,7 +236,8 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     // TODO https://github.com/airbytehq/airbyte/issues/4408
     // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
     // JdbcUtils -> setJsonField contains:
-    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
+    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i),
+    // Double::isFinite));
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float8")
@@ -229,7 +249,8 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     // TODO https://github.com/airbytehq/airbyte/issues/4408
     // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
     // JdbcUtils -> setJsonField contains:
-    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
+    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i),
+    // Double::isFinite));
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float")
@@ -310,8 +331,8 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("text")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
-                "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
+            .addInsertValues(
+                "'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'", "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
@@ -327,7 +348,8 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .build());
 
     // https://github.com/airbytehq/airbyte/issues/4408
-    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
+    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time
+    // types.
     // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -370,7 +392,5 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addInsertValues("'{10000, 10000, 10000, 10000}'", "null")
             .addExpectedValues("{10000,10000,10000,10000}", null)
             .build());
-
   }
-
 }

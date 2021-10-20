@@ -16,8 +16,6 @@ class BaseS3WriterTest {
   public void testGetOutputFilename() {
     final Timestamp timestamp = new Timestamp(1471461319000L);
     assertEquals(
-        "2016_08_17_1471461319000_0.csv",
-        BaseS3Writer.getOutputFilename(timestamp, S3Format.CSV));
+        "2016_08_17_1471461319000_0.csv", BaseS3Writer.getOutputFilename(timestamp, S3Format.CSV));
   }
-
 }

@@ -53,32 +53,35 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   JsonNode getStaticConfig() {
-    return Jsons
-        .deserialize(IOs.readFile(Path.of("secrets/config.json")));
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("ID"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME1),
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.FULL_REFRESH)
-            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME2),
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(
+            Lists.newArrayList(
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("ID"))
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME1),
+                                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+                                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.FULL_REFRESH)
+                    .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME2),
+                                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+                                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -95,29 +98,34 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     config = Jsons.clone(getStaticConfig());
-    database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:snowflake://%s/",
-            config.get("host").asText()),
-        SnowflakeSource.DRIVER_CLASS,
-        String.format("role=%s;warehouse=%s;database=%s",
-            config.get("role").asText(),
-            config.get("warehouse").asText(),
-            config.get("database").asText()));
+    database =
+        Databases.createJdbcDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format("jdbc:snowflake://%s/", config.get("host").asText()),
+            SnowflakeSource.DRIVER_CLASS,
+            String.format(
+                "role=%s;warehouse=%s;database=%s",
+                config.get("role").asText(),
+                config.get("warehouse").asText(),
+                config.get("database").asText()));
 
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
-    final String createTableQuery1 = String
-        .format("CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME,
-            STREAM_NAME1);
-    final String createTableQuery2 = String
-        .format("CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME,
-            STREAM_NAME2);
-    final String insertIntoTableQuery1 = String
-        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+    final String createTableQuery1 =
+        String.format(
+            "CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))",
             SCHEMA_NAME, STREAM_NAME1);
-    final String insertIntoTableQuery2 = String
-        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+    final String createTableQuery2 =
+        String.format(
+            "CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))",
+            SCHEMA_NAME, STREAM_NAME2);
+    final String insertIntoTableQuery1 =
+        String.format(
+            "INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+            SCHEMA_NAME, STREAM_NAME1);
+    final String insertIntoTableQuery2 =
+        String.format(
+            "INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
             SCHEMA_NAME, STREAM_NAME2);
 
     database.execute(createSchemaQuery);
@@ -129,10 +137,8 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String dropSchemaQuery = String
-        .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
+    final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
     database.execute(dropSchemaQuery);
     database.close();
   }
-
 }

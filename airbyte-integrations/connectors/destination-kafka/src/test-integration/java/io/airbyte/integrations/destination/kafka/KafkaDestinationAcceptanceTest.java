@@ -45,30 +45,31 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
     final ObjectNode stubProtocolConfig = mapper.createObjectNode();
     stubProtocolConfig.put("security_protocol", KafkaProtocol.PLAINTEXT.toString());
 
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("bootstrap_servers", KAFKA.getBootstrapServers())
-        .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
-        .put("sync_producer", true)
-        .put("protocol", stubProtocolConfig)
-        .put("client_id", "test-client")
-        .put("acks", "all")
-        .put("enable_idempotence", true)
-        .put("compression_type", "none")
-        .put("batch_size", 16384)
-        .put("linger_ms", "0")
-        .put("max_in_flight_requests_per_connection", 5)
-        .put("client_dns_lookup", "use_all_dns_ips")
-        .put("buffer_memory", "33554432")
-        .put("max_request_size", 1048576)
-        .put("retries", 2147483647)
-        .put("socket_connection_setup_timeout_ms", "10000")
-        .put("socket_connection_setup_timeout_max_ms", "30000")
-        .put("max_block_ms", "60000")
-        .put("request_timeout_ms", 30000)
-        .put("delivery_timeout_ms", 120000)
-        .put("send_buffer_bytes", -1)
-        .put("receive_buffer_bytes", -1)
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("bootstrap_servers", KAFKA.getBootstrapServers())
+            .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
+            .put("sync_producer", true)
+            .put("protocol", stubProtocolConfig)
+            .put("client_id", "test-client")
+            .put("acks", "all")
+            .put("enable_idempotence", true)
+            .put("compression_type", "none")
+            .put("batch_size", 16384)
+            .put("linger_ms", "0")
+            .put("max_in_flight_requests_per_connection", 5)
+            .put("client_dns_lookup", "use_all_dns_ips")
+            .put("buffer_memory", "33554432")
+            .put("max_request_size", 1048576)
+            .put("retries", 2147483647)
+            .put("socket_connection_setup_timeout_ms", "10000")
+            .put("socket_connection_setup_timeout_max_ms", "30000")
+            .put("max_block_ms", "60000")
+            .put("request_timeout_ms", 30000)
+            .put("delivery_timeout_ms", 120000)
+            .put("send_buffer_bytes", -1)
+            .put("receive_buffer_bytes", -1)
+            .build());
   }
 
   @Override
@@ -78,30 +79,31 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
     stubProtocolConfig.put("sasl_mechanism", "PLAIN");
     stubProtocolConfig.put("sasl_jaas_config", "invalid");
 
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("bootstrap_servers", KAFKA.getBootstrapServers())
-        .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
-        .put("test_topic", "check-topic")
-        .put("protocol", stubProtocolConfig)
-        .put("client_id", "test-client")
-        .put("acks", "all")
-        .put("enable_idempotence", true)
-        .put("compression_type", "none")
-        .put("batch_size", 16384)
-        .put("linger_ms", 0)
-        .put("max_in_flight_requests_per_connection", 5)
-        .put("client_dns_lookup", "use_all_dns_ips")
-        .put("buffer_memory", 33554432)
-        .put("max_request_size", 1048576)
-        .put("retries", 2147483647)
-        .put("socket_connection_setup_timeout_ms", 10000)
-        .put("socket_connection_setup_timeout_max_ms", 30000)
-        .put("max_block_ms", 60000)
-        .put("request_timeout_ms", 30000)
-        .put("delivery_timeout_ms", 120000)
-        .put("send_buffer_bytes", -1)
-        .put("receive_buffer_bytes", -1)
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("bootstrap_servers", KAFKA.getBootstrapServers())
+            .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
+            .put("test_topic", "check-topic")
+            .put("protocol", stubProtocolConfig)
+            .put("client_id", "test-client")
+            .put("acks", "all")
+            .put("enable_idempotence", true)
+            .put("compression_type", "none")
+            .put("batch_size", 16384)
+            .put("linger_ms", 0)
+            .put("max_in_flight_requests_per_connection", 5)
+            .put("client_dns_lookup", "use_all_dns_ips")
+            .put("buffer_memory", 33554432)
+            .put("max_request_size", 1048576)
+            .put("retries", 2147483647)
+            .put("socket_connection_setup_timeout_ms", 10000)
+            .put("socket_connection_setup_timeout_max_ms", 30000)
+            .put("max_block_ms", 60000)
+            .put("request_timeout_ms", 30000)
+            .put("delivery_timeout_ms", 120000)
+            .put("send_buffer_bytes", -1)
+            .put("receive_buffer_bytes", -1)
+            .build());
   }
 
   @Override
@@ -115,29 +117,38 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace) {
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace) {
     return retrieveRecords(testEnv, streamName, namespace, null);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema) {
-    final Map<String, Object> props = ImmutableMap.<String, Object>builder()
-        .put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers())
-        .put(ConsumerConfig.GROUP_ID_CONFIG, namingResolver.getIdentifier(namespace + "-" + streamName))
-        .put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-        .put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
-        .put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName())
-        .build();
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema) {
+    final Map<String, Object> props =
+        ImmutableMap.<String, Object>builder()
+            .put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers())
+            .put(
+                ConsumerConfig.GROUP_ID_CONFIG,
+                namingResolver.getIdentifier(namespace + "-" + streamName))
+            .put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+            .put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
+            .put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName())
+            .build();
     final KafkaConsumer<String, JsonNode> consumer = new KafkaConsumer<>(props);
     final List<JsonNode> records = new ArrayList<>();
-    final String topic = namingResolver.getIdentifier(namespace + "." + streamName + "." + TOPIC_NAME);
+    final String topic =
+        namingResolver.getIdentifier(namespace + "." + streamName + "." + TOPIC_NAME);
 
     consumer.subscribe(Collections.singletonList(topic));
-    consumer.poll(Duration.ofMillis(20000L)).iterator()
-        .forEachRemaining(record -> records.add(record.value().get(JavaBaseConstants.COLUMN_NAME_DATA)));
+    consumer
+        .poll(Duration.ofMillis(20000L))
+        .iterator()
+        .forEachRemaining(
+            record -> records.add(record.value().get(JavaBaseConstants.COLUMN_NAME_DATA)));
     consumer.close();
 
     return records;
@@ -153,5 +164,4 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   protected void tearDown(final TestDestinationEnv testEnv) {
     KAFKA.close();
   }
-
 }

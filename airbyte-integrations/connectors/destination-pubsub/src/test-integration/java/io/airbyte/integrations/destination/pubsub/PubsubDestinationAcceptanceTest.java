@@ -50,8 +50,8 @@ import org.slf4j.LoggerFactory;
 
 public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory
-      .getLogger(PubsubDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(PubsubDestinationAcceptanceTest.class);
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
   private TopicAdminClient topicAdminClient;
   private SubscriptionAdminClient subscriptionAdminClient;
@@ -91,10 +91,11 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws IOException {
     if (records.isEmpty()) {
       // first time retrieving records, retrieve all and keep locally for easier
@@ -114,8 +115,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
                 .setSubscription(subscriptionName.toString())
                 .build();
 
-        PullResponse pullResponse = subscriber.pullCallable()
-            .call(pullRequest);
+        PullResponse pullResponse = subscriber.pullCallable().call(pullRequest);
         var list = pullResponse.getReceivedMessagesList();
         do {
           final List<String> ackIds = Lists.newArrayList();
@@ -123,11 +123,16 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
             final var m = message.getMessage();
             final var s = m.getAttributesMap().get(STREAM);
             final var n = m.getAttributesMap().get(NAMESPACE);
-            records.add(Jsons.jsonNode(ImmutableMap.of(
-                STREAM, nullToEmpty(s),
-                NAMESPACE, nullToEmpty(n),
-                "data", Jsons.deserialize(m.getData().toStringUtf8())
-                    .get(JavaBaseConstants.COLUMN_NAME_DATA))));
+            records.add(
+                Jsons.jsonNode(
+                    ImmutableMap.of(
+                        STREAM,
+                        nullToEmpty(s),
+                        NAMESPACE,
+                        nullToEmpty(n),
+                        "data",
+                        Jsons.deserialize(m.getData().toStringUtf8())
+                            .get(JavaBaseConstants.COLUMN_NAME_DATA))));
             ackIds.add(message.getAckId());
           }
           if (!ackIds.isEmpty()) {
@@ -140,8 +145,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
             // Use acknowledgeCallable().futureCall to asynchronously perform this operation.
             subscriber.acknowledgeCallable().call(acknowledgeRequest);
           }
-          pullResponse = subscriber.pullCallable()
-              .call(pullRequest);
+          pullResponse = subscriber.pullCallable().call(pullRequest);
           list = pullResponse.getReceivedMessagesList();
         } while (list.size() > 0);
       }
@@ -149,12 +153,14 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     // at this point we have fetched all records first time, or it was already there
     // just filter based on stream/ns and send results back
-    return records
-        .stream()
+    return records.stream()
         .filter(Objects::nonNull)
         .filter(
-            e -> fromJsonNode(e).equals(new AirbyteStreamNameNamespacePair(nullToEmpty(streamName),
-                nullToEmpty(namespace))))
+            e ->
+                fromJsonNode(e)
+                    .equals(
+                        new AirbyteStreamNameNamespacePair(
+                            nullToEmpty(streamName), nullToEmpty(namespace))))
         .map(e -> e.get("data"))
         .collect(Collectors.toList());
   }
@@ -175,34 +181,42 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
     final String topicId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
     final String subscriptionId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
-    configJson = Jsons.jsonNode(ImmutableMap.builder()
-        .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJsonString)
-        .put(CONFIG_TOPIC_ID, topicId)
-        .build());
+    configJson =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put(CONFIG_PROJECT_ID, projectId)
+                .put(CONFIG_CREDS, credentialsJsonString)
+                .put(CONFIG_TOPIC_ID, topicId)
+                .build());
 
     credentials =
-        ServiceAccountCredentials
-            .fromStream(new ByteArrayInputStream(configJson.get(CONFIG_CREDS).asText().getBytes()));
+        ServiceAccountCredentials.fromStream(
+            new ByteArrayInputStream(configJson.get(CONFIG_CREDS).asText().getBytes()));
     // create topic
     topicName = TopicName.of(projectId, topicId);
-    topicAdminClient = TopicAdminClient
-        .create(TopicAdminSettings.newBuilder().setCredentialsProvider(
-            FixedCredentialsProvider.create(credentials)).build());
+    topicAdminClient =
+        TopicAdminClient.create(
+            TopicAdminSettings.newBuilder()
+                .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+                .build());
     final Topic topic = topicAdminClient.createTopic(topicName);
     LOGGER.info("Created topic: " + topic.getName());
 
     // create subscription - with ordering, cause tests expect it
     subscriptionName = ProjectSubscriptionName.of(projectId, subscriptionId);
-    subscriptionAdminClient = SubscriptionAdminClient.create(
-        SubscriptionAdminSettings.newBuilder()
-            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
-            .build());
+    subscriptionAdminClient =
+        SubscriptionAdminClient.create(
+            SubscriptionAdminSettings.newBuilder()
+                .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+                .build());
     final Subscription subscription =
         subscriptionAdminClient.createSubscription(
-            Subscription.newBuilder().setName(subscriptionName.toString())
-                .setTopic(topicName.toString()).setEnableMessageOrdering(true)
-                .setAckDeadlineSeconds(10).build());
+            Subscription.newBuilder()
+                .setName(subscriptionName.toString())
+                .setTopic(topicName.toString())
+                .setEnableMessageOrdering(true)
+                .setAckDeadlineSeconds(10)
+                .build());
     LOGGER.info("Created pull subscription: " + subscription.getName());
 
     // init local records container
@@ -228,5 +242,4 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
     }
     records.clear();
   }
-
 }

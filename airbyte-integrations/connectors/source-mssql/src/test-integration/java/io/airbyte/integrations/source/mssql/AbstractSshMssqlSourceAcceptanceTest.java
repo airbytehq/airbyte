@@ -50,13 +50,18 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
     populateDatabaseTestData();
   }
 
-  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(final JdbcDatabaseContainer<?> db) {
+  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(
+      final JdbcDatabaseContainer<?> db) {
     dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
     return ImmutableMap.builder()
-        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
-            .getNetworks()
-            .get(((Network.NetworkImpl) bastion.getNetWork()).getName())
-            .getIpAddress()))
+        .put(
+            "host",
+            Objects.requireNonNull(
+                db.getContainerInfo()
+                    .getNetworkSettings()
+                    .getNetworks()
+                    .get(((Network.NetworkImpl) bastion.getNetWork()).getName())
+                    .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("port", db.getExposedPorts().get(0))
@@ -67,9 +72,8 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s;",
-            config.get("host").asText(),
-            config.get("port").asInt()),
+        String.format(
+            "jdbc:sqlserver://%s:%s;", config.get("host").asText(), config.get("port").asInt()),
         "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         null);
   }
@@ -80,9 +84,10 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
   }
 
   private void initAndStartJdbcContainer() {
-    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2017-latest")
-        .withNetwork(bastion.getNetWork())
-        .acceptLicense();
+    db =
+        new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2017-latest")
+            .withNetwork(bastion.getNetWork())
+            .acceptLicense();
     db.start();
   }
 
@@ -92,15 +97,20 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
         List.of("host"),
         List.of("port"),
         mangledConfig -> {
-          getDatabaseFromConfig(mangledConfig).query(ctx -> {
-            ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
-            ctx.fetch(String.format("ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", dbName));
-            ctx.fetch(String.format("USE %s;", dbName));
-            ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
-            ctx.fetch(
-                "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
-            return null;
-          });
+          getDatabaseFromConfig(mangledConfig)
+              .query(
+                  ctx -> {
+                    ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
+                    ctx.fetch(
+                        String.format(
+                            "ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", dbName));
+                    ctx.fetch(String.format("USE %s;", dbName));
+                    ctx.fetch(
+                        "CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
+                    ctx.fetch(
+                        "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
+                    return null;
+                  });
         });
   }
 
@@ -126,27 +136,31 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(
+            Lists.newArrayList(
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("id"))
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                STREAM_NAME,
+                                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("id"))
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                STREAM_NAME2,
+                                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -158,5 +172,4 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

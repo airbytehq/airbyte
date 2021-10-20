@@ -12,5 +12,4 @@ public class SshKeyMssqlSourceAcceptanceTest extends AbstractSshMssqlSourceAccep
   public TunnelMethod getTunnelMethod() {
     return TunnelMethod.SSH_KEY_AUTH;
   }
-
 }

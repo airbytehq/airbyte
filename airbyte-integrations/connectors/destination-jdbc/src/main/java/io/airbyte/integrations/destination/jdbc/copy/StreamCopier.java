@@ -13,9 +13,7 @@ import java.util.UUID;
  */
 public interface StreamCopier {
 
-  /**
-   * Writes a value to a staging file for the stream.
-   */
+  /** Writes a value to a staging file for the stream. */
   void write(UUID id, AirbyteRecordMessage recordMessage, String fileName) throws Exception;
 
   /**
@@ -24,9 +22,7 @@ public interface StreamCopier {
    */
   void closeStagingUploader(boolean hasFailed) throws Exception;
 
-  /**
-   * Creates a temporary table in the target database.
-   */
+  /** Creates a temporary table in the target database. */
   void createTemporaryTable() throws Exception;
 
   /**
@@ -35,9 +31,7 @@ public interface StreamCopier {
    */
   void copyStagingFileToTemporaryTable() throws Exception;
 
-  /**
-   * Creates the destination schema if it does not already exist.
-   */
+  /** Creates the destination schema if it does not already exist. */
   void createDestinationSchema() throws Exception;
 
   /**
@@ -47,9 +41,7 @@ public interface StreamCopier {
    */
   String createDestinationTable() throws Exception;
 
-  /**
-   * Generates a merge SQL statement from the temporary table to the final table.
-   */
+  /** Generates a merge SQL statement from the temporary table to the final table. */
   String generateMergeStatement(String destTableName) throws Exception;
 
   /**
@@ -64,5 +56,4 @@ public interface StreamCopier {
    * @return the name of the staging file
    */
   String prepareStagingFile();
-
 }

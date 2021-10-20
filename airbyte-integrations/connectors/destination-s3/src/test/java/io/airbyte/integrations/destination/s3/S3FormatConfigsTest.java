@@ -35,5 +35,4 @@ public class S3FormatConfigsTest {
     final S3CsvFormatConfig csvFormatConfig = (S3CsvFormatConfig) formatConfig;
     assertEquals(csvFormatConfig.getFlattening(), Flattening.ROOT_LEVEL);
   }
-
 }

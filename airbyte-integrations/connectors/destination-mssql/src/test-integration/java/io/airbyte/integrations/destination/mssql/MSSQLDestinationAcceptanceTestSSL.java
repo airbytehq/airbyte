@@ -51,14 +51,17 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
 
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
 
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", "test_schema")
-        .put("ssl_method", Jsons.jsonNode(ImmutableMap.of("ssl_method", "encrypted_trust_server_certificate")))
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", db.getHost())
+            .put("port", db.getFirstMappedPort())
+            .put("username", db.getUsername())
+            .put("password", db.getPassword())
+            .put("schema", "test_schema")
+            .put(
+                "ssl_method",
+                Jsons.jsonNode(ImmutableMap.of("ssl_method", "encrypted_trust_server_certificate")))
+            .build());
   }
 
   @Override
@@ -68,24 +71,25 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", "wrong password")
-        .put("schema", "public")
-        .put("port", db.getFirstMappedPort())
-        .put("ssl", false)
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", db.getHost())
+            .put("username", db.getUsername())
+            .put("password", "wrong password")
+            .put("schema", "public")
+            .put("port", db.getFirstMappedPort())
+            .put("ssl", false)
+            .build());
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
@@ -96,10 +100,12 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
-    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
+    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we
+    // don't
     // use quoted names
     // if (!tableName.startsWith("\"")) {
     // // Currently, Normalization always quote tables identifiers
@@ -121,13 +127,17 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return Databases.createSqlServerDatabase(db.getUsername(), db.getPassword(),
-        db.getJdbcUrl()).query(
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
+    return Databases.createSqlServerDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl())
+        .query(
             ctx -> {
               ctx.fetch(String.format("USE %s;", config.get("database")));
               return ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                  .fetch(
+                      String.format(
+                          "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                   .stream()
                   .map(r -> r.formatJSON(JSON_FORMAT))
                   .map(Jsons::deserialize)
@@ -137,8 +147,11 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
 
   @BeforeAll
   protected static void init() {
-    db = new MSSQLServerContainer<>(DockerImageName.parse("airbyte/mssql_ssltest:dev").asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-        .acceptLicense();
+    db =
+        new MSSQLServerContainer<>(
+                DockerImageName.parse("airbyte/mssql_ssltest:dev")
+                    .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
+            .acceptLicense();
     db.start();
   }
 
@@ -148,9 +161,8 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asInt()),
+        String.format(
+            "jdbc:sqlserver://%s:%s", config.get("host").asText(), config.get("port").asInt()),
         "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         null);
   }
@@ -164,14 +176,16 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
     final Database database = getDatabase(configWithoutDbName);
-    database.query(ctx -> {
-      ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
-      ctx.fetch(String.format("USE %s;", dbName));
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));");
-      ctx.fetch(
-          "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
-      return null;
-    });
+    database.query(
+        ctx -> {
+          ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
+          ctx.fetch(String.format("USE %s;", dbName));
+          ctx.fetch(
+              "CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));");
+          ctx.fetch(
+              "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
+          return null;
+        });
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put("database", dbName);
@@ -185,5 +199,4 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
     db.stop();
     db.close();
   }
-
 }

@@ -18,11 +18,12 @@ public class GcsDestinationConfig {
   private final GcsCredentialConfig credentialConfig;
   private final S3FormatConfig formatConfig;
 
-  public GcsDestinationConfig(final String bucketName,
-                              final String bucketPath,
-                              final String bucketRegion,
-                              final GcsCredentialConfig credentialConfig,
-                              final S3FormatConfig formatConfig) {
+  public GcsDestinationConfig(
+      final String bucketName,
+      final String bucketPath,
+      final String bucketRegion,
+      final GcsCredentialConfig credentialConfig,
+      final S3FormatConfig formatConfig) {
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
     this.bucketRegion = bucketRegion;
@@ -58,5 +59,4 @@ public class GcsDestinationConfig {
   public S3FormatConfig getFormatConfig() {
     return formatConfig;
   }
-
 }

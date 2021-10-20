@@ -8,9 +8,7 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * This class encapsulates all externally relevant Table information.
- */
+/** This class encapsulates all externally relevant Table information. */
 @Getter
 @Builder
 public class TableInfo<T> {
@@ -19,5 +17,4 @@ public class TableInfo<T> {
   private final String name;
   private final List<T> fields;
   private final List<String> primaryKeys;
-
 }

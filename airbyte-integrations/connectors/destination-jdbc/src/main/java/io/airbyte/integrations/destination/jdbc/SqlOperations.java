@@ -30,7 +30,8 @@ public interface SqlOperations {
    * @param tableName Name of table
    * @throws Exception exception
    */
-  void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
+  void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName)
+      throws Exception;
 
   /**
    * Query to create a table with provided name in provided schema if it does not already exist.
@@ -49,7 +50,8 @@ public interface SqlOperations {
    * @param tableName Name of table
    * @throws Exception exception
    */
-  void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
+  void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName)
+      throws Exception;
 
   /**
    * Query to remove all records from a table. Assumes the table exists.
@@ -70,7 +72,12 @@ public interface SqlOperations {
    * @param tableName Name of table
    * @throws Exception exception
    */
-  void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
+  void insertRecords(
+      JdbcDatabase database,
+      List<AirbyteRecordMessage> records,
+      String schemaName,
+      String tableName)
+      throws Exception;
 
   /**
    * Query to copy all records from source table to destination table. Both tables must be in the
@@ -82,7 +89,11 @@ public interface SqlOperations {
    * @param destinationTableName Name of destination table
    * @return Query
    */
-  String copyTableQuery(JdbcDatabase database, String schemaName, String sourceTableName, String destinationTableName);
+  String copyTableQuery(
+      JdbcDatabase database,
+      String schemaName,
+      String sourceTableName,
+      String destinationTableName);
 
   /**
    * Given an arbitrary number of queries, execute a transaction.
@@ -93,9 +104,7 @@ public interface SqlOperations {
    */
   void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception;
 
-  /**
-   * Check if the data record is valid and ok to be written to destination
-   */
+  /** Check if the data record is valid and ok to be written to destination */
   boolean isValidData(final JsonNode data);
 
   /**
@@ -104,5 +113,4 @@ public interface SqlOperations {
    * @return true if the destination supports schema (ex: Postgres), false if it doesn't(MySQL)
    */
   boolean isSchemaRequired();
-
 }

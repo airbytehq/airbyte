@@ -24,23 +24,25 @@ public class S3JsonlDestinationAcceptanceTest extends S3DestinationAcceptanceTes
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\"\n"
-        + "}");
+    return Jsons.deserialize("{\n" + "  \"format_type\": \"JSONL\"\n" + "}");
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws IOException {
     final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
     final List<JsonNode> jsonRecords = new LinkedList<>();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
-      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      try (final BufferedReader reader = new BufferedReader(new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8))) {
+      final S3Object object =
+          s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      try (final BufferedReader reader =
+          new BufferedReader(
+              new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8))) {
         String line;
         while ((line = reader.readLine()) != null) {
           jsonRecords.add(Jsons.deserialize(line).get(JavaBaseConstants.COLUMN_NAME_DATA));
@@ -50,5 +52,4 @@ public class S3JsonlDestinationAcceptanceTest extends S3DestinationAcceptanceTes
 
     return jsonRecords;
   }
-
 }

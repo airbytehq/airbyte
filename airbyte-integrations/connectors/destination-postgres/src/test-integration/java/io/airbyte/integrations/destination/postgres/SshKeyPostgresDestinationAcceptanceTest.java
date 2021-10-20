@@ -12,5 +12,4 @@ public class SshKeyPostgresDestinationAcceptanceTest extends SshPostgresDestinat
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
   }
-
 }

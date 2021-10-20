@@ -20,9 +20,10 @@ import java.util.function.Consumer;
 public class SnowflakeCopyGcsDestination extends CopyDestination {
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return CopyConsumerFactory.create(
         outputRecordCollector,
@@ -58,5 +59,4 @@ public class SnowflakeCopyGcsDestination extends CopyDestination {
   private String getConfiguredSchema(final JsonNode config) {
     return config.get("schema").asText();
   }
-
 }

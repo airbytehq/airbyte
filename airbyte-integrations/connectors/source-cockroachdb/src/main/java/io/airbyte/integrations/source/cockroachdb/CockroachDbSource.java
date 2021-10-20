@@ -36,10 +36,13 @@ public class CockroachDbSource extends AbstractJdbcSource {
 
     final List<String> additionalParameters = new ArrayList<>();
 
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+    final StringBuilder jdbcUrl =
+        new StringBuilder(
+            String.format(
+                "jdbc:postgresql://%s:%s/%s?",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()));
 
     if (config.has("ssl") && config.get("ssl").asBoolean()) {
       additionalParameters.add("ssl=true");
@@ -48,9 +51,10 @@ public class CockroachDbSource extends AbstractJdbcSource {
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+    final ImmutableMap.Builder<Object, Object> configBuilder =
+        ImmutableMap.builder()
+            .put("username", config.get("username").asText())
+            .put("jdbc_url", jdbcUrl.toString());
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
@@ -61,15 +65,18 @@ public class CockroachDbSource extends AbstractJdbcSource {
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
-    return Set
-        .of("information_schema", "pg_catalog", "pg_internal", "catalog_history", "pg_extension",
-            "crdb_internal");
+    return Set.of(
+        "information_schema",
+        "pg_catalog",
+        "pg_internal",
+        "catalog_history",
+        "pg_extension",
+        "crdb_internal");
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                    final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final AirbyteConnectionStatus check = check(config);
 
@@ -86,5 +93,4 @@ public class CockroachDbSource extends AbstractJdbcSource {
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", CockroachDbSource.class);
   }
-
 }

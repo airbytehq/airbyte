@@ -32,8 +32,8 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
   }
 
   /**
-   * A self contained method for writing a file to the persistence for testing. This method should try
-   * to clean up after itself by deleting the file it creates.
+   * A self contained method for writing a file to the persistence for testing. This method should
+   * try to clean up after itself by deleting the file it creates.
    */
   public abstract void checkPersistence(JsonNode config) throws Exception;
 
@@ -51,22 +51,27 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
       LOGGER.error("Exception attempting to access the staging persistence: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the staging persistence with the provided configuration. \n" + e.getMessage());
+          .withMessage(
+              "Could not connect to the staging persistence with the provided configuration. \n"
+                  + e.getMessage());
     }
 
     try {
       final var nameTransformer = getNameTransformer();
-      final var outputSchema = nameTransformer.convertStreamName(config.get(schemaFieldName).asText());
+      final var outputSchema =
+          nameTransformer.convertStreamName(config.get(schemaFieldName).asText());
       final JdbcDatabase database = getDatabase(config);
-      AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
+      AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(
+          outputSchema, database, nameTransformer, getSqlOperations());
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to connect to the warehouse: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the warehouse with the provided configuration. \n" + e.getMessage());
+          .withMessage(
+              "Could not connect to the warehouse with the provided configuration. \n"
+                  + e.getMessage());
     }
   }
-
 }

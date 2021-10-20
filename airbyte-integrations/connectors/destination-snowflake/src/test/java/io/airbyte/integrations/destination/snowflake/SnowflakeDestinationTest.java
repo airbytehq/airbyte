@@ -52,5 +52,4 @@ public class SnowflakeDestinationTest {
     stubConfig.set("loading_method", stubLoadingMethod);
     assertFalse(SnowflakeDestination.isS3Copy(stubConfig));
   }
-
 }

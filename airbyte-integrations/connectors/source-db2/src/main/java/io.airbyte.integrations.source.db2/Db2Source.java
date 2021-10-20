@@ -32,21 +32,34 @@ public class Db2Source extends AbstractJdbcSource implements Source {
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("jdbc_url", String.format("jdbc:db2://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("db").asText()))
-        .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText())
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put(
+                "jdbc_url",
+                String.format(
+                    "jdbc:db2://%s:%s/%s",
+                    config.get("host").asText(),
+                    config.get("port").asText(),
+                    config.get("db").asText()))
+            .put("username", config.get("username").asText())
+            .put("password", config.get("password").asText())
+            .build());
   }
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
-        "NULLID", "SYSCAT", "SQLJ", "SYSFUN", "SYSIBM", "SYSIBMADM", "SYSIBMINTERNAL", "SYSIBMTS",
-        "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS");
+        "NULLID",
+        "SYSCAT",
+        "SQLJ",
+        "SYSFUN",
+        "SYSIBM",
+        "SYSIBMADM",
+        "SYSIBMINTERNAL",
+        "SYSIBMTS",
+        "SYSPROC",
+        "SYSPUBLIC",
+        "SYSSTAT",
+        "SYSTOOLS");
   }
-
 }

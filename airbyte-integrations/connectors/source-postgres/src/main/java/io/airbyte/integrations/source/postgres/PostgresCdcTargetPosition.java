@@ -56,7 +56,9 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
     if (targetLsn.compareTo(eventLsn) > 0) {
       return false;
     } else {
-      final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
+      final SnapshotMetadata snapshotMetadata =
+          SnapshotMetadata.valueOf(
+              valueAsJson.get("source").get("snapshot").asText().toUpperCase());
       // if not snapshot or is snapshot but last record in snapshot.
       return SnapshotMetadata.TRUE != snapshotMetadata;
     }
@@ -69,5 +71,4 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
         .map(PgLsn::fromLong)
         .orElseThrow(() -> new IllegalStateException("Could not find LSN"));
   }
-
 }

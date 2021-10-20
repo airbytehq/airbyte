@@ -14,9 +14,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Properties;
 
-/**
- * SnowflakeDatabase contains helpers to create connections to and run queries on Snowflake.
- */
+/** SnowflakeDatabase contains helpers to create connections to and run queries on Snowflake. */
 public class SnowflakeDatabase {
 
   private static final Duration NETWORK_TIMEOUT = Duration.ofMinutes(1);
@@ -67,7 +65,5 @@ public class SnowflakeDatabase {
     public void close() {
       // no op.
     }
-
   }
-
 }

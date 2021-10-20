@@ -25,5 +25,4 @@ public class S3NameTransformer extends ExtendedNameTransformer {
       return "_" + name;
     }
   }
-
 }

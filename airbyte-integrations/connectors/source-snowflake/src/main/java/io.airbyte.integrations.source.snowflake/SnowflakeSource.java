@@ -32,24 +32,25 @@ public class SnowflakeSource extends AbstractJdbcSource implements Source {
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("jdbc_url", String.format("jdbc:snowflake://%s/",
-            config.get("host").asText()))
-        .put("host", config.get("host").asText())
-        .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText())
-        .put("connection_properties", String.format("role=%s;warehouse=%s;database=%s;schema=%s",
-            config.get("role").asText(),
-            config.get("warehouse").asText(),
-            config.get("database").asText(),
-            config.get("schema").asText()))
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("jdbc_url", String.format("jdbc:snowflake://%s/", config.get("host").asText()))
+            .put("host", config.get("host").asText())
+            .put("username", config.get("username").asText())
+            .put("password", config.get("password").asText())
+            .put(
+                "connection_properties",
+                String.format(
+                    "role=%s;warehouse=%s;database=%s;schema=%s",
+                    config.get("role").asText(),
+                    config.get("warehouse").asText(),
+                    config.get("database").asText(),
+                    config.get("schema").asText()))
+            .build());
   }
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
-    return Set.of(
-        "INFORMATION_SCHEMA");
+    return Set.of("INFORMATION_SCHEMA");
   }
-
 }

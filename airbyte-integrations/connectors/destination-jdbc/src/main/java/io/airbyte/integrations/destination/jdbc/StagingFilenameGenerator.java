@@ -44,5 +44,4 @@ public class StagingFilenameGenerator {
     }
     return String.format("%s_%05d", streamName, currentFileSuffix);
   }
-
 }

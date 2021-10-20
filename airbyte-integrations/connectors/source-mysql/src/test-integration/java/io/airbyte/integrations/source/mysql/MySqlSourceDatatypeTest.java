@@ -43,25 +43,29 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("replication_method", ReplicationMethod.STANDARD)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", container.getHost())
+                .put("port", container.getFirstMappedPort())
+                .put("database", container.getDatabaseName())
+                .put("username", container.getUsername())
+                .put("password", container.getPassword())
+                .put("replication_method", ReplicationMethod.STANDARD)
+                .build());
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL,
-        "zeroDateTimeBehavior=convertToNull");
+    final Database database =
+        Databases.createDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:mysql://%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()),
+            "com.mysql.cj.jdbc.Driver",
+            SQLDialect.MYSQL,
+            "zeroDateTimeBehavior=convertToNull");
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
@@ -166,7 +170,11 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("double")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "power(10, 308)", "1/power(10, 45)", "10.5")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)), String.valueOf(1 / Math.pow(10, 45)), "10.5")
+            .addExpectedValues(
+                null,
+                String.valueOf(Math.pow(10, 308)),
+                String.valueOf(1 / Math.pow(10, 45)),
+                "10.5")
             .build());
 
     addDataTypeTestData(
@@ -331,7 +339,6 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addInsertValues("null", "1", "0", "127", "-128")
             .addExpectedValues(null, "true", "false", "false", "false")
             .build());
-
   }
 
   private String getLogString(final int length) {
@@ -344,5 +351,4 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     stringBuilder.append("lpad('0', ").append(length % maxLpadLength).append(", '0'))");
     return stringBuilder.toString();
   }
-
 }

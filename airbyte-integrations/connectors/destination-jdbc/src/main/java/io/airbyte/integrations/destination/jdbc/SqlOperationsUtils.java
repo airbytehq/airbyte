@@ -19,84 +19,93 @@ import java.util.function.Supplier;
 public class SqlOperationsUtils {
 
   /**
-   * Inserts "raw" records in a single query. The purpose of helper to abstract away database-specific
-   * SQL syntax from this query.
+   * Inserts "raw" records in a single query. The purpose of helper to abstract away
+   * database-specific SQL syntax from this query.
    *
    * @param insertQueryComponent the first line of the query e.g. INSERT INTO public.users (ab_id,
-   *        data, emitted_at)
+   *     data, emitted_at)
    * @param recordQueryComponent query template for a full record e.g. (?, ?::jsonb ?)
    * @param jdbcDatabase jdbc database
    * @param records records to write
    * @throws SQLException exception
    */
-  public static void insertRawRecordsInSingleQuery(final String insertQueryComponent,
-                                                   final String recordQueryComponent,
-                                                   final JdbcDatabase jdbcDatabase,
-                                                   final List<AirbyteRecordMessage> records)
+  public static void insertRawRecordsInSingleQuery(
+      final String insertQueryComponent,
+      final String recordQueryComponent,
+      final JdbcDatabase jdbcDatabase,
+      final List<AirbyteRecordMessage> records)
       throws SQLException {
-    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
+    insertRawRecordsInSingleQuery(
+        insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
   }
 
   /**
-   * Inserts "raw" records in a single query. The purpose of helper to abstract away database-specific
-   * SQL syntax from this query.
+   * Inserts "raw" records in a single query. The purpose of helper to abstract away
+   * database-specific SQL syntax from this query.
    *
-   * This version does not add a semicolon at the end of the INSERT statement.
+   * <p>This version does not add a semicolon at the end of the INSERT statement.
    *
    * @param insertQueryComponent the first line of the query e.g. INSERT INTO public.users (ab_id,
-   *        data, emitted_at)
+   *     data, emitted_at)
    * @param recordQueryComponent query template for a full record e.g. (?, ?::jsonb ?)
    * @param jdbcDatabase jdbc database
    * @param records records to write
    * @throws SQLException exception
    */
-  public static void insertRawRecordsInSingleQueryNoSem(final String insertQueryComponent,
-                                                        final String recordQueryComponent,
-                                                        final JdbcDatabase jdbcDatabase,
-                                                        final List<AirbyteRecordMessage> records)
+  public static void insertRawRecordsInSingleQueryNoSem(
+      final String insertQueryComponent,
+      final String recordQueryComponent,
+      final JdbcDatabase jdbcDatabase,
+      final List<AirbyteRecordMessage> records)
       throws SQLException {
-    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, false);
+    insertRawRecordsInSingleQuery(
+        insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, false);
   }
 
   @VisibleForTesting
-  static void insertRawRecordsInSingleQuery(final String insertQueryComponent,
-                                            final String recordQueryComponent,
-                                            final JdbcDatabase jdbcDatabase,
-                                            final List<AirbyteRecordMessage> records,
-                                            final Supplier<UUID> uuidSupplier,
-                                            final boolean sem)
+  static void insertRawRecordsInSingleQuery(
+      final String insertQueryComponent,
+      final String recordQueryComponent,
+      final JdbcDatabase jdbcDatabase,
+      final List<AirbyteRecordMessage> records,
+      final Supplier<UUID> uuidSupplier,
+      final boolean sem)
       throws SQLException {
     if (records.isEmpty()) {
       return;
     }
 
-    jdbcDatabase.execute(connection -> {
+    jdbcDatabase.execute(
+        connection -> {
 
-      // Strategy: We want to use PreparedStatement because it handles binding values to the SQL query
-      // (e.g. handling formatting timestamps). A PreparedStatement statement is created by supplying the
-      // full SQL string at creation time. Then subsequently specifying which values are bound to the
-      // string. Thus there will be two loops below.
-      // 1) Loop over records to build the full string.
-      // 2) Loop over the records and bind the appropriate values to the string.
-      final StringBuilder sql = new StringBuilder(insertQueryComponent);
-      records.forEach(r -> sql.append(recordQueryComponent));
-      final String s = sql.toString();
-      final String s1 = s.substring(0, s.length() - 2) + (sem ? ";" : "");
+          // Strategy: We want to use PreparedStatement because it handles binding values to the SQL
+          // query
+          // (e.g. handling formatting timestamps). A PreparedStatement statement is created by
+          // supplying the
+          // full SQL string at creation time. Then subsequently specifying which values are bound
+          // to the
+          // string. Thus there will be two loops below.
+          // 1) Loop over records to build the full string.
+          // 2) Loop over the records and bind the appropriate values to the string.
+          final StringBuilder sql = new StringBuilder(insertQueryComponent);
+          records.forEach(r -> sql.append(recordQueryComponent));
+          final String s = sql.toString();
+          final String s1 = s.substring(0, s.length() - 2) + (sem ? ";" : "");
 
-      try (final PreparedStatement statement = connection.prepareStatement(s1)) {
-        // second loop: bind values to the SQL string.
-        int i = 1;
-        for (final AirbyteRecordMessage message : records) {
-          // 1-indexed
-          statement.setString(i, uuidSupplier.get().toString());
-          statement.setString(i + 1, Jsons.serialize(message.getData()));
-          statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
-          i += 3;
-        }
+          try (final PreparedStatement statement = connection.prepareStatement(s1)) {
+            // second loop: bind values to the SQL string.
+            int i = 1;
+            for (final AirbyteRecordMessage message : records) {
+              // 1-indexed
+              statement.setString(i, uuidSupplier.get().toString());
+              statement.setString(i + 1, Jsons.serialize(message.getData()));
+              statement.setTimestamp(
+                  i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
+              i += 3;
+            }
 
-        statement.execute();
-      }
-    });
+            statement.execute();
+          }
+        });
   }
-
 }

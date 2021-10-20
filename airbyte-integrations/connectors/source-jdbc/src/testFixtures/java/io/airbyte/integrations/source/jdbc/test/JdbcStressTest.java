@@ -64,11 +64,11 @@ public abstract class JdbcStressTest {
   private AbstractJdbcSource source;
 
   /**
-   * These tests write records without specifying a namespace (schema name). They will be written into
-   * whatever the default schema is for the database. When they are discovered they will be namespaced
-   * by the schema name (e.g. <default-schema-name>.<table_name>). Thus the source needs to tell the
-   * tests what that default schema name is. If the database does not support schemas, then database
-   * name should used instead.
+   * These tests write records without specifying a namespace (schema name). They will be written
+   * into whatever the default schema is for the database. When they are discovered they will be
+   * namespaced by the schema name (e.g. <default-schema-name>.<table_name>). Thus the source needs
+   * to tell the tests what that default schema name is. If the database does not support schemas,
+   * then database name should used instead.
    *
    * @return name that will be used to namespace the record.
    */
@@ -96,8 +96,7 @@ public abstract class JdbcStressTest {
   public abstract AbstractJdbcSource getSource();
 
   protected String createTableQuery(final String tableName, final String columnClause) {
-    return String.format("CREATE TABLE %s(%s)",
-        tableName, columnClause);
+    return String.format("CREATE TABLE %s(%s)", tableName, columnClause);
   }
 
   public void setup() throws Exception {
@@ -109,19 +108,24 @@ public abstract class JdbcStressTest {
     config = getConfig();
 
     final JsonNode jdbcConfig = source.toDatabaseConfig(config);
-    final JdbcDatabase database = Databases.createJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
-        getDriverClass());
+    final JdbcDatabase database =
+        Databases.createJdbcDatabase(
+            jdbcConfig.get("username").asText(),
+            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+            jdbcConfig.get("jdbc_url").asText(),
+            getDriverClass());
 
-    database.execute(connection -> connection.createStatement().execute(
-        createTableQuery("id_and_name", String.format("id %s, name VARCHAR(200)", COL_ID_TYPE))));
+    database.execute(
+        connection ->
+            connection
+                .createStatement()
+                .execute(
+                    createTableQuery(
+                        "id_and_name", String.format("id %s, name VARCHAR(200)", COL_ID_TYPE))));
     final long batchCount = TOTAL_RECORDS / BATCH_SIZE;
     LOGGER.info("writing {} batches of {}", batchCount, BATCH_SIZE);
     for (int i = 0; i < batchCount; i++) {
-      if (i % 1000 == 0)
-        LOGGER.info("writing batch: " + i);
+      if (i % 1000 == 0) LOGGER.info("writing batch: " + i);
       final List<String> insert = new ArrayList<>();
       for (int j = 0; j < BATCH_SIZE; j++) {
         final int recordNumber = (i * BATCH_SIZE) + j;
@@ -131,10 +135,10 @@ public abstract class JdbcStressTest {
       final String sql = prepareInsertStatement(insert);
       database.execute(connection -> connection.createStatement().execute(sql));
     }
-
   }
 
-  // todo (cgardens) - restructure these tests so that testFullRefresh() and testIncremental() can be
+  // todo (cgardens) - restructure these tests so that testFullRefresh() and testIncremental() can
+  // be
   // separate tests. current constrained by only wanting to setup the fixture in the database once,
   // but it is not trivial to move them to @BeforeAll because it is static and we are doing
   // inheritance. Not impossible, just needs to be done thoughtfully and for all JdbcSources.
@@ -152,18 +156,23 @@ public abstract class JdbcStressTest {
     runTest(getConfiguredCatalogIncremental(), "incremental");
   }
 
-  private void runTest(final ConfiguredAirbyteCatalog configuredCatalog, final String testName) throws Exception {
+  private void runTest(final ConfiguredAirbyteCatalog configuredCatalog, final String testName)
+      throws Exception {
     LOGGER.info("running stress test for: " + testName);
-    final Iterator<AirbyteMessage> read = source.read(config, configuredCatalog, Jsons.jsonNode(Collections.emptyMap()));
-    final long actualCount = MoreStreams.toStream(read)
-        .filter(m -> m.getType() == Type.RECORD)
-        .peek(m -> {
-          if (m.getRecord().getData().get(COL_ID).asLong() % 100000 == 0) {
-            LOGGER.info("reading batch: " + m.getRecord().getData().get(COL_ID).asLong() / 1000);
-          }
-        })
-        .peek(m -> assertExpectedMessage(m))
-        .count();
+    final Iterator<AirbyteMessage> read =
+        source.read(config, configuredCatalog, Jsons.jsonNode(Collections.emptyMap()));
+    final long actualCount =
+        MoreStreams.toStream(read)
+            .filter(m -> m.getType() == Type.RECORD)
+            .peek(
+                m -> {
+                  if (m.getRecord().getData().get(COL_ID).asLong() % 100000 == 0) {
+                    LOGGER.info(
+                        "reading batch: " + m.getRecord().getData().get(COL_ID).asLong() / 1000);
+                  }
+                })
+            .peek(m -> assertExpectedMessage(m))
+            .count();
     ByteBuffer a;
     final long expectedRoundedRecordsCount = TOTAL_RECORDS - TOTAL_RECORDS % 1000;
     LOGGER.info("expected records count: " + TOTAL_RECORDS);
@@ -179,13 +188,23 @@ public abstract class JdbcStressTest {
     actualMessage.getRecord().setEmittedAt(null);
 
     final Number expectedRecordNumber =
-        getDriverClass().toLowerCase().contains("oracle") ? new BigDecimal(recordNumber)
+        getDriverClass().toLowerCase().contains("oracle")
+            ? new BigDecimal(recordNumber)
             : recordNumber;
 
-    final AirbyteMessage expectedMessage = new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName)
-            .withData(Jsons.jsonNode(
-                ImmutableMap.of(COL_ID, expectedRecordNumber, COL_NAME, "picard-" + recordNumber))));
+    final AirbyteMessage expectedMessage =
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(
+                new AirbyteRecordMessage()
+                    .withStream(streamName)
+                    .withData(
+                        Jsons.jsonNode(
+                            ImmutableMap.of(
+                                COL_ID,
+                                expectedRecordNumber,
+                                COL_NAME,
+                                "picard-" + recordNumber))));
     assertEquals(expectedMessage, actualMessage);
   }
 
@@ -195,25 +214,32 @@ public abstract class JdbcStressTest {
 
   private static ConfiguredAirbyteCatalog getConfiguredCatalogIncremental() {
     return new ConfiguredAirbyteCatalog()
-        .withStreams(Collections.singletonList(new ConfiguredAirbyteStream().withStream(getCatalog().getStreams().get(0))
-            .withCursorField(Collections.singletonList(COL_ID))
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)));
+        .withStreams(
+            Collections.singletonList(
+                new ConfiguredAirbyteStream()
+                    .withStream(getCatalog().getStreams().get(0))
+                    .withCursorField(Collections.singletonList(COL_ID))
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)));
   }
 
   private static AirbyteCatalog getCatalog() {
-    return new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
-        streamName,
-        Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-        Field.of(COL_NAME, JsonSchemaPrimitive.STRING))
-        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
+    return new AirbyteCatalog()
+        .withStreams(
+            Lists.newArrayList(
+                CatalogHelpers.createAirbyteStream(
+                        streamName,
+                        Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
+                        Field.of(COL_NAME, JsonSchemaPrimitive.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   }
 
   private String prepareInsertStatement(final List<String> inserts) {
     if (getDriverClass().toLowerCase().contains("oracle")) {
       return String.format("INSERT ALL %s SELECT * FROM dual", Strings.join(inserts, " "));
     }
-    return String.format("INSERT INTO id_and_name (id, name) VALUES %s", Strings.join(inserts, ", "));
+    return String.format(
+        "INSERT INTO id_and_name (id, name) VALUES %s", Strings.join(inserts, ", "));
   }
-
 }

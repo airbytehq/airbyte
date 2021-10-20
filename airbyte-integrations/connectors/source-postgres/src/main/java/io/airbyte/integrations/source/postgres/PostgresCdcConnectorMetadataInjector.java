@@ -22,5 +22,4 @@ public class PostgresCdcConnectorMetadataInjector implements CdcMetadataInjector
   public String namespace(final JsonNode source) {
     return source.get("schema").asText();
   }
-
 }

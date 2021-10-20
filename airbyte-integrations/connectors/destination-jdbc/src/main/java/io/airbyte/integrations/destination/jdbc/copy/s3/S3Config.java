@@ -16,12 +16,12 @@ public class S3Config {
   private final Integer partSize;
 
   public S3Config(
-                  final String endpoint,
-                  final String bucketName,
-                  final String accessKeyId,
-                  final String secretAccessKey,
-                  final String region,
-                  final Integer partSize) {
+      final String endpoint,
+      final String bucketName,
+      final String accessKeyId,
+      final String secretAccessKey,
+      final String region,
+      final Integer partSize) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.accessKeyId = accessKeyId;
@@ -67,5 +67,4 @@ public class S3Config {
         config.get("s3_bucket_region").asText(),
         partSize);
   }
-
 }

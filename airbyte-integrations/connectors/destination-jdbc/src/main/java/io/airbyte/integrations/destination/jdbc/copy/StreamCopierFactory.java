@@ -11,20 +11,23 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 
 public interface StreamCopierFactory<T> {
 
-  StreamCopier create(String configuredSchema,
-                      T config,
-                      String stagingFolder,
-                      ConfiguredAirbyteStream configuredStream,
-                      ExtendedNameTransformer nameTransformer,
-                      JdbcDatabase db,
-                      SqlOperations sqlOperations);
+  StreamCopier create(
+      String configuredSchema,
+      T config,
+      String stagingFolder,
+      ConfiguredAirbyteStream configuredStream,
+      ExtendedNameTransformer nameTransformer,
+      JdbcDatabase db,
+      SqlOperations sqlOperations);
 
-  static String getSchema(final String namespace, final String configuredSchema, final ExtendedNameTransformer nameTransformer) {
+  static String getSchema(
+      final String namespace,
+      final String configuredSchema,
+      final ExtendedNameTransformer nameTransformer) {
     if (namespace != null) {
       return nameTransformer.convertStreamName(namespace);
     } else {
       return nameTransformer.convertStreamName(configuredSchema);
     }
   }
-
 }

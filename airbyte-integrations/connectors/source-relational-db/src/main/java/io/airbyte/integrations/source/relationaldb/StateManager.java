@@ -25,9 +25,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Handles the state machine for the state of source implementations.
- */
+/** Handles the state machine for the state of source implementations. */
 public class StateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StateManager.class);
@@ -48,47 +46,60 @@ public class StateManager {
     }
 
     pairToCursorInfo =
-        new ImmutableMap.Builder<AirbyteStreamNameNamespacePair, CursorInfo>().putAll(createCursorInfoMap(serialized, catalog)).build();
+        new ImmutableMap.Builder<AirbyteStreamNameNamespacePair, CursorInfo>()
+            .putAll(createCursorInfoMap(serialized, catalog))
+            .build();
   }
 
-  private static Map<AirbyteStreamNameNamespacePair, CursorInfo> createCursorInfoMap(final DbState serialized,
-                                                                                     final ConfiguredAirbyteCatalog catalog) {
-    final Set<AirbyteStreamNameNamespacePair> allStreamNames = catalog.getStreams()
-        .stream()
-        .map(ConfiguredAirbyteStream::getStream)
-        .map(AirbyteStreamNameNamespacePair::fromAirbyteSteam)
-        .collect(Collectors.toSet());
-    allStreamNames.addAll(serialized.getStreams().stream().map(StateManager::toAirbyteStreamNameNamespacePair).collect(Collectors.toSet()));
+  private static Map<AirbyteStreamNameNamespacePair, CursorInfo> createCursorInfoMap(
+      final DbState serialized, final ConfiguredAirbyteCatalog catalog) {
+    final Set<AirbyteStreamNameNamespacePair> allStreamNames =
+        catalog.getStreams().stream()
+            .map(ConfiguredAirbyteStream::getStream)
+            .map(AirbyteStreamNameNamespacePair::fromAirbyteSteam)
+            .collect(Collectors.toSet());
+    allStreamNames.addAll(
+        serialized.getStreams().stream()
+            .map(StateManager::toAirbyteStreamNameNamespacePair)
+            .collect(Collectors.toSet()));
 
     final Map<AirbyteStreamNameNamespacePair, CursorInfo> localMap = new HashMap<>();
-    final Map<AirbyteStreamNameNamespacePair, DbStreamState> pairToState = serialized.getStreams()
-        .stream()
-        .collect(Collectors.toMap(StateManager::toAirbyteStreamNameNamespacePair, a -> a));
-    final Map<AirbyteStreamNameNamespacePair, ConfiguredAirbyteStream> pairToConfiguredAirbyteStream = catalog.getStreams().stream()
-        .collect(Collectors.toMap(AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam, s -> s));
+    final Map<AirbyteStreamNameNamespacePair, DbStreamState> pairToState =
+        serialized.getStreams().stream()
+            .collect(Collectors.toMap(StateManager::toAirbyteStreamNameNamespacePair, a -> a));
+    final Map<AirbyteStreamNameNamespacePair, ConfiguredAirbyteStream>
+        pairToConfiguredAirbyteStream =
+            catalog.getStreams().stream()
+                .collect(
+                    Collectors.toMap(
+                        AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam, s -> s));
 
     for (final AirbyteStreamNameNamespacePair pair : allStreamNames) {
       final Optional<DbStreamState> stateOptional = Optional.ofNullable(pairToState.get(pair));
-      final Optional<ConfiguredAirbyteStream> streamOptional = Optional.ofNullable(pairToConfiguredAirbyteStream.get(pair));
+      final Optional<ConfiguredAirbyteStream> streamOptional =
+          Optional.ofNullable(pairToConfiguredAirbyteStream.get(pair));
       localMap.put(pair, createCursorInfoForStream(pair, stateOptional, streamOptional));
     }
 
     return localMap;
   }
 
-  private static AirbyteStreamNameNamespacePair toAirbyteStreamNameNamespacePair(final DbStreamState state) {
+  private static AirbyteStreamNameNamespacePair toAirbyteStreamNameNamespacePair(
+      final DbStreamState state) {
     return new AirbyteStreamNameNamespacePair(state.getStreamName(), state.getStreamNamespace());
   }
 
   @VisibleForTesting
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  static CursorInfo createCursorInfoForStream(final AirbyteStreamNameNamespacePair pair,
-                                              final Optional<DbStreamState> stateOptional,
-                                              final Optional<ConfiguredAirbyteStream> streamOptional) {
-    final String originalCursorField = stateOptional
-        .map(DbStreamState::getCursorField)
-        .flatMap(f -> f.size() > 0 ? Optional.of(f.get(0)) : Optional.empty())
-        .orElse(null);
+  static CursorInfo createCursorInfoForStream(
+      final AirbyteStreamNameNamespacePair pair,
+      final Optional<DbStreamState> stateOptional,
+      final Optional<ConfiguredAirbyteStream> streamOptional) {
+    final String originalCursorField =
+        stateOptional
+            .map(DbStreamState::getCursorField)
+            .flatMap(f -> f.size() > 0 ? Optional.of(f.get(0)) : Optional.empty())
+            .orElse(null);
     final String originalCursor = stateOptional.map(DbStreamState::getCursor).orElse(null);
 
     final String cursor;
@@ -96,26 +107,37 @@ public class StateManager {
 
     // if cursor field is set in catalog.
     if (streamOptional.map(ConfiguredAirbyteStream::getCursorField).isPresent()) {
-      cursorField = streamOptional
-          .map(ConfiguredAirbyteStream::getCursorField)
-          .flatMap(f -> f.size() > 0 ? Optional.of(f.get(0)) : Optional.empty())
-          .orElse(null);
+      cursorField =
+          streamOptional
+              .map(ConfiguredAirbyteStream::getCursorField)
+              .flatMap(f -> f.size() > 0 ? Optional.of(f.get(0)) : Optional.empty())
+              .orElse(null);
       // if cursor field is set in state.
       if (stateOptional.map(DbStreamState::getCursorField).isPresent()) {
         // if cursor field in catalog and state are the same.
-        if (stateOptional.map(DbStreamState::getCursorField).equals(streamOptional.map(ConfiguredAirbyteStream::getCursorField))) {
+        if (stateOptional
+            .map(DbStreamState::getCursorField)
+            .equals(streamOptional.map(ConfiguredAirbyteStream::getCursorField))) {
           cursor = stateOptional.map(DbStreamState::getCursor).orElse(null);
-          LOGGER.info("Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {}", pair, cursorField, cursor);
+          LOGGER.info(
+              "Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {}",
+              pair,
+              cursorField,
+              cursor);
           // if cursor field in catalog and state are different.
         } else {
           cursor = null;
           LOGGER.info(
               "Found cursor field. Does not match previous cursor field. Stream: {}. Original Cursor Field: {}. New Cursor Field: {}. Resetting cursor value.",
-              pair, originalCursorField, cursorField);
+              pair,
+              originalCursorField,
+              cursorField);
         }
         // if cursor field is not set in state but is set in catalog.
       } else {
-        LOGGER.info("No cursor field set in catalog but not present in state. Stream: {}, New Cursor Field: {}. Resetting cursor value", pair,
+        LOGGER.info(
+            "No cursor field set in catalog but not present in state. Stream: {}, New Cursor Field: {}. Resetting cursor value",
+            pair,
             cursorField);
         cursor = null;
       }
@@ -123,7 +145,9 @@ public class StateManager {
     } else {
       LOGGER.info(
           "Cursor field set in state but not present in catalog. Stream: {}. Original Cursor Field: {}. Original value: {}. Resetting cursor.",
-          pair, originalCursorField, originalCursor);
+          pair,
+          originalCursorField,
+          originalCursor);
       cursorField = null;
       cursor = null;
     }
@@ -151,11 +175,13 @@ public class StateManager {
     return getCursorInfo(pair).map(CursorInfo::getCursor);
   }
 
-  synchronized public AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor) {
+  public synchronized AirbyteStateMessage updateAndEmit(
+      final AirbyteStreamNameNamespacePair pair, final String cursor) {
     // cdc file gets updated by debezium so the "update" part is a no op.
     if (!isCdc) {
       final Optional<CursorInfo> cursorInfo = getCursorInfo(pair);
-      Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
+      Preconditions.checkState(
+          cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
       cursorInfo.get().setCursor(cursor);
     }
 
@@ -166,7 +192,11 @@ public class StateManager {
     if (this.isCdc == null) {
       this.isCdc = isCdc;
     } else {
-      Preconditions.checkState(this.isCdc == isCdc, "attempt to set cdc to {}, but is already set to {}.", isCdc, this.isCdc);
+      Preconditions.checkState(
+          this.isCdc == isCdc,
+          "attempt to set cdc to {}, but is already set to {}.",
+          isCdc,
+          this.isCdc);
     }
   }
 
@@ -179,19 +209,26 @@ public class StateManager {
   }
 
   private AirbyteStateMessage toState() {
-    final DbState DbState = new DbState()
-        .withCdc(isCdc)
-        .withStreams(pairToCursorInfo.entrySet().stream()
-            .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
-            .map(e -> new DbStreamState()
-                .withStreamName(e.getKey().getName())
-                .withStreamNamespace(e.getKey().getNamespace())
-                .withCursorField(e.getValue().getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(e.getValue().getCursorField()))
-                .withCursor(e.getValue().getCursor()))
-            .collect(Collectors.toList()))
-        .withCdcState(cdcStateManager.getCdcState());
+    final DbState DbState =
+        new DbState()
+            .withCdc(isCdc)
+            .withStreams(
+                pairToCursorInfo.entrySet().stream()
+                    .sorted(
+                        Entry.comparingByKey()) // sort by stream name then namespace for sanity.
+                    .map(
+                        e ->
+                            new DbStreamState()
+                                .withStreamName(e.getKey().getName())
+                                .withStreamNamespace(e.getKey().getNamespace())
+                                .withCursorField(
+                                    e.getValue().getCursorField() == null
+                                        ? Collections.emptyList()
+                                        : Lists.newArrayList(e.getValue().getCursorField()))
+                                .withCursor(e.getValue().getCursor()))
+                    .collect(Collectors.toList()))
+            .withCdcState(cdcStateManager.getCdcState());
 
     return new AirbyteStateMessage().withData(Jsons.jsonNode(DbState));
   }
-
 }

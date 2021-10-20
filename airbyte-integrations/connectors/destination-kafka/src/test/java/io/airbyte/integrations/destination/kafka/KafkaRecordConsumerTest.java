@@ -46,12 +46,15 @@ public class KafkaRecordConsumerTest {
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
 
-  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
-      CatalogHelpers.createConfiguredAirbyteStream(
-          STREAM_NAME,
-          SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING))));
+  private static final ConfiguredAirbyteCatalog CATALOG =
+      new ConfiguredAirbyteCatalog()
+          .withStreams(
+              List.of(
+                  CatalogHelpers.createConfiguredAirbyteStream(
+                      STREAM_NAME,
+                      SCHEMA_NAME,
+                      Field.of("id", JsonSchemaPrimitive.NUMBER),
+                      Field.of("name", JsonSchemaPrimitive.STRING))));
 
   private static final StandardNameTransformer NAMING_RESOLVER = new StandardNameTransformer();
 
@@ -59,30 +62,39 @@ public class KafkaRecordConsumerTest {
   @ArgumentsSource(TopicMapArgumentsProvider.class)
   @SuppressWarnings("unchecked")
   public void testBuildTopicMap(final String topicPattern, final String expectedTopic) {
-    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(topicPattern));
-    final KafkaRecordConsumer recordConsumer = new KafkaRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
+    final KafkaDestinationConfig config =
+        KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(topicPattern));
+    final KafkaRecordConsumer recordConsumer =
+        new KafkaRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
 
     final Map<AirbyteStreamNameNamespacePair, String> topicMap = recordConsumer.buildTopicMap();
     assertEquals(1, topicMap.size());
 
-    final AirbyteStreamNameNamespacePair streamNameNamespacePair = new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
+    final AirbyteStreamNameNamespacePair streamNameNamespacePair =
+        new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
     assertEquals(expectedTopic, topicMap.get(streamNameNamespacePair));
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void testCannotConnectToBrokers() throws Exception {
-    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
-    final KafkaRecordConsumer consumer = new KafkaRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
+    final KafkaDestinationConfig config =
+        KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
+    final KafkaRecordConsumer consumer =
+        new KafkaRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
     final List<AirbyteMessage> expectedRecords = getNRecords(10);
 
     consumer.start();
 
     expectedRecords.forEach(m -> assertThrows(RuntimeException.class, () -> consumer.accept(m)));
 
-    consumer.accept(new AirbyteMessage()
-        .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 0)))));
+    consumer.accept(
+        new AirbyteMessage()
+            .withType(AirbyteMessage.Type.STATE)
+            .withState(
+                new AirbyteStateMessage()
+                    .withData(
+                        Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 0)))));
     consumer.close();
   }
 
@@ -90,47 +102,51 @@ public class KafkaRecordConsumerTest {
     final ObjectNode stubProtocolConfig = mapper.createObjectNode();
     stubProtocolConfig.put("security_protocol", KafkaProtocol.PLAINTEXT.toString());
 
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("bootstrap_servers", "localhost:9092")
-        .put("topic_pattern", topicPattern)
-        .put("sync_producer", true)
-        .put("protocol", stubProtocolConfig)
-        .put("sasl_jaas_config", "")
-        .put("sasl_mechanism", "PLAIN")
-        .put("client_id", "test-client")
-        .put("acks", "all")
-        .put("transactional_id", "txn-id")
-        .put("enable_idempotence", true)
-        .put("compression_type", "none")
-        .put("batch_size", "16384")
-        .put("linger_ms", "0")
-        .put("max_in_flight_requests_per_connection", "5")
-        .put("client_dns_lookup", "use_all_dns_ips")
-        .put("buffer_memory", 33554432)
-        .put("max_request_size", 1048576)
-        .put("retries", 1)
-        .put("socket_connection_setup_timeout_ms", "10")
-        .put("socket_connection_setup_timeout_max_ms", "30")
-        .put("max_block_ms", "100")
-        .put("request_timeout_ms", 100)
-        .put("delivery_timeout_ms", 120)
-        .put("send_buffer_bytes", -1)
-        .put("receive_buffer_bytes", -1)
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("bootstrap_servers", "localhost:9092")
+            .put("topic_pattern", topicPattern)
+            .put("sync_producer", true)
+            .put("protocol", stubProtocolConfig)
+            .put("sasl_jaas_config", "")
+            .put("sasl_mechanism", "PLAIN")
+            .put("client_id", "test-client")
+            .put("acks", "all")
+            .put("transactional_id", "txn-id")
+            .put("enable_idempotence", true)
+            .put("compression_type", "none")
+            .put("batch_size", "16384")
+            .put("linger_ms", "0")
+            .put("max_in_flight_requests_per_connection", "5")
+            .put("client_dns_lookup", "use_all_dns_ips")
+            .put("buffer_memory", 33554432)
+            .put("max_request_size", 1048576)
+            .put("retries", 1)
+            .put("socket_connection_setup_timeout_ms", "10")
+            .put("socket_connection_setup_timeout_max_ms", "30")
+            .put("max_block_ms", "100")
+            .put("request_timeout_ms", 100)
+            .put("delivery_timeout_ms", 120)
+            .put("send_buffer_bytes", -1)
+            .put("receive_buffer_bytes", -1)
+            .build());
   }
 
   private List<AirbyteMessage> getNRecords(final int n) {
     return IntStream.range(0, n)
         .boxed()
-        .map(i -> new AirbyteMessage()
-            .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage()
-                .withStream(STREAM_NAME)
-                .withNamespace(SCHEMA_NAME)
-                .withEmittedAt(Instant.now().toEpochMilli())
-                .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
+        .map(
+            i ->
+                new AirbyteMessage()
+                    .withType(AirbyteMessage.Type.RECORD)
+                    .withRecord(
+                        new AirbyteRecordMessage()
+                            .withStream(STREAM_NAME)
+                            .withNamespace(SCHEMA_NAME)
+                            .withEmittedAt(Instant.now().toEpochMilli())
+                            .withData(
+                                Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
         .collect(Collectors.toList());
-
   }
 
   public static class TopicMapArgumentsProvider implements ArgumentsProvider {
@@ -146,7 +162,5 @@ public class KafkaRecordConsumerTest {
           Arguments.of("{namespace}-{stream}-" + TOPIC_NAME, "public_id_and_name_test_topic"),
           Arguments.of("topic with spaces", "topic_with_spaces"));
     }
-
   }
-
 }

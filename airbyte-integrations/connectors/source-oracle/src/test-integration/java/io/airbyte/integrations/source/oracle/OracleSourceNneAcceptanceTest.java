@@ -23,78 +23,102 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
   @Test
   public void testEncrytion() throws SQLException {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-        .put("encryption_method", "client_nne")
-        .put("encryption_algorithm", "3DES168")
-        .build()));
+    ((ObjectNode) clone)
+        .put(
+            "encryption",
+            Jsons.jsonNode(
+                ImmutableMap.builder()
+                    .put("encryption_method", "client_nne")
+                    .put("encryption_algorithm", "3DES168")
+                    .build()));
 
-    final String algorithm = clone.get("encryption")
-        .get("encryption_algorithm").asText();
+    final String algorithm = clone.get("encryption").get("encryption_algorithm").asText();
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(clone.get("username").asText(),
-        clone.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            clone.get("host").asText(),
-            clone.get("port").asText(),
-            clone.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver",
-        "oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( "
-            + algorithm + " )");
+    final JdbcDatabase database =
+        Databases.createJdbcDatabase(
+            clone.get("username").asText(),
+            clone.get("password").asText(),
+            String.format(
+                "jdbc:oracle:thin:@//%s:%s/%s",
+                clone.get("host").asText(), clone.get("port").asText(), clone.get("sid").asText()),
+            "oracle.jdbc.driver.OracleDriver",
+            "oracle.net.encryption_client=REQUIRED;"
+                + "oracle.net.encryption_types_client=( "
+                + algorithm
+                + " )");
 
     final String network_service_banner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+    final List<JsonNode> collect =
+        database.query(network_service_banner).collect(Collectors.toList());
 
-    assertTrue(collect.get(2).get("NETWORK_SERVICE_BANNER").asText()
-        .contains("Oracle Advanced Security: " + algorithm + " encryption"));
+    assertTrue(
+        collect
+            .get(2)
+            .get("NETWORK_SERVICE_BANNER")
+            .asText()
+            .contains("Oracle Advanced Security: " + algorithm + " encryption"));
   }
 
   @Test
   public void testNoneEncrytion() throws SQLException {
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver");
+    final JdbcDatabase database =
+        Databases.createJdbcDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:oracle:thin:@//%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("sid").asText()),
+            "oracle.jdbc.driver.OracleDriver");
 
     final String network_service_banner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+    final List<JsonNode> collect =
+        database.query(network_service_banner).collect(Collectors.toList());
 
-    assertTrue(collect.get(1).get("NETWORK_SERVICE_BANNER").asText()
-        .contains("Oracle Advanced Security: encryption"));
+    assertTrue(
+        collect
+            .get(1)
+            .get("NETWORK_SERVICE_BANNER")
+            .asText()
+            .contains("Oracle Advanced Security: encryption"));
   }
 
   @Test
   public void testCheckProtocol() throws SQLException {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-        .put("encryption_method", "client_nne")
-        .put("encryption_algorithm", "AES256")
-        .build()));
+    ((ObjectNode) clone)
+        .put(
+            "encryption",
+            Jsons.jsonNode(
+                ImmutableMap.builder()
+                    .put("encryption_method", "client_nne")
+                    .put("encryption_algorithm", "AES256")
+                    .build()));
 
-    final String algorithm = clone.get("encryption")
-        .get("encryption_algorithm").asText();
+    final String algorithm = clone.get("encryption").get("encryption_algorithm").asText();
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(clone.get("username").asText(),
-        clone.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            clone.get("host").asText(),
-            clone.get("port").asText(),
-            clone.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver",
-        "oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( "
-            + algorithm + " )");
+    final JdbcDatabase database =
+        Databases.createJdbcDatabase(
+            clone.get("username").asText(),
+            clone.get("password").asText(),
+            String.format(
+                "jdbc:oracle:thin:@//%s:%s/%s",
+                clone.get("host").asText(), clone.get("port").asText(), clone.get("sid").asText()),
+            "oracle.jdbc.driver.OracleDriver",
+            "oracle.net.encryption_client=REQUIRED;"
+                + "oracle.net.encryption_types_client=( "
+                + algorithm
+                + " )");
 
-    final String network_service_banner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
-    final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+    final String network_service_banner =
+        "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
+    final List<JsonNode> collect =
+        database.query(network_service_banner).collect(Collectors.toList());
 
     assertEquals("tcp", collect.get(0).get("NETWORK_PROTOCOL").asText());
   }
-
 }

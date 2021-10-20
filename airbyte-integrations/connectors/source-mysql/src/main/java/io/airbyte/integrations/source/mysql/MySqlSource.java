@@ -49,10 +49,8 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public static final String MYSQL_DB_HISTORY = "mysql_db_history";
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
-  public static final List<String> SSL_PARAMETERS = List.of(
-      "useSSL=true",
-      "requireSSL=true",
-      "verifyServerCertificate=false");
+  public static final List<String> SSL_PARAMETERS =
+      List.of("useSSL=true", "requireSSL=true", "verifyServerCertificate=false");
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new MySqlSource(), List.of("host"), List.of("port"));
@@ -95,60 +93,85 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
-    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
+      throws Exception {
+    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations =
+        new ArrayList<>(super.getCheckOperations(config));
     if (isCdc(config)) {
-      checkOperations.add(database -> {
-        final List<String> log = database.resultSetQuery(connection -> {
-          final String sql = "show variables where Variable_name = 'log_bin'";
+      checkOperations.add(
+          database -> {
+            final List<String> log =
+                database
+                    .resultSetQuery(
+                        connection -> {
+                          final String sql = "show variables where Variable_name = 'log_bin'";
 
-          return connection.createStatement().executeQuery(sql);
-        }, resultSet -> resultSet.getString("Value")).collect(toList());
+                          return connection.createStatement().executeQuery(sql);
+                        },
+                        resultSet -> resultSet.getString("Value"))
+                    .collect(toList());
 
-        if (log.size() != 1) {
-          throw new RuntimeException("Could not query the variable log_bin");
-        }
+            if (log.size() != 1) {
+              throw new RuntimeException("Could not query the variable log_bin");
+            }
 
-        final String logBin = log.get(0);
-        if (!logBin.equalsIgnoreCase("ON")) {
-          throw new RuntimeException("The variable log_bin should be set to ON, but it is : " + logBin);
-        }
-      });
+            final String logBin = log.get(0);
+            if (!logBin.equalsIgnoreCase("ON")) {
+              throw new RuntimeException(
+                  "The variable log_bin should be set to ON, but it is : " + logBin);
+            }
+          });
 
-      checkOperations.add(database -> {
-        final List<String> format = database.resultSetQuery(connection -> {
-          final String sql = "show variables where Variable_name = 'binlog_format'";
+      checkOperations.add(
+          database -> {
+            final List<String> format =
+                database
+                    .resultSetQuery(
+                        connection -> {
+                          final String sql = "show variables where Variable_name = 'binlog_format'";
 
-          return connection.createStatement().executeQuery(sql);
-        }, resultSet -> resultSet.getString("Value")).collect(toList());
+                          return connection.createStatement().executeQuery(sql);
+                        },
+                        resultSet -> resultSet.getString("Value"))
+                    .collect(toList());
 
-        if (format.size() != 1) {
-          throw new RuntimeException("Could not query the variable binlog_format");
-        }
+            if (format.size() != 1) {
+              throw new RuntimeException("Could not query the variable binlog_format");
+            }
 
-        final String binlogFormat = format.get(0);
-        if (!binlogFormat.equalsIgnoreCase("ROW")) {
-          throw new RuntimeException("The variable binlog_format should be set to ROW, but it is : " + binlogFormat);
-        }
-      });
+            final String binlogFormat = format.get(0);
+            if (!binlogFormat.equalsIgnoreCase("ROW")) {
+              throw new RuntimeException(
+                  "The variable binlog_format should be set to ROW, but it is : " + binlogFormat);
+            }
+          });
     }
 
-    checkOperations.add(database -> {
-      final List<String> image = database.resultSetQuery(connection -> {
-        final String sql = "show variables where Variable_name = 'binlog_row_image'";
+    checkOperations.add(
+        database -> {
+          final List<String> image =
+              database
+                  .resultSetQuery(
+                      connection -> {
+                        final String sql =
+                            "show variables where Variable_name = 'binlog_row_image'";
 
-        return connection.createStatement().executeQuery(sql);
-      }, resultSet -> resultSet.getString("Value")).collect(toList());
+                        return connection.createStatement().executeQuery(sql);
+                      },
+                      resultSet -> resultSet.getString("Value"))
+                  .collect(toList());
 
-      if (image.size() != 1) {
-        throw new RuntimeException("Could not query the variable binlog_row_image");
-      }
+          if (image.size() != 1) {
+            throw new RuntimeException("Could not query the variable binlog_row_image");
+          }
 
-      final String binlogRowImage = image.get(0);
-      if (!binlogRowImage.equalsIgnoreCase("FULL")) {
-        throw new RuntimeException("The variable binlog_row_image should be set to FULL, but it is : " + binlogRowImage);
-      }
-    });
+          final String binlogRowImage = image.get(0);
+          if (!binlogRowImage.equalsIgnoreCase("FULL")) {
+            throw new RuntimeException(
+                "The variable binlog_row_image should be set to FULL, but it is : "
+                    + binlogRowImage);
+          }
+        });
 
     return checkOperations;
   }
@@ -158,11 +181,12 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     final AirbyteCatalog catalog = super.discover(config);
 
     if (isCdc(config)) {
-      final List<AirbyteStream> streams = catalog.getStreams().stream()
-          .map(MySqlSource::removeIncrementalWithoutPk)
-          .map(MySqlSource::setIncrementalToSourceDefined)
-          .map(MySqlSource::addCdcMetadataColumns)
-          .collect(toList());
+      final List<AirbyteStream> streams =
+          catalog.getStreams().stream()
+              .map(MySqlSource::removeIncrementalWithoutPk)
+              .map(MySqlSource::setIncrementalToSourceDefined)
+              .map(MySqlSource::addCdcMetadataColumns)
+              .collect(toList());
 
       catalog.setStreams(streams);
     }
@@ -172,15 +196,20 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+    final StringBuilder jdbcUrl =
+        new StringBuilder(
+            String.format(
+                "jdbc:mysql://%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()));
 
-    // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
+    // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is
+    // needed.
     jdbcUrl.append("?useCursorFetch=true");
     jdbcUrl.append("&zeroDateTimeBehavior=convertToNull");
-    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
+    if (config.get("jdbc_url_params") != null
+        && !config.get("jdbc_url_params").asText().isEmpty()) {
       jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
     }
 
@@ -189,9 +218,10 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
       jdbcUrl.append("&").append(String.join("&", SSL_PARAMETERS));
     }
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+    final ImmutableMap.Builder<Object, Object> configBuilder =
+        ImmutableMap.builder()
+            .put("username", config.get("username").asText())
+            .put("jdbc_url", jdbcUrl.toString());
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
@@ -207,39 +237,46 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
-    final Optional<SyncMode> any = catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
-        .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
+    final Optional<SyncMode> any =
+        catalog.getStreams().stream()
+            .map(ConfiguredAirbyteStream::getSyncMode)
+            .filter(syncMode -> syncMode == SyncMode.INCREMENTAL)
+            .findAny();
     return any.isPresent();
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                             final StateManager stateManager,
-                                                                             final Instant emittedAt) {
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
+      final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler =
-          new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(),
-              catalog, true);
+          new AirbyteDebeziumHandler(
+              sourceConfig,
+              MySqlCdcTargetPosition.targetPosition(database),
+              MySqlCdcProperties.getDebeziumProperties(),
+              catalog,
+              true);
 
-      return handler.getIncrementalIterators(new MySqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new MySqlCdcStateHandler(stateManager), new MySqlCdcConnectorMetadataInjector(), emittedAt);
+      return handler.getIncrementalIterators(
+          new MySqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new MySqlCdcStateHandler(stateManager),
+          new MySqlCdcConnectorMetadataInjector(),
+          emittedAt);
     } else {
       LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
-          emittedAt);
+      return super.getIncrementalIterators(
+          database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
-    return Set.of(
-        "information_schema",
-        "mysql",
-        "performance_schema",
-        "sys");
+    return Set.of("information_schema", "mysql", "performance_schema", "sys");
   }
 
   public static void main(final String[] args) throws Exception {
@@ -258,5 +295,4 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   protected JdbcSourceOperations getSourceOperations() {
     return new MySqlSourceOperations();
   }
-
 }

@@ -35,14 +35,18 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
+    final String schema =
+        Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
 
     final List<String> additionalParameters = new ArrayList<>();
 
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+    final StringBuilder jdbcUrl =
+        new StringBuilder(
+            String.format(
+                "jdbc:postgresql://%s:%s/%s?",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()));
 
     if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       additionalParameters.add("ssl=true");
@@ -53,10 +57,11 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
       additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
     }
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString())
-        .put("schema", schema);
+    final ImmutableMap.Builder<Object, Object> configBuilder =
+        ImmutableMap.builder()
+            .put("username", config.get("username").asText())
+            .put("jdbc_url", jdbcUrl.toString())
+            .put("schema", schema);
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
@@ -70,5 +75,4 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", PostgresDestination.class);
   }
-
 }

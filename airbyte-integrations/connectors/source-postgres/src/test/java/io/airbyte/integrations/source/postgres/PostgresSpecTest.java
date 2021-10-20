@@ -26,22 +26,26 @@ import org.junit.jupiter.api.Test;
  */
 public class PostgresSpecTest {
 
-  private static final String CONFIGURATION = "{  "
-      + "\"password\" : \"pwd\",  "
-      + "\"username\" : \"postgres\",  "
-      + "\"database\" : \"postgres_db\",  "
-      + "\"port\" : 5432,  "
-      + "\"host\" : \"localhost\",  "
-      + "\"ssl\" : true, "
-      + "\"replication_method\" : {    \"method\" : \"CDC\", \"replication_slot\" : \"ab_slot\", \"publication\" : \"ab_publication\"  }"
-      + "}";
+  private static final String CONFIGURATION =
+      "{  "
+          + "\"password\" : \"pwd\",  "
+          + "\"username\" : \"postgres\",  "
+          + "\"database\" : \"postgres_db\",  "
+          + "\"port\" : 5432,  "
+          + "\"host\" : \"localhost\",  "
+          + "\"ssl\" : true, "
+          + "\"replication_method\" : {    \"method\" : \"CDC\", \"replication_slot\" : \"ab_slot\", \"publication\" : \"ab_publication\"  }"
+          + "}";
   private static JsonNode schema;
   private static JsonSchemaValidator validator;
 
   @BeforeAll
   static void init() throws IOException {
     final String spec = MoreResources.readResource("spec.json");
-    final File schemaFile = IOs.writeFile(Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec).toFile();
+    final File schemaFile =
+        IOs.writeFile(
+                Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec)
+            .toFile();
     schema = JsonSchemaValidator.getSchema(schemaFile).get("connectionSpecification");
     validator = new JsonSchemaValidator();
   }
@@ -103,5 +107,4 @@ public class PostgresSpecTest {
 
     assertFalse(validator.test(schema, config));
   }
-
 }

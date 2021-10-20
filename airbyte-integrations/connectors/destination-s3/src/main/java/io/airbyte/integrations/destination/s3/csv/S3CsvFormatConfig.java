@@ -38,7 +38,6 @@ public class S3CsvFormatConfig implements S3FormatConfig {
     public String getValue() {
       return value;
     }
-
   }
 
   private final Flattening flattening;
@@ -46,7 +45,10 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
   public S3CsvFormatConfig(final JsonNode formatConfig) {
     this.flattening = Flattening.fromValue(formatConfig.get("flattening").asText());
-    this.partSize = formatConfig.get(PART_SIZE_MB_ARG_NAME) != null ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong() : null;
+    this.partSize =
+        formatConfig.get(PART_SIZE_MB_ARG_NAME) != null
+            ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong()
+            : null;
   }
 
   @Override
@@ -64,10 +66,6 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
   @Override
   public String toString() {
-    return "S3CsvFormatConfig{" +
-        "flattening=" + flattening +
-        ", partSize=" + partSize +
-        '}';
+    return "S3CsvFormatConfig{" + "flattening=" + flattening + ", partSize=" + partSize + '}';
   }
-
 }

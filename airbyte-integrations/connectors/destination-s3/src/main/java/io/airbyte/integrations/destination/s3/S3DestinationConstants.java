@@ -13,5 +13,4 @@ public final class S3DestinationConstants {
   public static final String PART_SIZE_MB_ARG_NAME = "part_size_mb";
 
   private S3DestinationConstants() {}
-
 }

@@ -17,7 +17,8 @@ public class MssqlCdcProperties {
     props.setProperty("snapshot.mode", "initial");
     // https://docs.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql?view=sql-server-ver15
     // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
-    // we set this to avoid preventing other (non-Airbyte) transactions from updating table rows while
+    // we set this to avoid preventing other (non-Airbyte) transactions from updating table rows
+    // while
     // we snapshot
     props.setProperty("snapshot.isolation.mode", "snapshot");
 
@@ -28,5 +29,4 @@ public class MssqlCdcProperties {
 
     return props;
   }
-
 }

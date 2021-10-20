@@ -50,7 +50,8 @@ public abstract class S3StreamCopier implements StreamCopier {
   // It is optimal to write every 10,000,000 records (BATCH_SIZE * DEFAULT_PART) to a new file.
   // The BATCH_SIZE is defined in CopyConsumerFactory.
   // The average size of such a file will be about 1 GB.
-  // This will make it easier to work with files and speed up the recording of large amounts of data.
+  // This will make it easier to work with files and speed up the recording of large amounts of
+  // data.
   // In addition, for a large number of records, we will not get a drop in the copy request to
   // QUERY_TIMEOUT when
   // the records from the file are copied to the staging table.
@@ -73,16 +74,17 @@ public abstract class S3StreamCopier implements StreamCopier {
   protected final String stagingFolder;
   private final StagingFilenameGenerator filenameGenerator;
 
-  public S3StreamCopier(final String stagingFolder,
-                        final DestinationSyncMode destSyncMode,
-                        final String schema,
-                        final String streamName,
-                        final String s3FileName,
-                        final AmazonS3 client,
-                        final JdbcDatabase db,
-                        final S3Config s3Config,
-                        final ExtendedNameTransformer nameTransformer,
-                        final SqlOperations sqlOperations) {
+  public S3StreamCopier(
+      final String stagingFolder,
+      final DestinationSyncMode destSyncMode,
+      final String schema,
+      final String streamName,
+      final String s3FileName,
+      final AmazonS3 client,
+      final JdbcDatabase db,
+      final S3Config s3Config,
+      final ExtendedNameTransformer nameTransformer,
+      final SqlOperations sqlOperations) {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -109,18 +111,23 @@ public abstract class S3StreamCopier implements StreamCopier {
       LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
       // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
       // have support for streaming multipart uploads;
-      // The alternative is first writing the entire output to disk before loading into S3. This is not
+      // The alternative is first writing the entire output to disk before loading into S3. This is
+      // not
       // feasible with large tables.
-      // Data is chunked into parts. A part is sent off to a queue to be uploaded once it has reached it's
+      // Data is chunked into parts. A part is sent off to a queue to be uploaded once it has
+      // reached it's
       // configured part size.
-      // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
-      final var manager = new StreamTransferManager(s3Config.getBucketName(), name, s3Client)
-          .numUploadThreads(DEFAULT_UPLOAD_THREADS)
-          .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-          .partSize(s3Config.getPartSize());
+      // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current
+      // configurations.
+      final var manager =
+          new StreamTransferManager(s3Config.getBucketName(), name, s3Client)
+              .numUploadThreads(DEFAULT_UPLOAD_THREADS)
+              .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+              .partSize(s3Config.getPartSize());
       multipartUploadManagers.put(name, manager);
       final var outputStream = manager.getMultiPartOutputStreams().get(0);
-      // We only need one output stream as we only have one input stream. This is reasonably performant.
+      // We only need one output stream as we only have one input stream. This is reasonably
+      // performant.
       // See the above comment.
       outputStreams.put(name, outputStream);
       final var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
@@ -134,11 +141,16 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String s3FileName) throws Exception {
+  public void write(
+      final UUID id, final AirbyteRecordMessage recordMessage, final String s3FileName)
+      throws Exception {
     if (csvPrinters.containsKey(s3FileName)) {
-      csvPrinters.get(s3FileName).printRecord(id,
-          Jsons.serialize(recordMessage.getData()),
-          Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
+      csvPrinters
+          .get(s3FileName)
+          .printRecord(
+              id,
+              Jsons.serialize(recordMessage.getData()),
+              Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
     }
   }
 
@@ -160,17 +172,34 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public void createTemporaryTable() throws Exception {
-    LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName);
+    LOGGER.info(
+        "Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.",
+        streamName,
+        schemaName,
+        tmpTableName);
     sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName);
   }
 
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
-    LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    s3StagingFiles.forEach(s3StagingFile -> Exceptions.toRuntime(() -> {
-      copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), s3StagingFile), schemaName, tmpTableName, s3Config);
-    }));
-    LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
+    LOGGER.info(
+        "Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .",
+        tmpTableName,
+        streamName,
+        schemaName);
+    s3StagingFiles.forEach(
+        s3StagingFile ->
+            Exceptions.toRuntime(
+                () -> {
+                  copyS3CsvFileIntoTable(
+                      db,
+                      getFullS3Path(s3Config.getBucketName(), s3StagingFile),
+                      schemaName,
+                      tmpTableName,
+                      s3Config);
+                }));
+    LOGGER.info(
+        "Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
   @Override
@@ -185,11 +214,18 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public String generateMergeStatement(final String destTableName) {
-    LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
+    LOGGER.info(
+        "Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.",
+        tmpTableName,
+        destTableName,
+        schemaName);
     final var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
-      LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
+      LOGGER.info(
+          "Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.",
+          destTableName,
+          schemaName);
     }
     queries.append(sqlOperations.copyTableQuery(db, schemaName, tmpTableName, destTableName));
     return queries.toString();
@@ -197,13 +233,14 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
-    s3StagingFiles.forEach(s3StagingFile -> {
-      LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
-      if (s3Client.doesObjectExist(s3Config.getBucketName(), s3StagingFile)) {
-        s3Client.deleteObject(s3Config.getBucketName(), s3StagingFile);
-      }
-      LOGGER.info("S3 staging file {} cleaned.", s3StagingFile);
-    });
+    s3StagingFiles.forEach(
+        s3StagingFile -> {
+          LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
+          if (s3Client.doesObjectExist(s3Config.getBucketName(), s3StagingFile)) {
+            s3Client.deleteObject(s3Config.getBucketName(), s3StagingFile);
+          }
+          LOGGER.info("S3 staging file {} cleaned.", s3StagingFile);
+        });
 
     LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
     sqlOperations.dropTableIfExists(db, schemaName, tmpTableName);
@@ -214,9 +251,7 @@ public abstract class S3StreamCopier implements StreamCopier {
     return String.join("/", "s3:/", s3BucketName, s3StagingFile);
   }
 
-  /**
-   * Closes the printers/outputstreams and waits for any buffered uploads to complete.
-   */
+  /** Closes the printers/outputstreams and waits for any buffered uploads to complete. */
   private void closeAndWaitForUpload() throws IOException {
     LOGGER.info("Uploading remaining data for {} stream.", streamName);
     for (final var csvPrinter : csvPrinters.values()) {
@@ -236,12 +271,15 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   public static void attemptS3WriteAndDelete(final S3Config s3Config, final String bucketPath) {
-    final var prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
-    final String outputTableName = prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+    final var prefix =
+        bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
+    final String outputTableName =
+        prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteS3Object(s3Config, outputTableName);
   }
 
-  private static void attemptWriteAndDeleteS3Object(final S3Config s3Config, final String outputTableName) {
+  private static void attemptWriteAndDeleteS3Object(
+      final S3Config s3Config, final String outputTableName) {
     final var s3 = getAmazonS3(s3Config);
     final var s3Bucket = s3Config.getBucketName();
 
@@ -268,8 +306,7 @@ public abstract class S3StreamCopier implements StreamCopier {
       final ClientConfiguration clientConfiguration = new ClientConfiguration();
       clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
-      return AmazonS3ClientBuilder
-          .standard()
+      return AmazonS3ClientBuilder.standard()
           .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
           .withPathStyleAccessEnabled(true)
           .withClientConfiguration(clientConfiguration)
@@ -278,11 +315,11 @@ public abstract class S3StreamCopier implements StreamCopier {
     }
   }
 
-  public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
-                                              String s3FileLocation,
-                                              String schema,
-                                              String tableName,
-                                              S3Config s3Config)
+  public abstract void copyS3CsvFileIntoTable(
+      JdbcDatabase database,
+      String s3FileLocation,
+      String schema,
+      String tableName,
+      S3Config s3Config)
       throws SQLException;
-
 }

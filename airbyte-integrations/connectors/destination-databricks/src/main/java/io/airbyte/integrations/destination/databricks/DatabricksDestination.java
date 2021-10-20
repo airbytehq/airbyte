@@ -29,9 +29,10 @@ public class DatabricksDestination extends CopyDestination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
     return CopyConsumerFactory.create(
         outputRecordCollector,
@@ -66,7 +67,8 @@ public class DatabricksDestination extends CopyDestination {
   }
 
   static String getDatabricksConnectionString(final DatabricksDestinationConfig databricksConfig) {
-    return String.format("jdbc:spark://%s:%s/default;transportMode=http;ssl=1;httpPath=%s;UserAgentEntry=Airbyte",
+    return String.format(
+        "jdbc:spark://%s:%s/default;transportMode=http;ssl=1;httpPath=%s;UserAgentEntry=Airbyte",
         databricksConfig.getDatabricksServerHostname(),
         databricksConfig.getDatabricksPort(),
         databricksConfig.getDatabricksHttpPath());
@@ -79,5 +81,4 @@ public class DatabricksDestination extends CopyDestination {
         getDatabricksConnectionString(databricksConfig),
         DatabricksConstants.DATABRICKS_DRIVER_CLASS);
   }
-
 }

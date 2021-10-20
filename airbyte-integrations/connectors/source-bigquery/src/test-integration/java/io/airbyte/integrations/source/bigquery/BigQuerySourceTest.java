@@ -45,7 +45,8 @@ class BigQuerySourceTest {
   void setUp() throws IOException, SQLException {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+          "Must provide path to a big query credentials file. By default {module-root}/"
+              + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
@@ -57,23 +58,29 @@ class BigQuerySourceTest {
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJsonString)
-        .put(CONFIG_DATASET_ID, datasetId)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put(CONFIG_PROJECT_ID, projectId)
+                .put(CONFIG_CREDS, credentialsJsonString)
+                .put(CONFIG_DATASET_ID, datasetId)
+                .build());
 
     database = new BigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), credentialsJsonString);
 
     final DatasetInfo datasetInfo =
-        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(datasetLocation).build();
+        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText())
+            .setLocation(datasetLocation)
+            .build();
     dataset = database.getBigQuery().create(datasetInfo);
 
     database.execute(
-        "CREATE TABLE " + datasetId
+        "CREATE TABLE "
+            + datasetId
             + ".id_and_name(id INT64, array_val ARRAY<STRUCT<key string, value STRUCT<string_val string>>>, object_val STRUCT<val_array ARRAY<STRUCT<value_str1 string>>, value_str2 string>);");
     database.execute(
-        "INSERT INTO " + datasetId
+        "INSERT INTO "
+            + datasetId
             + ".id_and_name (id, array_val, object_val) VALUES "
             + "(1, [STRUCT('test1_1', STRUCT('struct1_1')), STRUCT('test1_2', STRUCT('struct1_2'))], STRUCT([STRUCT('value1_1'), STRUCT('value1_2')], 'test1_1')), "
             + "(2, [STRUCT('test2_1', STRUCT('struct2_1')), STRUCT('test2_2', STRUCT('struct2_2'))], STRUCT([STRUCT('value2_1'), STRUCT('value2_2')], 'test2_1')), "
@@ -87,7 +94,8 @@ class BigQuerySourceTest {
 
   @Test
   public void testReadSuccess() throws Exception {
-    final List<AirbyteMessage> actualMessages = MoreIterators.toList(new BigQuerySource().read(config, getConfiguredCatalog(), null));
+    final List<AirbyteMessage> actualMessages =
+        MoreIterators.toList(new BigQuerySource().read(config, getConfiguredCatalog(), null));
 
     assertNotNull(actualMessages);
     assertEquals(3, actualMessages.size());
@@ -101,5 +109,4 @@ class BigQuerySourceTest {
         Field.of("array_val", JsonSchemaPrimitive.ARRAY),
         Field.of("object_val", JsonSchemaPrimitive.OBJECT));
   }
-
 }

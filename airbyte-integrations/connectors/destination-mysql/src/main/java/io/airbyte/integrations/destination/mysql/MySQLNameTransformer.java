@@ -12,9 +12,10 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
  * consistent convention, such as always creating and referring to databases and tables using
  * lowercase names. This convention is recommended for maximum portability and ease of use.
  *
- * Source: https://dev.mysql.com/doc/refman/8.0/en/identifier-case-sensitivity.html"
+ * <p>Source: https://dev.mysql.com/doc/refman/8.0/en/identifier-case-sensitivity.html"
  *
- * As a result, we are here forcing all identifier (table, schema and columns) names to lowercase.
+ * <p>As a result, we are here forcing all identifier (table, schema and columns) names to
+ * lowercase.
  */
 public class MySQLNameTransformer extends ExtendedNameTransformer {
 
@@ -25,7 +26,8 @@ public class MySQLNameTransformer extends ExtendedNameTransformer {
   // 4 charachters for 1 underscore and 3 suffix (e.g. _ab1)
   // 4 charachters for 1 underscore and 3 schema hash
   public static final int TRUNCATE_RESERVED_SIZE = 8;
-  public static final int TRUNCATION_MAX_NAME_LENGTH = MAX_MYSQL_NAME_LENGTH - TRUNCATE_DBT_RESERVED_SIZE - TRUNCATE_RESERVED_SIZE;
+  public static final int TRUNCATION_MAX_NAME_LENGTH =
+      MAX_MYSQL_NAME_LENGTH - TRUNCATE_DBT_RESERVED_SIZE - TRUNCATE_RESERVED_SIZE;
 
   @Override
   public String getIdentifier(final String name) {
@@ -60,5 +62,4 @@ public class MySQLNameTransformer extends ExtendedNameTransformer {
   protected String applyDefaultCase(final String input) {
     return input.toLowerCase();
   }
-
 }

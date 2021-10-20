@@ -30,13 +30,13 @@ public class S3DestinationConfig {
   private final S3FormatConfig formatConfig;
 
   public S3DestinationConfig(
-                             final String endpoint,
-                             final String bucketName,
-                             final String bucketPath,
-                             final String bucketRegion,
-                             final String accessKeyId,
-                             final String secretAccessKey,
-                             final S3FormatConfig formatConfig) {
+      final String endpoint,
+      final String bucketName,
+      final String bucketPath,
+      final String bucketRegion,
+      final String accessKeyId,
+      final String secretAccessKey,
+      final S3FormatConfig formatConfig) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
@@ -98,9 +98,9 @@ public class S3DestinationConfig {
     final ClientConfiguration clientConfiguration = new ClientConfiguration();
     clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
-    return AmazonS3ClientBuilder
-        .standard()
-        .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion))
+    return AmazonS3ClientBuilder.standard()
+        .withEndpointConfiguration(
+            new AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion))
         .withPathStyleAccessEnabled(true)
         .withClientConfiguration(clientConfiguration)
         .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
@@ -109,10 +109,9 @@ public class S3DestinationConfig {
 
   /**
    * @return {@link S3Config} for convenience. The part size should not matter in any use case that
-   *         gets an {@link S3Config} from this class. So the default 10 MB is used.
+   *     gets an {@link S3Config} from this class. So the default 10 MB is used.
    */
   public S3Config getS3Config() {
     return new S3Config(endpoint, bucketName, accessKeyId, secretAccessKey, bucketRegion, 10);
   }
-
 }

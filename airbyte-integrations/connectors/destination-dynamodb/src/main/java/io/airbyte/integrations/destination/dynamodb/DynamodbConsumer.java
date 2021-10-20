@@ -31,9 +31,10 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private AirbyteMessage lastStateMessage = null;
 
-  public DynamodbConsumer(final DynamodbDestinationConfig dynamodbDestinationConfig,
-                          final ConfiguredAirbyteCatalog configuredCatalog,
-                          final Consumer<AirbyteMessage> outputRecordCollector) {
+  public DynamodbConsumer(
+      final DynamodbDestinationConfig dynamodbDestinationConfig,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.dynamodbDestinationConfig = dynamodbDestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.outputRecordCollector = outputRecordCollector;
@@ -45,34 +46,41 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     final var endpoint = dynamodbDestinationConfig.getEndpoint();
     final AWSCredentials awsCreds =
-        new BasicAWSCredentials(dynamodbDestinationConfig.getAccessKeyId(), dynamodbDestinationConfig.getSecretAccessKey());
+        new BasicAWSCredentials(
+            dynamodbDestinationConfig.getAccessKeyId(),
+            dynamodbDestinationConfig.getSecretAccessKey());
     AmazonDynamoDB amazonDynamodb = null;
 
     if (endpoint.isEmpty()) {
-      amazonDynamodb = AmazonDynamoDBClientBuilder.standard()
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .withRegion(dynamodbDestinationConfig.getRegion())
-          .build();
+      amazonDynamodb =
+          AmazonDynamoDBClientBuilder.standard()
+              .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+              .withRegion(dynamodbDestinationConfig.getRegion())
+              .build();
     } else {
       final ClientConfiguration clientConfiguration = new ClientConfiguration();
       clientConfiguration.setSignerOverride("AWSDynamodbSignerType");
 
-      amazonDynamodb = AmazonDynamoDBClientBuilder
-          .standard()
-          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, dynamodbDestinationConfig.getRegion()))
-          .withClientConfiguration(clientConfiguration)
-          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-          .build();
+      amazonDynamodb =
+          AmazonDynamoDBClientBuilder.standard()
+              .withEndpointConfiguration(
+                  new AwsClientBuilder.EndpointConfiguration(
+                      endpoint, dynamodbDestinationConfig.getRegion()))
+              .withClientConfiguration(clientConfiguration)
+              .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+              .build();
     }
 
     final var uploadTimestamp = System.currentTimeMillis();
 
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      final var writer = new DynamodbWriter(dynamodbDestinationConfig, amazonDynamodb, configuredStream, uploadTimestamp);
+      final var writer =
+          new DynamodbWriter(
+              dynamodbDestinationConfig, amazonDynamodb, configuredStream, uploadTimestamp);
 
       final AirbyteStream stream = configuredStream.getStream();
-      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
-          .fromAirbyteSteam(stream);
+      final AirbyteStreamNameNamespacePair streamNamePair =
+          AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
       streamNameAndNamespaceToWriters.put(streamNamePair, writer);
     }
   }
@@ -87,8 +95,8 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
     }
 
     final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
-    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
-        .fromRecordMessage(recordMessage);
+    final AirbyteStreamNameNamespacePair pair =
+        AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
     if (!streamNameAndNamespaceToWriters.containsKey(pair)) {
       throw new IllegalArgumentException(
@@ -110,5 +118,4 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
       outputRecordCollector.accept(lastStateMessage);
     }
   }
-
 }

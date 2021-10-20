@@ -39,7 +39,8 @@ import org.slf4j.LoggerFactory;
 
 public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(DatabricksDestinationAcceptanceTest.class);
   private static final String SECRETS_CONFIG_JSON = "secrets/config.json";
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
@@ -70,26 +71,36 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws SQLException {
     final String tableName = nameTransformer.getIdentifier(streamName);
-    final String schemaName = StreamCopierFactory.getSchema(namespace, databricksConfig.getDatabaseSchema(), nameTransformer);
-    final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
+    final String schemaName =
+        StreamCopierFactory.getSchema(
+            namespace, databricksConfig.getDatabaseSchema(), nameTransformer);
+    final JsonFieldNameUpdater nameUpdater =
+        AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
     final Database database = getDatabase(databricksConfig);
-    return database.query(ctx -> ctx.select(asterisk())
-        .from(String.format("%s.%s", schemaName, tableName))
-        .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
-        .fetch().stream()
-        .map(record -> {
-          final JsonNode json = Jsons.deserialize(record.formatJSON(JSON_FORMAT));
-          final JsonNode jsonWithOriginalFields = nameUpdater.getJsonWithOriginalFieldNames(json);
-          return AvroRecordHelper.pruneAirbyteJson(jsonWithOriginalFields);
-        })
-        .collect(Collectors.toList()));
+    return database.query(
+        ctx ->
+            ctx
+                .select(asterisk())
+                .from(String.format("%s.%s", schemaName, tableName))
+                .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
+                .fetch()
+                .stream()
+                .map(
+                    record -> {
+                      final JsonNode json = Jsons.deserialize(record.formatJSON(JSON_FORMAT));
+                      final JsonNode jsonWithOriginalFields =
+                          nameUpdater.getJsonWithOriginalFieldNames(json);
+                      return AvroRecordHelper.pruneAirbyteJson(jsonWithOriginalFields);
+                    })
+                .collect(Collectors.toList()));
   }
 
   @Override
@@ -115,18 +126,22 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
   protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
     // clean up s3
     final List<KeyVersion> keysToDelete = new LinkedList<>();
-    final List<S3ObjectSummary> objects = s3Client
-        .listObjects(s3Config.getBucketName(), s3Config.getBucketPath())
-        .getObjectSummaries();
+    final List<S3ObjectSummary> objects =
+        s3Client
+            .listObjects(s3Config.getBucketName(), s3Config.getBucketPath())
+            .getObjectSummaries();
     for (final S3ObjectSummary object : objects) {
       keysToDelete.add(new KeyVersion(object.getKey()));
     }
 
     if (keysToDelete.size() > 0) {
-      LOGGER.info("Tearing down test bucket path: {}/{}", s3Config.getBucketName(),
+      LOGGER.info(
+          "Tearing down test bucket path: {}/{}",
+          s3Config.getBucketName(),
           s3Config.getBucketPath());
-      final DeleteObjectsResult result = s3Client
-          .deleteObjects(new DeleteObjectsRequest(s3Config.getBucketName()).withKeys(keysToDelete));
+      final DeleteObjectsResult result =
+          s3Client.deleteObjects(
+              new DeleteObjectsRequest(s3Config.getBucketName()).withKeys(keysToDelete));
       LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
     }
 
@@ -135,7 +150,11 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     final Database database = getDatabase(databricksConfig);
     // we cannot use jooq dropSchemaIfExists method here because there is no proper dialect for
     // Databricks, and it incorrectly quotes the schema name
-    database.query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", databricksConfig.getDatabaseSchema())));
+    database.query(
+        ctx ->
+            ctx.execute(
+                String.format(
+                    "DROP SCHEMA IF EXISTS %s CASCADE;", databricksConfig.getDatabaseSchema())));
   }
 
   private static Database getDatabase(final DatabricksDestinationConfig databricksConfig) {
@@ -146,5 +165,4 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
         DatabricksConstants.DATABRICKS_DRIVER_CLASS,
         SQLDialect.DEFAULT);
   }
-
 }

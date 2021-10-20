@@ -34,13 +34,15 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
     db = new ClickHouseContainer("yandex/clickhouse-server:21.3.10.1-alpine");
     db.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("database", SCHEMA_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", db.getHost())
+                .put("port", db.getFirstMappedPort())
+                .put("database", SCHEMA_NAME)
+                .put("username", db.getUsername())
+                .put("password", db.getPassword())
+                .build());
 
     super.setup();
   }
@@ -49,8 +51,7 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
   protected String createTableQuery(final String tableName, final String columnClause) {
     // ClickHouse requires Engine to be mentioned as part of create table query.
     // Refer : https://clickhouse.tech/docs/en/engines/table-engines/ for more information
-    return String.format("CREATE TABLE %s(%s) %s",
-        tableName, columnClause, "ENGINE = TinyLog");
+    return String.format("CREATE TABLE %s(%s) %s", tableName, columnClause, "ENGINE = TinyLog");
   }
 
   @AfterEach
@@ -73,5 +74,4 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
   public AbstractJdbcSource getSource() {
     return new ClickHouseSource();
   }
-
 }

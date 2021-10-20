@@ -38,40 +38,46 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeAll
   static void init() throws SQLException {
-    container = new MySQLContainer<>("mysql:8.0")
-        .withUsername(TEST_USER)
-        .withPassword(TEST_PASSWORD)
-        .withEnv("MYSQL_ROOT_HOST", "%")
-        .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD);
+    container =
+        new MySQLContainer<>("mysql:8.0")
+            .withUsername(TEST_USER)
+            .withPassword(TEST_PASSWORD)
+            .withEnv("MYSQL_ROOT_HOST", "%")
+            .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD);
     container.start();
-    final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD);
-    connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
+    final Connection connection =
+        DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD);
+    connection
+        .createStatement()
+        .execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
   }
 
   @BeforeEach
   public void setup() throws Exception {
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", Strings.addRandomSuffix("db", "_", 10))
-        .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", container.getHost())
+                .put("port", container.getFirstMappedPort())
+                .put("database", Strings.addRandomSuffix("db", "_", 10))
+                .put("username", TEST_USER)
+                .put("password", TEST_PASSWORD)
+                .build());
 
-    database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asText()),
-        MySqlSource.DRIVER_CLASS,
+    database =
+        Databases.createDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:mysql://%s:%s", config.get("host").asText(), config.get("port").asText()),
+            MySqlSource.DRIVER_CLASS,
+            SQLDialect.MYSQL);
 
-        SQLDialect.MYSQL);
-
-    database.query(ctx -> {
-      ctx.fetch("CREATE DATABASE " + config.get("database").asText());
-      return null;
-    });
+    database.query(
+        ctx -> {
+          ctx.fetch("CREATE DATABASE " + config.get("database").asText());
+          return null;
+        });
     database.close();
 
     super.setup();
@@ -112,9 +118,9 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
-    final ConnectorSpecification expected = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+    final ConnectorSpecification expected =
+        Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
 
     assertEquals(expected, actual);
   }
-
 }

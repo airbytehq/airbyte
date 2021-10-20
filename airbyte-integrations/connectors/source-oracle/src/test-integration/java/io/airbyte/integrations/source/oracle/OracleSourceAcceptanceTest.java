@@ -38,37 +38,67 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
     container = new OracleContainer("epiclabs/docker-oracle-xe-11g");
     container.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("sid", container.getSid())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("schemas", List.of("JDBC_SPACE"))
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-            .put("encryption_method", "unencrypted")
-            .build()))
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", container.getHost())
+                .put("port", container.getFirstMappedPort())
+                .put("sid", container.getSid())
+                .put("username", container.getUsername())
+                .put("password", container.getPassword())
+                .put("schemas", List.of("JDBC_SPACE"))
+                .put(
+                    "encryption",
+                    Jsons.jsonNode(
+                        ImmutableMap.builder().put("encryption_method", "unencrypted").build()))
+                .build());
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver");
+    final JdbcDatabase database =
+        Databases.createJdbcDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:oracle:thin:@//%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("sid").asText()),
+            "oracle.jdbc.driver.OracleDriver");
 
-    database.execute(connection -> {
-      connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
-      connection.createStatement().execute("CREATE TABLE jdbc_space.id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power BINARY_DOUBLE)");
-      connection.createStatement().execute("INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (1,'goku', BINARY_DOUBLE_INFINITY)");
-      connection.createStatement().execute("INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1)");
-      connection.createStatement().execute("INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (NULL, 'piccolo', -BINARY_DOUBLE_INFINITY)");
-      connection.createStatement().execute("CREATE TABLE jdbc_space.starships(id INTEGER, name VARCHAR(200))");
-      connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (1,'enterprise-d')");
-      connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (2, 'defiant')");
-      connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (3, 'yamato')");
-    });
+    database.execute(
+        connection -> {
+          connection
+              .createStatement()
+              .execute(
+                  "CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
+          connection
+              .createStatement()
+              .execute(
+                  "CREATE TABLE jdbc_space.id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power BINARY_DOUBLE)");
+          connection
+              .createStatement()
+              .execute(
+                  "INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (1,'goku', BINARY_DOUBLE_INFINITY)");
+          connection
+              .createStatement()
+              .execute(
+                  "INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1)");
+          connection
+              .createStatement()
+              .execute(
+                  "INSERT INTO jdbc_space.id_and_name (id, name, power) VALUES (NULL, 'piccolo', -BINARY_DOUBLE_INFINITY)");
+          connection
+              .createStatement()
+              .execute("CREATE TABLE jdbc_space.starships(id INTEGER, name VARCHAR(200))");
+          connection
+              .createStatement()
+              .execute("INSERT INTO jdbc_space.starships (id, name) VALUES (1,'enterprise-d')");
+          connection
+              .createStatement()
+              .execute("INSERT INTO jdbc_space.starships (id, name) VALUES (2, 'defiant')");
+          connection
+              .createStatement()
+              .execute("INSERT INTO jdbc_space.starships (id, name) VALUES (3, 'yamato')");
+        });
 
     database.close();
   }
@@ -95,24 +125,30 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("ID"))
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING),
-                Field.of("POWER", JsonSchemaPrimitive.NUMBER))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("ID"))
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(
+            Lists.newArrayList(
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("ID"))
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                STREAM_NAME,
+                                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+                                Field.of("NAME", JsonSchemaPrimitive.STRING),
+                                Field.of("POWER", JsonSchemaPrimitive.NUMBER))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("ID"))
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                STREAM_NAME2,
+                                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+                                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -124,5 +160,4 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

@@ -34,7 +34,9 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition {
     if (targetLsn.compareTo(recordLsn) > 0) {
       return false;
     } else {
-      final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
+      final SnapshotMetadata snapshotMetadata =
+          SnapshotMetadata.valueOf(
+              valueAsJson.get("source").get("snapshot").asText().toUpperCase());
       // if not snapshot or is snapshot but last record in snapshot.
       return SnapshotMetadata.TRUE != snapshotMetadata;
     }
@@ -64,23 +66,28 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition {
     return targetLsn.hashCode();
   }
 
-  public static MssqlCdcTargetPosition getTargetPosition(final JdbcDatabase database, final String dbName) {
+  public static MssqlCdcTargetPosition getTargetPosition(
+      final JdbcDatabase database, final String dbName) {
     try {
-      final List<JsonNode> jsonNodes = database
-          .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(
-              "USE " + dbName + "; SELECT sys.fn_cdc_get_max_lsn() AS max_lsn;"), JdbcUtils.getDefaultSourceOperations()::rowToJson);
+      final List<JsonNode> jsonNodes =
+          database.bufferedResultSetQuery(
+              conn ->
+                  conn.createStatement()
+                      .executeQuery(
+                          "USE " + dbName + "; SELECT sys.fn_cdc_get_max_lsn() AS max_lsn;"),
+              JdbcUtils.getDefaultSourceOperations()::rowToJson);
       Preconditions.checkState(jsonNodes.size() == 1);
       if (jsonNodes.get(0).get("max_lsn") != null) {
         final Lsn maxLsn = Lsn.valueOf(jsonNodes.get(0).get("max_lsn").binaryValue());
         LOGGER.info("identified target lsn: " + maxLsn);
         return new MssqlCdcTargetPosition(maxLsn);
       } else {
-        throw new RuntimeException("SQL returned max LSN as null, this might be because the SQL Server Agent is not running. " +
-            "Please enable the Agent and try again (https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service?view=sql-server-ver15)");
+        throw new RuntimeException(
+            "SQL returned max LSN as null, this might be because the SQL Server Agent is not running. "
+                + "Please enable the Agent and try again (https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service?view=sql-server-ver15)");
       }
     } catch (final SQLException | IOException e) {
       throw new RuntimeException(e);
     }
   }
-
 }

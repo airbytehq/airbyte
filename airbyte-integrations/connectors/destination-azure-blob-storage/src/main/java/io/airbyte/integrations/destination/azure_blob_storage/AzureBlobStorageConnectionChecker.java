@@ -23,15 +23,15 @@ public class AzureBlobStorageConnectionChecker {
   private BlobContainerClient containerClient; // aka schema in SQL DBs
   private final AppendBlobClient appendBlobClient; // aka "SQL Table"
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-      AzureBlobStorageConnectionChecker.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(AzureBlobStorageConnectionChecker.class);
 
   public AzureBlobStorageConnectionChecker(
-                                           final AzureBlobStorageDestinationConfig azureBlobStorageConfig) {
+      final AzureBlobStorageDestinationConfig azureBlobStorageConfig) {
 
-    final StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
-        azureBlobStorageConfig.getAccountName(),
-        azureBlobStorageConfig.getAccountKey());
+    final StorageSharedKeyCredential credential =
+        new StorageSharedKeyCredential(
+            azureBlobStorageConfig.getAccountName(), azureBlobStorageConfig.getAccountKey());
 
     this.appendBlobClient =
         new SpecializedBlobClientBuilder()
@@ -51,8 +51,9 @@ public class AzureBlobStorageConnectionChecker {
     writeUsingAppendBlock("Some test data");
     listBlobsInContainer()
         .forEach(
-            blobItem -> LOGGER.info(
-                "Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
+            blobItem ->
+                LOGGER.info(
+                    "Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
 
     deleteBlob();
   }
@@ -81,8 +82,8 @@ public class AzureBlobStorageConnectionChecker {
     LOGGER.info("Writing test data to Azure Blob storage: " + data);
     final InputStream dataStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
 
-    final Integer blobCommittedBlockCount = appendBlobClient.appendBlock(dataStream, data.length())
-        .getBlobCommittedBlockCount();
+    final Integer blobCommittedBlockCount =
+        appendBlobClient.appendBlock(dataStream, data.length()).getBlobCommittedBlockCount();
 
     LOGGER.info("blobCommittedBlockCount: " + blobCommittedBlockCount);
   }
@@ -110,5 +111,4 @@ public class AzureBlobStorageConnectionChecker {
     LOGGER.info("Deleting blob: " + containerClient.getBlobContainerName());
     containerClient.delete(); // remove aka "SQL Schema" used
   }
-
 }

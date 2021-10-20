@@ -17,63 +17,69 @@ public class AzureBlobDestinationTest {
 
   @Test
   public void testConfigObjectCustomDomainName() {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("azure_blob_storage_account_name", "accName")
-        .put("azure_blob_storage_account_key", "accKey")
-        .put("azure_blob_storage_endpoint_domain_name", "accDomainName.com")
-        .put("format", getFormatConfig())
-        .build());
-    final AzureBlobStorageDestinationConfig azureBlobStorageConfig = AzureBlobStorageDestinationConfig
-        .getAzureBlobStorageConfig(config);
+    final JsonNode config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("azure_blob_storage_account_name", "accName")
+                .put("azure_blob_storage_account_key", "accKey")
+                .put("azure_blob_storage_endpoint_domain_name", "accDomainName.com")
+                .put("format", getFormatConfig())
+                .build());
+    final AzureBlobStorageDestinationConfig azureBlobStorageConfig =
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config);
 
-    assertEquals("https://accName.accDomainName.com",
-        azureBlobStorageConfig.getEndpointUrl());
+    assertEquals("https://accName.accDomainName.com", azureBlobStorageConfig.getEndpointUrl());
   }
 
   @Test
   public void testConfigObjectDefaultDomainName() {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("azure_blob_storage_account_name", "accName")
-        .put("azure_blob_storage_account_key", "accKey")
-        .put("format", getFormatConfig())
-        .build());
-    final AzureBlobStorageDestinationConfig azureBlobStorageConfig = AzureBlobStorageDestinationConfig
-        .getAzureBlobStorageConfig(config);
+    final JsonNode config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("azure_blob_storage_account_name", "accName")
+                .put("azure_blob_storage_account_key", "accKey")
+                .put("format", getFormatConfig())
+                .build());
+    final AzureBlobStorageDestinationConfig azureBlobStorageConfig =
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config);
 
-    assertEquals("https://accName.blob.core.windows.net",
-        azureBlobStorageConfig.getEndpointUrl());
+    assertEquals("https://accName.blob.core.windows.net", azureBlobStorageConfig.getEndpointUrl());
   }
 
   @Test
   public void testConfigObjectDefaultBlobName() {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("azure_blob_storage_account_name", "accName")
-        .put("azure_blob_storage_account_key", "accKey")
-        .put("format", getFormatConfig())
-        .build());
+    final JsonNode config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("azure_blob_storage_account_name", "accName")
+                .put("azure_blob_storage_account_key", "accKey")
+                .put("format", getFormatConfig())
+                .build());
     final AzureBlobStorageDestinationConfig azureBlobStorageConfig =
-        AzureBlobStorageDestinationConfig
-            .getAzureBlobStorageConfig(config);
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config);
 
     assertNotNull(azureBlobStorageConfig);
   }
 
   @Test
   public void testConfigObjectDefaultContainerName() {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("azure_blob_storage_account_name", "accName")
-        .put("azure_blob_storage_account_key", "accKey")
-        .put("format", getFormatConfig())
-        .build());
-    final AzureBlobStorageDestinationConfig azureBlobStorageConfig = AzureBlobStorageDestinationConfig
-        .getAzureBlobStorageConfig(config);
+    final JsonNode config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("azure_blob_storage_account_name", "accName")
+                .put("azure_blob_storage_account_key", "accKey")
+                .put("format", getFormatConfig())
+                .build());
+    final AzureBlobStorageDestinationConfig azureBlobStorageConfig =
+        AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config);
 
     assertEquals("airbytecontainer", azureBlobStorageConfig.getContainerName());
   }
 
   @Test
   public void testSpec() throws Exception {
-    final AzureBlobStorageDestination azureBlobStorageDestination = new AzureBlobStorageDestination();
+    final AzureBlobStorageDestination azureBlobStorageDestination =
+        new AzureBlobStorageDestination();
     final ConnectorSpecification spec = azureBlobStorageDestination.spec();
     final JsonNode connectionSpecification = spec.getConnectionSpecification();
 
@@ -81,9 +87,6 @@ public class AzureBlobDestinationTest {
   }
 
   private JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\"\n"
-        + "}");
+    return Jsons.deserialize("{\n" + "  \"format_type\": \"JSONL\"\n" + "}");
   }
-
 }

@@ -26,30 +26,35 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeAll
   static void init() {
-    dbContainer = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+    dbContainer =
+        new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     dbContainer.start();
   }
 
   @BeforeEach
   public void setup() throws Exception {
-    final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", dbContainer.getHost())
-        .put("port", dbContainer.getFirstMappedPort())
-        .put("username", dbContainer.getUsername())
-        .put("password", dbContainer.getPassword())
-        .build());
+    final JsonNode configWithoutDbName =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", dbContainer.getHost())
+                .put("port", dbContainer.getFirstMappedPort())
+                .put("username", dbContainer.getUsername())
+                .put("password", dbContainer.getPassword())
+                .build());
 
-    database = Databases.createJdbcDatabase(
-        configWithoutDbName.get("username").asText(),
-        configWithoutDbName.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
-            configWithoutDbName.get("host").asText(),
-            configWithoutDbName.get("port").asInt()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver");
+    database =
+        Databases.createJdbcDatabase(
+            configWithoutDbName.get("username").asText(),
+            configWithoutDbName.get("password").asText(),
+            String.format(
+                "jdbc:sqlserver://%s:%s",
+                configWithoutDbName.get("host").asText(), configWithoutDbName.get("port").asInt()),
+            "com.microsoft.sqlserver.jdbc.SQLServerDriver");
 
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
-    database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
+    database.execute(
+        ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put("database", dbName);
@@ -82,5 +87,4 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public String getDriverClass() {
     return MssqlSource.DRIVER_CLASS;
   }
-
 }

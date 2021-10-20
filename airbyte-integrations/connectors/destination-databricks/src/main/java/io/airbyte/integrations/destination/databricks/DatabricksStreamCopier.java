@@ -23,18 +23,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This implementation is similar to
- * {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier}. The difference is that
- * this implementation creates Parquet staging files, instead of CSV ones.
- * <p/>
- * It does the following operations:
+ * This implementation is similar to {@link
+ * io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier}. The difference is that this
+ * implementation creates Parquet staging files, instead of CSV ones.
+ *
+ * <p>It does the following operations:
  * <li>1. Parquet writer writes data stream into staging parquet file in
- * s3://<bucket-name>/<bucket-path>/<staging-folder>.</li>
- * <li>2. Create a tmp delta table based on the staging parquet file.</li>
+ *     s3://<bucket-name>/<bucket-path>/<staging-folder>.
+ * <li>2. Create a tmp delta table based on the staging parquet file.
  * <li>3. Create the destination delta table based on the tmp delta table schema in
- * s3://<bucket>/<stream-name>.</li>
- * <li>4. Copy the staging parquet file into the destination delta table.</li>
- * <li>5. Delete the tmp delta table, and the staging parquet file.</li>
+ *     s3://<bucket>/<stream-name>.
+ * <li>4. Copy the staging parquet file into the destination delta table.
+ * <li>5. Delete the tmp delta table, and the staging parquet file.
  */
 public class DatabricksStreamCopier implements StreamCopier {
 
@@ -57,16 +57,17 @@ public class DatabricksStreamCopier implements StreamCopier {
   private final String destTableLocation;
   private final String stagingFolder;
 
-  public DatabricksStreamCopier(final String stagingFolder,
-                                final String schema,
-                                final ConfiguredAirbyteStream configuredStream,
-                                final AmazonS3 s3Client,
-                                final JdbcDatabase database,
-                                final DatabricksDestinationConfig databricksConfig,
-                                final ExtendedNameTransformer nameTransformer,
-                                final SqlOperations sqlOperations,
-                                final S3WriterFactory writerFactory,
-                                final Timestamp uploadTime)
+  public DatabricksStreamCopier(
+      final String stagingFolder,
+      final String schema,
+      final ConfiguredAirbyteStream configuredStream,
+      final AmazonS3 s3Client,
+      final JdbcDatabase database,
+      final DatabricksDestinationConfig databricksConfig,
+      final ExtendedNameTransformer nameTransformer,
+      final SqlOperations sqlOperations,
+      final S3WriterFactory writerFactory,
+      final Timestamp uploadTime)
       throws Exception {
     this.schemaName = schema;
     this.streamName = configuredStream.getStream().getName();
@@ -81,18 +82,28 @@ public class DatabricksStreamCopier implements StreamCopier {
     this.destTableName = nameTransformer.getIdentifier(streamName);
     this.stagingFolder = stagingFolder;
 
-    final S3DestinationConfig stagingS3Config = getStagingS3DestinationConfig(s3Config, stagingFolder);
-    this.parquetWriter = (S3ParquetWriter) writerFactory.create(stagingS3Config, s3Client, configuredStream, uploadTime);
+    final S3DestinationConfig stagingS3Config =
+        getStagingS3DestinationConfig(s3Config, stagingFolder);
+    this.parquetWriter =
+        (S3ParquetWriter)
+            writerFactory.create(stagingS3Config, s3Client, configuredStream, uploadTime);
 
-    this.tmpTableLocation = String.format("s3://%s/%s",
-        s3Config.getBucketName(), parquetWriter.getOutputPrefix());
-    this.destTableLocation = String.format("s3://%s/%s/%s/%s",
-        s3Config.getBucketName(), s3Config.getBucketPath(), databricksConfig.getDatabaseSchema(), streamName);
+    this.tmpTableLocation =
+        String.format("s3://%s/%s", s3Config.getBucketName(), parquetWriter.getOutputPrefix());
+    this.destTableLocation =
+        String.format(
+            "s3://%s/%s/%s/%s",
+            s3Config.getBucketName(),
+            s3Config.getBucketPath(),
+            databricksConfig.getDatabaseSchema(),
+            streamName);
 
     LOGGER.info("[Stream {}] Database schema: {}", streamName, schemaName);
     LOGGER.info("[Stream {}] Parquet schema: {}", streamName, parquetWriter.getParquetSchema());
-    LOGGER.info("[Stream {}] Tmp table {} location: {}", streamName, tmpTableName, tmpTableLocation);
-    LOGGER.info("[Stream {}] Data table {} location: {}", streamName, destTableName, destTableLocation);
+    LOGGER.info(
+        "[Stream {}] Tmp table {} location: {}", streamName, tmpTableName, tmpTableLocation);
+    LOGGER.info(
+        "[Stream {}] Data table {} location: {}", streamName, destTableName, destTableLocation);
 
     parquetWriter.initialize();
   }
@@ -103,7 +114,8 @@ public class DatabricksStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String fileName) throws Exception {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String fileName)
+      throws Exception {
     parquetWriter.write(id, recordMessage);
   }
 
@@ -114,16 +126,24 @@ public class DatabricksStreamCopier implements StreamCopier {
 
   @Override
   public void createDestinationSchema() throws Exception {
-    LOGGER.info("[Stream {}] Creating database schema if it does not exist: {}", streamName, schemaName);
+    LOGGER.info(
+        "[Stream {}] Creating database schema if it does not exist: {}", streamName, schemaName);
     sqlOperations.createSchemaIfNotExists(database, schemaName);
   }
 
   @Override
   public void createTemporaryTable() throws Exception {
-    LOGGER.info("[Stream {}] Creating tmp table {} from staging file: {}", streamName, tmpTableName, tmpTableLocation);
+    LOGGER.info(
+        "[Stream {}] Creating tmp table {} from staging file: {}",
+        streamName,
+        tmpTableName,
+        tmpTableLocation);
 
     sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
-    final String createTmpTable = String.format("CREATE TABLE %s.%s USING parquet LOCATION '%s';", schemaName, tmpTableName, tmpTableLocation);
+    final String createTmpTable =
+        String.format(
+            "CREATE TABLE %s.%s USING parquet LOCATION '%s';",
+            schemaName, tmpTableName, tmpTableLocation);
     LOGGER.info(createTmpTable);
     database.execute(createTmpTable);
   }
@@ -136,28 +156,36 @@ public class DatabricksStreamCopier implements StreamCopier {
 
   @Override
   public String createDestinationTable() throws Exception {
-    LOGGER.info("[Stream {}] Creating destination table if it does not exist: {}", streamName, destTableName);
-
-    final String createStatement = destinationSyncMode == DestinationSyncMode.OVERWRITE
-        // "create or replace" is the recommended way to replace existing table
-        ? "CREATE OR REPLACE TABLE"
-        : "CREATE TABLE IF NOT EXISTS";
-
-    final String createTable = String.format(
-        "%s %s.%s " +
-            "USING delta " +
-            "LOCATION '%s' " +
-            "COMMENT 'Created from stream %s' " +
-            "TBLPROPERTIES ('airbyte.destinationSyncMode' = '%s', %s) " +
-            // create the table based on the schema of the tmp table
-            "AS SELECT * FROM %s.%s LIMIT 0",
-        createStatement,
-        schemaName, destTableName,
-        destTableLocation,
+    LOGGER.info(
+        "[Stream {}] Creating destination table if it does not exist: {}",
         streamName,
-        destinationSyncMode.value(),
-        String.join(", ", DatabricksConstants.DEFAULT_TBL_PROPERTIES),
-        schemaName, tmpTableName);
+        destTableName);
+
+    final String createStatement =
+        destinationSyncMode == DestinationSyncMode.OVERWRITE
+            // "create or replace" is the recommended way to replace existing table
+            ? "CREATE OR REPLACE TABLE"
+            : "CREATE TABLE IF NOT EXISTS";
+
+    final String createTable =
+        String.format(
+            "%s %s.%s "
+                + "USING delta "
+                + "LOCATION '%s' "
+                + "COMMENT 'Created from stream %s' "
+                + "TBLPROPERTIES ('airbyte.destinationSyncMode' = '%s', %s) "
+                +
+                // create the table based on the schema of the tmp table
+                "AS SELECT * FROM %s.%s LIMIT 0",
+            createStatement,
+            schemaName,
+            destTableName,
+            destTableLocation,
+            streamName,
+            destinationSyncMode.value(),
+            String.join(", ", DatabricksConstants.DEFAULT_TBL_PROPERTIES),
+            schemaName,
+            tmpTableName);
     LOGGER.info(createTable);
     database.execute(createTable);
 
@@ -166,14 +194,10 @@ public class DatabricksStreamCopier implements StreamCopier {
 
   @Override
   public String generateMergeStatement(final String destTableName) {
-    final String copyData = String.format(
-        "COPY INTO %s.%s " +
-            "FROM '%s' " +
-            "FILEFORMAT = PARQUET " +
-            "PATTERN = '%s'",
-        schemaName, destTableName,
-        tmpTableLocation,
-        parquetWriter.getOutputFilename());
+    final String copyData =
+        String.format(
+            "COPY INTO %s.%s " + "FROM '%s' " + "FILEFORMAT = PARQUET " + "PATTERN = '%s'",
+            schemaName, destTableName, tmpTableLocation, parquetWriter.getOutputFilename());
     LOGGER.info(copyData);
     return copyData;
   }
@@ -184,7 +208,8 @@ public class DatabricksStreamCopier implements StreamCopier {
       LOGGER.info("[Stream {}] Deleting tmp table: {}", streamName, tmpTableName);
       sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
 
-      LOGGER.info("[Stream {}] Deleting staging file: {}", streamName, parquetWriter.getOutputFilePath());
+      LOGGER.info(
+          "[Stream {}] Deleting staging file: {}", streamName, parquetWriter.getOutputFilePath());
       s3Client.deleteObject(s3Config.getBucketName(), parquetWriter.getOutputFilePath());
     }
   }
@@ -193,7 +218,8 @@ public class DatabricksStreamCopier implements StreamCopier {
    * The staging data location is s3://<bucket-name>/<bucket-path>/<staging-folder>. This method
    * creates an {@link S3DestinationConfig} whose bucket path is <bucket-path>/<staging-folder>.
    */
-  static S3DestinationConfig getStagingS3DestinationConfig(final S3DestinationConfig config, final String stagingFolder) {
+  static S3DestinationConfig getStagingS3DestinationConfig(
+      final S3DestinationConfig config, final String stagingFolder) {
     return new S3DestinationConfig(
         config.getEndpoint(),
         config.getBucketName(),
@@ -204,5 +230,4 @@ public class DatabricksStreamCopier implements StreamCopier {
         // use default parquet format config
         new S3ParquetFormatConfig(MAPPER.createObjectNode()));
   }
-
 }

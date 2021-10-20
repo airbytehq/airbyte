@@ -66,16 +66,20 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     return toDatabaseConfigStatic(config);
   }
 
-  // todo (cgardens) - restructure AbstractJdbcSource so to take this function in the constructor. the
+  // todo (cgardens) - restructure AbstractJdbcSource so to take this function in the constructor.
+  // the
   // current structure forces us to declarehave a bunch of pure function methods as instance members
   // when they could be static.
   public JsonNode toDatabaseConfigStatic(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+    final StringBuilder jdbcUrl =
+        new StringBuilder(
+            String.format(
+                "jdbc:postgresql://%s:%s/%s?",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()));
 
     // assume ssl if not explicitly mentioned.
     if (!config.has("ssl") || config.get("ssl").asBoolean()) {
@@ -85,9 +89,10 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+    final ImmutableMap.Builder<Object, Object> configBuilder =
+        ImmutableMap.builder()
+            .put("username", config.get("username").asText())
+            .put("jdbc_url", jdbcUrl.toString());
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
@@ -106,11 +111,12 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     final AirbyteCatalog catalog = super.discover(config);
 
     if (isCdc(config)) {
-      final List<AirbyteStream> streams = catalog.getStreams().stream()
-          .map(PostgresSource::removeIncrementalWithoutPk)
-          .map(PostgresSource::setIncrementalToSourceDefined)
-          .map(PostgresSource::addCdcMetadataColumns)
-          .collect(toList());
+      final List<AirbyteStream> streams =
+          catalog.getStreams().stream()
+              .map(PostgresSource::removeIncrementalWithoutPk)
+              .map(PostgresSource::setIncrementalToSourceDefined)
+              .map(PostgresSource::addCdcMetadataColumns)
+              .collect(toList());
 
       catalog.setStreams(streams);
     }
@@ -119,55 +125,83 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
-    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
+      throws Exception {
+    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations =
+        new ArrayList<>(super.getCheckOperations(config));
 
     if (isCdc(config)) {
-      checkOperations.add(database -> {
-        final List<JsonNode> matchingSlots = database.query(connection -> {
-          final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
-          final PreparedStatement ps = connection.prepareStatement(sql);
-          ps.setString(1, config.get("replication_method").get("replication_slot").asText());
-          ps.setString(2, PostgresUtils.getPluginValue(config.get("replication_method")));
-          ps.setString(3, config.get("database").asText());
+      checkOperations.add(
+          database -> {
+            final List<JsonNode> matchingSlots =
+                database
+                    .query(
+                        connection -> {
+                          final String sql =
+                              "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
+                          final PreparedStatement ps = connection.prepareStatement(sql);
+                          ps.setString(
+                              1, config.get("replication_method").get("replication_slot").asText());
+                          ps.setString(
+                              2, PostgresUtils.getPluginValue(config.get("replication_method")));
+                          ps.setString(3, config.get("database").asText());
 
-          LOGGER.info("Attempting to find the named replication slot using the query: " + ps.toString());
+                          LOGGER.info(
+                              "Attempting to find the named replication slot using the query: "
+                                  + ps.toString());
 
-          return ps;
-        }, sourceOperations::rowToJson).collect(toList());
+                          return ps;
+                        },
+                        sourceOperations::rowToJson)
+                    .collect(toList());
 
-        if (matchingSlots.size() != 1) {
-          throw new RuntimeException("Expected exactly one replication slot but found " + matchingSlots.size()
-              + ". Please read the docs and add a replication slot to your database.");
-        }
+            if (matchingSlots.size() != 1) {
+              throw new RuntimeException(
+                  "Expected exactly one replication slot but found "
+                      + matchingSlots.size()
+                      + ". Please read the docs and add a replication slot to your database.");
+            }
+          });
 
-      });
+      checkOperations.add(
+          database -> {
+            final List<JsonNode> matchingPublications =
+                database
+                    .query(
+                        connection -> {
+                          final PreparedStatement ps =
+                              connection.prepareStatement(
+                                  "SELECT * FROM pg_publication WHERE pubname = ?");
+                          ps.setString(
+                              1, config.get("replication_method").get("publication").asText());
 
-      checkOperations.add(database -> {
-        final List<JsonNode> matchingPublications = database.query(connection -> {
-          final PreparedStatement ps = connection.prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
-          ps.setString(1, config.get("replication_method").get("publication").asText());
+                          LOGGER.info(
+                              "Attempting to find the publication using the query: "
+                                  + ps.toString());
 
-          LOGGER.info("Attempting to find the publication using the query: " + ps.toString());
+                          return ps;
+                        },
+                        sourceOperations::rowToJson)
+                    .collect(toList());
 
-          return ps;
-        }, sourceOperations::rowToJson).collect(toList());
-
-        if (matchingPublications.size() != 1) {
-          throw new RuntimeException("Expected exactly one publication but found " + matchingPublications.size()
-              + ". Please read the docs and add a publication to your database.");
-        }
-
-      });
+            if (matchingPublications.size() != 1) {
+              throw new RuntimeException(
+                  "Expected exactly one publication but found "
+                      + matchingPublications.size()
+                      + ". Please read the docs and add a publication to your database.");
+            }
+          });
     }
 
     return checkOperations;
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
-    // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
+    // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt
+    // to
     // create it.
     final AirbyteConnectionStatus check = check(config);
 
@@ -179,36 +213,47 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                             final StateManager stateManager,
-                                                                             final Instant emittedAt) {
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
+      final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt) {
     /**
-     * If a customer sets up a postgres source with cdc parameters (replication_slot and publication)
-     * but selects all the tables in FULL_REFRESH mode then we would still end up going through this
-     * path. We do have a check in place for debezium to make sure only tales in INCREMENTAL mode are
-     * synced {@link DebeziumRecordPublisher#getTableWhitelist(ConfiguredAirbyteCatalog)} but we should
-     * have a check here as well to make sure that if no table is in INCREMENTAL mode then skip this
-     * part
+     * If a customer sets up a postgres source with cdc parameters (replication_slot and
+     * publication) but selects all the tables in FULL_REFRESH mode then we would still end up going
+     * through this path. We do have a check in place for debezium to make sure only tales in
+     * INCREMENTAL mode are synced {@link
+     * DebeziumRecordPublisher#getTableWhitelist(ConfiguredAirbyteCatalog)} but we should have a
+     * check here as well to make sure that if no table is in INCREMENTAL mode then skip this part
      */
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig)) {
-      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig, PostgresCdcTargetPosition.targetPosition(database),
-          PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
-      return handler.getIncrementalIterators(new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadataInjector(), emittedAt);
+      final AirbyteDebeziumHandler handler =
+          new AirbyteDebeziumHandler(
+              sourceConfig,
+              PostgresCdcTargetPosition.targetPosition(database),
+              PostgresCdcProperties.getDebeziumProperties(sourceConfig),
+              catalog,
+              false);
+      return handler.getIncrementalIterators(
+          new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new PostgresCdcStateHandler(stateManager),
+          new PostgresCdcConnectorMetadataInjector(),
+          emittedAt);
 
     } else {
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      return super.getIncrementalIterators(
+          database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
 
   @VisibleForTesting
   static boolean isCdc(final JsonNode config) {
-    final boolean isCdc = config.hasNonNull("replication_method")
-        && config.get("replication_method").hasNonNull("replication_slot")
-        && config.get("replication_method").hasNonNull("publication");
+    final boolean isCdc =
+        config.hasNonNull("replication_method")
+            && config.get("replication_method").hasNonNull("replication_slot")
+            && config.get("replication_method").hasNonNull("publication");
     LOGGER.info("using CDC: {}", isCdc);
     return isCdc;
   }
@@ -263,5 +308,4 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);
   }
-
 }

@@ -67,9 +67,10 @@ public class CsvDestination extends BaseConnector implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
@@ -82,8 +83,11 @@ public class CsvDestination extends BaseConnector implements Destination {
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
-      CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-          JavaBaseConstants.COLUMN_NAME_DATA);
+      CSVFormat csvFormat =
+          CSVFormat.DEFAULT.withHeader(
+              JavaBaseConstants.COLUMN_NAME_AB_ID,
+              JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+              JavaBaseConstants.COLUMN_NAME_DATA);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       if (syncMode == null) {
         throw new IllegalStateException("Undefined destination sync mode");
@@ -123,17 +127,18 @@ public class CsvDestination extends BaseConnector implements Destination {
 
   /**
    * This consumer writes individual records to temporary files. If all of the messages are written
-   * successfully, it moves the tmp files to files named by their respective stream. If there are any
-   * failures, nothing is written.
+   * successfully, it moves the tmp files to files named by their respective stream. If there are
+   * any failures, nothing is written.
    */
   private static class CsvConsumer extends CommitOnStateAirbyteMessageConsumer {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public CsvConsumer(final Map<String, WriteConfig> writeConfigs,
-                       final ConfiguredAirbyteCatalog catalog,
-                       final Consumer<AirbyteMessage> outputRecordCollector) {
+    public CsvConsumer(
+        final Map<String, WriteConfig> writeConfigs,
+        final ConfiguredAirbyteCatalog catalog,
+        final Consumer<AirbyteMessage> outputRecordCollector) {
       super(outputRecordCollector);
       this.catalog = catalog;
       LOGGER.info("initializing consumer.");
@@ -156,14 +161,18 @@ public class CsvDestination extends BaseConnector implements Destination {
       // ignore other message types.
       if (!writeConfigs.containsKey(recordMessage.getStream())) {
         throw new IllegalArgumentException(
-            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+            String.format(
+                "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
                 Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
 
-      writeConfigs.get(recordMessage.getStream()).getWriter().printRecord(
-          UUID.randomUUID(),
-          recordMessage.getEmittedAt(),
-          Jsons.serialize(recordMessage.getData()));
+      writeConfigs
+          .get(recordMessage.getStream())
+          .getWriter()
+          .printRecord(
+              UUID.randomUUID(),
+              recordMessage.getEmittedAt(),
+              Jsons.serialize(recordMessage.getData()));
     }
 
     @Override
@@ -190,7 +199,10 @@ public class CsvDestination extends BaseConnector implements Destination {
       try {
         if (!hasFailed) {
           for (final WriteConfig writeConfig : writeConfigs.values()) {
-            Files.move(writeConfig.getTmpPath(), writeConfig.getFinalPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.move(
+                writeConfig.getTmpPath(),
+                writeConfig.getFinalPath(),
+                StandardCopyOption.REPLACE_EXISTING);
             LOGGER.info(String.format("File output: %s", writeConfig.getFinalPath()));
           }
         } else {
@@ -205,7 +217,6 @@ public class CsvDestination extends BaseConnector implements Destination {
         }
       }
     }
-
   }
 
   private static class WriteConfig {
@@ -231,11 +242,9 @@ public class CsvDestination extends BaseConnector implements Destination {
     public Path getFinalPath() {
       return finalPath;
     }
-
   }
 
   public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new CsvDestination()).run(args);
   }
-
 }

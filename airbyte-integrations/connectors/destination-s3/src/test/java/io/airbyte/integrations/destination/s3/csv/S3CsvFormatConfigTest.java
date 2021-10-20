@@ -37,46 +37,59 @@ public class S3CsvFormatConfigTest {
   @Test
   public void testHandlePartSizeConfig() throws IllegalAccessException {
 
-    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
-        + "  \"format_type\": \"CSV\",\n"
-        + "  \"flattening\": \"Root level flattening\",\n"
-        + "  \"part_size_mb\": 6\n"
-        + "}"));
+    final JsonNode config =
+        ConfigTestUtils.getBaseConfig(
+            Jsons.deserialize(
+                "{\n"
+                    + "  \"format_type\": \"CSV\",\n"
+                    + "  \"flattening\": \"Root level flattening\",\n"
+                    + "  \"part_size_mb\": 6\n"
+                    + "}"));
 
-    final S3DestinationConfig s3DestinationConfig = S3DestinationConfig
-        .getS3DestinationConfig(config);
+    final S3DestinationConfig s3DestinationConfig =
+        S3DestinationConfig.getS3DestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
     final S3FormatConfig formatConfig = s3DestinationConfig.getFormatConfig();
     assertEquals("CSV", formatConfig.getFormat().name());
     assertEquals(6, formatConfig.getPartSize());
     // Assert that is set properly in config
-    final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
-        s3DestinationConfig.getBucketName(), "objectKey", null,
-        s3DestinationConfig.getFormatConfig().getPartSize());
+    final StreamTransferManager streamTransferManager =
+        S3StreamTransferManagerHelper.getDefault(
+            s3DestinationConfig.getBucketName(),
+            "objectKey",
+            null,
+            s3DestinationConfig.getFormatConfig().getPartSize());
 
-    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes =
+        (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 6, partSizeBytes);
   }
 
   @Test
   public void testHandleAbsenceOfPartSizeConfig() throws IllegalAccessException {
 
-    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
-        + "  \"format_type\": \"CSV\",\n"
-        + "  \"flattening\": \"Root level flattening\"\n"
-        + "}"));
+    final JsonNode config =
+        ConfigTestUtils.getBaseConfig(
+            Jsons.deserialize(
+                "{\n"
+                    + "  \"format_type\": \"CSV\",\n"
+                    + "  \"flattening\": \"Root level flattening\"\n"
+                    + "}"));
 
-    final S3DestinationConfig s3DestinationConfig = S3DestinationConfig
-        .getS3DestinationConfig(config);
+    final S3DestinationConfig s3DestinationConfig =
+        S3DestinationConfig.getS3DestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
-    final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
-        s3DestinationConfig.getBucketName(), "objectKey", null,
-        s3DestinationConfig.getFormatConfig().getPartSize());
+    final StreamTransferManager streamTransferManager =
+        S3StreamTransferManagerHelper.getDefault(
+            s3DestinationConfig.getBucketName(),
+            "objectKey",
+            null,
+            s3DestinationConfig.getFormatConfig().getPartSize());
 
-    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes =
+        (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly
   }
-
 }

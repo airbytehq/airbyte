@@ -20,7 +20,8 @@ import org.jooq.SQLDialect;
 public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final String SCHEMA_NAME = "TEST";
-  private static final String INSERT_SEMI_STRUCTURED_SQL = "INSERT INTO %1$s (ID, TEST_COLUMN) SELECT %2$s, %3$s";
+  private static final String INSERT_SEMI_STRUCTURED_SQL =
+      "INSERT INTO %1$s (ID, TEST_COLUMN) SELECT %2$s, %3$s";
 
   private JsonNode config;
   private Database database;
@@ -50,11 +51,11 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:snowflake://%s/",
-            config.get("host").asText()),
+        String.format("jdbc:snowflake://%s/", config.get("host").asText()),
         SnowflakeSource.DRIVER_CLASS,
         SQLDialect.DEFAULT,
-        String.format("role=%s;warehouse=%s;database=%s",
+        String.format(
+            "role=%s;warehouse=%s;database=%s",
             config.get("role").asText(),
             config.get("warehouse").asText(),
             config.get("database").asText()));
@@ -62,8 +63,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String dropSchemaQuery = String
-        .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
+    final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
     database = getDatabase();
     database.query(ctx -> ctx.fetch(dropSchemaQuery));
     database.close();
@@ -188,8 +188,8 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         TestDataHolder.builder()
             .sourceType("VARCHAR")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'тест'", "'⚡ test ��'",
-                "'!\"#$%&\\'()*+,-./:;<=>?\\@[\\]^_\\`{|}~'")
+            .addInsertValues(
+                "null", "'тест'", "'⚡ test ��'", "'!\"#$%&\\'()*+,-./:;<=>?\\@[\\]^_\\`{|}~'")
             .addExpectedValues(null, "тест", "⚡ test ��", "!\"#$%&'()*+,-./:;<=>?@[]^_`|~")
             .build());
     addDataTypeTestData(
@@ -228,8 +228,8 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         TestDataHolder.builder()
             .sourceType("BOOLEAN")
             .airbyteType(JsonSchemaPrimitive.BOOLEAN)
-            .addInsertValues("null", "'true'", "5", "'false'", "0", "TO_BOOLEAN('y')",
-                "TO_BOOLEAN('n')")
+            .addInsertValues(
+                "null", "'true'", "5", "'false'", "0", "TO_BOOLEAN('y')", "TO_BOOLEAN('n')")
             .addExpectedValues(null, "true", "true", "false", "false", "true", "false")
             .build());
 
@@ -253,8 +253,8 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .sourceType("TIME")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "'00:00:00'", "'1:59 PM'", "'23:59:59'")
-            .addExpectedValues(null, "1970-01-01T00:00:00Z", "1970-01-01T13:59:00Z",
-                "1970-01-01T23:59:59Z")
+            .addExpectedValues(
+                null, "1970-01-01T00:00:00Z", "1970-01-01T13:59:00Z", "1970-01-01T23:59:59Z")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -291,8 +291,8 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .sourceType("VARIANT")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .insertPatternSql(INSERT_SEMI_STRUCTURED_SQL)
-            .addInsertValues("null",
-                "parse_json(' { \"key1\": \"value1\", \"key2\": \"value2\" } ')")
+            .addInsertValues(
+                "null", "parse_json(' { \"key1\": \"value1\", \"key2\": \"value2\" } ')")
             .addExpectedValues(null, "{\n  \"key1\": \"value1\",\n  \"key2\": \"value2\"\n}")
             .build());
     addDataTypeTestData(
@@ -308,9 +308,11 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .sourceType("OBJECT")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .insertPatternSql(INSERT_SEMI_STRUCTURED_SQL)
-            .addInsertValues("null",
+            .addInsertValues(
+                "null",
                 "parse_json(' { \"outer_key1\": { \"inner_key1A\": \"1a\", \"inner_key1B\": \"1b\" }, \"outer_key2\": { \"inner_key2\": 2 } } ')")
-            .addExpectedValues(null,
+            .addExpectedValues(
+                null,
                 "{\n  \"outer_key1\": {\n    \"inner_key1A\": \"1a\",\n    \"inner_key1B\": \"1b\"\n  },\n  \"outer_key2\": {\n    \"inner_key2\": 2\n  }\n}")
             .build());
 
@@ -319,12 +321,12 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         TestDataHolder.builder()
             .sourceType("GEOGRAPHY")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'POINT(-122.35 37.55)'",
-                "'LINESTRING(-124.20 42.00, -120.01 41.99)'")
-            .addExpectedValues(null,
+            .addInsertValues(
+                "null", "'POINT(-122.35 37.55)'", "'LINESTRING(-124.20 42.00, -120.01 41.99)'")
+            .addExpectedValues(
+                null,
                 "{\n  \"coordinates\": [\n    -122.35,\n    37.55\n  ],\n  \"type\": \"Point\"\n}",
                 "{\n  \"coordinates\": [\n    [\n      -124.2,\n      42\n    ],\n    [\n      -120.01,\n      41.99\n    ]\n  ],\n  \"type\": \"LineString\"\n}")
             .build());
   }
-
 }

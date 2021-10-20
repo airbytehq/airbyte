@@ -31,11 +31,12 @@ public class TestingDestinations extends BaseConnector implements Destination {
   }
 
   public TestingDestinations() {
-    this(ImmutableMap.<TestDestinationType, Destination>builder()
-        .put(TestDestinationType.LOGGING, new LoggingDestination())
-        .put(TestDestinationType.THROTTLED, new ThrottledDestination())
-        .put(TestDestinationType.SILENT, new SilentDestination())
-        .build());
+    this(
+        ImmutableMap.<TestDestinationType, Destination>builder()
+            .put(TestDestinationType.LOGGING, new LoggingDestination())
+            .put(TestDestinationType.THROTTLED, new ThrottledDestination())
+            .put(TestDestinationType.SILENT, new SilentDestination())
+            .build());
   }
 
   public TestingDestinations(final Map<TestDestinationType, Destination> destinationMap) {
@@ -47,9 +48,10 @@ public class TestingDestinations extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return selectDestination(config).getConsumer(config, catalog, outputRecordCollector);
   }
@@ -65,5 +67,4 @@ public class TestingDestinations extends BaseConnector implements Destination {
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", TestingDestinations.class);
   }
-
 }

@@ -62,20 +62,21 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
@@ -108,12 +109,17 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     return result;
   }
 
-  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(final JdbcDatabaseContainer<?> db) {
+  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(
+      final JdbcDatabaseContainer<?> db) {
     return ImmutableMap.builder()
-        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
-            .getNetworks()
-            .get(((Network.NetworkImpl) bastion.getNetWork()).getName())
-            .getIpAddress()))
+        .put(
+            "host",
+            Objects.requireNonNull(
+                db.getContainerInfo()
+                    .getNetworkSettings()
+                    .getNetworks()
+                    .get(((Network.NetworkImpl) bastion.getNetWork()).getName())
+                    .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("port", db.getExposedPorts().get(0))
@@ -126,31 +132,37 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asInt()),
+        String.format(
+            "jdbc:sqlserver://%s:%s", config.get("host").asText(), config.get("port").asInt()),
         "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         null);
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws Exception {
     final var schema = schemaName == null ? this.schemaName : schemaName;
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
         MSSQLDestination.HOST_KEY,
         MSSQLDestination.PORT_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
-            .query(
-                ctx -> ctx
-                    .fetch(String.format("USE %s;"
-                        + "SELECT * FROM %s.%s ORDER BY %s ASC;",
-                        database, schema, tableName.toLowerCase(),
-                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                    .stream()
-                    .map(r -> r.formatJSON(JSON_FORMAT))
-                    .map(Jsons::deserialize)
-                    .collect(Collectors.toList())));
+        (CheckedFunction<JsonNode, List<JsonNode>, Exception>)
+            mangledConfig ->
+                getDatabaseFromConfig(mangledConfig)
+                    .query(
+                        ctx ->
+                            ctx
+                                .fetch(
+                                    String.format(
+                                        "USE %s;" + "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                                        database,
+                                        schema,
+                                        tableName.toLowerCase(),
+                                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                                .stream()
+                                .map(r -> r.formatJSON(JSON_FORMAT))
+                                .map(Jsons::deserialize)
+                                .collect(Collectors.toList())));
   }
 
   @Override
@@ -162,13 +174,15 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
         MSSQLDestination.HOST_KEY,
         MSSQLDestination.PORT_KEY,
         mangledConfig -> {
-          getDatabaseFromConfig(mangledConfig).query(ctx -> {
-            ctx.fetch(String.format("CREATE DATABASE %s;", database));
-            ctx.fetch(String.format("USE %s;", database));
-            ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName));
+          getDatabaseFromConfig(mangledConfig)
+              .query(
+                  ctx -> {
+                    ctx.fetch(String.format("CREATE DATABASE %s;", database));
+                    ctx.fetch(String.format("USE %s;", database));
+                    ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName));
 
-            return null;
-          });
+                    return null;
+                  });
         });
   }
 
@@ -178,9 +192,10 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   private void initAndStartJdbcContainer() {
-    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2017-latest")
-        .withNetwork(bastion.getNetWork())
-        .acceptLicense();
+    db =
+        new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2017-latest")
+            .withNetwork(bastion.getNetWork())
+            .acceptLicense();
     db.start();
   }
 
@@ -188,5 +203,4 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
   }
-
 }

@@ -27,5 +27,4 @@ public class ScaffoldJavaJdbcSourceTests {
     // check.getStatus());"
     // TODO cleanup used resources and close used container. Ex: "container.close();"
   }
-
 }

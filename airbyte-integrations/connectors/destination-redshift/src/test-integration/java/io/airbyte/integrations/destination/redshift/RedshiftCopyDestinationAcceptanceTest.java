@@ -56,13 +56,13 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
@@ -83,7 +83,8 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
     if (!tableName.startsWith("\"")) {
@@ -106,14 +107,20 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return getDatabase().query(
-        ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .stream()
-            .map(r -> r.formatJSON(JSON_FORMAT))
-            .map(Jsons::deserialize)
-            .collect(Collectors.toList()));
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
+    return getDatabase()
+        .query(
+            ctx ->
+                ctx
+                    .fetch(
+                        String.format(
+                            "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                            schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                    .stream()
+                    .map(r -> r.formatJSON(JSON_FORMAT))
+                    .map(Jsons::deserialize)
+                    .collect(Collectors.toList()));
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
@@ -130,7 +137,8 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText());
+    final String dropSchemaQuery =
+        String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText());
     getDatabase().query(ctx -> ctx.execute(dropSchemaQuery));
   }
 
@@ -138,11 +146,13 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
     return Databases.createDatabase(
         baseConfig.get("username").asText(),
         baseConfig.get("password").asText(),
-        String.format("jdbc:redshift://%s:%s/%s",
+        String.format(
+            "jdbc:redshift://%s:%s/%s",
             baseConfig.get("host").asText(),
             baseConfig.get("port").asText(),
             baseConfig.get("database").asText()),
-        "com.amazon.redshift.jdbc.Driver", null);
+        "com.amazon.redshift.jdbc.Driver",
+        null);
   }
 
   @Override
@@ -154,5 +164,4 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   protected int getMaxRecordValueLimit() {
     return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }
-
 }

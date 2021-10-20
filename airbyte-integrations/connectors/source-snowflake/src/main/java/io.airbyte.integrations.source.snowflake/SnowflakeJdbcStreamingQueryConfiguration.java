@@ -9,8 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class SnowflakeJdbcStreamingQueryConfiguration implements
-    JdbcStreamingQueryConfiguration {
+public class SnowflakeJdbcStreamingQueryConfiguration implements JdbcStreamingQueryConfiguration {
 
   @Override
   public void accept(final Connection connection, final PreparedStatement preparedStatement)
@@ -18,5 +17,4 @@ public class SnowflakeJdbcStreamingQueryConfiguration implements
     connection.setAutoCommit(false);
     preparedStatement.setFetchSize(1000);
   }
-
 }

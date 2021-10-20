@@ -11,8 +11,6 @@ public class DatabricksConstants {
   public static final String DATABRICKS_USERNAME = "token";
   public static final String DATABRICKS_DRIVER_CLASS = "com.simba.spark.jdbc.Driver";
 
-  public static final Set<String> DEFAULT_TBL_PROPERTIES = Set.of(
-      "delta.autoOptimize.optimizeWrite = true",
-      "delta.autoOptimize.autoCompact = true");
-
+  public static final Set<String> DEFAULT_TBL_PROPERTIES =
+      Set.of("delta.autoOptimize.optimizeWrite = true", "delta.autoOptimize.autoCompact = true");
 }

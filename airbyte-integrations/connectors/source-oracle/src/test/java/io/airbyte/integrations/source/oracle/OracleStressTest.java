@@ -48,13 +48,15 @@ class OracleStressTest extends JdbcStressTest {
     COL_ID_TYPE = "NUMBER(38,0)";
     INSERT_STATEMENT = "INTO id_and_name (id, name) VALUES (%s,'picard-%s')";
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", ORACLE_DB.getHost())
-        .put("port", ORACLE_DB.getFirstMappedPort())
-        .put("sid", ORACLE_DB.getSid())
-        .put("username", ORACLE_DB.getUsername())
-        .put("password", ORACLE_DB.getPassword())
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", ORACLE_DB.getHost())
+                .put("port", ORACLE_DB.getFirstMappedPort())
+                .put("sid", ORACLE_DB.getSid())
+                .put("username", ORACLE_DB.getUsername())
+                .put("password", ORACLE_DB.getPassword())
+                .build());
 
     super.setup();
   }
@@ -96,12 +98,16 @@ class OracleStressTest extends JdbcStressTest {
 
     @Override
     public JsonNode toDatabaseConfig(final JsonNode config) {
-      final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-          .put("username", config.get("username").asText())
-          .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/xe",
-              config.get("host").asText(),
-              config.get("port").asText(),
-              config.get("sid").asText()));
+      final ImmutableMap.Builder<Object, Object> configBuilder =
+          ImmutableMap.builder()
+              .put("username", config.get("username").asText())
+              .put(
+                  "jdbc_url",
+                  String.format(
+                      "jdbc:oracle:thin:@//%s:%s/xe",
+                      config.get("host").asText(),
+                      config.get("port").asText(),
+                      config.get("sid").asText()));
 
       if (config.has("password")) {
         configBuilder.put("password", config.get("password").asText());
@@ -122,7 +128,5 @@ class OracleStressTest extends JdbcStressTest {
       new IntegrationRunner(source).run(args);
       LOGGER.info("completed source: {}", OracleTestSource.class);
     }
-
   }
-
 }

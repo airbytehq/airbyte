@@ -12,5 +12,4 @@ public class PostgresSQLNameTransformer extends ExtendedNameTransformer {
   protected String applyDefaultCase(final String input) {
     return input.toLowerCase();
   }
-
 }

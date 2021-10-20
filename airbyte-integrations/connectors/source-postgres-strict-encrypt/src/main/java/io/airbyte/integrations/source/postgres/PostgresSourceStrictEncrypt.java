@@ -34,5 +34,4 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSourceStrictEncrypt.class);
   }
-
 }

@@ -37,16 +37,19 @@ public class DynamodbWriter {
   private final String outputTableName;
   private final int batchSize = 25;
 
-  public DynamodbWriter(final DynamodbDestinationConfig config,
-                        final AmazonDynamoDB amazonDynamodb,
-                        final ConfiguredAirbyteStream configuredStream,
-                        final long uploadTimestamp) {
+  public DynamodbWriter(
+      final DynamodbDestinationConfig config,
+      final AmazonDynamoDB amazonDynamodb,
+      final ConfiguredAirbyteStream configuredStream,
+      final long uploadTimestamp) {
 
     this.config = config;
     this.dynamodb = new DynamoDB(amazonDynamodb);
     this.configuredStream = configuredStream;
     this.uploadTimestamp = uploadTimestamp;
-    this.outputTableName = DynamodbOutputTableHelper.getOutputTableName(config.getTableName(), configuredStream.getStream());
+    this.outputTableName =
+        DynamodbOutputTableHelper.getOutputTableName(
+            config.getTableName(), configuredStream.getStream());
 
     final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
     if (syncMode == null) {
@@ -84,39 +87,50 @@ public class DynamodbWriter {
     return true;
   }
 
-  private Table createTableIfNotExists(final AmazonDynamoDB amazonDynamodb, final String tableName) throws Exception {
-    final AttributeDefinition partitionKeyDefinition = new AttributeDefinition()
-        .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
-        .withAttributeType(ScalarAttributeType.S);
-    final AttributeDefinition sortKeyDefinition = new AttributeDefinition()
-        .withAttributeName("sync_time")
-        .withAttributeType(ScalarAttributeType.N);
-    final KeySchemaElement partitionKeySchema = new KeySchemaElement()
-        .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
-        .withKeyType(KeyType.HASH);
-    final KeySchemaElement sortKeySchema = new KeySchemaElement()
-        .withAttributeName("sync_time")
-        .withKeyType(KeyType.RANGE);
+  private Table createTableIfNotExists(final AmazonDynamoDB amazonDynamodb, final String tableName)
+      throws Exception {
+    final AttributeDefinition partitionKeyDefinition =
+        new AttributeDefinition()
+            .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
+            .withAttributeType(ScalarAttributeType.S);
+    final AttributeDefinition sortKeyDefinition =
+        new AttributeDefinition()
+            .withAttributeName("sync_time")
+            .withAttributeType(ScalarAttributeType.N);
+    final KeySchemaElement partitionKeySchema =
+        new KeySchemaElement()
+            .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
+            .withKeyType(KeyType.HASH);
+    final KeySchemaElement sortKeySchema =
+        new KeySchemaElement().withAttributeName("sync_time").withKeyType(KeyType.RANGE);
 
-    TableUtils.createTableIfNotExists(amazonDynamodb, new CreateTableRequest()
-        .withTableName(tableName)
-        .withAttributeDefinitions(partitionKeyDefinition)
-        .withKeySchema(partitionKeySchema)
-        .withAttributeDefinitions(sortKeyDefinition)
-        .withKeySchema(sortKeySchema)
-        .withBillingMode(BillingMode.PAY_PER_REQUEST));
+    TableUtils.createTableIfNotExists(
+        amazonDynamodb,
+        new CreateTableRequest()
+            .withTableName(tableName)
+            .withAttributeDefinitions(partitionKeyDefinition)
+            .withKeySchema(partitionKeySchema)
+            .withAttributeDefinitions(sortKeyDefinition)
+            .withKeySchema(sortKeySchema)
+            .withBillingMode(BillingMode.PAY_PER_REQUEST));
     return new DynamoDB(amazonDynamodb).getTable(tableName);
   }
 
   public void write(final UUID id, final AirbyteRecordMessage recordMessage) {
 
     final ObjectMapper mapper = new ObjectMapper();
-    final Map<String, Object> dataMap = mapper.convertValue(recordMessage.getData(), new TypeReference<Map<String, Object>>() {});
+    final Map<String, Object> dataMap =
+        mapper.convertValue(recordMessage.getData(), new TypeReference<Map<String, Object>>() {});
 
-    final var item = new Item()
-        .withPrimaryKey(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(), "sync_time", uploadTimestamp)
-        .withMap(JavaBaseConstants.COLUMN_NAME_DATA, dataMap)
-        .withLong(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
+    final var item =
+        new Item()
+            .withPrimaryKey(
+                JavaBaseConstants.COLUMN_NAME_AB_ID,
+                UUID.randomUUID().toString(),
+                "sync_time",
+                uploadTimestamp)
+            .withMap(JavaBaseConstants.COLUMN_NAME_DATA, dataMap)
+            .withLong(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
     tableWriteItems.addItemToPut(item);
     BatchWriteItemOutcome outcome;
     if (tableWriteItems.getItemsToPut().size() >= batchSize) {
@@ -131,7 +145,10 @@ public class DynamodbWriter {
         }
 
         if (maxRetries == 0) {
-          LOGGER.warn(String.format("Unprocessed items count after retry %d times: %s", 5, Integer.toString(outcome.getUnprocessedItems().size())));
+          LOGGER.warn(
+              String.format(
+                  "Unprocessed items count after retry %d times: %s",
+                  5, Integer.toString(outcome.getUnprocessedItems().size())));
         }
       } catch (final Exception e) {
         LOGGER.error(e.getMessage());
@@ -152,7 +169,10 @@ public class DynamodbWriter {
             maxRetries--;
           }
           if (maxRetries == 0) {
-            LOGGER.warn(String.format("Unprocessed items count after retry %d times: %s", 5, Integer.toString(outcome.getUnprocessedItems().size())));
+            LOGGER.warn(
+                String.format(
+                    "Unprocessed items count after retry %d times: %s",
+                    5, Integer.toString(outcome.getUnprocessedItems().size())));
           }
         }
       } catch (final Exception e) {
@@ -161,5 +181,4 @@ public class DynamodbWriter {
       LOGGER.info("Data writing completed for DynamoDB.");
     }
   }
-
 }

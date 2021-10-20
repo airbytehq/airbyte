@@ -39,10 +39,11 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private AirbyteMessage lastStateMessage = null;
 
-  public KafkaRecordConsumer(final KafkaDestinationConfig kafkaDestinationConfig,
-                             final ConfiguredAirbyteCatalog catalog,
-                             final Consumer<AirbyteMessage> outputRecordCollector,
-                             final NamingConventionTransformer nameTransformer) {
+  public KafkaRecordConsumer(
+      final KafkaDestinationConfig kafkaDestinationConfig,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final NamingConventionTransformer nameTransformer) {
     this.topicPattern = kafkaDestinationConfig.getTopicPattern();
     this.topicMap = new HashMap<>();
     this.producer = kafkaDestinationConfig.getProducer();
@@ -64,15 +65,19 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
 
-      // if brokers have the property "auto.create.topics.enable" enabled then topics will be auto-created
+      // if brokers have the property "auto.create.topics.enable" enabled then topics will be
+      // auto-created
       // otherwise these topics need to have been pre-created.
-      final String topic = topicMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
+      final String topic =
+          topicMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
       final String key = UUID.randomUUID().toString();
-      final JsonNode value = Jsons.jsonNode(ImmutableMap.of(
-          KafkaDestination.COLUMN_NAME_AB_ID, key,
-          KafkaDestination.COLUMN_NAME_STREAM, recordMessage.getStream(),
-          KafkaDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
-          KafkaDestination.COLUMN_NAME_DATA, recordMessage.getData()));
+      final JsonNode value =
+          Jsons.jsonNode(
+              ImmutableMap.of(
+                  KafkaDestination.COLUMN_NAME_AB_ID, key,
+                  KafkaDestination.COLUMN_NAME_STREAM, recordMessage.getStream(),
+                  KafkaDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
+                  KafkaDestination.COLUMN_NAME_DATA, recordMessage.getData()));
 
       sendRecord(new ProducerRecord<>(topic, key, value));
     } else {
@@ -83,19 +88,29 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   Map<AirbyteStreamNameNamespacePair, String> buildTopicMap() {
     return catalog.getStreams().stream()
         .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
-        .collect(Collectors.toMap(Function.identity(),
-            pair -> nameTransformer.getIdentifier(topicPattern
-                .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
-                .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")))));
+        .collect(
+            Collectors.toMap(
+                Function.identity(),
+                pair ->
+                    nameTransformer.getIdentifier(
+                        topicPattern
+                            .replaceAll(
+                                "\\{namespace}",
+                                Optional.ofNullable(pair.getNamespace()).orElse(""))
+                            .replaceAll(
+                                "\\{stream}", Optional.ofNullable(pair.getName()).orElse("")))));
   }
 
   private void sendRecord(final ProducerRecord<String, JsonNode> record) {
-    producer.send(record, (recordMetadata, exception) -> {
-      if (exception != null) {
-        LOGGER.error("Error sending message to topic.", exception);
-        throw new RuntimeException("Cannot send message to Kafka. Error: " + exception.getMessage(), exception);
-      }
-    });
+    producer.send(
+        record,
+        (recordMetadata, exception) -> {
+          if (exception != null) {
+            LOGGER.error("Error sending message to topic.", exception);
+            throw new RuntimeException(
+                "Cannot send message to Kafka. Error: " + exception.getMessage(), exception);
+          }
+        });
     if (sync) {
       producer.flush();
       outputRecordCollector.accept(lastStateMessage);
@@ -108,5 +123,4 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     producer.close();
     outputRecordCollector.accept(lastStateMessage);
   }
-
 }

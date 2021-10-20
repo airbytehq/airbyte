@@ -35,15 +35,16 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
   private final ConfiguredAirbyteCatalog configuredCatalog;
   private final AzureBlobStorageWriterFactory writerFactory;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final Map<AirbyteStreamNameNamespacePair, AzureBlobStorageWriter> streamNameAndNamespaceToWriters;
+  private final Map<AirbyteStreamNameNamespacePair, AzureBlobStorageWriter>
+      streamNameAndNamespaceToWriters;
 
   private AirbyteMessage lastStateMessage = null;
 
   public AzureBlobStorageConsumer(
-                                  final AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig,
-                                  final ConfiguredAirbyteCatalog configuredCatalog,
-                                  final AzureBlobStorageWriterFactory writerFactory,
-                                  final Consumer<AirbyteMessage> outputRecordCollector) {
+      final AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final AzureBlobStorageWriterFactory writerFactory,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.azureBlobStorageDestinationConfig = azureBlobStorageDestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.writerFactory = writerFactory;
@@ -54,38 +55,44 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
   @Override
   protected void startTracked() throws Exception {
     // Init the client itself here
-    final StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
-        azureBlobStorageDestinationConfig.getAccountName(),
-        azureBlobStorageDestinationConfig.getAccountKey());
+    final StorageSharedKeyCredential credential =
+        new StorageSharedKeyCredential(
+            azureBlobStorageDestinationConfig.getAccountName(),
+            azureBlobStorageDestinationConfig.getAccountKey());
 
-    final SpecializedBlobClientBuilder specializedBlobClientBuilder = new SpecializedBlobClientBuilder()
-        .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
-        .credential(credential)
-        .containerName(
-            azureBlobStorageDestinationConfig
-                .getContainerName());// Like schema (or even oracle user) in DB
+    final SpecializedBlobClientBuilder specializedBlobClientBuilder =
+        new SpecializedBlobClientBuilder()
+            .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
+            .credential(credential)
+            .containerName(
+                azureBlobStorageDestinationConfig
+                    .getContainerName()); // Like schema (or even oracle user) in DB
 
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
 
-      final AppendBlobClient appendBlobClient = specializedBlobClientBuilder
-          .blobName(configuredStream.getStream().getName())
-          .buildAppendBlobClient();
+      final AppendBlobClient appendBlobClient =
+          specializedBlobClientBuilder
+              .blobName(configuredStream.getStream().getName())
+              .buildAppendBlobClient();
 
       final boolean isNewlyCreatedBlob = createContainers(appendBlobClient, configuredStream);
 
-      final AzureBlobStorageWriter writer = writerFactory
-          .create(azureBlobStorageDestinationConfig, appendBlobClient, configuredStream,
+      final AzureBlobStorageWriter writer =
+          writerFactory.create(
+              azureBlobStorageDestinationConfig,
+              appendBlobClient,
+              configuredStream,
               isNewlyCreatedBlob);
 
       final AirbyteStream stream = configuredStream.getStream();
-      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
-          .fromAirbyteSteam(stream);
+      final AirbyteStreamNameNamespacePair streamNamePair =
+          AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
       streamNameAndNamespaceToWriters.put(streamNamePair, writer);
     }
   }
 
-  private boolean createContainers(final AppendBlobClient appendBlobClient,
-                                   final ConfiguredAirbyteStream configuredStream) {
+  private boolean createContainers(
+      final AppendBlobClient appendBlobClient, final ConfiguredAirbyteStream configuredStream) {
     // create container if absent (aka SQl Schema)
     final BlobContainerClient containerClient = appendBlobClient.getContainerClient();
     if (!containerClient.exists()) {
@@ -94,25 +101,29 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
     // create a storage container if absent (aka Table is SQL BD)
     if (SyncMode.FULL_REFRESH.equals(configuredStream.getSyncMode())) {
       // full refresh sync. Create blob and override if any
-      LOGGER.info("Sync mode is selected to OVERRIDE mode. New container will be automatically"
-          + " created or all data would be overridden (if any) for stream:" + configuredStream
-              .getStream().getName());
+      LOGGER.info(
+          "Sync mode is selected to OVERRIDE mode. New container will be automatically"
+              + " created or all data would be overridden (if any) for stream:"
+              + configuredStream.getStream().getName());
       appendBlobClient.create(true);
       return true;
     } else {
       // incremental sync. Create new container only if still absent
       if (!appendBlobClient.exists()) {
-        LOGGER.info("Sync mode is selected to APPEND mode. New container will be automatically"
-            + " created for stream:" + configuredStream.getStream().getName());
+        LOGGER.info(
+            "Sync mode is selected to APPEND mode. New container will be automatically"
+                + " created for stream:"
+                + configuredStream.getStream().getName());
         appendBlobClient.create(false);
         LOGGER.info(appendBlobClient.getBlobName() + " blob has been created");
         return true;
       } else {
-        LOGGER.info(String.format(
-            "Sync mode is selected to APPEND mode. Container %s already exists. Append mode is "
-                + "only available for \"Append blobs\". For more details please visit"
-                + " https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction#blobs",
-            configuredStream.getStream().getName()));
+        LOGGER.info(
+            String.format(
+                "Sync mode is selected to APPEND mode. Container %s already exists. Append mode is "
+                    + "only available for \"Append blobs\". For more details please visit"
+                    + " https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction#blobs",
+                configuredStream.getStream().getName()));
         LOGGER.info(appendBlobClient.getBlobName() + " already exists");
         return false;
       }
@@ -129,13 +140,14 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
     }
 
     final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
-    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
-        .fromRecordMessage(recordMessage);
+    final AirbyteStreamNameNamespacePair pair =
+        AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
     if (!streamNameAndNamespaceToWriters.containsKey(pair)) {
-      final String errMsg = String.format(
-          "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-          Jsons.serialize(configuredCatalog), Jsons.serialize(recordMessage));
+      final String errMsg =
+          String.format(
+              "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+              Jsons.serialize(configuredCatalog), Jsons.serialize(recordMessage));
       LOGGER.error(errMsg);
       throw new IllegalArgumentException(errMsg);
     }
@@ -144,8 +156,10 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
       streamNameAndNamespaceToWriters.get(pair).write(UUID.randomUUID(), recordMessage);
 
     } catch (final Exception e) {
-      LOGGER.error(String.format("Failed to write messagefor stream %s, details: %s",
-          streamNameAndNamespaceToWriters.get(pair), e.getMessage()));
+      LOGGER.error(
+          String.format(
+              "Failed to write messagefor stream %s, details: %s",
+              streamNameAndNamespaceToWriters.get(pair), e.getMessage()));
       throw new RuntimeException(e);
     }
   }
@@ -160,5 +174,4 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
       outputRecordCollector.accept(lastStateMessage);
     }
   }
-
 }

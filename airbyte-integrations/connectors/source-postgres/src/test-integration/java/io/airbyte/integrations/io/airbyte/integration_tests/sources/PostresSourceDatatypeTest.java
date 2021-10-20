@@ -23,44 +23,49 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
-  private static final Logger LOGGER = LoggerFactory
-      .getLogger(PostresSourceDatatypeTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PostresSourceDatatypeTest.class);
 
   @Override
   protected Database setupDatabase() throws SQLException {
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
-        .build());
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("ssl", false)
-        .put("replication_method", replicationMethod)
-        .build());
+    final JsonNode replicationMethod =
+        Jsons.jsonNode(ImmutableMap.builder().put("method", "Standard").build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", container.getHost())
+                .put("port", container.getFirstMappedPort())
+                .put("database", container.getDatabaseName())
+                .put("username", container.getUsername())
+                .put("password", container.getPassword())
+                .put("ssl", false)
+                .put("replication_method", replicationMethod)
+                .build());
     LOGGER.warn("PPP:config:" + config);
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
+    final Database database =
+        Databases.createDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:postgresql://%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()),
+            "org.postgresql.Driver",
+            SQLDialect.POSTGRES);
 
     database.query(ctx -> ctx.fetch("CREATE SCHEMA TEST;"));
     database.query(ctx -> ctx.fetch("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');"));
-    database.query(ctx -> ctx.fetch("CREATE TYPE inventory_item AS (\n"
-        + "    name            text,\n"
-        + "    supplier_id     integer,\n"
-        + "    price           numeric\n"
-        + ");"));
+    database.query(
+        ctx ->
+            ctx.fetch(
+                "CREATE TYPE inventory_item AS (\n"
+                    + "    name            text,\n"
+                    + "    supplier_id     integer,\n"
+                    + "    price           numeric\n"
+                    + ");"));
 
     return database;
   }
@@ -176,10 +181,22 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("varchar")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "'Миші йдуть на південь, не питай чому;'", "'櫻花分店'",
-                "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
-            .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
-                null, "\\xF0\\x9F\\x9A\\x80")
+            .addInsertValues(
+                "'a'",
+                "'abc'",
+                "'Миші йдуть на південь, не питай чому;'",
+                "'櫻花分店'",
+                "''",
+                "null",
+                "'\\xF0\\x9F\\x9A\\x80'")
+            .addExpectedValues(
+                "a",
+                "abc",
+                "Миші йдуть на південь, не питай чому;",
+                "櫻花分店",
+                "",
+                null,
+                "\\xF0\\x9F\\x9A\\x80")
             .build());
 
     addDataTypeTestData(
@@ -187,23 +204,38 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("varchar")
             .fullSourceDataType("character(12)")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
-                "''", "null")
-            .addExpectedValues("a           ", "abc         ", "Миші йдуть; ", "櫻花分店        ",
-                "            ", null)
+            .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'", "''", "null")
+            .addExpectedValues(
+                "a           ",
+                "abc         ",
+                "Миші йдуть; ",
+                "櫻花分店        ",
+                "            ",
+                null)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("cidr")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'192.168.100.128/25'", "'192.168/24'", "'192.168.1'",
-                "'128.1'", "'2001:4f8:3:ba::/64'")
-            .addExpectedValues(null, "192.168.100.128/25", "192.168.0.0/24", "192.168.1.0/24",
-                "128.1.0.0/16", "2001:4f8:3:ba::/64")
+            .addInsertValues(
+                "null",
+                "'192.168.100.128/25'",
+                "'192.168/24'",
+                "'192.168.1'",
+                "'128.1'",
+                "'2001:4f8:3:ba::/64'")
+            .addExpectedValues(
+                null,
+                "192.168.100.128/25",
+                "192.168.0.0/24",
+                "192.168.1.0/24",
+                "128.1.0.0/16",
+                "2001:4f8:3:ba::/64")
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it doesnt suppose to handle BC
+    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it doesnt suppose to handle
+    // BC
     // dates
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -215,7 +247,8 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
     // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
     // JdbcUtils -> setJsonField contains:
-    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
+    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i),
+    // Double::isFinite));
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float8")
@@ -226,7 +259,8 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
     // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
     // JdbcUtils -> setJsonField contains:
-    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
+    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i),
+    // Double::isFinite));
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float")
@@ -279,8 +313,8 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("macaddr")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'08:00:2b:01:02:03'", "'08-00-2b-01-02-04'",
-                "'08002b:010205'")
+            .addInsertValues(
+                "null", "'08:00:2b:01:02:03'", "'08-00-2b-01-02-04'", "'08002b:010205'")
             .addExpectedValues(null, "08:00:2b:01:02:03", "08:00:2b:01:02:04", "08:00:2b:01:02:05")
             .build());
 
@@ -288,9 +322,15 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("macaddr8")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'08:00:2b:01:02:03:04:05'", "'08-00-2b-01-02-03-04-06'",
+            .addInsertValues(
+                "null",
+                "'08:00:2b:01:02:03:04:05'",
+                "'08-00-2b-01-02-03-04-06'",
                 "'08002b:0102030407'")
-            .addExpectedValues(null, "08:00:2b:01:02:03:04:05", "08:00:2b:01:02:03:04:06",
+            .addExpectedValues(
+                null,
+                "08:00:2b:01:02:03:04:05",
+                "08:00:2b:01:02:03:04:06",
                 "08:00:2b:01:02:03:04:07")
             .build());
 
@@ -341,8 +381,8 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("text")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
-                "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
+            .addInsertValues(
+                "'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'", "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
@@ -405,7 +445,8 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues(
                 "XMLPARSE (DOCUMENT '<?xml version=\"1.0\"?><book><title>Manual</title><chapter>...</chapter></book>')",
-                "null", "''")
+                "null",
+                "''")
             .addExpectedValues("<book><title>Manual</title><chapter>...</chapter></book>", null, "")
             .build());
 
@@ -495,10 +536,12 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("polygon")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'",
-                "'((0,0),(999999999999999999999999,0))'", "null")
+            .addInsertValues(
+                "'((3,7),(15,18))'",
+                "'((0,0),(0,0))'",
+                "'((0,0),(999999999999999999999999,0))'",
+                "null")
             .addExpectedValues("((3,7),(15,18))", "((0,0),(0,0))", "((0,0),(1e+24,0))", null)
             .build());
   }
-
 }

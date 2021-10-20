@@ -44,5 +44,4 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
     final AirbyteStateMessage stateMessage = stateManager.emit();
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
-
 }

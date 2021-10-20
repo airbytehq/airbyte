@@ -32,14 +32,18 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
+    final String schema =
+        Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
 
     final List<String> additionalParameters = new ArrayList<>();
 
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+    final StringBuilder jdbcUrl =
+        new StringBuilder(
+            String.format(
+                "jdbc:sqlserver://%s:%s;databaseName=%s;",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()));
 
     if (config.has("ssl_method")) {
       readSsl(config, additionalParameters);
@@ -49,11 +53,12 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
       jdbcUrl.append(String.join(";", additionalParameters));
     }
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("jdbc_url", jdbcUrl.toString())
-        .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText())
-        .put("schema", schema);
+    final ImmutableMap.Builder<Object, Object> configBuilder =
+        ImmutableMap.builder()
+            .put("jdbc_url", jdbcUrl.toString())
+            .put("username", config.get("username").asText())
+            .put("password", config.get("password").asText())
+            .put("schema", schema);
 
     return Jsons.jsonNode(configBuilder.build());
   }
@@ -71,21 +76,26 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
         additionalParameters.add("encrypt=true");
 
         // trust store location code found at https://stackoverflow.com/a/56570588
-        final String trustStoreLocation = Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
-            .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
+        final String trustStoreLocation =
+            Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
+                .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
         final File trustStoreFile = new File(trustStoreLocation);
         if (!trustStoreFile.exists()) {
-          throw new RuntimeException("Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
-              + trustStoreLocation + " does not exist.");
+          throw new RuntimeException(
+              "Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
+                  + trustStoreLocation
+                  + " does not exist.");
         }
         final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
 
         additionalParameters.add("trustStore=" + trustStoreLocation);
         if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
-          additionalParameters.add("trustStorePassword=" + config.get("trustStorePassword").asText());
+          additionalParameters.add(
+              "trustStorePassword=" + config.get("trustStorePassword").asText());
         }
         if (config.has("hostNameInCertificate")) {
-          additionalParameters.add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
+          additionalParameters.add(
+              "hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
         }
         break;
     }
@@ -101,5 +111,4 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MSSQLDestination.class);
   }
-
 }

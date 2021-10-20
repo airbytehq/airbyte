@@ -56,5 +56,4 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public void tearDownRedshift() throws SQLException {
     super.tearDown();
   }
-
 }

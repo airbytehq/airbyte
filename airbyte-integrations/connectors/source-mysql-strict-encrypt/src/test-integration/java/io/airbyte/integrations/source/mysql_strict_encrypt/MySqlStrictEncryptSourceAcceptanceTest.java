@@ -44,33 +44,40 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("replication_method", MySqlSource.ReplicationMethod.STANDARD)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", container.getHost())
+                .put("port", container.getFirstMappedPort())
+                .put("database", container.getDatabaseName())
+                .put("username", container.getUsername())
+                .put("password", container.getPassword())
+                .put("replication_method", MySqlSource.ReplicationMethod.STANDARD)
+                .build());
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s?%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText(),
-            String.join("&", SSL_PARAMETERS)),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL);
+    final Database database =
+        Databases.createDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:mysql://%s:%s/%s?%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText(),
+                String.join("&", SSL_PARAMETERS)),
+            "com.mysql.cj.jdbc.Driver",
+            SQLDialect.MYSQL);
 
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      return null;
-    });
+    database.query(
+        ctx -> {
+          ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+          ctx.fetch(
+              "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+          ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+          ctx.fetch(
+              "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+          return null;
+        });
 
     database.close();
   }
@@ -87,7 +94,9 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
+    return SshHelpers.injectSshIntoSpec(
+        Jsons.deserialize(
+            MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
   }
 
   @Override
@@ -97,25 +106,33 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(
+            Lists.newArrayList(
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("id"))
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                String.format(
+                                    "%s.%s", config.get("database").asText(), STREAM_NAME),
+                                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                new ConfiguredAirbyteStream()
+                    .withSyncMode(SyncMode.INCREMENTAL)
+                    .withCursorField(Lists.newArrayList("id"))
+                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withStream(
+                        CatalogHelpers.createAirbyteStream(
+                                String.format(
+                                    "%s.%s", config.get("database").asText(), STREAM_NAME2),
+                                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                Field.of("name", JsonSchemaPrimitive.STRING))
+                            .withSupportedSyncModes(
+                                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -127,5 +144,4 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
 }

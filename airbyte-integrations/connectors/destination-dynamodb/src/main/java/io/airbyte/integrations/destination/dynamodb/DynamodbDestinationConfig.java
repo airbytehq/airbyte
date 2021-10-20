@@ -15,11 +15,11 @@ public class DynamodbDestinationConfig {
   private final String region;
 
   public DynamodbDestinationConfig(
-                                   final String endpoint,
-                                   final String tableName,
-                                   final String region,
-                                   final String accessKeyId,
-                                   final String secretAccessKey) {
+      final String endpoint,
+      final String tableName,
+      final String region,
+      final String accessKeyId,
+      final String secretAccessKey) {
     this.endpoint = endpoint;
     this.tableName = tableName;
     this.region = region;
@@ -55,5 +55,4 @@ public class DynamodbDestinationConfig {
   public String getTableName() {
     return tableName;
   }
-
 }

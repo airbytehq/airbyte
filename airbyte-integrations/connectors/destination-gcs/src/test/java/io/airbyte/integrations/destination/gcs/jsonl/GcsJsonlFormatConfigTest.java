@@ -24,13 +24,13 @@ public class GcsJsonlFormatConfigTest {
   @Test
   public void testHandlePartSizeConfig() throws IllegalAccessException {
 
-    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\",\n"
-        + "  \"part_size_mb\": 6\n"
-        + "}"));
+    final JsonNode config =
+        ConfigTestUtils.getBaseConfig(
+            Jsons.deserialize(
+                "{\n" + "  \"format_type\": \"JSONL\",\n" + "  \"part_size_mb\": 6\n" + "}"));
 
-    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-        .getGcsDestinationConfig(config);
+    final GcsDestinationConfig gcsDestinationConfig =
+        GcsDestinationConfig.getGcsDestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
     final S3FormatConfig formatConfig = gcsDestinationConfig.getFormatConfig();
@@ -38,31 +38,38 @@ public class GcsJsonlFormatConfigTest {
     assertEquals(6, formatConfig.getPartSize());
 
     // Assert that is set properly in config
-    final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
-        gcsDestinationConfig.getBucketName(), "objectKey", null,
-        gcsDestinationConfig.getFormatConfig().getPartSize());
+    final StreamTransferManager streamTransferManager =
+        S3StreamTransferManagerHelper.getDefault(
+            gcsDestinationConfig.getBucketName(),
+            "objectKey",
+            null,
+            gcsDestinationConfig.getFormatConfig().getPartSize());
 
-    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes =
+        (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 6, partSizeBytes);
   }
 
   @Test
   public void testHandleAbsenceOfPartSizeConfig() throws IllegalAccessException {
 
-    final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\"\n"
-        + "}"));
+    final JsonNode config =
+        ConfigTestUtils.getBaseConfig(
+            Jsons.deserialize("{\n" + "  \"format_type\": \"JSONL\"\n" + "}"));
 
-    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-        .getGcsDestinationConfig(config);
+    final GcsDestinationConfig gcsDestinationConfig =
+        GcsDestinationConfig.getGcsDestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
-    final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
-        gcsDestinationConfig.getBucketName(), "objectKey", null,
-        gcsDestinationConfig.getFormatConfig().getPartSize());
+    final StreamTransferManager streamTransferManager =
+        S3StreamTransferManagerHelper.getDefault(
+            gcsDestinationConfig.getBucketName(),
+            "objectKey",
+            null,
+            gcsDestinationConfig.getFormatConfig().getPartSize());
 
-    final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
+    final Integer partSizeBytes =
+        (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly
   }
-
 }

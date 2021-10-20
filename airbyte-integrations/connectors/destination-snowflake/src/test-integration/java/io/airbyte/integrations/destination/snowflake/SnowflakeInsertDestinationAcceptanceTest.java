@@ -49,7 +49,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   public JsonNode getStaticConfig() {
-    final JsonNode insertConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
+    final JsonNode insertConfig =
+        Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
     Preconditions.checkArgument(!SnowflakeDestination.isS3Copy(insertConfig));
     Preconditions.checkArgument(!SnowflakeDestination.isGcsCopy(insertConfig));
     return insertConfig;
@@ -63,14 +64,18 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
+    return retrieveRecordsFromTable(
+            namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
         .stream()
-        .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
+        .map(
+            j ->
+                Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
         .collect(Collectors.toList());
   }
 
@@ -90,11 +95,13 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
-    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
+    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we
+    // don't
     // use quoted names
     // if (!tableName.startsWith("\"")) {
     // // Currently, Normalization always quote tables identifiers
@@ -116,11 +123,18 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws SQLException, InterruptedException {
-    return SnowflakeDatabase.getDatabase(getConfig()).bufferedResultSetQuery(
-        connection -> connection.createStatement()
-            .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT)),
-        JdbcUtils.getDefaultSourceOperations()::rowToJson);
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema)
+      throws SQLException, InterruptedException {
+    return SnowflakeDatabase.getDatabase(getConfig())
+        .bufferedResultSetQuery(
+            connection ->
+                connection
+                    .createStatement()
+                    .executeQuery(
+                        String.format(
+                            "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                            schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT)),
+            JdbcUtils.getDefaultSourceOperations()::rowToJson);
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
@@ -139,27 +153,33 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
+    final String createSchemaQuery =
+        String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
     SnowflakeDatabase.getDatabase(baseConfig).execute(createSchemaQuery);
   }
 
-  /**
-   * This test is disabled because it is very slow, and should only be run manually for now.
-   */
+  /** This test is disabled because it is very slow, and should only be run manually for now. */
   @Disabled
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncWithBillionRecords(final String messagesFilename, final String catalogFilename) throws Exception {
-    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+  public void testSyncWithBillionRecords(
+      final String messagesFilename, final String catalogFilename) throws Exception {
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages =
+        MoreResources.readResource(messagesFilename)
+            .lines()
+            .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+            .collect(Collectors.toList());
 
     final List<AirbyteMessage> largeNumberRecords =
-        Collections.nCopies(15000000, messages).stream().flatMap(List::stream).collect(Collectors.toList());
+        Collections.nCopies(15000000, messages).stream()
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
 
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
   }
-
 }

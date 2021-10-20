@@ -31,5 +31,4 @@ public class SnowflakeInsertDestination extends AbstractJdbcDestination implemen
   public JsonNode toJdbcConfig(final JsonNode config) {
     return Jsons.emptyObject();
   }
-
 }

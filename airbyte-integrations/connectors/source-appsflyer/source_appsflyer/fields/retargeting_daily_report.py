@@ -16,5 +16,5 @@ main_fields = (
     "loyal_users",
     "loyal_users_rate",
     "total_cost",
-    "average_ecpi"
+    "average_ecpi",
 )

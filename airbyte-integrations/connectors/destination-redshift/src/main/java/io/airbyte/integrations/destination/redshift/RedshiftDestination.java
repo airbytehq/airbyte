@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The Redshift Destination offers two replication strategies. The first inserts via a typical SQL
- * Insert statement. Although less efficient, this requires less user set up. See
- * {@link RedshiftInsertDestination} for more detail. The second inserts via streaming the data to
- * an S3 bucket, and Cop-ing the date into Redshift. This is more efficient, and recommended for
+ * Insert statement. Although less efficient, this requires less user set up. See {@link
+ * RedshiftInsertDestination} for more detail. The second inserts via streaming the data to an S3
+ * bucket, and Cop-ing the date into Redshift. This is more efficient, and recommended for
  * production workloads, but does require users to set up an S3 bucket and pass in additional
  * credentials. See {@link RedshiftCopyS3Destination} for more detail. This class inspect the given
  * arguments to determine which strategy to use.
@@ -58,15 +58,22 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     final var accessKeyIdNode = config.get("access_key_id");
     final var secretAccessKeyNode = config.get("secret_access_key");
 
-    // Since region is a Json schema enum with an empty string default, we consider the empty string an
+    // Since region is a Json schema enum with an empty string default, we consider the empty string
+    // an
     // unset field.
     final var emptyRegion = regionNode == null || regionNode.asText().equals("");
 
-    if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null) {
+    if (bucketNode == null
+        && emptyRegion
+        && accessKeyIdNode == null
+        && secretAccessKeyNode == null) {
       return false;
     }
 
-    if (bucketNode == null || regionNode == null || accessKeyIdNode == null || secretAccessKeyNode == null) {
+    if (bucketNode == null
+        || regionNode == null
+        || accessKeyIdNode == null
+        || secretAccessKeyNode == null) {
       throw new RuntimeException("Error: Partially missing S3 Configuration.");
     }
     return true;
@@ -78,5 +85,4 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", RedshiftDestination.class);
   }
-
 }

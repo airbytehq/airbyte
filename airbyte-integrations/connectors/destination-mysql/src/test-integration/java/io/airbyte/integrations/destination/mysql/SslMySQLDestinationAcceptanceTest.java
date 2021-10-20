@@ -28,42 +28,45 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("database", db.getDatabaseName())
-        .put("port", db.getFirstMappedPort())
-        .put("ssl", true)
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", db.getHost())
+            .put("username", db.getUsername())
+            .put("password", db.getPassword())
+            .put("database", db.getDatabaseName())
+            .put("port", db.getFirstMappedPort())
+            .put("ssl", true)
+            .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", "wrong password")
-        .put("database", db.getDatabaseName())
-        .put("port", db.getFirstMappedPort())
-        .put("ssl", false)
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", db.getHost())
+            .put("username", db.getUsername())
+            .put("password", "wrong password")
+            .put("database", db.getDatabaseName())
+            .put("port", db.getFirstMappedPort())
+            .put("ssl", false)
+            .build());
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
@@ -94,23 +97,27 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
     db.close();
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws SQLException {
     return Databases.createDatabase(
-        db.getUsername(),
-        db.getPassword(),
-        String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-            db.getHost(),
-            db.getFirstMappedPort(),
-            db.getDatabaseName()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL).query(
-            ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(r -> r.formatJSON(JSON_FORMAT))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList()));
+            db.getUsername(),
+            db.getPassword(),
+            String.format(
+                "jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+                db.getHost(), db.getFirstMappedPort(), db.getDatabaseName()),
+            "com.mysql.cj.jdbc.Driver",
+            SQLDialect.MYSQL)
+        .query(
+            ctx ->
+                ctx
+                    .fetch(
+                        String.format(
+                            "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                            schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                    .stream()
+                    .map(r -> r.formatJSON(JSON_FORMAT))
+                    .map(Jsons::deserialize)
+                    .collect(Collectors.toList()));
   }
 
   private void setLocalInFileToTrue() {
@@ -122,25 +129,23 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   }
 
   private void grantCorrectPermissions() {
-    executeQuery("GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+    executeQuery(
+        "GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
   }
 
   private void executeQuery(final String query) {
     try {
       Databases.createDatabase(
-          "root",
-          "test",
-          String.format("jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
-              db.getHost(),
-              db.getFirstMappedPort(),
-              db.getDatabaseName()),
-          "com.mysql.cj.jdbc.Driver",
-          SQLDialect.MYSQL).query(
-              ctx -> ctx
-                  .execute(query));
+              "root",
+              "test",
+              String.format(
+                  "jdbc:mysql://%s:%s/%s?useSSL=true&requireSSL=true&verifyServerCertificate=false",
+                  db.getHost(), db.getFirstMappedPort(), db.getDatabaseName()),
+              "com.mysql.cj.jdbc.Driver",
+              SQLDialect.MYSQL)
+          .query(ctx -> ctx.execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
   }
-
 }

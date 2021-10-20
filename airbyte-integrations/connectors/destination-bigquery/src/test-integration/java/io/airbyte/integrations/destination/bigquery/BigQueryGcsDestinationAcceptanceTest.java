@@ -42,7 +42,8 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
@@ -94,7 +95,8 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     final String schema = namingResolver.getIdentifier(namespace);
@@ -102,12 +104,14 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
+    return retrieveRecordsFromTable(
+            namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
         .stream()
         .map(node -> node.get(JavaBaseConstants.COLUMN_NAME_DATA).asText())
         .map(Jsons::deserialize)
@@ -122,27 +126,30 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema)
+      throws InterruptedException {
     final QueryJobConfiguration queryConfig =
-        QueryJobConfiguration
-            .newBuilder(
-                String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .setUseLegacySql(false).build();
+        QueryJobConfiguration.newBuilder(
+                String.format(
+                    "SELECT * FROM `%s`.`%s` order by %s asc;",
+                    schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .setUseLegacySql(false)
+            .build();
 
-    final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
+    final TableResult queryResults =
+        executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
 
-    return StreamSupport
-        .stream(queryResults.iterateAll().spliterator(), false)
-        .map(row -> {
-          final Map<String, Object> jsonMap = Maps.newHashMap();
-          for (final Field field : fields) {
-            final Object value = getTypedFieldValue(row, field);
-            jsonMap.put(field.getName(), value);
-          }
-          return jsonMap;
-        })
+    return StreamSupport.stream(queryResults.iterateAll().spliterator(), false)
+        .map(
+            row -> {
+              final Map<String, Object> jsonMap = Maps.newHashMap();
+              for (final Field field : fields) {
+                final Object value = getTypedFieldValue(row, field);
+                jsonMap.put(field.getName(), value);
+              }
+              return jsonMap;
+            })
         .map(Jsons::jsonNode)
         .collect(Collectors.toList());
   }
@@ -166,54 +173,81 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+          "Must provide path to a big query credentials file. By default {module-root}/"
+              + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String fullConfigFromSecretFileAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String fullConfigFromSecretFileAsString =
+        new String(Files.readAllBytes(CREDENTIALS_PATH));
 
-    final JsonNode fullConfigFromSecretFileJson = Jsons.deserialize(fullConfigFromSecretFileAsString);
-    final JsonNode bigqueryConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
-    final JsonNode gcsConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.GCS_CONFIG);
+    final JsonNode fullConfigFromSecretFileJson =
+        Jsons.deserialize(fullConfigFromSecretFileAsString);
+    final JsonNode bigqueryConfigFromSecretFile =
+        fullConfigFromSecretFileJson.get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    final JsonNode gcsConfigFromSecretFile =
+        fullConfigFromSecretFileJson.get(BigQueryConsts.GCS_CONFIG);
 
     final String projectId = bigqueryConfigFromSecretFile.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
-    final JsonNode gcsCredentialFromSecretFile = gcsConfigFromSecretFile.get(BigQueryConsts.CREDENTIAL);
-    final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CREDENTIAL_TYPE, gcsCredentialFromSecretFile.get(BigQueryConsts.CREDENTIAL_TYPE))
-        .put(BigQueryConsts.HMAC_KEY_ACCESS_ID, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_ID))
-        .put(BigQueryConsts.HMAC_KEY_ACCESS_SECRET, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
-        .build());
+    final JsonNode gcsCredentialFromSecretFile =
+        gcsConfigFromSecretFile.get(BigQueryConsts.CREDENTIAL);
+    final JsonNode credential =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put(
+                    BigQueryConsts.CREDENTIAL_TYPE,
+                    gcsCredentialFromSecretFile.get(BigQueryConsts.CREDENTIAL_TYPE))
+                .put(
+                    BigQueryConsts.HMAC_KEY_ACCESS_ID,
+                    gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_ID))
+                .put(
+                    BigQueryConsts.HMAC_KEY_ACCESS_SECRET,
+                    gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
+                .build());
 
-    final JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
-        .put(BigQueryConsts.GCS_BUCKET_NAME, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_NAME))
-        .put(BigQueryConsts.GCS_BUCKET_PATH, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
-        .put(BigQueryConsts.CREDENTIAL, credential)
-        .build());
+    final JsonNode loadingMethod =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
+                .put(
+                    BigQueryConsts.GCS_BUCKET_NAME,
+                    gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_NAME))
+                .put(
+                    BigQueryConsts.GCS_BUCKET_PATH,
+                    gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_PATH).asText()
+                        + System.currentTimeMillis())
+                .put(BigQueryConsts.CREDENTIAL, credential)
+                .build());
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryConsts.CONFIG_CREDS, bigqueryConfigFromSecretFile.toString())
-        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
-        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
-        .put(BigQueryConsts.LOADING_METHOD, loadingMethod)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
+                .put(BigQueryConsts.CONFIG_CREDS, bigqueryConfigFromSecretFile.toString())
+                .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
+                .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
+                .put(BigQueryConsts.LOADING_METHOD, loadingMethod)
+                .build());
 
-    final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(bigqueryConfigFromSecretFile.toString().getBytes()));
+    final ServiceAccountCredentials credentials =
+        ServiceAccountCredentials.fromStream(
+            new ByteArrayInputStream(bigqueryConfigFromSecretFile.toString().getBytes()));
 
-    bigquery = BigQueryOptions.newBuilder()
-        .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
-        .setCredentials(credentials)
-        .build()
-        .getService();
+    bigquery =
+        BigQueryOptions.newBuilder()
+            .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
+            .setCredentials(credentials)
+            .build()
+            .getService();
 
     final DatasetInfo datasetInfo =
-        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
+        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText())
+            .setLocation(config.get(CONFIG_DATASET_LOCATION).asText())
+            .build();
     dataset = bigquery.create(datasetInfo);
 
     tornDown = false;
@@ -249,7 +283,8 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
 
   // todo (cgardens) - figure out how to share these helpers. they are currently copied from
   // BigQueryDestination.
-  private static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
+  private static ImmutablePair<Job, String> executeQuery(
+      final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
     final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
@@ -275,5 +310,4 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
       throw new RuntimeException(e);
     }
   }
-
 }

@@ -40,17 +40,19 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   private JsonNode getConfig(final OracleContainer db) {
 
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("sid", db.getSid())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schemas", List.of("JDBC_SPACE"))
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-            .put("encryption_method", "unencrypted")
-            .build()))
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", db.getHost())
+            .put("port", db.getFirstMappedPort())
+            .put("sid", db.getSid())
+            .put("username", db.getUsername())
+            .put("password", db.getPassword())
+            .put("schemas", List.of("JDBC_SPACE"))
+            .put(
+                "encryption",
+                Jsons.jsonNode(
+                    ImmutableMap.builder().put("encryption_method", "unencrypted").build()))
+            .build());
   }
 
   @Override
@@ -59,15 +61,17 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
-        .map(r -> Jsons.deserialize(
-            r.get(OracleDestination.COLUMN_NAME_DATA.replace("\"", "")).asText()))
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
+        .map(
+            r ->
+                Jsons.deserialize(
+                    r.get(OracleDestination.COLUMN_NAME_DATA.replace("\"", "")).asText()))
         .collect(Collectors.toList());
   }
 
@@ -82,9 +86,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
-                                                     final String streamName,
-                                                     final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
@@ -112,14 +115,18 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
       throws SQLException {
-    final List<org.jooq.Record> result = getDatabase(config)
-        .query(ctx -> ctx.fetch(
-            String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                OracleDestination.COLUMN_NAME_EMITTED_AT))
-            .stream()
-            .collect(Collectors.toList()));
-    return result
-        .stream()
+    final List<org.jooq.Record> result =
+        getDatabase(config)
+            .query(
+                ctx ->
+                    ctx
+                        .fetch(
+                            String.format(
+                                "SELECT * FROM %s.%s ORDER BY %s ASC",
+                                schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT))
+                        .stream()
+                        .collect(Collectors.toList()));
+    return result.stream()
         .map(r -> r.formatJSON(JSON_FORMAT))
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
@@ -129,10 +136,9 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
+        String.format(
+            "jdbc:oracle:thin:@//%s:%s/%s",
+            config.get("host").asText(), config.get("port").asText(), config.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
         null);
   }
@@ -140,10 +146,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
-    db = new OracleContainer()
-        .withUsername("test")
-        .withPassword("oracle")
-        .usingSid();
+    db = new OracleContainer().withUsername("test").withPassword("oracle").usingSid();
     db.start();
 
     config = getConfig(db);
@@ -168,20 +171,27 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   public void testNoneEncryption() throws SQLException {
     final JsonNode config = getConfig();
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver");
+    final JdbcDatabase database =
+        Databases.createJdbcDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            String.format(
+                "jdbc:oracle:thin:@//%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("sid").asText()),
+            "oracle.jdbc.driver.OracleDriver");
 
     final String network_service_banner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+    final List<JsonNode> collect =
+        database.query(network_service_banner).collect(Collectors.toList());
 
-    assertTrue(collect.get(1).get("NETWORK_SERVICE_BANNER").asText()
-        .contains("Oracle Advanced Security: encryption"));
+    assertTrue(
+        collect
+            .get(1)
+            .get("NETWORK_SERVICE_BANNER")
+            .asText()
+            .contains("Oracle Advanced Security: encryption"));
   }
-
 }

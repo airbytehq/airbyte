@@ -13,5 +13,4 @@ public class Manifest {
   public Manifest(final List<Entry> entries) {
     this.entries = entries;
   }
-
 }

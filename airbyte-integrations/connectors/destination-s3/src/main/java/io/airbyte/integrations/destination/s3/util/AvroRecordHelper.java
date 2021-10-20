@@ -16,7 +16,8 @@ import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
  */
 public class AvroRecordHelper {
 
-  public static JsonFieldNameUpdater getFieldNameUpdater(final String streamName, final String namespace, final JsonNode streamSchema) {
+  public static JsonFieldNameUpdater getFieldNameUpdater(
+      final String streamName, final String namespace, final JsonNode streamSchema) {
     final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
     schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true);
     return new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
@@ -24,9 +25,9 @@ public class AvroRecordHelper {
 
   /**
    * Convert an Airbyte JsonNode from Avro / Parquet Record to a plain one.
-   * <li>Remove the airbyte id and emission timestamp fields.</li>
-   * <li>Remove null fields that must exist in Parquet but does not in original Json.</li> This
-   * function mutates the input Json.
+   * <li>Remove the airbyte id and emission timestamp fields.
+   * <li>Remove null fields that must exist in Parquet but does not in original Json. This function
+   *     mutates the input Json.
    */
   public static JsonNode pruneAirbyteJson(final JsonNode input) {
     final ObjectNode output = (ObjectNode) input;
@@ -44,5 +45,4 @@ public class AvroRecordHelper {
 
     return output;
   }
-
 }

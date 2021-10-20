@@ -31,7 +31,8 @@ public class GcsDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final GcsDestinationConfig destinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
+      final GcsDestinationConfig destinationConfig =
+          GcsDestinationConfig.getGcsDestinationConfig(config);
       final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(destinationConfig);
       s3Client.putObject(destinationConfig.getBucketName(), "test", "check-content");
       s3Client.deleteObject(destinationConfig.getBucketName(), "test");
@@ -40,17 +41,22 @@ public class GcsDestination extends BaseConnector implements Destination {
       LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
-              .getMessage());
+          .withMessage(
+              "Could not connect to the Gcs bucket with the provided configuration. \n"
+                  + e.getMessage());
     }
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog configuredCatalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     final GcsWriterFactory formatterFactory = new ProductionWriterFactory();
-    return new GcsConsumer(GcsDestinationConfig.getGcsDestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
+    return new GcsConsumer(
+        GcsDestinationConfig.getGcsDestinationConfig(config),
+        configuredCatalog,
+        formatterFactory,
+        outputRecordCollector);
   }
-
 }

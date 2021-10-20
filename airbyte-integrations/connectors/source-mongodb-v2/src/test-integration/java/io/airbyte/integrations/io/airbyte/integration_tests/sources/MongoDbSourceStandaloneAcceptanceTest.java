@@ -26,22 +26,26 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
     mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"));
     mongoDBContainer.start();
 
-    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance", STANDALONE.getType())
-        .put("host", mongoDBContainer.getHost())
-        .put("port", mongoDBContainer.getFirstMappedPort())
-        .put("tls", false)
-        .build());
+    final JsonNode instanceConfig =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("instance", STANDALONE.getType())
+                .put("host", mongoDBContainer.getHost())
+                .put("port", mongoDBContainer.getFirstMappedPort())
+                .put("tls", false)
+                .build());
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance_type", instanceConfig)
-        .put("database", DATABASE_NAME)
-        .put("auth_source", "admin")
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("instance_type", instanceConfig)
+                .put("database", DATABASE_NAME)
+                .put("auth_source", "admin")
+                .build());
 
-    final var connectionString = String.format("mongodb://%s:%s/",
-        mongoDBContainer.getHost(),
-        mongoDBContainer.getFirstMappedPort());
+    final var connectionString =
+        String.format(
+            "mongodb://%s:%s/", mongoDBContainer.getHost(), mongoDBContainer.getFirstMappedPort());
 
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 
@@ -58,5 +62,4 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
     database.close();
     mongoDBContainer.close();
   }
-
 }

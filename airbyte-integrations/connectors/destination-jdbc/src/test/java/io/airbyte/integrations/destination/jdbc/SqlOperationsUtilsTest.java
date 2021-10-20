@@ -46,11 +46,12 @@ class SqlOperationsUtilsTest {
 
     final JsonNode config = createConfig();
 
-    database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        config.get("jdbc_url").asText(),
-        "org.postgresql.Driver");
+    database =
+        Databases.createJdbcDatabase(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            config.get("jdbc_url").asText(),
+            "org.postgresql.Driver");
 
     uuidSupplier = mock(Supplier.class);
   }
@@ -63,61 +64,77 @@ class SqlOperationsUtilsTest {
 
     new TestJdbcSqlOperations().createTableIfNotExists(database, SCHEMA_NAME, STREAM_NAME);
 
-    final String insertQueryComponent = String.format(
-        "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
-        SCHEMA_NAME,
-        STREAM_NAME,
-        JavaBaseConstants.COLUMN_NAME_AB_ID,
-        JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    final String insertQueryComponent =
+        String.format(
+            "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
+            SCHEMA_NAME,
+            STREAM_NAME,
+            JavaBaseConstants.COLUMN_NAME_AB_ID,
+            JavaBaseConstants.COLUMN_NAME_DATA,
+            JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQueryComponent = "(?, ?::jsonb, ?),\n";
 
-    final List<AirbyteRecordMessage> records = Lists.newArrayList(
-        new AirbyteRecordMessage()
-            .withStream("rivers")
-            .withEmittedAt(NOW.toEpochMilli())
-            .withData(Jsons.jsonNode(ImmutableMap.of("name", "rio grande", "width", 10))),
-        new AirbyteRecordMessage()
-            .withStream("rivers")
-            .withEmittedAt(NOW.toEpochMilli())
-            .withData(Jsons.jsonNode(ImmutableMap.of("name", "mississippi", "width", 20))));
+    final List<AirbyteRecordMessage> records =
+        Lists.newArrayList(
+            new AirbyteRecordMessage()
+                .withStream("rivers")
+                .withEmittedAt(NOW.toEpochMilli())
+                .withData(Jsons.jsonNode(ImmutableMap.of("name", "rio grande", "width", 10))),
+            new AirbyteRecordMessage()
+                .withStream("rivers")
+                .withEmittedAt(NOW.toEpochMilli())
+                .withData(Jsons.jsonNode(ImmutableMap.of("name", "mississippi", "width", 20))));
 
-    SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records, uuidSupplier, true);
+    SqlOperationsUtils.insertRawRecordsInSingleQuery(
+        insertQueryComponent, recordQueryComponent, database, records, uuidSupplier, true);
 
-    final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
-        connection -> connection.createStatement().executeQuery("SELECT * FROM RIVERS"),
-        JdbcUtils.getDefaultSourceOperations()::rowToJson);
+    final List<JsonNode> actualRecords =
+        database.bufferedResultSetQuery(
+            connection -> connection.createStatement().executeQuery("SELECT * FROM RIVERS"),
+            JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
-    final List<JsonNode> expectedRecords = Lists.newArrayList(
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put(JavaBaseConstants.COLUMN_NAME_AB_ID, RECORD1_UUID)
-            .put(JavaBaseConstants.COLUMN_NAME_DATA, records.get(0).getData())
-            .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, DataTypeUtils
-                .toISO8601String(records.get(0).getEmittedAt()))
-            .build()),
-        Jsons.jsonNode(ImmutableMap.builder()
-            .put(JavaBaseConstants.COLUMN_NAME_AB_ID, RECORD2_UUID)
-            .put(JavaBaseConstants.COLUMN_NAME_DATA, records.get(1).getData())
-            .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, DataTypeUtils
-                .toISO8601String(records.get(1).getEmittedAt()))
-            .build()));
+    final List<JsonNode> expectedRecords =
+        Lists.newArrayList(
+            Jsons.jsonNode(
+                ImmutableMap.builder()
+                    .put(JavaBaseConstants.COLUMN_NAME_AB_ID, RECORD1_UUID)
+                    .put(JavaBaseConstants.COLUMN_NAME_DATA, records.get(0).getData())
+                    .put(
+                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+                        DataTypeUtils.toISO8601String(records.get(0).getEmittedAt()))
+                    .build()),
+            Jsons.jsonNode(
+                ImmutableMap.builder()
+                    .put(JavaBaseConstants.COLUMN_NAME_AB_ID, RECORD2_UUID)
+                    .put(JavaBaseConstants.COLUMN_NAME_DATA, records.get(1).getData())
+                    .put(
+                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+                        DataTypeUtils.toISO8601String(records.get(1).getEmittedAt()))
+                    .build()));
 
     actualRecords.forEach(
-        r -> ((ObjectNode) r).put(JavaBaseConstants.COLUMN_NAME_DATA, Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText())));
+        r ->
+            ((ObjectNode) r)
+                .put(
+                    JavaBaseConstants.COLUMN_NAME_DATA,
+                    Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText())));
 
     assertEquals(expectedRecords, actualRecords);
   }
 
   private JsonNode createConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("schema", SCHEMA_NAME)
-        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-            container.getHost(),
-            container.getFirstMappedPort(),
-            container.getDatabaseName()))
-        .build());
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("username", container.getUsername())
+            .put("password", container.getPassword())
+            .put("schema", SCHEMA_NAME)
+            .put(
+                "jdbc_url",
+                String.format(
+                    "jdbc:postgresql://%s:%s/%s",
+                    container.getHost(),
+                    container.getFirstMappedPort(),
+                    container.getDatabaseName()))
+            .build());
   }
-
 }

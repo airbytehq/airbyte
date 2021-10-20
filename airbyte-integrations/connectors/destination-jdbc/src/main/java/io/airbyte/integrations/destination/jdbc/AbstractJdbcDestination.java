@@ -41,9 +41,10 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     return sqlOperations;
   }
 
-  public AbstractJdbcDestination(final String driverClass,
-                                 final NamingConventionTransformer namingResolver,
-                                 final SqlOperations sqlOperations) {
+  public AbstractJdbcDestination(
+      final String driverClass,
+      final NamingConventionTransformer namingResolver,
+      final SqlOperations sqlOperations) {
     this.driverClass = driverClass;
     this.namingResolver = namingResolver;
     this.sqlOperations = sqlOperations;
@@ -64,17 +65,22 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     }
   }
 
-  public static void attemptSQLCreateAndDropTableOperations(final String outputSchema,
-                                                            final JdbcDatabase database,
-                                                            final NamingConventionTransformer namingResolver,
-                                                            final SqlOperations sqlOps)
+  public static void attemptSQLCreateAndDropTableOperations(
+      final String outputSchema,
+      final JdbcDatabase database,
+      final NamingConventionTransformer namingResolver,
+      final SqlOperations sqlOps)
       throws Exception {
     // attempt to get metadata from the database as a cheap way of seeing if we can connect.
-    database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
+    database.bufferedResultSetQuery(
+        conn -> conn.getMetaData().getCatalogs(),
+        JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
     // verify we have write permissions on the target schema by creating a table with a random name,
     // then dropping that table
-    final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
+    final String outputTableName =
+        namingResolver.getIdentifier(
+            "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
     sqlOps.createSchemaIfNotExists(database, outputSchema);
     sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
     sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
@@ -93,10 +99,11 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(config), sqlOperations, namingResolver, config, catalog);
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
+    return JdbcBufferedConsumerFactory.create(
+        outputRecordCollector, getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
-
 }

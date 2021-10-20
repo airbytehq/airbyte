@@ -33,10 +33,11 @@ public class TestingSources extends BaseConnector implements Source {
   }
 
   public TestingSources() {
-    this(ImmutableMap.<TestDestinationType, Source>builder()
-        .put(TestDestinationType.INFINITE_FEED, new InfiniteFeedSource())
-        .put(TestDestinationType.EXCEPTION_AFTER_N, new ExceptionAfterNSource())
-        .build());
+    this(
+        ImmutableMap.<TestDestinationType, Source>builder()
+            .put(TestDestinationType.INFINITE_FEED, new InfiniteFeedSource())
+            .put(TestDestinationType.EXCEPTION_AFTER_N, new ExceptionAfterNSource())
+            .build());
   }
 
   public TestingSources(final Map<TestDestinationType, Source> sourceMap) {
@@ -58,9 +59,8 @@ public class TestingSources extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                    final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     return selectSource(config).read(config, catalog, state);
   }
@@ -71,5 +71,4 @@ public class TestingSources extends BaseConnector implements Source {
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", TestingSources.class);
   }
-
 }

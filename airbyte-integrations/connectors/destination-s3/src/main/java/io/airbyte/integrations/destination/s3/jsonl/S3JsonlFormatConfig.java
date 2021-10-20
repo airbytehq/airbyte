@@ -15,7 +15,10 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
   private final Long partSize;
 
   public S3JsonlFormatConfig(final JsonNode formatConfig) {
-    this.partSize = formatConfig.get(PART_SIZE_MB_ARG_NAME) != null ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong() : null;
+    this.partSize =
+        formatConfig.get(PART_SIZE_MB_ARG_NAME) != null
+            ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong()
+            : null;
   }
 
   @Override
@@ -26,5 +29,4 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
   public Long getPartSize() {
     return partSize;
   }
-
 }

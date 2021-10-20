@@ -30,21 +30,27 @@ public class MySqlSourceTests {
   @Test
   public void testSettingTimezones() throws Exception {
     // start DB
-    container = new MySQLContainer<>("mysql:8.0")
-        .withUsername(TEST_USER)
-        .withPassword(TEST_PASSWORD)
-        .withEnv("MYSQL_ROOT_HOST", "%")
-        .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD)
-        .withEnv("TZ", "Europe/Moscow");
+    container =
+        new MySQLContainer<>("mysql:8.0")
+            .withUsername(TEST_USER)
+            .withPassword(TEST_PASSWORD)
+            .withEnv("MYSQL_ROOT_HOST", "%")
+            .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD)
+            .withEnv("TZ", "Europe/Moscow");
     container.start();
     final Properties properties = new Properties();
-    properties.putAll(ImmutableMap.of("user", "root", "password", TEST_PASSWORD, "serverTimezone", "Europe/Moscow"));
+    properties.putAll(
+        ImmutableMap.of(
+            "user", "root", "password", TEST_PASSWORD, "serverTimezone", "Europe/Moscow"));
     DriverManager.getConnection(container.getJdbcUrl(), properties);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     config = getConfig(container, dbName, "serverTimezone=Europe/Moscow");
 
-    try (final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
-      connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
+    try (final Connection connection =
+        DriverManager.getConnection(container.getJdbcUrl(), properties)) {
+      connection
+          .createStatement()
+          .execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
       connection.createStatement().execute("CREATE DATABASE " + config.get("database").asText());
     }
     final AirbyteConnectionStatus check = new MySqlSource().check(config);
@@ -54,15 +60,16 @@ public class MySqlSourceTests {
     container.close();
   }
 
-  private static JsonNode getConfig(final MySQLContainer dbContainer, final String dbName, final String jdbcParams) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", dbContainer.getHost())
-        .put("port", dbContainer.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD)
-        .put("jdbc_url_params", jdbcParams)
-        .build());
+  private static JsonNode getConfig(
+      final MySQLContainer dbContainer, final String dbName, final String jdbcParams) {
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("host", dbContainer.getHost())
+            .put("port", dbContainer.getFirstMappedPort())
+            .put("database", dbName)
+            .put("username", TEST_USER)
+            .put("password", TEST_PASSWORD)
+            .put("jdbc_url_params", jdbcParams)
+            .build());
   }
-
 }

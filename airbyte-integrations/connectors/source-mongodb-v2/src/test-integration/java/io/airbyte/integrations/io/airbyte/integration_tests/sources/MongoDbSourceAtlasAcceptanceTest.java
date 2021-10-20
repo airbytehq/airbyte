@@ -25,31 +25,38 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a MongoDB credentials file. By default {module-root}/" + CREDENTIALS_PATH
+          "Must provide path to a MongoDB credentials file. By default {module-root}/"
+              + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
     final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
 
-    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance", ATLAS.getType())
-        .put("cluster_url", credentialsJson.get("cluster_url").asText())
-        .build());
+    final JsonNode instanceConfig =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("instance", ATLAS.getType())
+                .put("cluster_url", credentialsJson.get("cluster_url").asText())
+                .build());
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("user", credentialsJson.get("user").asText())
-        .put("password", credentialsJson.get("password").asText())
-        .put("instance_type", instanceConfig)
-        .put("database", DATABASE_NAME)
-        .put("auth_source", "admin")
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("user", credentialsJson.get("user").asText())
+                .put("password", credentialsJson.get("password").asText())
+                .put("instance_type", instanceConfig)
+                .put("database", DATABASE_NAME)
+                .put("auth_source", "admin")
+                .build());
 
-    final String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
-        config.get("user").asText(),
-        config.get("password").asText(),
-        config.get("instance_type").get("cluster_url").asText(),
-        config.get("database").asText());
+    final String connectionString =
+        String.format(
+            "mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
+            config.get("user").asText(),
+            config.get("password").asText(),
+            config.get("instance_type").get("cluster_url").asText(),
+            config.get("database").asText());
 
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 
@@ -66,5 +73,4 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
     database.getDatabase().getCollection(COLLECTION_NAME).drop();
     database.close();
   }
-
 }

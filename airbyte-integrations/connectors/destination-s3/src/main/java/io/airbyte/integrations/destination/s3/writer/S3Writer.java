@@ -14,19 +14,12 @@ import java.util.UUID;
  */
 public interface S3Writer {
 
-  /**
-   * Prepare an S3 writer for the stream.
-   */
+  /** Prepare an S3 writer for the stream. */
   void initialize() throws IOException;
 
-  /**
-   * Write an Airbyte record message to an S3 object.
-   */
+  /** Write an Airbyte record message to an S3 object. */
   void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException;
 
-  /**
-   * Close the S3 writer for the stream.
-   */
+  /** Close the S3 writer for the stream. */
   void close(boolean hasFailed) throws IOException;
-
 }

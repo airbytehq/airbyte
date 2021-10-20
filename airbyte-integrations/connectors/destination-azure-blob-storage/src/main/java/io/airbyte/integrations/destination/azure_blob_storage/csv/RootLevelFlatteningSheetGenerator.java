@@ -13,29 +13,30 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implements CsvSheetGenerator {
+public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator
+    implements CsvSheetGenerator {
 
-  /**
-   * Keep a header list to iterate the input json object with a defined order.
-   */
+  /** Keep a header list to iterate the input json object with a defined order. */
   private final List<String> recordHeaders;
 
   public RootLevelFlatteningSheetGenerator(final JsonNode jsonSchema) {
-    this.recordHeaders = MoreIterators.toList(jsonSchema.get("properties").fieldNames())
-        .stream().sorted().collect(Collectors.toList());;
+    this.recordHeaders =
+        MoreIterators.toList(jsonSchema.get("properties").fieldNames()).stream()
+            .sorted()
+            .collect(Collectors.toList());
+    ;
   }
 
   @Override
   public List<String> getHeaderRow() {
-    final List<String> headers = Lists.newArrayList(JavaBaseConstants.COLUMN_NAME_AB_ID,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    final List<String> headers =
+        Lists.newArrayList(
+            JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     headers.addAll(recordHeaders);
     return headers;
   }
 
-  /**
-   * With root level flattening, the record columns are the first level fields of the json.
-   */
+  /** With root level flattening, the record columns are the first level fields of the json. */
   @Override
   List<String> getRecordColumns(final JsonNode json) {
     final List<String> values = new LinkedList<>();
@@ -57,5 +58,4 @@ public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implem
 
     return values;
   }
-
 }

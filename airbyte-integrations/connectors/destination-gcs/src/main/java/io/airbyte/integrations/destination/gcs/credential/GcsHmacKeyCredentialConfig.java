@@ -28,5 +28,4 @@ public class GcsHmacKeyCredentialConfig implements GcsCredentialConfig {
   public GcsCredential getCredentialType() {
     return GcsCredential.HMAC_KEY;
   }
-
 }

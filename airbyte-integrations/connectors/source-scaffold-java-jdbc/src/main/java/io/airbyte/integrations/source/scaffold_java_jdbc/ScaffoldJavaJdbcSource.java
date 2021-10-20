@@ -21,7 +21,8 @@ public class ScaffoldJavaJdbcSource extends AbstractJdbcSource implements Source
   static final String DRIVER_CLASS = "driver_name_here";
 
   public ScaffoldJavaJdbcSource() {
-    // By default, NoOpJdbcStreamingQueryConfiguration class is used, but may be updated. See example
+    // By default, NoOpJdbcStreamingQueryConfiguration class is used, but may be updated. See
+    // example
     // MssqlJdbcStreamingQueryConfiguration
     super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration());
   }
@@ -46,5 +47,4 @@ public class ScaffoldJavaJdbcSource extends AbstractJdbcSource implements Source
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", ScaffoldJavaJdbcSource.class);
   }
-
 }

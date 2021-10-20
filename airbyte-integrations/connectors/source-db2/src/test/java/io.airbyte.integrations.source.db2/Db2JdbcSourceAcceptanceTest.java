@@ -37,8 +37,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
     TABLE_NAME_WITHOUT_PK = "ID_AND_NAME_WITHOUT_PK";
     TABLE_NAME_COMPOSITE_PK = "FULL_NAME_COMPOSITE_PK";
-    TEST_TABLES = ImmutableSet
-        .of(TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK);
+    TEST_TABLES = ImmutableSet.of(TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK);
     COL_ID = "ID";
     COL_NAME = "NAME";
     COL_UPDATED_AT = "UPDATED_AT";
@@ -47,49 +46,72 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     COL_LAST_NAME_WITH_SPACE = "LAST NAME";
     // In Db2 PK columns must be declared with NOT NULL statement.
     COLUMN_CLAUSE_WITH_PK = "id INTEGER NOT NULL, name VARCHAR(200), updated_at DATE";
-    COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE";
+    COLUMN_CLAUSE_WITH_COMPOSITE_PK =
+        "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE";
     // There is no IF EXISTS statement for a schema in Db2.
-    // The schema name must be in the catalog when attempting the DROP statement; otherwise an error is
+    // The schema name must be in the catalog when attempting the DROP statement; otherwise an error
+    // is
     // returned.
     DROP_SCHEMA_QUERY = "DROP SCHEMA %s RESTRICT";
   }
 
   @BeforeEach
   public void setup() throws Exception {
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("db", db.getDatabaseName())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", db.getHost())
+                .put("port", db.getFirstMappedPort())
+                .put("db", db.getDatabaseName())
+                .put("username", db.getUsername())
+                .put("password", db.getPassword())
+                .build());
 
     super.setup();
   }
 
   @AfterEach
   public void clean() throws Exception {
-    // In Db2 before dropping a schema, all objects that were in that schema must be dropped or moved to
+    // In Db2 before dropping a schema, all objects that were in that schema must be dropped or
+    // moved to
     // another schema.
     for (final String tableName : TEST_TABLES) {
-      final String dropTableQuery = String
-          .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME, tableName);
+      final String dropTableQuery =
+          String.format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME, tableName);
       super.database.execute(connection -> connection.createStatement().execute(dropTableQuery));
     }
     for (int i = 2; i < 10; i++) {
-      final String dropTableQuery = String
-          .format("DROP TABLE IF EXISTS %s.%s%s", SCHEMA_NAME, TABLE_NAME, i);
+      final String dropTableQuery =
+          String.format("DROP TABLE IF EXISTS %s.%s%s", SCHEMA_NAME, TABLE_NAME, i);
       super.database.execute(connection -> connection.createStatement().execute(dropTableQuery));
     }
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES))));
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES + 2))));
-    super.database.execute(connection -> connection.createStatement().execute(String
-        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME))));
+    super.database.execute(
+        connection ->
+            connection
+                .createStatement()
+                .execute(
+                    String.format(
+                        "DROP TABLE IF EXISTS %s.%s",
+                        SCHEMA_NAME,
+                        sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES))));
+    super.database.execute(
+        connection ->
+            connection
+                .createStatement()
+                .execute(
+                    String.format(
+                        "DROP TABLE IF EXISTS %s.%s",
+                        SCHEMA_NAME,
+                        sourceOperations.enquoteIdentifier(
+                            connection, TABLE_NAME_WITH_SPACES + 2))));
+    super.database.execute(
+        connection ->
+            connection
+                .createStatement()
+                .execute(
+                    String.format(
+                        "DROP TABLE IF EXISTS %s.%s",
+                        SCHEMA_NAME2, sourceOperations.enquoteIdentifier(connection, TABLE_NAME))));
 
     super.tearDown();
   }
@@ -118,5 +140,4 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public AbstractJdbcSource getJdbcSource() {
     return new Db2Source();
   }
-
 }

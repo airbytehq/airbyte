@@ -25,18 +25,22 @@ public class ProductionWriterFactory implements S3WriterFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(ProductionWriterFactory.class);
 
   @Override
-  public S3Writer create(final S3DestinationConfig config,
-                         final AmazonS3 s3Client,
-                         final ConfiguredAirbyteStream configuredStream,
-                         final Timestamp uploadTimestamp)
+  public S3Writer create(
+      final S3DestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp)
       throws Exception {
     final S3Format format = config.getFormatConfig().getFormat();
 
     if (format == S3Format.AVRO || format == S3Format.PARQUET) {
       final AirbyteStream stream = configuredStream.getStream();
       final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-      final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
-      final JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
+      final Schema avroSchema =
+          schemaConverter.getAvroSchema(
+              stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
+      final JsonFieldNameUpdater nameUpdater =
+          new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
 
       LOGGER.info("Avro schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
       if (nameUpdater.hasNameUpdate()) {
@@ -44,9 +48,11 @@ public class ProductionWriterFactory implements S3WriterFactory {
       }
 
       if (format == S3Format.AVRO) {
-        return new S3AvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+        return new S3AvroWriter(
+            config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
       } else {
-        return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+        return new S3ParquetWriter(
+            config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
       }
     }
 
@@ -60,5 +66,4 @@ public class ProductionWriterFactory implements S3WriterFactory {
 
     throw new RuntimeException("Unexpected S3 destination format: " + format);
   }
-
 }

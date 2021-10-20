@@ -21,13 +21,14 @@ class BigQueryWriteConfig {
   private final GcsCsvWriter gcsCsvWriter;
   private final GcsDestinationConfig gcsDestinationConfig;
 
-  BigQueryWriteConfig(final TableId table,
-                      final TableId tmpTable,
-                      final TableDataWriteChannel writer,
-                      final WriteDisposition syncMode,
-                      final Schema schema,
-                      final GcsCsvWriter gcsCsvWriter,
-                      final GcsDestinationConfig gcsDestinationConfig) {
+  BigQueryWriteConfig(
+      final TableId table,
+      final TableId tmpTable,
+      final TableDataWriteChannel writer,
+      final WriteDisposition syncMode,
+      final Schema schema,
+      final GcsCsvWriter gcsCsvWriter,
+      final GcsDestinationConfig gcsDestinationConfig) {
     this.table = table;
     this.tmpTable = tmpTable;
     this.writer = writer;
@@ -64,5 +65,4 @@ class BigQueryWriteConfig {
   public GcsDestinationConfig getGcsDestinationConfig() {
     return gcsDestinationConfig;
   }
-
 }

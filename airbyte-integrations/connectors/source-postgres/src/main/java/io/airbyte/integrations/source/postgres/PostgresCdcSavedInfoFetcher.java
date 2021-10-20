@@ -27,5 +27,4 @@ public class PostgresCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
   public Optional<JsonNode> getSavedSchemaHistory() {
     return Optional.empty();
   }
-
 }

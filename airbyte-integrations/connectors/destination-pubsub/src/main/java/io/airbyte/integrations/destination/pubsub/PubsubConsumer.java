@@ -41,9 +41,10 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
   private Publisher publisher;
   private AirbyteMessage lastStateMessage;
 
-  public PubsubConsumer(final JsonNode config,
-                        final ConfiguredAirbyteCatalog catalog,
-                        final Consumer<AirbyteMessage> outputRecordCollector) {
+  public PubsubConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.outputRecordCollector = outputRecordCollector;
     this.config = config;
     this.catalog = catalog;
@@ -60,14 +61,17 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
     final String topicName = config.get(PubsubDestination.CONFIG_TOPIC_ID).asText();
     final TopicName topic = TopicName.of(projectId, topicName);
     final String credentialsString =
-        config.get(PubsubDestination.CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(
-            PubsubDestination.CONFIG_CREDS))
+        config.get(PubsubDestination.CONFIG_CREDS).isObject()
+            ? Jsons.serialize(config.get(PubsubDestination.CONFIG_CREDS))
             : config.get(PubsubDestination.CONFIG_CREDS).asText();
-    final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
-    publisher = Publisher.newBuilder(topic)
-        .setEnableMessageOrdering(true)
-        .setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build();
+    final ServiceAccountCredentials credentials =
+        ServiceAccountCredentials.fromStream(
+            new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
+    publisher =
+        Publisher.newBuilder(topic)
+            .setEnableMessageOrdering(true)
+            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+            .build();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final Map<String, String> attrs = Maps.newHashMap();
       final var key = AirbyteStreamNameNamespacePair.fromAirbyteSteam(configStream.getStream());
@@ -89,8 +93,8 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
       return;
     }
     final AirbyteRecordMessage recordMessage = msg.getRecord();
-    final AirbyteStreamNameNamespacePair streamKey = AirbyteStreamNameNamespacePair
-        .fromRecordMessage(recordMessage);
+    final AirbyteStreamNameNamespacePair streamKey =
+        AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
     if (!attributes.containsKey(streamKey)) {
       throw new IllegalArgumentException(
@@ -98,15 +102,19 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
               "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
               Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
     }
-    final JsonNode data = Jsons.jsonNode(ImmutableMap.of(
-        JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
-        JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData(),
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt()));
+    final JsonNode data =
+        Jsons.jsonNode(
+            ImmutableMap.of(
+                JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
+                JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData(),
+                JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt()));
 
     publisher.publish(
-        PubsubMessage.newBuilder().putAllAttributes(attributes.get(streamKey))
+        PubsubMessage.newBuilder()
+            .putAllAttributes(attributes.get(streamKey))
             .setOrderingKey(streamKey.toString())
-            .setData(ByteString.copyFromUtf8(Jsons.serialize(data))).build());
+            .setData(ByteString.copyFromUtf8(Jsons.serialize(data)))
+            .build());
   }
 
   @Override
@@ -117,5 +125,4 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
       outputRecordCollector.accept(lastStateMessage);
     }
   }
-
 }

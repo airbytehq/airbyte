@@ -25,23 +25,26 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest")
-        .acceptLicense();
+    container =
+        new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     container.start();
 
-    final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .build());
+    final JsonNode configWithoutDbName =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", container.getHost())
+                .put("port", container.getFirstMappedPort())
+                .put("username", container.getUsername())
+                .put("password", container.getPassword())
+                .build());
 
     final Database database = getDatabase(configWithoutDbName);
-    database.query(ctx -> {
-      ctx.fetch(String.format("CREATE DATABASE %s;", DB_NAME));
-      ctx.fetch(String.format("USE %s;", DB_NAME));
-      return null;
-    });
+    database.query(
+        ctx -> {
+          ctx.fetch(String.format("CREATE DATABASE %s;", DB_NAME));
+          ctx.fetch(String.format("USE %s;", DB_NAME));
+          return null;
+        });
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put("database", DB_NAME);
@@ -53,9 +56,8 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asInt()),
+        String.format(
+            "jdbc:sqlserver://%s:%s", config.get("host").asText(), config.get("port").asInt()),
         "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         null);
   }
@@ -180,10 +182,9 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'",
-                "null")
-            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z",
-                "1999-01-08T00:00:00Z", null)
+            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'", "null")
+            .addExpectedValues(
+                "0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", "1999-01-08T00:00:00Z", null)
             .build());
 
     addDataTypeTestData(
@@ -210,7 +211,8 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
             .build());
 
-    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
+    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time
+    // types.
     // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -225,8 +227,8 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("datetimeoffset")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'0001-01-10 00:00:00 +01:00'", "'9999-01-10 00:00:00 +01:00'", "null")
-            .addExpectedValues("0001-01-10 00:00:00.0000000 +01:00",
-                "9999-01-10 00:00:00.0000000 +01:00", null)
+            .addExpectedValues(
+                "0001-01-10 00:00:00.0000000 +01:00", "9999-01-10 00:00:00.0000000 +01:00", null)
             .build());
 
     addDataTypeTestData(
@@ -242,10 +244,22 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("varchar")
             .fullSourceDataType("varchar(max) COLLATE Latin1_General_100_CI_AI_SC_UTF8")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
-                "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
-            .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
-                null, "\\xF0\\x9F\\x9A\\x80")
+            .addInsertValues(
+                "'a'",
+                "'abc'",
+                "N'Миші йдуть на південь, не питай чому;'",
+                "N'櫻花分店'",
+                "''",
+                "null",
+                "N'\\xF0\\x9F\\x9A\\x80'")
+            .addExpectedValues(
+                "a",
+                "abc",
+                "Миші йдуть на південь, не питай чому;",
+                "櫻花分店",
+                "",
+                null,
+                "\\xF0\\x9F\\x9A\\x80")
             .build());
 
     addDataTypeTestData(
@@ -269,20 +283,44 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("nvarchar")
             .fullSourceDataType("nvarchar(max)")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
-                "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
-            .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
-                null, "\\xF0\\x9F\\x9A\\x80")
+            .addInsertValues(
+                "'a'",
+                "'abc'",
+                "N'Миші йдуть на південь, не питай чому;'",
+                "N'櫻花分店'",
+                "''",
+                "null",
+                "N'\\xF0\\x9F\\x9A\\x80'")
+            .addExpectedValues(
+                "a",
+                "abc",
+                "Миші йдуть на південь, не питай чому;",
+                "櫻花分店",
+                "",
+                null,
+                "\\xF0\\x9F\\x9A\\x80")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("ntext")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
-                "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
-            .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
-                null, "\\xF0\\x9F\\x9A\\x80")
+            .addInsertValues(
+                "'a'",
+                "'abc'",
+                "N'Миші йдуть на південь, не питай чому;'",
+                "N'櫻花分店'",
+                "''",
+                "null",
+                "N'\\xF0\\x9F\\x9A\\x80'")
+            .addExpectedValues(
+                "a",
+                "abc",
+                "Миші йдуть на південь, не питай чому;",
+                "櫻花分店",
+                "",
+                null,
+                "\\xF0\\x9F\\x9A\\x80")
             .build());
 
     // TODO BUG Returns binary value instead of actual value
@@ -327,10 +365,22 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("sql_variant")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
-                "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
-            .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
-                null, "\\xF0\\x9F\\x9A\\x80")
+            .addInsertValues(
+                "'a'",
+                "'abc'",
+                "N'Миші йдуть на південь, не питай чому;'",
+                "N'櫻花分店'",
+                "''",
+                "null",
+                "N'\\xF0\\x9F\\x9A\\x80'")
+            .addExpectedValues(
+                "a",
+                "abc",
+                "Миші йдуть на південь, не питай чому;",
+                "櫻花分店",
+                "",
+                null,
+                "\\xF0\\x9F\\x9A\\x80")
             .build());
 
     // TODO BUG: Airbyte returns binary representation instead of text one.
@@ -341,7 +391,8 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null")
             .addNullExpectedValue()
-            // .addInsertValues("geometry::STGeomFromText('LINESTRING (100 100, 20 180, 180 180)', 0)")
+            // .addInsertValues("geometry::STGeomFromText('LINESTRING (100 100, 20 180, 180 180)',
+            // 0)")
             // .addExpectedValues("LINESTRING (100 100, 20 180, 180 180)",
             // "POLYGON ((0 0, 150 0, 150 150, 0 150, 0 0)", null)
             .build());
@@ -358,8 +409,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("xml")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues(
-                "'<user><user_id>1</user_id></user>'", "null", "''")
+            .addInsertValues("'<user><user_id>1</user_id></user>'", "null", "''")
             .addExpectedValues("<user><user_id>1</user_id></user>", null, "")
             .build());
 
@@ -371,11 +421,10 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null")
             .addNullExpectedValue()
-            // .addInsertValues("geography::STGeomFromText('LINESTRING(-122.360 47.656, -122.343 47.656 )',
+            // .addInsertValues("geography::STGeomFromText('LINESTRING(-122.360 47.656, -122.343
+            // 47.656 )',
             // 4326)")
             // .addExpectedValues("LINESTRING(-122.360 47.656, -122.343 47.656 )", null)
             .build());
-
   }
-
 }

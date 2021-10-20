@@ -12,5 +12,4 @@ public class RedshiftSQLNameTransformer extends ExtendedNameTransformer {
   public String convertStreamName(final String input) {
     return super.convertStreamName(input).toLowerCase();
   }
-
 }

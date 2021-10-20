@@ -35,5 +35,4 @@ public class RedshiftDestinationTest {
     final var stubConfig = mapper.createObjectNode();
     assertFalse(RedshiftDestination.isCopy(stubConfig));
   }
-
 }

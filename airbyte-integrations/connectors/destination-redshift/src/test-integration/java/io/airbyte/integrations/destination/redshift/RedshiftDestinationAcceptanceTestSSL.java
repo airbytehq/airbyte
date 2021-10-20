@@ -26,12 +26,13 @@ public class RedshiftDestinationAcceptanceTestSSL extends RedshiftCopyDestinatio
     return Databases.createDatabase(
         getConfig().get("username").asText(),
         getConfig().has("password") ? getConfig().get("password").asText() : null,
-        String.format("jdbc:redshift://%s:%s/%s",
+        String.format(
+            "jdbc:redshift://%s:%s/%s",
             getConfig().get("host").asText(),
             getConfig().get("port").asText(),
             getConfig().get("database").asText()),
-        RedshiftInsertDestination.DRIVER_CLASS, null,
+        RedshiftInsertDestination.DRIVER_CLASS,
+        null,
         "ssl=true;sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
   }
-
 }

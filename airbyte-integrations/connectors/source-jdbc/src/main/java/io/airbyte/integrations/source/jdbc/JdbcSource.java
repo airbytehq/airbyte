@@ -37,5 +37,4 @@ public class JdbcSource extends AbstractJdbcSource implements Source {
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", JdbcSource.class);
   }
-
 }

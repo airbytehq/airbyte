@@ -39,36 +39,42 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
   private final Schema parquetSchema;
   private final String outputFilename;
 
-  public S3ParquetWriter(final S3DestinationConfig config,
-                         final AmazonS3 s3Client,
-                         final ConfiguredAirbyteStream configuredStream,
-                         final Timestamp uploadTimestamp,
-                         final Schema schema,
-                         final JsonFieldNameUpdater nameUpdater)
+  public S3ParquetWriter(
+      final S3DestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp,
+      final Schema schema,
+      final JsonFieldNameUpdater nameUpdater)
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
 
     this.outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
     final String objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
+    LOGGER.info(
+        "Full S3 path for stream '{}': s3://{}/{}",
+        stream.getName(),
+        config.getBucketName(),
         objectKey);
 
-    final URI uri = new URI(
-        String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
+    final URI uri =
+        new URI(
+            String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
     final Path path = new Path(uri);
 
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     final Configuration hadoopConfig = getHadoopConfig(config);
-    this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
-        .withSchema(schema)
-        .withCompressionCodec(formatConfig.getCompressionCodec())
-        .withRowGroupSize(formatConfig.getBlockSize())
-        .withMaxPaddingSize(formatConfig.getMaxPaddingSize())
-        .withPageSize(formatConfig.getPageSize())
-        .withDictionaryPageSize(formatConfig.getDictionaryPageSize())
-        .withDictionaryEncoding(formatConfig.isDictionaryEncoding())
-        .build();
+    this.parquetWriter =
+        AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
+            .withSchema(schema)
+            .withCompressionCodec(formatConfig.getCompressionCodec())
+            .withRowGroupSize(formatConfig.getBlockSize())
+            .withMaxPaddingSize(formatConfig.getMaxPaddingSize())
+            .withPageSize(formatConfig.getPageSize())
+            .withDictionaryPageSize(formatConfig.getDictionaryPageSize())
+            .withDictionaryEncoding(formatConfig.isDictionaryEncoding())
+            .build();
     this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
     this.parquetSchema = schema;
   }
@@ -78,12 +84,14 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     hadoopConfig.set(Constants.ACCESS_KEY, config.getAccessKeyId());
     hadoopConfig.set(Constants.SECRET_KEY, config.getSecretAccessKey());
     if (config.getEndpoint().isEmpty()) {
-      hadoopConfig.set(Constants.ENDPOINT, String.format("s3.%s.amazonaws.com", config.getBucketRegion()));
+      hadoopConfig.set(
+          Constants.ENDPOINT, String.format("s3.%s.amazonaws.com", config.getBucketRegion()));
     } else {
       hadoopConfig.set(Constants.ENDPOINT, config.getEndpoint());
       hadoopConfig.set(Constants.PATH_STYLE_ACCESS, "true");
     }
-    hadoopConfig.set(Constants.AWS_CREDENTIALS_PROVIDER,
+    hadoopConfig.set(
+        Constants.AWS_CREDENTIALS_PROVIDER,
         "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
     return hadoopConfig;
   }
@@ -92,9 +100,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     return parquetSchema;
   }
 
-  /**
-   * The file path includes prefix and filename, but does not include the bucket name.
-   */
+  /** The file path includes prefix and filename, but does not include the bucket name. */
   public String getOutputFilePath() {
     return outputPrefix + "/" + outputFilename;
   }
@@ -117,5 +123,4 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
   protected void closeWhenFail() throws IOException {
     parquetWriter.close();
   }
-
 }

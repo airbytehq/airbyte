@@ -38,16 +38,18 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     try (final JdbcDatabase database = getDatabase(config)) {
       final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
 
-      final String outputSchema = getNamingResolver().getIdentifier(config.get("database").asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(),
-          mySQLSqlOperations);
+      final String outputSchema =
+          getNamingResolver().getIdentifier(config.get("database").asText());
+      attemptSQLCreateAndDropTableOperations(
+          outputSchema, database, getNamingResolver(), mySQLSqlOperations);
 
       mySQLSqlOperations.verifyLocalFileEnabled(database);
 
       final VersionCompatibility compatibility = mySQLSqlOperations.isCompatibleVersion(database);
       if (!compatibility.isCompatible()) {
-        throw new RuntimeException(String
-            .format("Your MySQL version %s is not compatible with Airbyte",
+        throw new RuntimeException(
+            String.format(
+                "Your MySQL version %s is not compatible with Airbyte",
                 compatibility.getVersion()));
       }
 
@@ -86,12 +88,16 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       additionalParameters.add("verifyServerCertificate=false");
     }
 
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+    final StringBuilder jdbcUrl =
+        new StringBuilder(
+            String.format(
+                "jdbc:mysql://%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText()));
     // zero dates by default cannot be parsed into java date objects (they will throw an error)
-    // in addition, users don't always have agency in fixing them e.g: maybe they don't own the database
+    // in addition, users don't always have agency in fixing them e.g: maybe they don't own the
+    // database
     // and can't
     // remove zero date values.
     // since zero dates are placeholders, we convert them to null by default
@@ -101,9 +107,10 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
     }
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+    final ImmutableMap.Builder<Object, Object> configBuilder =
+        ImmutableMap.builder()
+            .put("username", config.get("username").asText())
+            .put("jdbc_url", jdbcUrl.toString());
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
@@ -118,5 +125,4 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MySQLDestination.class);
   }
-
 }

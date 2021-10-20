@@ -27,23 +27,28 @@ public class DynamodbDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      DynamodbChecker.attemptDynamodbWriteAndDelete(DynamodbDestinationConfig.getDynamodbDestinationConfig(config));
+      DynamodbChecker.attemptDynamodbWriteAndDelete(
+          DynamodbDestinationConfig.getDynamodbDestinationConfig(config));
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to access the DynamoDB table: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the DynamoDB table with the provided configuration. \n" + e
-              .getMessage());
+          .withMessage(
+              "Could not connect to the DynamoDB table with the provided configuration. \n"
+                  + e.getMessage());
     }
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog configuredCatalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog configuredCatalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     // TODO
-    return new DynamodbConsumer(DynamodbDestinationConfig.getDynamodbDestinationConfig(config), configuredCatalog, outputRecordCollector);
+    return new DynamodbConsumer(
+        DynamodbDestinationConfig.getDynamodbDestinationConfig(config),
+        configuredCatalog,
+        outputRecordCollector);
   }
-
 }

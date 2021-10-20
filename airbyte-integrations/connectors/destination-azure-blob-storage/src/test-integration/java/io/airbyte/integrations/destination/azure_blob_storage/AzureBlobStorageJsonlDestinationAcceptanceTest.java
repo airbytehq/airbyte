@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-public class AzureBlobStorageJsonlDestinationAcceptanceTest extends
-    AzureBlobStorageDestinationAcceptanceTest {
+public class AzureBlobStorageJsonlDestinationAcceptanceTest
+    extends AzureBlobStorageDestinationAcceptanceTest {
 
   protected AzureBlobStorageJsonlDestinationAcceptanceTest() {
     super(AzureBlobStorageFormat.JSONL);
@@ -20,25 +20,26 @@ public class AzureBlobStorageJsonlDestinationAcceptanceTest extends
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\"\n"
-        + "}");
+    return Jsons.deserialize("{\n" + "  \"format_type\": \"JSONL\"\n" + "}");
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws IOException {
 
     final String allSyncedObjects = getAllSyncedObjects(streamName);
     final List<JsonNode> jsonRecords = new LinkedList<>();
 
-    allSyncedObjects.lines().forEach(line -> {
-      jsonRecords.add(Jsons.deserialize(line).get(JavaBaseConstants.COLUMN_NAME_DATA));
-    });
+    allSyncedObjects
+        .lines()
+        .forEach(
+            line -> {
+              jsonRecords.add(Jsons.deserialize(line).get(JavaBaseConstants.COLUMN_NAME_DATA));
+            });
     return jsonRecords;
   }
-
 }

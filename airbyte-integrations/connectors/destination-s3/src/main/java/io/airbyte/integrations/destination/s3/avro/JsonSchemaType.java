@@ -6,11 +6,8 @@ package io.airbyte.integrations.destination.s3.avro;
 
 import org.apache.avro.Schema;
 
-/**
- * Mapping of JsonSchema types to Avro types.
- */
+/** Mapping of JsonSchema types to Avro types. */
 public enum JsonSchemaType {
-
   STRING("string", true, Schema.Type.STRING),
   NUMBER("number", true, Schema.Type.DOUBLE),
   INTEGER("integer", true, Schema.Type.INT),
@@ -24,7 +21,8 @@ public enum JsonSchemaType {
   private final boolean isPrimitive;
   private final Schema.Type avroType;
 
-  JsonSchemaType(final String jsonSchemaType, final boolean isPrimitive, final Schema.Type avroType) {
+  JsonSchemaType(
+      final String jsonSchemaType, final boolean isPrimitive, final Schema.Type avroType) {
     this.jsonSchemaType = jsonSchemaType;
     this.isPrimitive = isPrimitive;
     this.avroType = avroType;
@@ -55,5 +53,4 @@ public enum JsonSchemaType {
   public String toString() {
     return jsonSchemaType;
   }
-
 }

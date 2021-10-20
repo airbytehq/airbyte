@@ -17,11 +17,12 @@ public class MySqlCdcProperties {
     // https://debezium.io/documentation/reference/connectors/mysql.html#mysql-boolean-values
     // https://debezium.io/documentation/reference/1.4/development/converters.html
     /**
-     * {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter}
-     * {@link MySQLConverter}
+     * {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter} {@link
+     * MySQLConverter}
      */
     props.setProperty("converters", "boolean, datetime");
-    props.setProperty("boolean.type", "io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter");
+    props.setProperty(
+        "boolean.type", "io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter");
     props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.MySQLConverter");
 
     // snapshot config
@@ -37,5 +38,4 @@ public class MySqlCdcProperties {
 
     return props;
   }
-
 }

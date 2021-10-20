@@ -11,12 +11,12 @@ import java.util.List;
 public class TestJdbcSqlOperations extends JdbcSqlOperations {
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tableName)
+  public void insertRecordsInternal(
+      final JdbcDatabase database,
+      final List<AirbyteRecordMessage> records,
+      final String schemaName,
+      final String tableName)
       throws Exception {
     // Not required for the testing
   }
-
 }

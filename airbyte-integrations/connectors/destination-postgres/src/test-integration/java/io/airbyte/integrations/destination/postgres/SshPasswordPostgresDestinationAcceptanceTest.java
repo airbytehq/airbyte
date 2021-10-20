@@ -6,11 +6,11 @@ package io.airbyte.integrations.destination.postgres;
 
 import io.airbyte.integrations.base.ssh.SshTunnel;
 
-public class SshPasswordPostgresDestinationAcceptanceTest extends SshPostgresDestinationAcceptanceTest {
+public class SshPasswordPostgresDestinationAcceptanceTest
+    extends SshPostgresDestinationAcceptanceTest {
 
   @Override
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
   }
-
 }

@@ -48,7 +48,8 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db).put("schema", schemaName));
+    return bastion.getTunnelConfig(
+        getTunnelMethod(), bastion.getBasicDbConfigBuider(db).put("schema", schemaName));
   }
 
   @Override
@@ -59,13 +60,13 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv env,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace).stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
@@ -86,10 +87,12 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(
+      final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
-    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
+    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we
+    // don't
     // use quoted names
     // if (!tableName.startsWith("\"")) {
     // // Currently, Normalization always quote tables identifiers
@@ -115,24 +118,36 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
     return Databases.createPostgresDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s", config.get("host").asText(), config.get("port").asText(),
+        String.format(
+            "jdbc:postgresql://%s:%s/%s",
+            config.get("host").asText(),
+            config.get("port").asText(),
             config.get("database").asText()));
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+      throws Exception {
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
         PostgresDestination.HOST_KEY,
         PostgresDestination.PORT_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
-            .query(
-                ctx -> ctx
-                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                    .stream()
-                    .map(r -> r.formatJSON(JSON_FORMAT))
-                    .map(Jsons::deserialize)
-                    .collect(Collectors.toList())));
+        (CheckedFunction<JsonNode, List<JsonNode>, Exception>)
+            mangledConfig ->
+                getDatabaseFromConfig(mangledConfig)
+                    .query(
+                        ctx ->
+                            ctx
+                                .fetch(
+                                    String.format(
+                                        "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                                        schemaName,
+                                        tableName,
+                                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                                .stream()
+                                .map(r -> r.formatJSON(JSON_FORMAT))
+                                .map(Jsons::deserialize)
+                                .collect(Collectors.toList())));
   }
 
   @Override
@@ -145,7 +160,8 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
         PostgresDestination.HOST_KEY,
         PostgresDestination.PORT_KEY,
         mangledConfig -> {
-          getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
+          getDatabaseFromConfig(mangledConfig)
+              .query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
         });
   }
 
@@ -155,8 +171,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
   }
 
   private void initAndStartJdbcContainer() {
-    db = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withNetwork(bastion.getNetWork());
+    db = new PostgreSQLContainer<>("postgres:13-alpine").withNetwork(bastion.getNetWork());
     db.start();
   }
 
@@ -168,10 +183,10 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
         PostgresDestination.HOST_KEY,
         PostgresDestination.PORT_KEY,
         mangledConfig -> {
-          getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
+          getDatabaseFromConfig(mangledConfig)
+              .query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
         });
 
     bastion.stopAndCloseContainers(db);
   }
-
 }

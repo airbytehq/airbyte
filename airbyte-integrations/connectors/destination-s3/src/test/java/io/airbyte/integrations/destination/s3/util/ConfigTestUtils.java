@@ -13,15 +13,17 @@ import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 public class ConfigTestUtils {
 
   public static JsonNode getBaseConfig(final JsonNode formatConfig) {
-    return Jsons.deserialize("{\n"
-        + "  \"s3_endpoint\": \"some_test-endpoint\",\n"
-        + "  \"s3_bucket_name\": \"test-bucket-name\",\n"
-        + "  \"s3_bucket_path\": \"test_path\",\n"
-        + "  \"s3_bucket_region\": \"us-east-2\",\n"
-        + "  \"access_key_id\": \"some-test-key-id\",\n"
-        + "  \"secret_access_key\": \"some-test-access-key\",\n"
-        + "  \"format\": " + formatConfig
-        + "}");
+    return Jsons.deserialize(
+        "{\n"
+            + "  \"s3_endpoint\": \"some_test-endpoint\",\n"
+            + "  \"s3_bucket_name\": \"test-bucket-name\",\n"
+            + "  \"s3_bucket_path\": \"test_path\",\n"
+            + "  \"s3_bucket_region\": \"us-east-2\",\n"
+            + "  \"access_key_id\": \"some-test-key-id\",\n"
+            + "  \"secret_access_key\": \"some-test-access-key\",\n"
+            + "  \"format\": "
+            + formatConfig
+            + "}");
   }
 
   public static void assertBaseConfig(final S3DestinationConfig s3DestinationConfig) {
@@ -32,5 +34,4 @@ public class ConfigTestUtils {
     assertEquals("some-test-key-id", s3DestinationConfig.getAccessKeyId());
     assertEquals("some-test-access-key", s3DestinationConfig.getSecretAccessKey());
   }
-
 }

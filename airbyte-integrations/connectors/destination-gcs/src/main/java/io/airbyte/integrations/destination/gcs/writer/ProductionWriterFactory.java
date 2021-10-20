@@ -26,10 +26,11 @@ public class ProductionWriterFactory implements GcsWriterFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(ProductionWriterFactory.class);
 
   @Override
-  public S3Writer create(final GcsDestinationConfig config,
-                         final AmazonS3 s3Client,
-                         final ConfiguredAirbyteStream configuredStream,
-                         final Timestamp uploadTimestamp)
+  public S3Writer create(
+      final GcsDestinationConfig config,
+      final AmazonS3 s3Client,
+      final ConfiguredAirbyteStream configuredStream,
+      final Timestamp uploadTimestamp)
       throws Exception {
     final S3Format format = config.getFormatConfig().getFormat();
 
@@ -37,8 +38,11 @@ public class ProductionWriterFactory implements GcsWriterFactory {
       final AirbyteStream stream = configuredStream.getStream();
 
       final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-      final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
-      final JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
+      final Schema avroSchema =
+          schemaConverter.getAvroSchema(
+              stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
+      final JsonFieldNameUpdater nameUpdater =
+          new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
 
       LOGGER.info("Paquet schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
       if (nameUpdater.hasNameUpdate()) {
@@ -46,9 +50,11 @@ public class ProductionWriterFactory implements GcsWriterFactory {
       }
 
       if (format == S3Format.AVRO) {
-        return new GcsAvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+        return new GcsAvroWriter(
+            config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
       } else {
-        return new GcsParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+        return new GcsParquetWriter(
+            config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
       }
     }
 
@@ -62,5 +68,4 @@ public class ProductionWriterFactory implements GcsWriterFactory {
 
     throw new RuntimeException("Unexpected GCS destination format: " + format);
   }
-
 }

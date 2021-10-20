@@ -32,9 +32,8 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InfiniteFeedSource.class);
 
-  public static final AirbyteCatalog CATALOG = CatalogHelpers.createAirbyteCatalog(
-      "data",
-      Field.of("column1", JsonSchemaPrimitive.STRING));
+  public static final AirbyteCatalog CATALOG =
+      CatalogHelpers.createAirbyteCatalog("data", Field.of("column1", JsonSchemaPrimitive.STRING));
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
@@ -47,31 +46,34 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
+  public AutoCloseableIterator<AirbyteMessage> read(
+      final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
     final Predicate<Long> anotherRecordPredicate =
-        config.has("max_records") ? recordNumber -> recordNumber < config.get("max_records").asLong() : recordNumber -> true;
+        config.has("max_records")
+            ? recordNumber -> recordNumber < config.get("max_records").asLong()
+            : recordNumber -> true;
 
     final AtomicLong i = new AtomicLong();
 
-    return AutoCloseableIterators.fromIterator(new AbstractIterator<>() {
+    return AutoCloseableIterators.fromIterator(
+        new AbstractIterator<>() {
 
-      @Override
-      protected AirbyteMessage computeNext() {
-        if (anotherRecordPredicate.test(i.get())) {
-          i.incrementAndGet();
-          LOGGER.info("source emitting record {}:", i.get());
-          return new AirbyteMessage()
-              .withType(Type.RECORD)
-              .withRecord(new AirbyteRecordMessage()
-                  .withStream("data")
-                  .withEmittedAt(Instant.now().toEpochMilli())
-                  .withData(Jsons.jsonNode(ImmutableMap.of("column1", i))));
-        } else {
-          return endOfData();
-        }
-      }
-
-    });
+          @Override
+          protected AirbyteMessage computeNext() {
+            if (anotherRecordPredicate.test(i.get())) {
+              i.incrementAndGet();
+              LOGGER.info("source emitting record {}:", i.get());
+              return new AirbyteMessage()
+                  .withType(Type.RECORD)
+                  .withRecord(
+                      new AirbyteRecordMessage()
+                          .withStream("data")
+                          .withEmittedAt(Instant.now().toEpochMilli())
+                          .withData(Jsons.jsonNode(ImmutableMap.of("column1", i))));
+            } else {
+              return endOfData();
+            }
+          }
+        });
   }
-
 }

@@ -42,17 +42,20 @@ class PostgresStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptance
   public void setup() throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", PSQL_DB.getHost())
-        .put("port", PSQL_DB.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", PSQL_DB.getUsername())
-        .put("password", PSQL_DB.getPassword())
-        .put("ssl", false)
-        .build());
+    config =
+        Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("host", PSQL_DB.getHost())
+                .put("port", PSQL_DB.getFirstMappedPort())
+                .put("database", dbName)
+                .put("username", PSQL_DB.getUsername())
+                .put("password", PSQL_DB.getPassword())
+                .put("ssl", false)
+                .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath =
+        IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     super.setup();
@@ -97,9 +100,10 @@ class PostgresStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptance
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
     final ConnectorSpecification expected =
-        SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
+        SshHelpers.injectSshIntoSpec(
+            Jsons.deserialize(
+                MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
 
     assertEquals(expected, actual);
   }
-
 }

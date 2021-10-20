@@ -58,12 +58,14 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(
+      final TestDestinationEnv testEnv,
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
-    final String accentStrippedStreamName = KeenCharactersStripper.stripSpecialCharactersFromStreamName(streamName);
+    final String accentStrippedStreamName =
+        KeenCharactersStripper.stripSpecialCharactersFromStreamName(streamName);
     collectionsToDelete.add(accentStrippedStreamName);
 
     final ArrayNode array = keenHttpClient.extract(accentStrippedStreamName, projectId, apiKey);
@@ -77,13 +79,13 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(Path.of(SECRET_FILE_PATH))) {
       throw new IllegalStateException(
-          "Must provide path to a file containing Keen account credentials: Project ID and Master API Key. " +
-              "By default {module-root}/" + SECRET_FILE_PATH);
+          "Must provide path to a file containing Keen account credentials: Project ID and Master API Key. "
+              + "By default {module-root}/"
+              + SECRET_FILE_PATH);
     }
     configJson = getBaseConfigJson();
     projectId = configJson.get(CONFIG_PROJECT_ID).asText();
     apiKey = configJson.get(CONFIG_API_KEY).asText();
-
   }
 
   @Override
@@ -95,13 +97,13 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void runSyncAndVerifyStateOutput(final JsonNode config,
-                                             final List<AirbyteMessage> messages,
-                                             final ConfiguredAirbyteCatalog catalog,
-                                             final boolean runNormalization)
+  protected void runSyncAndVerifyStateOutput(
+      final JsonNode config,
+      final List<AirbyteMessage> messages,
+      final ConfiguredAirbyteCatalog catalog,
+      final boolean runNormalization)
       throws Exception {
     super.runSyncAndVerifyStateOutput(config, messages, catalog, runNormalization);
     Thread.sleep(10000);
   }
-
 }

@@ -9,15 +9,15 @@ import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDe
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 
 /**
- * Create different {@link AzureBlobStorageWriter} based on
- * {@link AzureBlobStorageDestinationConfig}.
+ * Create different {@link AzureBlobStorageWriter} based on {@link
+ * AzureBlobStorageDestinationConfig}.
  */
 public interface AzureBlobStorageWriterFactory {
 
-  AzureBlobStorageWriter create(AzureBlobStorageDestinationConfig config,
-                                AppendBlobClient appendBlobClient,
-                                ConfiguredAirbyteStream configuredStream,
-                                boolean isNewlyCreatedBlob)
+  AzureBlobStorageWriter create(
+      AzureBlobStorageDestinationConfig config,
+      AppendBlobClient appendBlobClient,
+      ConfiguredAirbyteStream configuredStream,
+      boolean isNewlyCreatedBlob)
       throws Exception;
-
 }

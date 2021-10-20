@@ -20,9 +20,10 @@ import java.util.function.Consumer;
 public class SnowflakeCopyS3Destination extends CopyDestination {
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(
+      final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector) {
     return CopyConsumerFactory.create(
         outputRecordCollector,
         getDatabase(config),
@@ -62,5 +63,4 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
     final JsonNode loadingMethod = config.get("loading_method");
     return S3Config.getS3Config(loadingMethod);
   }
-
 }

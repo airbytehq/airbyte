@@ -22,26 +22,39 @@ public class DynamodbChecker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamodbChecker.class);
 
-  public static void attemptDynamodbWriteAndDelete(final DynamodbDestinationConfig dynamodbDestinationConfig) throws Exception {
+  public static void attemptDynamodbWriteAndDelete(
+      final DynamodbDestinationConfig dynamodbDestinationConfig) throws Exception {
     final var prefix = dynamodbDestinationConfig.getTableName();
-    final String outputTableName = prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+    final String outputTableName =
+        prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteDynamodbItem(dynamodbDestinationConfig, outputTableName);
   }
 
-  private static void attemptWriteAndDeleteDynamodbItem(final DynamodbDestinationConfig dynamodbDestinationConfig, final String outputTableName)
+  private static void attemptWriteAndDeleteDynamodbItem(
+      final DynamodbDestinationConfig dynamodbDestinationConfig, final String outputTableName)
       throws Exception {
     final DynamoDB dynamoDB = new DynamoDB(getAmazonDynamoDB(dynamodbDestinationConfig));
-    final Table table = dynamoDB.createTable(outputTableName, // create table
-        Arrays.asList(new KeySchemaElement(JavaBaseConstants.COLUMN_NAME_AB_ID, KeyType.HASH), new KeySchemaElement("sync_time", KeyType.RANGE)),
-        Arrays.asList(new AttributeDefinition(JavaBaseConstants.COLUMN_NAME_AB_ID, ScalarAttributeType.S),
-            new AttributeDefinition("sync_time", ScalarAttributeType.N)),
-        new ProvisionedThroughput(1L, 1L));
+    final Table table =
+        dynamoDB.createTable(
+            outputTableName, // create table
+            Arrays.asList(
+                new KeySchemaElement(JavaBaseConstants.COLUMN_NAME_AB_ID, KeyType.HASH),
+                new KeySchemaElement("sync_time", KeyType.RANGE)),
+            Arrays.asList(
+                new AttributeDefinition(JavaBaseConstants.COLUMN_NAME_AB_ID, ScalarAttributeType.S),
+                new AttributeDefinition("sync_time", ScalarAttributeType.N)),
+            new ProvisionedThroughput(1L, 1L));
     table.waitForActive();
 
     try {
-      final PutItemOutcome outcome = table
-          .putItem(
-              new Item().withPrimaryKey(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(), "sync_time", System.currentTimeMillis()));
+      final PutItemOutcome outcome =
+          table.putItem(
+              new Item()
+                  .withPrimaryKey(
+                      JavaBaseConstants.COLUMN_NAME_AB_ID,
+                      UUID.randomUUID().toString(),
+                      "sync_time",
+                      System.currentTimeMillis()));
     } catch (final Exception e) {
       LOGGER.error(e.getMessage());
     }
@@ -50,7 +63,8 @@ public class DynamodbChecker {
     table.waitForDelete();
   }
 
-  public static AmazonDynamoDB getAmazonDynamoDB(final DynamodbDestinationConfig dynamodbDestinationConfig) {
+  public static AmazonDynamoDB getAmazonDynamoDB(
+      final DynamodbDestinationConfig dynamodbDestinationConfig) {
     final var endpoint = dynamodbDestinationConfig.getEndpoint();
     final var region = dynamodbDestinationConfig.getRegion();
     final var accessKeyId = dynamodbDestinationConfig.getAccessKeyId();
@@ -68,13 +82,11 @@ public class DynamodbChecker {
       final ClientConfiguration clientConfiguration = new ClientConfiguration();
       clientConfiguration.setSignerOverride("AWSDynamodbSignerType");
 
-      return AmazonDynamoDBClientBuilder
-          .standard()
+      return AmazonDynamoDBClientBuilder.standard()
           .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
           .withClientConfiguration(clientConfiguration)
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
           .build();
     }
   }
-
 }
