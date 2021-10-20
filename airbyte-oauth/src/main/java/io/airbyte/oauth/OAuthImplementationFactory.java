@@ -12,7 +12,6 @@ import io.airbyte.oauth.flows.TrelloOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
-import io.airbyte.oauth.flows.zendesk.ZendeskOAuthFlow;
 import java.util.Map;
 import java.util.UUID;
 
@@ -28,7 +27,6 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository))
         .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
-        .put("airbyte/source-zendesk-sunshine", new ZendeskOAuthFlow(configRepository))
         .build();
   }
 
