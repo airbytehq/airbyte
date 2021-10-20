@@ -53,3 +53,10 @@ Visit the [Paystack dashboard settings page](https://dashboard.paystack.com/#/se
 Unfortunately Paystack does not yet support restricted permission levels on secret keys. This means that you will have to use the same secret key here that you use for charging customers. Use at your own risk. In the future Paystack might support restricted access levels and in that case Airbyte only requires a read-only access level key.
 
 If you would like to test Airbyte using test data on Paystack, `sk_test_` API keys are also supported.
+
+
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2021-10-20 | [7214](https://github.com/airbytehq/airbyte/pull/7214) | Add Paystack source connector |
