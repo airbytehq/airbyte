@@ -12,6 +12,8 @@ def deep_map(function, d):
     for key, val in d.items():
         if isinstance(val, dict):
             d[key] = deep_map(function, val)
+        elif isinstance(val, list):
+            d[key] = deep_map(function, val)
         else:
             d[key] = val
     return d
