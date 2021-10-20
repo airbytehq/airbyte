@@ -36,7 +36,7 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
     this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
-  public Long create(final UUID connectionId) {
+  public Long create(final UUID connectionId, ConnectorSpecification sourceSpec) {
     try {
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
       final SourceConnection sourceConnection = configRepository.getSourceConnection(standardSync.getSourceId());
@@ -45,7 +45,7 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
           sourceConnection.getSourceDefinitionId(),
           sourceConnection.getWorkspaceId(),
           sourceConnection.getConfiguration(),
-          new ConnectorSpecification());
+          sourceSpec);
       sourceConnection.withConfiguration(sourceConfiguration);
       final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
           destinationConnection.getDestinationDefinitionId(),

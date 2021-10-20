@@ -5,22 +5,27 @@
 package io.airbyte.scheduler.app;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.analytics.TrackingClient;
+import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -34,21 +39,25 @@ public class JobScheduler implements Runnable {
   private final ConfigRepository configRepository;
   private final BiPredicate<Optional<Job>, StandardSync> scheduleJobPredicate;
   private final SyncJobFactory jobFactory;
+  private final SpecFetcher specFetcher;
 
   @VisibleForTesting
   JobScheduler(final JobPersistence jobPersistence,
                final ConfigRepository configRepository,
                final BiPredicate<Optional<Job>, StandardSync> scheduleJobPredicate,
-               final SyncJobFactory jobFactory) {
+               final SyncJobFactory jobFactory,
+               final SpecFetcher specFetcher) {
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.scheduleJobPredicate = scheduleJobPredicate;
     this.jobFactory = jobFactory;
+    this.specFetcher = specFetcher;
   }
 
   public JobScheduler(final JobPersistence jobPersistence,
                       final ConfigRepository configRepository,
-                      final TrackingClient trackingClient) {
+                      final OAuthConfigSupplier oAuthSupplier,
+                      final SpecFetcher specFetcher) {
     this(
         jobPersistence,
         configRepository,
@@ -56,7 +65,8 @@ public class JobScheduler implements Runnable {
         new DefaultSyncJobFactory(
             new DefaultJobCreator(jobPersistence),
             configRepository,
-            new OAuthConfigSupplier(configRepository, false, trackingClient)));
+            oAuthSupplier),
+        specFetcher);
   }
 
   @Override
@@ -84,7 +94,8 @@ public class JobScheduler implements Runnable {
       final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(connection.getConnectionId());
 
       if (scheduleJobPredicate.test(previousJobOptional, connection)) {
-        jobFactory.create(connection.getConnectionId());
+        final UUID connectionId = connection.getConnectionId();
+        jobFactory.create(connectionId, getConnectionSourceSpec(connectionId));
         jobsScheduled++;
         SchedulerApp.PENDING_JOBS.getAndIncrement();
       }
@@ -94,6 +105,18 @@ public class JobScheduler implements Runnable {
 
     if (jobsScheduled > 0) {
       LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduled this cycle: {}", activeConnections.size(), jobsScheduled);
+    }
+  }
+
+  private ConnectorSpecification getConnectionSourceSpec(final UUID connectionId) throws IOException {
+    try {
+      final StandardSync standardSync = configRepository.getStandardSync(connectionId);
+      final SourceConnection sourceConnection = configRepository.getSourceConnection(standardSync.getSourceId());
+      final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+      final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+      return specFetcher.execute(imageName);
+    } catch (final JsonValidationException | ConfigNotFoundException e) {
+      throw new IOException("Failed to fetch spec for connector");
     }
   }
 

@@ -4,6 +4,8 @@
 
 package io.airbyte.scheduler.app;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -11,6 +13,8 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncOperation;
@@ -19,11 +23,13 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
@@ -76,15 +82,18 @@ class JobSchedulerTest {
   private ScheduleJobPredicate scheduleJobPredicate;
   private SyncJobFactory jobFactory;
   private JobScheduler scheduler;
+  private SpecFetcher specFetcher;
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws IOException {
     configRepository = mock(ConfigRepository.class);
     jobPersistence = mock(JobPersistence.class);
+    specFetcher = mock(SpecFetcher.class);
+    when(specFetcher.execute(any())).thenReturn(new ConnectorSpecification());
 
     scheduleJobPredicate = mock(ScheduleJobPredicate.class);
     jobFactory = mock(SyncJobFactory.class);
-    scheduler = new JobScheduler(jobPersistence, configRepository, scheduleJobPredicate, jobFactory);
+    scheduler = new JobScheduler(jobPersistence, configRepository, scheduleJobPredicate, jobFactory, specFetcher);
 
     previousJob = mock(Job.class);
   }
@@ -94,7 +103,7 @@ class JobSchedulerTest {
     when(jobPersistence.getLastReplicationJob(STANDARD_SYNC.getConnectionId()))
         .thenReturn(java.util.Optional.of(previousJob));
     when(scheduleJobPredicate.test(Optional.of(previousJob), STANDARD_SYNC)).thenReturn(true);
-    when(jobFactory.create(STANDARD_SYNC.getConnectionId())).thenReturn(JOB_ID);
+    when(jobFactory.create(STANDARD_SYNC.getConnectionId(), eq(any()))).thenReturn(JOB_ID);
     setConfigMocks();
 
     scheduler.run();
@@ -102,7 +111,7 @@ class JobSchedulerTest {
     verifyConfigCalls();
     verify(scheduleJobPredicate).test(Optional.of(previousJob), STANDARD_SYNC);
     verify(jobPersistence).getLastReplicationJob(STANDARD_SYNC.getConnectionId());
-    verify(jobFactory).create(STANDARD_SYNC.getConnectionId());
+    verify(jobFactory).create(STANDARD_SYNC.getConnectionId(), new ConnectorSpecification());
   }
 
   @Test
@@ -110,7 +119,7 @@ class JobSchedulerTest {
     when(jobPersistence.getLastReplicationJob(STANDARD_SYNC.getConnectionId()))
         .thenReturn(java.util.Optional.empty());
     when(scheduleJobPredicate.test(Optional.empty(), STANDARD_SYNC)).thenReturn(true);
-    when(jobFactory.create(STANDARD_SYNC.getConnectionId())).thenReturn(JOB_ID);
+    when(jobFactory.create(STANDARD_SYNC.getConnectionId(), eq(any()))).thenReturn(JOB_ID);
     setConfigMocks();
 
     scheduler.run();
@@ -118,7 +127,7 @@ class JobSchedulerTest {
     verifyConfigCalls();
     verify(scheduleJobPredicate).test(Optional.empty(), STANDARD_SYNC);
     verify(jobPersistence).getLastReplicationJob(STANDARD_SYNC.getConnectionId());
-    verify(jobFactory).create(STANDARD_SYNC.getConnectionId());
+    verify(jobFactory).create(STANDARD_SYNC.getConnectionId(), new ConnectorSpecification());
   }
 
   @Test
@@ -133,7 +142,7 @@ class JobSchedulerTest {
     verifyConfigCalls();
     verify(scheduleJobPredicate).test(Optional.of(previousJob), STANDARD_SYNC);
     verify(jobPersistence).getLastReplicationJob(STANDARD_SYNC.getConnectionId());
-    verify(jobFactory, never()).create(STANDARD_SYNC.getConnectionId());
+    verify(jobFactory, never()).create(STANDARD_SYNC.getConnectionId(), new ConnectorSpecification());
   }
 
   @Test
@@ -147,13 +156,16 @@ class JobSchedulerTest {
     verify(configRepository).listStandardSyncs();
     verify(scheduleJobPredicate, never()).test(Optional.of(previousJob), STANDARD_SYNC);
     verify(jobPersistence, never()).getLastReplicationJob(standardSync.getConnectionId());
-    verify(jobFactory, never()).create(standardSync.getConnectionId());
+    verify(jobFactory, never()).create(standardSync.getConnectionId(), new ConnectorSpecification());
   }
 
   // sets all mocks that are related to fetching configs. these are the same for all tests in this
   // test suite.
   private void setConfigMocks() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.listStandardSyncs()).thenReturn(Collections.singletonList(STANDARD_SYNC));
+    when(configRepository.getStandardSync(any())).thenReturn(STANDARD_SYNC);
+    when(configRepository.getSourceConnection(any())).thenReturn(new SourceConnection());
+    when(configRepository.getStandardSourceDefinition(any())).thenReturn(new StandardSourceDefinition());
   }
 
   // verify all mocks that are related to fetching configs are called. these are the same for all

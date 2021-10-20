@@ -27,13 +27,17 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.metrics.MetricSingleton;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
+import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.workers.temporal.TemporalClient;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -110,12 +114,15 @@ public class SchedulerApp {
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot, airbyteVersionOrWarnings);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
-    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);
+    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
+    final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
+    final SpecFetcher specFetcher = createSpecFetcher(oAuthConfigSupplier, temporalClient, jobTracker);
+    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, oAuthConfigSupplier, specFetcher);
     final JobSubmitter jobSubmitter = new JobSubmitter(
         workerThreadPool,
         jobPersistence,
         temporalWorkerRunFactory,
-        new JobTracker(configRepository, jobPersistence, trackingClient),
+        jobTracker,
         jobNotifier);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -155,6 +162,16 @@ public class SchedulerApp {
 
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool,
         scheduleJobsPool, executeJobsPool, cleanupJobsPool));
+  }
+
+  private SpecFetcher createSpecFetcher(final OAuthConfigSupplier oAuthConfigSupplier,
+                                        final TemporalClient temporalClient,
+                                        final JobTracker jobTracker) {
+    final DefaultSynchronousSchedulerClient syncSchedulerClient =
+        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
+    final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(syncSchedulerClient);
+    System.out.println("Sprc fetcher");
+    return new SpecFetcher(cachingSchedulerClient);
   }
 
   private void cleanupZombies(final JobPersistence jobPersistence, final JobNotifier jobNotifier) throws IOException {
