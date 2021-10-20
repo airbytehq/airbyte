@@ -19,12 +19,12 @@ public class JobsFlywayMigrationDatabase extends FlywayMigrationDatabase {
   }
 
   @Override
-  protected Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException {
+  protected Database getAndInitializeDatabase(final String username, final String password, final String connectionString) throws IOException {
     return new JobsDatabaseInstance(username, password, connectionString).getAndInitialize();
   }
 
   @Override
-  protected DatabaseMigrator getDatabaseMigrator(Database database) {
+  protected DatabaseMigrator getDatabaseMigrator(final Database database) {
     return new JobsDatabaseMigrator(database, JobsFlywayMigrationDatabase.class.getSimpleName());
   }
 

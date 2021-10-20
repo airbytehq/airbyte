@@ -6,12 +6,8 @@ package io.airbyte.oauth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -21,35 +17,37 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
 
-public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
+/*
+ * Class implementing generic oAuth 2.0 flow.
+ */
+public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   private final HttpClient httpClient;
-  private final ConfigRepository configRepository;
   private final Supplier<String> stateSupplier;
 
-  public BaseOAuthFlow(ConfigRepository configRepository) {
+  public BaseOAuthFlow(final ConfigRepository configRepository) {
     this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build(), BaseOAuthFlow::generateRandomState);
   }
 
-  public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
-    this.configRepository = configRepository;
+  public BaseOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+    super(configRepository);
     this.httpClient = httpClient;
     this.stateSupplier = stateSupplier;
   }
 
   @Override
-  public String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException {
+  public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl)
+      throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
   }
 
   @Override
-  public String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl)
+  public String getDestinationConsentUrl(final UUID workspaceId, final UUID destinationDefinitionId, final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
@@ -74,7 +72,11 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   @Override
-  public Map<String, Object> completeSourceOAuth(UUID workspaceId, UUID sourceDefinitionId, Map<String, Object> queryParams, String redirectUrl)
+  public Map<String, Object> completeSourceOAuth(
+                                                 final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return completeOAuthFlow(
@@ -85,10 +87,10 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
   }
 
   @Override
-  public Map<String, Object> completeDestinationOAuth(UUID workspaceId,
-                                                      UUID destinationDefinitionId,
-                                                      Map<String, Object> queryParams,
-                                                      String redirectUrl)
+  public Map<String, Object> completeDestinationOAuth(final UUID workspaceId,
+                                                      final UUID destinationDefinitionId,
+                                                      final Map<String, Object> queryParams,
+                                                      final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return completeOAuthFlow(
@@ -98,7 +100,8 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
         redirectUrl);
   }
 
-  private Map<String, Object> completeOAuthFlow(String clientId, String clientSecret, String authCode, String redirectUrl) throws IOException {
+  private Map<String, Object> completeOAuthFlow(final String clientId, final String clientSecret, final String authCode, final String redirectUrl)
+      throws IOException {
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(toUrlEncodedString(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
         .uri(URI.create(getAccessTokenUrl()))
@@ -108,7 +111,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     try {
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());;
       return extractRefreshToken(Jsons.deserialize(response.body()));
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
   }
@@ -136,73 +139,17 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
    */
   protected abstract Map<String, Object> extractRefreshToken(JsonNode data) throws IOException;
 
-  private JsonNode getSourceOAuthParamConfig(UUID workspaceId, UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
-    try {
-      final Optional<SourceOAuthParameter> param = MoreOAuthParameters.getSourceOAuthParameter(
-          configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId);
-      if (param.isPresent()) {
-        return param.get().getConfiguration();
-      } else {
-        throw new ConfigNotFoundException(ConfigSchema.SOURCE_OAUTH_PARAM, "Undefined OAuth Parameter.");
-      }
-    } catch (JsonValidationException e) {
-      throw new IOException("Failed to load OAuth Parameters", e);
-    }
-  }
-
-  private JsonNode getDestinationOAuthParamConfig(UUID workspaceId, UUID destinationDefinitionId) throws IOException, ConfigNotFoundException {
-    try {
-      final Optional<DestinationOAuthParameter> param = MoreOAuthParameters.getDestinationOAuthParameter(
-          configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId);
-      if (param.isPresent()) {
-        return param.get().getConfiguration();
-      } else {
-        throw new ConfigNotFoundException(ConfigSchema.DESTINATION_OAUTH_PARAM, "Undefined OAuth Parameter.");
-      }
-    } catch (JsonValidationException e) {
-      throw new IOException("Failed to load OAuth Parameters", e);
-    }
-  }
-
-  private static String urlEncode(String s) {
+  private static String urlEncode(final String s) {
     try {
       return URLEncoder.encode(s, StandardCharsets.UTF_8);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  /**
-   * Throws an exception if the client ID cannot be extracted. Subclasses should override this to
-   * parse the config differently.
-   *
-   * @return
-   */
-  protected String getClientIdUnsafe(JsonNode oauthConfig) {
-    if (oauthConfig.get("client_id") != null) {
-      return oauthConfig.get("client_id").asText();
-    } else {
-      throw new IllegalArgumentException("Undefined parameter 'client_id' necessary for the OAuth Flow.");
-    }
-  }
-
-  /**
-   * Throws an exception if the client secret cannot be extracted. Subclasses should override this to
-   * parse the config differently.
-   *
-   * @return
-   */
-  protected String getClientSecretUnsafe(JsonNode oauthConfig) {
-    if (oauthConfig.get("client_secret") != null) {
-      return oauthConfig.get("client_secret").asText();
-    } else {
-      throw new IllegalArgumentException("Undefined parameter 'client_secret' necessary for the OAuth Flow.");
-    }
-  }
-
-  private static String toUrlEncodedString(Map<String, String> body) {
+  private static String toUrlEncodedString(final Map<String, String> body) {
     final StringBuilder result = new StringBuilder();
-    for (var entry : body.entrySet()) {
+    for (final var entry : body.entrySet()) {
       if (result.length() > 0) {
         result.append("&");
       }

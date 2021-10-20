@@ -27,13 +27,13 @@ public class TestDataHolder {
   private String idColumnName;
   private String testColumnName;
 
-  TestDataHolder(String sourceType,
-                 JsonSchemaPrimitive airbyteType,
-                 List<String> values,
-                 List<String> expectedValues,
-                 String createTablePatternSql,
-                 String insertPatternSql,
-                 String fullSourceDataType) {
+  TestDataHolder(final String sourceType,
+                 final JsonSchemaPrimitive airbyteType,
+                 final List<String> values,
+                 final List<String> expectedValues,
+                 final String createTablePatternSql,
+                 final String insertPatternSql,
+                 final String fullSourceDataType) {
     this.sourceType = sourceType;
     this.airbyteType = airbyteType;
     this.values = values;
@@ -76,7 +76,7 @@ public class TestDataHolder {
      * @param sourceType source data type name
      * @return builder
      */
-    public TestDataHolderBuilder sourceType(String sourceType) {
+    public TestDataHolderBuilder sourceType(final String sourceType) {
       this.sourceType = sourceType;
       if (fullSourceDataType == null)
         fullSourceDataType = sourceType;
@@ -90,7 +90,7 @@ public class TestDataHolder {
      * @param airbyteType Airbyte data type
      * @return builder
      */
-    public TestDataHolderBuilder airbyteType(JsonSchemaPrimitive airbyteType) {
+    public TestDataHolderBuilder airbyteType(final JsonSchemaPrimitive airbyteType) {
       this.airbyteType = airbyteType;
       return this;
     }
@@ -104,7 +104,7 @@ public class TestDataHolder {
      * @param createTablePatternSql creation table sql pattern
      * @return builder
      */
-    public TestDataHolderBuilder createTablePatternSql(String createTablePatternSql) {
+    public TestDataHolderBuilder createTablePatternSql(final String createTablePatternSql) {
       this.createTablePatternSql = createTablePatternSql;
       return this;
     }
@@ -117,7 +117,7 @@ public class TestDataHolder {
      * @param insertPatternSql creation table sql pattern
      * @return builder
      */
-    public TestDataHolderBuilder insertPatternSql(String insertPatternSql) {
+    public TestDataHolderBuilder insertPatternSql(final String insertPatternSql) {
       this.insertPatternSql = insertPatternSql;
       return this;
     }
@@ -129,7 +129,7 @@ public class TestDataHolder {
      * @param fullSourceDataType actual string for the column data type description
      * @return builder
      */
-    public TestDataHolderBuilder fullSourceDataType(String fullSourceDataType) {
+    public TestDataHolderBuilder fullSourceDataType(final String fullSourceDataType) {
       this.fullSourceDataType = fullSourceDataType;
       return this;
     }
@@ -142,7 +142,7 @@ public class TestDataHolder {
      * @param insertValue test value
      * @return builder
      */
-    public TestDataHolderBuilder addInsertValues(String... insertValue) {
+    public TestDataHolderBuilder addInsertValues(final String... insertValue) {
       this.values.addAll(Arrays.asList(insertValue));
       return this;
     }
@@ -154,7 +154,7 @@ public class TestDataHolder {
      * @param expectedValue value which should be provided by a streamer
      * @return builder
      */
-    public TestDataHolderBuilder addExpectedValues(String... expectedValue) {
+    public TestDataHolderBuilder addExpectedValues(final String... expectedValue) {
       this.expectedValues.addAll(Arrays.asList(expectedValue));
       return this;
     }
@@ -176,19 +176,19 @@ public class TestDataHolder {
 
   }
 
-  void setNameSpace(String nameSpace) {
+  void setNameSpace(final String nameSpace) {
     this.nameSpace = nameSpace;
   }
 
-  void setTestNumber(long testNumber) {
+  void setTestNumber(final long testNumber) {
     this.testNumber = testNumber;
   }
 
-  void setIdColumnName(String idColumnName) {
+  void setIdColumnName(final String idColumnName) {
     this.idColumnName = idColumnName;
   }
 
-  void setTestColumnName(String testColumnName) {
+  void setTestColumnName(final String testColumnName) {
     this.testColumnName = testColumnName;
   }
 
@@ -218,9 +218,9 @@ public class TestDataHolder {
   }
 
   public List<String> getInsertSqlQueries() {
-    List<String> insertSqls = new ArrayList<>();
+    final List<String> insertSqls = new ArrayList<>();
     int rowId = 1;
-    for (String value : values) {
+    for (final String value : values) {
       insertSqls.add(String.format(insertPatternSql, (nameSpace != null ? nameSpace + "." : "") + getNameWithTestPrefix(), rowId++, value));
     }
     return insertSqls;

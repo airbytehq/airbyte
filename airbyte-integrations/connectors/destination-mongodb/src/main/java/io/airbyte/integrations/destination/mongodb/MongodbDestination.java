@@ -64,7 +64,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
     namingResolver = new MongodbNameTransformer();
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new MongodbDestination();
     LOGGER.info("starting destination: {}", MongodbDestination.class);
     new IntegrationRunner(destination).run(args);
@@ -72,16 +72,16 @@ public class MongodbDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      var database = getDatabase(config);
-      var databaseName = config.get(DATABASE).asText();
-      Set<String> databaseNames = MoreIterators.toSet(database.getDatabaseNames().iterator());
+      final var database = getDatabase(config);
+      final var databaseName = config.get(DATABASE).asText();
+      final Set<String> databaseNames = MoreIterators.toSet(database.getDatabaseNames().iterator());
       if (!databaseNames.contains(databaseName)) {
         throw new MongodbDatabaseException(databaseName);
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } catch (RuntimeException e) {
+    } catch (final RuntimeException e) {
       LOGGER.error("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
@@ -89,12 +89,12 @@ public class MongodbDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
-    var database = getDatabase(config);
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    final var database = getDatabase(config);
 
-    Map<AirbyteStreamNameNamespacePair, MongodbWriteConfig> writeConfigs = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, MongodbWriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
       final String streamName = stream.getName();
@@ -105,9 +105,9 @@ public class MongodbDestination extends BaseConnector implements Destination {
         database.getCollection(collectionName).drop();
       }
 
-      MongoCollection<Document> collection = database.getOrCreateNewCollection(tmpCollectionName);
-      Set<String> documentsHash = new HashSet<>();
-      try (MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
+      final MongoCollection<Document> collection = database.getOrCreateNewCollection(tmpCollectionName);
+      final Set<String> documentsHash = new HashSet<>();
+      try (final MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
         while (cursor.hasNext()) {
           documentsHash.add(cursor.next().get(AIRBYTE_DATA_HASH, String.class));
         }
@@ -121,13 +121,13 @@ public class MongodbDestination extends BaseConnector implements Destination {
 
   /* Helpers */
 
-  private MongoDatabase getDatabase(JsonNode config) {
+  private MongoDatabase getDatabase(final JsonNode config) {
     return new MongoDatabase(getConnectionString(config), config.get(DATABASE).asText());
   }
 
   @VisibleForTesting
-  String getConnectionString(JsonNode config) {
-    var credentials = config.get(AUTH_TYPE).get(AUTHORIZATION).asText().equals(LOGIN_AND_PASSWORD)
+  String getConnectionString(final JsonNode config) {
+    final var credentials = config.get(AUTH_TYPE).get(AUTHORIZATION).asText().equals(LOGIN_AND_PASSWORD)
         ? String.format("%s:%s@", config.get(AUTH_TYPE).get(USERNAME).asText(), config.get(AUTH_TYPE).get(PASSWORD).asText())
         : StringUtils.EMPTY;
 
@@ -142,11 +142,11 @@ public class MongodbDestination extends BaseConnector implements Destination {
     }
   }
 
-  private String buildConnectionString(JsonNode config, String credentials) {
-    StringBuilder connectionStrBuilder = new StringBuilder();
+  private String buildConnectionString(final JsonNode config, final String credentials) {
+    final StringBuilder connectionStrBuilder = new StringBuilder();
 
-    JsonNode instanceConfig = config.get(INSTANCE_TYPE);
-    MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(INSTANCE).asText());
+    final JsonNode instanceConfig = config.get(INSTANCE_TYPE);
+    final MongoInstanceType instance = MongoInstanceType.fromValue(instanceConfig.get(INSTANCE).asText());
 
     switch (instance) {
       case STANDALONE -> {

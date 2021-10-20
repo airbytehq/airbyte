@@ -74,7 +74,7 @@ public class MigrationAcceptanceTest {
     secondRun(targetVersion);
   }
 
-  private Consumer<String> logConsumerForServer(Set<String> expectedLogs) {
+  private Consumer<String> logConsumerForServer(final Set<String> expectedLogs) {
     return logLine -> expectedLogs.removeIf(entry -> {
       if (logLine.contains("Migrating from version")) {
         System.out.println("logLine = " + logLine);
@@ -108,12 +108,12 @@ public class MigrationAcceptanceTest {
     airbyteTestContainer.stopRetainVolumes();
   }
 
-  private String targetVersionWithoutPatch(String targetVersion) {
+  private String targetVersionWithoutPatch(final String targetVersion) {
     return AirbyteVersion.versionWithoutPatch(targetVersion).getVersion();
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  private void secondRun(String targetVersion) throws Exception {
+  private void secondRun(final String targetVersion) throws Exception {
     final Set<String> logsToExpect = new HashSet<>();
     logsToExpect.add("Version: " + targetVersion);
     logsToExpect.add("Starting migrations. Current version: 0.17.0-alpha-db-patch, Target version: " + targetVersionWithoutPatch(targetVersion));
@@ -137,7 +137,7 @@ public class MigrationAcceptanceTest {
 
     airbyteTestContainer.start();
 
-    ApiClient apiClient = getApiClient();
+    final ApiClient apiClient = getApiClient();
     healthCheck(apiClient);
 
     assertTrue(logsToExpect.isEmpty(), "Missing logs: " + logsToExpect);
@@ -146,26 +146,26 @@ public class MigrationAcceptanceTest {
     airbyteTestContainer.stop();
   }
 
-  private void assertDataFromApi(ApiClient apiClient) throws ApiException {
+  private void assertDataFromApi(final ApiClient apiClient) throws ApiException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = assertWorkspaceInformation(apiClient);
     assertSourceDefinitionInformation(apiClient);
     assertDestinationDefinitionInformation(apiClient);
     assertConnectionInformation(apiClient, workspaceIdRequestBody);
   }
 
-  private void assertSourceDefinitionInformation(ApiClient apiClient) throws ApiException {
+  private void assertSourceDefinitionInformation(final ApiClient apiClient) throws ApiException {
     final SourceDefinitionApi sourceDefinitionApi = new SourceDefinitionApi(apiClient);
     final List<SourceDefinitionRead> sourceDefinitions = sourceDefinitionApi.listSourceDefinitions().getSourceDefinitions();
     assertTrue(sourceDefinitions.size() >= 58);
     boolean foundMysqlSourceDefinition = false;
     boolean foundPostgresSourceDefinition = false;
-    for (SourceDefinitionRead sourceDefinitionRead : sourceDefinitions) {
+    for (final SourceDefinitionRead sourceDefinitionRead : sourceDefinitions) {
       if (sourceDefinitionRead.getSourceDefinitionId().toString().equals("435bb9a5-7887-4809-aa58-28c27df0d7ad")) {
         assertEquals(sourceDefinitionRead.getName(), "MySQL");
         assertEquals(sourceDefinitionRead.getDockerImageTag(), "0.2.0");
         foundMysqlSourceDefinition = true;
       } else if (sourceDefinitionRead.getSourceDefinitionId().toString().equals("decd338e-5647-4c0b-adf4-da0e75f5a750")) {
-        String[] tagBrokenAsArray = sourceDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
+        final String[] tagBrokenAsArray = sourceDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
         assertEquals(3, tagBrokenAsArray.length);
         assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
         assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
@@ -179,7 +179,7 @@ public class MigrationAcceptanceTest {
     assertTrue(foundPostgresSourceDefinition);
   }
 
-  private void assertDestinationDefinitionInformation(ApiClient apiClient) throws ApiException {
+  private void assertDestinationDefinitionInformation(final ApiClient apiClient) throws ApiException {
     final DestinationDefinitionApi destinationDefinitionApi = new DestinationDefinitionApi(apiClient);
     final List<DestinationDefinitionRead> destinationDefinitions = destinationDefinitionApi.listDestinationDefinitions().getDestinationDefinitions();
     assertTrue(destinationDefinitions.size() >= 10);
@@ -199,7 +199,7 @@ public class MigrationAcceptanceTest {
           foundLocalCSVDestinationDefinition = true;
         }
         case "424892c4-daac-4491-b35d-c6688ba547ba" -> {
-          String[] tagBrokenAsArray = destinationDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
+          final String[] tagBrokenAsArray = destinationDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
           assertEquals(3, tagBrokenAsArray.length);
           assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
           assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
@@ -215,7 +215,7 @@ public class MigrationAcceptanceTest {
     assertTrue(foundSnowflakeDestinationDefintion);
   }
 
-  private void assertConnectionInformation(ApiClient apiClient, WorkspaceIdRequestBody workspaceIdRequestBody) throws ApiException {
+  private void assertConnectionInformation(final ApiClient apiClient, final WorkspaceIdRequestBody workspaceIdRequestBody) throws ApiException {
     final ConnectionApi connectionApi = new ConnectionApi(apiClient);
     final List<ConnectionRead> connections = connectionApi.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections();
     assertEquals(connections.size(), 2);
@@ -240,7 +240,7 @@ public class MigrationAcceptanceTest {
     }
   }
 
-  private WorkspaceIdRequestBody assertWorkspaceInformation(ApiClient apiClient) throws ApiException {
+  private WorkspaceIdRequestBody assertWorkspaceInformation(final ApiClient apiClient) throws ApiException {
     final WorkspaceApi workspaceApi = new WorkspaceApi(apiClient);
     final WorkspaceRead workspace = workspaceApi.listWorkspaces().getWorkspaces().get(0);
     // originally the default workspace started with a hardcoded id. the migration in version 0.29.0
@@ -261,7 +261,7 @@ public class MigrationAcceptanceTest {
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  private void populateDataForFirstRun(ApiClient apiClient) throws ApiException, URISyntaxException {
+  private void populateDataForFirstRun(final ApiClient apiClient) throws ApiException, URISyntaxException {
     final ImportApi deploymentApi = new ImportApi(apiClient);
     final File file = Path
         .of(Resources.getResource("03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
@@ -270,12 +270,12 @@ public class MigrationAcceptanceTest {
     assertEquals(importRead.getStatus(), StatusEnum.SUCCEEDED);
   }
 
-  private void healthCheck(ApiClient apiClient) {
+  private void healthCheck(final ApiClient apiClient) {
     final HealthApi healthApi = new HealthApi(apiClient);
     try {
-      HealthCheckRead healthCheck = healthApi.getHealthCheck();
+      final HealthCheckRead healthCheck = healthApi.getHealthCheck();
       assertTrue(healthCheck.getDb());
-    } catch (ApiException e) {
+    } catch (final ApiException e) {
       throw new RuntimeException("Health check failed, usually due to auto migration failure. Please check the logs for details.");
     }
   }
@@ -287,7 +287,7 @@ public class MigrationAcceptanceTest {
         .setBasePath("/api");
   }
 
-  private Map<String, String> getEnvironmentVariables(String version) {
+  private Map<String, String> getEnvironmentVariables(final String version) {
     final Map<String, String> env = new HashMap<>();
     env.put("VERSION", version);
     env.put("DATABASE_USER", "docker");

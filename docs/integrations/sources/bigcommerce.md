@@ -40,16 +40,16 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 ## Getting started
 
-1. Navigate to your store’s control panel (Advanced Settings > API Accounts > Create API Account)
+1. Navigate to your store’s control panel \(Advanced Settings &gt; API Accounts &gt; Create API Account\)
 2. Create an API account.
 3. Select the resources you want to allow access to. Airbyte only needs read-level access.
    * Note: The UI will show all possible data sources and will show errors when syncing if it doesn't have permissions to access a resource.
 4. The generated `Access Token` is what you'll use as the `access_token` for the integration. 
 5. You're ready to set up BigCommerce in Airbyte!
 
-
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.0  | 2021-08-19 | [5521](https://github.com/airbytehq/airbyte/pull/5521) | Initial Release. Source BigCommerce |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2021-08-19 | [5521](https://github.com/airbytehq/airbyte/pull/5521) | Initial Release. Source BigCommerce |
+

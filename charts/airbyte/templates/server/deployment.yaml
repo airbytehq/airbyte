@@ -153,6 +153,9 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: GCP_STORAGE_BUCKET
+        {{- if .Values.server.extraEnv }}
+        {{ .Values.server.extraEnv | toYaml | nindent 8 }}
+        {{- end }}
         {{- if .Values.server.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
