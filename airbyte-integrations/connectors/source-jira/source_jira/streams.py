@@ -663,7 +663,7 @@ class Projects(JiraStream):
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         for project in super().read_records(**kwargs):
-            if project["key"] in self._projects:
+            if not self._projects or project["key"] in self._projects:
                 yield project
         yield from []
 
