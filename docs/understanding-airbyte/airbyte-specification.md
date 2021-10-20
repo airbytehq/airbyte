@@ -59,7 +59,7 @@ The `read` command will emit a stream records to stdout.
 spec() -> ConnectorSpecification
 check(Config) -> AirbyteConnectionStatus
 discover(Config) -> AirbyteCatalog
-read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
+read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
 ```
 
 #### Spec
