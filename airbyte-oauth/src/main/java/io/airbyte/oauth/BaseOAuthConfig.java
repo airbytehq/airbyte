@@ -22,20 +22,9 @@ import java.util.UUID;
 public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
 
   protected ConfigRepository configRepository;
-  private UUID workspaceId;
 
   public BaseOAuthConfig(final ConfigRepository configRepository) {
     this.configRepository = configRepository;
-  }
-
-  @Override
-  public void setWorkspaceId(UUID workspaceId) {
-    this.workspaceId = workspaceId;
-  }
-
-  @Override
-  public UUID getWorkspaceId() {
-    return this.workspaceId;
   }
 
   protected BaseOAuthConfig() {}

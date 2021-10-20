@@ -21,8 +21,4 @@ public interface OAuthFlowImplementation {
   Map<String, Object> completeDestinationOAuth(UUID workspaceId, UUID destinationDefinitionId, Map<String, Object> queryParams, String redirectUrl)
       throws IOException, ConfigNotFoundException;
 
-  void setWorkspaceId(UUID workspaceId);
-
-  UUID getWorkspaceId();
-
 }
