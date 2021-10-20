@@ -8,13 +8,18 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
-from base_python import HttpStream
+from urllib.parse import urlparse
+from urllib.parse import parse_qs
 
 
-class Stream(HttpStream):
+from airbyte_cdk.sources.streams.http import HttpStream
+
+class Stream(HttpStream, ABC):
     url_base = "https://www.zopim.com/api/v2/"
+    primary_key = "id"
 
     data_field = None
+
     limit = 100
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
@@ -26,7 +31,12 @@ class Stream(HttpStream):
         return self.name
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return {}
+        response_data = response.json()
+        
+        if "next_url" in response_data:
+            next_url = response_data["next_url"]
+            cursor = parse_qs(urlparse(next_url).query)['cursor']     
+            return { "cursor": cursor }
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
@@ -240,5 +250,11 @@ class RoutingSettings(Stream):
     name = "routing_settings"
     data_field = "data"
 
-    def path(self, **kwargs) -> str:
+    
+    def path(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
         return "routing_settings/account"
