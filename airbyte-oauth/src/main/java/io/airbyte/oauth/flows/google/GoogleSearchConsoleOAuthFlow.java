@@ -10,6 +10,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
 import java.net.http.HttpClient;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -47,9 +48,13 @@ public class GoogleSearchConsoleOAuthFlow extends GoogleOAuthFlow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data) throws IOException {
+  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
     // the config object containing refresh token is nested inside the "authorization" object
-    return Map.of("authorization", super.extractRefreshToken(data));
+    final Map<String, Object> result = new HashMap<>();
+    if (data.has("refresh_token")) {
+      result.put("refresh_token", data.get("refresh_token").asText());
+    }
+    return Map.of("authorization", result);
   }
 
 }

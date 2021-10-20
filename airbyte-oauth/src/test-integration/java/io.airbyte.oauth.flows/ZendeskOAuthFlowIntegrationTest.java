@@ -14,6 +14,7 @@ import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.OAuthFlowImplementation;
+import io.airbyte.oauth.flows.zendesk.ZendeskOAuthFlow;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,12 +22,11 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
+public class ZendeskOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
-  protected static final Path CREDENTIALS_PATH = Path.of("secrets/facebook_marketing.json");
+  protected static final Path CREDENTIALS_PATH = Path.of("secrets/zendesk_sunshine.json");
 
   @Override
   protected Path get_credentials_path() {
@@ -35,12 +35,7 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
 
   @Override
   protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new FacebookMarketingOAuthFlow(configRepository);
-  }
-
-  @BeforeEach
-  public void setup() throws IOException {
-    super.setup();
+    return new ZendeskOAuthFlow(configRepository);
   }
 
   @Test
@@ -57,6 +52,7 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
+            .put("subdomain", credentialsJson.get("subdomain").asText())
             .build()))));
     final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);

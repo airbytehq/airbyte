@@ -21,11 +21,24 @@ import java.util.UUID;
  */
 public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
 
-  private final ConfigRepository configRepository;
+  protected ConfigRepository configRepository;
+  private UUID workspaceId;
 
   public BaseOAuthConfig(final ConfigRepository configRepository) {
     this.configRepository = configRepository;
   }
+
+  @Override
+  public void setWorkspaceId(UUID workspaceId) {
+    this.workspaceId = workspaceId;
+  }
+
+  @Override
+  public UUID getWorkspaceId() {
+    return this.workspaceId;
+  }
+
+  protected BaseOAuthConfig() {}
 
   protected JsonNode getSourceOAuthParamConfig(final UUID workspaceId, final UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
     try {
@@ -60,7 +73,7 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
    * Throws an exception if the client ID cannot be extracted. Subclasses should override this to
    * parse the config differently.
    *
-   * @return
+   * @return The configured Client ID used for this oauth flow
    */
   protected String getClientIdUnsafe(final JsonNode oauthConfig) {
     if (oauthConfig.get("client_id") != null) {
@@ -71,10 +84,24 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
   }
 
   /**
+   * Throws an exception if the client ID cannot be extracted. Subclasses should override this to
+   * parse the config differently.
+   *
+   * @return The configured subdomain used for this oauth flow
+   */
+  protected String getSubdomain(final JsonNode oauthConfig) {
+    if (oauthConfig.get("subdomain") != null) {
+      return oauthConfig.get("subdomain").asText();
+    } else {
+      throw new IllegalArgumentException("Undefined parameter 'client_id' necessary for the OAuth Flow.");
+    }
+  }
+
+  /**
    * Throws an exception if the client secret cannot be extracted. Subclasses should override this to
    * parse the config differently.
    *
-   * @return
+   * @return The configured client secret for this OAuthFlow
    */
   protected String getClientSecretUnsafe(final JsonNode oauthConfig) {
     if (oauthConfig.get("client_secret") != null) {
