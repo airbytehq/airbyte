@@ -23,7 +23,6 @@ class OnesignalStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self._auth_token = config["user_auth_key"]
-        self._app_slices = []
 
         # OneSignal uses epoch timestamp, so we need to convert the start_date
         # config to epoch timestamp too.
