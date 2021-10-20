@@ -80,7 +80,7 @@ class SourceJira(AbstractSource):
 
         try:
             authenticator = self.get_authenticator(config)
-            args = {"authenticator": authenticator, "domain": config["domain"]}
+            args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
             issue_resolutions = IssueResolutions(**args)
             for item in issue_resolutions.read_records(sync_mode=SyncMode.full_refresh):
                 continue
