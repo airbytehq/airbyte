@@ -19,7 +19,7 @@ OneSignal API consists of four endpoints which can be extracted data from:
 
 - Device and notification endpoint has 300 and 50 records limit per request respectively, so the cursor pagination strategy is used for them.
 
-- Rate limiting is a standard exponential backoff when a 429 HTTP status code returned.
+- Rate limiting follows [https://documentation.onesignal.com/docs/rate-limits](https://documentation.onesignal.com/docs/rate-limits), when a 429 HTTP status code returned.
 
 - For the outcome endpoint, it needs to specify a comma-separated list of names and the value (sum/count) for the returned outcome data. So this requirement is added to the source spec.
 

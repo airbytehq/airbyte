@@ -21,7 +21,9 @@
       "outcome_names": {
         "type": "string",
         "description": "Comma-separated list of names and the value (sum/count) for the returned outcome data. See the <a href=\"https://documentation.onesignal.com/reference/view-outcomes\">docs</a> for more details",
-        "examples": ["os__session_duration.count,os__click.count,CustomOutcomeName.sum"]
+        "examples": [
+          "os__session_duration.count,os__click.count,CustomOutcomeName.sum"
+        ]
       }
     }
   }
