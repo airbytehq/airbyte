@@ -2,46 +2,7 @@
   "streams": [
     {
       "name": "stock_summaries",
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "item_identifier": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "sku": {
-                "type": "string"
-              },
-              "id": {
-                "type": "integer"
-              }
-            }
-          },
-          "qualifier": {
-            "type": "string"
-          },
-          "total_received": {
-            "type": "number"
-          },
-          "allocated": {
-            "type": "number"
-          },
-          "available": {
-            "type": "number"
-          },
-          "on_hold": {
-            "type": "number"
-          },
-          "on_hand": {
-            "type": "number"
-          },
-          "facility_id": {
-            "type": "integer"
-          }
-        }
-      },
+      "json_schema": {},
       "supported_sync_modes": [
         "full_refresh"
       ],
@@ -50,54 +11,87 @@
           "facility_id"
         ],
         [
-          "item_identifier.id"
+          "_item_identifier_id"
         ]
       ]
     },
     {
-      "name": "employees",
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "name": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "years_of_service": {
-            "type": [
-              "null",
-              "integer"
-            ]
-          },
-          "start_date": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "date-time"
-          }
-        }
-      },
+      "name": "customers",
+      "json_schema": {},
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_primary_key": [
+        [
+          "_id"
+        ]
+      ]
+    },
+    {
+      "name": "items",
+      "json_schema": {},
       "supported_sync_modes": [
         "full_refresh",
         "incremental"
       ],
       "source_defined_cursor": true,
       "default_cursor_field": [
-        "start_date"
+        "_cursor"
       ],
       "source_defined_primary_key": [
         [
-          "employee_id"
+          "_id"
+        ]
+      ]
+    },
+    {
+      "name": "stock_details",
+      "json_schema": {},
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
+      "source_defined_cursor": true,
+      "default_cursor_field": [
+        "_cursor"
+      ],
+      "source_defined_primary_key": [
+        [
+          "_id"
+        ]
+      ]
+    },
+    {
+      "name": "inventory",
+      "json_schema": {},
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
+      "source_defined_cursor": true,
+      "default_cursor_field": [
+        "_cursor"
+      ],
+      "source_defined_primary_key": [
+        [
+          "_id"
+        ]
+      ]
+    },
+    {
+      "name": "orders",
+      "json_schema": {},
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
+      "source_defined_cursor": true,
+      "default_cursor_field": [
+        "_cursor"
+      ],
+      "source_defined_primary_key": [
+        [
+          "_id"
         ]
       ]
     }
