@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.exchangeratesapi.io/"
     cursor_field = "date"
     primary_key = "date"
 
