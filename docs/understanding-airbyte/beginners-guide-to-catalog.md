@@ -251,7 +251,7 @@ This example provides another way of thinking about exposing data in a source. A
 
 ## Nested Schema Example
 
-Often, a data source contains "nested" data. In other words this is data that where each record contains other objects nested inside it. Cases like this are cannot be easily modeled just as tables / columns. This is why Airbyte uses JsonSchema to model the schema of its streams.
+Often, a data source contains "nested" data. In other words this is data where each record contains other objects nested inside it. Cases like this cannot be easily modeled just as tables / columns. This is why Airbyte uses JsonSchema to model the schema of its streams.
 
 Let's imagine we are modeling a flight object. A flight object might look like this:
 
