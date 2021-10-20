@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.29
+Fix import logger error
+
 ## 0.1.28
 Added `check_config_against_spec` parameter to `Connector` abstract class 
 to allow skipping validating the input config against the spec for non-`check` calls

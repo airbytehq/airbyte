@@ -49,7 +49,7 @@ dependencies {
     acceptanceTestsImplementation 'com.fasterxml.jackson.core:jackson-databind'
     acceptanceTestsImplementation 'io.github.cdimascio:java-dotenv:3.0.0'
     acceptanceTestsImplementation 'org.apache.commons:commons-csv:1.4'
-    acceptanceTestsImplementation 'org.testcontainers:postgresql:1.15.1'
+    acceptanceTestsImplementation 'org.testcontainers:postgresql:1.15.3'
     acceptanceTestsImplementation 'org.postgresql:postgresql:42.2.18'
 
     automaticMigrationAcceptanceTestImplementation project(':airbyte-api')
