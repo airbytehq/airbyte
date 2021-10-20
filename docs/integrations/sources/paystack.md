@@ -9,6 +9,13 @@ The Paystack source supports both Full Refresh and Incremental syncs. You can ch
 This Source is capable of syncing the following core streams:
 
 [Customers](https://paystack.com/docs/api/#customer-list) \(Incremental\)
+[Disputes](https://paystack.com/docs/api/#dispute-list) \(Incremental\)
+[Invoices](https://paystack.com/docs/api/#invoice-list) \(Incremental\)
+[Refunds](https://paystack.com/docs/api/#refund-list) \(Incremental\)
+[Settlements](https://paystack.com/docs/api/#settlement) \(Incremental\)
+[Subscriptions](https://paystack.com/docs/api/#subscription-list) \(Incremental\)
+[Transactions](https://paystack.com/docs/api/#transaction-list) \(Incremental\)
+[Transfers](https://paystack.com/docs/api/#transfer-list) \(Incremental\)
 
 ### Note on Incremental Syncs
 

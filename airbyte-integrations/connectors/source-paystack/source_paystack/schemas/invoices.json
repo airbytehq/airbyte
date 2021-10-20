@@ -4,6 +4,9 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "integration": {
+      "type": ["null", "integer"]
+    },
     "domain": {
       "type": ["null", "string"]
     },
@@ -38,6 +41,9 @@
             "type": ["null", "string"]
           },
           "amount": {
+            "type": ["null", "integer"]
+          },
+          "quantity": {
             "type": ["null", "integer"]
           }
         }
@@ -75,7 +81,17 @@
     },
     "notifications": {
       "type": ["null", "array"],
-      "items": {}
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+            "sent_at": {
+                "type": ["null", "string"]
+            },
+            "channel": {
+                "type": ["null", "string"]
+            }
+        }
+    }
     },
     "offline_reference": {
       "type": ["null", "string"]

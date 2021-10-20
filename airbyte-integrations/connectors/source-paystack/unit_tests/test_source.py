@@ -33,4 +33,4 @@ def test_streams(mocker):
     source = SourcePaystack()
     streams = source.streams({"start_date": "2020-08-01", "secret_key": "sk_test_123456"})
 
-    assert len(streams) == 1
+    assert len(streams) == 8

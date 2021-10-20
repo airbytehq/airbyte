@@ -92,7 +92,7 @@
       }
     },
     "fees": {
-      "type": ["null", "null"]
+      "type": ["null", "integer"]
     },
     "fees_split": {
       "type": ["null", "null"]
@@ -104,47 +104,48 @@
     "authorization": {
       "type": ["null", "object"],
       "properties": {}
-    }
-  },
-  "plan": {
-    "type": ["null", "object"],
-    "properties": {}
-  },
-  "split": {
-    "type": ["null", "object"],
-    "properties": {}
-  },
-  "subaccount": {
-    "type": ["null", "object"],
-    "properties": {}
-  },
-  "order_id": {
-    "type": ["null", "null"]
-  },
-  "paidAt": {
-    "type": ["null", "null"]
-  },
-  "createdAt": {
-    "type": ["null", "string"],
-    "format": "date-time"
-  },
-  "requested_amount": {
-    "type": ["null", "integer"]
-  },
-  "source": {
-    "type": ["null", "object"],
-    "properties": {
-      "source": {
-        "type": ["null", "string"]
-      },
-      "type": {
-        "type": ["null", "string"]
-      },
-      "identifier": {
-        "type": ["null", "null"]
-      },
-      "entry_point": {
-        "type": ["null", "string"]
+    },
+    "plan": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "split": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "subaccount": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "order_id": {
+      "type": ["null", "integer"]
+    },
+    "paidAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "requested_amount": {
+      "type": ["null", "integer"]
+    },
+    "source": {
+      "type": ["null", "object"],
+      "properties": {
+        "source": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "identifier": {
+          "type": ["null", "null"]
+        },
+        "entry_point": {
+          "type": ["null", "string"]
+        }
       }
     }
   }

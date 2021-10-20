@@ -9,7 +9,16 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_paystack.constants import PAYSTACK_API_BASE_URL, AUTH_KEY_FIELD
-from source_paystack.streams import Customers
+from source_paystack.streams import (
+    Customers,
+    Disputes,
+    Invoices,
+    Refunds,
+    Settlements,
+    Subscriptions,
+    Transactions,
+    Transfers
+)
 
 class SourcePaystack(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -51,6 +60,13 @@ class SourcePaystack(AbstractSource):
         args = {"authenticator": authenticator, "start_date": config["start_date"]}
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
         return [
-            Customers(**incremental_args)
+            Customers(**incremental_args),
+            Disputes(**incremental_args),
+            Invoices(**incremental_args),
+            Refunds(**incremental_args),
+            Settlements(**incremental_args),
+            Subscriptions(**incremental_args),
+            Transactions(**incremental_args),
+            Transfers(**incremental_args)
         ]
 

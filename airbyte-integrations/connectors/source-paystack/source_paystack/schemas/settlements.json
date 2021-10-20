@@ -9,8 +9,7 @@
       "properties": {}
     },
     "settled_by": {
-      "type": ["null", "object"],
-      "properties": {}
+      "type": ["null", "string"]
     },
     "settlement_date": {
       "type": ["null", "string"],
@@ -20,6 +19,18 @@
       "type": ["null", "string"]
     },
     "total_amount": {
+      "type": ["null", "integer"]
+    },
+    "total_fees": {
+      "type": ["null", "integer"]
+    },
+    "total_processed": {
+      "type": ["null", "integer"]
+    },
+    "deductions": {
+      "type": ["null", "integer"]
+    },
+    "effective_amount": {
       "type": ["null", "integer"]
     },
     "status": {

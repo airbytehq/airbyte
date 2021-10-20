@@ -54,6 +54,16 @@ def test_next_page_token_is_none_when_last_page_reached(patch_base_class):
 
     assert token is None
 
+def test_next_page_token_is_none_when_no_pages_exist(patch_base_class):
+    stream = PaystackStream(start_date=START_DATE)
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"meta": {"page": 1, "pageCount": 0}}
+    inputs = {"response": mock_response}
+
+    token = stream.next_page_token(**inputs)
+
+    assert token is None
+
 def test_parse_response_generates_data(patch_base_class):
     stream = PaystackStream(start_date=START_DATE)
     mock_response = MagicMock()
