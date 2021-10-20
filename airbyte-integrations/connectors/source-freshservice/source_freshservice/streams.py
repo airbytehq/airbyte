@@ -1,9 +1,13 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from abc import ABC
-import requests
-from airbyte_cdk.sources.streams.http import HttpStream
+from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
-from typing import Any, Iterable, Dict, Mapping, MutableMapping, Optional
+import requests
+from airbyte_cdk.sources.streams.http import HttpStream
 
 
 # Basic full refresh stream
@@ -14,9 +18,9 @@ class FreshserviceStream(HttpStream, ABC):
     results_per_page = 30
 
     def __init__(self, config: Dict):
-        super().__init__(authenticator=config['authenticator'])
+        super().__init__(authenticator=config["authenticator"])
         self.config = config
-        self.url_base = self.url_base.format(config['domain_name'])
+        self.url_base = self.url_base.format(config["domain_name"])
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.links.get("next", None)
@@ -28,9 +32,7 @@ class FreshserviceStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {
-            "per_page": self.results_per_page
-        }
+        params = {"per_page": self.results_per_page}
         if next_page_token:
             params.update(**next_page_token)
         else:
@@ -44,13 +46,17 @@ class FreshserviceStream(HttpStream, ABC):
         records = json_response.get(self.object_name, []) if self.object_name is not None else json_response
         yield from records
 
+
 class FullRefrehsFreshserviceStream(FreshserviceStream, ABC):
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params.pop("updated_since")
         params.pop("order_type")
         params.pop("order_by")
         return params
+
 
 # Basic incremental stream
 class IncrementalFreshserviceStream(FreshserviceStream, ABC):
@@ -84,84 +90,107 @@ class IncrementalFreshserviceStream(FreshserviceStream, ABC):
 
 
 class Tickets(IncrementalFreshserviceStream):
-    object_name = 'tickets'
+    object_name = "tickets"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
+
 
 class Problems(IncrementalFreshserviceStream):
-    object_name = 'problems'
+    object_name = "problems"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
+
 
 class Changes(IncrementalFreshserviceStream):
-    object_name = 'changes'
+    object_name = "changes"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
+
 
 class Releases(IncrementalFreshserviceStream):
-    object_name = 'releases'
+    object_name = "releases"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
+
 
 class Requesters(FullRefrehsFreshserviceStream):
-    object_name = 'requesters'
+    object_name = "requesters"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
+
 
 class Agents(FullRefrehsFreshserviceStream):
-    object_name = 'agents'
+    object_name = "agents"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
+
 
 class Locations(FullRefrehsFreshserviceStream):
-    object_name = 'locations'
+    object_name = "locations"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
+
 
 class Products(FullRefrehsFreshserviceStream):
-    object_name = 'products'
+    object_name = "products"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
+
 
 class Vendors(FullRefrehsFreshserviceStream):
-    object_name = 'vendors'
+    object_name = "vendors"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
+
 
 class Assets(FullRefrehsFreshserviceStream):
-    object_name = 'assets'
+    object_name = "assets"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
+
 
 class PurchaseOrders(FullRefrehsFreshserviceStream):
-    object_name = 'purchase_orders'
+    object_name = "purchase_orders"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
 
+
 class Software(FullRefrehsFreshserviceStream):
-    object_name = 'applications'
+    object_name = "applications"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
