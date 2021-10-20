@@ -60,6 +60,9 @@
         },
         "has_storage_rates": {
           "type": "boolean"
+        },
+        "row_version": {
+          "type": "string"
         }
       }
     },
