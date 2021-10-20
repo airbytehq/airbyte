@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 # This order matters
 additional_fields = (
     "custom_data",
@@ -32,5 +36,5 @@ additional_fields = (
     "blocked_reason_rule",
     "blocked_sub_reason",
     "rejected_reason",
-    "rejected_reason_value"
+    "rejected_reason_value",
 )

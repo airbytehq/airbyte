@@ -4,20 +4,23 @@
 
 import logging
 from datetime import datetime
-from typing import Any, List, Mapping, Optional, Tuple, Type, MutableMapping
-from jsonschema import RefResolver
-
-
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AirbyteConnectionStatus, AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification, Status
-
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Type
 
 import pendulum
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AuthSpecification,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    OAuth2Specification,
+    Status,
+)
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import (
@@ -34,8 +37,8 @@ from source_facebook_marketing.streams import (
     Campaigns,
 )
 
-
 logger = logging.getLogger(__name__)
+
 
 class InsightConfig(BaseModel):
 
@@ -133,7 +136,6 @@ class SourceFacebookMarketing(AbstractSource):
             Campaigns(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             AdSets(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
             Ads(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
-
             AdCreatives(api=api),
             AdsInsights(**insights_args),
             AdsInsightsAgeAndGender(**insights_args),
@@ -155,10 +157,9 @@ class SourceFacebookMarketing(AbstractSource):
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=repr(e))
 
-        self._check_custom_insights_entries(config.get('custom_insights', []))
+        self._check_custom_insights_entries(config.get("custom_insights", []))
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """
@@ -175,7 +176,7 @@ class SourceFacebookMarketing(AbstractSource):
                 auth_type="oauth2.0",
                 oauth2Specification=OAuth2Specification(
                     rootObject=[], oauthFlowInitParameters=[], oauthFlowOutputParameters=[["access_token"]]
-                )
+                ),
             ),
         )
 
@@ -201,23 +202,27 @@ class SourceFacebookMarketing(AbstractSource):
 
     def _check_custom_insights_entries(self, insights: List[Mapping[str, Any]]):
 
-        default_fields = list(ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights").get("properties", {}).keys())
-        default_breakdowns = list(ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights_breakdowns").get("properties", {}).keys())
-        default_actions_breakdowns = [e for e in default_breakdowns if 'action_' in e]
+        default_fields = list(
+            ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights").get("properties", {}).keys()
+        )
+        default_breakdowns = list(
+            ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights_breakdowns").get("properties", {}).keys()
+        )
+        default_actions_breakdowns = [e for e in default_breakdowns if "action_" in e]
 
         for insight in insights:
-            if insight.get('fields'):
-                value_checked, value = self._check_values(default_fields, insight.get('fields'))
+            if insight.get("fields"):
+                value_checked, value = self._check_values(default_fields, insight.get("fields"))
                 if not value_checked:
                     message = f"{value} is not a valid field name"
                     raise Exception("Config validation error: " + message) from None
-            if insight.get('breakdowns'):
-                value_checked, value = self._check_values(default_breakdowns, insight.get('breakdowns'))
+            if insight.get("breakdowns"):
+                value_checked, value = self._check_values(default_breakdowns, insight.get("breakdowns"))
                 if not value_checked:
                     message = f"{value} is not a valid breakdown name"
                     raise Exception("Config validation error: " + message) from None
-            if insight.get('action_breakdowns'):
-                value_checked, value = self._check_values(default_actions_breakdowns, insight.get('action_breakdowns'))
+            if insight.get("action_breakdowns"):
+                value_checked, value = self._check_values(default_actions_breakdowns, insight.get("action_breakdowns"))
                 if not value_checked:
                     message = f"{value} is not a valid action_breakdown name"
                     raise Exception("Config validation error: " + message) from None
