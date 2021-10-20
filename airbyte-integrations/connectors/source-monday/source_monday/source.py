@@ -4,6 +4,7 @@
 
 
 from abc import ABC
+import os
 import json
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -32,9 +33,11 @@ class MondayStream(HttpStream, ABC):
         '''
         Load schema from file and make a GraphQL query
         '''
-        with open(f'./source_monday/schemas/{self.name.lower()}.json') as f:
+        script_dir = os.path.dirname(__file__)
+        schema_path = os.path.join(script_dir, f'schemas/{self.name.lower()}.json')
+        with open(schema_path) as f:
             schema_dict = json.load(f)
-            schema = schema_dict['stream']['json_schema']['properties']
+            schema = schema_dict['properties']
             graphql_schema = []
             for col in schema:
                 if 'properties' in schema[col]:

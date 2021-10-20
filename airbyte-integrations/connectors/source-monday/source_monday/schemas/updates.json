@@ -1,35 +1,30 @@
 {
-  "stream": {
-    "name": "updates",
-    "json_schema": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "assets": {
+      "type": "array",
+      "properties": {
+        "id": { "type": "integer" }
+      }
+    },
+    "body": { "type": "string" },
+    "created_at": { "type": "date-time" },
+    "creator_id": { "type": "integer" },
+    "id": { "type": "integer" },
+    "item_id": { "type": "integer" },
+    "replies": {
       "type": "object",
       "properties": {
-        "assets": {
-          "type": "array",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
-        "body": { "type": "string" },
-        "created_at": {"type": "timestamp"},
-        "creator_id": { "type": "integer" },
         "id": { "type": "integer" },
-        "item_id": { "type": "integer" },
-        "replies": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "integer" },
-              "creator_id": { "type": "integer" },
-              "created_at": {"type": "timestamp"},
-              "text_body": { "type": "string" },
-              "updated_at": {"type": "timestamp"},
-              "body": { "type": "string" }
-            }
-          },
-          "text_body": { "type": "string" },
-          "updated_at": {"type": "timestamp"}
+        "creator_id": { "type": "integer" },
+        "created_at": { "type": "date-time" },
+        "text_body": { "type": "string" },
+        "updated_at": { "type": "date-time" },
+        "body": { "type": "string" }
       }
-    }
+    },
+    "text_body": { "type": "string" },
+    "updated_at": { "type": "date-time" }
   }
 }

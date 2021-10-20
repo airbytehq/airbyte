@@ -1,63 +1,58 @@
 {
-  "stream": {
-    "name": "items",
-    "json_schema": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "assets": {
       "type": "object",
       "properties": {
-        "assets": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
-        "board": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
-        "column_values": {
-          "type": "array",
-          "properties": {
-            "id": { "type": "integer" },
-            "value": { "type": "object" },
-            "additional_info": { "type": "object" },
-            "text": { "type": "string" },
-            "title": { "type": "string" },
-            "type": { "type": "string" }
-          }
-        },
-        "created_at": { "type": "timestamp" },
-        "creator_id": { "type": "integer" },
-        "group": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
+        "id": { "type": "integer" }
+      }
+    },
+    "board": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" }
+      }
+    },
+    "column_values": {
+      "type": "array",
+      "properties": {
         "id": { "type": "integer" },
-        "name": { "type": "string" },
-        "parent_item": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
-        "state": { "type": "string" },
-        "subscribers": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
-        "updated_at": { "type": "timestamp" },
-        "updates": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        }
+        "value": { "type": "object" },
+        "additional_info": { "type": "object" },
+        "text": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string" }
+      }
+    },
+    "created_at": { "type": "date-time" },
+    "creator_id": { "type": "integer" },
+    "group": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "id": { "type": "integer" },
+    "name": { "type": "string" },
+    "parent_item": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" }
+      }
+    },
+    "state": { "type": "string" },
+    "subscribers": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" }
+      }
+    },
+    "updated_at": { "type": "date-time" },
+    "updates": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" }
       }
     }
   }

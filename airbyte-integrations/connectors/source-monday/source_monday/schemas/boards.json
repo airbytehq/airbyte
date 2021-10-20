@@ -1,87 +1,81 @@
 {
-  "stream": {
-    "name": "boards",
-    "json_schema": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "board_kind": { "type": "string" },
+    "columns": {
+      "type": "array",
+      "properties": {
+        "archived": { "type": "boolean" },
+        "id": { "type": "string" },
+        "settings_str": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "width": { "type": "integer" }
+      }
+    },
+    "communication": { "type": "object" },
+    "description": { "type": "string" },
+    "groups": {
+      "type": "array",
+      "properties": {
+        "archived": { "type": "boolean" },
+        "color": { "type": "string" },
+        "deleted": { "type": "boolean" },
+        "id": { "type": "string" },
+        "position": { "type": "string" },
+        "title": { "type": "string" }
+      }
+    },
+    "id": { "type": "integer" },
+    "name": { "type": "string" },
+    "owner": {
       "type": "object",
       "properties": {
-        "board_kind": { "type": "string" },
-        "columns": {
-          "type": "array",
-          "properties": {
-            "archived": { "type": "boolean" },
-            "id": { "type": "string" },
-            "settings_str": { "type": "string" },
-            "title": { "type": "string" },
-            "type": { "type": "string" },
-            "width": { "type": "integer" }
-          }
-        },
-        "communication": { "type": "object" },
-        "description": { "type": "string" },
-        "groups": {
-          "type": "array",
-          "properties": {
-            "archived": { "type": "boolean" },
-            "color": { "type": "string" },
-            "deleted": { "type": "boolean" },
-            "id": { "type": "integer" },
-            "position": { "type": "string" },
-            "title": { "type": "string" }
-          }
-        },
+        "id": { "type": "integer" }
+      }
+    },
+    "permissions": { "type": "string" },
+    "pos": { "type": "string" },
+    "state": { "type": "string" },
+    "subscribers": {
+      "type": "array",
+      "properties": {
+        "id": { "type": "integer" }
+      }
+    },
+    "tags": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "top_group": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "updated_at": { "type": "date-time" },
+    "updates": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" }
+      }
+    },
+    "views": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" }
+      }
+    },
+    "workspace": {
+      "type": "object",
+      "properties": {
         "id": { "type": "integer" },
         "name": { "type": "string" },
-        "owner": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
-        "permissions": { "type": "string" },
-        "pos": { "type": "string" },
-        "state": { "type": "string" },
-        "subscribers": {
-          "type": "list",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
-        "tags": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
-        "top_group": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
-        "updated_at": { "type": "timestamp" },
-        "updates": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
-        "views": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" }
-          }
-        },
-        "workspace": {
-          "type":"object",
-          "properties": {
-            "id": { "type": "integer" },
-            "name": { "type": "string" },
-            "kind": { "type": "string" },
-            "description": { "type": "string" }
-          }
-
-        }
+        "kind": { "type": "string" },
+        "description": { "type": "string" }
       }
     }
   }
