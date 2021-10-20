@@ -123,12 +123,7 @@ class ChildStreamMixin(HttpSubStream):
     def filter_by_state(self, **kwargs) -> bool:
         return True
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        **kwargs
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         data = response.json().get(self.data_field)
         for record in data:
             if self.filter_by_state(stream_state=stream_state, record=record):
@@ -171,11 +166,7 @@ class IncrementalOnesignalStream(ChildStreamMixin, OnesignalStream, ABC):
         if next_offset < total:
             return {"offset": next_offset}
 
-    def filter_by_state(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        record: Mapping[str, Any] = None
-    ) -> bool:
+    def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
         value = 0
         if record:
             value = record.get(self.cursor_field, value)
