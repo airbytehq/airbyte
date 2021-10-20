@@ -28,7 +28,10 @@ class CsvParser(AbstractFileParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
         build ReadOptions object like: pa.csv.ReadOptions(**self._read_options())
         """
-        return {"block_size": self._format.get("block_size", 10000), "encoding": self._format.get("encoding", "utf8")}
+        return {
+            **{"block_size": self._format.get("block_size", 10000), "encoding": self._format.get("encoding", "utf8")},
+            **json.loads(self._format.get("advanced_options", "{}")),
+        }
 
     def _parse_options(self):
         """

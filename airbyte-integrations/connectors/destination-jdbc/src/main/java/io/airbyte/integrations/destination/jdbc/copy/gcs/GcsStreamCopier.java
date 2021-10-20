@@ -11,10 +11,10 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -40,6 +40,15 @@ import org.slf4j.LoggerFactory;
 public abstract class GcsStreamCopier implements StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsStreamCopier.class);
+  // It is optimal to write every 10,000,000 records (BATCH_SIZE * MAX_PER_FILE_PART_COUNT) to a new
+  // file.
+  // The BATCH_SIZE is defined in CopyConsumerFactory.
+  // The average size of such a file will be about 1 GB.
+  // This will make it easier to work with files and speed up the recording of large amounts of data.
+  // In addition, for a large number of records, we will not get a drop in the copy request to
+  // QUERY_TIMEOUT when
+  // the records from the file are copied to the staging table.
+  public static final int MAX_PARTS_PER_FILE = 1000;
 
   private final Storage storageClient;
   private final GcsConfig gcsConfig;
@@ -54,6 +63,7 @@ public abstract class GcsStreamCopier implements StreamCopier {
   private final HashMap<String, WriteChannel> channels = new HashMap<>();
   private final HashMap<String, CSVPrinter> csvPrinters = new HashMap<>();
   private final String stagingFolder;
+  private final StagingFilenameGenerator filenameGenerator;
 
   public GcsStreamCopier(final String stagingFolder,
                          final DestinationSyncMode destSyncMode,
@@ -74,28 +84,31 @@ public abstract class GcsStreamCopier implements StreamCopier {
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     this.storageClient = storageClient;
     this.gcsConfig = gcsConfig;
+    this.filenameGenerator = new StagingFilenameGenerator(streamName, MAX_PARTS_PER_FILE);
   }
 
   private String prepareGcsStagingFile() {
-    return String.join("/", stagingFolder, schemaName, Strings.addRandomSuffix("", "", 6) + "_" + streamName);
+    return String.join("/", stagingFolder, schemaName, filenameGenerator.getStagingFilename());
   }
 
   @Override
   public String prepareStagingFile() {
     final var name = prepareGcsStagingFile();
-    gcsStagingFiles.add(name);
-    final var blobId = BlobId.of(gcsConfig.getBucketName(), name);
-    final var blobInfo = BlobInfo.newBuilder(blobId).build();
-    final var blob = storageClient.create(blobInfo);
-    final var channel = blob.writer();
-    channels.put(name, channel);
-    final OutputStream outputStream = Channels.newOutputStream(channel);
+    if (!gcsStagingFiles.contains(name)) {
+      gcsStagingFiles.add(name);
+      final var blobId = BlobId.of(gcsConfig.getBucketName(), name);
+      final var blobInfo = BlobInfo.newBuilder(blobId).build();
+      final var blob = storageClient.create(blobInfo);
+      final var channel = blob.writer();
+      channels.put(name, channel);
+      final OutputStream outputStream = Channels.newOutputStream(channel);
 
-    final var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
-    try {
-      csvPrinters.put(name, new CSVPrinter(writer, CSVFormat.DEFAULT));
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
+      final var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
+      try {
+        csvPrinters.put(name, new CSVPrinter(writer, CSVFormat.DEFAULT));
+      } catch (final IOException e) {
+        throw new RuntimeException(e);
+      }
     }
     return name;
   }

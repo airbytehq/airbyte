@@ -5,6 +5,7 @@
 package io.airbyte.oauth;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -117,21 +118,35 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   }
 
   /**
+   * Query parameters to provide the access token url with.
+   */
+  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+    return ImmutableMap.<String, String>builder()
+        // required
+        .put("client_id", clientId)
+        .put("redirect_uri", redirectUrl)
+        .put("client_secret", clientSecret)
+        .put("code", authCode)
+        .build();
+  }
+
+  /**
    * Once the user is redirected after getting their consent, the API should redirect them to a
    * specific redirection URL along with query parameters. This function should parse and extract the
    * code from these query parameters in order to continue the OAuth Flow.
    */
-  protected abstract String extractCodeParameter(Map<String, Object> queryParams) throws IOException;
+  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
+    if (queryParams.containsKey("code")) {
+      return (String) queryParams.get("code");
+    } else {
+      throw new IOException("Undefined 'code' from consent redirected url.");
+    }
+  }
 
   /**
    * Returns the URL where to retrieve the access token from.
    */
   protected abstract String getAccessTokenUrl();
-
-  /**
-   * Query parameters to provide the access token url with.
-   */
-  protected abstract Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl);
 
   /**
    * Once the auth code is exchange for a refresh token, the oauth flow implementation can extract and
