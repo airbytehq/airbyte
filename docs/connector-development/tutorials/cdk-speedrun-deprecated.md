@@ -129,7 +129,7 @@ In your `source.py` file, add this `ExchangeRates` class. This stream represents
 from airbyte_cdk.sources.streams.http import HttpStream
 
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.exchangeratesapi.io/"
 
     # Set this as a noop.
     primary_key = None
@@ -163,7 +163,7 @@ Update your `ExchangeRates` class to implement the required functions as follows
 
 ```python
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.exchangeratesapi.io/"
 
     primary_key = None
 
