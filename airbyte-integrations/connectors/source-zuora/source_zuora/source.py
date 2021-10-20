@@ -266,7 +266,7 @@ class ZuoraListObjects(ZuoraBase):
         return "SHOW TABLES"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.logger.info("Retrieving the list of available Objects from Zuora")
+        # self.logger.info("Retrieving the list of available Objects from Zuora")
         return [name["Table"] for name in response]
 
 
@@ -281,7 +281,7 @@ class ZuoraDescribeObject(ZuoraBase):
         self.zuora_object_name = zuora_object_name
 
     def query(self, **kwargs) -> str:
-        self.logger.info(f"Getting schema information for {self.zuora_object_name}")
+        # self.logger.info(f"Getting schema information for {self.zuora_object_name}")
         return f"DESCRIBE {self.zuora_object_name}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> List[Dict]:
@@ -499,9 +499,7 @@ class SourceZuora(AbstractSource):
         """
         Testing connection availability for the connector by granting the token.
         """
-        # Define authentication method from user's input
         auth = ZuoraAuthenticator(config).get_auth()
-
         try:
             auth.get_auth_header()
             return True, None
@@ -513,9 +511,7 @@ class SourceZuora(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run by building stream classes dynamically.
         """
-        # Define authentication method from user's input
         auth = ZuoraAuthenticator(config)
-
         config["authenticator"] = auth.get_auth()
         config["url_base"] = auth.url_base
 

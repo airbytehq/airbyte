@@ -3,9 +3,6 @@
   "window_in_days": 30,
   "tenant_endpoint": "US Cloud API Sandbox",
   "data_query": "Live",
-  "authorization": {
-    "authorization": "auth_app_creds",
-    "client_id": "some_client_id",
-    "client_secret": "some_client_secret"
-  }
+  "client_id": "some_client_id",
+  "client_secret": "some_client_secret"
 }
