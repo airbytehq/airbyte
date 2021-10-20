@@ -473,7 +473,7 @@ class IssueProperties(StartDateJiraStream):
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects, start_date=self._start_date)
-        issue_property_keys_stream = IssuePropertyKeys(authenticator=self.authenticator, domain=self._domain)
+        issue_property_keys_stream = IssuePropertyKeys(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
             for property_key in issue_property_keys_stream.read_records(stream_slice={"key": issue["key"]}, **kwargs):
                 yield from super().read_records(stream_slice={"key": property_key["key"], "issue_key": issue["key"]}, **kwargs)
