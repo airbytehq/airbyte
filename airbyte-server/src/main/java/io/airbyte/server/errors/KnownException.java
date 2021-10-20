@@ -9,11 +9,11 @@ import org.apache.logging.log4j.core.util.Throwables;
 
 public abstract class KnownException extends RuntimeException {
 
-  public KnownException(String message) {
+  public KnownException(final String message) {
     super(message);
   }
 
-  public KnownException(String message, Throwable cause) {
+  public KnownException(final String message, final Throwable cause) {
     super(message, cause);
   }
 
@@ -23,8 +23,8 @@ public abstract class KnownException extends RuntimeException {
     return KnownException.infoFromThrowable(this);
   }
 
-  public static KnownExceptionInfo infoFromThrowableWithMessage(Throwable t, String message) {
-    KnownExceptionInfo exceptionInfo = new KnownExceptionInfo()
+  public static KnownExceptionInfo infoFromThrowableWithMessage(final Throwable t, final String message) {
+    final KnownExceptionInfo exceptionInfo = new KnownExceptionInfo()
         .exceptionClassName(t.getClass().getName())
         .message(message)
         .exceptionStack(Throwables.toStringList(t));
@@ -35,7 +35,7 @@ public abstract class KnownException extends RuntimeException {
     return exceptionInfo;
   }
 
-  public static KnownExceptionInfo infoFromThrowable(Throwable t) {
+  public static KnownExceptionInfo infoFromThrowable(final Throwable t) {
     return infoFromThrowableWithMessage(t, t.getMessage());
   }
 

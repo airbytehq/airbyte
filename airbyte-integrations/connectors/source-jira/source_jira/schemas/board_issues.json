@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "expand": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "self": {
+      "type": "string"
+    },
+    "key": {
+      "type": "string"
+    },
+    "fields": {
+      "type": "object"
+    },
+    "boardId": {
+      "type": "string"
+    }
+  }
+}

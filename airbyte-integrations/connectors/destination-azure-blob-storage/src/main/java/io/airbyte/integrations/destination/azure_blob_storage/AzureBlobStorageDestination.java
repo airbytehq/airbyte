@@ -23,18 +23,18 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AzureBlobStorageDestination.class);
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new AzureBlobStorageDestination()).run(args);
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      AzureBlobStorageConnectionChecker client = new AzureBlobStorageConnectionChecker(
+      final AzureBlobStorageConnectionChecker client = new AzureBlobStorageConnectionChecker(
           AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config));
       client.attemptWriteAndDelete();
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception attempting to access the azure blob storage bucket: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -45,10 +45,10 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
-    AzureBlobStorageWriterFactory formatterFactory = new ProductionWriterFactory();
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog configuredCatalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    final AzureBlobStorageWriterFactory formatterFactory = new ProductionWriterFactory();
     return new AzureBlobStorageConsumer(
         AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config), configuredCatalog,
         formatterFactory, outputRecordCollector);

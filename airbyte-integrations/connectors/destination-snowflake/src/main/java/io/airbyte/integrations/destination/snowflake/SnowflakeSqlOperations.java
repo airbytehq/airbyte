@@ -20,7 +20,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
   @Override
-  public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
+  public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
     final String createTableQuery = String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -32,7 +32,10 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
-  public void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName)
+  public void insertRecordsInternal(final JdbcDatabase database,
+                                    final List<AirbyteRecordMessage> records,
+                                    final String schemaName,
+                                    final String tableName)
       throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 

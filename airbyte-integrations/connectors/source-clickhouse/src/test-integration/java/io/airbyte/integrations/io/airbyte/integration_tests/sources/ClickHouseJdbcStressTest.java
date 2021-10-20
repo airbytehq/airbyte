@@ -46,7 +46,7 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
   }
 
   @Override
-  protected String createTableQuery(String tableName, String columnClause) {
+  protected String createTableQuery(final String tableName, final String columnClause) {
     // ClickHouse requires Engine to be mentioned as part of create table query.
     // Refer : https://clickhouse.tech/docs/en/engines/table-engines/ for more information
     return String.format("CREATE TABLE %s(%s) %s",

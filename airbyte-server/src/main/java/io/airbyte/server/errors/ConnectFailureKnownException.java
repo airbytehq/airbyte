@@ -6,11 +6,11 @@ package io.airbyte.server.errors;
 
 public class ConnectFailureKnownException extends KnownException {
 
-  public ConnectFailureKnownException(String message) {
+  public ConnectFailureKnownException(final String message) {
     super(message);
   }
 
-  public ConnectFailureKnownException(String message, Throwable cause) {
+  public ConnectFailureKnownException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

@@ -13,7 +13,7 @@ dependencies {
 
     // jOOQ code generation
     implementation 'org.jooq:jooq-codegen:3.13.4'
-    implementation "org.testcontainers:postgresql:1.15.1"
+    implementation "org.testcontainers:postgresql:1.15.3"
     // The jOOQ code generator only has access to classes added to the jooqGenerator configuration
     jooqGenerator project(':airbyte-db:lib')
 }
