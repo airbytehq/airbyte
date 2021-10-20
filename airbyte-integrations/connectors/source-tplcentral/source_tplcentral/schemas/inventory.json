@@ -322,6 +322,9 @@
     "quarantined": {
       "type": "boolean"
     },
+    "row_version": {
+      "type": "string"
+    },
     "stock_row_version": {
       "type": "string"
     },

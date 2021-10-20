@@ -283,7 +283,7 @@
                     "number"
                   ]
                 },
-                "lenght": {
+                "length": {
                   "type": [
                     "null",
                     "number"
@@ -320,7 +320,7 @@
                     "number"
                   ]
                 },
-                "lenght": {
+                "length": {
                   "type": [
                     "null",
                     "number"
@@ -404,7 +404,17 @@
               ],
               "description": "0: disallow; 1: allow; 2: require"
             },
-            "outbound_mobile_serialization_behavior": {
+            "track_cost": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "integer",
+              "enum": [
+                0,
+                1,
+                2
+              ],
+              "description": "0: disallow; 1: allow; 2: require"
+            },
+            "outbound_mobile_serialization": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
               "enum": [
@@ -472,11 +482,29 @@
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "name": {
-                  "type": "string"
+                "length": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
                 },
-                "id": {
-                  "type": "integer"
+                "width": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "height": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "weight": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
                 }
               }
             },
@@ -485,11 +513,29 @@
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "name": {
-                  "type": "string"
+                "length": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
                 },
-                "id": {
-                  "type": "integer"
+                "width": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "height": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "weight": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
                 }
               }
             },
