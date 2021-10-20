@@ -93,7 +93,7 @@ Let's walk through what each field in a stream means.
 
 * `name` - The name of the stream.
 * `supported_sync_modes` - This field lists the type of data replication that this source supports. The possible values in this array include `FULL_REFRESH` \([docs](connections/full-refresh-overwrite.md)\) and `INCREMENTAL` \([docs](connections/incremental-append.md)\).
-* `source_defined_cursor` - If the stream supports `INCREMENTAL` replication, then this field signal whether the source can figure out how to detect new records on its own or not.
+* `source_defined_cursor` - If the stream supports `INCREMENTAL` replication, then this field signals whether the source can figure out how to detect new records on its own or not.
 * `json_schema` - This field is a [JsonSchema](https://json-schema.org/understanding-json-schema) object that describes the structure of the data. Notice that each key in the `properties` object corresponds to a column name in our database table.
 
 Now we understand _what_ data is available from this source. Next we will configure _how_ we want to replicate that data.
