@@ -12,7 +12,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, Oauth2Authenticator
 
 
 class OktaStream(HttpStream, ABC):
@@ -124,8 +124,22 @@ class Users(IncrementalOktaStream):
 
 
 class SourceOkta(AbstractSource):
-    def initialize_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
-        return TokenAuthenticator(config["token"], auth_method="SSWS")
+    def get_authenticator(self, config: Mapping[str, Any]):
+        base_url = config.get("base_url")
+        authorization = config.get("authorization", {})
+
+        auth_type = authorization.get("auth_type")
+        if auth_type == "Client":
+            return Oauth2Authenticator(
+                token_refresh_endpoint=f"{base_url}/oauth2/default/v1/token",
+                client_secret=authorization.get("client_secret"),
+                client_id=authorization.get("client_id"),
+                refresh_token=authorization.get("refresh_token"),
+            )
+        elif auth_type == "Token":
+            return TokenAuthenticator(authorization["token"], auth_method="SSWS")
+        else:
+            raise Exception(f"Invalid auth type: {auth_type}")
 
     def get_url_base(self, config: Mapping[str, Any]) -> str:
         return parse.urljoin(config["base_url"], "/api/v1/")
@@ -150,7 +164,7 @@ class SourceOkta(AbstractSource):
             return False, "Failed to authenticate with the provided credentials"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = self.initialize_authenticator(config)
+        auth = self.get_authenticator(config)
         url_base = self.get_url_base(config)
 
         initialization_params = {
