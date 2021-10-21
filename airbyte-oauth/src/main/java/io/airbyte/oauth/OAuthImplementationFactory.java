@@ -14,6 +14,7 @@ import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
 import java.util.Map;
+import java.util.UUID;
 
 public class OAuthImplementationFactory {
 
@@ -31,7 +32,7 @@ public class OAuthImplementationFactory {
         .build();
   }
 
-  public OAuthFlowImplementation create(final String imageName) {
+  public OAuthFlowImplementation create(final String imageName, final UUID workspaceId) {
     if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
       return OAUTH_FLOW_MAPPING.get(imageName);
     } else {
