@@ -14,6 +14,7 @@ import { Routing } from "packages/cloud/routes";
 import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
+import ConfirmationModalServiceProvider from "hooks/services/ConfirmationModal";
 import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
 import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
@@ -62,17 +63,19 @@ const App: React.FC = () => {
             <Suspense fallback={<LoadingPage />}>
               <ApiErrorBoundary>
                 <NotificationServiceProvider>
-                  <FeatureService features={Features}>
-                    <AppServicesProvider>
-                      <AuthenticationProvider>
-                        <IntercomProvider appId={INTERCOM_APP_ID}>
-                          <AnalyticsInitializer>
-                            <Routing />
-                          </AnalyticsInitializer>
-                        </IntercomProvider>
-                      </AuthenticationProvider>
-                    </AppServicesProvider>
-                  </FeatureService>
+                  <ConfirmationModalServiceProvider>
+                    <FeatureService features={Features}>
+                      <AppServicesProvider>
+                        <AuthenticationProvider>
+                          <IntercomProvider appId={INTERCOM_APP_ID}>
+                            <AnalyticsInitializer>
+                              <Routing />
+                            </AnalyticsInitializer>
+                          </IntercomProvider>
+                        </AuthenticationProvider>
+                      </AppServicesProvider>
+                    </FeatureService>
+                  </ConfirmationModalServiceProvider>
                 </NotificationServiceProvider>
               </ApiErrorBoundary>
             </Suspense>
