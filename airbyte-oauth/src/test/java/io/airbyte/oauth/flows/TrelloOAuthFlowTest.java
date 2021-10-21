@@ -4,6 +4,7 @@
 
 package io.airbyte.oauth.flows;
 
+import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -75,7 +76,8 @@ public class TrelloOAuthFlowTest {
   @Test
   public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
     final String concentUrl =
-        trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+        trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL,
+            emptyMap());
     assertEquals(concentUrl, "https://trello.com/1/OAuthAuthorizeToken?oauth_token=test_token");
   }
 

@@ -4,6 +4,7 @@
 
 package io.airbyte.oauth.flows.google;
 
+import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -62,8 +63,12 @@ public class GoogleAnalyticsOAuthFlowTest {
 
   @Test
   public void testGetConsentUrlEmptyOAuthParameters() {
-    assertThrows(ConfigNotFoundException.class, () -> googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
-    assertThrows(ConfigNotFoundException.class, () -> googleAnalyticsOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(ConfigNotFoundException.class,
+        () -> googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL,
+            emptyMap()));
+    assertThrows(ConfigNotFoundException.class,
+        () -> googleAnalyticsOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId,
+            REDIRECT_URL, emptyMap()));
   }
 
   @Test
@@ -73,13 +78,18 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.emptyObject())));
-    when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withDestinationDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.emptyObject())));
-    assertThrows(IllegalArgumentException.class, () -> googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
-    assertThrows(IllegalArgumentException.class, () -> googleAnalyticsOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    when(configRepository.listDestinationOAuthParam()).thenReturn(
+        List.of(new DestinationOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withDestinationDefinitionId(definitionId)
+            .withWorkspaceId(workspaceId)
+            .withConfiguration(Jsons.emptyObject())));
+    assertThrows(IllegalArgumentException.class,
+        () -> googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL,
+            emptyMap()));
+    assertThrows(IllegalArgumentException.class,
+        () -> googleAnalyticsOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId,
+            REDIRECT_URL, emptyMap()));
   }
 
   @Test
@@ -91,7 +101,9 @@ public class GoogleAnalyticsOAuthFlowTest {
         .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", getClientId())
             .build())))));
-    final String actualSourceUrl = googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String actualSourceUrl = googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId,
+        definitionId, REDIRECT_URL,
+        emptyMap());
     final String expectedSourceUrl = String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=%s&access_type=offline&state=%s&include_granted_scopes=true&prompt=consent",
         getClientId(),
@@ -104,17 +116,19 @@ public class GoogleAnalyticsOAuthFlowTest {
 
   @Test
   public void testGetDestinationConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
-    when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withDestinationDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
-            .put("client_id", getClientId())
-            .build())))));
+    when(configRepository.listDestinationOAuthParam()).thenReturn(
+        List.of(new DestinationOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withDestinationDefinitionId(definitionId)
+            .withWorkspaceId(workspaceId)
+            .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
+                .put("client_id", getClientId())
+                .build())))));
     // It would be better to make this comparison agnostic of the order of query params but the URI
     // class' equals() method
     // considers URLs with different qparam orders different URIs..
-    final String actualDestinationUrl = googleAnalyticsOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String actualDestinationUrl = googleAnalyticsOAuthFlow.getDestinationConsentUrl(
+        workspaceId, definitionId, REDIRECT_URL, emptyMap());
     final String expectedDestinationUrl = String.format(
         "https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=%s&access_type=offline&state=%s&include_granted_scopes=true&prompt=consent",
         getClientId(),

@@ -47,11 +47,14 @@ public class OAuthHandler {
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final OAuthFlowImplementation oAuthFlowImplementation = getSourceOAuthFlowImplementation(sourceDefinitionIdRequestBody.getSourceDefinitionId());
-    final ImmutableMap<String, Object> metadata = generateSourceMetadata(sourceDefinitionIdRequestBody.getSourceDefinitionId());
-    final OAuthConsentRead result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
-        sourceDefinitionIdRequestBody.getWorkspaceId(),
-        sourceDefinitionIdRequestBody.getSourceDefinitionId(),
-        sourceDefinitionIdRequestBody.getRedirectUrl()));
+    final ImmutableMap<String, Object> metadata = generateSourceMetadata(
+        sourceDefinitionIdRequestBody.getSourceDefinitionId());
+    final OAuthConsentRead result = new OAuthConsentRead().consentUrl(
+        oAuthFlowImplementation.getSourceConsentUrl(
+            sourceDefinitionIdRequestBody.getWorkspaceId(),
+            sourceDefinitionIdRequestBody.getSourceDefinitionId(),
+            sourceDefinitionIdRequestBody.getRedirectUrl(),
+            sourceDefinitionIdRequestBody.getParams()));
     try {
       trackingClient.track(sourceDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     } catch (final Exception e) {
@@ -64,11 +67,14 @@ public class OAuthHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final OAuthFlowImplementation oAuthFlowImplementation =
         getDestinationOAuthFlowImplementation(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
-    final ImmutableMap<String, Object> metadata = generateDestinationMetadata(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
-    final OAuthConsentRead result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
-        destinationDefinitionIdRequestBody.getWorkspaceId(),
-        destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
-        destinationDefinitionIdRequestBody.getRedirectUrl()));
+    final ImmutableMap<String, Object> metadata = generateDestinationMetadata(
+        destinationDefinitionIdRequestBody.getDestinationDefinitionId());
+    final OAuthConsentRead result = new OAuthConsentRead().consentUrl(
+        oAuthFlowImplementation.getDestinationConsentUrl(
+            destinationDefinitionIdRequestBody.getWorkspaceId(),
+            destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
+            destinationDefinitionIdRequestBody.getRedirectUrl(),
+            destinationDefinitionIdRequestBody.getParams()));
     try {
       trackingClient.track(destinationDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     } catch (final Exception e) {

@@ -3256,6 +3256,9 @@ components:
         redirectUrl:
           description: The url to redirect to after getting the user consent
           type: string
+        params:
+          type: object
+          additionalProperties: true
     OAuthConsentRead:
       type: object
       required:

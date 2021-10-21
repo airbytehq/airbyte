@@ -49,22 +49,31 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
     this.transport = transport;
   }
 
-  public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl)
+  public String getSourceConsentUrl(final UUID workspaceId,
+      final UUID sourceDefinitionId,
+      final String redirectUrl,
+      Map<String, Object> params)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return getConsentUrl(oAuthParamConfig, redirectUrl);
   }
 
-  public String getDestinationConsentUrl(final UUID workspaceId, final UUID destinationDefinitionId, final String redirectUrl)
+  public String getDestinationConsentUrl(final UUID workspaceId,
+      final UUID destinationDefinitionId,
+      final String redirectUrl,
+      Map<String, Object> params)
       throws IOException, ConfigNotFoundException {
-    final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
+    final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId,
+        destinationDefinitionId);
     return getConsentUrl(oAuthParamConfig, redirectUrl);
   }
 
-  private String getConsentUrl(final JsonNode oAuthParamConfig, final String redirectUrl) throws IOException, ConfigNotFoundException {
+  private String getConsentUrl(final JsonNode oAuthParamConfig, final String redirectUrl)
+      throws IOException, ConfigNotFoundException {
     final String clientKey = getClientIdUnsafe(oAuthParamConfig);
     final String clientSecret = getClientSecretUnsafe(oAuthParamConfig);
-    final OAuthGetTemporaryToken oAuthGetTemporaryToken = new OAuthGetTemporaryToken(REQUEST_TOKEN_URL);
+    final OAuthGetTemporaryToken oAuthGetTemporaryToken = new OAuthGetTemporaryToken(
+        REQUEST_TOKEN_URL);
     signer.clientSharedSecret = clientSecret;
     signer.tokenSharedSecret = null;
     oAuthGetTemporaryToken.signer = signer;

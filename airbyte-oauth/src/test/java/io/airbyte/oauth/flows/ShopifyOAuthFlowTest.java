@@ -4,6 +4,7 @@
 
 package io.airbyte.oauth.flows;
 
+import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -70,7 +71,7 @@ public class ShopifyOAuthFlowTest {
             .put("client_secret", "test_client_secret")
             .build())))));
     final String actualSourceUrl = shopifyOAuthFlow.getSourceConsentUrl(workspaceId, definitionId,
-        REDIRECT_URL);
+        REDIRECT_URL, emptyMap());
     final String expectedSourceUrl = String.format(
         "https://airbyte-integration-test.myshopify.com/admin/oauth/authorize?client_id=%s&redirect_uri=%s&state=%s&%s",
         getClientId(),
