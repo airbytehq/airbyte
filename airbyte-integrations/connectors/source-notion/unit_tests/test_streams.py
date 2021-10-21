@@ -2,11 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import requests
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 from source_notion.streams import NotionStream
 
 
@@ -27,27 +27,25 @@ def test_request_params(patch_base_class):
 
 def test_next_page_token(patch_base_class, requests_mock):
     stream = NotionStream(config=MagicMock())
-    requests_mock.get("https://dummy", json={ "next_cursor": "aaa" })
-    inputs = { "response": requests.get("https://dummy") }
-    expected_token = { "next_cursor": "aaa" }
+    requests_mock.get("https://dummy", json={"next_cursor": "aaa"})
+    inputs = {"response": requests.get("https://dummy")}
+    expected_token = {"next_cursor": "aaa"}
     assert stream.next_page_token(**inputs) == expected_token
 
 
 def test_parse_response(patch_base_class, requests_mock):
     stream = NotionStream(config=MagicMock())
-    requests_mock.get("https://dummy", json={
-        "results": [{ "a": 123 }, { "b": "xx" }]
-    })
+    requests_mock.get("https://dummy", json={"results": [{"a": 123}, {"b": "xx"}]})
     resp = requests.get("https://dummy")
-    inputs = { "response": resp, "stream_state": MagicMock() }
-    expected_parsed_object = [{ "a": 123 }, { "b": "xx" }]
+    inputs = {"response": resp, "stream_state": MagicMock()}
+    expected_parsed_object = [{"a": 123}, {"b": "xx"}]
     assert list(stream.parse_response(**inputs)) == expected_parsed_object
 
 
 def test_request_headers(patch_base_class):
     stream = NotionStream(config=MagicMock())
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = { "Notion-Version": "2021-08-16" }
+    expected_headers = {"Notion-Version": "2021-08-16"}
     assert stream.request_headers(**inputs) == expected_headers
 
 

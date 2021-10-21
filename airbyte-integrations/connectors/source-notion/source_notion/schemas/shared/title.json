@@ -17,12 +17,12 @@
           "type": ["null", "object"],
           "additionalProperties": false,
           "properties": {
-              "type": {
-                "enum": ["url"]
-              },
-              "url": {
-                "type": "string"
-              }
+            "type": {
+              "enum": ["url"]
+            },
+            "url": {
+              "type": "string"
+            }
           }
         }
       }
@@ -47,7 +47,27 @@
           "type": "boolean"
         },
         "color": {
-          "enum": ["default", "gray", "brown", "orange", "yellow", "green", "blue", "purple", "pink", "red", "gray_background", "brown_background", "orange_background", "yellow_background", "green_background", "blue_background", "purple_background", "pink_background", "red_background"]
+          "enum": [
+            "default",
+            "gray",
+            "brown",
+            "orange",
+            "yellow",
+            "green",
+            "blue",
+            "purple",
+            "pink",
+            "red",
+            "gray_background",
+            "brown_background",
+            "orange_background",
+            "yellow_background",
+            "green_background",
+            "blue_background",
+            "purple_background",
+            "pink_background",
+            "red_background"
+          ]
         }
       }
     },
@@ -59,4 +79,3 @@
     }
   }
 }
-

@@ -7,4 +7,3 @@
     "children": { "type": "array", "items": { "type": "object" } }
   }
 }
-

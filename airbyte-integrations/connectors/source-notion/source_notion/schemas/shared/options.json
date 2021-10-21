@@ -10,8 +10,18 @@
       "type": "string"
     },
     "color": {
-      "enum": ["default", "gray", "brown", "orange", "yellow", "green", "blue", "purple", "pink", "red"]
+      "enum": [
+        "default",
+        "gray",
+        "brown",
+        "orange",
+        "yellow",
+        "green",
+        "blue",
+        "purple",
+        "pink",
+        "red"
+      ]
     }
   }
 }
-

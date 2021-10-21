@@ -42,7 +42,10 @@
               "patternProperties": {
                 "^id$": { "type": "string" },
                 "^type$": { "enum": ["title", "rich_text"] },
-                "^title$|^rich_text$": { "type": "array", "items": { "$ref": "rich_text.json" } }
+                "^title$|^rich_text$": {
+                  "type": "array",
+                  "items": { "$ref": "rich_text.json" }
+                }
               }
             },
             {
@@ -66,7 +69,10 @@
               "properties": {
                 "id": { "type": "string" },
                 "type": { "enum": ["multi_select"] },
-                "multi_select": { "type": ["null", "array"], "items": { "$ref": "options.json" } }
+                "multi_select": {
+                  "type": ["null", "array"],
+                  "items": { "$ref": "options.json" }
+                }
               }
             },
             {
@@ -238,4 +244,3 @@
     }
   }
 }
-

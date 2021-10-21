@@ -2,11 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from unittest.mock import MagicMock
 
-import requests
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_notion.streams import IncrementalNotionStream, Pages, Blocks
+from source_notion.streams import Blocks, IncrementalNotionStream, Pages
 
 
 @fixture
@@ -19,13 +19,7 @@ def patch_incremental_base_class(mocker):
 
 @fixture
 def args():
-    return {
-        "authenticator": None,
-        "config": {
-            "access_token": "",
-            "start_date": "2021-01-01T00:00:00.000Z"
-        }
-    }
+    return {"authenticator": None, "config": {"access_token": "", "start_date": "2021-01-01T00:00:00.000Z"}}
 
 
 @fixture
@@ -49,29 +43,74 @@ def test_cursor_field(stream):
 
 
 def test_get_updated_state(stream):
-    inputs = {
-        "current_stream_state": { "last_edited_time": "2021-10-10T00:00:00.000Z" },
-        "latest_record": { "last_edited_time": "2021-10-20T00:00:00.000Z" }
-    }
-    expected_state = { "last_edited_time": "2021-10-20T00:00:00.000Z" }
-    assert stream.get_updated_state(**inputs) == expected_state
+    stream.is_finished = False
 
     inputs = {
-        "current_stream_state": { "last_edited_time": "2021-10-20T00:00:00.000Z" },
-        "latest_record": { "last_edited_time": "2021-10-10T00:00:00.000Z" }
+        "current_stream_state": {"last_edited_time": "2021-10-10T00:00:00.000Z"},
+        "latest_record": {"last_edited_time": "2021-10-20T00:00:00.000Z"},
     }
-    assert stream.get_updated_state(**inputs) == expected_state
+    expected_state = "2021-10-10T00:00:00.000Z"
+    state = stream.get_updated_state(**inputs)
+    assert state["last_edited_time"].value == expected_state
+
+    inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-30T00:00:00.000Z"}}
+    state = stream.get_updated_state(**inputs)
+    assert state["last_edited_time"].value == expected_state
+
+    # after stream sync is finished, state should output the max cursor time
+    stream.is_finished = True
+    inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-10T00:00:00.000Z"}}
+    expected_state = "2021-10-30T00:00:00.000Z"
+    state = stream.get_updated_state(**inputs)
+    assert state["last_edited_time"].value == expected_state
 
 
 def test_stream_slices(blocks, requests_mock):
     stream = blocks
-    requests_mock.post("https://api.notion.com/v1/search", json={
-        "results": [ { "id": "aaa" }, { "id": "bbb" } ],
-        "next_cursor": None
-    })
+    requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"id": "aaa"}, {"id": "bbb"}], "next_cursor": None})
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    expected_stream_slice = [ { "page_id": "aaa" }, { "page_id": "bbb" } ]
+    expected_stream_slice = [{"page_id": "aaa"}, {"page_id": "bbb"}]
     assert list(stream.stream_slices(**inputs)) == expected_stream_slice
+
+
+def test_end_of_stream_state(blocks, requests_mock):
+    stream = blocks
+    requests_mock.post(
+        "https://api.notion.com/v1/search", json={"results": [{"id": "aaa"}, {"id": "bbb"}, {"id": "ccc"}], "next_cursor": None}
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/aaa/children",
+        json={
+            "results": [{"id": "block 1", "type": "heading_1", "has_children": False, "last_edited_time": "2021-10-30T00:00:00.000Z"}],
+            "next_cursor": None,
+        },
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/bbb/children",
+        json={
+            "results": [{"id": "block 2", "type": "heading_1", "has_children": False, "last_edited_time": "2021-10-20T00:00:00.000Z"}],
+            "next_cursor": None,
+        },
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/ccc/children",
+        json={
+            "results": [{"id": "block 3", "type": "heading_1", "has_children": False, "last_edited_time": "2021-10-10T00:00:00.000Z"}],
+            "next_cursor": None,
+        },
+    )
+
+    state = {"last_edited_time": "2021-10-01T00:00:00.000Z"}
+    sync_mode = SyncMode.incremental
+
+    for idx, app_slice in enumerate(stream.stream_slices(sync_mode, **MagicMock())):
+        for record in stream.read_records(sync_mode=sync_mode, stream_slice=app_slice):
+            state = stream.get_updated_state(state, record)
+            state_value = state["last_edited_time"].value
+            if idx == 2:  # the last slice
+                assert state_value == "2021-10-30T00:00:00.000Z"
+            else:
+                assert state_value == "2021-10-01T00:00:00.000Z"
 
 
 def test_supports_incremental(stream, mocker):
@@ -90,54 +129,63 @@ def test_stream_checkpoint_interval(stream):
 
 def test_request_params(blocks):
     stream = blocks
-    inputs = { "stream_state": {}, "next_page_token": { "next_cursor": "aaa" } }
-    expected_request_params = { "page_size": 100, "start_cursor": "aaa" }
+    inputs = {"stream_state": {}, "next_page_token": {"next_cursor": "aaa"}}
+    expected_request_params = {"page_size": 100, "start_cursor": "aaa"}
     assert stream.request_params(**inputs) == expected_request_params
 
 
-def test_filter_by_state(stream):
-    inputs = {
-        "stream_state": { "last_edited_time": "2021-10-10T00:00:00.000Z" },
-        "record": { "last_edited_time": "2021-10-20T00:00:00.000Z" }
-    }
-    expected_filter_by_state  = [{ "last_edited_time": "2021-10-20T00:00:00.000Z" }]
-    assert list(stream.filter_by_state(**inputs)) == expected_filter_by_state
-
-    inputs = {
-        "stream_state": { "last_edited_time": "2021-10-20T00:00:00.000Z" },
-        "record": { "last_edited_time": "2021-10-10T00:00:00.000Z" }
-    }
-    expected_filter_by_state = []
-    assert list(stream.filter_by_state(**inputs)) == expected_filter_by_state
-
-
-def test_filter_by_state_blocks(blocks):
+def test_record_filter(blocks, requests_mock):
     stream = blocks
+    sync_mode = SyncMode.incremental
+
+    root = "aaa"
+    record = {"id": "id1", "type": "heading_1", "has_children": False, "last_edited_time": "2021-10-20T00:00:00.000Z"}
+    requests_mock.get(f"https://api.notion.com/v1/blocks/{root}/children", json={"results": [record], "next_cursor": None})
 
     inputs = {
-        "stream_state": { "last_edited_time": "2021-10-10T00:00:00.000Z" },
-        "record": { "last_edited_time": "2021-10-20T00:00:00.000Z", "type": "aaa" }
+        "sync_mode": sync_mode,
+        "stream_state": {"last_edited_time": "2021-10-10T00:00:00.000Z"},
     }
-    expected_filter_by_state  = [{ "last_edited_time": "2021-10-20T00:00:00.000Z", "type": "aaa" }]
-    assert list(stream.filter_by_state(**inputs)) == expected_filter_by_state
+    stream.block_id_stack = [root]
+    assert next(stream.read_records(**inputs)) == record
 
     inputs = {
-        "stream_state": { "last_edited_time": "2021-10-20T00:00:00.000Z" },
-        "record": { "last_edited_time": "2021-10-10T00:00:00.000Z", "type": "aaa" }
+        "sync_mode": sync_mode,
+        "stream_state": {"last_edited_time": "2021-10-30T00:00:00.000Z"},
     }
-    expected_filter_by_state  = []
-    assert list(stream.filter_by_state(**inputs)) == expected_filter_by_state
+    stream.block_id_stack = [root]
+    assert list(stream.read_records(**inputs)) == []
 
     # 'child_page' and 'child_database' should not be included
+    record["type"] = "child_page"
     inputs = {
-        "stream_state": { "last_edited_time": "2021-10-10T00:00:00.000Z" },
-        "record": { "last_edited_time": "2021-10-20T00:00:00.000Z", "type": "child_page" }
+        "sync_mode": sync_mode,
+        "stream_state": {"last_edited_time": "2021-10-10T00:00:00.000Z"},
     }
-    expected_filter_by_state = []
-    assert list(stream.filter_by_state(**inputs)) == expected_filter_by_state
-    inputs = {
-        "stream_state": { "last_edited_time": "2021-10-10T00:00:00.000Z" },
-        "record": { "last_edited_time": "2021-10-20T00:00:00.000Z", "type": "child_database" }
-    }
-    expected_filter_by_state = []
-    assert list(stream.filter_by_state(**inputs)) == expected_filter_by_state
+    stream.block_id_stack = [root]
+    assert list(stream.read_records(**inputs)) == []
+    record["type"] = "child_database"
+    stream.block_id_stack = [root]
+    assert list(stream.read_records(**inputs)) == []
+
+
+def test_recursive_read(blocks, requests_mock):
+    stream = blocks
+
+    # block records tree:
+    #
+    # root |-> record1 -> record2 -> record3
+    #      |-> record4
+
+    root = "aaa"
+    record1 = {"id": "id1", "type": "heading_1", "has_children": True, "last_edited_time": ""}
+    record2 = {"id": "id2", "type": "heading_1", "has_children": True, "last_edited_time": ""}
+    record3 = {"id": "id3", "type": "heading_1", "has_children": False, "last_edited_time": ""}
+    record4 = {"id": "id4", "type": "heading_1", "has_children": False, "last_edited_time": ""}
+    requests_mock.get(f"https://api.notion.com/v1/blocks/{root}/children", json={"results": [record1, record4], "next_cursor": None})
+    requests_mock.get(f"https://api.notion.com/v1/blocks/{record1['id']}/children", json={"results": [record2], "next_cursor": None})
+    requests_mock.get(f"https://api.notion.com/v1/blocks/{record2['id']}/children", json={"results": [record3], "next_cursor": None})
+
+    inputs = {"sync_mode": SyncMode.incremental}
+    stream.block_id_stack = [root]
+    assert list(stream.read_records(**inputs)) == [record3, record2, record1, record4]

@@ -6,4 +6,3 @@
     "text": { "type": "array", "items": { "$ref": "rich_text.json" } }
   }
 }
-

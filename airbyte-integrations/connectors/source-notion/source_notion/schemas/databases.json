@@ -44,7 +44,23 @@
               "additionalProperties": true,
               "properties": {
                 "id": { "type": "string" },
-                "type": { "enum": ["title", "rich_text", "date", "people", "files", "checkbox", "url", "email", "phone_number", "created_time", "created_by", "last_edited_time", "last_edited_by"] },
+                "type": {
+                  "enum": [
+                    "title",
+                    "rich_text",
+                    "date",
+                    "people",
+                    "files",
+                    "checkbox",
+                    "url",
+                    "email",
+                    "phone_number",
+                    "created_time",
+                    "created_by",
+                    "last_edited_time",
+                    "last_edited_by"
+                  ]
+                },
                 "name": { "type": "string" }
               }
             },
@@ -54,7 +70,46 @@
                 "id": { "type": "string" },
                 "type": { "enum": ["number"] },
                 "name": { "type": "string" },
-                "format": { "enum": ["number", "number_with_commas", "percent", "dollar", "canadian_dollar", "euro", "pound", "yen", "ruble", "rupee", "won", "yuan", "real", "lira", "rupiah", "franc", "hong_kong_dollar", "new_zealand_dollar", "krona", "norwegian_krone", "mexican_peso", "rand", "new_taiwan_dollar", "danish_krone", "zloty", "baht", "forint", "koruna", "shekel", "chilean_peso", "philippine_peso", "dirham", "colombian_peso", "riyal", "ringgit", "leu"] }
+                "format": {
+                  "enum": [
+                    "number",
+                    "number_with_commas",
+                    "percent",
+                    "dollar",
+                    "canadian_dollar",
+                    "euro",
+                    "pound",
+                    "yen",
+                    "ruble",
+                    "rupee",
+                    "won",
+                    "yuan",
+                    "real",
+                    "lira",
+                    "rupiah",
+                    "franc",
+                    "hong_kong_dollar",
+                    "new_zealand_dollar",
+                    "krona",
+                    "norwegian_krone",
+                    "mexican_peso",
+                    "rand",
+                    "new_taiwan_dollar",
+                    "danish_krone",
+                    "zloty",
+                    "baht",
+                    "forint",
+                    "koruna",
+                    "shekel",
+                    "chilean_peso",
+                    "philippine_peso",
+                    "dirham",
+                    "colombian_peso",
+                    "riyal",
+                    "ringgit",
+                    "leu"
+                  ]
+                }
               }
             },
             {
@@ -63,7 +118,10 @@
                 "id": { "type": "string" },
                 "type": { "enum": ["select", "multi_select"] },
                 "name": { "type": "string" },
-                "options": { "type": "array", "items": { "$ref": "options.json" } }
+                "options": {
+                  "type": "array",
+                  "items": { "$ref": "options.json" }
+                }
               }
             },
             {
@@ -96,7 +154,24 @@
                 "relation_property_id": { "type": "string" },
                 "rollup_property_name": { "type": "string" },
                 "rollup_property_id": { "type": "string" },
-                "function": { "enum": ["count_all", "count_values", "count_unique_values", "count_empty", "count_not_empty", "percent_empty", "percent_not_empty", "sum", "average", "median", "min", "max", "range", "show_original"] }
+                "function": {
+                  "enum": [
+                    "count_all",
+                    "count_values",
+                    "count_unique_values",
+                    "count_empty",
+                    "count_not_empty",
+                    "percent_empty",
+                    "percent_not_empty",
+                    "sum",
+                    "average",
+                    "median",
+                    "min",
+                    "max",
+                    "range",
+                    "show_original"
+                  ]
+                }
               }
             }
           ]
@@ -105,4 +180,3 @@
     }
   }
 }
-
