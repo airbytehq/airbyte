@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Job;
@@ -19,6 +20,7 @@ import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -82,44 +84,32 @@ public class BigQueryUtils {
     }
   }
 
-  // https://cloud.google.com/bigquery/docs/tables#create-table
-  static void createTable(final BigQuery bigquery, final String datasetName, final String tableName, final Schema schema) {
-    try {
-
-      final TableId tableId = TableId.of(datasetName, tableName);
-      final TableDefinition tableDefinition = StandardTableDefinition.of(schema);
-      final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
-
-      bigquery.create(tableInfo);
-      LOGGER.info("Table: {} created successfully", tableId);
-    } catch (final BigQueryException e) {
-      LOGGER.info("Table was not created. \n", e);
-    }
-  }
-
   // https://cloud.google.com/bigquery/docs/creating-partitioned-tables#java
   static void createPartitionedTable(final BigQuery bigquery, final String datasetName, final String tableName, final Schema schema) {
     try {
 
-      TableId tableId = TableId.of(datasetName, tableName);
+      final TableId tableId = TableId.of(datasetName, tableName);
 
-      TimePartitioning partitioning =
-          TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
-              .setField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT) //  name of column to use for partitioning
-              .setExpirationMs(7776000000L) // 90 days
-              .build();
+      final TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
+          .setField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+          .build();
 
-      StandardTableDefinition tableDefinition =
+      final Clustering clustering = Clustering.newBuilder()
+          .setFields(ImmutableList.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+          .build();
+
+      final StandardTableDefinition tableDefinition =
           StandardTableDefinition.newBuilder()
               .setSchema(schema)
               .setTimePartitioning(partitioning)
+              .setClustering(clustering)
               .build();
-      TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
+      final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
       bigquery.create(tableInfo);
       LOGGER.info("Partitioned Table: {} created successfully", tableId);
     } catch (BigQueryException e) {
-      LOGGER.info("Partitioned table was not created. \n" + e.toString());
+      LOGGER.info("Partitioned table was not created. \n" + e);
     }
   }
 

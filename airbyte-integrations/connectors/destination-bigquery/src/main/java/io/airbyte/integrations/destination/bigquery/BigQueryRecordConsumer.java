@@ -19,14 +19,17 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobInfo.CreateDisposition;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.LoadJobConfiguration;
+import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
@@ -50,7 +53,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,9 +151,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       gcsCsvWriter.csvPrinter.printRecord(
           UUID.randomUUID().toString(),
           formattedEmittedAt,
-          Jsons.serialize(formattedData)
-      );
-    } catch(IOException e) {
+          Jsons.serialize(formattedData));
+    } catch (IOException e) {
       e.printStackTrace();
       LOGGER.warn("An error occurred writing CSV file.");
     }
@@ -200,7 +201,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
           try {
             loadCsvFromGcsTruncate(pair);
           } catch (final Exception e) {
-            LOGGER.error("Failed to load data from GCS CSV file to BibQuery tmp table with reason: " + e.getMessage());
+            LOGGER.error("Failed to load data from GCS CSV file to BigQuery tmp table with reason: " + e.getMessage());
             throw new RuntimeException(e);
           }
         });
@@ -217,7 +218,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
       // Initialize client that will be used to send requests. This client only needs to be created
       // once, and can be reused for multiple requests.
-      LOGGER.info(String.format("Started coping data from %s GCS csv file to %s tmp BigQuery table with schema: \n %s",
+      LOGGER.info(String.format("Started copying data from %s GCS csv file to %s tmp BigQuery table with schema: \n %s",
           csvFile, tmpTable, schema));
 
       final CsvOptions csvOptions = CsvOptions.newBuilder().setEncoding(UTF8).setSkipLeadingRows(1).build();
@@ -234,7 +235,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       // Load the table
       final Job loadJob = bigquery.create(JobInfo.of(configuration));
 
-      LOGGER.info("Crated a new job GCS csv file to tmp BigQuery table: " + loadJob);
+      LOGGER.info("Created a new job GCS csv file to tmp BigQuery table: " + loadJob);
       LOGGER.info("Waiting for job to complete...");
 
       // Load data from a GCS parquet file into the table
@@ -291,15 +292,20 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       }));
 
       if (!hasFailed) {
-        LOGGER.info("Migration finished with no explicit errors. Copying data from tmp tables to permanent");
+        LOGGER.info("Replication finished with no explicit errors. Copying data from tmp tables to permanent");
         writeConfigs.values()
             .forEach(
-                bigQueryWriteConfig -> copyTable(bigquery, bigQueryWriteConfig.getTmpTable(), bigQueryWriteConfig.getTable(),
-                    bigQueryWriteConfig.getSyncMode()));
+                bigQueryWriteConfig -> {
+                  if (bigQueryWriteConfig.getSyncMode().equals(WriteDisposition.WRITE_APPEND)) {
+                    checkPartitions(bigquery, bigQueryWriteConfig.getTable());
+                  }
+                  copyTable(bigquery, bigQueryWriteConfig.getTmpTable(), bigQueryWriteConfig.getTable(),
+                      bigQueryWriteConfig.getSyncMode());
+                });
         // BQ is still all or nothing if a failure happens in the destination.
         outputRecordCollector.accept(lastStateMessage);
       } else {
-        LOGGER.warn("Had errors while migrations");
+        LOGGER.warn("Had errors while replicating");
       }
     } finally {
       // clean up tmp tables;
@@ -343,7 +349,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
                                 final TableId sourceTableId,
                                 final TableId destinationTableId,
                                 final WriteDisposition syncMode) {
-
     final CopyJobConfiguration configuration = CopyJobConfiguration.newBuilder(destinationTableId, sourceTableId)
         .setCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
         .setWriteDisposition(syncMode)
@@ -355,7 +360,65 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       LOGGER.error("Failed on copy tables with error:" + job.getStatus());
       throw new RuntimeException("BigQuery was unable to copy table due to an error: \n" + job.getStatus().getError());
     }
-    LOGGER.info("successfully copied tmp table: {} to final table: {}", sourceTableId, destinationTableId);
+    LOGGER.info("successfully copied table: {} to table: {}", sourceTableId, destinationTableId);
+  }
+
+  private void checkPartitions(final BigQuery bigquery, final TableId destinationTableId) {
+    try {
+      final QueryJobConfiguration queryConfig = QueryJobConfiguration
+          .newBuilder(
+              String.format("SELECT max(is_partitioning_column) as is_partitioned FROM `%s.%s.INFORMATION_SCHEMA.COLUMNS` WHERE TABLE_NAME = '%s';",
+                  bigquery.getOptions().getProjectId(),
+                  destinationTableId.getDataset(),
+                  destinationTableId.getTable()))
+          .setUseLegacySql(false)
+          .build();
+      final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
+      result.getLeft().getQueryResults().getValues().forEach(row -> {
+        if (!row.get("is_partitioned").isNull() && row.get("is_partitioned").getStringValue().equals("NO")) {
+          LOGGER.info("Partitioning existing destination table");
+          final String tmpPartitionTable = Strings.addRandomSuffix("_airbyte_partitioned_table", "_", 5);
+          final TableId tmpPartitionTableId = TableId.of(destinationTableId.getDataset(), tmpPartitionTable);
+          bigquery.delete(tmpPartitionTableId);
+          final QueryJobConfiguration partitionQuery = QueryJobConfiguration
+              .newBuilder(getCreatePartitionedTableQuery(bigquery.getOptions().getProjectId(), destinationTableId, tmpPartitionTable))
+              .setUseLegacySql(false)
+              .build();
+          BigQueryUtils.executeQuery(bigquery, partitionQuery);
+          bigquery.delete(destinationTableId);
+          copyTable(bigquery, tmpPartitionTableId, destinationTableId, WriteDisposition.WRITE_EMPTY);
+          bigquery.delete(tmpPartitionTableId);
+        }
+      });
+    } catch (final InterruptedException e) {
+      LOGGER.warn("Had errors while partitioning: ", e);
+    }
+  }
+
+  protected String getCreatePartitionedTableQuery(final String projectId, final TableId destinationTableId, final String tmpPartitionTable) {
+    return String.format("create table `%s.%s.%s` (%s %s, %s %s, %s %s) partition by date(%s)"
+        + " as select %s, %s, %s from `%s.%s.%s`",
+        // create table
+        projectId,
+        destinationTableId.getDataset(),
+        tmpPartitionTable,
+        // (
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        StandardSQLTypeName.STRING,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+        StandardSQLTypeName.TIMESTAMP,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        StandardSQLTypeName.STRING,
+        // ) partition by
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+        // as select
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        // from
+        projectId,
+        destinationTableId.getDataset(),
+        destinationTableId.getTable());
   }
 
   private void printHeapMemoryConsumption() {

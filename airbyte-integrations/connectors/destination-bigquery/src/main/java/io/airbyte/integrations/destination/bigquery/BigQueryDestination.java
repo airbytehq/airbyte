@@ -316,10 +316,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     if (loadingMethod != null && loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES) != null
         && BigQueryConsts.KEEP_GCS_FILES_VAL
             .equals(loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES).asText())) {
-      LOGGER.info("All tmp files GCS will be kept in bucket when migration is finished");
+      LOGGER.info("All tmp files GCS will be kept in bucket when replication is finished");
       return true;
     } else {
-      LOGGER.info("All tmp files will be removed from GCS when migration is finished");
+      LOGGER.info("All tmp files will be removed from GCS when replication is finished");
       return false;
     }
   }
