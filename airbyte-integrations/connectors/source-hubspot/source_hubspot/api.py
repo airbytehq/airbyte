@@ -17,6 +17,8 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 from base_python.entrypoint import logger
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
+# The value is obtained experimentally, Hubspot allows the URL length up to ~ 16300 symbols,
+# so it was decided to limit the length of the `properties` parameter to 15000 characters.
 PROPERTIES_PARAM_MAX_LENGTH = 15000
 
 # we got this when provided API Token has incorrect format
@@ -329,24 +331,21 @@ class Stream(ABC):
             properties_list = list(self.properties.keys())
             if properties_list:
                 # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
-                #  Unfortunately, this implementation is not 100% reliable, but there is no other alternative at the moment.
                 #  We will need to fix this code when the Hubspot developers add the ability to use a special parameter to get all properties for an entity.
                 #  According to Hubspot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
                 #  and the official documentation, this does not exist at the moment.
-                stream_records = []
+                stream_records = {}
 
                 for properties in split_properties(properties_list):
                     params.update({"properties": ",".join(properties)})
                     response = getter(params=params)
-                    if stream_records:
-                        for record in self._transform(self.parse_response(response)):
-                            index = next((i for i, item in enumerate(stream_records) if item.get("id") == record.get("id")), -1)
-                            if index != -1 and stream_records[index].get("properties"):
-                                stream_records[index]["properties"].update(record.get("properties", {}))
-                    else:
-                        stream_records = list(self._transform(self.parse_response(response)))
+                    for record in self._transform(self.parse_response(response)):
+                        if record["id"] not in stream_records:
+                            stream_records[record["id"]] = record
+                        elif stream_records[record["id"]].get("properties"):
+                            stream_records[record["id"]]["properties"].update(record.get("properties", {}))
 
-                yield from stream_records
+                yield from [value for key, value in stream_records.items()]
             else:
                 response = getter(params=params)
                 yield from self._transform(self.parse_response(response))
