@@ -2023,8 +2023,10 @@ components:
             If they were inside a oneOf {'switch': {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=['switch', 0]
             "
           type: array
-          items:
-            type: string
+          items: {} # <--- using generic any type. Build fails with oneOf (https://github.com/OpenAPITools/openapi-generator/issues/6161)
+          example:
+            - path
+            - 1
         oauthFlowInitParameters:
           description:
             "Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow.
