@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
+public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, Application {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationWorker.class);
 
@@ -77,4 +77,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
     }
   }
 
+  @Override public String getApplicationName() {
+    return "airbyte-dbt-transformation-worker";
+  }
 }

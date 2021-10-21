@@ -81,4 +81,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
     WorkerUtils.cancelProcess(process);
   }
 
+  @Override public String getApplicationName() {
+    return "airbyte-spec-getter";
+  }
 }

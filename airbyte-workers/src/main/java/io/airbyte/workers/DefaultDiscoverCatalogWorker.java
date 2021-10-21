@@ -81,4 +81,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
     WorkerUtils.cancelProcess(process);
   }
 
+  @Override public String getApplicationName() {
+    return "airbyte-catalog-discovery";
+  }
 }

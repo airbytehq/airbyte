@@ -14,8 +14,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * This source will never emit any messages. It can be used in cases where that is helpful (hint:
- * reset connection jobs).
+ * This source will never emit any messages. It can be used in cases where that is helpful (hint: reset connection jobs).
  */
 public class EmptyAirbyteSource implements AirbyteSource {
 
@@ -56,4 +55,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
     // no op.
   }
 
+  @Override public String getApplicationName() {
+    return "airbyte-empty-source";
+  }
 }
