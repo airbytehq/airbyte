@@ -21,13 +21,11 @@ import java.util.UUID;
  */
 public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
 
-  protected ConfigRepository configRepository;
+  private final ConfigRepository configRepository;
 
   public BaseOAuthConfig(final ConfigRepository configRepository) {
     this.configRepository = configRepository;
   }
-
-  protected BaseOAuthConfig() {}
 
   protected JsonNode getSourceOAuthParamConfig(final UUID workspaceId, final UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
     try {
@@ -67,20 +65,6 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
   protected String getClientIdUnsafe(final JsonNode oauthConfig) {
     if (oauthConfig.get("client_id") != null) {
       return oauthConfig.get("client_id").asText();
-    } else {
-      throw new IllegalArgumentException("Undefined parameter 'client_id' necessary for the OAuth Flow.");
-    }
-  }
-
-  /**
-   * Throws an exception if the client ID cannot be extracted. Subclasses should override this to
-   * parse the config differently.
-   *
-   * @return The configured subdomain used for this oauth flow
-   */
-  protected String getSubdomain(final JsonNode oauthConfig) {
-    if (oauthConfig.get("subdomain") != null) {
-      return oauthConfig.get("subdomain").asText();
     } else {
       throw new IllegalArgumentException("Undefined parameter 'client_id' necessary for the OAuth Flow.");
     }

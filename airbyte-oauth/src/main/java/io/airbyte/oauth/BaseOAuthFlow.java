@@ -56,7 +56,6 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   protected final HttpClient httpClient;
   private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
   private final Supplier<String> stateSupplier;
-  private UUID workspaceId;
 
   public BaseOAuthFlow(final ConfigRepository configRepository) {
     this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build(), BaseOAuthFlow::generateRandomState);
