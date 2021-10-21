@@ -9,8 +9,6 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.logging.LoggingHelper;
-import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -28,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public class DefaultAirbyteDestination implements AirbyteDestination {
 
@@ -57,7 +54,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   @Override
   public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot) throws IOException, WorkerException {
     Preconditions.checkState(destinationProcess == null);
-    MDC.put(LoggingHelper.LOG_SOURCE_MDC_KEY, LoggingHelper.applyColor(Color.CYAN, "airbyte-destination"));
 
     LOGGER.info("Running destination...");
     destinationProcess = integrationLauncher.write(

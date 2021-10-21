@@ -9,8 +9,6 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.logging.LoggingHelper;
-import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -25,7 +23,6 @@ import java.util.Iterator;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public class DefaultAirbyteSource implements AirbyteSource {
 
@@ -49,10 +46,9 @@ public class DefaultAirbyteSource implements AirbyteSource {
     this(integrationLauncher, new DefaultAirbyteStreamFactory(), new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
-  @VisibleForTesting
-  DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                       final AirbyteStreamFactory streamFactory,
-                       final HeartbeatMonitor heartbeatMonitor) {
+  @VisibleForTesting DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
+                                          final AirbyteStreamFactory streamFactory,
+                                          final HeartbeatMonitor heartbeatMonitor) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.heartbeatMonitor = heartbeatMonitor;
@@ -60,7 +56,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   @Override
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
-    MDC.put(LoggingHelper.LOG_SOURCE_MDC_KEY, LoggingHelper.applyColor(Color.BLUE, "airbyte-source"));
     Preconditions.checkState(sourceProcess == null);
 
     sourceProcess = integrationLauncher.read(jobRoot,
@@ -114,8 +109,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
         CHECK_HEARTBEAT_DURATION,
         FORCED_SHUTDOWN_DURATION);
 
-    MDC.remove(LoggingHelper.LOG_SOURCE_MDC_KEY);
-
     if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
       final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();
       throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
@@ -133,8 +126,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
       WorkerUtils.cancelProcess(sourceProcess);
       LOGGER.info("Cancelled source process!");
     }
-
-    MDC.remove(LoggingHelper.LOG_SOURCE_MDC_KEY);
   }
 
 }

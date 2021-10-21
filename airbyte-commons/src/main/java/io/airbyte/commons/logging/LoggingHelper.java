@@ -29,7 +29,7 @@ public class LoggingHelper {
 
   }
 
-  public static final String LOG_SOURCE_MDC_KEY = "source";
+  public static final String LOG_SOURCE_MDC_KEY = "log_source";
 
   private static final String RESET = "\u001B[0m";
 
