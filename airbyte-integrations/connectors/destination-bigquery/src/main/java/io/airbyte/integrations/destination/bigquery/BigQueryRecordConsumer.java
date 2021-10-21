@@ -148,7 +148,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
     final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
     try {
-      gcsCsvWriter.csvPrinter.printRecord(
+      gcsCsvWriter.getCsvPrinter().printRecord(
           UUID.randomUUID().toString(),
           formattedEmittedAt,
           Jsons.serialize(formattedData));
@@ -382,8 +382,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
           final String tmpPartitionTable = Strings.addRandomSuffix("_airbyte_partitioned_table", "_", 5);
           final TableId tmpPartitionTableId = TableId.of(destinationTableId.getDataset(), tmpPartitionTable);
           bigquery.delete(tmpPartitionTableId);
-          // Use BigQuery SQL because java api does not support creating a table from a select query in java
-          // see
+          // Use BigQuery SQL because java api does not support creating a table from a select query in java,
+          // see:
           // https://cloud.google.com/bigquery/docs/creating-partitioned-tables#create_a_partitioned_table_from_a_query_result
           final QueryJobConfiguration partitionQuery = QueryJobConfiguration
               .newBuilder(getCreatePartitionedTableQuery(bigQueryWriteConfig.getSchema(), bigquery.getOptions().getProjectId(), destinationTableId,
