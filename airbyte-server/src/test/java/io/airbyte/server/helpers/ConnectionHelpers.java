@@ -40,7 +40,7 @@ public class ConnectionHelpers {
   private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
   private static final long BASIC_SCHEDULE_UNITS = 1L;
 
-  public static StandardSync generateSyncWithSourceId(UUID sourceId) {
+  public static StandardSync generateSyncWithSourceId(final UUID sourceId) {
     final UUID connectionId = UUID.randomUUID();
 
     return new StandardSync()
@@ -59,7 +59,7 @@ public class ConnectionHelpers {
         .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
   }
 
-  public static StandardSync generateSyncWithDestinationId(UUID destinationId) {
+  public static StandardSync generateSyncWithDestinationId(final UUID destinationId) {
     final UUID connectionId = UUID.randomUUID();
 
     return new StandardSync()
@@ -88,10 +88,10 @@ public class ConnectionHelpers {
         .withUnits(BASIC_SCHEDULE_UNITS);
   }
 
-  public static ConnectionRead generateExpectedConnectionRead(UUID connectionId,
-                                                              UUID sourceId,
-                                                              UUID destinationId,
-                                                              List<UUID> operationIds) {
+  public static ConnectionRead generateExpectedConnectionRead(final UUID connectionId,
+                                                              final UUID sourceId,
+                                                              final UUID destinationId,
+                                                              final List<UUID> operationIds) {
 
     return new ConnectionRead()
         .connectionId(connectionId)
@@ -112,7 +112,7 @@ public class ConnectionHelpers {
             .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
   }
 
-  public static ConnectionRead generateExpectedConnectionRead(StandardSync standardSync) {
+  public static ConnectionRead generateExpectedConnectionRead(final StandardSync standardSync) {
     final ConnectionRead connectionRead = generateExpectedConnectionRead(
         standardSync.getConnectionId(),
         standardSync.getSourceId(),
@@ -130,7 +130,7 @@ public class ConnectionHelpers {
     return connectionRead;
   }
 
-  public static ConnectionRead connectionReadFromStandardSync(StandardSync standardSync) {
+  public static ConnectionRead connectionReadFromStandardSync(final StandardSync standardSync) {
     final ConnectionRead connectionRead = new ConnectionRead();
     connectionRead
         .connectionId(standardSync.getConnectionId())

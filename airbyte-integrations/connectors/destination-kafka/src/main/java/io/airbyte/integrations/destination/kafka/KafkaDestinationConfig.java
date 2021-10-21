@@ -26,20 +26,20 @@ public class KafkaDestinationConfig {
   private final boolean sync;
   private final KafkaProducer<String, JsonNode> producer;
 
-  private KafkaDestinationConfig(String topicPattern, boolean sync, JsonNode config) {
+  private KafkaDestinationConfig(final String topicPattern, final boolean sync, final JsonNode config) {
     this.topicPattern = topicPattern;
     this.sync = sync;
     this.producer = buildKafkaProducer(config);
   }
 
-  public static KafkaDestinationConfig getKafkaDestinationConfig(JsonNode config) {
+  public static KafkaDestinationConfig getKafkaDestinationConfig(final JsonNode config) {
     return new KafkaDestinationConfig(
         config.get("topic_pattern").asText(),
         config.has("sync_producer") && config.get("sync_producer").asBoolean(),
         config);
   }
 
-  private KafkaProducer<String, JsonNode> buildKafkaProducer(JsonNode config) {
+  private KafkaProducer<String, JsonNode> buildKafkaProducer(final JsonNode config) {
     final Map<String, Object> props = ImmutableMap.<String, Object>builder()
         .put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.get("bootstrap_servers").asText())
         .putAll(propertiesByProtocol(config))
@@ -76,8 +76,8 @@ public class KafkaDestinationConfig {
     return new KafkaProducer<>(filteredProps);
   }
 
-  private Map<String, Object> propertiesByProtocol(JsonNode config) {
-    JsonNode protocolConfig = config.get("protocol");
+  private Map<String, Object> propertiesByProtocol(final JsonNode config) {
+    final JsonNode protocolConfig = config.get("protocol");
     LOGGER.info("Kafka protocol config: {}", protocolConfig.toString());
     final KafkaProtocol protocol = KafkaProtocol.valueOf(protocolConfig.get("security_protocol").asText().toUpperCase());
     final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
