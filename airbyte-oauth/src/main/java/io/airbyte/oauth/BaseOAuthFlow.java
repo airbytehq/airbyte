@@ -175,12 +175,13 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
                                                 final String redirectUrl,
                                                 JsonNode oAuthParamConfig)
       throws IOException {
-    var accessTokenUrl = getAccessTokenUrl(oAuthParamConfig);
+    var accessTokenUrl = getAccessTokenUrl();
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers
             .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
         .uri(URI.create(accessTokenUrl))
         .header("Content-Type", tokenReqContentType.contentType)
+        .header("Accept", "application/json")
         .build();
     // TODO: Handle error response to report better messages
     try {
@@ -220,7 +221,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   /**
    * Returns the URL where to retrieve the access token from.
    */
-  protected abstract String getAccessTokenUrl(JsonNode oAuthParamConfig);
+  protected abstract String getAccessTokenUrl();
 
   protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
     final Map<String, Object> result = new HashMap<>();

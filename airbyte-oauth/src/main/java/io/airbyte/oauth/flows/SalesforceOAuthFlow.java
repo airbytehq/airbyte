@@ -51,7 +51,7 @@ public class SalesforceOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected String getAccessTokenUrl(JsonNode oAuthConfig) {
+  protected String getAccessTokenUrl() {
     return ACCESS_TOKEN_URL;
   }
 
