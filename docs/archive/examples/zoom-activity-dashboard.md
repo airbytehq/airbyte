@@ -144,7 +144,7 @@ Go ahead and install Tableau on your machine. After the installation is complete
 
 Once your activation is successful, you will see your Tableau dashboard.
 
-![](../../.gitbook/assets/tableau-dashboard%20(3)%20(1).png)
+![](../../.gitbook/assets/tableau-dashboard%20(3)%20(3)%20(1).png)
 
 On the sidebar menu under the **To a Server** section, click on the **More…** menu. You will see a list of datasource connectors you can connect Tableau with.
 

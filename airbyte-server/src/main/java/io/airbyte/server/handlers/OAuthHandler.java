@@ -46,15 +46,14 @@ public class OAuthHandler {
 
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final OAuthFlowImplementation oAuthFlowImplementation = getSourceOAuthFlowImplementation(sourceDefinitionIdRequestBody.getSourceDefinitionId());
-    final ImmutableMap<String, Object> metadata = generateSourceMetadata(
-        sourceDefinitionIdRequestBody.getSourceDefinitionId());
-    final OAuthConsentRead result = new OAuthConsentRead().consentUrl(
-        oAuthFlowImplementation.getSourceConsentUrl(
-            sourceDefinitionIdRequestBody.getWorkspaceId(),
-            sourceDefinitionIdRequestBody.getSourceDefinitionId(),
-            sourceDefinitionIdRequestBody.getRedirectUrl(),
-            sourceDefinitionIdRequestBody.getParams()));
+    final OAuthFlowImplementation oAuthFlowImplementation = getSourceOAuthFlowImplementation(sourceDefinitionIdRequestBody.getSourceDefinitionId(),
+        sourceDefinitionIdRequestBody.getWorkspaceId());
+    final ImmutableMap<String, Object> metadata = generateSourceMetadata(sourceDefinitionIdRequestBody.getSourceDefinitionId());
+    final OAuthConsentRead result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
+        sourceDefinitionIdRequestBody.getWorkspaceId(),
+        sourceDefinitionIdRequestBody.getSourceDefinitionId(),
+        sourceDefinitionIdRequestBody.getRedirectUrl(),
+        sourceDefinitionIdRequestBody.getParams()));
     try {
       trackingClient.track(sourceDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     } catch (final Exception e) {
@@ -66,15 +65,14 @@ public class OAuthHandler {
   public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final OAuthFlowImplementation oAuthFlowImplementation =
-        getDestinationOAuthFlowImplementation(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
-    final ImmutableMap<String, Object> metadata = generateDestinationMetadata(
-        destinationDefinitionIdRequestBody.getDestinationDefinitionId());
-    final OAuthConsentRead result = new OAuthConsentRead().consentUrl(
-        oAuthFlowImplementation.getDestinationConsentUrl(
-            destinationDefinitionIdRequestBody.getWorkspaceId(),
-            destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
-            destinationDefinitionIdRequestBody.getRedirectUrl(),
-            destinationDefinitionIdRequestBody.getParams()));
+        getDestinationOAuthFlowImplementation(destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
+            destinationDefinitionIdRequestBody.getWorkspaceId());
+    final ImmutableMap<String, Object> metadata = generateDestinationMetadata(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
+    final OAuthConsentRead result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
+        destinationDefinitionIdRequestBody.getWorkspaceId(),
+        destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
+        destinationDefinitionIdRequestBody.getRedirectUrl(),
+        destinationDefinitionIdRequestBody.getParams()));
     try {
       trackingClient.track(destinationDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     } catch (final Exception e) {
@@ -85,7 +83,8 @@ public class OAuthHandler {
 
   public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest oauthSourceRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final OAuthFlowImplementation oAuthFlowImplementation = getSourceOAuthFlowImplementation(oauthSourceRequestBody.getSourceDefinitionId());
+    final OAuthFlowImplementation oAuthFlowImplementation = getSourceOAuthFlowImplementation(oauthSourceRequestBody.getSourceDefinitionId(),
+        oauthSourceRequestBody.getWorkspaceId());
     final ImmutableMap<String, Object> metadata = generateSourceMetadata(oauthSourceRequestBody.getSourceDefinitionId());
     final Map<String, Object> result = oAuthFlowImplementation.completeSourceOAuth(
         oauthSourceRequestBody.getWorkspaceId(),
@@ -103,7 +102,7 @@ public class OAuthHandler {
   public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest oauthDestinationRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final OAuthFlowImplementation oAuthFlowImplementation =
-        getDestinationOAuthFlowImplementation(oauthDestinationRequestBody.getDestinationDefinitionId());
+        getDestinationOAuthFlowImplementation(oauthDestinationRequestBody.getDestinationDefinitionId(), oauthDestinationRequestBody.getWorkspaceId());
     final ImmutableMap<String, Object> metadata = generateDestinationMetadata(oauthDestinationRequestBody.getDestinationDefinitionId());
     final Map<String, Object> result = oAuthFlowImplementation.completeDestinationOAuth(
         oauthDestinationRequestBody.getWorkspaceId(),
@@ -138,18 +137,18 @@ public class OAuthHandler {
     configRepository.writeDestinationOAuthParam(param);
   }
 
-  private OAuthFlowImplementation getSourceOAuthFlowImplementation(final UUID sourceDefinitionId)
+  private OAuthFlowImplementation getSourceOAuthFlowImplementation(final UUID sourceDefinitionId, final UUID workspaceId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceDefinitionId);
-    return oAuthImplementationFactory.create(standardSourceDefinition.getDockerRepository());
+    return oAuthImplementationFactory.create(standardSourceDefinition.getDockerRepository(), workspaceId);
   }
 
-  private OAuthFlowImplementation getDestinationOAuthFlowImplementation(final UUID destinationDefinitionId)
+  private OAuthFlowImplementation getDestinationOAuthFlowImplementation(final UUID destinationDefinitionId, final UUID workspaceId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardDestinationDefinition standardDestinationDefinition = configRepository
         .getStandardDestinationDefinition(destinationDefinitionId);
-    return oAuthImplementationFactory.create(standardDestinationDefinition.getDockerRepository());
+    return oAuthImplementationFactory.create(standardDestinationDefinition.getDockerRepository(), workspaceId);
   }
 
   private ImmutableMap<String, Object> generateSourceMetadata(final UUID sourceDefinitionId)
