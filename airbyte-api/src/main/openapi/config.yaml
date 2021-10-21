@@ -2023,7 +2023,7 @@ components:
             If they were inside a oneOf {'switch': {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=['switch', 0]
             "
           type: array
-          items: {}  # <--- using generic any type. Build fails with oneOf (https://github.com/OpenAPITools/openapi-generator/issues/6161)
+          items: {} # <--- using generic any type. Build fails with oneOf (https://github.com/OpenAPITools/openapi-generator/issues/6161)
           example:
             - path
             - 1
