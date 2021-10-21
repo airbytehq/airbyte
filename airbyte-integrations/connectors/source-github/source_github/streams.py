@@ -662,7 +662,7 @@ class PullRequestStats(SemiIncrementalGithubStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for stream_slice in super().stream_slices(**kwargs):
-            pull_requests = list(self._parent_stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice, stream_state=stream_state))
+            pull_requests = list(self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state))
             if self._parent_stream.is_sorted_descending:
                 pull_requests.reverse()
             for pull_request in pull_requests:
@@ -710,7 +710,7 @@ class Reviews(SemiIncrementalGithubStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for stream_slice in super().stream_slices(**kwargs):
-            pull_requests = list(self._parent_stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice, stream_state=stream_state))
+            pull_requests = list(self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state))
             if self._parent_stream.is_sorted_descending:
                 pull_requests.reverse()
             for pull_request in pull_requests:
