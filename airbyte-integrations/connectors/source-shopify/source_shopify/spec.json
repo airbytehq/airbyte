@@ -33,7 +33,9 @@
               "auth_method": {
                 "type": "string",
                 "const": "access_token",
-                "enum": ["access_token"],
+                "enum": [
+                  "access_token"
+                ],
                 "default": "access_token",
                 "order": 0
               },

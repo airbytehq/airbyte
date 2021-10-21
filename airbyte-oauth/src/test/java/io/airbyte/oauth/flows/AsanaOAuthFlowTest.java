@@ -4,6 +4,7 @@
 
 package io.airbyte.oauth.flows;
 
+import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -59,7 +60,7 @@ public class AsanaOAuthFlowTest {
   @Test
   public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
     final String concentUrl =
-        asanaoAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+        asanaoAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, emptyMap());
     assertEquals(concentUrl,
         "https://app.asana.com/-/oauth_authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state");
   }

@@ -36,7 +36,11 @@ public class AsanaOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+  protected String formatConsentUrl(UUID definitionId,
+      String clientId,
+      String redirectUrl,
+      Map<String, Object> params)
+      throws IOException {
     try {
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)

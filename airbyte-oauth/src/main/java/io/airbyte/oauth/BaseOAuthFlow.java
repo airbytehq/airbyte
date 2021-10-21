@@ -41,25 +41,39 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   }
 
   @Override
-  public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl)
+  public String getSourceConsentUrl(final UUID workspaceId,
+      final UUID sourceDefinitionId,
+      final String redirectUrl,
+      final Map<String, Object> params)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
-    return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
+    return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl,
+        params);
   }
 
   @Override
-  public String getDestinationConsentUrl(final UUID workspaceId, final UUID destinationDefinitionId, final String redirectUrl)
+  public String getDestinationConsentUrl(final UUID workspaceId,
+      final UUID destinationDefinitionId,
+      final String redirectUrl,
+      final Map<String, Object> params)
       throws IOException, ConfigNotFoundException {
-    final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
-    return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
+    final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId,
+        destinationDefinitionId);
+    return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig),
+        redirectUrl,
+        params);
   }
 
   /**
    * Depending on the OAuth flow implementation, the URL to grant user's consent may differ,
-   * especially in the query parameters to be provided. This function should generate such consent URL
-   * accordingly.
+   * especially in the query parameters to be provided. This function should generate such consent
+   * URL accordingly.
    */
-  protected abstract String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException;
+  protected abstract String formatConsentUrl(UUID definitionId,
+      String clientId,
+      String redirectUrl,
+      Map<String, Object> params)
+      throws IOException;
 
   private static String generateRandomState() {
     return RandomStringUtils.randomAlphanumeric(7);

@@ -56,14 +56,22 @@ public class ShopifyOAuthFlow extends BaseOAuthFlow {
   }
 
   @VisibleForTesting
-  ShopifyOAuthFlow(ConfigRepository configRepository, HttpClient httpClient,
+  ShopifyOAuthFlow(ConfigRepository configRepository,
+      HttpClient httpClient,
       Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl)
+  protected String formatConsentUrl(UUID definitionId,
+      String clientId,
+      String redirectUrl,
+      Map<String, Object> params)
       throws IOException {
+    if (params != null && params.containsKey("shopDomain")) {
+      authPrefix = String.valueOf(params.get("shopDomain"));
+    }
+
     String host = authPrefix + ".myshopify.com";
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
@@ -110,8 +118,10 @@ public class ShopifyOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret,
-      String authCode, String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(String clientId,
+      String clientSecret,
+      String authCode,
+      String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         .put("client_id", clientId)
         .put("client_secret", clientSecret)

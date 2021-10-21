@@ -34,7 +34,11 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+      final String clientId,
+      final String redirectUrl,
+      Map<String, Object> params)
+      throws IOException {
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
         .setHost("www.facebook.com")
