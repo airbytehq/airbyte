@@ -1,39 +1,351 @@
 {
   "streams": [
     {
-      "name": "TODO fix this file",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": true,
-      "default_cursor_field": "column1",
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "column1": {
-            "type": "string"
+      "stream": {
+        "name": "pages",
+        "json_schema": {
+          "definitions": {
+            "user": {
+              "type": "object",
+              "properties": {
+                "type": { "type": ["string", "null"] },
+                "accountId": { "type": ["string", "null"] },
+                "email": { "type": ["string", "null"] },
+                "publicName": { "type": ["string", "null"] }
+              }
+            },
+            "usersUserKeys": {
+              "type": "object",
+              "properties": {
+                "users": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/user" }
+                },
+                "userKeys": { "type": "array", "items": { "type": "string" } }
+              }
+            },
+            "version": {
+              "type": "object",
+              "properties": {
+                "by": { "$ref": "#/definitions/user" },
+                "when": { "type": ["string", "null"], "format": "date-time" },
+                "friendlyWhen": { "type": ["string", "null"] },
+                "message": { "type": ["string", "null"] },
+                "number": { "type": ["integer", "null"] },
+                "minorEdit": { "type": ["boolean", "null"] },
+                "collaborators": { "$ref": "#/definitions/usersUserKeys" }
+              }
+            },
+            "content": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "title": { "type": "string" },
+                "type": { "type": "string" },
+                "status": { "type": "string" }
+              }
+            },
+            "contentRestriction": {
+              "type": "object",
+              "properties": {
+                "operations": { "type": ["string", "null"] },
+                "restrictions": {
+                  "user": {
+                    "type": "object",
+                    "properties": {
+                      "results": {
+                        "type": "array",
+                        "items": { "$ref": "#/definitions/user" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
-          "column2": {
-            "type": "number"
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "title": { "type": "string" },
+            "type": { "type": "string" },
+            "status": { "type": "string" },
+            "history": {
+              "type": "object",
+              "properties": {
+                "latest": { "type": "boolean" },
+                "createdBy": { "$ref": "#/definitions/user" },
+                "createdDate": { "type": "string", "format": "date-time" },
+                "contributors": {
+                  "type": "object",
+                  "properties": {
+                    "publishers": { "$ref": "#/definitions/usersUserKeys" }
+                  }
+                },
+                "previousVersion": { "$ref": "#/definitions/version" }
+              }
+            },
+            "version": { "$ref": "#/definitions/version" },
+            "descendants": {
+              "type": "object",
+              "properties": {
+                "comment": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/definitions/content" }
+                    }
+                  }
+                }
+              }
+            },
+            "restrictions": {
+              "type": "object",
+              "properties": {
+                "read": { "$ref": "#/definitions/contentRestriction" }
+              }
+            },
+            "_expandable": {
+              "type": "object",
+              "properties": {
+                "container": { "type": "string" },
+                "space": { "type": "string" }
+              }
+            },
+            "_links": {
+              "type": "object",
+              "properties": {
+                "self": { "type": "string" },
+                "tinyui": { "type": "string" },
+                "editui": { "type": "string" },
+                "webui": { "type": "string" }
+              }
+            }
           }
-        }
-      }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
-      "name": "table1",
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": false,
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "column1": {
-            "type": "string"
+      "stream": {
+        "name": "blog_posts",
+        "json_schema": {
+          "definitions": {
+            "user": {
+              "type": "object",
+              "properties": {
+                "type": { "type": ["string", "null"] },
+                "accountId": { "type": ["string", "null"] },
+                "email": { "type": ["string", "null"] },
+                "publicName": { "type": ["string", "null"] }
+              }
+            },
+            "usersUserKeys": {
+              "type": "object",
+              "properties": {
+                "users": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/user" }
+                },
+                "userKeys": { "type": "array", "items": { "type": "string" } }
+              }
+            },
+            "version": {
+              "type": "object",
+              "properties": {
+                "by": { "$ref": "#/definitions/user" },
+                "when": { "type": ["string", "null"], "format": "date-time" },
+                "friendlyWhen": { "type": ["string", "null"] },
+                "message": { "type": ["string", "null"] },
+                "number": { "type": ["integer", "null"] },
+                "minorEdit": { "type": ["boolean", "null"] },
+                "collaborators": { "$ref": "#/definitions/usersUserKeys" }
+              }
+            },
+            "content": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "title": { "type": "string" },
+                "type": { "type": "string" },
+                "status": { "type": "string" }
+              }
+            },
+            "contentRestriction": {
+              "type": "object",
+              "properties": {
+                "operations": { "type": ["string", "null"] },
+                "restrictions": {
+                  "user": {
+                    "type": "object",
+                    "properties": {
+                      "results": {
+                        "type": "array",
+                        "items": { "$ref": "#/definitions/user" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
-          "column2": {
-            "type": "number"
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "title": { "type": "string" },
+            "type": { "type": "string" },
+            "status": { "type": "string" },
+            "history": {
+              "type": "object",
+              "properties": {
+                "latest": { "type": "boolean" },
+                "createdBy": { "$ref": "#/definitions/user" },
+                "createdDate": { "type": "string", "format": "date-time" },
+                "contributors": {
+                  "type": "object",
+                  "properties": {
+                    "publishers": { "$ref": "#/definitions/usersUserKeys" }
+                  }
+                },
+                "previousVersion": { "$ref": "#/definitions/version" }
+              }
+            },
+            "version": { "$ref": "#/definitions/version" },
+            "descendants": {
+              "type": "object",
+              "properties": {
+                "comment": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/definitions/content" }
+                    }
+                  }
+                }
+              }
+            },
+            "restrictions": {
+              "type": "object",
+              "properties": {
+                "read": { "$ref": "#/definitions/contentRestriction" }
+              }
+            },
+            "_expandable": {
+              "type": "object",
+              "properties": {
+                "container": { "type": "string" },
+                "space": { "type": "string" }
+              }
+            },
+            "_links": {
+              "type": "object",
+              "properties": {
+                "self": { "type": "string" },
+                "tinyui": { "type": "string" },
+                "editui": { "type": "string" },
+                "webui": { "type": "string" }
+              }
+            }
           }
-        }
-      }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "space",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": { "type": "integer" },
+            "key": { "type": "string" },
+            "name": { "type": "string" },
+            "type": { "type": "string" },
+            "status": { "type": "string" },
+            "permissions": { "type": "array" },
+            "icon": { "type": "object" },
+            "description": { "type": "object" },
+            "_expandable": { "type": "object" },
+            "_links": { "type": "object" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "group",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "type": { "type": "string" },
+            "_links": { "type": "object" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "theme",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "themeKey": { "type": "string" },
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "icon": { "type": "object" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "audit",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "author": { "type": "object" },
+            "remoteAddress": { "type": "string" },
+            "creationDate": { "type": "date-time" },
+            "summary": { "type": "string" },
+            "description": { "type": "string" },
+            "category": { "type": "string" },
+            "sysAdmin": { "type": "boolean" },
+            "superAdmin": { "type": "boolean" },
+            "affectedObject": { "type": "object" },
+            "changedValues": { "type": "array" },
+            "associatedObjects": { "type": "array" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
