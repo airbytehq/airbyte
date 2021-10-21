@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_strava.source import StravaStream
+from source_strava.streams import StravaStream
 
 
 @pytest.fixture

@@ -5,7 +5,7 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_strava.source import IncrementalStravaStream
+from source_strava.streams import IncrementalStravaStream
 
 
 @fixture
