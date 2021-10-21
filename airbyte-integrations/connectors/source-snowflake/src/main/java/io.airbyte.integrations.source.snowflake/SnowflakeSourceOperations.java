@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.snowflake;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
