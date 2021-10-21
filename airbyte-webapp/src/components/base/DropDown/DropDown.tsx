@@ -1,6 +1,7 @@
 import React from "react";
 import { Props } from "react-select";
 import { SelectComponentsConfig } from "react-select/src/components";
+import { CSSObject } from "styled-components";
 
 import DropdownIndicator from "./components/DropdownIndicator";
 import Menu from "./components/Menu";
@@ -54,7 +55,12 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       isSearchable={false}
       closeMenuOnSelect={!props.isMulti}
       hideSelectedOptions={false}
-      styles={{ menuPortal: (base: any) => ({ ...base, zIndex: 9999 }) }}
+      styles={{
+        menuPortal: (base: CSSObject) => ({
+          ...base,
+          zIndex: 9999,
+        }),
+      }}
       {...props}
       value={currentValue}
       components={components}

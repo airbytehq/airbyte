@@ -18,9 +18,9 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
   private static final Logger LOGGER = LoggerFactory.getLogger(UncaughtExceptionMapper.class);
 
   @Override
-  public Response toResponse(Throwable e) {
+  public Response toResponse(final Throwable e) {
     LOGGER.error("Uncaught exception", e);
-    KnownExceptionInfo exceptionInfo = KnownException.infoFromThrowableWithMessage(e, "Internal Server Error: " + e.getMessage());
+    final KnownExceptionInfo exceptionInfo = KnownException.infoFromThrowableWithMessage(e, "Internal Server Error: " + e.getMessage());
     return Response.status(500)
         .entity(Jsons.serialize(exceptionInfo))
         .type("application/json")

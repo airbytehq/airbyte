@@ -44,7 +44,7 @@ public class ThrottledDestination extends BaseConnector implements Destination {
     private final Consumer<AirbyteMessage> outputRecordCollector;
     private final long millisPerRecord;
 
-    public ThrottledConsumer(long millisPerRecord, Consumer<AirbyteMessage> outputRecordCollector) {
+    public ThrottledConsumer(final long millisPerRecord, final Consumer<AirbyteMessage> outputRecordCollector) {
       this.millisPerRecord = millisPerRecord;
       this.outputRecordCollector = outputRecordCollector;
     }

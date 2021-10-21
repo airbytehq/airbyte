@@ -2,8 +2,7 @@
 
 ## Overview
 
-The Snowflake source allows you to sync data from Snowflake.
-It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The Snowflake source allows you to sync data from Snowflake. It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 This Snowflake source connector is built on top of the source-jdbc code base and is configured to rely on JDBC 3.12.14 [Snowflake driver](https://github.com/snowflakedb/snowflake-jdbc) as described in Snowflake [documentation](https://docs.snowflake.com/en/user-guide/jdbc.html).
 
@@ -24,18 +23,17 @@ The Snowflake source does not alter the schema present in your warehouse. Depend
 ### Requirements
 
 1. You'll need the following information to configure the Snowflake source:
-
-* **Host**
-* **Role**
-* **Warehouse**
-* **Database**
-* **Schema**
-* **Username**
-* **Password**
-
-2. Create a dedicated read-only Airbyte user and role with access to all schemas needed for replication.
+2. **Host**
+3. **Role**
+4. **Warehouse**
+5. **Database**
+6. **Schema**
+7. **Username**
+8. **Password**
+9. Create a dedicated read-only Airbyte user and role with access to all schemas needed for replication.
 
 ### Setup guide
+
 #### 1. Additional information about Snowflake connection parameters could be found [here](https://docs.snowflake.com/en/user-guide/jdbc-configure.html#connection-parameters).
 
 #### 2. Create a dedicated read-only user with access to the relevant schemas \(Recommended but optional\)
@@ -73,9 +71,9 @@ You can limit this grant down to specific schemas instead of the whole database.
 
 Your database user should now be ready for use with Airbyte.
 
-
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.1   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
+

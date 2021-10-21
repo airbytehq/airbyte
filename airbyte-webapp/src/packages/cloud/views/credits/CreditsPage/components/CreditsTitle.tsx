@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 import PageTitle from "components/PageTitle";
 import { Button } from "components/base";
+import { useIntercom } from "react-use-intercom";
 //
 // const CreditsLink = styled(Link)`
 //   margin-left: 10px;
@@ -11,6 +12,12 @@ import { Button } from "components/base";
 // `;
 
 const CreditsTitle: React.FC = () => {
+  const { show } = useIntercom();
+
+  const handleGetCredits = () => {
+    show();
+  };
+
   return (
     <PageTitle
       title={
@@ -22,7 +29,7 @@ const CreditsTitle: React.FC = () => {
         </>
       }
       endComponent={
-        <Button disabled>
+        <Button onClick={handleGetCredits}>
           <FormattedMessage id="credits.buyCredits" />
         </Button>
       }
