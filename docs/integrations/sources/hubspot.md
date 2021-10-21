@@ -27,6 +27,7 @@ This source is capable of syncing the following tables and their data:
 * [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements)
 * [Forms](https://developers.hubspot.com/docs/api/marketing/forms)
 * [Line Items](https://developers.hubspot.com/docs/api/crm/line-items)
+* [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
 * [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners)
 * [Products](https://developers.hubspot.com/docs/api/crm/products)
 * [Quotes](https://developers.hubspot.com/docs/api/crm/quotes)
@@ -95,6 +96,7 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.18 | 2021-10-18 | [5840](https://github.com/airbytehq/airbyte/pull/5840) | Add new marketing emails (with statistics) stream |
 | 0.1.17 | 2021-10-14 | [6995](https://github.com/airbytehq/airbyte/pull/6995) | Update `discover` method: disable `quotes` stream when using OAuth config  |
 | 0.1.16 | 2021-09-27 | [6465](https://github.com/airbytehq/airbyte/pull/6465) | Implement OAuth support. Use CDK authenticator instead of connector specific authenticator |
 | 0.1.15 | 2021-09-23 | [6374](https://github.com/airbytehq/airbyte/pull/6374) | Use correct schema for `owners` stream |
@@ -106,4 +108,3 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 | 0.1.9 | 2021-08-11 | [5334](https://github.com/airbytehq/airbyte/pull/5334) | Fix empty strings inside float datatype |
 | 0.1.8 | 2021-08-06 | [5250](https://github.com/airbytehq/airbyte/pull/5250) | Fix issue with printing exceptions |
 | 0.1.7 | 2021-07-27 | [4913](https://github.com/airbytehq/airbyte/pull/4913) | Update fields schema |
-

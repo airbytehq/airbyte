@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 # This order matters
 main_fields = (
     "date",
@@ -31,5 +35,5 @@ main_fields = (
     "create_product_complete_sales",
     "init_appsflyer_id_unique_users",
     "init_appsflyer_id_event_counter",
-    "init_appsflyer_id_sales"
+    "init_appsflyer_id_sales",
 )

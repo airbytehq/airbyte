@@ -33,14 +33,14 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AsanaOAuthFlowIntegrationTest {
+public class SalesforceOAuthFlowIntegrationTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AsanaOAuthFlowIntegrationTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SalesforceOAuthFlowIntegrationTest.class);
   private static final String REDIRECT_URL = "http://localhost:8000/code";
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/asana.json");
+  private static final Path CREDENTIALS_PATH = Path.of("secrets/salesforce.json");
 
   private ConfigRepository configRepository;
-  private AsanaOAuthFlow asanaOAuthFlow;
+  private SalesforceOAuthFlow salesforceOAuthFlow;
   private HttpServer server;
   private ServerHandler serverHandler;
 
@@ -51,7 +51,7 @@ public class AsanaOAuthFlowIntegrationTest {
           "Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
-    asanaOAuthFlow = new AsanaOAuthFlow(configRepository);
+    salesforceOAuthFlow = new SalesforceOAuthFlow(configRepository);
 
     server = HttpServer.create(new InetSocketAddress(8000), 0);
     server.setExecutor(null); // creates a default executor
@@ -66,7 +66,7 @@ public class AsanaOAuthFlowIntegrationTest {
   }
 
   @Test
-  public void testFullAsanaOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
+  public void testFullSalesforceOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
@@ -81,7 +81,7 @@ public class AsanaOAuthFlowIntegrationTest {
             .put("client_id", clientId)
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = asanaOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = salesforceOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -90,13 +90,11 @@ public class AsanaOAuthFlowIntegrationTest {
       limit -= 1;
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
-    final Map<String, Object> params = asanaOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
+    final Map<String, Object> params = salesforceOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
         Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
-    assertTrue(params.containsKey("credentials"));
-    final Map creds = (Map) params.get("credentials");
-    assertTrue(creds.containsKey("refresh_token"));
-    assertTrue(creds.get("refresh_token").toString().length() > 0);
+    assertTrue(params.containsKey("refresh_token"));
+    assertTrue(params.get("refresh_token").toString().length() > 0);
   }
 
   static class ServerHandler implements HttpHandler {
@@ -158,7 +156,7 @@ public class AsanaOAuthFlowIntegrationTest {
       }
       final Map<String, String> result = new HashMap<>();
       for (String param : query.split("&")) {
-        String[] entry = param.split("=");
+        String[] entry = param.split("=", 2);
         if (entry.length > 1) {
           result.put(entry[0], entry[1]);
         } else {
