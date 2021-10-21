@@ -8,6 +8,7 @@ from urllib.parse import parse_qsl, urlparse
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 # Basic full refresh stream
@@ -15,6 +16,7 @@ class FreshserviceStream(HttpStream, ABC):
     primary_key = "id"
     order_field = "updated_at"
     page_size = 30
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, start_date: str = None, domain_name: str = None, **kwargs):
         super().__init__(**kwargs)
@@ -34,7 +36,7 @@ class FreshserviceStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {"per_page": self.page_size}
-        
+
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -48,6 +50,7 @@ class FreshserviceStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
+
 
 # Basic incremental stream
 class IncrementalFreshserviceStream(FreshserviceStream, ABC):
