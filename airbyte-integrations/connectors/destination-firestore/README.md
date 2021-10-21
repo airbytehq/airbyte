@@ -1,7 +1,7 @@
 # Google Firestore Destination
 
 This is the repository for the Google Firestore destination connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/gcp-firestore).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/firestore).
 
 ## Local development
 
@@ -32,7 +32,7 @@ should work as you expect.
 #### Building via Gradle
 From the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:destination-gcp-firestore:build
+./gradlew :airbyte-integrations:connectors:destination-firestore:build
 ```
 
 #### Create credentials
@@ -58,12 +58,12 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/destination-gcp-firestore:dev
+docker build . -t airbyte/destination-firestore:dev
 ```
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:destination-gcp-firestore:airbyteDocker
+./gradlew :airbyte-integrations:connectors:destination-firestore:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -71,10 +71,10 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/destination-gcp-firestore:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-gcp-firestore:dev check --config /secrets/config.json
+docker run --rm airbyte/destination-firestore:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-firestore:dev check --config /secrets/config.json
 # messages.jsonl is a file containing line-separated JSON representing AirbyteMessages
-cat messages.jsonl | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-gcp-firestore:dev write --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+cat messages.jsonl | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-firestore:dev write --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
@@ -105,11 +105,11 @@ Coming soon:
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:destination-gcp-firestore:unitTest
+./gradlew :airbyte-integrations:connectors:destination-firestore:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:destination-gcp-firestore:integrationTest
+./gradlew :airbyte-integrations:connectors:destination-firestore:integrationTest
 ```
 
 ## Dependency Management

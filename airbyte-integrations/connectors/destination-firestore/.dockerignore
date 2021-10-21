@@ -1,5 +1,5 @@
 *
 !Dockerfile
 !main.py
-!destinationfirestore
+!destination_firestore
 !setup.py

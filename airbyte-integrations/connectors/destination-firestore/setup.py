@@ -16,7 +16,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="destination_firestore",
-    description="Destination implementation for Gcp Firestore.",
+    description="Destination implementation for Google Firestore.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
