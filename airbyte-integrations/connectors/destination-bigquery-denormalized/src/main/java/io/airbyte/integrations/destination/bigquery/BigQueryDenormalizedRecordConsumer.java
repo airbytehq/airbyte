@@ -11,8 +11,6 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.Schema;
-import com.google.cloud.bigquery.StandardSQLTypeName;
-import com.google.cloud.bigquery.TableId;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -62,33 +60,6 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     data.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt);
     return data;
-  }
-
-  @Override
-  protected String getCreatePartitionedTableQuery(final String projectId, final TableId destinationTableId, final String tmpPartitionTable) {
-    return String.format("create table `%s.%s.%s` (%s %s, %s %s, %s %s) partition by date(%s)"
-        + " as select %s, %s, %s from `%s.%s.%s`",
-        // create table
-        projectId,
-        destinationTableId.getDataset(),
-        tmpPartitionTable,
-        // (
-        JavaBaseConstants.COLUMN_NAME_AB_ID,
-        StandardSQLTypeName.STRING,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-        StandardSQLTypeName.TIMESTAMP,
-        JavaBaseConstants.COLUMN_NAME_DATA,
-        StandardSQLTypeName.STRING,
-        // ) partition by
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-        // as select
-        JavaBaseConstants.COLUMN_NAME_AB_ID,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-        JavaBaseConstants.COLUMN_NAME_DATA,
-        // from
-        projectId,
-        destinationTableId.getDataset(),
-        destinationTableId.getTable());
   }
 
   protected JsonNode formatData(final FieldList fields, final JsonNode root) {
