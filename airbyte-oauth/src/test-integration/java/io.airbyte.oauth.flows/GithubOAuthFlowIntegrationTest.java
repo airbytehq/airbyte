@@ -24,9 +24,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
+public class GithubOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
-  protected static final Path CREDENTIALS_PATH = Path.of("secrets/facebook_marketing.json");
+  protected static final Path CREDENTIALS_PATH = Path.of("secrets/github.json");
+  protected static final String REDIRECT_URL = "http://localhost:8000/auth_flow";
+  protected static final int SERVER_LISTENING_PORT = 8000;
 
   @Override
   protected Path get_credentials_path() {
@@ -35,7 +37,12 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
 
   @Override
   protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new FacebookMarketingOAuthFlow(configRepository);
+    return new GithubOAuthFlow(configRepository);
+  }
+
+  @Override
+  protected int getServerListeningPort() {
+    return SERVER_LISTENING_PORT;
   }
 
   @BeforeEach
@@ -44,7 +51,7 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
   }
 
   @Test
-  public void testFullGoogleOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
+  public void testFullGithubOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();

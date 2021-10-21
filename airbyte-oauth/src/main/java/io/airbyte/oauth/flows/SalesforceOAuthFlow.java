@@ -64,13 +64,13 @@ public class SalesforceOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(JsonNode data) throws IOException {
+  protected Map<String, Object> extractRefreshToken(JsonNode data, String accessTokenUrl) throws IOException {
     System.out.println(Jsons.serialize(data));
     if (data.has("refresh_token")) {
       final String refreshToken = data.get("refresh_token").asText();
       return Map.of("refresh_token", refreshToken);
     } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", ACCESS_TOKEN_URL));
+      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
     }
   }
 
