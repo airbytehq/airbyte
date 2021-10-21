@@ -93,6 +93,17 @@ docker cp airbyte-server:/tmp/workspace/9/2/catalog.json .
 cat catalog.json
 ```
 
+### Extract the catalog.json file from a Kubernetes pod
+
+Or if you are running Airbyte on Kubernetes and want to copy it out from the normalisation pod:
+```bash
+kubectl cp <namespace pods are in>/<normalisation-pod-name>:/config/destination_catalog.json ./catalog.json
+e.g.
+kubectl cp jobs/normalization-worker-3605-0-sxtox:/config/destination_catalog.json ./catalog.json
+cat ./catalog.json
+```
+
+
 ## CSV or JSON local Destinations: Check local data folder
 
 If you setup a pipeline using one of the local File based destinations \(CSV or JSON\), Airbyte is writing the resulting files containing the data in the special `/local/` directory in the container. By default, this volume is mounted from `/tmp/airbyte_local` on the host machine. So you need to navigate to this [local folder](file:///tmp/airbyte_local/) on the filesystem of the machine running the Airbyte deployment to retrieve the local data files.
