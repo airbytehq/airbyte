@@ -18,7 +18,6 @@ class Error(Exception):
 
 
 class QueryWindowError(Error):
-
     def __init__(self, value: Any):
         self.message = f"`Query Window` is set to '{value}', please make sure you use float or integer, not string."
         super().__init__(self.logger.info(self.message))

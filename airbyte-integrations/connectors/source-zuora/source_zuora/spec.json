@@ -17,6 +17,7 @@
         "title": "Query Window (in days)",
         "description": "The amount of days for each data-chunk begining from start_date. Bigger the value - faster the fetch. (0.1 - as for couple of hours, 1 - as for a Day; 364 - as for a Year).",
         "examples": ["0.5", "1", "30", "60", "90", "120", "200", "364"],
+        "pattern": "^(0|[1-9]\\d*)(\\.\\d+)?$",
         "default": "90"
       },
       "tenant_endpoint": {
