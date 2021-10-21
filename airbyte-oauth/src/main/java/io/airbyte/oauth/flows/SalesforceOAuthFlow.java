@@ -19,7 +19,8 @@ import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 /**
- * Following docs from https://help.salesforce.com/s/articleView?language=en_US&id=sf.remoteaccess_oauth_web_server_flow.htm
+ * Following docs from
+ * https://help.salesforce.com/s/articleView?language=en_US&id=sf.remoteaccess_oauth_web_server_flow.htm
  */
 public class SalesforceOAuthFlow extends BaseOAuthFlow {
 
@@ -50,7 +51,7 @@ public class SalesforceOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(JsonNode oAuthConfig) {
     return ACCESS_TOKEN_URL;
   }
 
@@ -63,13 +64,13 @@ public class SalesforceOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(JsonNode data) throws IOException {
+  protected Map<String, Object> extractRefreshToken(JsonNode data, String accessTokenUrl) throws IOException {
     System.out.println(Jsons.serialize(data));
     if (data.has("refresh_token")) {
       final String refreshToken = data.get("refresh_token").asText();
       return Map.of("refresh_token", refreshToken);
     } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", ACCESS_TOKEN_URL));
+      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
     }
   }
 
