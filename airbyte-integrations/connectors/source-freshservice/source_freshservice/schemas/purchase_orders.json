@@ -21,7 +21,7 @@
     "discount_percentage": { "type": ["null", "integer"] },
     "tax_percentage": { "type": ["null", "integer"] },
     "shipping_cost": { "type": ["null", "integer"] },
-    "custom_fields": { "type": "object" },
+    "custom_fields": { "type": ["null", "object"] },
     "purchase_items": { "type": "array" }
   }
 }

@@ -7,10 +7,10 @@
     "last_name": { "type": ["null", "string"] },
     "job_title": { "type": ["null", "string"] },
     "primary_email": { "type": ["null", "string"] },
-    "secondary_emails": { "type": "array" },
+    "secondary_emails": { "type": ["null", "array"] },
     "work_phone_number": { "type": ["null", "integer"] },
     "mobile_phone_number": { "type": ["null", "integer"] },
-    "department_ids": { "type": "array" },
+    "department_ids": { "type": ["null", "array"] },
     "can_see_all_tickets_from_associated_departments": {
       "type": ["null", "boolean"]
     },
@@ -21,7 +21,7 @@
     "language": { "type": ["null", "string"] },
     "location_id": { "type": ["null", "integer"] },
     "background_information": { "type": ["null", "string"] },
-    "custom_fields": { "type": "object" },
+    "custom_fields": { "type": ["null", "object"] },
     "active": { "type": ["null", "boolean"] },
     "has_logged_in": { "type": ["null", "boolean"] },
     "created_at": { "type": ["null", "string"] },

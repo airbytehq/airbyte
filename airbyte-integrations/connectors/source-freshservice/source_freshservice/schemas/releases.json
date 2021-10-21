@@ -20,9 +20,9 @@
     "item_category": { "type": ["null", "string"] },
     "created_at": { "type": ["null", "string"] },
     "updated_at": { "type": ["null", "string"] },
-    "associated_assets": { "type": "array" },
-    "associated_changes": { "type": "array" },
-    "custom_fields": { "type": "object" },
+    "associated_assets": { "type": ["null", "array"] },
+    "associated_changes": { "type": ["null", "array"] },
+    "custom_fields": { "type": ["null", "object"] },
     "planning_fields": { "type": "object" }
   }
 }
