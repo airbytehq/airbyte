@@ -19,6 +19,7 @@ from airbyte_cdk.models import (
     Status,
     Type,
 )
+
 # helpers
 from airbyte_cdk.sources import Source
 

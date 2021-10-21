@@ -24,7 +24,7 @@ class OauthModelConverterTest {
         Arguments.of(
             List.of(List.of("init1"), List.of("init2-1", "init2-2")),
             List.of(List.of("output1"), List.of("output2-1", "output2-2")),
-            List.of("path")),
+            List.of("path", "nestedPath", 1)),
         // init params only
         Arguments.of(
             List.of(List.of("init1"), List.of("init2-1", "init2-2")),
@@ -39,12 +39,12 @@ class OauthModelConverterTest {
         Arguments.of(
             List.of(List.of()),
             List.of(List.of()),
-            List.of("path")));
+            List.of("path", "nestedPath", 1)));
   }
 
   @ParameterizedTest
   @MethodSource("testProvider")
-  public void testIt(final List<List<String>> initParams, final List<List<String>> outputParams, final List<String> rootObject) {
+  public void testIt(final List<List<String>> initParams, final List<List<String>> outputParams, final List<Object> rootObject) {
     final ConnectorSpecification input = new ConnectorSpecification().withAuthSpecification(
         new AuthSpecification()
             .withAuthType(AuthSpecification.AuthType.OAUTH_2_0)

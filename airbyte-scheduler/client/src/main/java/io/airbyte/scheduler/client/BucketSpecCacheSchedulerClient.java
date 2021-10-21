@@ -127,7 +127,7 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
     try {
       validateConfig(Jsons.deserialize(specAsString));
     } catch (final JsonValidationException e) {
-      LOGGER.error("Received invalid spec from bucket store. Received: {}", specAsString);
+      LOGGER.error("Received invalid spec from bucket store. {}", e.toString());
       return Optional.empty();
     }
     return Optional.of(Jsons.deserialize(specAsString, ConnectorSpecification.class));
