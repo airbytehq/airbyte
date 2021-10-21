@@ -4,9 +4,9 @@
 
 from http import HTTPStatus
 from unittest.mock import MagicMock
-import pytest
+
 import pendulum
-from requests.models import Response
+import pytest
 from source_appsflyer.source import AppsflyerStream
 
 
@@ -14,8 +14,9 @@ from source_appsflyer.source import AppsflyerStream
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     def __init__(self):
-        self.api_token= "secret"
-        self.timezone= pendulum.timezone("UTC")
+        self.api_token = "secret"
+        self.timezone = pendulum.timezone("UTC")
+
     mocker.patch.object(AppsflyerStream, "__init__", __init__)
     mocker.patch.object(AppsflyerStream, "path", "v0/example_endpoint")
     mocker.patch.object(AppsflyerStream, "primary_key", "test_primary_key")
@@ -84,12 +85,12 @@ def test_should_retry(patch_base_class, http_status, response_text, should_retry
         (HTTPStatus.BAD_REQUEST, "", None),
         (HTTPStatus.TOO_MANY_REQUESTS, "", None),
         (HTTPStatus.INTERNAL_SERVER_ERROR, "", None),
-        (HTTPStatus.FORBIDDEN, "Limit reached for ", 60), # Wait time for aggregate data is 60 Seconds.
+        (HTTPStatus.FORBIDDEN, "Limit reached for ", 60),  # Wait time for aggregate data is 60 Seconds.
         (
             HTTPStatus.BAD_REQUEST,
             "Your API calls limit has been reached for report type",
-            "Midnight"
-        ), # Wait time for raw data is Midnight UTC - Now UTC.
+            "Midnight",
+        ),  # Wait time for raw data is Midnight UTC - Now UTC.
     ],
 )
 def test_backoff_time(patch_base_class, http_status, response_text, expected_backoff_time):

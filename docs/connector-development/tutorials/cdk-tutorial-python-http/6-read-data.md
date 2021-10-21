@@ -36,7 +36,7 @@ Let's begin by pulling data for the last day's rates by using the `/latest` endp
 
 ```python
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.exchangeratesapi.io/"
 
     primary_key = None
 
@@ -133,7 +133,7 @@ from datetime import datetime, timedelta
 
 
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.exchangeratesapi.io/"
     cursor_field = "date"
     primary_key = "date"
 
