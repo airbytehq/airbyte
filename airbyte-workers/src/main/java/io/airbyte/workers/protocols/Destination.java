@@ -4,9 +4,9 @@
 
 package io.airbyte.workers.protocols;
 
+import io.airbyte.commons.application.Application;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.config.WorkerDestinationConfig;
-import io.airbyte.workers.Application;
 import java.nio.file.Path;
 import java.util.Optional;
 

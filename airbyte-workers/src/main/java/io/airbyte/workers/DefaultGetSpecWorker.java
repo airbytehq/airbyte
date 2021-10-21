@@ -6,6 +6,8 @@ package io.airbyte.workers;
 
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.ScopedMDCChange;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -40,7 +42,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
   @Override
   public ConnectorSpecification run(final JobGetSpecConfig config, final Path jobRoot) throws WorkerException {
-    try {
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
       process = integrationLauncher.spec(jobRoot);
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
@@ -78,7 +80,10 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
   @Override
   public void cancel() {
-    WorkerUtils.cancelProcess(process);
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+      WorkerUtils.cancelProcess(process);
+    } catch (final Exception e) {
+    }
   }
 
   @Override public String getApplicationName() {

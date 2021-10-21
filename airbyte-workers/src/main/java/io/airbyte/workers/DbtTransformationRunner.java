@@ -7,7 +7,10 @@ package io.airbyte.workers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.application.Application;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.ScopedMDCChange;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
@@ -39,7 +42,9 @@ public class DbtTransformationRunner implements AutoCloseable, Application {
   }
 
   public void start() throws Exception {
-    normalizationRunner.start();
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+      normalizationRunner.start();
+    }
   }
 
   /**
@@ -58,10 +63,12 @@ public class DbtTransformationRunner implements AutoCloseable, Application {
                      final ResourceRequirements resourceRequirements,
                      final OperatorDbt dbtConfig)
       throws Exception {
-    if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
-      return false;
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+      if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
+        return false;
+      }
+      return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);
     }
-    return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);
   }
 
   public boolean transform(final String jobId,
@@ -71,7 +78,7 @@ public class DbtTransformationRunner implements AutoCloseable, Application {
                            final ResourceRequirements resourceRequirements,
                            final OperatorDbt dbtConfig)
       throws Exception {
-    try {
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
       final Map<String, String> files = ImmutableMap.of(
           DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"),
           "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"));
@@ -103,16 +110,18 @@ public class DbtTransformationRunner implements AutoCloseable, Application {
 
   @Override
   public void close() throws Exception {
-    normalizationRunner.close();
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+      normalizationRunner.close();
 
-    if (process == null) {
-      return;
-    }
+      if (process == null) {
+        return;
+      }
 
-    LOGGER.debug("Closing dbt transformation process");
-    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
-    if (process.isAlive() || process.exitValue() != 0) {
-      throw new WorkerException("Dbt transformation process wasn't successful");
+      LOGGER.debug("Closing dbt transformation process");
+      WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+      if (process.isAlive() || process.exitValue() != 0) {
+        throw new WorkerException("Dbt transformation process wasn't successful");
+      }
     }
   }
 

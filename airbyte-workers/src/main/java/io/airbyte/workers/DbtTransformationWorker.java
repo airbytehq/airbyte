@@ -4,16 +4,14 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.commons.application.Application;
 import io.airbyte.commons.logging.LoggingHelper;
-import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.ScopedMDCChange;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +24,6 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
   private final int attempt;
   private final DbtTransformationRunner dbtTransformationRunner;
   private final ResourceRequirements resourceRequirements;
-  private final Map<String, String> newMDCValue;
 
   private final AtomicBoolean cancelled;
 
@@ -40,15 +37,11 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
     this.resourceRequirements = resourceRequirements;
 
     this.cancelled = new AtomicBoolean(false);
-
-    this.newMDCValue = new HashMap<>() {{
-      put(LoggingHelper.LOG_SOURCE_MDC_KEY, LoggingHelper.applyColor(Color.GREEN, getApplicationName()));
-    }};
   }
 
   @Override
   public Void run(final OperatorDbtInput operatorDbtInput, final Path jobRoot) throws WorkerException {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(newMDCValue)) {
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
       final long startTime = System.currentTimeMillis();
 
       try (dbtTransformationRunner) {
@@ -82,7 +75,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
 
   @Override
   public void cancel() {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(newMDCValue)) {
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
       LOGGER.info("Cancelling Dbt Transformation runner...");
       try {
         cancelled.set(true);

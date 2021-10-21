@@ -1,4 +1,4 @@
-package io.airbyte.workers;
+package io.airbyte.commons.application;
 
 public interface Application {
 

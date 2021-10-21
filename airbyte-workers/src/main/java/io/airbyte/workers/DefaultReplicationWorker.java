@@ -4,6 +4,8 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.ScopedMDCChange;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
@@ -78,15 +80,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    */
   @Override
   public ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
-    LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+      LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
 
-    // todo (cgardens) - this should not be happening in the worker. this is configuration information
-    // that is independent of workflow executions.
-    final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
-    destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
+      // todo (cgardens) - this should not be happening in the worker. this is configuration information
+      // that is independent of workflow executions.
+      final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
+      destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
-    final long startTime = System.currentTimeMillis();
-    try {
+      final long startTime = System.currentTimeMillis();
       LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
           .stream()
           .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
@@ -245,29 +247,31 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   @Override
   public void cancel() {
-    // Resources are closed in the opposite order they are declared.
-    LOGGER.info("Cancelling replication worker...");
-    try {
-      executors.awaitTermination(10, TimeUnit.SECONDS);
-    } catch (final InterruptedException e) {
-      e.printStackTrace();
-    }
-    cancelled.set(true);
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+      // Resources are closed in the opposite order they are declared.
+      LOGGER.info("Cancelling replication worker...");
+      try {
+        executors.awaitTermination(10, TimeUnit.SECONDS);
+      } catch (final InterruptedException e) {
+        e.printStackTrace();
+      }
+      cancelled.set(true);
 
-    LOGGER.info("Cancelling destination...");
-    try {
-      destination.cancel();
+      LOGGER.info("Cancelling destination...");
+      try {
+        destination.cancel();
+      } catch (final Exception e) {
+        LOGGER.info("Error cancelling destination: ", e);
+      }
+
+      LOGGER.info("Cancelling source...");
+      try {
+        source.cancel();
+      } catch (final Exception e) {
+        LOGGER.info("Error cancelling source: ", e);
+      }
     } catch (final Exception e) {
-      LOGGER.info("Error cancelling destination: ", e);
     }
-
-    LOGGER.info("Cancelling source...");
-    try {
-      source.cancel();
-    } catch (final Exception e) {
-      LOGGER.info("Error cancelling source: ", e);
-    }
-
   }
 
   @Override public String getApplicationName() {

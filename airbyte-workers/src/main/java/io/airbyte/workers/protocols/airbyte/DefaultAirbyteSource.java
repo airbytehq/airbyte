@@ -9,6 +9,8 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.ScopedMDCChange;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -56,22 +58,24 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   @Override
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
-    Preconditions.checkState(sourceProcess == null);
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+      Preconditions.checkState(sourceProcess == null);
 
-    sourceProcess = integrationLauncher.read(jobRoot,
-        WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-        Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
-        WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        Jsons.serialize(sourceConfig.getCatalog()),
-        sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
-        sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
-    // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source");
+      sourceProcess = integrationLauncher.read(jobRoot,
+          WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+          Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
+          WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
+          Jsons.serialize(sourceConfig.getCatalog()),
+          sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
+          sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
+      // stdout logs are logged elsewhere since stdout also contains data
+      LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source");
 
-    messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
-        .peek(message -> heartbeatMonitor.beat())
-        .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE)
-        .iterator();
+      messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
+          .peek(message -> heartbeatMonitor.beat())
+          .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE)
+          .iterator();
+    }
   }
 
   @Override
@@ -96,35 +100,39 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   @Override
   public void close() throws Exception {
-    if (sourceProcess == null) {
-      LOGGER.debug("Source process already exited");
-      return;
-    }
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+      if (sourceProcess == null) {
+        LOGGER.debug("Source process already exited");
+        return;
+      }
 
-    LOGGER.debug("Closing source process");
-    WorkerUtils.gentleCloseWithHeartbeat(
-        sourceProcess,
-        heartbeatMonitor,
-        GRACEFUL_SHUTDOWN_DURATION,
-        CHECK_HEARTBEAT_DURATION,
-        FORCED_SHUTDOWN_DURATION);
+      LOGGER.debug("Closing source process");
+      WorkerUtils.gentleCloseWithHeartbeat(
+          sourceProcess,
+          heartbeatMonitor,
+          GRACEFUL_SHUTDOWN_DURATION,
+          CHECK_HEARTBEAT_DURATION,
+          FORCED_SHUTDOWN_DURATION);
 
-    if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();
-      throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
+      if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
+        final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();
+        throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
+      }
     }
   }
 
   @Override
   public void cancel() throws Exception {
-    LOGGER.info("Attempting to cancel source process...");
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+      LOGGER.info("Attempting to cancel source process...");
 
-    if (sourceProcess == null) {
-      LOGGER.info("Source process no longer exists, cancellation is a no-op.");
-    } else {
-      LOGGER.info("Source process exists, cancelling...");
-      WorkerUtils.cancelProcess(sourceProcess);
-      LOGGER.info("Cancelled source process!");
+      if (sourceProcess == null) {
+        LOGGER.info("Source process no longer exists, cancellation is a no-op.");
+      } else {
+        LOGGER.info("Source process exists, cancelling...");
+        WorkerUtils.cancelProcess(sourceProcess);
+        LOGGER.info("Cancelled source process!");
+      }
     }
   }
 

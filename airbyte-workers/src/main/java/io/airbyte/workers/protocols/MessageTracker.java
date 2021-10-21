@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.protocols;
 
+import io.airbyte.commons.application.Application;
 import io.airbyte.config.State;
-import io.airbyte.workers.Application;
 import java.util.Optional;
 import java.util.function.Consumer;
 

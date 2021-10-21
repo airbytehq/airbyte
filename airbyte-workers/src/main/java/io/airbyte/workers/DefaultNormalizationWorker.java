@@ -4,6 +4,8 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.ScopedMDCChange;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.workers.normalization.NormalizationRunner;
@@ -41,8 +43,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   @Override
   public Void run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
-
-    try (normalizationRunner) {
+    try (normalizationRunner;
+        final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
       LOGGER.info("Running normalization.");
       normalizationRunner.start();
 
@@ -56,25 +58,26 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
           input.getResourceRequirements())) {
         throw new WorkerException("Normalization Failed.");
       }
+
+      if (cancelled.get()) {
+        LOGGER.info("Normalization was cancelled.");
+      }
+
+      final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
+      final String durationDescription = DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
+      LOGGER.info("Normalization executed in {}.", durationDescription);
+
+      return null;
+
     } catch (final Exception e) {
       throw new WorkerException("Normalization Failed.", e);
     }
-
-    if (cancelled.get()) {
-      LOGGER.info("Normalization was cancelled.");
-    }
-
-    final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
-    final String durationDescription = DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
-    LOGGER.info("Normalization executed in {}.", durationDescription);
-
-    return null;
   }
 
   @Override
   public void cancel() {
-    LOGGER.info("Cancelling normalization runner...");
-    try {
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+      LOGGER.info("Cancelling normalization runner...");
       cancelled.set(true);
       normalizationRunner.close();
     } catch (final Exception e) {

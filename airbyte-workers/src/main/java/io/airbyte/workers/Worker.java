@@ -4,6 +4,7 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.commons.application.Application;
 import java.nio.file.Path;
 
 public interface Worker<InputType, OutputType> extends Application {

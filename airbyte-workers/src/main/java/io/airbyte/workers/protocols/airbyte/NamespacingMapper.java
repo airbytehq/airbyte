@@ -5,6 +5,8 @@
 package io.airbyte.workers.protocols.airbyte;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.ScopedMDCChange;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -37,43 +39,51 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
 
   @Override
   public ConfiguredAirbyteCatalog mapCatalog(final ConfiguredAirbyteCatalog inputCatalog) {
-    final ConfiguredAirbyteCatalog catalog = Jsons.clone(inputCatalog);
-    catalog.getStreams().forEach(s -> {
-      final AirbyteStream stream = s.getStream();
-      // Default behavior if namespaceDefinition is not set is to follow SOURCE
-      if (namespaceDefinition != null) {
-        if (namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
-          stream.withNamespace(null);
-        } else if (namespaceDefinition.equals(NamespaceDefinitionType.CUSTOMFORMAT)) {
-          final String namespace = formatNamespace(stream.getNamespace(), namespaceFormat);
-          if (namespace == null) {
-            LOGGER.error("Namespace Format cannot be blank for Stream {}. Falling back to default namespace from destination settings",
-                stream.getName());
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+      final ConfiguredAirbyteCatalog catalog = Jsons.clone(inputCatalog);
+      catalog.getStreams().forEach(s -> {
+        final AirbyteStream stream = s.getStream();
+        // Default behavior if namespaceDefinition is not set is to follow SOURCE
+        if (namespaceDefinition != null) {
+          if (namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
+            stream.withNamespace(null);
+          } else if (namespaceDefinition.equals(NamespaceDefinitionType.CUSTOMFORMAT)) {
+            final String namespace = formatNamespace(stream.getNamespace(), namespaceFormat);
+            if (namespace == null) {
+              LOGGER.error("Namespace Format cannot be blank for Stream {}. Falling back to default namespace from destination settings",
+                  stream.getName());
+            }
+            stream.withNamespace(namespace);
           }
-          stream.withNamespace(namespace);
         }
-      }
-      stream.withName(transformStreamName(stream.getName(), streamPrefix));
-    });
-    return catalog;
+        stream.withName(transformStreamName(stream.getName(), streamPrefix));
+      });
+      return catalog;
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public AirbyteMessage mapMessage(final AirbyteMessage inputMessage) {
-    if (inputMessage.getType() == Type.RECORD) {
-      final AirbyteMessage message = Jsons.clone(inputMessage);
-      // Default behavior if namespaceDefinition is not set is to follow SOURCE
-      if (namespaceDefinition != null) {
-        if (namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
-          message.getRecord().withNamespace(null);
-        } else if (namespaceDefinition.equals(NamespaceDefinitionType.CUSTOMFORMAT)) {
-          message.getRecord().withNamespace(formatNamespace(message.getRecord().getNamespace(), namespaceFormat));
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+      if (inputMessage.getType() == Type.RECORD) {
+        final AirbyteMessage message = Jsons.clone(inputMessage);
+        // Default behavior if namespaceDefinition is not set is to follow SOURCE
+        if (namespaceDefinition != null) {
+          if (namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
+            message.getRecord().withNamespace(null);
+          } else if (namespaceDefinition.equals(NamespaceDefinitionType.CUSTOMFORMAT)) {
+            message.getRecord().withNamespace(formatNamespace(message.getRecord().getNamespace(), namespaceFormat));
+          }
         }
+        message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), streamPrefix));
+        return message;
       }
-      message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), streamPrefix));
-      return message;
+      return inputMessage;
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
     }
-    return inputMessage;
   }
 
   private static String formatNamespace(final String sourceNamespace, final String namespaceFormat) {
