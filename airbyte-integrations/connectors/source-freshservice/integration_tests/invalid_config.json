@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "domain_name": "mydomain.freshservice.com",
+  "api_key": "<wrong_api_key>",
+  "start_date": "2021-09-01"
 }
