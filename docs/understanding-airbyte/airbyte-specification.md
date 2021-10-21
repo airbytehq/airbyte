@@ -59,7 +59,7 @@ The `read` command will emit a stream records to stdout.
 spec() -> ConnectorSpecification
 check(Config) -> AirbyteConnectionStatus
 discover(Config) -> AirbyteCatalog
-read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
+read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
 ```
 
 #### Spec
@@ -81,7 +81,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 * Output:
   1. `connectionStatus` - an [AirbyteConnectionStatus](https://github.com/airbytehq/airbyte/blob/922bfd08a9182443599b78dbb273d70cb9f63d30/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L99-L112) wrapped in an `AirbyteMessage` of type `connection_status`.
 * The `check` command attempts to connect to the underlying data source in order to verify that the provided credentials are usable.
-  * e.g. If the given the credentials, it can connect to the Postgres database, it will return a success response. If it fails \(perhaps the password is incorrect\), it will return a failed response and \(when possible\) a helpful error message.
+  * e.g. If given the credentials, it can connect to the Postgres database, it will return a success response. If it fails \(perhaps the password is incorrect\), it will return a failed response and \(when possible\) a helpful error message.
 
 #### Discover
 
