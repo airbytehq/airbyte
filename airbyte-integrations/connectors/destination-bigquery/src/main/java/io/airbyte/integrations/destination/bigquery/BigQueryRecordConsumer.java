@@ -50,6 +50,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,7 +120,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       } else {
         // GCS uploading way, this data will be moved to bigquery in close method
         final GcsCsvWriter gcsCsvWriter = writer.getGcsCsvWriter();
-        gcsCsvWriter.write(UUID.randomUUID(), recordMessage);
+        writeRecordToCsv(gcsCsvWriter, recordMessage);
       }
     } else {
       LOGGER.warn("Unexpected message: " + message.getType());
@@ -136,6 +137,24 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
         JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(formattedData),
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt));
+  }
+
+  protected void writeRecordToCsv(final GcsCsvWriter gcsCsvWriter, final AirbyteRecordMessage recordMessage) {
+    // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
+    // use BQ helpers to string-format correctly.
+    final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+    final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
+    final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
+    try {
+      gcsCsvWriter.csvPrinter.printRecord(
+          UUID.randomUUID().toString(),
+          formattedEmittedAt,
+          Jsons.serialize(formattedData)
+      );
+    } catch(IOException e) {
+      e.printStackTrace();
+      LOGGER.warn("An error occurred writing CSV file.");
+    }
   }
 
   @Override

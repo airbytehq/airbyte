@@ -18,8 +18,10 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
+import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -69,7 +71,7 @@ public class BigQueryUtils {
       createSchemaTable(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
     }
-    BigQueryUtils.createTable(bigquery, schemaName, tmpTableName, schema);
+    BigQueryUtils.createPartitionedTable(bigquery, schemaName, tmpTableName, schema);
   }
 
   static void createSchemaTable(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
@@ -92,6 +94,32 @@ public class BigQueryUtils {
       LOGGER.info("Table: {} created successfully", tableId);
     } catch (final BigQueryException e) {
       LOGGER.info("Table was not created. \n", e);
+    }
+  }
+
+  // https://cloud.google.com/bigquery/docs/creating-partitioned-tables#java
+  static void createPartitionedTable(final BigQuery bigquery, final String datasetName, final String tableName, final Schema schema) {
+    try {
+
+      TableId tableId = TableId.of(datasetName, tableName);
+
+      TimePartitioning partitioning =
+          TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
+              .setField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT) //  name of column to use for partitioning
+              .setExpirationMs(7776000000L) // 90 days
+              .build();
+
+      StandardTableDefinition tableDefinition =
+          StandardTableDefinition.newBuilder()
+              .setSchema(schema)
+              .setTimePartitioning(partitioning)
+              .build();
+      TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
+
+      bigquery.create(tableInfo);
+      LOGGER.info("Partitioned Table: {} created successfully", tableId);
+    } catch (BigQueryException e) {
+      LOGGER.info("Partitioned table was not created. \n" + e.toString());
     }
   }
 
