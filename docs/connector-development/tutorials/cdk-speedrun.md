@@ -6,7 +6,7 @@ This is a blazing fast guide to building an HTTP source connector. Think of it a
 
 If you are a visual learner and want to see a video version of this guide going over each part in detail, check it out below.
 
-{% embed url="https://www.youtube.com/watch?v=kJ3hLoNfz\_E&t=3s" caption="A speedy CDK overview." %}
+{% embed url="https://www.youtube.com/watch?v=kJ3hLoNfz_E" caption="A speedy CDK overview." %}
 
 ## Dependencies
 
