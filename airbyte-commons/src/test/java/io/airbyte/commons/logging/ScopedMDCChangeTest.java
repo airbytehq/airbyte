@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.commons.logging;
 
 import java.util.HashMap;
@@ -10,15 +14,23 @@ import org.slf4j.MDC;
 
 public class ScopedMDCChangeTest {
 
-  private static final Map<String, String> originalMap = new HashMap<>() {{
-    put("test", "entry");
-    put("testOverride", "should be overrided");
-  }};
+  private static final Map<String, String> originalMap = new HashMap<>() {
 
-  private static final Map<String, String> modificationInMDC = new HashMap<>() {{
-    put("new", "will be added");
-    put("testOverride", "will override");
-  }};
+    {
+      put("test", "entry");
+      put("testOverride", "should be overrided");
+    }
+
+  };
+
+  private static final Map<String, String> modificationInMDC = new HashMap<>() {
+
+    {
+      put("new", "will be added");
+      put("testOverride", "will override");
+    }
+
+  };
 
   @BeforeEach
   public void init() {
@@ -33,12 +45,15 @@ public class ScopedMDCChangeTest {
       final Map<String, String> mdcState = MDC.getCopyOfContextMap();
 
       Assertions.assertThat(mdcState).containsExactlyInAnyOrderEntriesOf(
-          new HashMap<String, String>() {{
-            put("test", "entry");
-            put("new", "will be added");
-            put("testOverride", "will override");
-          }}
-      );
+          new HashMap<String, String>() {
+
+            {
+              put("test", "entry");
+              put("new", "will be added");
+              put("testOverride", "will override");
+            }
+
+          });
 
     } catch (final Exception e) {
       e.printStackTrace();
@@ -48,8 +63,7 @@ public class ScopedMDCChangeTest {
   @Test
   @DisplayName("The MDC context is properly restored")
   public void testMDCRestore() {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(modificationInMDC)) {
-    } catch (final Exception e) {
+    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(modificationInMDC)) {} catch (final Exception e) {
       e.printStackTrace();
     }
     final Map<String, String> mdcState = MDC.getCopyOfContextMap();
@@ -57,4 +71,5 @@ public class ScopedMDCChangeTest {
     Assertions.assertThat(mdcState).containsAllEntriesOf(originalMap);
     Assertions.assertThat(mdcState).doesNotContainKey("new");
   }
+
 }
