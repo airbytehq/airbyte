@@ -102,7 +102,7 @@ class GroupsAPI(StreamAPI):
 
 class GroupMembersAPI(StreamAPI):
     def process_response(self, response: Dict) -> Iterator[dict]:
-        return response["members"]
+        return response.get("members", [])
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         groups = GroupsAPI(self._api)
