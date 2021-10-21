@@ -35,10 +35,7 @@
     "allEmailCampaignIds": {
       "type": ["null", "array"],
       "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
+        "type": ["null", "integer"]
       }
     },
     "analyticsPageId": {
@@ -162,7 +159,7 @@
       }
     },
     "mailingListsIncluded": {
-      "type": ["null", "string"],
+      "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
@@ -189,7 +186,7 @@
       "type": ["null", "string"]
     },
     "primaryEmailCampaignId": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "processingStatus": {
       "type": ["null", "string"]
@@ -222,252 +219,135 @@
       "type": ["null", "string"]
     },
     "smartEmailFields": {
-      "type": ["null", "string"]
+      "type": ["null", "object"]
     },
     "state": {
       "type": ["null", "string"]
     },
     "stats": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "counters": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "open": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "delivered": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "bounce": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "unsubscribed": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "click": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "dropped": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "selected": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "spamreport": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "suppressed": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "hardbounced": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "softbounced": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "pending": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "contactslost": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "notsent": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
         "deviceBreakdown": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "open_device_type": {
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "properties": {
                 "computer": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "mobile": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "unknown": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 }
               }
             },
             "click_device_type": {
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "properties": {
                 "computer": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "mobile": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "unknown": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 }
               }
             }
           }
         },
         "failedToLoad": {
-          "type": [
-            "null",
-            "boolean"
-          ]
+          "type": ["null", "boolean"]
         },
         "ratios": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "clickratio": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "clickthroughratio": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "deliveredratio": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "openratio": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "unsubscribedratio": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "spamreportratio": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "bounceratio": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "hardbounceratio": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "softbounceratio": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "contactslostratio": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "pendingratio": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "notsentratio": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           }
         }
