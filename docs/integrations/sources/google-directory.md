@@ -58,4 +58,5 @@ You should now be ready to use the Google Directory connector in Airbyte.
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.5  | 2021-10-20 | [6930](https://github.com/airbytehq/airbyte/pull/6930) | Fix crash when a group don't have members |
 | 0.1.4  | 2021-10-19 | [7167](https://github.com/airbytehq/airbyte/pull/7167) | Add organizations and phones to `users` schema |
