@@ -15,14 +15,24 @@ class BaseSchemaModel(BaseModel):
 
         @staticmethod
         def schema_extra(schema: MutableMapping[str, Any], model) -> None:
-            # Pydantic adds title to every attribute, this is too much, so we manually drop them
-            for prop in schema.get("properties", {}).values():
+            # Pydantic adds a title to each attribute, that is not needed, so we manually drop them.
+            # Also pydantic does not add a "null" option to a field marked as optional,
+            # so we add this functionality manually. Same for "$ref"
+            schema.pop("title", None)
+            for name, prop in schema.get("properties", {}).items():
                 prop.pop("title", None)
+                allow_none = model.__fields__[name].allow_none
+                if allow_none:
+                    if "type" in prop:
+                        prop["type"] = ["null", prop["type"]]
+                    elif "$ref" in prop:
+                        ref = prop.pop("$ref")
+                        prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
 
     object: str
 
 
-class PersonList(BaseModel):
+class PersonList(BaseSchemaModel):
     id: str
     name: str
     created: datetime
