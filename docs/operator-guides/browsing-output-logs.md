@@ -93,9 +93,20 @@ docker cp airbyte-server:/tmp/workspace/9/2/catalog.json .
 cat catalog.json
 ```
 
-### Extract the catalog.json file from a Kubernetes pod
+### Browsing on Kubernetes
 
-Or if you are running Airbyte on Kubernetes and want to copy it out from the normalisation pod:
+If you are running on Kubernetes, use the following commands instead to browsing and copy the files to your local.
+
+To browse, identify the pod you are interested in and exec into it. You will be presented with a terminal that will accept normal linux commands e.g ls.
+```bash
+kubectl exec -it <pod name> -n <namespace pod is in> -c main bash
+e.g.
+kubectl exec -it destination-bigquery-worker-3607-0-chlle  -n jobs  -c main bash
+root@destination-bigquery-worker-3607-0-chlle:/config# ls
+FINISHED_UPLOADING  destination_catalog.json  destination_config.json
+```
+
+To copy the file on to your local in order to preserve it's contents:
 ```bash
 kubectl cp <namespace pods are in>/<normalisation-pod-name>:/config/destination_catalog.json ./catalog.json
 e.g.
