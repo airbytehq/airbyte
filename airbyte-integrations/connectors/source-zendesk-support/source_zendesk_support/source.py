@@ -29,6 +29,8 @@ from .streams import (
     UserSettingsStream,
 )
 
+# from airbyte_cdk.sources.streams.http.auth.token import TokenAuthenticator
+
 
 class BasicApiTokenAuthenticator(TokenAuthenticator):
     """basic Authorization header"""

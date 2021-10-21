@@ -39,9 +39,9 @@ public class MongodbDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongodbDestination.class);
 
-  private static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/?authSource=%s&ssl=%s";
-  private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?authSource=%s&retryWrites=true&w=majority&tls=true";
-  private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=%s&directConnection=false&ssl=true";
+  private static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=admin&ssl=%s";
+  private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true";
+  private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=admin&directConnection=false&ssl=true";
   private static final String INSTANCE_TYPE = "instance_type";
   private static final String INSTANCE = "instance";
   private static final String CLUSTER_URL = "cluster_url";
@@ -77,7 +77,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
       final var database = getDatabase(config);
       final var databaseName = config.get(DATABASE).asText();
       final Set<String> databaseNames = MoreIterators.toSet(database.getDatabaseNames().iterator());
-      if (!databaseNames.contains(databaseName)) {
+      if (!databaseNames.contains(databaseName) && !databaseName.equals(database.getName())) {
         throw new MongodbDatabaseException(databaseName);
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
@@ -150,22 +150,22 @@ public class MongodbDestination extends BaseConnector implements Destination {
 
     switch (instance) {
       case STANDALONE -> {
+        // if there is no TLS present in spec, TLS should be enabled by default for strict encryption
+        var tls = !instanceConfig.has(TLS) || instanceConfig.get(TLS).asBoolean();
         connectionStrBuilder.append(
             String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText(),
-                config.get(DATABASE).asText(), instanceConfig.get(TLS).asBoolean()));
+                config.get(DATABASE).asText(), tls));
       }
       case REPLICA -> {
         connectionStrBuilder.append(
-            String.format(MONGODB_REPLICA_URL, credentials, instanceConfig.get(SERVER_ADDRESSES).asText(), config.get(DATABASE).asText(),
-                config.get(DATABASE).asText()));
+            String.format(MONGODB_REPLICA_URL, credentials, instanceConfig.get(SERVER_ADDRESSES).asText(), config.get(DATABASE).asText()));
         if (instanceConfig.has(REPLICA_SET)) {
           connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(REPLICA_SET).asText()));
         }
       }
       case ATLAS -> {
         connectionStrBuilder.append(
-            String.format(MONGODB_CLUSTER_URL, credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(DATABASE).asText(),
-                config.get(DATABASE).asText()));
+            String.format(MONGODB_CLUSTER_URL, credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(DATABASE).asText()));
       }
       default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);
     }
