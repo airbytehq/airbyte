@@ -3,18 +3,18 @@
   "type": "object",
   "properties": {
     "id": { "type": "integer" },
-    "name": { "type": "string" },
-    "description": { "type": "string" },
-    "application_type": { "type": "string" },
-    "status": { "type": "string" },
-    "publisher_id": { "type": "integer" },
-    "managed_by_id": { "type": "integer" },
-    "notes": { "type": "string" },
-    "category": { "type": "string" },
-    "sources": { "type": "string" },
-    "user_count": { "type": "integer" },
-    "installation_count": { "type": "integer" },
-    "created_at": { "type": "string" },
-    "updated_at": { "type": "string" }
+    "name": { "type": ["null", "string"] },
+    "description": { "type": ["null", "string"] },
+    "application_type": { "type": ["null", "string"] },
+    "status": { "type": ["null", "string"] },
+    "publisher_id": { "type": ["null", "integer"] },
+    "managed_by_id": { "type": ["null", "integer"] },
+    "notes": { "type": ["null", "string"] },
+    "category": { "type": ["null", "string"] },
+    "sources": { "type": ["null", "string"] },
+    "user_count": { "type": ["null", "integer"] },
+    "installation_count": { "type": ["null", "integer"] },
+    "created_at": { "type": ["null", "string"] },
+    "updated_at": { "type": ["null", "string"] }
   }
 }

@@ -26,22 +26,17 @@ class FreshserviceStream(HttpStream, ABC):
         return f"https://{self.domain_name}/api/v2/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        next_page = response.links.get("next", None)
+        next_page = response.links.get("next")
         if next_page:
-            return dict(parse_qsl(urlparse(next_page.get("url")).query))
-        else:
-            return None
+            return {"page": dict(parse_qsl(urlparse(next_page.get("url")).query)).get("page")}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {"per_page": self.page_size}
+        
         if next_page_token:
-            params.update(**next_page_token)
-        else:
-            params["order_by"] = self.order_field
-            params["order_type"] = "asc"
-            params["updated_since"] = self._start_date
+            params.update(next_page_token)
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -53,18 +48,6 @@ class FreshserviceStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.object_name
-
-
-class FullRefrehsFreshserviceStream(FreshserviceStream, ABC):
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params.pop("updated_since")
-        params.pop("order_type")
-        params.pop("order_by")
-        return params
-
 
 # Basic incremental stream
 class IncrementalFreshserviceStream(FreshserviceStream, ABC):
@@ -117,7 +100,7 @@ class Releases(IncrementalFreshserviceStream):
     object_name = "releases"
 
 
-class Requesters(FullRefrehsFreshserviceStream):
+class Requesters(FreshserviceStream):
     """
     API docs: https://api.freshservice.com/v2/#requesters
     """
@@ -125,7 +108,7 @@ class Requesters(FullRefrehsFreshserviceStream):
     object_name = "requesters"
 
 
-class Agents(FullRefrehsFreshserviceStream):
+class Agents(FreshserviceStream):
     """
     API docs: https://api.freshservice.com/v2/#agents
     """
@@ -133,7 +116,7 @@ class Agents(FullRefrehsFreshserviceStream):
     object_name = "agents"
 
 
-class Locations(FullRefrehsFreshserviceStream):
+class Locations(FreshserviceStream):
     """
     API docs: https://api.freshservice.com/v2/#locations
     """
@@ -141,7 +124,7 @@ class Locations(FullRefrehsFreshserviceStream):
     object_name = "locations"
 
 
-class Products(FullRefrehsFreshserviceStream):
+class Products(FreshserviceStream):
     """
     API docs: https://api.freshservice.com/v2/#products
     """
@@ -149,7 +132,7 @@ class Products(FullRefrehsFreshserviceStream):
     object_name = "products"
 
 
-class Vendors(FullRefrehsFreshserviceStream):
+class Vendors(FreshserviceStream):
     """
     API docs: https://api.freshservice.com/v2/#vendors
     """
@@ -157,7 +140,7 @@ class Vendors(FullRefrehsFreshserviceStream):
     object_name = "vendors"
 
 
-class Assets(FullRefrehsFreshserviceStream):
+class Assets(FreshserviceStream):
     """
     API docs: https://api.freshservice.com/v2/#assets
     """
@@ -165,7 +148,7 @@ class Assets(FullRefrehsFreshserviceStream):
     object_name = "assets"
 
 
-class PurchaseOrders(FullRefrehsFreshserviceStream):
+class PurchaseOrders(FreshserviceStream):
     """
     API docs: https://api.freshservice.com/v2/#purchase-order
     """
@@ -173,7 +156,7 @@ class PurchaseOrders(FullRefrehsFreshserviceStream):
     object_name = "purchase_orders"
 
 
-class Software(FullRefrehsFreshserviceStream):
+class Software(FreshserviceStream):
     """
     API docs: https://api.freshservice.com/v2/#software
     """

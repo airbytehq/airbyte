@@ -3,15 +3,15 @@
   "type": "object",
   "properties": {
     "id": { "type": "integer" },
-    "name": { "type": "string" },
-    "asset_type_id": { "type": "integer" },
-    "manufacturer": { "type": "string" },
-    "status": { "type": "string" },
-    "mode_of_procurement": { "type": "string" },
-    "depreciation_type_id": { "type": "integer" },
-    "description": { "type": "string" },
-    "description_text": { "type": "string" },
-    "created_at": { "type": "string" },
-    "updated_at": { "type": "string" }
+    "name": { "type": ["null", "string"] },
+    "asset_type_id": { "type": ["null", "integer"] },
+    "manufacturer": { "type": ["null", "string"] },
+    "status": { "type": ["null", "string"] },
+    "mode_of_procurement": { "type": ["null", "string"] },
+    "depreciation_type_id": { "type": ["null", "integer"] },
+    "description": { "type": ["null", "string"] },
+    "description_text": { "type": ["null", "string"] },
+    "created_at": { "type": ["null", "string"] },
+    "updated_at": { "type": ["null", "string"] }
   }
 }

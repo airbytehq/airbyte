@@ -3,15 +3,15 @@
   "type": "object",
   "properties": {
     "id": { "type": "integer" },
-    "name": { "type": "string" },
-    "description": { "type": "string" },
-    "primary_contact_id": { "type": "integer" },
-    "line1": { "type": "string" },
-    "city": { "type": "string" },
-    "state": { "type": "string" },
-    "country": { "type": "string" },
-    "zipcode": { "type": "string" },
-    "created_at": { "type": "string" },
-    "updated_at": { "type": "string" }
+    "name": { "type": ["null", "string"] },
+    "description": { "type": ["null", "string"] },
+    "primary_contact_id": { "type": ["null", "integer"] },
+    "line1": { "type": ["null", "string"] },
+    "city": { "type": ["null", "string"] },
+    "state": { "type": ["null", "string"] },
+    "country": { "type": ["null", "string"] },
+    "zipcode": { "type": ["null", "string"] },
+    "created_at": { "type": ["null", "string"] },
+    "updated_at": { "type": ["null", "string"] }
   }
 }
