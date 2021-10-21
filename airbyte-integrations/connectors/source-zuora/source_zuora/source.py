@@ -39,7 +39,7 @@ class ZuoraStream(HttpStream, ABC):
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
-        self.window_in_days = float(config["window_in_days"])
+        self.window_in_days: float = float(config["window_in_days"])
         self._config = config
 
     @property
@@ -245,14 +245,11 @@ class ZuoraObjectsBase(ZuoraBase):
 
         # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
         start_date = min(start_date, end_date)
-        date_slices = []
 
         while start_date <= end_date:
             end_date_slice = start_date.add(days=self.window_in_days)
-            date_slices.append({"start_date": self.to_datetime_str(start_date), "end_date": self.to_datetime_str(end_date_slice)})
+            yield {"start_date": self.to_datetime_str(start_date), "end_date": self.to_datetime_str(end_date_slice)}
             start_date = end_date_slice
-
-        return date_slices
 
 
 class ZuoraListObjects(ZuoraBase):
