@@ -4,18 +4,13 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Gitlab Singer Spec",
     "type": "object",
-    "required": ["api_url", "private_token", "start_date"],
+    "required": ["api_url", "authentication", "start_date"],
     "additionalProperties": false,
     "properties": {
       "api_url": {
         "type": "string",
         "examples": ["gitlab.com"],
         "description": "Please enter your basic URL from Gitlab instance"
-      },
-      "private_token": {
-        "type": "string",
-        "description": "Log into your Gitlab account and then generate a personal Access Token.",
-        "airbyte_secret": true
       },
       "groups": {
         "type": "string",
@@ -32,6 +27,62 @@
         "description": "The date from which you'd like to replicate data for Gitlab API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
         "examples": ["2021-03-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      },
+      "authentication": {
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Authenticate via Oauth",
+            "type": "object",
+            "required": ["client_id", "client_secret", "refresh_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "enum": ["Client"],
+                "default": "Client",
+                "order": 0
+              },
+              "client_id": {
+                "title": "Client ID",
+                "type": "string",
+                "description": "The Client ID of your developer application",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "The client secret of your developer application",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "title": "Refresh Token",
+                "type": "string",
+                "description": "A refresh token generated using the above client ID and secret",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Authentiaction via personal Access Token",
+            "required": ["access_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Token",
+                "enum": ["Token"],
+                "default": "Token",
+                "order": 0
+              },
+              "access_token": {
+                "type": "string",
+                "description": "Log into your Gitlab account and then generate a personal Access Token.",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
       }
     }
   }

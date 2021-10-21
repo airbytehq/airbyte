@@ -8,7 +8,7 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, Oauth2Authenticator
 
 from .streams import (
     Branches,
@@ -45,8 +45,7 @@ class SourceGitlab(AbstractSource):
         if not pids and not gids:
             raise Exception("Either groups or projects need to be provided for connect to Gitlab API")
 
-        auth = TokenAuthenticator(token=config["private_token"])
-        auth_params = dict(authenticator=auth, api_url=config["api_url"])
+        auth_params = self.get_auth_kwargs(config)
         groups = Groups(group_ids=gids, **auth_params)
         if gids:
             projects = GroupProjects(project_ids=pids, parent_stream=groups, **auth_params)
@@ -65,8 +64,7 @@ class SourceGitlab(AbstractSource):
             return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(error)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = TokenAuthenticator(token=config["private_token"])
-        auth_params = dict(authenticator=auth, api_url=config["api_url"])
+        auth_params = self.get_auth_kwargs(config)
 
         groups, projects = self._generate_main_streams(config)
         pipelines = Pipelines(parent_stream=projects, start_date=config["start_date"], **auth_params)
@@ -98,3 +96,27 @@ class SourceGitlab(AbstractSource):
         ]
 
         return streams
+
+    @staticmethod
+    def get_auth_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
+        authorization = config.get("authentication", {})
+
+        stream_kwargs = {
+            "api_url": config.get("api_url"),
+        }
+
+        auth_type = authorization.get("auth_type")
+        if auth_type == "Client":
+            stream_kwargs["authenticator"] = Oauth2Authenticator(
+                scopes=["api"],
+                token_refresh_endpoint=f"https://{stream_kwargs.get('api_url')}/oauth/token",
+                client_secret=authorization.get("client_secret"),
+                client_id=authorization.get("client_id"),
+                refresh_token=authorization.get("refresh_token")
+            )
+        elif auth_type == "Token":
+            stream_kwargs["authenticator"] = TokenAuthenticator(token=auth_type.get("private_token"))
+        else:
+            raise Exception(f"Invalid auth type: {auth_type}")
+
+        return stream_kwargs
