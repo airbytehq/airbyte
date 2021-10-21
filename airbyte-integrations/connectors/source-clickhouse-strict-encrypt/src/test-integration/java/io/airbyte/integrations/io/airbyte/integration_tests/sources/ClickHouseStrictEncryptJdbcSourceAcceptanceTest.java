@@ -7,27 +7,33 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import static org.junit.Assert.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.string.Strings;
+import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.clickhouse.ClickHouseStrictEncryptSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import java.sql.SQLException;
 import java.util.List;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
 public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
-  private static final String SCHEMA_NAME = "default";
-  private GenericContainer db;
+  private static GenericContainer container;
+  private static JdbcDatabase db;
   private JsonNode config;
+  private String dbName;
 
   @Override
   public boolean supportsSchemas() {
@@ -51,17 +57,53 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
     // ClickHouse requires Engine to be mentioned as part of create table query.
     // Refer : https://clickhouse.tech/docs/en/engines/table-engines/ for more information
     return String.format("CREATE TABLE %s(%s) %s",
-        tableName, columnClause, primaryKeyClause.equals("") ? "Engine = TinyLog"
+        dbName + "." + tableName, columnClause, primaryKeyClause.equals("") ? "Engine = TinyLog"
             : "ENGINE = MergeTree() ORDER BY " + primaryKeyClause + " PRIMARY KEY "
                 + primaryKeyClause);
   }
 
-  @Override
+  @BeforeAll
+  static void init() {
+    container = new GenericContainer("etsybaev/clickhouse-with-ssl:dev").withExposedPorts(8443);
+    container.start();
+  }
+
+  @BeforeEach
+  public void setup() throws Exception {
+    final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
+        .put("username", "default")
+        .put("password", "")
+        .build());
+
+    db = Databases.createJdbcDatabase(
+        configWithoutDbName.get("username").asText(),
+        configWithoutDbName.get("password").asText(),
+        String.format("jdbc:clickhouse://%s:%s?ssl=true&sslmode=none",
+            configWithoutDbName.get("host").asText(),
+            configWithoutDbName.get("port").asText()),
+        ClickHouseSource.DRIVER_CLASS);
+
+    dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+
+    db.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
+    config = Jsons.clone(configWithoutDbName);
+    ((ObjectNode) config).put("database", dbName);
+
+    super.setup();
+  }
+
   @AfterEach
-  public void tearDown() throws SQLException {
-    db.close();
-    db.stop();
+  public void tearDownMySql() throws Exception {
+    db.execute(ctx -> ctx.createStatement().execute(String.format("DROP DATABASE %s;", dbName)));
     super.tearDown();
+  }
+
+  @AfterAll
+  public static void cleanUp() throws Exception {
+    db.close();
+    container.close();
   }
 
   @Override
@@ -80,23 +122,6 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
     }
     clause.append(")");
     return clause.toString();
-  }
-
-  @Override
-  @BeforeEach
-  public void setup() throws Exception {
-    db = new GenericContainer("etsybaev/clickhouse-with-ssl:dev").withExposedPorts(8443);
-    db.start();
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("database", SCHEMA_NAME)
-        .put("username", "default")
-        .put("password", "")
-        .build());
-
-    super.setup();
   }
 
   @Override
