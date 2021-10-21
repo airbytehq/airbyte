@@ -8,6 +8,7 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.ConfigPersistence2;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -25,6 +26,7 @@ public interface ServerFactory {
                         SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
                         WorkflowServiceStubs temporalService,
                         ConfigRepository configRepository,
+                        ConfigPersistence2 configPersistence2,
                         JobPersistence jobPersistence,
                         ConfigPersistence seed,
                         Database configsDatabase,
@@ -39,6 +41,7 @@ public interface ServerFactory {
                                  final SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
                                  final WorkflowServiceStubs temporalService,
                                  final ConfigRepository configRepository,
+                                 final ConfigPersistence2 configPersistence2,
                                  final JobPersistence jobPersistence,
                                  final ConfigPersistence seed,
                                  final Database configsDatabase,
@@ -49,6 +52,7 @@ public interface ServerFactory {
       ConfigurationApiFactory.setValues(
           temporalService,
           configRepository,
+          configPersistence2,
           jobPersistence,
           seed,
           schedulerJobClient,

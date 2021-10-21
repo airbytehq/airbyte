@@ -363,7 +363,7 @@ public class RunMigrationTest {
 
   @SuppressWarnings("SameParameterValue")
   private JobPersistence getJobPersistence(final File file, final String version) throws IOException {
-    final DefaultJobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase, configDatabase);
+    final DefaultJobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "db_init");
     resourceToBeCleanedUp.add(tempFolder.toFile());
 

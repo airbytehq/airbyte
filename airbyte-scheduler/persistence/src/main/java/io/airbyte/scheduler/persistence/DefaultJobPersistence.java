@@ -4,9 +4,7 @@
 
 package io.airbyte.scheduler.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.Tables.SYNC_STATE;
 import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
-import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -22,7 +20,6 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
-import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
@@ -60,7 +57,6 @@ import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.Named;
 import org.jooq.Record;
-import org.jooq.Record1;
 import org.jooq.Result;
 import org.jooq.Sequence;
 import org.jooq.Table;
@@ -112,29 +108,23 @@ public class DefaultJobPersistence implements JobPersistence {
       "ORDER BY jobs.created_at DESC, jobs.id DESC, attempts.created_at ASC, attempts.id ASC ";
 
   private final ExceptionWrappingDatabase jobDatabase;
-  private final ExceptionWrappingDatabase configDatabase;
   private final Supplier<Instant> timeSupplier;
 
   @VisibleForTesting
   DefaultJobPersistence(final Database jobDatabase,
-                        final Database configDatabase,
                         final Supplier<Instant> timeSupplier,
                         final int minimumAgeInDays,
                         final int excessiveNumberOfJobs,
                         final int minimumRecencyCount) {
     this.jobDatabase = new ExceptionWrappingDatabase(jobDatabase);
-    this.configDatabase = new ExceptionWrappingDatabase(configDatabase);
     this.timeSupplier = timeSupplier;
     JOB_HISTORY_MINIMUM_AGE_IN_DAYS = minimumAgeInDays;
     JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS = excessiveNumberOfJobs;
     JOB_HISTORY_MINIMUM_RECENCY = minimumRecencyCount;
   }
 
-  /**
-   * @param configDatabase The config database is only needed for reading and writing sync state.
-   */
-  public DefaultJobPersistence(final Database jobDatabase, final Database configDatabase) {
-    this(jobDatabase, configDatabase, Instant::now, 30, 500, 10);
+  public DefaultJobPersistence(final Database jobDatabase) {
+    this(jobDatabase, Instant::now, 30, 500, 10);
   }
 
   /**
@@ -324,7 +314,7 @@ public class DefaultJobPersistence implements JobPersistence {
   public <T> void writeOutput(final long jobId, final int attemptNumber, final T output) throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     writeOutputToAttemptTable(jobId, attemptNumber, output, now);
-    writeOutputToSyncStateTable(jobId, output, now);
+    // writeOutputToSyncStateTable(jobId, output, now);
   }
 
   private <T> void writeOutputToAttemptTable(final long jobId,
@@ -338,50 +328,6 @@ public class DefaultJobPersistence implements JobPersistence {
             .set(ATTEMPTS.UPDATED_AT, now)
             .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
             .execute());
-  }
-
-  private <T> void writeOutputToSyncStateTable(final long jobId, final T output, final OffsetDateTime now) throws IOException {
-    if (!(output instanceof JobOutput)) {
-      return;
-    }
-    final JobOutput jobOutput = (JobOutput) output;
-    if (jobOutput.getSync() == null) {
-      return;
-    }
-
-    final Record1<String> jobConnectionId = jobDatabase.query(ctx -> ctx
-        .select(JOBS.SCOPE)
-        .from(JOBS)
-        .where(JOBS.ID.eq(jobId))
-        .fetchAny());
-    final State syncState = jobOutput.getSync().getState();
-
-    if (jobConnectionId == null) {
-      LOGGER.error("No job can be found for id {}", jobId);
-      return;
-    }
-
-    final UUID connectionId = UUID.fromString(jobConnectionId.value1());
-    configDatabase.transaction(
-        ctx -> {
-          final boolean hasExistingRecord = ctx.fetchExists(SYNC_STATE, SYNC_STATE.SYNC_ID.eq(connectionId));
-          if (hasExistingRecord) {
-            LOGGER.info("Updating connection {} state", connectionId);
-            return ctx.update(SYNC_STATE)
-                .set(SYNC_STATE.STATE, JSONB.valueOf(Jsons.serialize(syncState)))
-                .set(SYNC_STATE.UPDATED_AT, now)
-                .where(SYNC_STATE.SYNC_ID.eq(connectionId))
-                .execute();
-          } else {
-            LOGGER.info("Inserting new state for connection {}", connectionId);
-            return ctx.insertInto(SYNC_STATE)
-                .set(SYNC_STATE.SYNC_ID, UUID.fromString(jobConnectionId.value1()))
-                .set(SYNC_STATE.STATE, JSONB.valueOf(Jsons.serialize(syncState)))
-                .set(SYNC_STATE.CREATED_AT, now)
-                .set(SYNC_STATE.UPDATED_AT, now)
-                .execute();
-          }
-        });
   }
 
   @Override
@@ -446,21 +392,6 @@ public class DefaultJobPersistence implements JobPersistence {
         .stream()
         .findFirst()
         .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
-  }
-
-  @Override
-  public Optional<State> getCurrentState(final UUID connectionId) throws IOException {
-    return configDatabase.query(ctx -> {
-      final Record1<JSONB> record = ctx.select(SYNC_STATE.STATE)
-          .from(SYNC_STATE)
-          .where(SYNC_STATE.SYNC_ID.eq(connectionId))
-          .fetchAny();
-      if (record == null) {
-        return Optional.empty();
-      }
-
-      return Optional.of(Jsons.deserialize(record.value1().data(), State.class));
-    });
   }
 
   @Override

@@ -20,6 +20,7 @@ import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.nio.file.Path;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +45,14 @@ public class TemporalWorkerRunFactory {
 
   public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(final Job job, final int attemptId) {
     final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
+    final UUID connectionId = UUID.fromString(job.getScope());
     return switch (job.getConfigType()) {
       case SYNC -> () -> {
-        final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(), attemptId, job.getConfig().getSync());
+        final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(
+            job.getId(),
+            attemptId,
+            job.getConfig().getSync(),
+            connectionId);
         return toOutputAndStatus(output);
       };
       case RESET_CONNECTION -> () -> {
@@ -63,7 +69,7 @@ public class TemporalWorkerRunFactory {
             .withOperationSequence(resetConnection.getOperationSequence())
             .withResourceRequirements(resetConnection.getResourceRequirements());
 
-        final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(), attemptId, config);
+        final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(), attemptId, config, connectionId);
         return toOutputAndStatus(output);
       };
       default -> throw new IllegalArgumentException("Does not support job type: " + temporalJobType);
@@ -84,7 +90,7 @@ public class TemporalWorkerRunFactory {
     if (!response.isSuccess()) {
       status = JobStatus.FAILED;
     } else {
-      final ReplicationStatus replicationStatus = response.getOutput().get().getStandardSyncSummary().getStatus();
+      final ReplicationStatus replicationStatus = response.getOutput().orElseThrow().getStandardSyncSummary().getStatus();
       if (replicationStatus == ReplicationStatus.FAILED || replicationStatus == ReplicationStatus.CANCELLED) {
         status = JobStatus.FAILED;
       } else {

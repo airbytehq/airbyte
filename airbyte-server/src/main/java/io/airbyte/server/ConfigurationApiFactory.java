@@ -8,6 +8,7 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.ConfigPersistence2;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
@@ -23,6 +24,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
 
   private static WorkflowServiceStubs temporalService;
   private static ConfigRepository configRepository;
+  private static ConfigPersistence2 configPersistence2;
   private static JobPersistence jobPersistence;
   private static ConfigPersistence seed;
   private static SchedulerJobClient schedulerJobClient;
@@ -37,6 +39,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   public static void setValues(
                                final WorkflowServiceStubs temporalService,
                                final ConfigRepository configRepository,
+                               final ConfigPersistence2 configPersistence2,
                                final JobPersistence jobPersistence,
                                final ConfigPersistence seed,
                                final SchedulerJobClient schedulerJobClient,
@@ -48,6 +51,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final Database jobsDatabase,
                                final TrackingClient trackingClient) {
     ConfigurationApiFactory.configRepository = configRepository;
+    ConfigurationApiFactory.configPersistence2 = configPersistence2;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
     ConfigurationApiFactory.schedulerJobClient = schedulerJobClient;
@@ -67,6 +71,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
 
     return new ConfigurationApi(
         ConfigurationApiFactory.configRepository,
+        ConfigurationApiFactory.configPersistence2,
         ConfigurationApiFactory.jobPersistence,
         ConfigurationApiFactory.seed,
         ConfigurationApiFactory.schedulerJobClient,

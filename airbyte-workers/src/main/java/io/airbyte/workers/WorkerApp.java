@@ -9,8 +9,11 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.persistence.ConfigPersistence2;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.db.Database;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
@@ -50,7 +53,7 @@ public class WorkerApp {
   private final WorkflowServiceStubs temporalService;
   private final MaxWorkersConfig maxWorkers;
   private final WorkerEnvironment workerEnvironment;
-  private final String airbyteVersion;
+  private final ConfigPersistence2 configPersistence2;
 
   public WorkerApp(final Path workspaceRoot,
                    final ProcessFactory processFactory,
@@ -58,14 +61,14 @@ public class WorkerApp {
                    final WorkflowServiceStubs temporalService,
                    final MaxWorkersConfig maxWorkers,
                    final WorkerEnvironment workerEnvironment,
-                   final String airbyteVersion) {
+                   final ConfigPersistence2 configPersistence2) {
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.temporalService = temporalService;
     this.maxWorkers = maxWorkers;
     this.workerEnvironment = workerEnvironment;
-    this.airbyteVersion = airbyteVersion;
+    this.configPersistence2 = configPersistence2;
   }
 
   public void start() {
@@ -101,8 +104,9 @@ public class WorkerApp {
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
         new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
-        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, airbyteVersion),
-        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, airbyteVersion));
+        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment),
+        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
+        new SyncWorkflow.PersistStateActivityImpl(workspaceRoot, configPersistence2));
     factory.start();
   }
 
@@ -146,6 +150,14 @@ public class WorkerApp {
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
 
+    // todo (cgardens) - make sure appropriate env variables are passed to this container.
+    final Database configDatabase = new ConfigsDatabaseInstance(
+        configs.getConfigDatabaseUser(),
+        configs.getConfigDatabasePassword(),
+        configs.getConfigDatabaseUrl())
+            .getInitialized();
+    final ConfigPersistence2 configPersistence2 = new ConfigPersistence2(configDatabase);
+
     new WorkerApp(
         workspaceRoot,
         processFactory,
@@ -153,7 +165,7 @@ public class WorkerApp {
         temporalService,
         configs.getMaxWorkers(),
         configs.getWorkerEnvironment(),
-        configs.getAirbyteVersion()).start();
+        configPersistence2).start();
   }
 
 }
