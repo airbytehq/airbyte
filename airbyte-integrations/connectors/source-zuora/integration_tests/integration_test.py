@@ -20,7 +20,6 @@ from source_zuora.source import (
 from source_zuora.zuora_auth import ZuoraAuthenticator
 from source_zuora.zuora_excluded_streams import ZUORA_EXCLUDED_STREAMS
 
-
 def get_config(config_path: str) -> Mapping[str, Any]:
     """
     Get the config from /test_input

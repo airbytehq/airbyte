@@ -17,6 +17,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 from .zuora_auth import ZuoraAuthenticator
 from .zuora_errors import (
+    QueryWindowError,
     ZOQLQueryCannotProcessObject,
     ZOQLQueryFailed,
     ZOQLQueryFieldCannotResolveAltCursor,
@@ -39,12 +40,22 @@ class ZuoraStream(HttpStream, ABC):
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
-        self.window_in_days: float = float(config["window_in_days"])
         self._config = config
 
     @property
     def url_base(self) -> str:
         return self._config["url_base"]
+
+    @property
+    def window_in_days(self) -> float:
+        """
+        Converting `Query Window` config parameter from string type into type float.
+        """
+        try:
+            value = self._config["window_in_days"]
+            return float(value)
+        except ValueError:
+            raise QueryWindowError(value)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """ Abstractmethod HTTPStream CDK dependency """
