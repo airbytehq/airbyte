@@ -16,15 +16,6 @@
         {%- endif -%}
     {%- endfor -%}
     {%- if found_column -%}
-      {#
-        {%- set column_values = dbt_utils.get_column_values(target_table, col_ab_id, default="ignore") -%}
-        {%- for val in column_values -%}
-            {%- if val == None or val == "ignore" -%}
-                {{ dbt_utils.log_info(target_table ~ "." ~ col_ab_id ~ " contains NULL values. The table needs to be rebuilt in full_refresh") }}
-                {{ return(true) }}
-            {%- endif -%}
-        {%- endfor -%}
-      #}
         {{ return(false) }}
     {%- else -%}
         {{ dbt_utils.log_info(target_table ~ "." ~ col_ab_id ~ " does not exist. The table needs to be rebuilt in full_refresh") }}
