@@ -636,11 +636,7 @@ class Issues(IncrementalGithubStream):
     }
 
 
-class PullRequestStats(SemiIncrementalGithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
-    """
-
+class PullRequestSubStream(SemiIncrementalGithubStream, ABC):
     def __init__(self, parent: PullRequests, **kwargs):
         self._parent_stream = parent
         super().__init__(**kwargs)
@@ -650,6 +646,31 @@ class PullRequestStats(SemiIncrementalGithubStream):
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         return None
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(**kwargs):
+            pull_requests = list(self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state))
+            if self._parent_stream.is_sorted_descending:
+                pull_requests.reverse()
+            for pull_request in pull_requests:
+                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"], self.cursor_field: pull_request[self.cursor_field]}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        yield from super(SemiIncrementalGithubStream, self).read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        )
+
+
+class PullRequestStats(PullRequestSubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+    """
 
     @property
     def record_keys(self) -> List[str]:
@@ -660,25 +681,6 @@ class PullRequestStats(SemiIncrementalGithubStream):
     ) -> str:
         return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for stream_slice in super().stream_slices(**kwargs):
-            pull_requests = list(self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state))
-            if self._parent_stream.is_sorted_descending:
-                pull_requests.reverse()
-            for pull_request in pull_requests:
-                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"], self.cursor_field: pull_request[self.cursor_field]}
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        yield from super(SemiIncrementalGithubStream, self).read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        )
-
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         yield self.transform(response.json(), stream_slice=stream_slice)
 
@@ -688,44 +690,15 @@ class PullRequestStats(SemiIncrementalGithubStream):
         return record
 
 
-class Reviews(SemiIncrementalGithubStream):
+class Reviews(PullRequestSubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
     """
-
-    def __init__(self, parent: PullRequests, **kwargs):
-        self._parent_stream = parent
-        super().__init__(**kwargs)
-
-    use_cache = False
-
-    @property
-    def state_checkpoint_interval(self) -> Optional[int]:
-        return None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}/reviews"
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for stream_slice in super().stream_slices(**kwargs):
-            pull_requests = list(self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state))
-            if self._parent_stream.is_sorted_descending:
-                pull_requests.reverse()
-            for pull_request in pull_requests:
-                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"], self.cursor_field: pull_request[self.cursor_field]}
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        yield from super(SemiIncrementalGithubStream, self).read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        )
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         for record in response.json():  # GitHub puts records in an array.
