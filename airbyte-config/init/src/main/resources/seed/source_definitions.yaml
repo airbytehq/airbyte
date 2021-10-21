@@ -332,7 +332,7 @@
 - sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   name: Oracle DB
   dockerRepository: airbyte/source-oracle
-  dockerImageTag: 0.3.7
+  dockerImageTag: 0.3.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/oracle
   sourceType: database
 - sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071

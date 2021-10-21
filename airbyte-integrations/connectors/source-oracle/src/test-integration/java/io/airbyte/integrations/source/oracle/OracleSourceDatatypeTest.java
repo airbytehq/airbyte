@@ -174,7 +174,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("BINARY_DOUBLE")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("126.45d", "2.22507485850720E-308", "TO_BINARY_DOUBLE('1.79769313486231E+308')", "BINARY_DOUBLE_INFINITY")
+            .addInsertValues("126.45d", "2.22507485850720E-308", "1.79769313486231E+308d", "BINARY_DOUBLE_INFINITY")
             .addExpectedValues("126.45", "0.0", "1.79769313486231E308", "Infinity")
             .build());
 
@@ -266,8 +266,8 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("LONG")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("LONG RAW")
-            // @TODO stream fails when reading data back
-            // .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
+             .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
+            .addExpectedValues("c29tZSBjb250ZW50IGhlcmU=", null)
             .build());
 
     addDataTypeTestData(

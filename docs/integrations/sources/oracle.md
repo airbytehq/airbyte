@@ -132,6 +132,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.3.8 | 2021-10-13 | [7125](https://github.com/airbytehq/airbyte/pull/7125) | Fix incorrect handling of LONG RAW data type |
 | 0.3.7 | 2021-10-01 | [6616](https://github.com/airbytehq/airbyte/pull/6616) | Added network encryption options |
 | 0.3.6 | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
 | 0.3.5 | 2021-09-22 | [6356](https://github.com/airbytehq/airbyte/pull/6356) | Added option to connect to DB via SSH. |
