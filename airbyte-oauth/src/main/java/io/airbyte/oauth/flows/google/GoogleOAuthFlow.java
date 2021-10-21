@@ -12,7 +12,6 @@ import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -64,7 +63,7 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
   protected abstract String getScope();
 
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(JsonNode oAuthParamConfig) {
     return ACCESS_TOKEN_URL;
   }
 
@@ -80,20 +79,6 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
         .put("grant_type", "authorization_code")
         .put("redirect_uri", redirectUrl)
         .build();
-  }
-
-  @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data) throws IOException {
-    final Map<String, Object> result = new HashMap<>();
-    if (data.has("access_token")) {
-      result.put("access_token", data.get("access_token").asText());
-    }
-    if (data.has("refresh_token")) {
-      result.put("refresh_token", data.get("refresh_token").asText());
-    } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", ACCESS_TOKEN_URL));
-    }
-    return result;
   }
 
 }
