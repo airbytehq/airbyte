@@ -135,6 +135,8 @@ class SourceGithub(AbstractSource):
         organization_args = {"authenticator": authenticator, "organizations": organizations}
         default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), full_refresh_args)
 
+        pull_request_stream = PullRequests(**incremental_args)
+
         return [
             Assignees(**full_refresh_args),
             Branches(**full_refresh_args),
@@ -153,12 +155,12 @@ class SourceGithub(AbstractSource):
             Organizations(**organization_args),
             Projects(**incremental_args),
             PullRequestCommentReactions(**incremental_args),
-            PullRequestStats(**full_refresh_args),
-            PullRequests(**incremental_args),
+            PullRequestStats(parent=pull_request_stream, **incremental_args),
+            pull_request_stream,
             Releases(**incremental_args),
             Repositories(**organization_args),
             ReviewComments(**incremental_args),
-            Reviews(**full_refresh_args),
+            Reviews(parent=pull_request_stream, **incremental_args),
             Stargazers(**incremental_args),
             Tags(**full_refresh_args),
             Teams(**organization_args),
