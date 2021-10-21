@@ -7,7 +7,7 @@
 * **Airbyte Core** is licensed under the Elastic License 2.0 (ELv2).
 * **Airbyte Cloud & Airbyte Enterprise** are both closed source and require a commercial license from Airbyte.
 
-![Diagram of license structure](https://assets-global.website-files.com/605e01bc25f7e19a82e74788/6142675d8f67e640a5b3b407_Screen%20Shot%202021-09-16%20at%208.36.21%20AM.png)
+![Diagram of license structure](../../.gitbook/assets/license_faq_diagram.png)
 
 ## About Elastic License 2.0 (ELv2)
 ELv2 is a simple, non-copyleft license, allowing for the right to “use, copy, distribute, make available, and prepare derivative works of the software”. Anyone can use Airbyte, free of charge. You can run the software at scale on your infrastructure. There are only three high-level limitations. You cannot:
