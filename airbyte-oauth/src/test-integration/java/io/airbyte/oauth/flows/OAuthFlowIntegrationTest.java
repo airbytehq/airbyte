@@ -4,60 +4,59 @@
 
 package io.airbyte.oauth.flows;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.oauth.OAuthFlowImplementation;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AsanaOAuthFlowIntegrationTest {
+public abstract class OAuthFlowIntegrationTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AsanaOAuthFlowIntegrationTest.class);
-  private static final String REDIRECT_URL = "http://localhost:8000/code";
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/asana.json");
+  /**
+   * Convenience base class for OAuthFlow tests. Those tests right now are meant to be run manually,
+   * due to the consent flow in the browser
+   */
+  protected static final Logger LOGGER = LoggerFactory.getLogger(OAuthFlowIntegrationTest.class);
+  protected static final String REDIRECT_URL = "http://localhost/code";
 
-  private ConfigRepository configRepository;
-  private AsanaOAuthFlow asanaOAuthFlow;
-  private HttpServer server;
-  private ServerHandler serverHandler;
+  protected ConfigRepository configRepository;
+  protected OAuthFlowImplementation flow;
+  protected HttpServer server;
+  protected ServerHandler serverHandler;
+
+  protected abstract Path get_credentials_path();
+
+  protected abstract OAuthFlowImplementation getFlowObject(ConfigRepository configRepository);
 
   @BeforeEach
   public void setup() throws IOException {
-    if (!Files.exists(CREDENTIALS_PATH)) {
+    if (!Files.exists(get_credentials_path())) {
       throw new IllegalStateException(
           "Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
-    asanaOAuthFlow = new AsanaOAuthFlow(configRepository);
 
-    server = HttpServer.create(new InetSocketAddress(8000), 0);
+    flow = this.getFlowObject(configRepository);
+
+    server = HttpServer.create(new InetSocketAddress(80), 0);
     server.setExecutor(null); // creates a default executor
     server.start();
     serverHandler = new ServerHandler("code");
     server.createContext("/code", serverHandler);
+
   }
 
   @AfterEach
@@ -65,44 +64,9 @@ public class AsanaOAuthFlowIntegrationTest {
     server.stop(1);
   }
 
-  @Test
-  public void testFullAsanaOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
-    int limit = 20;
-    final UUID workspaceId = UUID.randomUUID();
-    final UUID definitionId = UUID.randomUUID();
-    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
-    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
-    final String clientId = credentialsJson.get("client_id").asText();
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", clientId)
-            .put("client_secret", credentialsJson.get("client_secret").asText())
-            .build()))));
-    final String url = asanaOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    LOGGER.info("Waiting for user consent at: {}", url);
-    // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
-    // access...
-    while (!serverHandler.isSucceeded() && limit > 0) {
-      Thread.sleep(1000);
-      limit -= 1;
-    }
-    assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
-    final Map<String, Object> params = asanaOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
-        Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
-    LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
-    assertTrue(params.containsKey("credentials"));
-    final Map creds = (Map) params.get("credentials");
-    assertTrue(creds.containsKey("refresh_token"));
-    assertTrue(creds.get("refresh_token").toString().length() > 0);
-  }
-
   static class ServerHandler implements HttpHandler {
 
     final private String expectedParam;
-    private Map responseQuery;
     private String paramValue;
     private boolean succeeded;
 
@@ -120,10 +84,6 @@ public class AsanaOAuthFlowIntegrationTest {
       return paramValue;
     }
 
-    public Map getResponseQuery() {
-      return responseQuery;
-    }
-
     @Override
     public void handle(HttpExchange t) {
       final String query = t.getRequestURI().getQuery();
@@ -136,7 +96,6 @@ public class AsanaOAuthFlowIntegrationTest {
           paramValue = data.get(expectedParam);
           response = String.format("Successfully extracted %s:\n'%s'\nTest should be continuing the OAuth Flow to retrieve the refresh_token...",
               expectedParam, paramValue);
-          responseQuery = data;
           LOGGER.info(response);
           t.sendResponseHeaders(200, response.length());
           succeeded = true;
