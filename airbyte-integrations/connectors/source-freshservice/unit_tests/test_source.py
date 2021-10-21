@@ -4,13 +4,24 @@
 
 from unittest.mock import MagicMock
 
+import responses
 from source_freshservice.source import SourceFreshservice
 
 
-def test_check_connection(mocker, config):
+def setup_responses():
+    responses.add(
+        responses.GET,
+        "https://test.freshservice.com/api/v2/tickets",
+        json={"per_page": 30, "order_by": "updated_at", "order_type": "asc", "updated_since": "2021-05-07T00:00:00Z"},
+    )
+
+
+@responses.activate
+def test_check_connection(mocker, test_config):
+    setup_responses()
     source = SourceFreshservice()
     logger_mock = MagicMock()
-    assert source.check_connection(logger_mock, config) == (True, None)
+    assert source.check_connection(logger_mock, test_config) == (True, None)
 
 
 def test_streams(mocker):

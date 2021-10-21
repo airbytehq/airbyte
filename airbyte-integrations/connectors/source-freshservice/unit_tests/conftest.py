@@ -2,12 +2,13 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import json
-
 import pytest
 
 
-@pytest.fixture(scope="session", name="config")
-def config_fixture():
-    with open("secrets/config.json", "r") as config_file:
-        return json.load(config_file)
+@pytest.fixture
+def test_config():
+    return {
+        "domain_name": "test.freshservice.com",
+        "api_key": "test_api_key",
+        "start_date": "2021-05-07T00:00:00Z",
+    }

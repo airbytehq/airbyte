@@ -3,7 +3,7 @@
 #
 
 from abc import ABC
-from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
 import requests
@@ -12,15 +12,18 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 # Basic full refresh stream
 class FreshserviceStream(HttpStream, ABC):
-    url_base = "https://{}/api/v2/"
     primary_key = "id"
     order_field = "updated_at"
-    results_per_page = 30
+    page_size = 30
 
-    def __init__(self, config: Dict):
-        super().__init__(authenticator=config["authenticator"])
-        self.config = config
-        self.url_base = self.url_base.format(config["domain_name"])
+    def __init__(self, start_date: str = None, domain_name: str = None, **kwargs):
+        super().__init__(**kwargs)
+        self._start_date = start_date
+        self.domain_name = domain_name
+
+    @property
+    def url_base(self) -> str:
+        return f"https://{self.domain_name}/api/v2/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.links.get("next", None)
@@ -32,19 +35,24 @@ class FreshserviceStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"per_page": self.results_per_page}
+        params = {"per_page": self.page_size}
         if next_page_token:
             params.update(**next_page_token)
         else:
             params["order_by"] = self.order_field
             params["order_type"] = "asc"
-            params["updated_since"] = self.config["start_date"]
+            params["updated_since"] = self._start_date
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         records = json_response.get(self.object_name, []) if self.object_name is not None else json_response
         yield from records
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return self.object_name
 
 
 class FullRefrehsFreshserviceStream(FreshserviceStream, ABC):
@@ -76,122 +84,98 @@ class IncrementalFreshserviceStream(FreshserviceStream, ABC):
                 params["updated_since"] = stream_state.get(self.cursor_field)
         return params
 
-    # Parse the stream_slice with respect to stream_state for Incremental refresh
-    # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
-    # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
-    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
-        # Getting records >= state
-        if stream_state:
-            for record in records_slice:
-                if record.get(self.cursor_field) >= stream_state.get(self.cursor_field):
-                    yield record
-        else:
-            yield from records_slice
-
 
 class Tickets(IncrementalFreshserviceStream):
-    object_name = "tickets"
+    """
+    API docs: https://api.freshservice.com/v2/#view_all_ticket
+    """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.object_name
+    object_name = "tickets"
 
 
 class Problems(IncrementalFreshserviceStream):
-    object_name = "problems"
+    """
+    API docs: https://api.freshservice.com/v2/#problems
+    """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.object_name
+    object_name = "problems"
 
 
 class Changes(IncrementalFreshserviceStream):
-    object_name = "changes"
+    """
+    API docs: https://api.freshservice.com/v2/#changes
+    """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.object_name
+    object_name = "changes"
 
 
 class Releases(IncrementalFreshserviceStream):
-    object_name = "releases"
+    """
+    API docs: https://api.freshservice.com/v2/#releases
+    """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.object_name
+    object_name = "releases"
 
 
 class Requesters(FullRefrehsFreshserviceStream):
-    object_name = "requesters"
+    """
+    API docs: https://api.freshservice.com/v2/#requesters
+    """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.object_name
+    object_name = "requesters"
 
 
 class Agents(FullRefrehsFreshserviceStream):
-    object_name = "agents"
+    """
+    API docs: https://api.freshservice.com/v2/#agents
+    """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.object_name
+    object_name = "agents"
 
 
 class Locations(FullRefrehsFreshserviceStream):
-    object_name = "locations"
+    """
+    API docs: https://api.freshservice.com/v2/#locations
+    """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.object_name
+    object_name = "locations"
 
 
 class Products(FullRefrehsFreshserviceStream):
-    object_name = "products"
+    """
+    API docs: https://api.freshservice.com/v2/#products
+    """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.object_name
+    object_name = "products"
 
 
 class Vendors(FullRefrehsFreshserviceStream):
-    object_name = "vendors"
+    """
+    API docs: https://api.freshservice.com/v2/#vendors
+    """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.object_name
+    object_name = "vendors"
 
 
 class Assets(FullRefrehsFreshserviceStream):
-    object_name = "assets"
+    """
+    API docs: https://api.freshservice.com/v2/#assets
+    """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.object_name
+    object_name = "assets"
 
 
 class PurchaseOrders(FullRefrehsFreshserviceStream):
-    object_name = "purchase_orders"
+    """
+    API docs: https://api.freshservice.com/v2/#purchase-order
+    """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.object_name
+    object_name = "purchase_orders"
 
 
 class Software(FullRefrehsFreshserviceStream):
-    object_name = "applications"
+    """
+    API docs: https://api.freshservice.com/v2/#software
+    """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return self.object_name
+    object_name = "applications"

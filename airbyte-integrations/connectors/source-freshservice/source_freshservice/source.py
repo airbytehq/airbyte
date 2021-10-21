@@ -6,9 +6,11 @@ import base64
 from typing import Any, List, Mapping, Tuple
 
 import requests
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .streams import (
     Agents,
@@ -35,29 +37,36 @@ class HttpBasicAuthenticator(TokenAuthenticator):
 
 
 class SourceFreshservice(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        auth = HttpBasicAuthenticator((config["api_key"], "")).get_auth_header()
-        url = f'https://{config["domain_name"]}/api/v2/tickets'
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        kwargs = {
+            "authenticator": HttpBasicAuthenticator((config["api_key"], "")),
+            "start_date": config["start_date"],
+            "domain_name": config["domain_name"],
+        }
         try:
-            session = requests.get(url, headers=auth)
-            session.raise_for_status()
+            tickets = Tickets(**kwargs).read_records(sync_mode=SyncMode.full_refresh)
+            next(tickets)
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        config["authenticator"] = HttpBasicAuthenticator((config["api_key"], ""))
+        kwargs = {
+            "authenticator": HttpBasicAuthenticator((config["api_key"], "")),
+            "start_date": config["start_date"],
+            "domain_name": config["domain_name"],
+        }
         return [
-            Tickets(config),
-            Problems(config),
-            Changes(config),
-            Releases(config),
-            Requesters(config),
-            Agents(config),
-            Locations(config),
-            Products(config),
-            Vendors(config),
-            Assets(config),
-            PurchaseOrders(config),
-            Software(config),
+            Tickets(**kwargs),
+            Problems(**kwargs),
+            Changes(**kwargs),
+            Releases(**kwargs),
+            Requesters(**kwargs),
+            Agents(**kwargs),
+            Locations(**kwargs),
+            Products(**kwargs),
+            Vendors(**kwargs),
+            Assets(**kwargs),
+            PurchaseOrders(**kwargs),
+            Software(**kwargs),
         ]
