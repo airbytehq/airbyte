@@ -3,7 +3,7 @@
 We're using the [Sphinx](https://www.sphinx-doc.org/) library in order 
 to automatically generate the docs for the [airbyte-cdk](https://pypi.org/project/airbyte-cdk/).
 
-## Updating the docs structure
+## Updating the docs structure (manually)
 
 Documentation structure is set in `airbyte-cdk/python/reference_docs/_source`, using the `.rst` files.
 
@@ -57,10 +57,16 @@ Let's dive into using an example:
 For more examples see `airbyte-cdk/python/reference_docs/_source` 
 and read the [docs](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html).
 
-**NOTE**: It's also possible to autogenerate the `rst` files with 
-[sphinx-apidoc](https://www.sphinx-doc.org/en/master/man/sphinx-apidoc.html). 
-But this method could be used only for testing purposes or to generate the initial `rst` schema.
-In most cases we'll need to work on `rst` files manually.
+## Updating the docs structure (automatically)
+
+It's also possible to generate `.rst` files automatically using `generate_rst_schema.py` script. 
+
+You should also update this script in order to change the docs appearance or structure.
+
+To generate the docs, 
+run `python generate_rst_schema.py -o _source/api ../../python/airbyte_cdk -f -t _source/templates` 
+from the `airbyte-cdk/python/reference_docs` root. 
+
 
 ## Building the docs locally
 

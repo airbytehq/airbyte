@@ -1,5 +1,3 @@
-airbyte\_cdk.sources.streams.http package
-=========================================
 
 Subpackages
 -----------

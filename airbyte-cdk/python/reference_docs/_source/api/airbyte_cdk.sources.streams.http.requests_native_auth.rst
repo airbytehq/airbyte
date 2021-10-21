@@ -1,5 +1,3 @@
-airbyte\_cdk.sources.streams.http.requests\_native\_auth package
-================================================================
 
 Submodules
 ----------
