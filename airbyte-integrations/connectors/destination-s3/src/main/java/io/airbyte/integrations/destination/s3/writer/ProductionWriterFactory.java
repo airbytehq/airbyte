@@ -5,9 +5,10 @@
 package io.airbyte.integrations.destination.s3.writer;
 
 import com.amazonaws.services.s3.AmazonS3;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.avro.AvroNameTransformer;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 import io.airbyte.integrations.destination.s3.avro.S3AvroWriter;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
@@ -19,6 +20,7 @@ import java.sql.Timestamp;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class ProductionWriterFactory implements S3WriterFactory {
 
@@ -38,17 +40,15 @@ public class ProductionWriterFactory implements S3WriterFactory {
 
       final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
       final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
-      final JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
+      final NamingConventionTransformer nameUpdater = new AvroNameTransformer();
+      final JsonAvroConverter converter = JsonAvroConverter.builder().setNameTransformer(nameUpdater::getIdentifier).build();
 
       LOGGER.info("Avro schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
-      if (nameUpdater.hasNameUpdate()) {
-        LOGGER.info("The following field names will be standardized: {}", nameUpdater);
-      }
 
       if (format == S3Format.AVRO) {
-        return new S3AvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+        return new S3AvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, converter);
       } else {
-        return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+        return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, converter);
       }
     }
 

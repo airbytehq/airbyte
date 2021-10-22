@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.s3.S3NameTransformer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,7 +29,7 @@ import org.slf4j.LoggerFactory;
 /**
  * The main function of this class is to convert a JsonSchema to Avro schema. It can also
  * standardize schema names, and keep track of a mapping from the original names to the standardized
- * ones.
+ * ones, which is needed for unit tests.
  * <p/>
  * For limitations of this converter, see the README of this connector:
  * https://docs.airbyte.io/integrations/destinations/s3#avro
@@ -42,7 +41,7 @@ public class JsonToAvroSchemaConverter {
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonToAvroSchemaConverter.class);
   private static final Schema TIMESTAMP_MILLIS_SCHEMA = LogicalTypes.timestampMillis()
       .addToSchema(Schema.create(Type.LONG));
-  private static final S3NameTransformer NAME_TRANSFORMER = new S3NameTransformer();
+  private static final AvroNameTransformer NAME_TRANSFORMER = new AvroNameTransformer();
 
   private final Map<String, String> standardizedNames = new HashMap<>();
 

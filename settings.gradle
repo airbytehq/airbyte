@@ -11,6 +11,12 @@ gradleEnterprise {
     }
 }
 
+sourceControl {
+    gitRepository("https://github.com/airbytehq/json-avro-converter.git") {
+        producesModule("tech.allegro.schema.json2avro:converter")
+    }
+}
+
 rootProject.name = 'airbyte'
 
 // SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE. Blank is equivalent to all.
