@@ -48,12 +48,12 @@ public class DestinationHandler {
 
   @VisibleForTesting
   DestinationHandler(final ConfigRepository configRepository,
-      final JsonSchemaValidator integrationSchemaValidation,
-      final SpecFetcher specFetcher,
-      final ConnectionsHandler connectionsHandler,
-      final Supplier<UUID> uuidGenerator,
-      final JsonSecretsProcessor secretsProcessor,
-      final ConfigurationUpdate configurationUpdate) {
+                     final JsonSchemaValidator integrationSchemaValidation,
+                     final SpecFetcher specFetcher,
+                     final ConnectionsHandler connectionsHandler,
+                     final Supplier<UUID> uuidGenerator,
+                     final JsonSecretsProcessor secretsProcessor,
+                     final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
     this.specFetcher = specFetcher;
@@ -64,9 +64,9 @@ public class DestinationHandler {
   }
 
   public DestinationHandler(final ConfigRepository configRepository,
-      final JsonSchemaValidator integrationSchemaValidation,
-      final SpecFetcher specFetcher,
-      final ConnectionsHandler connectionsHandler) {
+                            final JsonSchemaValidator integrationSchemaValidation,
+                            final SpecFetcher specFetcher,
+                            final ConnectionsHandler connectionsHandler) {
     this(
         configRepository,
         integrationSchemaValidation,
@@ -216,11 +216,11 @@ public class DestinationHandler {
   }
 
   private void persistDestinationConnection(final String name,
-      final UUID destinationDefinitionId,
-      final UUID workspaceId,
-      final UUID destinationId,
-      final JsonNode configurationJson,
-      final boolean tombstone)
+                                            final UUID destinationDefinitionId,
+                                            final UUID workspaceId,
+                                            final UUID destinationId,
+                                            final JsonNode configurationJson,
+                                            final boolean tombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationConnection destinationConnection = new DestinationConnection()
         .withName(name)
@@ -250,7 +250,7 @@ public class DestinationHandler {
   }
 
   protected static DestinationRead toDestinationRead(final DestinationConnection destinationConnection,
-      final StandardDestinationDefinition standardDestinationDefinition) {
+                                                     final StandardDestinationDefinition standardDestinationDefinition) {
     return new DestinationRead()
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .destinationId(destinationConnection.getDestinationId())

@@ -82,12 +82,12 @@ public class SchedulerHandler {
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
   public SchedulerHandler(final ConfigRepository configRepository,
-      final SchedulerJobClient schedulerJobClient,
-      final SynchronousSchedulerClient synchronousSchedulerClient,
-      final JobPersistence jobPersistence,
-      final JobNotifier jobNotifier,
-      final WorkflowServiceStubs temporalService,
-      final OAuthConfigSupplier oAuthConfigSupplier) {
+                          final SchedulerJobClient schedulerJobClient,
+                          final SynchronousSchedulerClient synchronousSchedulerClient,
+                          final JobPersistence jobPersistence,
+                          final JobNotifier jobNotifier,
+                          final WorkflowServiceStubs temporalService,
+                          final OAuthConfigSupplier oAuthConfigSupplier) {
     this(
         configRepository,
         schedulerJobClient,
@@ -103,15 +103,15 @@ public class SchedulerHandler {
 
   @VisibleForTesting
   SchedulerHandler(final ConfigRepository configRepository,
-      final SchedulerJobClient schedulerJobClient,
-      final SynchronousSchedulerClient synchronousSchedulerClient,
-      final ConfigurationUpdate configurationUpdate,
-      final JsonSchemaValidator jsonSchemaValidator,
-      final SpecFetcher specFetcher,
-      final JobPersistence jobPersistence,
-      final JobNotifier jobNotifier,
-      final WorkflowServiceStubs temporalService,
-      final OAuthConfigSupplier oAuthConfigSupplier) {
+                   final SchedulerJobClient schedulerJobClient,
+                   final SynchronousSchedulerClient synchronousSchedulerClient,
+                   final ConfigurationUpdate configurationUpdate,
+                   final JsonSchemaValidator jsonSchemaValidator,
+                   final SpecFetcher specFetcher,
+                   final JobPersistence jobPersistence,
+                   final JobNotifier jobNotifier,
+                   final WorkflowServiceStubs temporalService,
+                   final OAuthConfigSupplier oAuthConfigSupplier) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -259,7 +259,7 @@ public class SchedulerHandler {
   }
 
   public DestinationDefinitionSpecificationRead getDestinationSpecification(
-      final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+                                                                            final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID destinationDefinitionId = destinationDefinitionIdRequestBody.getDestinationDefinitionId();
     final StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationDefinitionId);

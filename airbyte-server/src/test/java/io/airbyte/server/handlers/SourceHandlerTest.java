@@ -141,7 +141,7 @@ class SourceHandlerTest {
 
     when(secretsProcessor
         .copySecrets(sourceConnection.getConfiguration(), newConfiguration, sourceDefinitionSpecificationRead.getConnectionSpecification()))
-        .thenReturn(newConfiguration);
+            .thenReturn(newConfiguration);
     when(secretsProcessor.maskSecrets(newConfiguration, sourceDefinitionSpecificationRead.getConnectionSpecification())).thenReturn(newConfiguration);
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);

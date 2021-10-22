@@ -83,8 +83,7 @@ public class ArchiveHandlerTest {
       super(1L, TimeUnit.MINUTES, 1L);
     }
 
-    public void register(final Path path) {
-    }
+    public void register(final Path path) {}
 
   }
 
@@ -162,9 +161,9 @@ public class ArchiveHandlerTest {
     final UUID sourceS3DefinitionId = UUID.fromString("69589781-7828-43c5-9f63-8925b1c1ccc2");
     final String sourceS3DefinitionVersion = "0.0.0";
     final StandardSourceDefinition sourceS3Definition = seedPersistence.getConfig(
-            ConfigSchema.STANDARD_SOURCE_DEFINITION,
-            sourceS3DefinitionId.toString(),
-            StandardSourceDefinition.class)
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        sourceS3DefinitionId.toString(),
+        StandardSourceDefinition.class)
         // This source definition is on an old version
         .withDockerImageTag(sourceS3DefinitionVersion);
     final SourceConnection sourceConnection = new SourceConnection()

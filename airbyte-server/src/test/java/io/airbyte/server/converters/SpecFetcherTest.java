@@ -122,4 +122,5 @@ class SpecFetcherTest {
     assertEquals(Optional.empty(), response.getMetadata().getConfigId());
     assertEquals(connectorSpecification, response.getOutput());
   }
+
 }

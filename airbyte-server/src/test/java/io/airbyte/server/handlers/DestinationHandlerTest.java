@@ -187,7 +187,7 @@ class DestinationHandlerTest {
 
     when(secretsProcessor
         .copySecrets(destinationConnection.getConfiguration(), newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification()))
-        .thenReturn(newConfiguration);
+            .thenReturn(newConfiguration);
     when(secretsProcessor.maskSecrets(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(newConfiguration);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))

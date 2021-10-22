@@ -80,8 +80,7 @@ public class SpecFetcher {
         now,
         now,
         true,
-        null
-    );
+        null);
   }
 
   private static ConnectorSpecification getSpecFromJob(final SynchronousResponse<ConnectorSpecification> response) {
