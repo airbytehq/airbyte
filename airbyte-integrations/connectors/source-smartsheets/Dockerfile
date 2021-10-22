@@ -7,9 +7,8 @@ ENV CODE_PATH="source_smartsheets"
 
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
-COPY setup.py ./
 COPY main.py ./
-
+COPY setup.py ./
 RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
