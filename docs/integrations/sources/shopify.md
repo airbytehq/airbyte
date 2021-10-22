@@ -1,6 +1,6 @@
 ---
 description: >-
-Shopify is a proprietary e-commerce platform for online stores and retail point-of-sale systems.
+  Shopify is a proprietary e-commerce platform for online stores and retail point-of-sale systems.
 ---
 
 # Shopify

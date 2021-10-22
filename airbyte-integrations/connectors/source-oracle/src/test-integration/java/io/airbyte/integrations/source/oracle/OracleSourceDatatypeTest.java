@@ -46,7 +46,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("schemas", List.of("TEST"))
         .build());
 
-    Database database = Databases.createOracleDatabase(config.get("username").asText(),
+    final Database database = Databases.createOracleDatabase(config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
             config.get("host").asText(),
@@ -75,7 +75,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 
@@ -174,7 +174,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("BINARY_DOUBLE")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("126.45d", "2.22507485850720E-308", "TO_BINARY_DOUBLE('1.79769313486231E+308')", "BINARY_DOUBLE_INFINITY")
+            .addInsertValues("126.45d", "2.22507485850720E-308", "1.79769313486231E+308d", "BINARY_DOUBLE_INFINITY")
             .addExpectedValues("126.45", "0.0", "1.79769313486231E308", "Infinity")
             .build());
 
@@ -206,18 +206,18 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("2009-02-21 18:00:00.0 EST", "2009-02-21 18:00:00.0 -5:00")
             .build());
 
-    DateFormat utcFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
+    final DateFormat utcFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
     utcFormat.setTimeZone(TimeZone.getTimeZone(Calendar.getInstance().getTimeZone().getID()));
     Date date = null;
     try {
       date = utcFormat.parse("21-Feb-2009 18:00:00");
-    } catch (ParseException e) {
+    } catch (final ParseException e) {
       LOGGER.error("Unparseable date");
       date = Date.from(Instant.parse("2009-02-21T18:00:00.00Z"));
     }
-    DateFormat currentTFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    final DateFormat currentTFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     currentTFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-    String utc = currentTFormat.format(date);
+    final String utc = currentTFormat.format(date);
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIMESTAMP")
@@ -266,8 +266,8 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("LONG")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("LONG RAW")
-            // @TODO stream fails when reading data back
-            // .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
+            .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
+            .addExpectedValues("c29tZSBjb250ZW50IGhlcmU=", null)
             .build());
 
     addDataTypeTestData(

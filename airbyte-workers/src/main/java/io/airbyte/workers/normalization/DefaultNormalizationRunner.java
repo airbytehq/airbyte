@@ -44,7 +44,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     SNOWFLAKE
   }
 
-  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory, String normalizationImageName) {
+  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory, final String normalizationImageName) {
     this.destinationType = destinationType;
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImageName;

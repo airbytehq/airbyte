@@ -49,18 +49,18 @@ public class PgLsn implements Comparable<PgLsn> {
    * @return long representation of the lsn string.
    */
   @VisibleForTesting
-  static long lsnToLong(String lsn) {
-    int slashIndex = lsn.lastIndexOf('/');
+  static long lsnToLong(final String lsn) {
+    final int slashIndex = lsn.lastIndexOf('/');
     Preconditions.checkArgument(slashIndex >= 0);
 
-    String logicalXLogStr = lsn.substring(0, slashIndex);
+    final String logicalXLogStr = lsn.substring(0, slashIndex);
     // parses as a long but then cast to int. this allows us to retain the full 32 bits of the integer
     // as opposed to the reduced value of Integer.MAX_VALUE.
-    int logicalXlog = (int) Long.parseLong(logicalXLogStr, 16);
-    String segmentStr = lsn.substring(slashIndex + 1, lsn.length());
-    int segment = (int) Long.parseLong(segmentStr, 16);
+    final int logicalXlog = (int) Long.parseLong(logicalXLogStr, 16);
+    final String segmentStr = lsn.substring(slashIndex + 1, lsn.length());
+    final int segment = (int) Long.parseLong(segmentStr, 16);
 
-    ByteBuffer buf = ByteBuffer.allocate(8);
+    final ByteBuffer buf = ByteBuffer.allocate(8);
     buf.putInt(logicalXlog);
     buf.putInt(segment);
     buf.position(0);
@@ -68,9 +68,9 @@ public class PgLsn implements Comparable<PgLsn> {
   }
 
   @VisibleForTesting
-  static String longToLsn(long long1) {
-    int front = (int) (long1 >> 32);
-    int back = (int) long1;
+  static String longToLsn(final long long1) {
+    final int front = (int) (long1 >> 32);
+    final int back = (int) long1;
     return (Integer.toHexString(front) + "/" + Integer.toHexString(back)).toUpperCase();
   }
 

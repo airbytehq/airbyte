@@ -41,12 +41,12 @@ public class MigrateV0_29_0Test {
   private static final ResourceId CONNECTION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
   private static final ResourceId OPERATION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_OPERATION");
 
-  private Stream<JsonNode> getResourceStream(String resourcePath) throws IOException {
+  private Stream<JsonNode> getResourceStream(final String resourcePath) throws IOException {
     final ArrayNode nodeArray = (ArrayNode) Yamls.deserialize(MoreResources.readResource(resourcePath));
     return StreamSupport.stream(Spliterators.spliteratorUnknownSize(nodeArray.iterator(), 0), false);
   }
 
-  private List<JsonNode> getResourceList(String resourcePath) throws IOException {
+  private List<JsonNode> getResourceList(final String resourcePath) throws IOException {
     return getResourceStream(resourcePath).collect(Collectors.toList());
   }
 
@@ -87,7 +87,7 @@ public class MigrateV0_29_0Test {
     assertExpectedOutput(expectedOutput, outputAsList);
   }
 
-  private void assertExpectedOutput(Map<ResourceId, List<JsonNode>> expected, Map<ResourceId, List<JsonNode>> actual) {
+  private void assertExpectedOutput(final Map<ResourceId, List<JsonNode>> expected, final Map<ResourceId, List<JsonNode>> actual) {
     assertEquals(expected.keySet(), actual.keySet());
     expected.forEach((key, value) -> assertEquals(value, actual.get(key), String.format("Resources output do not match for %s:", key.getName())));
     assertEquals(expected, actual);

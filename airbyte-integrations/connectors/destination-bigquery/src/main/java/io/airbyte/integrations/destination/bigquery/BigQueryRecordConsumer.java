@@ -67,12 +67,12 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private AirbyteMessage lastStateMessage = null;
 
-  public BigQueryRecordConsumer(BigQuery bigquery,
-                                Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                ConfiguredAirbyteCatalog catalog,
-                                Consumer<AirbyteMessage> outputRecordCollector,
-                                boolean isGcsUploadingMode,
-                                boolean isKeepFilesInGcs) {
+  public BigQueryRecordConsumer(final BigQuery bigquery,
+                                final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final Consumer<AirbyteMessage> outputRecordCollector,
+                                final boolean isGcsUploadingMode,
+                                final boolean isKeepFilesInGcs) {
     this.bigquery = bigquery;
     this.writeConfigs = writeConfigs;
     this.catalog = catalog;
@@ -87,14 +87,14 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  public void acceptTracked(AirbyteMessage message) throws IOException {
+  public void acceptTracked(final AirbyteMessage message) throws IOException {
     if (message.getType() == Type.STATE) {
       lastStateMessage = message;
     } else if (message.getType() == Type.RECORD) {
       final AirbyteRecordMessage recordMessage = message.getRecord();
 
       // ignore other message types.
-      AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
+      final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
       if (!writeConfigs.containsKey(pair)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
@@ -108,7 +108,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         try {
           writer.getWriter()
               .write(ByteBuffer.wrap((Jsons.serialize(formatRecord(writer.getSchema(), recordMessage)) + "\n").getBytes(Charsets.UTF_8)));
-        } catch (IOException | RuntimeException e) {
+        } catch (final IOException | RuntimeException e) {
           LOGGER.error("Got an error while writing message:" + e.getMessage());
           LOGGER.error(String.format(
               "Failed to process a message for job: %s, \nStreams numbers: %s, \nSyncMode: %s, \nTableName: %s, \nTmpTableName: %s, \nAirbyteMessage: %s",
@@ -118,7 +118,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         }
       } else {
         // GCS uploading way, this data will be moved to bigquery in close method
-        GcsCsvWriter gcsCsvWriter = writer.getGcsCsvWriter();
+        final GcsCsvWriter gcsCsvWriter = writer.getGcsCsvWriter();
         gcsCsvWriter.write(UUID.randomUUID(), recordMessage);
       }
     } else {
@@ -126,10 +126,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
-  protected JsonNode formatRecord(Schema schema, AirbyteRecordMessage recordMessage) {
+  protected JsonNode formatRecord(final Schema schema, final AirbyteRecordMessage recordMessage) {
     // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
     // use BQ helpers to string-format correctly.
-    long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+    final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
     final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
     final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
     return Jsons.jsonNode(ImmutableMap.of(
@@ -139,7 +139,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  public void close(boolean hasFailed) {
+  public void close(final boolean hasFailed) {
     LOGGER.info("Started closing all connections");
     // process gcs streams
     if (isGcsUploadingMode) {
@@ -153,7 +153,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
-  private void closeGcsStreamsAndCopyDataToBigQuery(boolean hasFailed) {
+  private void closeGcsStreamsAndCopyDataToBigQuery(final boolean hasFailed) {
     final List<BigQueryWriteConfig> gcsWritersList = writeConfigs.values().parallelStream()
         .filter(el -> el.getGcsCsvWriter() != null)
         .collect(Collectors.toList());
@@ -166,7 +166,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         try {
           LOGGER.info("Closing connector:" + gcsCsvWriter);
           gcsCsvWriter.close(hasFailed);
-        } catch (IOException | RuntimeException e) {
+        } catch (final IOException | RuntimeException e) {
           LOGGER.error(String.format("Failed to close %s gcsWriter, \n details: %s", gcsCsvWriter, e.getMessage()));
           printHeapMemoryConsumption();
           throw new RuntimeException(e);
@@ -180,30 +180,30 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         .forEach(pair -> {
           try {
             loadCsvFromGcsTruncate(pair);
-          } catch (Exception e) {
+          } catch (final Exception e) {
             LOGGER.error("Failed to load data from GCS CSV file to BibQuery tmp table with reason: " + e.getMessage());
             throw new RuntimeException(e);
           }
         });
   }
 
-  private void loadCsvFromGcsTruncate(BigQueryWriteConfig bigQueryWriteConfig)
+  private void loadCsvFromGcsTruncate(final BigQueryWriteConfig bigQueryWriteConfig)
       throws Exception {
     try {
 
-      TableId tmpTable = bigQueryWriteConfig.getTmpTable();
-      Schema schema = bigQueryWriteConfig.getSchema();
+      final TableId tmpTable = bigQueryWriteConfig.getTmpTable();
+      final Schema schema = bigQueryWriteConfig.getSchema();
 
-      String csvFile = bigQueryWriteConfig.getGcsCsvWriter().getGcsCsvFileLocation();
+      final String csvFile = bigQueryWriteConfig.getGcsCsvWriter().getGcsCsvFileLocation();
 
       // Initialize client that will be used to send requests. This client only needs to be created
       // once, and can be reused for multiple requests.
       LOGGER.info(String.format("Started coping data from %s GCS csv file to %s tmp BigQuery table with schema: \n %s",
           csvFile, tmpTable, schema));
 
-      CsvOptions csvOptions = CsvOptions.newBuilder().setEncoding(UTF8).setSkipLeadingRows(1).build();
+      final CsvOptions csvOptions = CsvOptions.newBuilder().setEncoding(UTF8).setSkipLeadingRows(1).build();
 
-      LoadJobConfiguration configuration =
+      final LoadJobConfiguration configuration =
           LoadJobConfiguration.builder(tmpTable, csvFile)
               .setFormatOptions(csvOptions)
               .setSchema(schema)
@@ -213,14 +213,14 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       // For more information on Job see:
       // https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html
       // Load the table
-      Job loadJob = bigquery.create(JobInfo.of(configuration));
+      final Job loadJob = bigquery.create(JobInfo.of(configuration));
 
       LOGGER.info("Crated a new job GCS csv file to tmp BigQuery table: " + loadJob);
       LOGGER.info("Waiting for job to complete...");
 
       // Load data from a GCS parquet file into the table
       // Blocks until this load table job completes its execution, either failing or succeeding.
-      Job completedJob = loadJob.waitFor();
+      final Job completedJob = loadJob.waitFor();
 
       // Check for errors
       if (completedJob == null) {
@@ -229,25 +229,25 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       } else if (completedJob.getStatus().getError() != null) {
         // You can also look at queryJob.getStatus().getExecutionErrors() for all
         // errors, not just the latest one.
-        String msg = "BigQuery was unable to load into the table due to an error: \n"
+        final String msg = "BigQuery was unable to load into the table due to an error: \n"
             + loadJob.getStatus().getError();
         LOGGER.error(msg);
         throw new Exception(msg);
       }
       LOGGER.info("Table is successfully overwritten by CSV file loaded from GCS");
-    } catch (BigQueryException | InterruptedException e) {
+    } catch (final BigQueryException | InterruptedException e) {
       LOGGER.error("Column not added during load append \n" + e.toString());
       throw new RuntimeException("Column not added during load append \n" + e.toString());
     }
   }
 
-  private void closeNormalBigqueryStreams(boolean hasFailed) {
+  private void closeNormalBigqueryStreams(final boolean hasFailed) {
     try {
       writeConfigs.values().parallelStream().forEach(bigQueryWriteConfig -> Exceptions.toRuntime(() -> {
-        TableDataWriteChannel writer = bigQueryWriteConfig.getWriter();
+        final TableDataWriteChannel writer = bigQueryWriteConfig.getWriter();
         try {
           writer.close();
-        } catch (IOException | RuntimeException e) {
+        } catch (final IOException | RuntimeException e) {
           LOGGER.error(String.format("Failed to close writer: %s, \nStreams numbers: %s",
               writer.getJob(), catalog.getStreams().size()));
           printHeapMemoryConsumption();
@@ -260,7 +260,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         if (bigQueryWriteConfig.getWriter().getJob() != null) {
           try {
             bigQueryWriteConfig.getWriter().getJob().waitFor();
-          } catch (RuntimeException e) {
+          } catch (final RuntimeException e) {
             LOGGER.error(
                 String.format("Failed to process a message for job: %s, \nStreams numbers: %s, \nSyncMode: %s, \nTableName: %s, \nTmpTableName: %s",
                     bigQueryWriteConfig.getWriter().getJob(), catalog.getStreams().size(), bigQueryWriteConfig.getSyncMode(),
@@ -292,24 +292,24 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private void deleteDataFromGcsBucket() {
     writeConfigs.values().forEach(writeConfig -> {
-      GcsDestinationConfig gcsDestinationConfig = writeConfig.getGcsDestinationConfig();
-      AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+      final GcsDestinationConfig gcsDestinationConfig = writeConfig.getGcsDestinationConfig();
+      final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
 
-      String gcsBucketName = gcsDestinationConfig.getBucketName();
-      String gcs_bucket_path = gcsDestinationConfig.getBucketPath();
+      final String gcsBucketName = gcsDestinationConfig.getBucketName();
+      final String gcs_bucket_path = gcsDestinationConfig.getBucketPath();
 
-      List<KeyVersion> keysToDelete = new LinkedList<>();
-      List<S3ObjectSummary> objects = s3Client
+      final List<KeyVersion> keysToDelete = new LinkedList<>();
+      final List<S3ObjectSummary> objects = s3Client
           .listObjects(gcsBucketName, gcs_bucket_path)
           .getObjectSummaries();
-      for (S3ObjectSummary object : objects) {
+      for (final S3ObjectSummary object : objects) {
         keysToDelete.add(new KeyVersion(object.getKey()));
       }
 
       if (keysToDelete.size() > 0) {
         LOGGER.info("Tearing down test bucket path: {}/{}", gcsBucketName, gcs_bucket_path);
         // Google Cloud Storage doesn't accept request to delete multiple objects
-        for (KeyVersion keyToDelete : keysToDelete) {
+        for (final KeyVersion keyToDelete : keysToDelete) {
           s3Client.deleteObject(gcsBucketName, keyToDelete.getKey());
         }
         LOGGER.info("Deleted {} file(s).", keysToDelete.size());
@@ -320,10 +320,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   // https://cloud.google.com/bigquery/docs/managing-tables#copying_a_single_source_table
   private static void copyTable(
-                                BigQuery bigquery,
-                                TableId sourceTableId,
-                                TableId destinationTableId,
-                                WriteDisposition syncMode) {
+                                final BigQuery bigquery,
+                                final TableId sourceTableId,
+                                final TableId destinationTableId,
+                                final WriteDisposition syncMode) {
 
     final CopyJobConfiguration configuration = CopyJobConfiguration.newBuilder(destinationTableId, sourceTableId)
         .setCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
@@ -340,10 +340,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   private void printHeapMemoryConsumption() {
-    int mb = 1024 * 1024;
-    MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-    long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
-    long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
+    final int mb = 1024 * 1024;
+    final MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+    final long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
+    final long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
     LOGGER.info("Initial Memory (xms) mb = " + xms);
     LOGGER.info("Max Memory (xmx) : mb + " + xmx);
   }

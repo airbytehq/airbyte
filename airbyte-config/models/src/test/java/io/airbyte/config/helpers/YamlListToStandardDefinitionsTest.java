@@ -63,8 +63,8 @@ public class YamlListToStandardDefinitionsTest {
     @Test
     @DisplayName("should correctly read yaml file")
     public void correctlyReadTest() throws JsonProcessingException {
-      var jsonDefs = YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, goodDesDefYaml);
-      var defList = mapper.treeToValue(jsonDefs, StandardDestinationDefinition[].class);
+      final var jsonDefs = YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, goodDesDefYaml);
+      final var defList = mapper.treeToValue(jsonDefs, StandardDestinationDefinition[].class);
       assertEquals(1, defList.length);
       assertEquals("Local JSON", defList[0].getName());
     }
@@ -102,7 +102,7 @@ public class YamlListToStandardDefinitionsTest {
     @Test
     @DisplayName("should correctly read yaml file")
     public void correctlyReadTest() {
-      var defs = YamlListToStandardDefinitions
+      final var defs = YamlListToStandardDefinitions
           .verifyAndConvertToModelList(StandardDestinationDefinition.class, goodDesDefYaml);
       assertEquals(1, defs.size());
       assertEquals("Local JSON", defs.get(0).getName());

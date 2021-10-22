@@ -30,11 +30,11 @@ public class RunMigration implements Runnable, AutoCloseable {
   private final ConfigDumpImporter configDumpImporter;
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
-  public RunMigration(JobPersistence jobPersistence,
-                      ConfigRepository configRepository,
-                      String targetVersion,
-                      ConfigPersistence seedPersistence,
-                      SpecFetcher specFetcher) {
+  public RunMigration(final JobPersistence jobPersistence,
+                      final ConfigRepository configRepository,
+                      final String targetVersion,
+                      final ConfigPersistence seedPersistence,
+                      final SpecFetcher specFetcher) {
     this.targetVersion = targetVersion;
     this.seedPersistence = seedPersistence;
     this.configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, null);
@@ -45,7 +45,7 @@ public class RunMigration implements Runnable, AutoCloseable {
   public void run() {
     try {
       // Export data
-      File exportData = configDumpExporter.dump();
+      final File exportData = configDumpExporter.dump();
       filesToBeCleanedUp.add(exportData);
 
       // Define output target
@@ -55,19 +55,19 @@ public class RunMigration implements Runnable, AutoCloseable {
       filesToBeCleanedUp.add(tempFolder.toFile());
 
       // Run Migration
-      MigrateConfig migrateConfig = new MigrateConfig(exportData.toPath(), output.toPath(), targetVersion);
+      final MigrateConfig migrateConfig = new MigrateConfig(exportData.toPath(), output.toPath(), targetVersion);
       MigrationRunner.run(migrateConfig);
 
       // Import data
       configDumpImporter.importDataWithSeed(targetVersion, output, seedPersistence);
-    } catch (IOException | JsonValidationException e) {
+    } catch (final IOException | JsonValidationException e) {
       throw new RuntimeException("Automatic migration failed", e);
     }
   }
 
   @Override
   public void close() throws IOException {
-    for (File file : filesToBeCleanedUp) {
+    for (final File file : filesToBeCleanedUp) {
       if (file.exists()) {
         LOGGER.info("Deleting " + file.getName());
         if (file.isDirectory()) {

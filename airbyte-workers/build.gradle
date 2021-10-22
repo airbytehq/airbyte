@@ -35,7 +35,7 @@ dependencies {
     testImplementation 'org.postgresql:postgresql:42.2.18'
     testImplementation "org.flywaydb:flyway-core:7.14.0"
     testImplementation 'org.testcontainers:testcontainers:1.15.3'
-    testImplementation 'org.testcontainers:postgresql:1.15.1'
+    testImplementation 'org.testcontainers:postgresql:1.15.3'
 
     testImplementation project(':airbyte-commons-docker')
 

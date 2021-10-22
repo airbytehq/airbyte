@@ -77,7 +77,7 @@ class IntegrationRunnerTest {
     stdoutConsumer = Mockito.mock(Consumer.class);
     destination = mock(Destination.class);
     source = mock(Source.class);
-    Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
+    final Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
     configuredCatalogPath = IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
@@ -123,7 +123,7 @@ class IntegrationRunnerTest {
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).check(CONFIG);
@@ -143,7 +143,7 @@ class IntegrationRunnerTest {
     when(destination.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
     new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator).run(ARGS);
 
@@ -165,7 +165,7 @@ class IntegrationRunnerTest {
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).discover(CONFIG);
@@ -190,7 +190,7 @@ class IntegrationRunnerTest {
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
@@ -210,7 +210,7 @@ class IntegrationRunnerTest {
     when(destination.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
     final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator));
     runner.run(ARGS);
@@ -244,7 +244,7 @@ class IntegrationRunnerTest {
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
 
-    InOrder inOrder = inOrder(airbyteMessageConsumerMock);
+    final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
     inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
     inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage2);
     inOrder.verify(airbyteMessageConsumerMock).accept(stateMessage);
@@ -272,7 +272,7 @@ class IntegrationRunnerTest {
 
     assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
 
-    InOrder inOrder = inOrder(airbyteMessageConsumerMock);
+    final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
     inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
     inOrder.verify(airbyteMessageConsumerMock).close();
     inOrder.verifyNoMoreInteractions();
