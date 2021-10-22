@@ -15,7 +15,6 @@ import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -49,12 +48,12 @@ public class DestinationHandler {
 
   @VisibleForTesting
   DestinationHandler(final ConfigRepository configRepository,
-                     final JsonSchemaValidator integrationSchemaValidation,
-                     final SpecFetcher specFetcher,
-                     final ConnectionsHandler connectionsHandler,
-                     final Supplier<UUID> uuidGenerator,
-                     final JsonSecretsProcessor secretsProcessor,
-                     final ConfigurationUpdate configurationUpdate) {
+      final JsonSchemaValidator integrationSchemaValidation,
+      final SpecFetcher specFetcher,
+      final ConnectionsHandler connectionsHandler,
+      final Supplier<UUID> uuidGenerator,
+      final JsonSecretsProcessor secretsProcessor,
+      final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
     this.specFetcher = specFetcher;
@@ -65,9 +64,9 @@ public class DestinationHandler {
   }
 
   public DestinationHandler(final ConfigRepository configRepository,
-                            final JsonSchemaValidator integrationSchemaValidation,
-                            final SpecFetcher specFetcher,
-                            final ConnectionsHandler connectionsHandler) {
+      final JsonSchemaValidator integrationSchemaValidation,
+      final SpecFetcher specFetcher,
+      final ConnectionsHandler connectionsHandler) {
     this(
         configRepository,
         integrationSchemaValidation,
@@ -213,15 +212,15 @@ public class DestinationHandler {
 
   public static ConnectorSpecification getSpec(final SpecFetcher specFetcher, final StandardDestinationDefinition destinationDef)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return specFetcher.execute(DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag()));
+    return specFetcher.execute(destinationDef);
   }
 
   private void persistDestinationConnection(final String name,
-                                            final UUID destinationDefinitionId,
-                                            final UUID workspaceId,
-                                            final UUID destinationId,
-                                            final JsonNode configurationJson,
-                                            final boolean tombstone)
+      final UUID destinationDefinitionId,
+      final UUID workspaceId,
+      final UUID destinationId,
+      final JsonNode configurationJson,
+      final boolean tombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationConnection destinationConnection = new DestinationConnection()
         .withName(name)
@@ -251,7 +250,7 @@ public class DestinationHandler {
   }
 
   protected static DestinationRead toDestinationRead(final DestinationConnection destinationConnection,
-                                                     final StandardDestinationDefinition standardDestinationDefinition) {
+      final StandardDestinationDefinition standardDestinationDefinition) {
     return new DestinationRead()
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .destinationId(destinationConnection.getDestinationId())

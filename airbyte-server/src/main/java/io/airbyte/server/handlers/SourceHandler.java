@@ -14,7 +14,6 @@ import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
@@ -42,12 +41,12 @@ public class SourceHandler {
   private final JsonSecretsProcessor secretsProcessor;
 
   SourceHandler(final ConfigRepository configRepository,
-                final JsonSchemaValidator integrationSchemaValidation,
-                final SpecFetcher specFetcher,
-                final ConnectionsHandler connectionsHandler,
-                final Supplier<UUID> uuidGenerator,
-                final JsonSecretsProcessor secretsProcessor,
-                final ConfigurationUpdate configurationUpdate) {
+      final JsonSchemaValidator integrationSchemaValidation,
+      final SpecFetcher specFetcher,
+      final ConnectionsHandler connectionsHandler,
+      final Supplier<UUID> uuidGenerator,
+      final JsonSecretsProcessor secretsProcessor,
+      final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
     this.specFetcher = specFetcher;
@@ -58,9 +57,9 @@ public class SourceHandler {
   }
 
   public SourceHandler(final ConfigRepository configRepository,
-                       final JsonSchemaValidator integrationSchemaValidation,
-                       final SpecFetcher specFetcher,
-                       final ConnectionsHandler connectionsHandler) {
+      final JsonSchemaValidator integrationSchemaValidation,
+      final SpecFetcher specFetcher,
+      final ConnectionsHandler connectionsHandler) {
     this(
         configRepository,
         integrationSchemaValidation,
@@ -206,9 +205,7 @@ public class SourceHandler {
     // read configuration from db
     final StandardSourceDefinition sourceDef = configRepository
         .getSourceDefinitionFromSource(sourceId);
-    final String imageName = DockerUtils
-        .getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    final ConnectorSpecification spec = specFetcher.execute(imageName);
+    final ConnectorSpecification spec = specFetcher.execute(sourceDef);
     return buildSourceRead(sourceId, spec);
   }
 
@@ -243,18 +240,16 @@ public class SourceHandler {
 
   public static ConnectorSpecification getSpecFromSourceDefinitionId(final SpecFetcher specFetcher, final StandardSourceDefinition sourceDefinition)
       throws IOException, ConfigNotFoundException {
-    final String imageName = DockerUtils
-        .getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
-    return specFetcher.execute(imageName);
+    return specFetcher.execute(sourceDefinition);
   }
 
   private void persistSourceConnection(final String name,
-                                       final UUID sourceDefinitionId,
-                                       final UUID workspaceId,
-                                       final UUID sourceId,
-                                       final boolean tombstone,
-                                       final JsonNode configurationJson,
-                                       final ConnectorSpecification spec)
+      final UUID sourceDefinitionId,
+      final UUID workspaceId,
+      final UUID sourceId,
+      final boolean tombstone,
+      final JsonNode configurationJson,
+      final ConnectorSpecification spec)
       throws JsonValidationException, IOException {
     final SourceConnection sourceConnection = new SourceConnection()
         .withName(name)
@@ -268,7 +263,7 @@ public class SourceHandler {
   }
 
   protected static SourceRead toSourceRead(final SourceConnection sourceConnection,
-                                           final StandardSourceDefinition standardSourceDefinition) {
+      final StandardSourceDefinition standardSourceDefinition) {
     return new SourceRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
         .sourceName(standardSourceDefinition.getName())

@@ -82,12 +82,12 @@ public class SchedulerHandler {
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
   public SchedulerHandler(final ConfigRepository configRepository,
-                          final SchedulerJobClient schedulerJobClient,
-                          final SynchronousSchedulerClient synchronousSchedulerClient,
-                          final JobPersistence jobPersistence,
-                          final JobNotifier jobNotifier,
-                          final WorkflowServiceStubs temporalService,
-                          final OAuthConfigSupplier oAuthConfigSupplier) {
+      final SchedulerJobClient schedulerJobClient,
+      final SynchronousSchedulerClient synchronousSchedulerClient,
+      final JobPersistence jobPersistence,
+      final JobNotifier jobNotifier,
+      final WorkflowServiceStubs temporalService,
+      final OAuthConfigSupplier oAuthConfigSupplier) {
     this(
         configRepository,
         schedulerJobClient,
@@ -103,15 +103,15 @@ public class SchedulerHandler {
 
   @VisibleForTesting
   SchedulerHandler(final ConfigRepository configRepository,
-                   final SchedulerJobClient schedulerJobClient,
-                   final SynchronousSchedulerClient synchronousSchedulerClient,
-                   final ConfigurationUpdate configurationUpdate,
-                   final JsonSchemaValidator jsonSchemaValidator,
-                   final SpecFetcher specFetcher,
-                   final JobPersistence jobPersistence,
-                   final JobNotifier jobNotifier,
-                   final WorkflowServiceStubs temporalService,
-                   final OAuthConfigSupplier oAuthConfigSupplier) {
+      final SchedulerJobClient schedulerJobClient,
+      final SynchronousSchedulerClient synchronousSchedulerClient,
+      final ConfigurationUpdate configurationUpdate,
+      final JsonSchemaValidator jsonSchemaValidator,
+      final SpecFetcher specFetcher,
+      final JobPersistence jobPersistence,
+      final JobNotifier jobNotifier,
+      final WorkflowServiceStubs temporalService,
+      final OAuthConfigSupplier oAuthConfigSupplier) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -136,11 +136,9 @@ public class SchedulerHandler {
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(final SourceCoreConfig sourceConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-
     final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
         sourceConfig.getConnectionConfiguration(),
-        specFetcher.execute(imageName));
+        specFetcher.execute(sourceDef));
 
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
@@ -148,6 +146,7 @@ public class SchedulerHandler {
         .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
         .withConfiguration(partialConfig);
 
+    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName));
   }
 
@@ -177,11 +176,9 @@ public class SchedulerHandler {
   public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(final DestinationCoreConfig destinationConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
-
     final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
         destinationConfig.getConnectionConfiguration(),
-        specFetcher.execute(imageName));
+        specFetcher.execute(destDef));
 
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
@@ -189,6 +186,7 @@ public class SchedulerHandler {
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
         .withConfiguration(partialConfig);
 
+    final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
     return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName));
   }
 
@@ -261,7 +259,8 @@ public class SchedulerHandler {
     return specRead;
   }
 
-  public DestinationDefinitionSpecificationRead getDestinationSpecification(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+  public DestinationDefinitionSpecificationRead getDestinationSpecification(
+      final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID destinationDefinitionId = destinationDefinitionIdRequestBody.getDestinationDefinitionId();
     final StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
@@ -379,7 +378,7 @@ public class SchedulerHandler {
 
   private void cancelTemporalWorkflowIfPresent(final long jobId) throws IOException {
     final var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1; // attempts ids are monotonically increasing starting from 0
-                                                                                       // and
+    // and
     // specific to a job id, allowing us to do this.
     final var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, latestAttemptId);
 
@@ -416,15 +415,13 @@ public class SchedulerHandler {
   private ConnectorSpecification getSpecFromSourceDefinitionId(final UUID sourceDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    return specFetcher.execute(imageName);
+    return specFetcher.execute(sourceDef);
   }
 
   private ConnectorSpecification getSpecFromDestinationDefinitionId(final UUID destDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destDefId);
-    final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
-    return specFetcher.execute(imageName);
+    return specFetcher.execute(destinationDef);
   }
 
 }
