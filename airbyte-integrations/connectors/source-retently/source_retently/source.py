@@ -5,6 +5,7 @@ from abc import abstractmethod
 import base64, math
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -12,21 +13,26 @@ from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthen
 
 class SourceRetently(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        api_key = config["api_key"]
-        if not api_key:
-            return False, f"API key is missing"
-        else:
+        try:
+            api_key = config["api_key"]
+            auth_method = f"api_key={api_key}"
+            token = ""
+            auth = TokenAuthenticator(token, auth_method=auth_method)
+            stream = Companies(auth)
+            records = stream.read_records(sync_mode=SyncMode.full_refresh)
+            next(records)
             return True, None
+        except Exception as e:
+            return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         api_key = config["api_key"]
         auth_method = f"api_key={api_key}"
         token = ""
-        
         auth = TokenAuthenticator(token, auth_method=auth_method)
         return [ Customers(auth), Companies(auth), Reports(auth) ]
 
-class Stream(HttpStream):
+class RetentlyStream(HttpStream):
     primary_key = None
 
     @property
@@ -71,7 +77,7 @@ class Stream(HttpStream):
     ) -> MutableMapping[str, Any]:
         return next_page_token
 
-class Customers(Stream):
+class Customers(RetentlyStream):
     json_path = "subscribers"
     def path(
             self,
@@ -81,7 +87,7 @@ class Customers(Stream):
     ) -> str:
         return "nps/customers"
 
-class Companies(Stream):
+class Companies(RetentlyStream):
     json_path = "companies"
     def path(
             self,
@@ -91,7 +97,7 @@ class Companies(Stream):
     ) -> str:
         return "companies"
 
-class Reports(Stream):
+class Reports(RetentlyStream):
     json_path = None
     def path(
             self,
