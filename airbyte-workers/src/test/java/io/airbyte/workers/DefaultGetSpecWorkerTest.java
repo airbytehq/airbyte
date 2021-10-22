@@ -78,7 +78,14 @@ class DefaultGetSpecWorkerTest {
   }
 
   @Test
-  public void testFailureOnNonzeroExitCode() throws InterruptedException {
+  public void testFailureOnNonzeroExitCode() throws InterruptedException, IOException {
+    final String expectedSpecString = MoreResources.readResource("valid_spec.json");
+
+    final AirbyteMessage message = new AirbyteMessage()
+        .withType(Type.SPEC)
+        .withSpec(Jsons.deserialize(expectedSpecString, io.airbyte.protocol.models.ConnectorSpecification.class));
+
+    Mockito.when(process.getInputStream()).thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));
     Mockito.when(process.waitFor(Mockito.anyLong(), Mockito.any())).thenReturn(true);
     Mockito.when(process.exitValue()).thenReturn(1);
 
