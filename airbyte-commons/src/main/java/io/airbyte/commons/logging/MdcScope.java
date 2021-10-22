@@ -45,9 +45,16 @@ public class MdcScope implements AutoCloseable {
   public static class MdcScopeBuilder {
 
     private Optional<String> maybeLogPrefix = Optional.empty();
+    private Optional<Color> maybePrefixColor = Optional.empty();
 
     public MdcScopeBuilder setLogPrefix(final String logPrefix) {
       this.maybeLogPrefix = Optional.ofNullable(logPrefix);
+
+      return this;
+    }
+
+    public MdcScopeBuilder setPrefixColor(final Color color) {
+      this.maybePrefixColor = Optional.ofNullable(color);
 
       return this;
     }

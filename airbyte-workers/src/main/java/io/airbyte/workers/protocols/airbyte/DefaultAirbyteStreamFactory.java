@@ -6,6 +6,9 @@ package io.airbyte.workers.protocols.airbyte;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper.Color;
+import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.logging.MdcScope.MdcScopeBuilder;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
@@ -27,6 +30,10 @@ import org.slf4j.LoggerFactory;
 public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteStreamFactory.class);
+  private static final MdcScope containerLogMDC = new MdcScopeBuilder()
+      .setLogPrefix("container-log")
+      .setPrefixColor(Color.MAGENTA)
+      .build();
 
   private final AirbyteProtocolPredicate protocolValidator;
   private final Logger logger;
@@ -50,7 +57,9 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
             // we log as info all the lines that are not valid json
             // some sources actually log their process on stdout, we
             // want to make sure this info is available in the logs.
-            logger.info(line);
+            try (containerLogMDC) {
+              logger.info(line);
+            } catch (final Exception e) {}
           }
           return jsonLine.stream();
         })
@@ -73,7 +82,11 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .filter(airbyteMessage -> {
           final boolean isLog = airbyteMessage.getType() == AirbyteMessage.Type.LOG;
           if (isLog) {
-            internalLog(airbyteMessage.getLog());
+            try (containerLogMDC) {
+              internalLog(airbyteMessage.getLog());
+            } catch (final Exception e) {
+              e.printStackTrace();
+            }
           }
           return !isLog;
         });
