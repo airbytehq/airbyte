@@ -1,7 +1,10 @@
 {
-  "merchant_id": "merchant id",
-  "public_key": "public key",
-  "start_date": "asdad as as ",
-  "private_key": "private key",
-  "environment": "Sandbox"
+  "authorization": {
+    "auth_type": "PrivateKey",
+    "merchant_id": "merchant id",
+    "public_key": "public key",
+    "private_key": "private key"
+  },
+  "start_date": "2020-11-22",
+  "environment": "sandbox"
 }

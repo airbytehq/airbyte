@@ -12,18 +12,24 @@ import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
 from braintree.attribute_getter import AttributeGetter
+from dateutil.parser import isoparse
 from source_braintree.schemas import Customer, Discount, Dispute, MerchantAccount, Plan, Subscription, Transaction
-from source_braintree.spec import BraintreeConfig
 
 
 class BraintreeStream(Stream, ABC):
-    def __init__(self, config: BraintreeConfig):
-        self._start_date = config.start_date
-        self._gateway = BraintreeStream.create_gateway(config)
+    def __init__(self, config: Mapping[str, Any]):
+        self._start_date = isoparse(config["start_date"])
+        auth_config = config["authorization"].copy()
+        auth_config["environment"] = config["environment"]
+        self._gateway = BraintreeStream.create_gateway(auth_config)
 
     @staticmethod
-    def create_gateway(config: BraintreeConfig):
-        return braintree.BraintreeGateway(braintree.Configuration(**config.dict()))
+    def create_gateway(config: Mapping[str, Any]):
+        auth_type = config.pop("auth_type", None)
+        if auth_type == "Oauth":
+            return braintree.BraintreeGateway(access_token=config["access_token"])
+        else:
+            return braintree.BraintreeGateway(braintree.Configuration(**config))
 
     @property
     @abstractmethod

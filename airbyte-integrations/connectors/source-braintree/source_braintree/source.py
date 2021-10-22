@@ -5,13 +5,11 @@
 
 from typing import Any, List, Mapping, Optional, Tuple
 
+import braintree
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.abstract_source import AbstractSource
 from airbyte_cdk.sources.streams.core import Stream
-from source_braintree.spec import BraintreeConfig
 from source_braintree.streams import (
-    BraintreeStream,
     CustomerStream,
     DiscountStream,
     DisputeStream,
@@ -27,24 +25,25 @@ class SourceBraintree(AbstractSource):
         """
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-        config = BraintreeConfig(**config)
-        gateway = BraintreeStream.create_gateway(config)
-        gateway.customer.all()
+        # Try to initiate a stream and validate input date params
+        try:
+            customer_stream = CustomerStream(config)
+            customer_stream._gateway.customer.all()
+
+        except Exception as e:
+            return False, e
+
         return True, ""
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        config = BraintreeConfig(**config)
-        return [
+        all_streams = [
             CustomerStream(config),
-            DiscountStream(config),
             DisputeStream(config),
             TransactionStream(config),
             MerchantAccountStream(config),
-            PlanStream(config),
             SubscriptionStream(config),
         ]
-
-    def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
-        return ConnectorSpecification(
-            connectionSpecification=BraintreeConfig.schema(), documentationUrl="https://docs.airbyte.io/integrations/sources/braintree"
-        )
+        if not config["authorization"]["auth_type"] == "Oauth":
+            # Streams are not accessible via oauth because they do not have related scope rule.
+            all_streams.extend([PlanStream(config), DiscountStream(config)])
+        return all_streams

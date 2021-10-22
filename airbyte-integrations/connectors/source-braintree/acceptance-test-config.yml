@@ -1,23 +1,24 @@
 connector_image: airbyte/source-braintree:dev
 tests:
   spec:
-    - spec_path: "integration_tests/spec.json"
+    - spec_path: "source_braintree/spec.json"
   connection:
     - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "secrets/config_oauth.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+    - config_path: "secrets/config_oauth.json"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: ["subscription_stream"]
-      expect_records:
-        path: "integration_tests/expected_records.txt"
-        extra_fields: no
-        exact_order: no
-        extra_records: yes
+    - config_path: "secrets/config_oauth.json"
+      configured_catalog_path: "integration_tests/configured_catalog_oauth.json"
+      empty_streams: ["subscription_stream"]
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_incremental.json"

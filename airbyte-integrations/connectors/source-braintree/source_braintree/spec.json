@@ -1,0 +1,119 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/braintree",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "BrainTree Source CDK Specifications",
+    "type": "object",
+    "required": ["authorization", "start_date", "environment"],
+    "additionalProperties": false,
+    "properties": {
+      "start_date": {
+        "type": "string",
+        "description": "The start date to sync data. Leave blank for full sync. Format: YYYY-MM-DD.",
+        "examples": ["2021-01-01"],
+        "default": "2021-01-01",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}"
+      },
+      "environment": {
+        "type": "string",
+        "description": "Environment specifies where the data will come from",
+        "enum": ["development", "sandbox", "qa", "production"],
+        "default": "production"
+      },
+      "authorization": {
+        "type": "object",
+        "title": "Authentication Type",
+        "oneOf": [
+          {
+            "title": "Oauth authentication",
+            "type": "object",
+            "required": [
+              "auth_type",
+              "client_id",
+              "client_secret",
+              "refresh_token"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Oauth",
+                "enum": ["Oauth"],
+                "default": "Oauth",
+                "order": 0
+              },
+              "client_id": {
+                "title": "Client ID",
+                "type": "string",
+                "description": "The Square-issued ID of your application",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "The Square-issued application secret for your application",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "title": "Refresh Token",
+                "type": "string",
+                "description": "A refresh token generated using the above client ID and secret",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "title": "Access Token",
+                "type": "string",
+                "description": "An access token generated using the above client ID and secret",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Private Key",
+            "required": [
+              "auth_type",
+              "merchant_id",
+              "public_key",
+              "private_key"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "PrivateKey",
+                "enum": ["PrivateKey"],
+                "default": "PrivateKey",
+                "order": 1
+              },
+              "merchant_id": {
+                "title": "Merchant ID",
+                "type": "string",
+                "description": "<a href=\"https://docs.airbyte.io/integrations/sources/braintree\">Merchant ID</a> is the unique identifier for entire gateway account.",
+                "airbyte_secret": true
+              },
+              "public_key": {
+                "title": "Public key",
+                "type": "string",
+                "description": "This is your user-specific public identifier for Braintree.",
+                "airbyte_secret": true
+              },
+              "private_key": {
+                "title": "Private_key key",
+                "type": "string",
+                "description": "This is your user-specific private identifier.",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["authorization", 0],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"], ["access_token"]]
+    }
+  }
+}
