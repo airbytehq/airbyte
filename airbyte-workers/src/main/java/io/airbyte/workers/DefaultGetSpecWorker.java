@@ -82,6 +82,6 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
   }
 
   @Override public String getApplicationName() {
-    return "airbyte-spec-getter";
+    return "get-spec-worker";
   }
 }

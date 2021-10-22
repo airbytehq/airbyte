@@ -83,6 +83,6 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   }
 
   @Override public String getApplicationName() {
-    return "airbyte-normalization";
+    return "normalization-worker";
   }
 }

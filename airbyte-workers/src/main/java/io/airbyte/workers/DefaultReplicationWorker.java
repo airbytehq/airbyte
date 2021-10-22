@@ -271,6 +271,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   }
 
   @Override public String getApplicationName() {
-    return "airbyte-replication";
+    return "sync-worker";
   }
 }

@@ -5,9 +5,8 @@
 package io.airbyte.workers.protocols;
 
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.workers.Application;
 
-public interface Mapper<T> extends Application {
+public interface Mapper<T> {
 
   ConfiguredAirbyteCatalog mapCatalog(ConfiguredAirbyteCatalog catalog);
 

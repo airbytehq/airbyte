@@ -78,6 +78,6 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
   }
 
   @Override public String getApplicationName() {
-    return "airbyte-dbt-transformation-worker";
+    return "normalization-worker";
   }
 }

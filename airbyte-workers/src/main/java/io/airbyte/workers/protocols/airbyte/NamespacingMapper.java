@@ -96,7 +96,4 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
     }
   }
 
-  @Override public String getApplicationName() {
-    return "airbyte-namespacing-mapper";
-  }
 }

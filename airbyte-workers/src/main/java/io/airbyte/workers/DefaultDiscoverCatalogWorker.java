@@ -82,6 +82,6 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   }
 
   @Override public String getApplicationName() {
-    return "airbyte-catalog-discovery";
+    return "discover-worker";
   }
 }

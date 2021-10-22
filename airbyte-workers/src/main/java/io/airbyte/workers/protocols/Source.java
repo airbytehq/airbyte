@@ -5,11 +5,10 @@
 package io.airbyte.workers.protocols;
 
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.workers.Application;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public interface Source<T> extends AutoCloseable, Application {
+public interface Source<T> extends AutoCloseable {
 
   void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception;
 
