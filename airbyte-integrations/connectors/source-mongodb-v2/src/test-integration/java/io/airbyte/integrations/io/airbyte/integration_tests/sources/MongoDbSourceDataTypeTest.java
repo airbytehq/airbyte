@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.source.mongodb.MongoDbSource;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -25,6 +26,8 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +58,7 @@ import org.testcontainers.utility.DockerImageName;
 public class MongoDbSourceDataTypeTest {
 
   private static final String STREAM_NAME = "test.acceptance_test";
+  private static final long MILLI = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
   private MongoDBContainer mongoDBContainer;
   private MongoDatabase database;
@@ -93,7 +97,7 @@ public class MongoDbSourceDataTypeTest {
         .append("double", new BsonDouble(Double.MAX_VALUE))
         .append("decimal", new BsonDecimal128(Decimal128.NaN))
         .append("tms", new BsonTimestamp(1634658099))
-        .append("dateTime", new BsonDateTime(1634920048051L))
+        .append("dateTime", new BsonDateTime(MILLI))
         .append("binary", new BsonBinary(new UUID(10, 15)))
         .append("symbol", new BsonSymbol("s"))
         .append("string", new BsonString("test mongo db"))
@@ -171,7 +175,7 @@ public class MongoDbSourceDataTypeTest {
                     .put("double", 1.7976931348623157E308)
                     .put("decimal", NaN)
                     .put("tms", "1970-01-19T17:04:18Z")
-                    .put("dateTime", "2021-10-22T12:27:28Z")
+                    .put("dateTime", DataTypeUtils.toISO8601String(MILLI))
                     .put("binary", new BsonBinary(new UUID(10, 15)).getData())
                     .put("symbol", "s")
                     .put("string", "test mongo db")
