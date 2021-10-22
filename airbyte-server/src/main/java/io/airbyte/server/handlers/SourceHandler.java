@@ -205,7 +205,7 @@ public class SourceHandler {
     // read configuration from db
     final StandardSourceDefinition sourceDef = configRepository
         .getSourceDefinitionFromSource(sourceId);
-    final ConnectorSpecification spec = specFetcher.execute(sourceDef);
+    final ConnectorSpecification spec = specFetcher.getSpec(sourceDef);
     return buildSourceRead(sourceId, spec);
   }
 
@@ -240,7 +240,7 @@ public class SourceHandler {
 
   public static ConnectorSpecification getSpecFromSourceDefinitionId(final SpecFetcher specFetcher, final StandardSourceDefinition sourceDefinition)
       throws IOException, ConfigNotFoundException {
-    return specFetcher.execute(sourceDefinition);
+    return specFetcher.getSpec(sourceDefinition);
   }
 
   private void persistSourceConnection(final String name,

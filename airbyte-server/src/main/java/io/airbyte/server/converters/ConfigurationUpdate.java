@@ -41,7 +41,7 @@ public class ConfigurationUpdate {
     persistedSource.setName(sourceName);
     // get spec
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(persistedSource.getSourceDefinitionId());
-    final ConnectorSpecification spec = specFetcher.execute(sourceDefinition);
+    final ConnectorSpecification spec = specFetcher.getSpec(sourceDefinition);
     // copy any necessary secrets from the current source to the incoming updated source
     final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
         persistedSource.getConfiguration(),
@@ -59,7 +59,7 @@ public class ConfigurationUpdate {
     // get spec
     final StandardDestinationDefinition destinationDefinition = configRepository
         .getStandardDestinationDefinition(persistedDestination.getDestinationDefinitionId());
-    final ConnectorSpecification spec = specFetcher.execute(destinationDefinition);
+    final ConnectorSpecification spec = specFetcher.getSpec(destinationDefinition);
     // copy any necessary secrets from the current destination to the incoming updated destination
     final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
         persistedDestination.getConfiguration(),

@@ -23,6 +23,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -82,7 +83,8 @@ public class ArchiveHandlerTest {
       super(1L, TimeUnit.MINUTES, 1L);
     }
 
-    public void register(final Path path) {}
+    public void register(final Path path) {
+    }
 
   }
 
@@ -116,7 +118,8 @@ public class ArchiveHandlerTest {
     final SpecFetcher specFetcher = mock(SpecFetcher.class);
     final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
     when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
-    when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
+    when(specFetcher.getSpec(any(StandardSourceDefinition.class))).thenReturn(emptyConnectorSpec);
+    when(specFetcher.getSpec(any(StandardDestinationDefinition.class))).thenReturn(emptyConnectorSpec);
 
     archiveHandler = new ArchiveHandler(
         VERSION,
@@ -159,9 +162,9 @@ public class ArchiveHandlerTest {
     final UUID sourceS3DefinitionId = UUID.fromString("69589781-7828-43c5-9f63-8925b1c1ccc2");
     final String sourceS3DefinitionVersion = "0.0.0";
     final StandardSourceDefinition sourceS3Definition = seedPersistence.getConfig(
-        ConfigSchema.STANDARD_SOURCE_DEFINITION,
-        sourceS3DefinitionId.toString(),
-        StandardSourceDefinition.class)
+            ConfigSchema.STANDARD_SOURCE_DEFINITION,
+            sourceS3DefinitionId.toString(),
+            StandardSourceDefinition.class)
         // This source definition is on an old version
         .withDockerImageTag(sourceS3DefinitionVersion);
     final SourceConnection sourceConnection = new SourceConnection()

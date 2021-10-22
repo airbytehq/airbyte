@@ -70,9 +70,8 @@ public class ServerApp implements ServerRunnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
   /**
-   * We can't support automatic migration for kube before this version because we had a bug in kube
-   * which would cause airbyte db to erase state upon termination, as a result the automatic migration
-   * wouldn't run
+   * We can't support automatic migration for kube before this version because we had a bug in kube which would cause airbyte db to erase state upon
+   * termination, as a result the automatic migration wouldn't run
    */
   private static final AirbyteVersion KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION = new AirbyteVersion("0.26.5-alpha");
   private final String airbyteVersion;
@@ -80,8 +79,8 @@ public class ServerApp implements ServerRunnable {
   private final Set<Object> customComponents;
 
   public ServerApp(final String airbyteVersion,
-                   final Set<Class<?>> customComponentClasses,
-                   final Set<Object> customComponents) {
+      final Set<Class<?>> customComponentClasses,
+      final Set<Object> customComponents) {
     this.airbyteVersion = airbyteVersion;
     this.customComponentClasses = customComponentClasses;
     this.customComponents = customComponents;
@@ -167,7 +166,7 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
-            .getAndInitialize();
+        .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase);
     configPersistence.migrateFileConfigs(configs);
 
@@ -183,7 +182,7 @@ public class ServerApp implements ServerRunnable {
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl())
-            .getAndInitialize();
+        .getAndInitialize();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
     createDeploymentIfNoneExists(jobPersistence);
@@ -219,7 +218,7 @@ public class ServerApp implements ServerRunnable {
     final SpecFetcher specFetcher = new SpecFetcher(cachingSchedulerClient);
 
     // required before migration
-    configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.execute(dockerImage)));
+    configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.getSpec(dockerImage)));
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
     if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
@@ -263,15 +262,14 @@ public class ServerApp implements ServerRunnable {
   }
 
   /**
-   * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
-   * no other operation is allowed
+   * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and no other operation is allowed
    */
   private static void runAutomaticMigration(final ConfigRepository configRepository,
-                                            final JobPersistence jobPersistence,
-                                            final ConfigPersistence seed,
-                                            final SpecFetcher specFetcher,
-                                            final String airbyteVersion,
-                                            final String airbyteDatabaseVersion) {
+      final JobPersistence jobPersistence,
+      final ConfigPersistence seed,
+      final SpecFetcher specFetcher,
+      final String airbyteVersion,
+      final String airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,

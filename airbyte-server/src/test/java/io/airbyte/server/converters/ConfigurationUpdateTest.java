@@ -88,7 +88,7 @@ class ConfigurationUpdateTest {
   void testSourceUpdate() throws JsonValidationException, IOException, ConfigNotFoundException {
     when(configRepository.getSourceConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_SOURCE_CONNECTION);
     when(configRepository.getStandardSourceDefinition(UUID2)).thenReturn(SOURCE_DEFINITION);
-    when(specFetcher.execute(IMAGE_NAME)).thenReturn(CONNECTOR_SPECIFICATION);
+    when(specFetcher.getSpec(SOURCE_DEFINITION)).thenReturn(CONNECTOR_SPECIFICATION);
     when(secretsProcessor.copySecrets(ORIGINAL_CONFIGURATION, NEW_CONFIGURATION, SPEC)).thenReturn(NEW_CONFIGURATION);
 
     final SourceConnection actual = configurationUpdate.source(UUID1, ORIGINAL_SOURCE_CONNECTION.getName(), NEW_CONFIGURATION);
@@ -100,7 +100,7 @@ class ConfigurationUpdateTest {
   void testDestinationUpdate() throws JsonValidationException, IOException, ConfigNotFoundException {
     when(configRepository.getDestinationConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_DESTINATION_CONNECTION);
     when(configRepository.getStandardDestinationDefinition(UUID2)).thenReturn(DESTINATION_DEFINITION);
-    when(specFetcher.execute(IMAGE_NAME)).thenReturn(CONNECTOR_SPECIFICATION);
+    when(specFetcher.getSpec(SOURCE_DEFINITION)).thenReturn(CONNECTOR_SPECIFICATION);
     when(secretsProcessor.copySecrets(ORIGINAL_CONFIGURATION, NEW_CONFIGURATION, SPEC)).thenReturn(NEW_CONFIGURATION);
 
     final DestinationConnection actual = configurationUpdate.destination(UUID1, ORIGINAL_DESTINATION_CONNECTION.getName(), NEW_CONFIGURATION);

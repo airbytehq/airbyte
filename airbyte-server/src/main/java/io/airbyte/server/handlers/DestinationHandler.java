@@ -212,7 +212,7 @@ public class DestinationHandler {
 
   public static ConnectorSpecification getSpec(final SpecFetcher specFetcher, final StandardDestinationDefinition destinationDef)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return specFetcher.execute(destinationDef);
+    return specFetcher.getSpec(destinationDef);
   }
 
   private void persistDestinationConnection(final String name,

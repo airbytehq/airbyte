@@ -24,15 +24,14 @@ public class DockerImageValidator {
   }
 
   /**
-   * @throws BadObjectSchemaKnownException if it is unable to verify that the input image is a valid
-   *         connector definition image.
+   * @throws BadObjectSchemaKnownException if it is unable to verify that the input image is a valid connector definition image.
    */
   public void assertValidIntegrationImage(final String dockerRepository, final String imageTag) throws BadObjectSchemaKnownException {
     // Validates that the docker image exists and can generate a compatible spec by running a getSpec
     // job on the provided image.
     final String imageName = DockerUtils.getTaggedImageName(dockerRepository, imageTag);
     try {
-      specFetcher.execute(imageName);
+      specFetcher.getSpec(imageName);
     } catch (final Exception e) {
       throw new BadObjectSchemaKnownException(
           String.format("Encountered an issue while validating input docker image (%s): %s", imageName, e.getMessage()));
