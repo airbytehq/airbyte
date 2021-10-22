@@ -1,9 +1,6 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/firestore",
-  "supported_destination_sync_modes": [
-    "append",
-    "overwrite"
-  ],
+  "supported_destination_sync_modes": ["append", "overwrite"],
   "supportsIncremental": true,
   "supportsDBT": false,
   "supportsNormalization": false,

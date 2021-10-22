@@ -3,21 +3,18 @@
 #
 
 
-from typing import Mapping, Any, Iterable
+from typing import Any, Iterable, Mapping
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, DestinationSyncMode, Status
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 
-from airbyte_cdk.models import Type
 from .writer import FirestoreWriter
 
-class DestinationFirestore(Destination):
 
+class DestinationFirestore(Destination):
     def write(
-            self,
-            config: Mapping[str, Any],
-            configured_catalog: ConfiguredAirbyteCatalog,
-            input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         """
         TODO
@@ -68,6 +65,3 @@ class DestinationFirestore(Destination):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
-
-
-
