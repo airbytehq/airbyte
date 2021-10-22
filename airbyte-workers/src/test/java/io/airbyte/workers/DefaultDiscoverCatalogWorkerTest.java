@@ -4,6 +4,13 @@
 
 package io.airbyte.workers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -24,10 +31,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 public class DefaultDiscoverCatalogWorkerTest {
 
@@ -52,14 +58,13 @@ public class DefaultDiscoverCatalogWorkerTest {
   @BeforeEach
   public void setup() throws Exception {
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "");
-    integrationLauncher = Mockito.mock(IntegrationLauncher.class, Mockito.RETURNS_DEEP_STUBS);
-    process = Mockito.mock(Process.class);
+    integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
+    process = mock(Process.class);
 
-    Mockito.when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS)))
-        .thenReturn(process);
-    final InputStream inputStream = Mockito.mock(InputStream.class);
-    Mockito.when(process.getInputStream()).thenReturn(inputStream);
-    Mockito.when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+    when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS))).thenReturn(process);
+    final InputStream inputStream = mock(InputStream.class);
+    when(process.getInputStream()).thenReturn(inputStream);
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
     IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CATALOG_JSON_FILENAME, MoreResources.readResource("airbyte_postgres_catalog.json"));
 
@@ -72,45 +77,41 @@ public class DefaultDiscoverCatalogWorkerTest {
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
     final AirbyteCatalog output = worker.run(INPUT, jobRoot);
 
-    Assertions.assertThat(output).isEqualTo(CATALOG);
+    assertEquals(CATALOG, output);
 
-    org.junit.jupiter.api.Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {
         Thread.sleep(50);
       }
     });
 
-    Mockito.verify(process).exitValue();
+    verify(process).exitValue();
   }
 
   @SuppressWarnings("BusyWait")
   @Test
   public void testDiscoverSchemaProcessFail() throws Exception {
-    Mockito.when(process.exitValue()).thenReturn(1);
+    when(process.exitValue()).thenReturn(1);
 
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
-    Assertions.assertThatThrownBy(() -> worker.run(INPUT, jobRoot))
-        .isInstanceOf(WorkerException.class)
-        .hasNoCause();
+    assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
 
-    org.junit.jupiter.api.Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {
         Thread.sleep(50);
       }
     });
 
-    Mockito.verify(process).exitValue();
+    verify(process).exitValue();
   }
 
   @Test
   public void testDiscoverSchemaException() throws WorkerException {
-    Mockito.when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS)))
+    when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS)))
         .thenThrow(new RuntimeException());
 
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
-    Assertions.assertThatThrownBy(() -> worker.run(INPUT, jobRoot))
-        .isInstanceOf(RuntimeException.class)
-        .hasNoCause();
+    assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
   }
 
   @Test
@@ -120,7 +121,7 @@ public class DefaultDiscoverCatalogWorkerTest {
 
     worker.cancel();
 
-    Mockito.verify(process).destroy();
+    verify(process).destroy();
   }
 
 }

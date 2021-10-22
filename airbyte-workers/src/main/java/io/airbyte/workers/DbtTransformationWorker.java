@@ -4,8 +4,6 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.commons.logging.MdcScope;
-import io.airbyte.commons.logging.MdcScope.MdcScopeBuilder;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
 import java.nio.file.Files;
@@ -26,10 +24,6 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
 
   private final AtomicBoolean cancelled;
 
-  private final MdcScope extraMdcEntries = new MdcScopeBuilder()
-      .setLogPrefix("sync-worker")
-      .build();
-
   public DbtTransformationWorker(final String jobId,
                                  final int attempt,
                                  final ResourceRequirements resourceRequirements,
@@ -44,52 +38,40 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
 
   @Override
   public Void run(final OperatorDbtInput operatorDbtInput, final Path jobRoot) throws WorkerException {
-    try (extraMdcEntries) {
-      final long startTime = System.currentTimeMillis();
+    final long startTime = System.currentTimeMillis();
 
-      try (dbtTransformationRunner) {
-        LOGGER.info("Running dbt transformation.");
-        dbtTransformationRunner.start();
-        final Path transformRoot = Files.createDirectories(jobRoot.resolve("transform"));
-        if (!dbtTransformationRunner.run(
-            jobId,
-            attempt,
-            transformRoot,
-            operatorDbtInput.getDestinationConfiguration(),
-            resourceRequirements,
-            operatorDbtInput.getOperatorDbt())) {
-          throw new WorkerException("DBT Transformation Failed.");
-        }
-      } catch (final Exception e) {
-        throw new WorkerException("Dbt Transformation Failed.", e);
+    try (dbtTransformationRunner) {
+      LOGGER.info("Running dbt transformation.");
+      dbtTransformationRunner.start();
+      final Path transformRoot = Files.createDirectories(jobRoot.resolve("transform"));
+      if (!dbtTransformationRunner.run(
+          jobId,
+          attempt,
+          transformRoot,
+          operatorDbtInput.getDestinationConfiguration(),
+          resourceRequirements,
+          operatorDbtInput.getOperatorDbt())) {
+        throw new WorkerException("DBT Transformation Failed.");
       }
-      if (cancelled.get()) {
-        LOGGER.info("Dbt Transformation was cancelled.");
-      }
-
-      final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
-      LOGGER.info("Dbt Transformation executed in {}.", duration.toMinutesPart());
-
-      return null;
-    } catch (final RuntimeException e) {
-      throw e;
     } catch (final Exception e) {
-      throw new WorkerException("Dbt Transformation failed", e);
+      throw new WorkerException("Dbt Transformation Failed.", e);
     }
+    if (cancelled.get()) {
+      LOGGER.info("Dbt Transformation was cancelled.");
+    }
+
+    final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
+    LOGGER.info("Dbt Transformation executed in {}.", duration.toMinutesPart());
+
+    return null;
   }
 
   @Override
   public void cancel() {
-    try (extraMdcEntries) {
-      LOGGER.info("Cancelling Dbt Transformation runner...");
-      try {
-        cancelled.set(true);
-        dbtTransformationRunner.close();
-      } catch (final Exception e) {
-        e.printStackTrace();
-      }
-    } catch (final RuntimeException e) {
-      throw e;
+    LOGGER.info("Cancelling Dbt Transformation runner...");
+    try {
+      cancelled.set(true);
+      dbtTransformationRunner.close();
     } catch (final Exception e) {
       e.printStackTrace();
     }

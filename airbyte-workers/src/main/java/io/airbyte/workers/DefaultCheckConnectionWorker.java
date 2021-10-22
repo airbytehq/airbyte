@@ -8,8 +8,6 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.logging.MdcScope;
-import io.airbyte.commons.logging.MdcScope.MdcScopeBuilder;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -33,10 +31,6 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
 
-  private final MdcScope extraMdcEntries = new MdcScopeBuilder()
-      .setLogPrefix("check-connection-worker")
-      .build();
-
   private Process process;
 
   public DefaultCheckConnectionWorker(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
@@ -51,7 +45,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   @Override
   public StandardCheckConnectionOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
 
-    try (extraMdcEntries) {
+    try {
       process = integrationLauncher.check(
           jobRoot,
           WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
@@ -82,8 +76,6 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         throw new WorkerException("Error while getting checking connection.");
       }
 
-    } catch (final RuntimeException e) {
-      throw e;
     } catch (final Exception e) {
       throw new WorkerException("Error while getting checking connection.", e);
     }
@@ -91,13 +83,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
   @Override
   public void cancel() {
-    try (extraMdcEntries) {
-      WorkerUtils.cancelProcess(process);
-    } catch (final RuntimeException e) {
-      throw e;
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
+    WorkerUtils.cancelProcess(process);
   }
 
 }

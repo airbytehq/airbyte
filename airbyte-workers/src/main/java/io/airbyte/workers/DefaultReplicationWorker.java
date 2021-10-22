@@ -4,8 +4,6 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.commons.logging.MdcScope;
-import io.airbyte.commons.logging.MdcScope.MdcScopeBuilder;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
@@ -47,10 +45,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean cancelled;
   private final AtomicBoolean hasFailed;
 
-  private final MdcScope extraMdcEntries = new MdcScopeBuilder()
-      .setLogPrefix("sync-worker")
-      .build();
-
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
                                   final Source<AirbyteMessage> source,
@@ -85,15 +79,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    */
   @Override
   public ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
-    try (extraMdcEntries) {
-      LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
+    LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
 
-      // todo (cgardens) - this should not be happening in the worker. this is configuration information
-      // that is independent of workflow executions.
-      final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
-      destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
+    // todo (cgardens) - this should not be happening in the worker. this is configuration information
+    // that is independent of workflow executions.
+    final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
+    destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
-      final long startTime = System.currentTimeMillis();
+    final long startTime = System.currentTimeMillis();
+    try {
       LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
           .stream()
           .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
@@ -179,8 +173,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       }
 
       return output;
-    } catch (final RuntimeException e) {
-      throw e;
     } catch (final Exception e) {
       throw new WorkerException("Sync failed", e);
     }
@@ -254,34 +246,29 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   @Override
   public void cancel() {
-    try (extraMdcEntries) {
-      // Resources are closed in the opposite order they are declared.
-      LOGGER.info("Cancelling replication worker...");
-      try {
-        executors.awaitTermination(10, TimeUnit.SECONDS);
-      } catch (final InterruptedException e) {
-        e.printStackTrace();
-      }
-      cancelled.set(true);
-
-      LOGGER.info("Cancelling destination...");
-      try {
-        destination.cancel();
-      } catch (final Exception e) {
-        LOGGER.info("Error cancelling destination: ", e);
-      }
-
-      LOGGER.info("Cancelling source...");
-      try {
-        source.cancel();
-      } catch (final Exception e) {
-        LOGGER.info("Error cancelling source: ", e);
-      }
-    } catch (final RuntimeException e) {
-      throw e;
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
+    // Resources are closed in the opposite order they are declared.
+    LOGGER.info("Cancelling replication worker...");
+    try {
+      executors.awaitTermination(10, TimeUnit.SECONDS);
+    } catch (final InterruptedException e) {
+      e.printStackTrace();
     }
+    cancelled.set(true);
+
+    LOGGER.info("Cancelling destination...");
+    try {
+      destination.cancel();
+    } catch (final Exception e) {
+      LOGGER.info("Error cancelling destination: ", e);
+    }
+
+    LOGGER.info("Cancelling source...");
+    try {
+      source.cancel();
+    } catch (final Exception e) {
+      LOGGER.info("Error cancelling source: ", e);
+    }
+
   }
 
 }

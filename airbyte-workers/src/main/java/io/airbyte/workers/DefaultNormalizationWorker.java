@@ -4,8 +4,6 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.commons.logging.MdcScope;
-import io.airbyte.commons.logging.MdcScope.MdcScopeBuilder;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.workers.normalization.NormalizationRunner;
@@ -26,10 +24,6 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   private final NormalizationRunner normalizationRunner;
   private final WorkerEnvironment workerEnvironment;
 
-  private final MdcScope extraMdcEntries = new MdcScopeBuilder()
-      .setLogPrefix("normalization-worker")
-      .build();
-
   private final AtomicBoolean cancelled;
 
   public DefaultNormalizationWorker(final String jobId,
@@ -47,7 +41,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   @Override
   public Void run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
-    try (normalizationRunner; extraMdcEntries) {
+
+    try (normalizationRunner) {
       LOGGER.info("Running normalization.");
       normalizationRunner.start();
 
@@ -61,34 +56,29 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
           input.getResourceRequirements())) {
         throw new WorkerException("Normalization Failed.");
       }
-
-      if (cancelled.get()) {
-        LOGGER.info("Normalization was cancelled.");
-      }
-
-      final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
-      final String durationDescription = DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
-      LOGGER.info("Normalization executed in {}.", durationDescription);
-
-      return null;
-
-    } catch (final RuntimeException e) {
-      throw e;
     } catch (final Exception e) {
       throw new WorkerException("Normalization Failed.", e);
     }
+
+    if (cancelled.get()) {
+      LOGGER.info("Normalization was cancelled.");
+    }
+
+    final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
+    final String durationDescription = DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
+    LOGGER.info("Normalization executed in {}.", durationDescription);
+
+    return null;
   }
 
   @Override
   public void cancel() {
-    try (extraMdcEntries) {
-      LOGGER.info("Cancelling normalization runner...");
+    LOGGER.info("Cancelling normalization runner...");
+    try {
       cancelled.set(true);
       normalizationRunner.close();
-    } catch (final RuntimeException e) {
-      throw e;
     } catch (final Exception e) {
-      throw new RuntimeException(e);
+      e.printStackTrace();
     }
   }
 

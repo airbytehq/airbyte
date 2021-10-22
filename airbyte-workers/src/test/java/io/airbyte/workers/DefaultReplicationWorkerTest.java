@@ -324,7 +324,7 @@ class DefaultReplicationWorkerTest {
         destination,
         sourceMessageTracker,
         destinationMessageTracker);
-    assertThrows(IllegalStateException.class, () -> worker.run(syncInput, jobRoot));
+    assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }
 
 }
