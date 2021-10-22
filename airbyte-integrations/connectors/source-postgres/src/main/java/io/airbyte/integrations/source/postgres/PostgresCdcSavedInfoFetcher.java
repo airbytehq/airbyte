@@ -13,7 +13,7 @@ public class PostgresCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
   private final JsonNode savedOffset;
 
-  public PostgresCdcSavedInfoFetcher(CdcState savedState) {
+  public PostgresCdcSavedInfoFetcher(final CdcState savedState) {
     final boolean savedStatePresent = savedState != null && savedState.getState() != null;
     this.savedOffset = savedStatePresent ? savedState.getState() : null;
   }

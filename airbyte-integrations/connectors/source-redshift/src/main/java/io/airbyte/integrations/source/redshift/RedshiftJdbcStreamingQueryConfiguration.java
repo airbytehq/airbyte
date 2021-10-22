@@ -14,7 +14,7 @@ public class RedshiftJdbcStreamingQueryConfiguration implements JdbcStreamingQue
   // aws docs on how setting up batching:
   // https://docs.aws.amazon.com/redshift/latest/dg/queries-troubleshooting.html
   @Override
-  public void accept(Connection connection, PreparedStatement preparedStatement) throws SQLException {
+  public void accept(final Connection connection, final PreparedStatement preparedStatement) throws SQLException {
     connection.setAutoCommit(false);
     preparedStatement.setFetchSize(1000);
   }

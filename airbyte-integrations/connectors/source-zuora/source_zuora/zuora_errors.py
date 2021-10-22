@@ -4,9 +4,10 @@
 
 
 import sys
+from typing import Any
 
 import requests
-from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.logger import AirbyteLogger
 
 
 class Error(Exception):
@@ -14,6 +15,14 @@ class Error(Exception):
 
     # Define the instance of the Native Airbyte Logger
     logger = AirbyteLogger()
+
+
+class QueryWindowError(Error):
+    def __init__(self, value: Any):
+        self.message = f"`Query Window` is set to '{value}', please make sure you use float or integer, not string."
+        super().__init__(self.logger.info(self.message))
+        # Exit with non-zero status
+        sys.exit(1)
 
 
 class ZOQLQueryError(Error):

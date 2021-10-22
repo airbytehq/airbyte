@@ -5,3 +5,6 @@
 !setup.py
 !normalization
 !dbt-project-template
+!dbt-project-template-mssql
+!dbt-project-template-mysql
+!dbt-project-template-oracle

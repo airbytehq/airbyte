@@ -14,6 +14,6 @@ dependencies {
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-json-validation')
     implementation 'com.google.cloud:google-cloud-secretmanager:1.7.2'
-    testImplementation "org.testcontainers:postgresql:1.15.1"
+    testImplementation "org.testcontainers:postgresql:1.15.3"
     integrationTestJavaImplementation project(':airbyte-config:persistence')
 }

@@ -19,14 +19,14 @@ public class CdcStateManager {
   private CdcState currentState;
 
   @VisibleForTesting
-  CdcStateManager(CdcState serialized) {
+  CdcStateManager(final CdcState serialized) {
     this.initialState = serialized;
     this.currentState = serialized;
 
     LOGGER.info("Initialized CDC state with: {}", serialized);
   }
 
-  public void setCdcState(CdcState state) {
+  public void setCdcState(final CdcState state) {
     this.currentState = state;
   }
 
