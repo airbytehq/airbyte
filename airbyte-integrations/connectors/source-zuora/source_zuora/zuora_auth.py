@@ -3,12 +3,14 @@
 #
 
 
-from typing import Any, Mapping
+from typing import Any, Dict, Mapping
 
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
+
+from .zuora_endpoint import get_url_base
 
 
-class ZuoraAuthenticator(Oauth2Authenticator):
+class OAuth(Oauth2Authenticator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -17,3 +19,20 @@ class ZuoraAuthenticator(Oauth2Authenticator):
         payload["grant_type"] = "client_credentials"
         payload.pop("refresh_token")  # Zuora doesn't have Refresh Token parameter
         return payload
+
+
+class ZuoraAuthenticator:
+    def __init__(self, config: Dict):
+        self.config = config
+
+    @property
+    def url_base(self) -> str:
+        return get_url_base(self.config["tenant_endpoint"])
+
+    def get_auth(self) -> OAuth:
+        return OAuth(
+            token_refresh_endpoint=f"{self.url_base}/oauth/token",
+            client_id=self.config["client_id"],
+            client_secret=self.config["client_secret"],
+            refresh_token=None,  # Zuora doesn't have Refresh Token parameter
+        )
