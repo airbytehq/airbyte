@@ -8,7 +8,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper;
-import io.airbyte.commons.logging.ScopedMDCChange;
+import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -43,7 +43,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   @Override
   public AirbyteCatalog run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
       process = integrationLauncher.discover(
           jobRoot,
           WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
@@ -73,6 +73,8 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       }
     } catch (final WorkerException e) {
       throw e;
+    } catch (final RuntimeException e) {
+      throw e;
     } catch (final Exception e) {
       throw new WorkerException("Error while discovering schema", e);
     }
@@ -80,9 +82,12 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   @Override
   public void cancel() {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
       WorkerUtils.cancelProcess(process);
+    } catch (final RuntimeException e) {
+      throw e;
     } catch (final Exception e) {
+      throw new RuntimeException(e);
     }
   }
 

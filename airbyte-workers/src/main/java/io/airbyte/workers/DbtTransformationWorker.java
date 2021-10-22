@@ -6,7 +6,7 @@ package io.airbyte.workers;
 
 import io.airbyte.commons.application.Application;
 import io.airbyte.commons.logging.LoggingHelper;
-import io.airbyte.commons.logging.ScopedMDCChange;
+import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
 import java.nio.file.Files;
@@ -41,7 +41,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
 
   @Override
   public Void run(final OperatorDbtInput operatorDbtInput, final Path jobRoot) throws WorkerException {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
       final long startTime = System.currentTimeMillis();
 
       try (dbtTransformationRunner) {
@@ -68,6 +68,8 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
       LOGGER.info("Dbt Transformation executed in {}.", duration.toMinutesPart());
 
       return null;
+    } catch (final RuntimeException e) {
+      throw e;
     } catch (final Exception e) {
       throw new WorkerException(getApplicationName() + " failed", e);
     }
@@ -75,7 +77,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
 
   @Override
   public void cancel() {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
       LOGGER.info("Cancelling Dbt Transformation runner...");
       try {
         cancelled.set(true);
@@ -83,6 +85,8 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
       } catch (final Exception e) {
         e.printStackTrace();
       }
+    } catch (final RuntimeException e) {
+      throw e;
     } catch (final Exception e) {
       e.printStackTrace();
     }

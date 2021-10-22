@@ -5,7 +5,7 @@
 package io.airbyte.workers;
 
 import io.airbyte.commons.logging.LoggingHelper;
-import io.airbyte.commons.logging.ScopedMDCChange;
+import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
@@ -80,7 +80,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    */
   @Override
   public ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
       LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
 
       // todo (cgardens) - this should not be happening in the worker. this is configuration information
@@ -174,6 +174,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       }
 
       return output;
+    } catch (final RuntimeException e) {
+      throw e;
     } catch (final Exception e) {
       throw new WorkerException("Sync failed", e);
     }
@@ -247,7 +249,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   @Override
   public void cancel() {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
       // Resources are closed in the opposite order they are declared.
       LOGGER.info("Cancelling replication worker...");
       try {
@@ -270,7 +272,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       } catch (final Exception e) {
         LOGGER.info("Error cancelling source: ", e);
       }
+    } catch (final RuntimeException e) {
+      throw e;
     } catch (final Exception e) {
+      throw new RuntimeException(e);
     }
   }
 

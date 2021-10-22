@@ -9,8 +9,6 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.logging.LoggingHelper;
-import io.airbyte.commons.logging.ScopedMDCChange;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -55,29 +53,23 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   @Override
   public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot) throws IOException, WorkerException {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
-      Preconditions.checkState(destinationProcess == null);
+    Preconditions.checkState(destinationProcess == null);
 
-      LOGGER.info("Running destination...");
-      destinationProcess = integrationLauncher.write(
-          jobRoot,
-          WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-          Jsons.serialize(destinationConfig.getDestinationConnectionConfiguration()),
-          WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
-          Jsons.serialize(destinationConfig.getCatalog()));
-      // stdout logs are logged elsewhere since stdout also contains data
-      LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination");
+    LOGGER.info("Running destination...");
+    destinationProcess = integrationLauncher.write(
+        jobRoot,
+        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+        Jsons.serialize(destinationConfig.getDestinationConnectionConfiguration()),
+        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
+        Jsons.serialize(destinationConfig.getCatalog()));
+    // stdout logs are logged elsewhere since stdout also contains data
+    LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination");
 
-      writer = new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8));
+    writer = new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8));
 
-      messageIterator = streamFactory.create(IOs.newBufferedReader(destinationProcess.getInputStream()))
-          .filter(message -> message.getType() == Type.STATE)
-          .iterator();
-    } catch (final IOException | WorkerException e) {
-      throw e;
-    } catch (final Exception e) {
-      throw new WorkerException("Destination Failed");
-    }
+    messageIterator = streamFactory.create(IOs.newBufferedReader(destinationProcess.getInputStream()))
+        .filter(message -> message.getType() == Type.STATE)
+        .iterator();
   }
 
   @Override
@@ -99,38 +91,34 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   @Override
   public void close() throws Exception {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
-      if (destinationProcess == null) {
-        LOGGER.debug("Destination process already exited");
-        return;
-      }
+    if (destinationProcess == null) {
+      LOGGER.debug("Destination process already exited");
+      return;
+    }
 
-      if (!endOfStream.get()) {
-        notifyEndOfStream();
-      }
+    if (!endOfStream.get()) {
+      notifyEndOfStream();
+    }
 
-      LOGGER.debug("Closing destination process");
-      WorkerUtils.gentleClose(destinationProcess, 10, TimeUnit.HOURS);
-      if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
-        final String message =
-            destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + destinationProcess.exitValue();
-        throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
-      }
+    LOGGER.debug("Closing destination process");
+    WorkerUtils.gentleClose(destinationProcess, 10, TimeUnit.HOURS);
+    if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
+      final String message =
+          destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + destinationProcess.exitValue();
+      throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }
 
   @Override
   public void cancel() throws Exception {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
-      LOGGER.info("Attempting to cancel destination process...");
+    LOGGER.info("Attempting to cancel destination process...");
 
-      if (destinationProcess == null) {
-        LOGGER.info("Destination process no longer exists, cancellation is a no-op.");
-      } else {
-        LOGGER.info("Destination process exists, cancelling...");
-        WorkerUtils.cancelProcess(destinationProcess);
-        LOGGER.info("Cancelled destination process!");
-      }
+    if (destinationProcess == null) {
+      LOGGER.info("Destination process no longer exists, cancellation is a no-op.");
+    } else {
+      LOGGER.info("Destination process exists, cancelling...");
+      WorkerUtils.cancelProcess(destinationProcess);
+      LOGGER.info("Cancelled destination process!");
     }
   }
 

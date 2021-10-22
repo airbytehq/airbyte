@@ -5,7 +5,7 @@
 package io.airbyte.workers;
 
 import io.airbyte.commons.logging.LoggingHelper;
-import io.airbyte.commons.logging.ScopedMDCChange;
+import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.workers.normalization.NormalizationRunner;
@@ -44,7 +44,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   public Void run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
     try (normalizationRunner;
-        final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+        final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
       LOGGER.info("Running normalization.");
       normalizationRunner.start();
 
@@ -69,6 +69,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
 
       return null;
 
+    } catch (final RuntimeException e) {
+      throw e;
     } catch (final Exception e) {
       throw new WorkerException("Normalization Failed.", e);
     }
@@ -76,12 +78,14 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
 
   @Override
   public void cancel() {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
       LOGGER.info("Cancelling normalization runner...");
       cancelled.set(true);
       normalizationRunner.close();
+    } catch (final RuntimeException e) {
+      throw e;
     } catch (final Exception e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 

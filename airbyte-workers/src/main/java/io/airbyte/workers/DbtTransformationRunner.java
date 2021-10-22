@@ -7,10 +7,7 @@ package io.airbyte.workers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.application.Application;
 import io.airbyte.commons.io.LineGobbler;
-import io.airbyte.commons.logging.LoggingHelper;
-import io.airbyte.commons.logging.ScopedMDCChange;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
@@ -42,9 +39,7 @@ public class DbtTransformationRunner implements AutoCloseable {
   }
 
   public void start() throws Exception {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
-      normalizationRunner.start();
-    }
+    normalizationRunner.start();
   }
 
   /**
@@ -63,12 +58,10 @@ public class DbtTransformationRunner implements AutoCloseable {
                      final ResourceRequirements resourceRequirements,
                      final OperatorDbt dbtConfig)
       throws Exception {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
-      if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
-        return false;
-      }
-      return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);
+    if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
+      return false;
     }
+    return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);
   }
 
   public boolean transform(final String jobId,
@@ -78,50 +71,40 @@ public class DbtTransformationRunner implements AutoCloseable {
                            final ResourceRequirements resourceRequirements,
                            final OperatorDbt dbtConfig)
       throws Exception {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
-      final Map<String, String> files = ImmutableMap.of(
-          DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"),
-          "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"));
-      final List<String> dbtArguments = new ArrayList<>();
-      dbtArguments.add(DBT_ENTRYPOINT_SH);
-      if (Strings.isNullOrEmpty(dbtConfig.getDbtArguments())) {
-        throw new WorkerException("Dbt Arguments are required");
-      }
-      Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
-      process =
-          processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", resourceRequirements,
-              Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.CUSTOM_STEP),
-              dbtArguments);
-
-      LineGobbler.gobble(process.getInputStream(), LOGGER::info);
-      LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
-
-      WorkerUtils.wait(process);
-
-      return process.exitValue() == 0;
-    } catch (final Exception e) {
-      // make sure we kill the process on failure to avoid zombies.
-      if (process != null) {
-        WorkerUtils.cancelProcess(process);
-      }
-      throw e;
+    final Map<String, String> files = ImmutableMap.of(
+        DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"),
+        "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"));
+    final List<String> dbtArguments = new ArrayList<>();
+    dbtArguments.add(DBT_ENTRYPOINT_SH);
+    if (Strings.isNullOrEmpty(dbtConfig.getDbtArguments())) {
+      throw new WorkerException("Dbt Arguments are required");
     }
+    Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
+    process =
+        processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", resourceRequirements,
+            Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.CUSTOM_STEP),
+            dbtArguments);
+
+    LineGobbler.gobble(process.getInputStream(), LOGGER::info);
+    LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
+
+    WorkerUtils.wait(process);
+
+    return process.exitValue() == 0;
   }
 
   @Override
   public void close() throws Exception {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
-      normalizationRunner.close();
+    normalizationRunner.close();
 
-      if (process == null) {
-        return;
-      }
+    if (process == null) {
+      return;
+    }
 
-      LOGGER.debug("Closing dbt transformation process");
-      WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
-      if (process.isAlive() || process.exitValue() != 0) {
-        throw new WorkerException("Dbt transformation process wasn't successful");
-      }
+    LOGGER.debug("Closing dbt transformation process");
+    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+    if (process.isAlive() || process.exitValue() != 0) {
+      throw new WorkerException("Dbt transformation process wasn't successful");
     }
   }
 }

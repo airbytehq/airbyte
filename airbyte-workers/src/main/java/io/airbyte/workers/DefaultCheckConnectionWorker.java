@@ -8,6 +8,8 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -45,7 +47,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   @Override
   public StandardCheckConnectionOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
 
-    try {
+    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
       process = integrationLauncher.check(
           jobRoot,
           WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
@@ -76,6 +78,8 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         throw new WorkerException("Error while getting checking connection.");
       }
 
+    } catch (final RuntimeException e) {
+      throw e;
     } catch (final Exception e) {
       throw new WorkerException("Error while getting checking connection.", e);
     }
@@ -83,7 +87,13 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
   @Override
   public void cancel() {
-    WorkerUtils.cancelProcess(process);
+    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
+      WorkerUtils.cancelProcess(process);
+    } catch (final RuntimeException e) {
+      throw e;
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override public String getApplicationName() {
