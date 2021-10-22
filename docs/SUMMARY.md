@@ -108,6 +108,7 @@
     * [S3](integrations/sources/s3.md)
     * [SAP Business One](integrations/sources/sap-business-one.md)
     * [Salesforce](integrations/sources/salesforce.md)
+    * [SalesLoft](integrations/sources/salesloft.md)
     * [Sendgrid](integrations/sources/sendgrid.md)
     * [Shopify](integrations/sources/shopify.md)
     * [Shortio](integrations/sources/shortio.md)
