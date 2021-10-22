@@ -1,7 +1,7 @@
 
       
 
-  create  table "postgres"."test_normalization"."exchange_rate__dbt_tmp"
+  create  table "postgres".test_normalization."exchange_rate"
   as (
     
 -- Final base SQL model
