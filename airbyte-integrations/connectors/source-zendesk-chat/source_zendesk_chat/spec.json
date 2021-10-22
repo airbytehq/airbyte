@@ -31,16 +31,19 @@
               },
               "client_id": {
                 "type": "string",
+                "title": "Client ID",
                 "description": "The Client ID of your OAuth application",
                 "airbyte_secret": true
               },
               "client_secret": {
                 "type": "string",
+                "title": "Client Secret",
                 "description": "The Client Secret of your OAuth application.",
                 "airbyte_secret": true
               },
               "access_token": {
                 "type": "string",
+                "title": "Access Token",
                 "description": "Access Token for making authenticated requests.",
                 "airbyte_secret": true
               }
@@ -60,6 +63,7 @@
               },
               "access_token": {
                 "type": "string",
+                "title": "Access Token",
                 "description": "The Access Token to make authenticated requests.",
                 "airbyte_secret": true
               }
@@ -72,7 +76,7 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": ["authorization", 0],
+      "rootObject": ["authorization", "0"],
       "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
       "oauthFlowOutputParameters": [["access_token"]]
     }

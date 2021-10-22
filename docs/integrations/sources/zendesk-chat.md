@@ -52,6 +52,16 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 * Zendesk Chat Access Token
 
+### Connect using `OAuth 2.0` option:
+1. Select `OAuth2.0` in `Authorization Method`
+2. Click on `authenticate your Zendesk Chat account`
+2. Proceed the authentication using your credentials for your Zendesk account.
+
+### Connect using `Access Token` option:
+1. Generate a Access Token as described in [Zendesk Chat docs](https://developer.zendesk.com/rest_api/docs/chat/auth)
+2. Use the generated `access_token` in Airbyte connection.
+
+
 ### Setup guide
 
 Generate a Access Token as described in [Zendesk Chat docs](https://developer.zendesk.com/rest_api/docs/chat/auth)
@@ -62,6 +72,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.3 | 2021-10-22 | []() | Added support of `OAuth 2.0` authentication |
 | 0.1.2 | 2021-08-17 | [5476](https://github.com/airbytehq/airbyte/pull/5476) | Correct field unread to boolean type |
 | 0.1.1 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
 | 0.1.0 | 2021-05-03 | [3088](https://github.com/airbytehq/airbyte/pull/3088) | Initial release |
