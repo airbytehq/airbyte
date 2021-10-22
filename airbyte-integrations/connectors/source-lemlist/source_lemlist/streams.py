@@ -23,6 +23,10 @@ class LemlistStream(HttpStream):
         super().__init__(**kwargs)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """Pagination is offset-based and response doesn't contain a next_page_token
+        Thus, the only way to know if there are any more pages is to check if the
+        number of items in current page is equal to the page_size limit"""
+
         if len(response.json()) == self.page_size:
             self.offset += self.page_size
             next_page_params = {"offset": self.offset}
