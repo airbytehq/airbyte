@@ -12,6 +12,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 # Basic full refresh stream
@@ -21,6 +22,7 @@ class ConfluenceStream(HttpStream, ABC):
     limit = 50
     start = 0
     expand = []
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
@@ -93,11 +95,8 @@ class Group(ConfluenceStream):
     api_name = "group"
 
 
-class Theme(ConfluenceStream):
-    api_name = "settings/theme"
-
-
 class Audit(ConfluenceStream):
+    primary_key = "author"
     api_name = "audit"
     limit = 1000
 
@@ -124,4 +123,4 @@ class SourceConfluence(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = HttpBasicAuthenticator(config["email"], config["api_token"], auth_method="Basic")
         config["authenticator"] = auth
-        return [Pages(config), BlogPosts(config), Space(config), Group(config), Theme(config), Audit(config)]
+        return [Pages(config), BlogPosts(config), Space(config), Group(config), Audit(config)]

@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "api_token": "<abcd>",
+  "domain_name": "example.atlassian.net",
+  "email": "test@example.com"
 }

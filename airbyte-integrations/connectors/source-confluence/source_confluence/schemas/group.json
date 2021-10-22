@@ -2,9 +2,9 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": { "type": "string" },
-    "name": { "type": "string" },
-    "type": { "type": "string" },
-    "_links": { "type": "object" }
+    "id": { "type": ["null", "string"] },
+    "name": { "type": ["null", "string"] },
+    "type": { "type": ["null", "string"] },
+    "_links": { "type": ["null", "object"] }
   }
 }

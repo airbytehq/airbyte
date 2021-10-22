@@ -2,16 +2,16 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "author": { "type": "object" },
-    "remoteAddress": { "type": "string" },
-    "creationDate": { "type": "date-time" },
-    "summary": { "type": "string" },
-    "description": { "type": "string" },
-    "category": { "type": "string" },
-    "sysAdmin": { "type": "boolean" },
-    "superAdmin": { "type": "boolean" },
-    "affectedObject": { "type": "object" },
-    "changedValues": { "type": "array" },
-    "associatedObjects": { "type": "array" }
+    "author": { "type": ["null", "object"] },
+    "remoteAddress": { "type": ["null", "string"] },
+    "creationDate": { "type": ["null", "string"] },
+    "summary": { "type": ["null", "string"] },
+    "description": { "type": ["null", "string"] },
+    "category": { "type": ["null", "string"] },
+    "sysAdmin": { "type": ["null", "boolean"] },
+    "superAdmin": { "type": ["null", "boolean"] },
+    "affectedObject": { "type": ["null", "object"] },
+    "changedValues": { "type": ["null", "array"] },
+    "associatedObjects": { "type": ["null", "array"] }
   }
 }
