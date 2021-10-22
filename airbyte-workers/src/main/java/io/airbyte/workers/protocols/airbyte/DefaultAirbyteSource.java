@@ -136,7 +136,4 @@ public class DefaultAirbyteSource implements AirbyteSource {
     }
   }
 
-  @Override public String getApplicationName() {
-    return "airbyte-source";
-  }
 }

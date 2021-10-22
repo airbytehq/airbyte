@@ -10,7 +10,7 @@ import io.airbyte.config.WorkerDestinationConfig;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public interface Destination<T> extends CheckedConsumer<T, Exception>, AutoCloseable, Application {
+public interface Destination<T> extends CheckedConsumer<T, Exception>, AutoCloseable {
 
   void start(WorkerDestinationConfig destinationConfig, Path jobRoot) throws Exception;
 

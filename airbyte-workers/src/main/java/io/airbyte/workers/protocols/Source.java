@@ -9,7 +9,7 @@ import io.airbyte.config.WorkerSourceConfig;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public interface Source<T> extends AutoCloseable, Application {
+public interface Source<T> extends AutoCloseable {
 
   void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception;
 

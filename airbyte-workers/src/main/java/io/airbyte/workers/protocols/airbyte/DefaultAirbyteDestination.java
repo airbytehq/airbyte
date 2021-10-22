@@ -154,7 +154,4 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
   }
 
-  @Override public String getApplicationName() {
-    return "airbyte-destination";
-  }
 }

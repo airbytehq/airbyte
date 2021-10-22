@@ -21,14 +21,14 @@ public class LoggingHelper {
     CYAN("\u001b[36m"),
     WHITE("\u001b[37m");
 
-    private final String ainsiCode;
+    private final String ansi;
 
-    Color(final String ainsiCode) {
-      this.ainsiCode = ainsiCode;
+    Color(final String ansiCode) {
+      this.ansi = ansiCode;
     }
 
     public String getCode() {
-      return ainsiCode;
+      return ansi;
     }
 
   }

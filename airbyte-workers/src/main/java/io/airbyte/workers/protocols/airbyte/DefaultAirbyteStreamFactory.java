@@ -95,7 +95,4 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     }
   }
 
-  @Override public String getApplicationName() {
-    return "airbyte-stream-factory";
-  }
 }

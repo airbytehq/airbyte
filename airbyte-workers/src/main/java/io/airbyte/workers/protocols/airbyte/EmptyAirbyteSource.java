@@ -55,7 +55,4 @@ public class EmptyAirbyteSource implements AirbyteSource {
     // no op.
   }
 
-  @Override public String getApplicationName() {
-    return "airbyte-empty-source";
-  }
 }

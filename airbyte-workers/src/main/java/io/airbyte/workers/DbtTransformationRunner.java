@@ -27,7 +27,7 @@ import org.apache.tools.ant.types.Commandline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DbtTransformationRunner implements AutoCloseable, Application {
+public class DbtTransformationRunner implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationRunner.class);
   private static final String DBT_ENTRYPOINT_SH = "entrypoint.sh";
@@ -123,9 +123,5 @@ public class DbtTransformationRunner implements AutoCloseable, Application {
         throw new WorkerException("Dbt transformation process wasn't successful");
       }
     }
-  }
-
-  @Override public String getApplicationName() {
-    return "airbyte-dbt-transformation-runner";
   }
 }

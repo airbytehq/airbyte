@@ -87,6 +87,6 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   }
 
   @Override public String getApplicationName() {
-    return "airbyte-connection-checker";
+    return "check-connection-worker";
   }
 }
