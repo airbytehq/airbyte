@@ -51,10 +51,10 @@ ELv2 will apply from the following Airbyte core version as of September 27, 2021
 We chose ELv2 because it is very permissive with what you can do with the software. 
 
 You can basically build ANY product on top of Airbyte as long as you don’t:
-* Host Airbyte yourself and sell it as an ELT/ETL tool.
+* Host Airbyte yourself and sell it as an ELT/ETL tool, or a replacement for the Airbyte solution.
 * Sell a product that directly exposes Airbyte’s UI or API.
 
-Here is a non-exhaustive list of what you can do:
+Here is a non-exhaustive list of what you can do (without providing your customers direct access to Airbyte functionality):
 * I am creating an analytics/attribution platform and I want to use Airbyte to bring data in on behalf of my customers.
 * I am building my internal data stack and I want my team to be able to interact with Airbyte to configure the pipelines through the UI or the API.
 ...
