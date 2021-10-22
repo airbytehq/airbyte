@@ -83,6 +83,6 @@ You can easily get the page id from the page url. For example, if you have a pag
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.2 | 2021-10-18 | [7128](https://github.com/airbytehq/airbyte/pull/7128) | Upgrade Facebook API to v.12 |
 | 0.1.1 | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification |
 | 0.1.0 | 2021-09-01 | [5158](https://github.com/airbytehq/airbyte/pull/5158) | Initial Release |
-
