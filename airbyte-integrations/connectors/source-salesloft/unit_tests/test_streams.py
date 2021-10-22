@@ -43,7 +43,6 @@ def test_next_page_token_invalid(patch_base_class):
     assert isinstance(ex.value, KeyError)
 
 
-
 def test_parse_response(patch_base_class):
     stream = SalesloftStream(authenticator=MagicMock())
     response = MagicMock()
