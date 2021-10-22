@@ -10,7 +10,7 @@ public class WorkspaceRetentionConfig {
   private final long maxDays;
   private final long maxSizeMb;
 
-  public WorkspaceRetentionConfig(long minDays, long maxDays, long maxSizeMb) {
+  public WorkspaceRetentionConfig(final long minDays, final long maxDays, final long maxSizeMb) {
     this.minDays = minDays;
     this.maxDays = maxDays;
     this.maxSizeMb = maxSizeMb;

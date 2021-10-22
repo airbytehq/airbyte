@@ -15,6 +15,7 @@ import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -53,11 +54,12 @@ public class KubeProcessFactory implements ProcessFactory {
   /**
    * Sets up a process factory with the default processRunnerHost.
    */
-  public KubeProcessFactory(String namespace,
-                            ApiClient officialClient,
-                            KubernetesClient fabricClient,
-                            String kubeHeartbeatUrl) {
-    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()));
+  public KubeProcessFactory(final String namespace,
+                            final ApiClient officialClient,
+                            final KubernetesClient fabricClient,
+                            final String kubeHeartbeatUrl,
+                            final Set<Integer> ports) {
+    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()), ports);
   }
 
   /**
@@ -70,21 +72,23 @@ public class KubeProcessFactory implements ProcessFactory {
    *        injectable for testing.
    */
   @VisibleForTesting
-  public KubeProcessFactory(String namespace,
-                            ApiClient officialClient,
-                            KubernetesClient fabricClient,
-                            String kubeHeartbeatUrl,
-                            String processRunnerHost) {
+  public KubeProcessFactory(final String namespace,
+                            final ApiClient officialClient,
+                            final KubernetesClient fabricClient,
+                            final String kubeHeartbeatUrl,
+                            final String processRunnerHost,
+                            final Set<Integer> ports) {
     this.namespace = namespace;
     this.officialClient = officialClient;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.processRunnerHost = processRunnerHost;
+    KubePortManagerSingleton.init(ports);
   }
 
   @Override
-  public Process create(String jobId,
-                        int attempt,
+  public Process create(final String jobId,
+                        final int attempt,
                         final Path jobRoot,
                         final String imageName,
                         final boolean usesStdin,
@@ -98,14 +102,14 @@ public class KubeProcessFactory implements ProcessFactory {
       // used to differentiate source and destination processes with the same id and attempt
       final String podName = createPodName(imageName, jobId, attempt);
 
-      final int stdoutLocalPort = KubePortManagerSingleton.take();
+      final int stdoutLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
 
-      final int stderrLocalPort = KubePortManagerSingleton.take();
+      final int stderrLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
 
-      var allLabels = new HashMap<>(customLabels);
-      var generalKubeLabels = Map.of(
+      final var allLabels = new HashMap<>(customLabels);
+      final var generalKubeLabels = Map.of(
           JOB_LABEL_KEY, jobId,
           ATTEMPT_LABEL_KEY, String.valueOf(attempt),
           WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE);
@@ -131,7 +135,7 @@ public class KubeProcessFactory implements ProcessFactory {
           WorkerUtils.DEFAULT_WORKER_POD_NODE_SELECTORS,
           allLabels,
           args);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new WorkerException(e.getMessage(), e);
     }
   }
@@ -148,22 +152,22 @@ public class KubeProcessFactory implements ProcessFactory {
    * easier operations.
    */
   @VisibleForTesting
-  protected static String createPodName(String fullImagePath, String jobId, int attempt) {
-    var versionDelimiter = ":";
-    var noVersion = fullImagePath.split(versionDelimiter)[0];
+  protected static String createPodName(final String fullImagePath, final String jobId, final int attempt) {
+    final var versionDelimiter = ":";
+    final var noVersion = fullImagePath.split(versionDelimiter)[0];
 
-    var dockerDelimiter = "/";
-    var nameParts = noVersion.split(dockerDelimiter);
+    final var dockerDelimiter = "/";
+    final var nameParts = noVersion.split(dockerDelimiter);
     var imageName = nameParts[nameParts.length - 1];
 
-    var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+    final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
     final String suffix = "worker-" + jobId + "-" + attempt + "-" + randSuffix;
 
     var podName = imageName + "-" + suffix;
 
-    var podNameLenLimit = 63;
+    final var podNameLenLimit = 63;
     if (podName.length() > podNameLenLimit) {
-      var extra = podName.length() - podNameLenLimit;
+      final var extra = podName.length() - podNameLenLimit;
       imageName = imageName.substring(extra);
       podName = imageName + "-" + suffix;
     }

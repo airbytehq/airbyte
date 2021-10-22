@@ -26,19 +26,19 @@ public class KeenHttpClient {
   final HttpClient httpClient = HttpClient.newHttpClient();
   final ObjectMapper objectMapper = new ObjectMapper();
 
-  public void eraseStream(String streamToDelete, String projectId, String apiKey)
+  public void eraseStream(final String streamToDelete, final String projectId, final String apiKey)
       throws IOException, InterruptedException {
     eraseStream(streamToDelete, projectId, apiKey, false);
   }
 
-  public void eraseStream(String streamToDelete, String projectId, String apiKey, boolean retried)
+  public void eraseStream(final String streamToDelete, final String projectId, final String apiKey, final boolean retried)
       throws IOException, InterruptedException {
 
-    URI deleteUri = URI.create(String.format(
+    final URI deleteUri = URI.create(String.format(
         KEEN_BASE_API_PATH + "/projects/%s/events/%s",
         projectId, streamToDelete));
 
-    HttpRequest request = HttpRequest.newBuilder()
+    final HttpRequest request = HttpRequest.newBuilder()
         .uri(deleteUri)
         .timeout(Duration.ofSeconds(30))
         .header("Authorization", apiKey)
@@ -46,7 +46,7 @@ public class KeenHttpClient {
         .DELETE()
         .build();
 
-    HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+    final HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
 
     if (response.statusCode() != 204) {
       if (response.statusCode() == 429 && !retried) {
@@ -60,20 +60,20 @@ public class KeenHttpClient {
     }
   }
 
-  public ArrayNode extract(String streamName, String projectId, String apiKey)
+  public ArrayNode extract(final String streamName, final String projectId, final String apiKey)
       throws IOException, InterruptedException {
-    URI extractionUri = URI.create(String.format(
+    final URI extractionUri = URI.create(String.format(
         keenBaseApiPath + "/projects/%s/queries/extraction" +
             "?api_key=%s&timeframe=this_7_years&event_collection=%s",
         projectId, apiKey, streamName));
 
-    HttpRequest request = HttpRequest.newBuilder()
+    final HttpRequest request = HttpRequest.newBuilder()
         .uri(extractionUri)
         .timeout(Duration.ofSeconds(30))
         .header("Content-Type", "application/json")
         .build();
 
-    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     if (response.statusCode() != 200) {
       throw new IllegalStateException("Server did not return successful response: " + response.body());

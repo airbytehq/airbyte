@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.7
+Add start_date parameter to specification from which to start pulling data.
+
 ## 0.2.6
 Fix `unique_external_id` type in `contacts` schema. Should be a string 
 instead of an integer.

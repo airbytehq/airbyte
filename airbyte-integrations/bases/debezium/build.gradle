@@ -7,6 +7,7 @@ project.configurations {
 }
 dependencies {
     implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-db:lib')
 
     implementation 'io.debezium:debezium-api:1.4.2.Final'
     implementation 'io.debezium:debezium-embedded:1.4.2.Final'

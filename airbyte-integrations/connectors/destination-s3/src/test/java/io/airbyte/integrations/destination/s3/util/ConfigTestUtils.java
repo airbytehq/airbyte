@@ -12,7 +12,7 @@ import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 
 public class ConfigTestUtils {
 
-  public static JsonNode getBaseConfig(JsonNode formatConfig) {
+  public static JsonNode getBaseConfig(final JsonNode formatConfig) {
     return Jsons.deserialize("{\n"
         + "  \"s3_endpoint\": \"some_test-endpoint\",\n"
         + "  \"s3_bucket_name\": \"test-bucket-name\",\n"
@@ -24,7 +24,7 @@ public class ConfigTestUtils {
         + "}");
   }
 
-  public static void assertBaseConfig(S3DestinationConfig s3DestinationConfig) {
+  public static void assertBaseConfig(final S3DestinationConfig s3DestinationConfig) {
     assertEquals("some_test-endpoint", s3DestinationConfig.getEndpoint());
     assertEquals("test-bucket-name", s3DestinationConfig.getBucketName());
     assertEquals("test_path", s3DestinationConfig.getBucketPath());

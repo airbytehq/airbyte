@@ -13,6 +13,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -34,13 +35,13 @@ public class OAuthConfigSupplier {
   private final boolean maskSecrets;
   private final TrackingClient trackingClient;
 
-  public OAuthConfigSupplier(ConfigRepository configRepository, boolean maskSecrets, TrackingClient trackingClient) {
+  public OAuthConfigSupplier(final ConfigRepository configRepository, final boolean maskSecrets, final TrackingClient trackingClient) {
     this.configRepository = configRepository;
     this.maskSecrets = maskSecrets;
     this.trackingClient = trackingClient;
   }
 
-  public JsonNode injectSourceOAuthParameters(UUID sourceDefinitionId, UUID workspaceId, JsonNode sourceConnectorConfig)
+  public JsonNode injectSourceOAuthParameters(final UUID sourceDefinitionId, final UUID workspaceId, final JsonNode sourceConnectorConfig)
       throws IOException {
     try {
       final ImmutableMap<String, Object> metadata = generateSourceMetadata(sourceDefinitionId);
@@ -52,16 +53,18 @@ public class OAuthConfigSupplier {
                 injectJsonNode((ObjectNode) sourceConnectorConfig, (ObjectNode) sourceOAuthParameter.getConfiguration());
                 if (!maskSecrets) {
                   // when maskSecrets = true, no real oauth injections is happening
-                  trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata);
+                  Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
                 }
               });
       return sourceConnectorConfig;
-    } catch (JsonValidationException | ConfigNotFoundException e) {
+    } catch (final JsonValidationException | ConfigNotFoundException e) {
       throw new IOException(e);
     }
   }
 
-  public JsonNode injectDestinationOAuthParameters(UUID destinationDefinitionId, UUID workspaceId, JsonNode destinationConnectorConfig)
+  public JsonNode injectDestinationOAuthParameters(final UUID destinationDefinitionId,
+                                                   final UUID workspaceId,
+                                                   final JsonNode destinationConnectorConfig)
       throws IOException {
     try {
       final ImmutableMap<String, Object> metadata = generateDestinationMetadata(destinationDefinitionId);
@@ -75,15 +78,15 @@ public class OAuthConfigSupplier {
             }
           });
       return destinationConnectorConfig;
-    } catch (JsonValidationException | ConfigNotFoundException e) {
+    } catch (final JsonValidationException | ConfigNotFoundException e) {
       throw new IOException(e);
     }
   }
 
   @VisibleForTesting
-  void injectJsonNode(ObjectNode mainConfig, ObjectNode fromConfig) {
+  void injectJsonNode(final ObjectNode mainConfig, final ObjectNode fromConfig) {
     // TODO this method might make sense to have as a general utility in Jsons
-    for (String key : Jsons.keys(fromConfig)) {
+    for (final String key : Jsons.keys(fromConfig)) {
       if (fromConfig.get(key).getNodeType() == OBJECT) {
         // nested objects are merged rather than overwrite the contents of the equivalent object in config
         if (mainConfig.get(key) == null) {
@@ -111,7 +114,7 @@ public class OAuthConfigSupplier {
     }
   }
 
-  private static boolean isSecretMask(String input) {
+  private static boolean isSecretMask(final String input) {
     return Strings.isNullOrEmpty(input.replaceAll("\\*", ""));
   }
 

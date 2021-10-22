@@ -26,7 +26,7 @@ public class GKEPostgresConfig {
   private static final String PASSWORD = "admin123";
   private static final String DB = "postgresdb";
 
-  public static Map<Object, Object> dbConfig(Type connectorType, boolean hiddenPassword, boolean withSchema) {
+  public static Map<Object, Object> dbConfig(final Type connectorType, final boolean hiddenPassword, final boolean withSchema) {
     final Map<Object, Object> dbConfig = new HashMap<>();
     dbConfig.put("host", connectorType == Type.SOURCE ? SOURCE_HOST : DESTINATION_HOST);
     dbConfig.put("password", hiddenPassword ? "**********" : PASSWORD);
