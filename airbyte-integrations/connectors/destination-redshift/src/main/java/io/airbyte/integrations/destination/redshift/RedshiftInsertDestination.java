@@ -37,26 +37,21 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
     return getJdbcDatabase(config);
   }
 
-  private static void readSsl(final JsonNode redshiftConfig, final List<String> additionalProperties) {
-    final boolean tls = redshiftConfig.has("tls") && redshiftConfig.get("tls").asBoolean(); // for backward compatibility
-    if (!tls) {
-      additionalProperties.add("ssl=false");
-    } else {
-      additionalProperties.add("ssl=true");
-      additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
-    }
+  private static void addSsl(final List<String> additionalProperties) {
+    additionalProperties.add("ssl=true");
+    additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
   }
 
   public static JdbcDatabase getJdbcDatabase(final JsonNode config) {
     final List<String> additionalProperties = new ArrayList<>();
     final var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
-    readSsl(config, additionalProperties);
+    addSsl(additionalProperties);
     return Databases.createJdbcDatabase(
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         RedshiftInsertDestination.DRIVER_CLASS,
-        additionalProperties.isEmpty() ? "" : String.join(";", additionalProperties));
+        String.join(";", additionalProperties));
   }
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
