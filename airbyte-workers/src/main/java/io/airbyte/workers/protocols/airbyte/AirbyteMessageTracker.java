@@ -7,7 +7,7 @@ package io.airbyte.workers.protocols.airbyte;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper;
-import io.airbyte.commons.logging.ScopedMDCChange;
+import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.protocols.MessageTracker;
@@ -29,7 +29,7 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
 
   @Override
   public void accept(final AirbyteMessage message) {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(LoggingHelper.getExtraMDCEntries(this))) {
+    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
       if (message.getType() == AirbyteMessage.Type.RECORD) {
         recordCount.incrementAndGet();
         // todo (cgardens) - pretty wasteful to do an extra serialization just to get size.
