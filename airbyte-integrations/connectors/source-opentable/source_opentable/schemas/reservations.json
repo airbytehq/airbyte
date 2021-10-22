@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "href": {
+      "type": ["null", "string"]
+    },
+    "rid": {
+      "type": ["null", "integer"],
+      "format": "date-time"
+    },
+    "sequence_id": {
+      "type": ["null", "string"]
+    },
+    "guest_id": {
+      "type": ["null", "string"]
+    },
+    "guest": {
+      "type": ["null", "string"]
+    },
+    "confirmation_id": {
+      "type": ["null", "integer"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "table_number": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "party_size": {
+      "type": ["null", "integer"]
+    },
+    "visit_tags": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "origin": {
+      "type": ["null", "string"]
+    },
+    "pos_data": {
+      "type": ["null","object"],
+      "properties": {
+        "check_ids": {
+          "type": "null"
+        }
+      }
+    },
+    "marketing_opted_out": {
+      "type": ["null", "boolean"]
+    },
+    "guest_request": {
+      "type": ["null", "string"]
+    },
+    "venue_notes": {
+      "type": ["null", "string"]
+    },
+    "table_category": {
+      "type": ["null", "string"]
+    },
+    "server": {
+      "type": ["null", "string"]
+    },
+    "referrer": {
+      "type": ["null", "string"]
+    },
+    "created_date_utc": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "added_to_waitlist_utc": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "done_time_utc": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "scheduled_time_utc": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "seated_time_utc": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at_utc": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "added_to_waitlist": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "done_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "scheduled_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "seated_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}
