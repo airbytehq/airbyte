@@ -80,7 +80,7 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("credentials").get("client_id").asText())
             .put("client_secret", credentialsJson.get("credentials").get("client_secret").asText())
             .build())))));
-    final String url = googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Map.of());
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -90,7 +90,7 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
     final Map<String, Object> params = googleAnalyticsOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
-        Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
+        Map.of("code", serverHandler.getParamValue()), REDIRECT_URL, Map.of());
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("credentials"));
     final Map<String, Object> credentials = (Map<String, Object>) params.get("credentials");

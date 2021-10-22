@@ -67,7 +67,8 @@ public class GoogleSheetsOAuthFlowTest {
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams = googleSheetsOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+    final Map<String, Object> actualQueryParams =
+        googleSheetsOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL, Map.of());
 
     assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
@@ -89,7 +90,7 @@ public class GoogleSheetsOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        googleSheetsOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        googleSheetsOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL, Map.of());
 
     assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }

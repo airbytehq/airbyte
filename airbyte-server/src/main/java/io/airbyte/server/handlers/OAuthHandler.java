@@ -52,7 +52,8 @@ public class OAuthHandler {
     final OAuthConsentRead result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
         sourceDefinitionIdRequestBody.getWorkspaceId(),
         sourceDefinitionIdRequestBody.getSourceDefinitionId(),
-        sourceDefinitionIdRequestBody.getRedirectUrl()));
+        sourceDefinitionIdRequestBody.getRedirectUrl(),
+        sourceDefinitionIdRequestBody.getInputParams()));
     try {
       trackingClient.track(sourceDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     } catch (final Exception e) {
@@ -70,7 +71,8 @@ public class OAuthHandler {
     final OAuthConsentRead result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
         destinationDefinitionIdRequestBody.getWorkspaceId(),
         destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
-        destinationDefinitionIdRequestBody.getRedirectUrl()));
+        destinationDefinitionIdRequestBody.getRedirectUrl(),
+        destinationDefinitionIdRequestBody.getInputParams()));
     try {
       trackingClient.track(destinationDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     } catch (final Exception e) {
@@ -88,7 +90,8 @@ public class OAuthHandler {
         oauthSourceRequestBody.getWorkspaceId(),
         oauthSourceRequestBody.getSourceDefinitionId(),
         oauthSourceRequestBody.getQueryParams(),
-        oauthSourceRequestBody.getRedirectUrl());
+        oauthSourceRequestBody.getRedirectUrl(),
+        oauthSourceRequestBody.getInputParams());
     try {
       trackingClient.track(oauthSourceRequestBody.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
     } catch (final Exception e) {
@@ -106,7 +109,8 @@ public class OAuthHandler {
         oauthDestinationRequestBody.getWorkspaceId(),
         oauthDestinationRequestBody.getDestinationDefinitionId(),
         oauthDestinationRequestBody.getQueryParams(),
-        oauthDestinationRequestBody.getRedirectUrl());
+        oauthDestinationRequestBody.getRedirectUrl(),
+        oauthDestinationRequestBody.getInputParams());
     try {
       trackingClient.track(oauthDestinationRequestBody.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
     } catch (final Exception e) {

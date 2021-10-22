@@ -24,19 +24,23 @@ class OauthModelConverterTest {
         Arguments.of(
             List.of(List.of("init1"), List.of("init2-1", "init2-2")),
             List.of(List.of("output1"), List.of("output2-1", "output2-2")),
+            List.of(List.of("input"), List.of("input-1", "input2-2")),
             List.of("path", "nestedPath", 1)),
         // init params only
         Arguments.of(
             List.of(List.of("init1"), List.of("init2-1", "init2-2")),
+            List.of(List.of()),
             List.of(List.of()),
             List.of()),
         // output params only
         Arguments.of(
             List.of(List.of()),
             List.of(List.of("output1"), List.of("output2-1", "output2-2")),
+            List.of(List.of()),
             List.of()),
         // rootObject only
         Arguments.of(
+            List.of(List.of()),
             List.of(List.of()),
             List.of(List.of()),
             List.of("path", "nestedPath", 1)));
@@ -44,13 +48,17 @@ class OauthModelConverterTest {
 
   @ParameterizedTest
   @MethodSource("testProvider")
-  public void testIt(final List<List<String>> initParams, final List<List<String>> outputParams, final List<Object> rootObject) {
+  public void testIt(final List<List<String>> initParams,
+                     final List<List<String>> outputParams,
+                     final List<List<String>> inputFields,
+                     final List<Object> rootObject) {
     final ConnectorSpecification input = new ConnectorSpecification().withAuthSpecification(
         new AuthSpecification()
             .withAuthType(AuthSpecification.AuthType.OAUTH_2_0)
             .withOauth2Specification(new OAuth2Specification()
                 .withOauthFlowInitParameters(initParams)
                 .withOauthFlowOutputParameters(outputParams)
+                .withOauthFlowInputFields(inputFields)
                 .withRootObject(rootObject)));
 
     final io.airbyte.api.model.AuthSpecification expected = new io.airbyte.api.model.AuthSpecification()
@@ -59,6 +67,7 @@ class OauthModelConverterTest {
             new io.airbyte.api.model.OAuth2Specification()
                 .oauthFlowInitParameters(initParams)
                 .oauthFlowOutputParameters(outputParams)
+                .oauthFlowInputFields(inputFields)
                 .rootObject(rootObject));
 
     final Optional<io.airbyte.api.model.AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(input);

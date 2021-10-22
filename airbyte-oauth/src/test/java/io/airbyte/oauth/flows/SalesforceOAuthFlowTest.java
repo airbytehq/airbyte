@@ -59,7 +59,7 @@ public class SalesforceOAuthFlowTest {
   @Test
   public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
     final String concentUrl =
-        salesforceoAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+        salesforceoAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Map.of());
     assertEquals(concentUrl,
         "https://login.salesforce.com/services/oauth2/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state");
   }
@@ -73,7 +73,7 @@ public class SalesforceOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        salesforceoAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        salesforceoAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL, Map.of());
     assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
 

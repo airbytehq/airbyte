@@ -101,6 +101,10 @@ class OAuth2Specification(BaseModel):
         None,
         description="Pointers to the fields in the rootObject which can be populated from successfully completing the oauth flow using the init parameters. This is typically a refresh/access token. Each inner array represents the path in the rootObject of the referenced field.",
     )
+    oauthFlowInputFields: Optional[List[List[str]]] = Field(
+        None,
+        description="Represents a list of pointers to the fields required to launch the oauth flow. For example, to authenticate a shopify user, we need to embed the shop ID in the consentgrant URL, shop ID is a separate parameter in the spec Therefore this array would contain a list of pointers (a pointer is a string array denoting a path in the config) pointing to the required fields",
+    )
 
 
 class AuthType(Enum):

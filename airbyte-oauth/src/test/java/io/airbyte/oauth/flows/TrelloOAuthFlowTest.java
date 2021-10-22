@@ -75,7 +75,7 @@ public class TrelloOAuthFlowTest {
   @Test
   public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
     final String concentUrl =
-        trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+        trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Map.of());
     assertEquals(concentUrl, "https://trello.com/1/OAuthAuthorizeToken?oauth_token=test_token");
   }
 
@@ -84,7 +84,7 @@ public class TrelloOAuthFlowTest {
     final Map<String, String> expectedParams = Map.of("key", "test_client_id", "token", "test_token");
     final Map<String, Object> queryParams = Map.of("oauth_token", "token", "oauth_verifier", "verifier");
     final Map<String, Object> returnedParams =
-        trelloOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        trelloOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL, Map.of());
     assertEquals(returnedParams, expectedParams);
   }
 

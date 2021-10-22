@@ -68,7 +68,7 @@ public class GoogleSearchConsoleOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams = googleSearchConsoleOAuthFlow
-        .completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        .completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL, Map.of());
 
     assertEquals(Jsons.serialize(Map.of("authorization", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
@@ -90,7 +90,7 @@ public class GoogleSearchConsoleOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams = googleSearchConsoleOAuthFlow
-        .completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        .completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL, Map.of());
 
     assertEquals(Jsons.serialize(Map.of("authorization", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }

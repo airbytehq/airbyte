@@ -81,7 +81,7 @@ public class TrelloOAuthFlowIntegrationTest {
             .put("client_id", clientId)
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Map.of());
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -91,7 +91,8 @@ public class TrelloOAuthFlowIntegrationTest {
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
     final Map<String, Object> params = trelloOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
-        Map.of("oauth_verifier", serverHandler.getParamValue(), "oauth_token", serverHandler.getResponseQuery().get("oauth_token")), REDIRECT_URL);
+        Map.of("oauth_verifier", serverHandler.getParamValue(), "oauth_token", serverHandler.getResponseQuery().get("oauth_token")), REDIRECT_URL,
+        Map.of());
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("token"));
     assertTrue(params.containsKey("key"));

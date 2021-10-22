@@ -59,7 +59,7 @@ public class AsanaOAuthFlowTest {
   @Test
   public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
     final String concentUrl =
-        asanaoAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+        asanaoAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Map.of());
     assertEquals(concentUrl,
         "https://app.asana.com/-/oauth_authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state");
   }
@@ -73,7 +73,7 @@ public class AsanaOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        asanaoAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        asanaoAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL, Map.of());
     assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
 

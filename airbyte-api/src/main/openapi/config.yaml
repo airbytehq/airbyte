@@ -2052,6 +2052,17 @@ components:
             type: array
             items:
               type: string
+        oauthFlowInputFields:
+          description:
+            "Pointers to the fields in the config with parameters required for oAuth to work.
+            This is typically a subdomain to perform an authorization.
+            Each inner array represents the path in the config of the referenced field."
+          type: array
+          items:
+            description: A list of strings denoting a pointer into the rootObject for where to find this property
+            type: array
+            items:
+              type: string
     SourceDefinitionSpecificationRead:
       type: object
       required:
@@ -3241,6 +3252,10 @@ components:
         redirectUrl:
           description: The url to redirect to after getting the user consent
           type: string
+        inputParams:
+          description: Parameters that required for oAuth flow from user input.
+          type: object
+          additionalProperties: true # Oauth parameters like authorization subdomain. Need to be provided by user when over UI.
     DestinationOauthConsentRequest:
       type: object
       required:
@@ -3255,6 +3270,10 @@ components:
         redirectUrl:
           description: The url to redirect to after getting the user consent
           type: string
+        inputParams:
+          description: Parameters that required for oAuth flow from user input.
+          type: object
+          additionalProperties: true # Oauth parameters like authorization subdomain. Need to be provided by user when over UI.
     OAuthConsentRead:
       type: object
       required:
@@ -3279,6 +3298,10 @@ components:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
+        inputParams:
+          description: Parameters that required for oAuth flow from user input.
+          type: object
+          additionalProperties: true # Oauth parameters like authorization subdomain. Need to be provided by user when over UI.
     CompleteDestinationOAuthRequest:
       type: object
       required:
@@ -3296,6 +3319,10 @@ components:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
+        inputParams:
+          description: Parameters that required for oAuth flow from user input.
+          type: object
+          additionalProperties: true # Oauth parameters like authorization subdomain. Need to be provided by user when over UI.
     CompleteOauthResponse:
       type: object
       additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance

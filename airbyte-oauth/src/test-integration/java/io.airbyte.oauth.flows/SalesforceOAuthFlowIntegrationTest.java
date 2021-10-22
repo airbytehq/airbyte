@@ -81,7 +81,7 @@ public class SalesforceOAuthFlowIntegrationTest {
             .put("client_id", clientId)
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = salesforceOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = salesforceOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Map.of());
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -91,7 +91,7 @@ public class SalesforceOAuthFlowIntegrationTest {
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
     final Map<String, Object> params = salesforceOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
-        Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
+        Map.of("code", serverHandler.getParamValue()), REDIRECT_URL, Map.of());
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("refresh_token"));
     assertTrue(params.get("refresh_token").toString().length() > 0);

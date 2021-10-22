@@ -23,7 +23,8 @@ public class OauthModelConverter {
           .oauth2Specification(new OAuth2Specification()
               .rootObject(incomingAuthSpec.getOauth2Specification().getRootObject())
               .oauthFlowInitParameters(incomingAuthSpec.getOauth2Specification().getOauthFlowInitParameters())
-              .oauthFlowOutputParameters(incomingAuthSpec.getOauth2Specification().getOauthFlowOutputParameters()));
+              .oauthFlowOutputParameters(incomingAuthSpec.getOauth2Specification().getOauthFlowOutputParameters())
+              .oauthFlowInputFields(incomingAuthSpec.getOauth2Specification().getOauthFlowInputFields()));
     }
 
     return Optional.ofNullable(authSpecification);

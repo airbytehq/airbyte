@@ -58,7 +58,7 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Map.of());
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -68,7 +68,7 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
     final Map<String, Object> params = flow.completeSourceOAuth(workspaceId, definitionId,
-        Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
+        Map.of("code", serverHandler.getParamValue()), REDIRECT_URL, Map.of());
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("access_token"));
     assertTrue(params.get("access_token").toString().length() > 0);

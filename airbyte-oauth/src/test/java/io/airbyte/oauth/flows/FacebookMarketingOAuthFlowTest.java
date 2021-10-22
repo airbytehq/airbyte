@@ -67,7 +67,7 @@ public class FacebookMarketingOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        facebookMarketingOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        facebookMarketingOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL, Map.of());
 
     assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
@@ -89,7 +89,7 @@ public class FacebookMarketingOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        facebookMarketingOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        facebookMarketingOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL, Map.of());
 
     assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }

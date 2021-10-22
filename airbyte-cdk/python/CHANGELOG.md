@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.31
+Added oauthFlowInputFields to OAuth2Specification for annotating expected user provided parameters for oAuth flow.
+
 ## 0.1.30
 Updated OAuth2Specification.rootObject type in airbyte_protocol to allow string or int
 

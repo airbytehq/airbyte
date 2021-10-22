@@ -256,6 +256,19 @@ definitions:
           type: array
           items:
             type: string
+      oauthFlowInputFields:
+        description:
+          "Represents a list of pointers to the fields required to launch the oauth flow.
+          For example, to authenticate a shopify user, we need to embed the shop ID in the consentgrant URL,
+          shop ID is a separate parameter in the spec
+          Therefore this array would contain a list of pointers (a pointer is a string array denoting a path in the config)
+          pointing to the required fields"
+        type: array
+        items:
+          description: A list of strings denoting a pointer into the config object for where to find this property
+          type: array
+          items:
+            type: string
   ConnectorSpecification:
     description: Specification of a connector (source/destination)
     type: object

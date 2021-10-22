@@ -61,7 +61,7 @@ public class GithubOAuthFlowTest {
   @Test
   public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
     final String concentUrl =
-        githuboAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+        githuboAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Map.of());
     assertEquals(concentUrl,
         "https://github.com/login/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&state=state");
   }
@@ -75,7 +75,7 @@ public class GithubOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        githuboAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        githuboAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL, Map.of());
     assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
 

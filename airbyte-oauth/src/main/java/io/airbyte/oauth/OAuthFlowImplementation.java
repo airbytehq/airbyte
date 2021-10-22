@@ -11,14 +11,24 @@ import java.util.UUID;
 
 public interface OAuthFlowImplementation {
 
-  String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException;
-
-  String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException;
-
-  Map<String, Object> completeSourceOAuth(UUID workspaceId, UUID sourceDefinitionId, Map<String, Object> queryParams, String redirectUrl)
+  String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl, Map<String, Object> inputParameters)
       throws IOException, ConfigNotFoundException;
 
-  Map<String, Object> completeDestinationOAuth(UUID workspaceId, UUID destinationDefinitionId, Map<String, Object> queryParams, String redirectUrl)
+  String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl, Map<String, Object> inputParameters)
+      throws IOException, ConfigNotFoundException;
+
+  Map<String, Object> completeSourceOAuth(UUID workspaceId,
+                                          UUID sourceDefinitionId,
+                                          Map<String, Object> queryParams,
+                                          String redirectUrl,
+                                          Map<String, Object> inputParameters)
+      throws IOException, ConfigNotFoundException;
+
+  Map<String, Object> completeDestinationOAuth(UUID workspaceId,
+                                               UUID destinationDefinitionId,
+                                               Map<String, Object> queryParams,
+                                               String redirectUrl,
+                                               Map<String, Object> inputParameters)
       throws IOException, ConfigNotFoundException;
 
 }
