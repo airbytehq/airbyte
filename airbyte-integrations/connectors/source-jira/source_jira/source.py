@@ -99,8 +99,8 @@ class SourceJira(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
-        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-        incremental_args = {**args, "start_date": config["start_date"]}
+        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+        incremental_args = {**args, "start_date": config.get("start_date", "")}
         return [
             ApplicationRoles(**args),
             Avatars(**args),
