@@ -38,7 +38,9 @@ public abstract class OAuthFlowIntegrationTest {
   protected HttpServer server;
   protected ServerHandler serverHandler;
 
-  protected abstract Path getCredentialsPath();
+  protected Path getCredentialsPath() {
+    return Path.of("secrets/config.json");
+  };
 
   protected abstract OAuthFlowImplementation getFlowObject(ConfigRepository configRepository);
 

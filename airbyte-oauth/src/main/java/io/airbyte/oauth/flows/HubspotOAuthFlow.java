@@ -4,7 +4,6 @@
 
 package io.airbyte.oauth.flows;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
@@ -87,7 +86,7 @@ public class HubspotOAuthFlow extends BaseOAuthFlow {
    * @param oAuthParamConfig the configuration map
    */
   @Override
-  protected String getAccessTokenUrl(JsonNode oAuthParamConfig) {
+  protected String getAccessTokenUrl() {
     return "https://api.hubapi.com/oauth/v1/token";
   }
 
