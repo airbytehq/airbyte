@@ -31,7 +31,7 @@ class Client:
         by_receipt_time: bool = False,
     ) -> Iterator[Mapping[str, Any]]:
 
-        self.logger.info(f"Creating search job: {query}")
+        self.logger.info(f"Creating search job: {query}, from: {from_time}, to: {to_time}")
         search_job: dict = self.sumo.search_job(
             query,
             from_time,
