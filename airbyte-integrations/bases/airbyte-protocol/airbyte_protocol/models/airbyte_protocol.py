@@ -44,10 +44,8 @@ class AirbyteStateMessage(BaseModel):
 
 class Level(Enum):
     FATAL = "FATAL"
-    CRITICAL = "CRITICAL"
     ERROR = "ERROR"
     WARN = "WARN"
-    WARNING = "WARNING"
     INFO = "INFO"
     DEBUG = "DEBUG"
     TRACE = "TRACE"

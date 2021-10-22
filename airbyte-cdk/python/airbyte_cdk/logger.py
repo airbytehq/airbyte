@@ -42,10 +42,21 @@ def init_logger(name: str = None):
 class AirbyteLogFormatter(logging.Formatter):
     """Output log records using AirbyteMessage"""
 
+    # Transforming Python log levels to Airbyte protocol log levels
+    level_mapping = {
+        logging.FATAL: "FATAL",
+        logging.ERROR: "ERROR",
+        logging.WARNING: "WARN",
+        logging.INFO: "INFO",
+        logging.DEBUG: "DEBUG",
+        TRACE_LEVEL_NUM: "TRACE",
+    }
+
     def format(self, record: logging.LogRecord) -> str:
         """Return a JSON representation of the log message"""
         message = super().format(record)
-        log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=record.levelname, message=message))
+        airbyte_level = self.level_mapping.get(record.levelno, "INFO")
+        log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
         return log_message.json(exclude_unset=True)
 
 
