@@ -50,7 +50,7 @@ models:
       airbyte_incremental:
         +tags: incremental_tables
         +materialized: incremental
-        +on_schema_change: append_new_columns
+        +on_schema_change: sync_all_columns
       airbyte_tables:
         +tags: normalized_tables
         +materialized: table
