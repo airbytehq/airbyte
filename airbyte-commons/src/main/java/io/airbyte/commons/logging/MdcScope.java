@@ -8,8 +8,8 @@ import java.util.Map;
 import org.slf4j.MDC;
 
 /**
- * This class is an autoClosable class that will add some specific values into the log MDC. When
- * being close, it will restore the orginal MDC. It is advise to use it like that:
+ * This class is an autoClosable class that will add some specific values into the log MDC. When being close, it will restore the orginal MDC. It is
+ * advise to use it like that:
  *
  * <pre>
  *   <code>
@@ -23,11 +23,11 @@ import org.slf4j.MDC;
  *   </code>
  * </pre>
  */
-public class ScopedMDCChange implements AutoCloseable {
+public class MdcScope implements AutoCloseable {
 
   private final Map<String, String> originalContextMap;
 
-  public ScopedMDCChange(final Map<String, String> keyValuesToAdd) {
+  public MdcScope(final Map<String, String> keyValuesToAdd) {
     originalContextMap = MDC.getCopyOfContextMap();
 
     keyValuesToAdd.forEach(
@@ -36,7 +36,6 @@ public class ScopedMDCChange implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    MDC.clear();
     MDC.setContextMap(originalContextMap);
   }
 
