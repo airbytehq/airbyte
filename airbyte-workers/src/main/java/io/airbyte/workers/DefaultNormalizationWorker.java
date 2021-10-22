@@ -4,8 +4,8 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.logging.MdcScope.MdcScopeBuilder;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.workers.normalization.NormalizationRunner;
@@ -26,6 +26,10 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   private final NormalizationRunner normalizationRunner;
   private final WorkerEnvironment workerEnvironment;
 
+  private final MdcScope extraMdcEntries = new MdcScopeBuilder()
+      .setLogPrefix("normalization-worker")
+      .build();
+
   private final AtomicBoolean cancelled;
 
   public DefaultNormalizationWorker(final String jobId,
@@ -43,8 +47,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   @Override
   public Void run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
-    try (normalizationRunner;
-        final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
+    try (normalizationRunner; extraMdcEntries) {
       LOGGER.info("Running normalization.");
       normalizationRunner.start();
 
@@ -78,7 +81,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
 
   @Override
   public void cancel() {
-    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
+    try (extraMdcEntries) {
       LOGGER.info("Cancelling normalization runner...");
       cancelled.set(true);
       normalizationRunner.close();
@@ -87,11 +90,6 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public String getApplicationName() {
-    return "normalization-worker";
   }
 
 }

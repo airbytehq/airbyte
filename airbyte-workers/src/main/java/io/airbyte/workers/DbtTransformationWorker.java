@@ -4,9 +4,8 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.commons.application.Application;
-import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.logging.MdcScope.MdcScopeBuilder;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
 import java.nio.file.Files;
@@ -16,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, Application {
+public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationWorker.class);
 
@@ -26,6 +25,10 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
   private final ResourceRequirements resourceRequirements;
 
   private final AtomicBoolean cancelled;
+
+  private final MdcScope extraMdcEntries = new MdcScopeBuilder()
+      .setLogPrefix("sync-worker")
+      .build();
 
   public DbtTransformationWorker(final String jobId,
                                  final int attempt,
@@ -41,7 +44,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
 
   @Override
   public Void run(final OperatorDbtInput operatorDbtInput, final Path jobRoot) throws WorkerException {
-    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
+    try (extraMdcEntries) {
       final long startTime = System.currentTimeMillis();
 
       try (dbtTransformationRunner) {
@@ -71,13 +74,13 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
     } catch (final RuntimeException e) {
       throw e;
     } catch (final Exception e) {
-      throw new WorkerException(getApplicationName() + " failed", e);
+      throw new WorkerException("Dbt Transformation failed", e);
     }
   }
 
   @Override
   public void cancel() {
-    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
+    try (extraMdcEntries) {
       LOGGER.info("Cancelling Dbt Transformation runner...");
       try {
         cancelled.set(true);
@@ -90,11 +93,6 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
     } catch (final Exception e) {
       e.printStackTrace();
     }
-  }
-
-  @Override
-  public String getApplicationName() {
-    return "normalization-worker";
   }
 
 }

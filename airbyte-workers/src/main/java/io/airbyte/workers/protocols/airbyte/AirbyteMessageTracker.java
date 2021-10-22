@@ -6,8 +6,8 @@ package io.airbyte.workers.protocols.airbyte;
 
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.logging.MdcScope.MdcScopeBuilder;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.protocols.MessageTracker;
@@ -21,6 +21,10 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
   private final AtomicLong numBytes;
   private final AtomicReference<State> outputState;
 
+  private final MdcScope extraMdcEntries = new MdcScopeBuilder()
+      .setLogPrefix("airbyte-message-tracker")
+      .build();
+
   public AirbyteMessageTracker() {
     this.recordCount = new AtomicLong();
     this.numBytes = new AtomicLong();
@@ -29,7 +33,7 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
 
   @Override
   public void accept(final AirbyteMessage message) {
-    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
+    try (extraMdcEntries) {
       if (message.getType() == AirbyteMessage.Type.RECORD) {
         recordCount.incrementAndGet();
         // todo (cgardens) - pretty wasteful to do an extra serialization just to get size.
@@ -54,11 +58,6 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
   @Override
   public Optional<State> getOutputState() {
     return Optional.ofNullable(outputState.get());
-  }
-
-  @Override
-  public String getApplicationName() {
-    return "airbyte-message-tracker";
   }
 
 }

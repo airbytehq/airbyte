@@ -4,10 +4,6 @@
 
 package io.airbyte.commons.logging;
 
-import io.airbyte.commons.application.Application;
-import java.util.HashMap;
-import java.util.Map;
-
 public class LoggingHelper {
 
   public enum Color {
@@ -39,16 +35,6 @@ public class LoggingHelper {
 
   public static String applyColor(final Color color, final String msg) {
     return color.getCode() + msg + RESET;
-  }
-
-  public static Map<String, String> getExtraMDCEntries(final Application application) {
-    return new HashMap<>() {
-
-      {
-        put(LoggingHelper.LOG_SOURCE_MDC_KEY, LoggingHelper.applyColor(Color.GREEN, application.getApplicationName()));
-      }
-
-    };
   }
 
 }

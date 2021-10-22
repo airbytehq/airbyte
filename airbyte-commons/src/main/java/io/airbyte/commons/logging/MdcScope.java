@@ -4,7 +4,10 @@
 
 package io.airbyte.commons.logging;
 
+import io.airbyte.commons.logging.LoggingHelper.Color;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.slf4j.MDC;
 
 /**
@@ -37,6 +40,26 @@ public class MdcScope implements AutoCloseable {
   @Override
   public void close() throws Exception {
     MDC.setContextMap(originalContextMap);
+  }
+
+  public static class MdcScopeBuilder {
+
+    private Optional<String> maybeLogPrefix = Optional.empty();
+
+    public MdcScopeBuilder setLogPrefix(final String logPrefix) {
+      this.maybeLogPrefix = Optional.ofNullable(logPrefix);
+
+      return this;
+    }
+
+    public MdcScope build() {
+      final Map<String, String> extraMdcEntries = new HashMap<>();
+
+      maybeLogPrefix.map(logPrefix -> extraMdcEntries.put(LoggingHelper.LOG_SOURCE_MDC_KEY, LoggingHelper.applyColor(Color.GREEN, logPrefix)));
+
+      return new MdcScope(extraMdcEntries);
+    }
+
   }
 
 }

@@ -4,8 +4,8 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.logging.MdcScope.MdcScopeBuilder;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
@@ -47,6 +47,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean cancelled;
   private final AtomicBoolean hasFailed;
 
+  private final MdcScope extraMdcEntries = new MdcScopeBuilder()
+      .setLogPrefix("sync-worker")
+      .build();
+
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
                                   final Source<AirbyteMessage> source,
@@ -81,7 +85,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    */
   @Override
   public ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
-    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
+    try (extraMdcEntries) {
       LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
 
       // todo (cgardens) - this should not be happening in the worker. this is configuration information
@@ -250,7 +254,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   @Override
   public void cancel() {
-    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
+    try (extraMdcEntries) {
       // Resources are closed in the opposite order they are declared.
       LOGGER.info("Cancelling replication worker...");
       try {
@@ -278,11 +282,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public String getApplicationName() {
-    return "sync-worker";
   }
 
 }

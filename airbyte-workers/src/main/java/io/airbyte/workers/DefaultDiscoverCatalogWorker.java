@@ -7,8 +7,8 @@ package io.airbyte.workers;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.logging.MdcScope.MdcScopeBuilder;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -30,6 +30,10 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
 
+  private final MdcScope extraMdcEntries = new MdcScopeBuilder()
+      .setLogPrefix("discover-worker")
+      .build();
+
   private volatile Process process;
 
   public DefaultDiscoverCatalogWorker(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
@@ -43,7 +47,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   @Override
   public AirbyteCatalog run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
-    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
+    try (extraMdcEntries) {
       process = integrationLauncher.discover(
           jobRoot,
           WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
@@ -82,18 +86,13 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   @Override
   public void cancel() {
-    try (final MdcScope scopedMDCChange = new MdcScope(LoggingHelper.getExtraMDCEntries(this))) {
+    try (extraMdcEntries) {
       WorkerUtils.cancelProcess(process);
     } catch (final RuntimeException e) {
       throw e;
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public String getApplicationName() {
-    return "discover-worker";
   }
 
 }

@@ -25,9 +25,4 @@ public class EchoWorker implements Worker<String, String> {
     // no-op
   }
 
-  @Override
-  public String getApplicationName() {
-    return "airbyte-echo-worker";
-  }
-
 }

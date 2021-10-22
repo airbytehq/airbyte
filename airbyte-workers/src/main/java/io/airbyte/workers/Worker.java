@@ -4,10 +4,9 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.commons.application.Application;
 import java.nio.file.Path;
 
-public interface Worker<InputType, OutputType> extends Application {
+public interface Worker<InputType, OutputType> {
 
   /**
    * Blocking call to run the worker's workflow. Once this is complete, getStatus should return either

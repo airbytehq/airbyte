@@ -4,12 +4,11 @@
 
 package io.airbyte.workers.protocols;
 
-import io.airbyte.commons.application.Application;
 import io.airbyte.config.State;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public interface MessageTracker<T> extends Consumer<T>, Application {
+public interface MessageTracker<T> extends Consumer<T> {
 
   @Override
   void accept(T message);
