@@ -25,6 +25,7 @@ import org.apache.avro.SchemaBuilder;
 import org.apache.avro.SchemaBuilder.RecordBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
 
 /**
  * The main function of this class is to convert a JsonSchema to Avro schema. It can also
@@ -106,8 +107,8 @@ public class JsonToAvroSchemaConverter {
           stdName);
       builder = builder.doc(
           String.format("%s%s%s",
-              S3AvroConstants.DOC_KEY_ORIGINAL_NAME,
-              S3AvroConstants.DOC_KEY_VALUE_DELIMITER,
+              AvroConstants.DOC_KEY_ORIGINAL_NAME,
+              AvroConstants.DOC_KEY_VALUE_DELIMITER,
               name));
     }
     if (namespace != null) {
@@ -134,13 +135,17 @@ public class JsonToAvroSchemaConverter {
         LOGGER.warn("Field name contains illegal character(s) and is standardized: {} -> {}",
             fieldName, stdFieldName);
         fieldBuilder = fieldBuilder.doc(String.format("%s%s%s",
-            S3AvroConstants.DOC_KEY_ORIGINAL_NAME,
-            S3AvroConstants.DOC_KEY_VALUE_DELIMITER,
+            AvroConstants.DOC_KEY_ORIGINAL_NAME,
+            AvroConstants.DOC_KEY_VALUE_DELIMITER,
             fieldName));
       }
       assembler = fieldBuilder.type(getNullableFieldTypes(fieldName, fieldDefinition))
           .withDefault(null);
     }
+
+    // support additional properties
+    assembler = assembler.name(AdditionalPropertyField.FIELD_NAME)
+        .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
 
     return assembler.endRecord();
   }

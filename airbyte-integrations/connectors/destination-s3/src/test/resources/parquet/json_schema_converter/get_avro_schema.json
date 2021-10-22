@@ -20,6 +20,14 @@
           "name": "node_id",
           "type": ["null", "string"],
           "default": null
+        },
+        {
+          "name":"_ab_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
     }
@@ -75,11 +83,27 @@
                   "name": "last_name",
                   "type": ["null", "string"],
                   "default": null
+                },
+                {
+                  "name":"_ab_additional_properties",
+                  "type":[
+                    "null",
+                    { "type":"map", "values":"string" }
+                  ],
+                  "default":null
                 }
               ]
             }
           ],
           "default": null
+        },
+        {
+          "name":"_ab_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
     }
@@ -119,6 +143,14 @@
           "name": "node_id",
           "type": ["null", "string"],
           "default": null
+        },
+        {
+          "name":"_ab_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
     }
@@ -146,6 +178,14 @@
           "doc": "_airbyte_original_name:node:id",
           "type": ["null", "string"],
           "default": null
+        },
+        {
+          "name":"_ab_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
     }
@@ -171,6 +211,14 @@
           "name": "identifier",
           "type": ["null", "double", "string"],
           "default": null
+        },
+        {
+          "name":"_ab_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
     }
@@ -205,6 +253,14 @@
             }
           ],
           "default": null
+        },
+        {
+          "name":"_ab_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
     }
@@ -250,6 +306,14 @@
             }
           ],
           "default": null
+        },
+        {
+          "name":"_ab_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
     }
@@ -285,6 +349,14 @@
           "name": "created_at",
           "type": ["null", "string", "int"],
           "default": null
+        },
+        {
+          "name":"_ab_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
     }
@@ -334,11 +406,27 @@
                   "name": "created_at",
                   "type": ["null", "string", "int"],
                   "default": null
+                },
+                {
+                  "name":"_ab_additional_properties",
+                  "type":[
+                    "null",
+                    { "type":"map", "values":"string" }
+                  ],
+                  "default":null
                 }
               ]
             }
           ],
           "default": null
+        },
+        {
+          "name":"_ab_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
     }
@@ -377,6 +465,14 @@
             }
           ],
           "default": null
+        },
+        {
+          "name":"_ab_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
     }
@@ -403,6 +499,14 @@
           "type": ["null", "string"],
           "doc": "_airbyte_original_name:5filed_name",
           "default": null
+        },
+        {
+          "name":"_ab_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
     }

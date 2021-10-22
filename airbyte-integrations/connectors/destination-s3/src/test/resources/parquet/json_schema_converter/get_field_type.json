@@ -99,6 +99,14 @@
             "name": "node_id",
             "type": ["null", "string"],
             "default": null
+          },
+          {
+            "name":"_ab_additional_properties",
+            "type":[
+              "null",
+              { "type":"map", "values":"string" }
+            ],
+            "default":null
           }
         ]
       }
