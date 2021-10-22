@@ -25,3 +25,6 @@ properties:
     type: string
   icon:
     type: string
+  spec:
+    type: object
+    existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
