@@ -297,7 +297,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
             .forEach(
                 bigQueryWriteConfig -> {
                   if (bigQueryWriteConfig.getSyncMode().equals(WriteDisposition.WRITE_APPEND)) {
-                    checkPartitions(bigQueryWriteConfig, bigquery, bigQueryWriteConfig.getTable());
+                    partitionIfUnpartitioned(bigQueryWriteConfig, bigquery, bigQueryWriteConfig.getTable());
                   }
                   copyTable(bigquery, bigQueryWriteConfig.getTmpTable(), bigQueryWriteConfig.getTable(),
                       bigQueryWriteConfig.getSyncMode());
@@ -363,9 +363,9 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     LOGGER.info("successfully copied table: {} to table: {}", sourceTableId, destinationTableId);
   }
 
-  private void checkPartitions(final BigQueryWriteConfig bigQueryWriteConfig,
-                               final BigQuery bigquery,
-                               final TableId destinationTableId) {
+  private void partitionIfUnpartitioned(final BigQueryWriteConfig bigQueryWriteConfig,
+                                        final BigQuery bigquery,
+                                        final TableId destinationTableId) {
     try {
       final QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(
@@ -381,18 +381,21 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
           LOGGER.info("Partitioning existing destination table");
           final String tmpPartitionTable = Strings.addRandomSuffix("_airbyte_partitioned_table", "_", 5);
           final TableId tmpPartitionTableId = TableId.of(destinationTableId.getDataset(), tmpPartitionTable);
+          // make sure tmpPartitionTable does not already exist
           bigquery.delete(tmpPartitionTableId);
-          // Use BigQuery SQL because java api does not support creating a table from a select query in java,
-          // see:
+          // Use BigQuery SQL to copy because java api copy jobs does not support creating a table from a
+          // select query, see:
           // https://cloud.google.com/bigquery/docs/creating-partitioned-tables#create_a_partitioned_table_from_a_query_result
           final QueryJobConfiguration partitionQuery = QueryJobConfiguration
-              .newBuilder(getCreatePartitionedTableQuery(bigQueryWriteConfig.getSchema(), bigquery.getOptions().getProjectId(), destinationTableId,
-                  tmpPartitionTable))
+              .newBuilder(
+                  getCreatePartitionedTableFromSelectQuery(bigQueryWriteConfig.getSchema(), bigquery.getOptions().getProjectId(), destinationTableId,
+                      tmpPartitionTable))
               .setUseLegacySql(false)
               .build();
           BigQueryUtils.executeQuery(bigquery, partitionQuery);
-          // Copying data from partitioned tmp table into a non-partitioned table does not make it
-          // partitioned... we need to force re-create from 0...
+          // Copying data from a partitioned tmp table into an existing non-partitioned table does not make it
+          // partitioned... thus, we force re-create from scratch by completely deleting and creating new
+          // table.
           bigquery.delete(destinationTableId);
           copyTable(bigquery, tmpPartitionTableId, destinationTableId, WriteDisposition.WRITE_EMPTY);
           bigquery.delete(tmpPartitionTableId);
@@ -403,10 +406,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
-  protected String getCreatePartitionedTableQuery(final Schema schema,
-                                                  final String projectId,
-                                                  final TableId destinationTableId,
-                                                  final String tmpPartitionTable) {
+  protected String getCreatePartitionedTableFromSelectQuery(final Schema schema,
+                                                            final String projectId,
+                                                            final TableId destinationTableId,
+                                                            final String tmpPartitionTable) {
     return String.format("create table `%s.%s.%s` (", projectId, destinationTableId.getDataset(), tmpPartitionTable)
         + schema.getFields().stream()
             .map(field -> String.format("%s %s", field.getName(), field.getType()))
