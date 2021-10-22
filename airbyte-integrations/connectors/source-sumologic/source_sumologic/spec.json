@@ -22,7 +22,7 @@
       "query": {
         "type": "string",
         "title": "Query",
-        "description": "Sumo Logic query string for the search job."
+        "description": "Sumo Logic query string for the search job. You need to escape special characters."
       },
       "from_time": {
         "type": "string",
@@ -41,14 +41,13 @@
       "by_receipt_time": {
         "type": "boolean",
         "title": "By Receipt Time",
-        "description": "Query logs by _receipttime instead of _messagetime, default is using _messagetime.",
-        "default": "false"
+        "description": "Query logs by _receipttime instead of _messagetime, default is using _messagetime."
       },
       "limit": {
         "type": "integer",
         "title": "Limit",
-        "description": "This row size limit used for pagination. Default 10000. Higher number may cause OOM.",
-        "default": 1000
+        "description": "This row size limit used for pagination. Higher value requires more memory.",
+        "default": 10000
       },
       "offset": {
         "type": "integer",
