@@ -14,7 +14,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
@@ -27,7 +26,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.http.client.utils.URIBuilder;
 
 /*
  * Class implementing generic oAuth 2.0 flow.
@@ -94,31 +92,6 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
-  }
-
-  protected String formatConsentUrl(String clientId,
-                                    String redirectUrl,
-                                    String host,
-                                    String path,
-                                    String scope,
-                                    String responseType)
-      throws IOException {
-    final URIBuilder builder = new URIBuilder()
-        .setScheme("https")
-        .setHost(host)
-        .setPath(path)
-        // required
-        .addParameter("client_id", clientId)
-        .addParameter("redirect_uri", redirectUrl)
-        .addParameter("state", getState())
-        // optional
-        .addParameter("response_type", responseType)
-        .addParameter("scope", scope);
-    try {
-      return builder.build().toString();
-    } catch (URISyntaxException e) {
-      throw new IOException("Failed to format Consent URL for OAuth flow", e);
-    }
   }
 
   /**
@@ -226,9 +199,11 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
     final Map<String, Object> result = new HashMap<>();
     if (data.has("refresh_token")) {
       result.put("refresh_token", data.get("refresh_token").asText());
-    } else if (data.has("access_token")) {
+    }
+    if (data.has("access_token")) {
       result.put("access_token", data.get("access_token").asText());
-    } else {
+    }
+    if (result.isEmpty()) {
       throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
     }
     return Map.of("credentials", result);

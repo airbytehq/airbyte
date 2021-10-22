@@ -21,44 +21,37 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
-
-  protected static final Path CREDENTIALS_PATH = Path.of("secrets/facebook_marketing.json");
+public class HubspotOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
   @Override
   protected Path getCredentialsPath() {
-    return CREDENTIALS_PATH;
+    return Path.of("secrets/hubspot.json");
   }
 
   @Override
   protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new FacebookMarketingOAuthFlow(configRepository);
-  }
-
-  @BeforeEach
-  public void setup() throws IOException {
-    super.setup();
+    return new HubspotOAuthFlow(configRepository);
   }
 
   @Test
-  public void testFullGoogleOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
-    int limit = 20;
+  public void testFullOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
+    int limit = 100;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
-    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String fullConfigAsString = new String(Files.readAllBytes(getCredentialsPath()));
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", credentialsJson.get("client_id").asText())
-            .put("client_secret", credentialsJson.get("client_secret").asText())
+            .put("client_id", credentialsJson.get("credentials").get("client_id").asText())
+            .put("client_secret", credentialsJson.get("credentials").get("client_secret").asText())
             .build()))));
-    final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    var flowObject = getFlowObject(configRepository);
+    final String url = flowObject.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -67,11 +60,15 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
       limit -= 1;
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
-    final Map<String, Object> params = flow.completeSourceOAuth(workspaceId, definitionId,
+    final Map<String, Object> params = flowObject.completeSourceOAuth(workspaceId, definitionId,
         Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
-    assertTrue(params.containsKey("access_token"));
-    assertTrue(params.get("access_token").toString().length() > 0);
+    assertTrue(params.containsKey("credentials"));
+    final Map<String, Object> credentials = (Map<String, Object>) params.get("credentials");
+    assertTrue(credentials.containsKey("refresh_token"));
+    assertTrue(credentials.get("refresh_token").toString().length() > 0);
+    assertTrue(credentials.containsKey("access_token"));
+    assertTrue(credentials.get("access_token").toString().length() > 0);
   }
 
 }

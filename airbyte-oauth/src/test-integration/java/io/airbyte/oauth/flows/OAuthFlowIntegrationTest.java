@@ -37,13 +37,13 @@ public abstract class OAuthFlowIntegrationTest {
   protected HttpServer server;
   protected ServerHandler serverHandler;
 
-  protected abstract Path get_credentials_path();
+  protected abstract Path getCredentialsPath();
 
   protected abstract OAuthFlowImplementation getFlowObject(ConfigRepository configRepository);
 
   @BeforeEach
   public void setup() throws IOException {
-    if (!Files.exists(get_credentials_path())) {
+    if (!Files.exists(getCredentialsPath())) {
       throw new IllegalStateException(
           "Must provide path to a oauth credentials file.");
     }
