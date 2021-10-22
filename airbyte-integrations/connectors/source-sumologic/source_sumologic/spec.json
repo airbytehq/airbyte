@@ -1,0 +1,61 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/sumologic",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Sumologic Spec",
+    "type": "object",
+    "required": ["access_id", "access_key", "query"],
+    "additionalProperties": false,
+    "properties": {
+      "access_id": {
+        "type": "string",
+        "title": "Access ID",
+        "description": "Sumo Logic API Access ID.",
+        "airbyte_secret": true
+      },
+      "access_key": {
+        "type": "string",
+        "title": "Access Key",
+        "description": "Sumo Logic API Access Key.",
+        "airbyte_secret": true
+      },
+      "query": {
+        "type": "string",
+        "title": "Query",
+        "description": "Sumo Logic query string for the search job."
+      },
+      "from_time": {
+        "type": "string",
+        "title": "From Time",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00. Any data before this date will not be replicated.",
+        "examples": ["2017-01-25T00:00:00Z"]
+      },
+      "to_time": {
+        "type": "string",
+        "title": "To Time",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00. Any data after this date will not be replicated.",
+        "examples": ["2017-01-25T00:00:00Z"]
+      },
+      "by_receipt_time": {
+        "type": "boolean",
+        "title": "By Receipt Time",
+        "description": "Query logs by `_receipttime` instead of `_messagetime`, default is using `_messagetime`.",
+        "default": "false"
+      },
+      "limit": {
+        "type": "integer",
+        "title": "Limit",
+        "description": "This row size limit used for pagination. Default 10000. Higher number may cause OOM.",
+        "default": 1000
+      },
+      "offset": {
+        "type": "integer",
+        "title": "Offset",
+        "description": "Skip the first N messages. Default 0",
+        "default": 0
+      }
+    }
+  }
+}

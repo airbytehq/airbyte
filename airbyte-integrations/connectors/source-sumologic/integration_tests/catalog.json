@@ -1,0 +1,61 @@
+{
+  "streams": [
+    {
+      "name": "messages",
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "_messagetime",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "_messageid": {
+            "type": "integer"
+          },
+          "_sourceid": {
+            "type": "integer"
+          },
+          "_sourcename": {
+            "type": ["null", "string"]
+          },
+          "_sourcehost": {
+            "type": ["null", "string"]
+          },
+          "_sourcecategory": {
+            "type": ["null", "string"]
+          },
+          "_format": {
+            "type": ["null", "string"]
+          },
+          "_size": {
+            "type": ["null", "integer"]
+          },
+          "_messagetime": {
+            "type": "integer"
+          },
+          "_receipttime": {
+            "type": "integer"
+          },
+          "_messagecount": {
+            "type": "integer"
+          },
+          "_raw": {
+            "type": "string"
+          },
+          "_source": {
+            "type": ["null", "string"]
+          },
+          "_collectorid": {
+            "type": "integer"
+          },
+          "_collector": {
+            "type": "string"
+          },
+          "_blockid": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  ]
+}

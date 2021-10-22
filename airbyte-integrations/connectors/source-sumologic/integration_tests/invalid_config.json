@@ -1,0 +1,6 @@
+{
+  "access_id": "bar",
+  "access_key": "foo",
+  "query": "_sourceCategory=xyz",
+  "from_time": "2021-10-22T00:00:00"
+}
