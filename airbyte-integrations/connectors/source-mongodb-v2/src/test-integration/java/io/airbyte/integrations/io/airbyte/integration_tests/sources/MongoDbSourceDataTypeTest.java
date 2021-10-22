@@ -6,7 +6,6 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.STANDALONE;
 import static java.lang.Double.NaN;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -49,7 +48,6 @@ import org.bson.BsonSymbol;
 import org.bson.BsonTimestamp;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -130,9 +128,7 @@ public class MongoDbSourceDataTypeTest {
     setEmittedAtToNull(actualMessages);
     final List<AirbyteMessage> expectedMessages = getExpectedMessages();
 
-    assertEquals(expectedMessages.size(), actualMessages.size());
-    assertThat(expectedMessages, Matchers.containsInAnyOrder(actualMessages.toArray()));
-    assertThat(actualMessages, Matchers.containsInAnyOrder(expectedMessages.toArray()));
+    assertEquals(expectedMessages, actualMessages);
   }
 
   private ConfiguredAirbyteCatalog getConfiguredCatalog() {

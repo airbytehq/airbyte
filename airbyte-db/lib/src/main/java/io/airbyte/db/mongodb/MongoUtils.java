@@ -10,6 +10,7 @@ import static org.bson.BsonType.DOCUMENT;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.client.util.DateTime;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -220,7 +221,7 @@ public class MongoUtils {
   private static void readJavaScriptWithScope(ObjectNode o, BsonReader reader, String fieldName, List<String> columnNames) {
     var code = reader.readJavaScriptWithScope();
     var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames);
-    o.set(fieldName, Jsons.jsonNode(Map.of("code", code, "scope", scope)));
+    o.set(fieldName, Jsons.jsonNode(ImmutableMap.of("code", code, "scope", scope)));
   }
 
   public enum MongoInstanceType {
