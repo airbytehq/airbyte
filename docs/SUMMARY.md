@@ -124,6 +124,7 @@
     * [Strava](integrations/sources/strava.md)
     * [Stripe](integrations/sources/stripe.md)
     * [Sugar CRM](integrations/sources/sugar-crm.md)
+    * [Sumo Logic](integrations/sources/sumologic.md)
     * [SurveyMonkey](integrations/sources/surveymonkey.md)
     * [Tempo](integrations/sources/tempo.md)
     * [TikTok Marketing](integrations/sources/tiktok-marketing.md)  

@@ -107,6 +107,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Strava](sources/strava.md) | Beta |
 | [Stripe](sources/stripe.md) | Certified |
 | [Sugar CRM](sources/sugar-crm.md) | Beta |
+| [Sumo Logic](sources/sumologic.md) | Beta |
 | [SurveyMonkey](sources/surveymonkey.md) | Beta |
 | [Tempo](sources/tempo.md) | Beta |
 | [TikTok Marketing](./sources/tiktok-marketing.md)| Alpha |
