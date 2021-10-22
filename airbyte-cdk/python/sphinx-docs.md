@@ -76,3 +76,19 @@ This build could be useful on each `airbyte-cdk` update, especially if the packa
 - Install Sphinx deps with `pip install ".[sphinx-docs]"`;
 - Run `make html` from the `airbyte-cdk/python/reference_docs` root;
 - Check out the `airbyte-cdk/python/reference_docs/_build` for the new documentation built.
+
+
+### Publishing to Read the Docs
+
+Our current sphinx docs setup is meant to be published to [readthedocs](https://readthedocs.org/). 
+So it may be useful to check our docs published at https://airbyte-cdk.readthedocs.io/en/latest/ 
+for the last build in case if the airbyte-cdk package was updated.
+
+Publishing process is automatic and implemented via the GitHub incoming webhook. 
+See https://docs.readthedocs.io/en/stable/webhooks.html.
+
+To check build logs and state, check the https://readthedocs.org/projects/airbyte-cdk/builds/. 
+You may also run build manually here if needed.
+
+Publishing configuration is placed to `.readthedocs.yaml`. 
+See https://docs.readthedocs.io/en/stable/config-file/v2.html for the config description.
