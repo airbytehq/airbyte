@@ -78,7 +78,7 @@ This build could be useful on each `airbyte-cdk` update, especially if the packa
 - Check out the `airbyte-cdk/python/reference_docs/_build` for the new documentation built.
 
 
-### Publishing to Read the Docs
+## Publishing to Read the Docs
 
 Our current sphinx docs setup is meant to be published to [readthedocs](https://readthedocs.org/). 
 So it may be useful to check our docs published at https://airbyte-cdk.readthedocs.io/en/latest/ 
