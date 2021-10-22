@@ -370,9 +370,9 @@ public class SchedulerHandler {
   }
 
   private void cancelTemporalWorkflowIfPresent(final long jobId) throws IOException {
-    final var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1; // attempts ids are monotonically increasing starting from 0
-    // and
-    // specific to a job id, allowing us to do this.
+    // attempts ids are monotonically increasing starting from
+    // 0 and specific to a job id, allowing us to do this.
+    final var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1;
     final var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, latestAttemptId);
 
     if (workflowId.isPresent()) {
