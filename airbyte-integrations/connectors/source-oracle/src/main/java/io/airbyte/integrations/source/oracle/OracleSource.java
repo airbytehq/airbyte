@@ -56,11 +56,11 @@ public class OracleSource extends AbstractJdbcSource implements Source {
     final List<String> additionalParameters = new ArrayList<>();
 
     /*
-      The property useFetchSizeWithLongColumn required to select LONG or LONG RAW columns.
-      Oracle recommends avoiding LONG and LONG RAW columns. Use LOB instead. They are included in Oracle only for legacy reasons.
-      THIS IS A THIN ONLY PROPERTY. IT SHOULD NOT BE USED WITH ANY OTHER DRIVERS.
-      See https://docs.oracle.com/cd/E11882_01/appdev.112/e13995/oracle/jdbc/OracleDriver.html
-          https://docs.oracle.com/cd/B19306_01/java.102/b14355/jstreams.htm#i1014085
+     * The property useFetchSizeWithLongColumn required to select LONG or LONG RAW columns. Oracle
+     * recommends avoiding LONG and LONG RAW columns. Use LOB instead. They are included in Oracle only
+     * for legacy reasons. THIS IS A THIN ONLY PROPERTY. IT SHOULD NOT BE USED WITH ANY OTHER DRIVERS.
+     * See https://docs.oracle.com/cd/E11882_01/appdev.112/e13995/oracle/jdbc/OracleDriver.html
+     * https://docs.oracle.com/cd/B19306_01/java.102/b14355/jstreams.htm#i1014085
      */
     additionalParameters.add("oracle.jdbc.useFetchSizeWithLongColumn=true");
 
