@@ -32,3 +32,6 @@ properties:
       - file
       - database
       - custom
+  spec:
+    type: object
+    existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
