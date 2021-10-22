@@ -80,7 +80,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "folder_id": {
       "type": ["null", "string"]
@@ -118,7 +118,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "public": {
       "type": ["null", "boolean"]
@@ -181,7 +181,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "space_id": {
       "type": ["null", "string"]
@@ -200,7 +200,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "user_id": {
       "type": ["null", "string"]

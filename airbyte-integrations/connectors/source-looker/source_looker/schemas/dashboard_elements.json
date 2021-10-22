@@ -12,13 +12,13 @@
       "type": ["null", "string"]
     },
     "dashboard_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "edit_uri": {
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "look": {
       "properties": {
@@ -100,7 +100,7 @@
             }
           },
           "type": ["null", "object"],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "folder_id": {
           "type": ["null", "string"]
@@ -138,7 +138,7 @@
             }
           },
           "type": ["null", "object"],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "public": {
           "type": ["null", "boolean"]
@@ -250,7 +250,7 @@
             }
           },
           "type": ["null", "object"],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "query_id": {
           "type": ["null", "string"]
@@ -304,7 +304,7 @@
             }
           },
           "type": ["null", "object"],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "space_id": {
           "type": ["null", "string"]
@@ -326,7 +326,7 @@
             }
           },
           "type": ["null", "object"],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "user_id": {
           "type": ["null", "string"]
@@ -336,7 +336,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "look_id": {
       "type": ["null", "string"]
@@ -460,7 +460,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "query_id": {
       "type": ["null", "string"]
@@ -490,7 +490,7 @@
                     }
                   },
                   "type": ["null", "object"],
-                  "additionalProperties": false
+                  "additionalProperties": true
                 },
                 "type": ["null", "array"]
               },
@@ -510,10 +510,10 @@
           "type": ["null", "array"]
         },
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "merge_result_id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "query": {
           "properties": {
@@ -558,7 +558,7 @@
               "type": ["null", "boolean"]
             },
             "id": {
-              "type": ["null", "string"]
+              "type": ["null", "integer"]
             },
             "limit": {
               "type": ["null", "string"]
@@ -616,10 +616,10 @@
             }
           },
           "type": ["null", "object"],
-          "additionalProperties": false
+          "additionalProperties": true
         },
         "query_id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "sorts": {
           "items": {},
@@ -635,10 +635,10 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "result_maker_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "subtitle_text": {
       "type": ["null", "string"]

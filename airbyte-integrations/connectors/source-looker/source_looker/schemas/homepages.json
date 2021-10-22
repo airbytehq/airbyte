@@ -123,7 +123,7 @@
                 }
               },
               "type": ["null", "object"],
-              "additionalProperties": false
+              "additionalProperties": true
             },
             "type": ["null", "array"]
           },
@@ -148,7 +148,7 @@
           }
         },
         "type": ["null", "object"],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "type": ["null", "array"]
     },

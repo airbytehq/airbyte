@@ -6,10 +6,10 @@
       "type": ["null", "integer"]
     },
     "content_metadata_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "creator_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "dashboards": {
       "items": {
@@ -18,7 +18,7 @@
             "type": ["null", "string"]
           },
           "content_metadata_id": {
-            "type": ["null", "string"]
+            "type": ["null", "integer"]
           },
           "description": {
             "type": ["null", "string"]
@@ -29,16 +29,16 @@
                 "type": ["null", "integer"]
               },
               "content_metadata_id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "creator_id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "external_id": {
                 "type": ["null", "string"]
               },
               "id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "is_embed": {
                 "type": ["null", "boolean"]
@@ -65,29 +65,29 @@
                 "type": ["null", "string"]
               },
               "parent_id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               }
             },
             "type": ["null", "object"],
-            "additionalProperties": false
+            "additionalProperties": true
           },
           "hidden": {
             "type": ["null", "boolean"]
           },
           "id": {
-            "type": ["null", "string"]
+            "type": ["null", "integer"]
           },
           "model": {
             "properties": {
               "id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "label": {
                 "type": ["null", "string"]
               }
             },
             "type": ["null", "object"],
-            "additionalProperties": false
+            "additionalProperties": true
           },
           "query_timezone": {
             "type": ["null", "string"]
@@ -107,16 +107,16 @@
                 "type": ["null", "integer"]
               },
               "content_metadata_id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "creator_id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "external_id": {
                 "type": ["null", "string"]
               },
               "id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "is_embed": {
                 "type": ["null", "boolean"]
@@ -143,11 +143,11 @@
                 "type": ["null", "string"]
               },
               "parent_id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               }
             },
             "type": ["null", "object"],
-            "additionalProperties": false
+            "additionalProperties": true
           },
           "title": {
             "type": ["null", "string"]
@@ -157,7 +157,7 @@
           }
         },
         "type": ["null", "object"],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "type": ["null", "array"]
     },
@@ -165,7 +165,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "integer"]
     },
     "is_embed": {
       "type": ["null", "boolean"]
@@ -195,7 +195,7 @@
             "type": ["null", "string"]
           },
           "content_metadata_id": {
-            "type": ["null", "string"]
+            "type": ["null", "integer"]
           },
           "created_at": {
             "format": "date-time",
@@ -208,7 +208,7 @@
                   "type": ["null", "string"]
                 },
                 "content_metadata_id": {
-                  "type": ["null", "string"]
+                  "type": ["null", "integer"]
                 },
                 "description": {
                   "type": ["null", "string"]
@@ -219,16 +219,16 @@
                       "type": ["null", "integer"]
                     },
                     "content_metadata_id": {
-                      "type": ["null", "string"]
+                      "type": ["null", "integer"]
                     },
                     "creator_id": {
-                      "type": ["null", "string"]
+                      "type": ["null", "integer"]
                     },
                     "external_id": {
                       "type": ["null", "string"]
                     },
                     "id": {
-                      "type": ["null", "string"]
+                      "type": ["null", "integer"]
                     },
                     "is_embed": {
                       "type": ["null", "boolean"]
@@ -255,29 +255,29 @@
                       "type": ["null", "string"]
                     },
                     "parent_id": {
-                      "type": ["null", "string"]
+                      "type": ["null", "integer"]
                     }
                   },
                   "type": ["null", "object"],
-                  "additionalProperties": false
+                  "additionalProperties": true
                 },
                 "hidden": {
                   "type": ["null", "boolean"]
                 },
                 "id": {
-                  "type": ["null", "string"]
+                  "type": ["null", "integer"]
                 },
                 "model": {
                   "properties": {
                     "id": {
-                      "type": ["null", "string"]
+                      "type": ["null", "integer"]
                     },
                     "label": {
                       "type": ["null", "string"]
                     }
                   },
                   "type": ["null", "object"],
-                  "additionalProperties": false
+                  "additionalProperties": true
                 },
                 "query_timezone": {
                   "type": ["null", "string"]
@@ -297,16 +297,16 @@
                       "type": ["null", "integer"]
                     },
                     "content_metadata_id": {
-                      "type": ["null", "string"]
+                      "type": ["null", "integer"]
                     },
                     "creator_id": {
-                      "type": ["null", "string"]
+                      "type": ["null", "integer"]
                     },
                     "external_id": {
                       "type": ["null", "string"]
                     },
                     "id": {
-                      "type": ["null", "string"]
+                      "type": ["null", "integer"]
                     },
                     "is_embed": {
                       "type": ["null", "boolean"]
@@ -333,11 +333,11 @@
                       "type": ["null", "string"]
                     },
                     "parent_id": {
-                      "type": ["null", "string"]
+                      "type": ["null", "integer"]
                     }
                   },
                   "type": ["null", "object"],
-                  "additionalProperties": false
+                  "additionalProperties": true
                 },
                 "title": {
                   "type": ["null", "string"]
@@ -347,7 +347,7 @@
                 }
               },
               "type": ["null", "object"],
-              "additionalProperties": false
+              "additionalProperties": true
             },
             "type": ["null", "array"]
           },
@@ -379,16 +379,16 @@
                 "type": ["null", "integer"]
               },
               "content_metadata_id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "creator_id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "external_id": {
                 "type": ["null", "string"]
               },
               "id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "is_embed": {
                 "type": ["null", "boolean"]
@@ -415,11 +415,11 @@
                 "type": ["null", "string"]
               },
               "parent_id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               }
             },
             "type": ["null", "object"],
-            "additionalProperties": false
+            "additionalProperties": true
           },
           "folder_id": {
             "type": ["null", "string"]
@@ -428,7 +428,7 @@
             "type": ["null", "string"]
           },
           "id": {
-            "type": ["null", "string"]
+            "type": ["null", "integer"]
           },
           "image_embed_url": {
             "type": ["null", "string"]
@@ -450,14 +450,14 @@
           "model": {
             "properties": {
               "id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "label": {
                 "type": ["null", "string"]
               }
             },
             "type": ["null", "object"],
-            "additionalProperties": false
+            "additionalProperties": true
           },
           "public": {
             "type": ["null", "boolean"]
@@ -480,16 +480,16 @@
                 "type": ["null", "integer"]
               },
               "content_metadata_id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "creator_id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "external_id": {
                 "type": ["null", "string"]
               },
               "id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               },
               "is_embed": {
                 "type": ["null", "boolean"]
@@ -516,11 +516,11 @@
                 "type": ["null", "string"]
               },
               "parent_id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               }
             },
             "type": ["null", "object"],
-            "additionalProperties": false
+            "additionalProperties": true
           },
           "space_id": {
             "type": ["null", "string"]
@@ -535,11 +535,11 @@
           "user": {
             "properties": {
               "id": {
-                "type": ["null", "string"]
+                "type": ["null", "integer"]
               }
             },
             "type": ["null", "object"],
-            "additionalProperties": false
+            "additionalProperties": true
           },
           "user_id": {
             "type": ["null", "string"]
@@ -549,7 +549,7 @@
           }
         },
         "type": ["null", "object"],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "type": ["null", "array"]
     },
@@ -557,7 +557,7 @@
       "type": ["null", "string"]
     },
     "parent_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     }
   }
 }

@@ -57,7 +57,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "dialect_name": {
       "type": ["null", "string"]
@@ -136,7 +136,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "pool_timeout": {
       "type": ["null", "integer"]
@@ -164,7 +164,7 @@
           }
         },
         "type": ["null", "object"],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "type": ["null", "array"]
     },
@@ -187,7 +187,7 @@
       "type": ["null", "boolean"]
     },
     "user_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "username": {
       "type": ["null", "string"]

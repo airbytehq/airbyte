@@ -18,7 +18,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "looker_release_version": {
       "type": ["null", "string"]
@@ -40,7 +40,7 @@
           }
         },
         "type": ["null", "object"],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "type": ["null", "array"]
     }

@@ -6,7 +6,7 @@
       "type": ["null", "integer"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "model_name": {
       "type": ["null", "string"]

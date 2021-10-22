@@ -24,7 +24,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "id": {
       "type": ["null", "string"]

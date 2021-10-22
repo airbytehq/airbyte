@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "model_set": {
       "properties": {
@@ -14,7 +14,7 @@
           "type": ["null", "boolean"]
         },
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "models": {
           "items": {
@@ -30,7 +30,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "model_set_id": {
       "type": ["null", "string"]
@@ -47,7 +47,7 @@
           "type": ["null", "boolean"]
         },
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "integer"]
         },
         "name": {
           "type": ["null", "string"]
@@ -63,7 +63,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "permission_set_id": {
       "type": ["null", "string"]

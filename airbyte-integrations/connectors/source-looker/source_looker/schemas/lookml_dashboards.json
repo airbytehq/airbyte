@@ -57,7 +57,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "hidden": {
       "type": ["null", "boolean"]
@@ -75,7 +75,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "query_timezone": {
       "type": ["null", "string"]
@@ -135,7 +135,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "title": {
       "type": ["null", "string"]

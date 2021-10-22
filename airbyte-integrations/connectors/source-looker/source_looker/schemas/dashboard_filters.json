@@ -6,7 +6,7 @@
       "type": ["null", "boolean"]
     },
     "dashboard_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "default_value": {
       "type": ["null", "string"]
@@ -23,7 +23,7 @@
       "additionalProperties": true
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "listens_to_filters": {
       "items": {

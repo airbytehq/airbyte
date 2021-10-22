@@ -18,7 +18,7 @@
             "type": ["null", "string"]
           },
           "id": {
-            "type": ["null", "string"]
+            "type": ["null", "integer"]
           },
           "is_disabled": {
             "type": ["null", "boolean"]
@@ -31,7 +31,7 @@
           }
         },
         "type": ["null", "object"],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "type": ["null", "array"]
     },
@@ -66,7 +66,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "credentials_embed": {
       "items": {
@@ -81,7 +81,7 @@
             "type": ["null", "string"]
           },
           "id": {
-            "type": ["null", "string"]
+            "type": ["null", "integer"]
           },
           "is_disabled": {
             "type": ["null", "boolean"]
@@ -97,7 +97,7 @@
           }
         },
         "type": ["null", "object"],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "type": ["null", "array"]
     },
@@ -129,7 +129,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "credentials_ldap": {
       "properties": {
@@ -159,7 +159,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "credentials_looker_openid": {
       "properties": {
@@ -189,7 +189,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "credentials_oidc": {
       "properties": {
@@ -216,7 +216,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "credentials_saml": {
       "properties": {
@@ -243,7 +243,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "credentials_totp": {
       "properties": {
@@ -264,7 +264,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "display_name": {
       "type": ["null", "string"]
@@ -292,7 +292,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "is_disabled": {
       "type": ["null", "boolean"]
@@ -313,11 +313,10 @@
       "type": ["null", "boolean"]
     },
     "personal_folder_id": {
-      "type": ["null", "string"],
-      "additionalProperties": true
+      "type": ["null", "integer"]
     },
     "personal_space_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "presumed_looker_employee": {
       "type": ["null", "boolean"]
@@ -359,7 +358,7 @@
             "type": ["null", "integer"]
           },
           "id": {
-            "type": ["null", "string"]
+            "type": ["null", "integer"]
           },
           "ip_address": {
             "type": ["null", "string"]
@@ -378,7 +377,7 @@
           }
         },
         "type": ["null", "object"],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "type": ["null", "array"]
     },

@@ -27,7 +27,7 @@
       "type": ["null", "integer"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "ip_address": {
       "type": ["null", "string"]
