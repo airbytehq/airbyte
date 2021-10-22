@@ -258,8 +258,7 @@ public class SchedulerHandler {
     return specRead;
   }
 
-  public DestinationDefinitionSpecificationRead getDestinationSpecification(
-                                                                            final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+  public DestinationDefinitionSpecificationRead getDestinationSpecification(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID destinationDefinitionId = destinationDefinitionIdRequestBody.getDestinationDefinitionId();
     final StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
