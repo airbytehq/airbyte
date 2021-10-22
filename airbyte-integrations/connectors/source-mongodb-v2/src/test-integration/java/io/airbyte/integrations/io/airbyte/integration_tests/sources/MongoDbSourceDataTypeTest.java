@@ -25,8 +25,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -95,7 +93,7 @@ public class MongoDbSourceDataTypeTest {
         .append("double", new BsonDouble(Double.MAX_VALUE))
         .append("decimal", new BsonDecimal128(Decimal128.NaN))
         .append("tms", new BsonTimestamp(1634658099))
-        .append("dateTime", new BsonDateTime(LocalDate.of(2021, 10, 10).atStartOfDay(ZoneId.of("Z")).toInstant().toEpochMilli()))
+        .append("dateTime", new BsonDateTime(1634920048051L))
         .append("binary", new BsonBinary(new UUID(10, 15)))
         .append("symbol", new BsonSymbol("s"))
         .append("string", new BsonString("test mongo db"))
@@ -173,7 +171,7 @@ public class MongoDbSourceDataTypeTest {
                     .put("double", 1.7976931348623157E308)
                     .put("decimal", NaN)
                     .put("tms", "1970-01-19T17:04:18Z")
-                    .put("dateTime", "2021-10-09T20:00:00Z")
+                    .put("dateTime", "2021-10-22T12:27:28Z")
                     .put("binary", new BsonBinary(new UUID(10, 15)).getData())
                     .put("symbol", "s")
                     .put("string", "test mongo db")
