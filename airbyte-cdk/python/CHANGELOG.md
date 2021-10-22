@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.31
+Transforming Python log levels to Airbyte protocol log levels
+
+## 0.1.30
+Updated OAuth2Specification.rootObject type in airbyte_protocol to allow string or int
+
 ## 0.1.29
 Fix import logger error
 
