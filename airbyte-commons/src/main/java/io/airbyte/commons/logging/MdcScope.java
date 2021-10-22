@@ -62,7 +62,13 @@ public class MdcScope implements AutoCloseable {
     public MdcScope build() {
       final Map<String, String> extraMdcEntries = new HashMap<>();
 
-      maybeLogPrefix.map(logPrefix -> extraMdcEntries.put(LoggingHelper.LOG_SOURCE_MDC_KEY, LoggingHelper.applyColor(Color.GREEN, logPrefix)));
+      maybeLogPrefix.stream().forEach(logPrefix -> {
+        final String potentiallyColoredLog = maybePrefixColor
+            .map(color -> LoggingHelper.applyColor(color, logPrefix))
+            .orElse(logPrefix);
+
+        extraMdcEntries.put(LoggingHelper.LOG_SOURCE_MDC_KEY, potentiallyColoredLog);
+      });
 
       return new MdcScope(extraMdcEntries);
     }
