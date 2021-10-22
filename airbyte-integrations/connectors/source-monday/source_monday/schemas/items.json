@@ -3,56 +3,56 @@
   "type": "object",
   "properties": {
     "assets": {
-      "type": "object",
+      "type": ["array", "object"],
       "properties": {
-        "id": { "type": "integer" }
+        "id": { "type": ["null", "integer"]}
       }
     },
     "board": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
-        "id": { "type": "integer" }
+        "id": { "type": ["null", "integer"]}
       }
     },
     "column_values": {
-      "type": "array",
+      "type": ["null", "array"],
       "properties": {
-        "id": { "type": "integer" },
-        "value": { "type": "object" },
-        "additional_info": { "type": "object" },
-        "text": { "type": "string" },
-        "title": { "type": "string" },
-        "type": { "type": "string" }
+        "id": { "type": ["null", "integer"]},
+        "value": { "type": ["null", "object"]},
+        "additional_info": { "type": ["null", "object"]},
+        "text": { "type": ["null", "string"]},
+        "title": { "type": ["null", "string"]},
+        "type": { "type": ["null", "string"]}
       }
     },
-    "created_at": { "type": "date-time" },
-    "creator_id": { "type": "integer" },
+    "created_at": { "type": ["null", "string"], "format": "date-time" },
+    "creator_id": { "type": ["null", "integer"]},
     "group": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
-        "id": { "type": "string" }
+        "id": { "type": ["null", "string"]}
       }
     },
-    "id": { "type": "integer" },
-    "name": { "type": "string" },
+    "id": { "type": ["null", "integer"]},
+    "name": { "type": ["null", "string"]},
     "parent_item": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
-        "id": { "type": "integer" }
+        "id": { "type": ["null", "integer"]}
       }
     },
-    "state": { "type": "string" },
+    "state": { "type": ["null", "string"]},
     "subscribers": {
-      "type": "object",
+      "type": ["null", "array"],
       "properties": {
-        "id": { "type": "integer" }
+        "id": { "type": ["null", "integer"]}
       }
     },
-    "updated_at": { "type": "date-time" },
+    "updated_at": { "type": ["null", "string"], "format": "date-time" },
     "updates": {
-      "type": "object",
+      "type": ["null", "array"],
       "properties": {
-        "id": { "type": "integer" }
+        "id": { "type": ["null", "integer"]}
       }
     }
   }

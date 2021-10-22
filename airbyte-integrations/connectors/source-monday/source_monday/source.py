@@ -13,6 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 # Basic full refresh stream
@@ -20,6 +21,7 @@ class MondayStream(HttpStream, ABC):
     url_base = "https://api.monday.com/v2"
     primary_key = "id"
     page = 1
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json_response = response.json().get("data", {})

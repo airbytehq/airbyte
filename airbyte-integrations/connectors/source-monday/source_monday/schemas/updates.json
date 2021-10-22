@@ -3,28 +3,28 @@
   "type": "object",
   "properties": {
     "assets": {
-      "type": "array",
+      "type": ["null", "array"],
       "properties": {
-        "id": { "type": "integer" }
+        "id": { "type": ["null", "integer"]}
       }
     },
-    "body": { "type": "string" },
-    "created_at": { "type": "date-time" },
-    "creator_id": { "type": "integer" },
-    "id": { "type": "integer" },
-    "item_id": { "type": "integer" },
+    "body": { "type": ["null", "string"]},
+    "created_at": { "type": ["null", "string"], "format": "date-time" },
+    "creator_id": { "type": ["null", "integer"]},
+    "id": { "type": ["null", "integer"]},
+    "item_id": { "type": ["null", "integer"]},
     "replies": {
-      "type": "object",
+      "type": ["null", "array"],
       "properties": {
-        "id": { "type": "integer" },
-        "creator_id": { "type": "integer" },
-        "created_at": { "type": "date-time" },
-        "text_body": { "type": "string" },
-        "updated_at": { "type": "date-time" },
-        "body": { "type": "string" }
+        "id": { "type": ["null", "integer"]},
+        "creator_id": { "type": ["null", "integer"]},
+        "created_at": { "type": ["null", "string"], "format": "date-time" },
+        "text_body": { "type": ["null", "string"]},
+        "updated_at": { "type": ["null", "string"], "format": "date-time" },
+        "body": { "type": ["null", "string"]}
       }
     },
-    "text_body": { "type": "string" },
-    "updated_at": { "type": "date-time" }
+    "text_body": { "type": ["null", "string"]},
+    "updated_at": { "type": ["null", "string"], "format": "date-time" }
   }
 }
