@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Jira Spec",
     "type": "object",
-    "required": ["api_token", "domain", "email", "projects", "start_date"],
+    "required": ["api_token", "domain", "email"],
     "additionalProperties": true,
     "properties": {
       "api_token": {
