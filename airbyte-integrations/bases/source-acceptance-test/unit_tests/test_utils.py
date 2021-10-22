@@ -2,6 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from functools import partial
+
 import pytest
 from source_acceptance_test.utils.compare import serialize
 
@@ -86,3 +88,14 @@ def test_compare_two_records(not_sorted_data, sorted_data):
     """Test that compare two records with equals, not sorted data."""
     output_diff = set(map(serialize, sorted_data)) - set(map(serialize, not_sorted_data))
     assert not output_diff
+
+
+def test_exclude_fields(sorted_data):
+    """"""
+    ignored_fields = [
+        "organization_id",
+    ]
+    serializer = partial(serialize, exclude_fields=ignored_fields)
+    output = map(serializer, sorted_data)
+    for item in output:
+        assert "organization_id" not in item
