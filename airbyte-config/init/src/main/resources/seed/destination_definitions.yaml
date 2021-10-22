@@ -52,7 +52,7 @@
 - destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   name: Redshift
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.18
+  dockerImageTag: 0.3.19
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
 - destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
@@ -93,5 +93,5 @@
 - destinationDefinitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
   name: MongoDB
   dockerRepository: airbyte/destination-mongodb
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mongodb

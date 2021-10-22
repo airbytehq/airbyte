@@ -37,24 +37,16 @@ public class RedshiftSource extends AbstractJdbcSource implements Source {
             redshiftConfig.get("host").asText(),
             redshiftConfig.get("port").asText(),
             redshiftConfig.get("database").asText()));
-    readSsl(redshiftConfig, additionalProperties);
+    addSsl(additionalProperties);
+    builder.put("connection_properties", String.join(";", additionalProperties));
 
-    if (!additionalProperties.isEmpty()) {
-      final String connectionParams = String.join(";", additionalProperties);
-      builder.put("connection_properties", connectionParams);
-    }
     return Jsons.jsonNode(builder
         .build());
   }
 
-  private void readSsl(final JsonNode redshiftConfig, final List<String> additionalProperties) {
-    final boolean tls = redshiftConfig.has("tls") && redshiftConfig.get("tls").asBoolean(); // for backward compatibility
-    if (!tls) {
-      additionalProperties.add("ssl=false");
-    } else {
-      additionalProperties.add("ssl=true");
-      additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
-    }
+  private void addSsl(final List<String> additionalProperties) {
+    additionalProperties.add("ssl=true");
+    additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
   }
 
   @Override

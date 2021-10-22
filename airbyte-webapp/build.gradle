@@ -3,9 +3,11 @@ plugins {
     id "com.github.node-gradle.node" version "3.1.1"
 }
 
+def nodeVersion = System.getenv('NODE_VERSION') ?: '14.11.0'
+
 node {
     download = true
-    version = "14.11.0"
+    version = nodeVersion
 }
 
 npm_run_build {
@@ -31,8 +33,8 @@ assemble.dependsOn npm_run_build
 build.finalizedBy test
 
 task copyDocs(type: Copy) {
-    from "${System.getProperty("user.dir")}/docs/integrations/getting-started"
-    into "${buildDir}/docs/getting-started/"
+    from "${System.getProperty("user.dir")}/docs/integrations"
+    into "${buildDir}/docs/integrations"
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
