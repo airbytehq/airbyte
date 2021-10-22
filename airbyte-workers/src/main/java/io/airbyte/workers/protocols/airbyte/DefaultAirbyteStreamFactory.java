@@ -18,14 +18,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Creates a stream from an input stream. The produced stream attempts to parse each line of the
- * InputStream into a AirbyteMessage. If the line cannot be parsed into a AirbyteMessage it is
- * dropped. Each record MUST be new line separated.
+ * Creates a stream from an input stream. The produced stream attempts to parse each line of the InputStream into a AirbyteMessage. If the line cannot
+ * be parsed into a AirbyteMessage it is dropped. Each record MUST be new line separated.
  *
  * <p>
- * If a line starts with a AirbyteMessage and then has other characters after it, that
- * AirbyteMessage will still be parsed. If there are multiple AirbyteMessage records on the same
- * line, only the first will be parsed.
+ * If a line starts with a AirbyteMessage and then has other characters after it, that AirbyteMessage will still be parsed. If there are multiple
+ * AirbyteMessage records on the same line, only the first will be parsed.
  */
 public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
@@ -59,7 +57,8 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
             // want to make sure this info is available in the logs.
             try (containerLogMDC) {
               logger.info(line);
-            } catch (final Exception e) {}
+            } catch (final Exception e) {
+            }
           }
           return jsonLine.stream();
         })
@@ -85,7 +84,6 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
             try (containerLogMDC) {
               internalLog(airbyteMessage.getLog());
             } catch (final Exception e) {
-              e.printStackTrace();
             }
           }
           return !isLog;
