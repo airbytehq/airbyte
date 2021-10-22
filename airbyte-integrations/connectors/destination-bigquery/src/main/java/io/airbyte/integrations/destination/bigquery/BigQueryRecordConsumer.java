@@ -378,7 +378,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
       result.getLeft().getQueryResults().getValues().forEach(row -> {
         if (!row.get("is_partitioned").isNull() && row.get("is_partitioned").getStringValue().equals("NO")) {
-          LOGGER.info("Partitioning existing destination table");
+          LOGGER.info("Partitioning existing destination table {}", destinationTableId);
           final String tmpPartitionTable = Strings.addRandomSuffix("_airbyte_partitioned_table", "_", 5);
           final TableId tmpPartitionTableId = TableId.of(destinationTableId.getDataset(), tmpPartitionTable);
           // make sure tmpPartitionTable does not already exist
