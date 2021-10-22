@@ -101,35 +101,62 @@
             "default": null
           },
           {
-            "name":"_ab_additional_properties",
-            "type":[
+            "name": "_ab_additional_properties",
+            "type": [
               "null",
-              { "type":"map", "values":"string" }
+              {"type": "map", "values": "string"}
             ],
-            "default":null
+            "default": null
           }
         ]
       }
     ]
   },
   {
+    "fieldName": "object_field_without_properties",
+    "jsonFieldSchema": {
+      "type": "object"
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "record",
+        "name": "object_field_without_properties",
+        "fields": [
+          {
+            "name": "_ab_additional_properties",
+            "type": ["null", {"type": "map", "values": "string"}],
+            "default": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "fieldName": "_ab_additional_properties",
+    "jsonFieldSchema": {
+      "type": "object"
+    },
+    "avroFieldType": ["null", {"type":"map","values":"string"}]
+  },
+  {
     "fieldName": "any_of_field",
     "jsonFieldSchema": {
-      "anyOf": [{ "type": "string" }, { "type": "integer" }]
+      "anyOf": [{"type": "string"}, {"type": "integer"}]
     },
     "avroFieldType": ["null", "string", "int"]
   },
   {
     "fieldName": "all_of_field",
     "jsonFieldSchema": {
-      "allOf": [{ "type": "string" }, { "type": "integer" }]
+      "allOf": [{"type": "string"}, {"type": "integer"}]
     },
     "avroFieldType": ["null", "string", "int"]
   },
   {
     "fieldName": "one_of_field",
     "jsonFieldSchema": {
-      "oneOf": [{ "type": "string" }, { "type": "integer" }]
+      "oneOf": [{"type": "string"}, {"type": "integer"}]
     },
     "avroFieldType": ["null", "string", "int"]
   }

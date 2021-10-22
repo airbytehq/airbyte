@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
-import org.apache.avro.Schema.Type;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.SchemaBuilder.RecordBuilder;
 import org.slf4j.Logger;
@@ -37,11 +36,12 @@ import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
  */
 public class JsonToAvroSchemaConverter {
 
-  public static final Schema UUID_SCHEMA = LogicalTypes.uuid()
-      .addToSchema(Schema.create(Type.STRING));
+  private static final Schema UUID_SCHEMA = LogicalTypes.uuid()
+      .addToSchema(Schema.create(Schema.Type.STRING));
+  private static final Schema NULL_SCHEMA = Schema.create(Schema.Type.NULL);
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonToAvroSchemaConverter.class);
   private static final Schema TIMESTAMP_MILLIS_SCHEMA = LogicalTypes.timestampMillis()
-      .addToSchema(Schema.create(Type.LONG));
+      .addToSchema(Schema.create(Schema.Type.LONG));
   private static final AvroNameTransformer NAME_TRANSFORMER = new AvroNameTransformer();
 
   private final Map<String, String> standardizedNames = new HashMap<>();
@@ -116,7 +116,11 @@ public class JsonToAvroSchemaConverter {
     }
 
     final JsonNode properties = jsonSchema.get("properties");
-    final List<String> fieldNames = new ArrayList<>(MoreIterators.toList(properties.fieldNames()));
+    // object field with no "properties" will be handled by the default additional properties
+    // field during object conversion; so it is fine if there is no "properties"
+    final List<String> fieldNames = properties == null
+        ? Collections.emptyList()
+        : new ArrayList<>(MoreIterators.toList(properties.fieldNames()));
 
     SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
 
@@ -144,8 +148,10 @@ public class JsonToAvroSchemaConverter {
     }
 
     // support additional properties
-    assembler = assembler.name(AdditionalPropertyField.FIELD_NAME)
-        .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
+    if (!fieldNames.contains(AdditionalPropertyField.FIELD_NAME)) {
+      assembler = assembler.name(AdditionalPropertyField.FIELD_NAME)
+          .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
+    }
 
     return assembler.endRecord();
   }
@@ -153,6 +159,10 @@ public class JsonToAvroSchemaConverter {
   Schema getSingleFieldType(final String fieldName, final JsonSchemaType fieldType, final JsonNode fieldDefinition) {
     Preconditions
         .checkState(fieldType != JsonSchemaType.NULL, "Null types should have been filtered out");
+
+    if (fieldName.equals(AdditionalPropertyField.FIELD_NAME)) {
+      return AdditionalPropertyField.FIELD_SCHEMA;
+    }
 
     final Schema fieldSchema;
     switch (fieldType) {
@@ -170,7 +180,7 @@ public class JsonToAvroSchemaConverter {
           fieldSchema = Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
         } else if (items.isArray()) {
           final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items);
-          arrayElementTypes.add(0, Schema.create(Type.NULL));
+          arrayElementTypes.add(0, NULL_SCHEMA);
           fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
         } else {
           throw new IllegalStateException(
@@ -221,7 +231,9 @@ public class JsonToAvroSchemaConverter {
       return Schema.create(Schema.Type.NULL);
     } else {
       // Mark every field as nullable to prevent missing value exceptions from Avro / Parquet.
-      nonNullFieldTypes.add(0, Schema.create(Schema.Type.NULL));
+      if (!nonNullFieldTypes.contains(NULL_SCHEMA)) {
+        nonNullFieldTypes.add(0, NULL_SCHEMA);
+      }
       return Schema.createUnion(nonNullFieldTypes);
     }
   }

@@ -510,5 +510,55 @@
         }
       ]
     }
+  },
+  {
+    "schemaName": "record_with_additional_properties",
+    "namespace": "namespace12",
+    "appendAirbyteFields": true,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "_ab_additional_properties": {
+          "type": "object"
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_with_additional_properties",
+      "namespace": "namespace12",
+      "fields": [
+        {
+          "name": "_airbyte_ab_id",
+          "type": {
+            "type": "string",
+            "logicalType": "uuid"
+          }
+        },
+        {
+          "name": "_airbyte_emitted_at",
+          "type": {
+            "type": "long",
+            "logicalType": "timestamp-millis"
+          }
+        },
+        {
+          "name": "node_id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name":"_ab_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
+        }
+      ]
+    }
   }
 ]
