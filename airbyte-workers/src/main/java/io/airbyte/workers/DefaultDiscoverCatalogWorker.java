@@ -91,7 +91,9 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
     }
   }
 
-  @Override public String getApplicationName() {
+  @Override
+  public String getApplicationName() {
     return "discover-worker";
   }
+
 }

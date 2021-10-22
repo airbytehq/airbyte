@@ -92,7 +92,9 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void>, 
     }
   }
 
-  @Override public String getApplicationName() {
+  @Override
+  public String getApplicationName() {
     return "normalization-worker";
   }
+
 }

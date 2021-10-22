@@ -12,8 +12,7 @@ public class EchoWorker implements Worker<String, String> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EchoWorker.class);
 
-  public EchoWorker() {
-  }
+  public EchoWorker() {}
 
   @Override
   public String run(final String string, final Path jobRoot) {
@@ -26,7 +25,9 @@ public class EchoWorker implements Worker<String, String> {
     // no-op
   }
 
-  @Override public String getApplicationName() {
+  @Override
+  public String getApplicationName() {
     return "airbyte-echo-worker";
   }
+
 }

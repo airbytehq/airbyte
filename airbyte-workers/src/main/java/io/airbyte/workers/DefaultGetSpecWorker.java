@@ -91,7 +91,9 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
     }
   }
 
-  @Override public String getApplicationName() {
+  @Override
+  public String getApplicationName() {
     return "get-spec-worker";
   }
+
 }

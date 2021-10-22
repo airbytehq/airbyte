@@ -96,7 +96,9 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
     }
   }
 
-  @Override public String getApplicationName() {
+  @Override
+  public String getApplicationName() {
     return "check-connection-worker";
   }
+
 }

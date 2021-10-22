@@ -57,7 +57,9 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
     return Optional.ofNullable(outputState.get());
   }
 
-  @Override public String getApplicationName() {
+  @Override
+  public String getApplicationName() {
     return "airbyte-message-tracker";
   }
+
 }
