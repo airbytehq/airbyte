@@ -40,9 +40,8 @@ public class ElasticsearchConnection {
     private static final int MAX_HITS = 10000;
     private static Logger log = LoggerFactory.getLogger(ElasticsearchConnection.class);
 
-    private final String tmpIndex = "test_airbyte";
-    private final ObjectMapper mapper = new ObjectMapper();
     private final ElasticsearchClient client;
+    private final RestClient restClient;
     private final HttpHost httpHost;
 
     /**
@@ -56,7 +55,7 @@ public class ElasticsearchConnection {
 
         // Create the low-level client
         httpHost = HttpHost.create(config.getEndpoint());
-        RestClient restClient = RestClient.builder(httpHost)
+        restClient = RestClient.builder(httpHost)
                 .setDefaultHeaders(configureHeaders(config))
                 .setHttpClientConfigCallback(new ElasticsearchHttpClientConfigCallback(config))
                 .setFailureListener(new FailureListener())
@@ -185,7 +184,8 @@ public class ElasticsearchConnection {
     /**
      * Shutdown the connection to the Elasticsearch server
      */
-    public void close() {
+    public void close() throws IOException {
+        this.restClient.close();
         this.client.shutdown();
     }
 
