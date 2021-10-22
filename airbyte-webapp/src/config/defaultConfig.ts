@@ -10,6 +10,7 @@ const defaultConfig: Config = {
   healthCheckInterval: 10000,
   version: "",
   apiUrl: `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`,
+  integrationUrl: "/",
   oauthRedirectUrl: `${window.location.protocol}//${window.location.host}`,
   isDemo: false,
 };

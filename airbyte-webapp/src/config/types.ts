@@ -17,7 +17,7 @@ declare global {
     REACT_APP_SENTRY_DSN?: string;
     REACT_APP_WEBAPP_TAG?: string;
     REACT_APP_INTERCOM_APP_ID?: string;
-
+    REACT_APP_INTEGRATION_DOCS_URLS?: string;
     analytics: SegmentAnalytics;
     _API_URL: string;
   }
@@ -32,6 +32,7 @@ export type Config = {
   healthCheckInterval: number;
   isDemo: boolean;
   version?: string;
+  integrationUrl?: string;
 };
 
 export type DeepPartial<T> = {
