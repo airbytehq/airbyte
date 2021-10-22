@@ -266,7 +266,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("LONG")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("LONG RAW")
-             .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
+            .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
             .addExpectedValues("c29tZSBjb250ZW50IGhlcmU=", null)
             .build());
 
