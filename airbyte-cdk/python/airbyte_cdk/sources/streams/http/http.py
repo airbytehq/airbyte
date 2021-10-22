@@ -165,7 +165,7 @@ class HttpStream(Stream, ABC):
 
         If returns a ready text that it will be sent as is.
         If returns a dict that it will be converted to a urlencoded form.
-           E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
+        E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """

@@ -110,7 +110,7 @@ class SingerHelper:
         """
         :param singer_catalog:
         :param sync_mode_overrides: A dict from stream name to the sync modes it should use. Each stream in this dict must exist in the Singer catalog,
-        but not every stream in the catalog should exist in this
+          but not every stream in the catalog should exist in this
         :param primary_key_overrides: A dict of stream name -> list of fields to be used as PKs.
         :return: Airbyte Catalog
         """
