@@ -7,13 +7,13 @@ from unittest.mock import MagicMock
 from source_freshsales.source import SourceFreshsales
 
 
-def test_check_connection(mocker):
+def test_check_connection(mocker, config):
     source = SourceFreshsales()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
+    logger_mock = MagicMock()
+    assert source.check_connection(logger_mock, config) == (True, None)
 
 
-def test_streams(mocker):
+def test_count_streams(mocker):
     source = SourceFreshsales()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
