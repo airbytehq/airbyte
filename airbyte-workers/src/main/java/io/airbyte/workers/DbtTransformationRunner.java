@@ -48,7 +48,7 @@ public class DbtTransformationRunner implements AutoCloseable {
    * transform-config scripts (to translate Airbyte Catalogs into Dbt profiles file). Thus, we depend
    * on the NormalizationRunner to configure the dbt project with the appropriate destination settings
    * and pull the custom git repository into the workspace.
-   * <p>
+   *
    * Once the workspace folder/files is setup to run, we invoke the custom transformation command as
    * provided by the user to execute whatever extra transformation has been implemented.
    */
@@ -72,26 +72,34 @@ public class DbtTransformationRunner implements AutoCloseable {
                            final ResourceRequirements resourceRequirements,
                            final OperatorDbt dbtConfig)
       throws Exception {
-    final Map<String, String> files = ImmutableMap.of(
-        DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"),
-        "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"));
-    final List<String> dbtArguments = new ArrayList<>();
-    dbtArguments.add(DBT_ENTRYPOINT_SH);
-    if (Strings.isNullOrEmpty(dbtConfig.getDbtArguments())) {
-      throw new WorkerException("Dbt Arguments are required");
+    try {
+      final Map<String, String> files = ImmutableMap.of(
+          DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"),
+          "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"));
+      final List<String> dbtArguments = new ArrayList<>();
+      dbtArguments.add(DBT_ENTRYPOINT_SH);
+      if (Strings.isNullOrEmpty(dbtConfig.getDbtArguments())) {
+        throw new WorkerException("Dbt Arguments are required");
+      }
+      Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
+      process =
+          processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", resourceRequirements,
+              Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.CUSTOM_STEP),
+              dbtArguments);
+
+      LineGobbler.gobble(process.getInputStream(), LOGGER::info);
+      LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
+
+      WorkerUtils.wait(process);
+
+      return process.exitValue() == 0;
+    } catch (final Exception e) {
+      // make sure we kill the process on failure to avoid zombies.
+      if (process != null) {
+        WorkerUtils.cancelProcess(process);
+      }
+      throw e;
     }
-    Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
-    process =
-        processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", resourceRequirements,
-            Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.CUSTOM_STEP),
-            dbtArguments);
-
-    LineGobbler.gobble(process.getInputStream(), LOGGER::info);
-    LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
-
-    WorkerUtils.wait(process);
-
-    return process.exitValue() == 0;
   }
 
   @Override
