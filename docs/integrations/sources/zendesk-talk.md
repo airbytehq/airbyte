@@ -51,13 +51,27 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 ### Requirements
 
-* Zendesk API Token 
-* Zendesk Email 
-* Zendesk Subdomain 
+* Zendesk Subdomain
+* Start Date
+* Auth Method
+  * API Token
+    * Zendesk API Token
+    * Zendesk Email
+  * oAuth2
+    * Access Token
 
 ### Setup guide
 
-Generate a API access token as described in [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-)
+Generate a API access token using the [Zendesk support](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token)
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+
+### CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| `0.1.3` | 2021-10-22 | [6513](https://github.com/airbytehq/airbyte/pull/6513) | support oAuth2 |
+| `0.1.2` | 2021-07-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | kubernetes support |
+| `0.1.1` | 2021-04-22 | [3022](https://github.com/airbytehq/airbyte/pull/3022) | fix normalization failure |
+| `0.1.0` | 2021-04-06 | [2775](https://github.com/airbytehq/airbyte/pull/2775) | created CDK native zendesk talk connector                   |
 

@@ -21,7 +21,8 @@ def retry_pattern(backoff_type, **wait_gen_kwargs):
     def sleep_on_ratelimit(details):
         _, exc, _ = sys.exc_info()
         logger.info(str(exc))
-        logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
+        logger.info(
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def log_giveup(_details):
         logger.error("Max retry limit reached")
@@ -36,14 +37,15 @@ def retry_pattern(backoff_type, **wait_gen_kwargs):
     )
 
 
-class API:
+class ApiTokenAuth:
     """Zendesk Talk API interface, authorize, retrieve and post, supports backoff logic"""
 
-    def __init__(self, subdomain: str, access_token: str, email: str):
+    def __init__(self, subdomain: str, api_token: str, email: str):
         self.BASE_URL = f"https://{subdomain}.zendesk.com/api/v2/channels/voice"
         self._session = requests.Session()
         self._session.headers = {"Content-Type": "application/json"}
-        self._session.auth = (f"{email}/token", access_token)
+        if api_token:
+            self._session.auth = (f"{email}/token", api_token)
 
     @staticmethod
     def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
@@ -70,8 +72,18 @@ class API:
 
     @retry_pattern(backoff.expo, max_tries=4, factor=5)
     def get(self, url: str, domain_inclusion=False, params=None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
-        response = self._session.get(url if domain_inclusion else self.BASE_URL + url, params=params or {})
+        response = self._session.get(
+            url if domain_inclusion else self.BASE_URL + url, params=params or {})
         return self._parse_and_handle_errors(response)
+
+
+class OauthTokenAuth(ApiTokenAuth):
+    def __init__(self, subdomain: str, access_token: str):
+        super().__init__(subdomain=subdomain, api_token="", email="")
+        self._session.headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer { access_token}"
+        }
 
 
 class Stream(ABC):
@@ -87,8 +99,8 @@ class Stream(ABC):
     def url(self):
         """Default URL to read from"""
 
-    def __init__(self, api: API, start_date: str = None, **kwargs):
-        self._api: API = api
+    def __init__(self, api: ApiTokenAuth, start_date: str = None, **kwargs):
+        self._api: ApiTokenAuth = api
         self._start_date = pendulum.parse(start_date)
 
     @property
@@ -110,7 +122,8 @@ class Stream(ABC):
         while True:
             response = getter(domain_inclusion=domain_inclusion)
             if response.get(self.data_field) is None:
-                raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
+                raise RuntimeError("Unexpected API response: {} not in {}".format(
+                    self.data_field, response.keys()))
 
             yield from response[self.data_field]
             counter += len(response[self.data_field])
@@ -118,7 +131,8 @@ class Stream(ABC):
             if response[self.count_field] <= counter:
                 break
             else:
-                getter.keywords.update({"url": response[self.has_more], "params": None})
+                getter.keywords.update(
+                    {"url": response[self.has_more], "params": None})
                 domain_inclusion = True
 
     def read_stats(self, getter: Callable) -> Any:
@@ -161,12 +175,15 @@ class IncrementalStream(Stream, ABC):
         for record in self._paginator(getter):
             yield record
             cursor = pendulum.parse(record[self.updated_at_field])
-            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+            latest_cursor = max(
+                cursor, latest_cursor) if latest_cursor else cursor
 
         if latest_cursor:
-            new_state = max(latest_cursor, self._state) if self._state else latest_cursor
+            new_state = max(
+                latest_cursor, self._state) if self._state else latest_cursor
             if new_state != self._state:
-                logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
+                logger.info(
+                    f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
                 self._state = new_state
                 self._start_date = self._state
 
@@ -240,7 +257,8 @@ class IVRRoutesStream(Stream):
     data_field = "ivr_routes"
 
     def list(self, fields) -> Iterable:
-        ivr_menu_obj = IVRMenusStream(api=self._api, start_date=str(self._start_date))
+        ivr_menu_obj = IVRMenusStream(
+            api=self._api, start_date=str(self._start_date))
         for ivr_menu in ivr_menu_obj.list(fields=[]):
             for ivr_route in self.read(partial(self._api.get, url=self.url.format(ivr_menu["ivr_id"], ivr_menu["id"]))):
                 yield {"ivr_id": ivr_menu["ivr_id"], "ivr_menu_id": ivr_menu["id"], **ivr_route}

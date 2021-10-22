@@ -9,7 +9,8 @@ from base_python import BaseClient
 from requests import HTTPError
 
 from .api import (
-    API,
+    ApiTokenAuth,
+    OauthTokenAuth,
     AccountOverviewStream,
     AddressesStream,
     AgentsActivityStream,
@@ -26,13 +27,33 @@ from .api import (
 )
 
 
+class ZendeskTalkException(Exception):
+    pass
+
+
 class Client(BaseClient):
     """Zendesk client, provides methods to discover and read streams"""
 
-    def __init__(self, start_date: str, subdomain: str, access_token: str, email: str, **kwargs):
-        self._start_date = start_date
-        self._api = API(subdomain=subdomain, access_token=access_token, email=email)
+    def __init__(self, start_date: str, subdomain: str, **kwargs):
+        auth_method = kwargs.get("auth_method", {}).get("auth_method")
+        if not auth_method or auth_method == "api_token":
+            api_token = kwargs["access_token"] if not auth_method else kwargs["auth_method"]["api_token"]
+            email = kwargs["email"] if not auth_method else kwargs["auth_method"]["email"]
+            self._api = ApiTokenAuth(
+                subdomain=subdomain,
+                api_token=api_token,
+                email=email
+            )
+        elif auth_method == "access_token":
+            access_token = kwargs["auth_method"]["access_token"]
+            self._api = OauthTokenAuth(
+                subdomain=subdomain,
+                access_token=access_token
+            )
+        else:
+            raise ZendeskTalkException(f"incorrect input parameters: {kwargs}")
 
+        self._start_date = start_date
         common_params = dict(api=self._api, start_date=self._start_date)
         self._apis = {
             "phone_numbers": PhoneNumbersStream(**common_params),
