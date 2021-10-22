@@ -1,0 +1,2479 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "in_app_events",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "attributed_touch_type": {
+              "type": ["null", "string"]
+            },
+            "attributed_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "install_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "event_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "event_name": {
+              "type": ["null", "string"]
+            },
+            "event_value": {
+              "type": ["null", "string"]
+            },
+            "event_revenue": {
+              "type": ["null", "string"]
+            },
+            "event_revenue_currency": {
+              "type": ["null", "string"]
+            },
+            "event_revenue_usd": {
+              "type": ["null", "string"]
+            },
+            "event_source": {
+              "type": ["null", "string"]
+            },
+            "is_receipt_validated": {
+              "type": ["null", "boolean"]
+            },
+            "af_prt": {
+              "type": ["null", "string"]
+            },
+            "media_source": {
+              "type": ["null", "string"]
+            },
+            "af_channel": {
+              "type": ["null", "string"]
+            },
+            "af_keywords": {
+              "type": ["null", "string"]
+            },
+            "campaign": {
+              "type": ["null", "string"]
+            },
+            "af_c_id": {
+              "type": ["null", "string"]
+            },
+            "af_adset": {
+              "type": ["null", "string"]
+            },
+            "af_adset_id": {
+              "type": ["null", "string"]
+            },
+            "af_ad": {
+              "type": ["null", "string"]
+            },
+            "af_ad_id": {
+              "type": ["null", "string"]
+            },
+            "af_ad_type": {
+              "type": ["null", "string"]
+            },
+            "af_siteid": {
+              "type": ["null", "string"]
+            },
+            "af_sub_siteid": {
+              "type": ["null", "string"]
+            },
+            "af_sub1": {
+              "type": ["null", "string"]
+            },
+            "af_sub2": {
+              "type": ["null", "string"]
+            },
+            "af_sub3": {
+              "type": ["null", "string"]
+            },
+            "af_sub4": {
+              "type": ["null", "string"]
+            },
+            "af_sub5": {
+              "type": ["null", "string"]
+            },
+            "af_cost_model": {
+              "type": ["null", "string"]
+            },
+            "af_cost_value": {
+              "type": ["null", "string"]
+            },
+            "af_cost_currency": {
+              "type": ["null", "string"]
+            },
+            "contributor1_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor1_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor1_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor1_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor1_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "contributor2_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor2_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor2_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor2_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor2_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "contributor3_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor3_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor3_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor3_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor3_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "region": {
+              "type": ["null", "string"]
+            },
+            "country_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "city": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "dma": {
+              "type": ["null", "string"]
+            },
+            "ip": {
+              "type": ["null", "string"]
+            },
+            "wifi": {
+              "type": ["null", "boolean"]
+            },
+            "operator": {
+              "type": ["null", "string"]
+            },
+            "carrier": {
+              "type": ["null", "string"]
+            },
+            "language": {
+              "type": ["null", "string"]
+            },
+            "appsflyer_id": {
+              "type": ["null", "string"]
+            },
+            "advertising_id": {
+              "type": ["null", "string"]
+            },
+            "idfa": {
+              "type": ["null", "string"]
+            },
+            "android_id": {
+              "type": ["null", "string"]
+            },
+            "customer_user_id": {
+              "type": ["null", "string"]
+            },
+            "imei": {
+              "type": ["null", "string"]
+            },
+            "idfv": {
+              "type": ["null", "string"]
+            },
+            "platform": {
+              "type": ["null", "string"]
+            },
+            "device_type": {
+              "type": ["null", "string"]
+            },
+            "os_version": {
+              "type": ["null", "string"]
+            },
+            "app_version": {
+              "type": ["null", "string"]
+            },
+            "sdk_version": {
+              "type": ["null", "string"]
+            },
+            "app_id": {
+              "type": ["null", "string"]
+            },
+            "app_name": {
+              "type": ["null", "string"]
+            },
+            "bundle_id": {
+              "type": ["null", "string"]
+            },
+            "is_retargeting": {
+              "type": ["null", "boolean"]
+            },
+            "retargeting_conversion_type": {
+              "type": ["null", "string"]
+            },
+            "af_attribution_lookback": {
+              "type": ["null", "string"]
+            },
+            "af_reengagement_window": {
+              "type": ["null", "string"]
+            },
+            "is_primary_attribution": {
+              "type": ["null", "boolean"]
+            },
+            "user_agent": {
+              "type": ["null", "string"]
+            },
+            "http_referrer": {
+              "type": ["null", "string"]
+            },
+            "original_url": {
+              "type": ["null", "string"]
+            },
+            "app_type": {
+              "type": ["null", "string"]
+            },
+            "custom_data": {
+              "type": ["null", "string"]
+            },
+            "network_account_id": {
+              "type": ["null", "string"]
+            },
+            "install_app_store": {
+              "type": ["null", "string"]
+            },
+            "contributor1_match_type": {
+              "type": ["null", "string"]
+            },
+            "contributor2_match_type": {
+              "type": ["null", "string"]
+            },
+            "contributor3_match_type": {
+              "type": ["null", "string"]
+            },
+            "campaign_type": {
+              "type": ["null", "string"]
+            },
+            "conversion_type": {
+              "type": ["null", "string"]
+            },
+            "match_type": {
+              "type": ["null", "string"]
+            },
+            "gp_referrer": {
+              "type": ["null", "string"]
+            },
+            "gp_click_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "gp_install_begin": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "gp_broadcast_referrer": {
+              "type": ["null", "string"]
+            },
+            "keyword_match_type": {
+              "type": ["null", "string"]
+            },
+            "keyword_id": {
+              "type": ["null", "string"]
+            },
+            "att": {
+              "type": ["null", "string"]
+            },
+            "amazon_aid": {
+              "type": ["null", "string"]
+            },
+            "device_category": {
+              "type": ["null", "string"]
+            },
+            "device_model": {
+              "type": ["null", "string"]
+            },
+            "device_download_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "deeplink_url": {
+              "type": ["null", "string"]
+            },
+            "oaid": {
+              "type": ["null", "string"]
+            },
+            "is_lat": {
+              "type": ["null", "boolean"]
+            },
+            "store_reinstall": {
+              "type": ["null", "boolean"]
+            },
+            "placement": {
+              "type": ["null", "string"]
+            },
+            "mediation_network": {
+              "type": ["null", "string"]
+            },
+            "segment": {
+              "type": ["null", "string"]
+            },
+            "ad_unit": {
+              "type": ["null", "string"]
+            },
+            "monetization_network": {
+              "type": ["null", "string"]
+            },
+            "impressions": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason_value": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason_rule": {
+              "type": ["null", "string"]
+            },
+            "blocked_sub_reason": {
+              "type": ["null", "string"]
+            },
+            "rejected_reason": {
+              "type": ["null", "string"]
+            },
+            "rejected_reason_value": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["event_time"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "installs",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "attributed_touch_type": {
+              "type": ["null", "string"]
+            },
+            "attributed_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "install_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "event_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "event_name": {
+              "type": ["null", "string"]
+            },
+            "event_value": {
+              "type": ["null", "string"]
+            },
+            "event_revenue": {
+              "type": ["null", "string"]
+            },
+            "event_revenue_currency": {
+              "type": ["null", "string"]
+            },
+            "event_revenue_usd": {
+              "type": ["null", "string"]
+            },
+            "event_source": {
+              "type": ["null", "string"]
+            },
+            "is_receipt_validated": {
+              "type": ["null", "boolean"]
+            },
+            "af_prt": {
+              "type": ["null", "string"]
+            },
+            "media_source": {
+              "type": ["null", "string"]
+            },
+            "af_channel": {
+              "type": ["null", "string"]
+            },
+            "af_keywords": {
+              "type": ["null", "string"]
+            },
+            "campaign": {
+              "type": ["null", "string"]
+            },
+            "af_c_id": {
+              "type": ["null", "string"]
+            },
+            "af_adset": {
+              "type": ["null", "string"]
+            },
+            "af_adset_id": {
+              "type": ["null", "string"]
+            },
+            "af_ad": {
+              "type": ["null", "string"]
+            },
+            "af_ad_id": {
+              "type": ["null", "string"]
+            },
+            "af_ad_type": {
+              "type": ["null", "string"]
+            },
+            "af_siteid": {
+              "type": ["null", "string"]
+            },
+            "af_sub_siteid": {
+              "type": ["null", "string"]
+            },
+            "af_sub1": {
+              "type": ["null", "string"]
+            },
+            "af_sub2": {
+              "type": ["null", "string"]
+            },
+            "af_sub3": {
+              "type": ["null", "string"]
+            },
+            "af_sub4": {
+              "type": ["null", "string"]
+            },
+            "af_sub5": {
+              "type": ["null", "string"]
+            },
+            "af_cost_model": {
+              "type": ["null", "string"]
+            },
+            "af_cost_value": {
+              "type": ["null", "string"]
+            },
+            "af_cost_currency": {
+              "type": ["null", "string"]
+            },
+            "contributor1_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor1_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor1_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor1_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor1_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "contributor2_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor2_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor2_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor2_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor2_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "contributor3_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor3_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor3_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor3_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor3_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "region": {
+              "type": ["null", "string"]
+            },
+            "country_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "city": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "dma": {
+              "type": ["null", "string"]
+            },
+            "ip": {
+              "type": ["null", "string"]
+            },
+            "wifi": {
+              "type": ["null", "boolean"]
+            },
+            "operator": {
+              "type": ["null", "string"]
+            },
+            "carrier": {
+              "type": ["null", "string"]
+            },
+            "language": {
+              "type": ["null", "string"]
+            },
+            "appsflyer_id": {
+              "type": ["null", "string"]
+            },
+            "advertising_id": {
+              "type": ["null", "string"]
+            },
+            "idfa": {
+              "type": ["null", "string"]
+            },
+            "android_id": {
+              "type": ["null", "string"]
+            },
+            "customer_user_id": {
+              "type": ["null", "string"]
+            },
+            "imei": {
+              "type": ["null", "string"]
+            },
+            "idfv": {
+              "type": ["null", "string"]
+            },
+            "platform": {
+              "type": ["null", "string"]
+            },
+            "device_type": {
+              "type": ["null", "string"]
+            },
+            "os_version": {
+              "type": ["null", "string"]
+            },
+            "app_version": {
+              "type": ["null", "string"]
+            },
+            "sdk_version": {
+              "type": ["null", "string"]
+            },
+            "app_id": {
+              "type": ["null", "string"]
+            },
+            "app_name": {
+              "type": ["null", "string"]
+            },
+            "bundle_id": {
+              "type": ["null", "string"]
+            },
+            "is_retargeting": {
+              "type": ["null", "boolean"]
+            },
+            "retargeting_conversion_type": {
+              "type": ["null", "string"]
+            },
+            "af_attribution_lookback": {
+              "type": ["null", "string"]
+            },
+            "af_reengagement_window": {
+              "type": ["null", "string"]
+            },
+            "is_primary_attribution": {
+              "type": ["null", "boolean"]
+            },
+            "user_agent": {
+              "type": ["null", "string"]
+            },
+            "http_referrer": {
+              "type": ["null", "string"]
+            },
+            "original_url": {
+              "type": ["null", "string"]
+            },
+            "app_type": {
+              "type": ["null", "string"]
+            },
+            "custom_data": {
+              "type": ["null", "string"]
+            },
+            "network_account_id": {
+              "type": ["null", "string"]
+            },
+            "install_app_store": {
+              "type": ["null", "string"]
+            },
+            "contributor1_match_type": {
+              "type": ["null", "string"]
+            },
+            "contributor2_match_type": {
+              "type": ["null", "string"]
+            },
+            "contributor3_match_type": {
+              "type": ["null", "string"]
+            },
+            "campaign_type": {
+              "type": ["null", "string"]
+            },
+            "conversion_type": {
+              "type": ["null", "string"]
+            },
+            "match_type": {
+              "type": ["null", "string"]
+            },
+            "gp_referrer": {
+              "type": ["null", "string"]
+            },
+            "gp_click_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "gp_install_begin": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "gp_broadcast_referrer": {
+              "type": ["null", "string"]
+            },
+            "keyword_match_type": {
+              "type": ["null", "string"]
+            },
+            "keyword_id": {
+              "type": ["null", "string"]
+            },
+            "att": {
+              "type": ["null", "string"]
+            },
+            "amazon_aid": {
+              "type": ["null", "string"]
+            },
+            "device_category": {
+              "type": ["null", "string"]
+            },
+            "device_model": {
+              "type": ["null", "string"]
+            },
+            "device_download_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "deeplink_url": {
+              "type": ["null", "string"]
+            },
+            "oaid": {
+              "type": ["null", "string"]
+            },
+            "is_lat": {
+              "type": ["null", "boolean"]
+            },
+            "store_reinstall": {
+              "type": ["null", "boolean"]
+            },
+            "placement": {
+              "type": ["null", "string"]
+            },
+            "mediation_network": {
+              "type": ["null", "string"]
+            },
+            "segment": {
+              "type": ["null", "string"]
+            },
+            "ad_unit": {
+              "type": ["null", "string"]
+            },
+            "monetization_network": {
+              "type": ["null", "string"]
+            },
+            "impressions": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason_value": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason_rule": {
+              "type": ["null", "string"]
+            },
+            "blocked_sub_reason": {
+              "type": ["null", "string"]
+            },
+            "rejected_reason": {
+              "type": ["null", "string"]
+            },
+            "rejected_reason_value": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["install_time"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "uninstall_events",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "attributed_touch_type": {
+              "type": ["null", "string"]
+            },
+            "attributed_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "install_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "event_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "event_name": {
+              "type": ["null", "string"]
+            },
+            "event_value": {
+              "type": ["null", "string"]
+            },
+            "event_revenue": {
+              "type": ["null", "string"]
+            },
+            "event_revenue_currency": {
+              "type": ["null", "string"]
+            },
+            "event_revenue_usd": {
+              "type": ["null", "string"]
+            },
+            "event_source": {
+              "type": ["null", "string"]
+            },
+            "is_receipt_validated": {
+              "type": ["null", "boolean"]
+            },
+            "af_prt": {
+              "type": ["null", "string"]
+            },
+            "media_source": {
+              "type": ["null", "string"]
+            },
+            "af_channel": {
+              "type": ["null", "string"]
+            },
+            "af_keywords": {
+              "type": ["null", "string"]
+            },
+            "campaign": {
+              "type": ["null", "string"]
+            },
+            "af_c_id": {
+              "type": ["null", "string"]
+            },
+            "af_adset": {
+              "type": ["null", "string"]
+            },
+            "af_adset_id": {
+              "type": ["null", "string"]
+            },
+            "af_ad": {
+              "type": ["null", "string"]
+            },
+            "af_ad_id": {
+              "type": ["null", "string"]
+            },
+            "af_ad_type": {
+              "type": ["null", "string"]
+            },
+            "af_siteid": {
+              "type": ["null", "string"]
+            },
+            "af_sub_siteid": {
+              "type": ["null", "string"]
+            },
+            "af_sub1": {
+              "type": ["null", "string"]
+            },
+            "af_sub2": {
+              "type": ["null", "string"]
+            },
+            "af_sub3": {
+              "type": ["null", "string"]
+            },
+            "af_sub4": {
+              "type": ["null", "string"]
+            },
+            "af_sub5": {
+              "type": ["null", "string"]
+            },
+            "af_cost_model": {
+              "type": ["null", "string"]
+            },
+            "af_cost_value": {
+              "type": ["null", "string"]
+            },
+            "af_cost_currency": {
+              "type": ["null", "string"]
+            },
+            "contributor1_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor1_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor1_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor1_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor1_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "contributor2_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor2_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor2_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor2_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor2_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "contributor3_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor3_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor3_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor3_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor3_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "region": {
+              "type": ["null", "string"]
+            },
+            "country_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "city": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "dma": {
+              "type": ["null", "string"]
+            },
+            "ip": {
+              "type": ["null", "string"]
+            },
+            "wifi": {
+              "type": ["null", "boolean"]
+            },
+            "operator": {
+              "type": ["null", "string"]
+            },
+            "carrier": {
+              "type": ["null", "string"]
+            },
+            "language": {
+              "type": ["null", "string"]
+            },
+            "appsflyer_id": {
+              "type": ["null", "string"]
+            },
+            "advertising_id": {
+              "type": ["null", "string"]
+            },
+            "idfa": {
+              "type": ["null", "string"]
+            },
+            "android_id": {
+              "type": ["null", "string"]
+            },
+            "customer_user_id": {
+              "type": ["null", "string"]
+            },
+            "imei": {
+              "type": ["null", "string"]
+            },
+            "idfv": {
+              "type": ["null", "string"]
+            },
+            "platform": {
+              "type": ["null", "string"]
+            },
+            "device_type": {
+              "type": ["null", "string"]
+            },
+            "os_version": {
+              "type": ["null", "string"]
+            },
+            "app_version": {
+              "type": ["null", "string"]
+            },
+            "sdk_version": {
+              "type": ["null", "string"]
+            },
+            "app_id": {
+              "type": ["null", "string"]
+            },
+            "app_name": {
+              "type": ["null", "string"]
+            },
+            "bundle_id": {
+              "type": ["null", "string"]
+            },
+            "is_retargeting": {
+              "type": ["null", "boolean"]
+            },
+            "retargeting_conversion_type": {
+              "type": ["null", "string"]
+            },
+            "af_attribution_lookback": {
+              "type": ["null", "string"]
+            },
+            "af_reengagement_window": {
+              "type": ["null", "string"]
+            },
+            "is_primary_attribution": {
+              "type": ["null", "boolean"]
+            },
+            "user_agent": {
+              "type": ["null", "string"]
+            },
+            "http_referrer": {
+              "type": ["null", "string"]
+            },
+            "original_url": {
+              "type": ["null", "string"]
+            },
+            "custom_data": {
+              "type": ["null", "string"]
+            },
+            "network_account_id": {
+              "type": ["null", "string"]
+            },
+            "install_app_store": {
+              "type": ["null", "string"]
+            },
+            "contributor1_match_type": {
+              "type": ["null", "string"]
+            },
+            "contributor2_match_type": {
+              "type": ["null", "string"]
+            },
+            "contributor3_match_type": {
+              "type": ["null", "string"]
+            },
+            "match_type": {
+              "type": ["null", "string"]
+            },
+            "gp_referrer": {
+              "type": ["null", "string"]
+            },
+            "gp_click_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "gp_install_begin": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "gp_broadcast_referrer": {
+              "type": ["null", "string"]
+            },
+            "keyword_match_type": {
+              "type": ["null", "string"]
+            },
+            "keyword_id": {
+              "type": ["null", "string"]
+            },
+            "amazon_aid": {
+              "type": ["null", "string"]
+            },
+            "device_category": {
+              "type": ["null", "string"]
+            },
+            "device_model": {
+              "type": ["null", "string"]
+            },
+            "device_download_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "deeplink_url": {
+              "type": ["null", "string"]
+            },
+            "oaid": {
+              "type": ["null", "string"]
+            },
+            "is_lat": {
+              "type": ["null", "boolean"]
+            },
+            "store_reinstall": {
+              "type": ["null", "boolean"]
+            },
+            "placement": {
+              "type": ["null", "string"]
+            },
+            "mediation_network": {
+              "type": ["null", "string"]
+            },
+            "segment": {
+              "type": ["null", "string"]
+            },
+            "ad_unit": {
+              "type": ["null", "string"]
+            },
+            "monetization_network": {
+              "type": ["null", "string"]
+            },
+            "impressions": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason_value": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason_rule": {
+              "type": ["null", "string"]
+            },
+            "blocked_sub_reason": {
+              "type": ["null", "string"]
+            },
+            "rejected_reason": {
+              "type": ["null", "string"]
+            },
+            "rejected_reason_value": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["event_time"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "retargeting_in_app_events",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "attributed_touch_type": {
+              "type": ["null", "string"]
+            },
+            "attributed_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "install_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "event_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "event_name": {
+              "type": ["null", "string"]
+            },
+            "event_value": {
+              "type": ["null", "string"]
+            },
+            "event_revenue": {
+              "type": ["null", "string"]
+            },
+            "event_revenue_currency": {
+              "type": ["null", "string"]
+            },
+            "event_revenue_usd": {
+              "type": ["null", "string"]
+            },
+            "event_source": {
+              "type": ["null", "string"]
+            },
+            "is_receipt_validated": {
+              "type": ["null", "boolean"]
+            },
+            "af_prt": {
+              "type": ["null", "string"]
+            },
+            "media_source": {
+              "type": ["null", "string"]
+            },
+            "af_channel": {
+              "type": ["null", "string"]
+            },
+            "af_keywords": {
+              "type": ["null", "string"]
+            },
+            "campaign": {
+              "type": ["null", "string"]
+            },
+            "af_c_id": {
+              "type": ["null", "string"]
+            },
+            "af_adset": {
+              "type": ["null", "string"]
+            },
+            "af_adset_id": {
+              "type": ["null", "string"]
+            },
+            "af_ad": {
+              "type": ["null", "string"]
+            },
+            "af_ad_id": {
+              "type": ["null", "string"]
+            },
+            "af_ad_type": {
+              "type": ["null", "string"]
+            },
+            "af_siteid": {
+              "type": ["null", "string"]
+            },
+            "af_sub_siteid": {
+              "type": ["null", "string"]
+            },
+            "af_sub1": {
+              "type": ["null", "string"]
+            },
+            "af_sub2": {
+              "type": ["null", "string"]
+            },
+            "af_sub3": {
+              "type": ["null", "string"]
+            },
+            "af_sub4": {
+              "type": ["null", "string"]
+            },
+            "af_sub5": {
+              "type": ["null", "string"]
+            },
+            "af_cost_model": {
+              "type": ["null", "string"]
+            },
+            "af_cost_value": {
+              "type": ["null", "string"]
+            },
+            "af_cost_currency": {
+              "type": ["null", "string"]
+            },
+            "contributor1_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor1_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor1_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor1_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor1_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "contributor2_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor2_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor2_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor2_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor2_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "contributor3_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor3_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor3_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor3_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor3_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "region": {
+              "type": ["null", "string"]
+            },
+            "country_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "city": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "dma": {
+              "type": ["null", "string"]
+            },
+            "ip": {
+              "type": ["null", "string"]
+            },
+            "wifi": {
+              "type": ["null", "boolean"]
+            },
+            "operator": {
+              "type": ["null", "string"]
+            },
+            "carrier": {
+              "type": ["null", "string"]
+            },
+            "language": {
+              "type": ["null", "string"]
+            },
+            "appsflyer_id": {
+              "type": ["null", "string"]
+            },
+            "advertising_id": {
+              "type": ["null", "string"]
+            },
+            "idfa": {
+              "type": ["null", "string"]
+            },
+            "android_id": {
+              "type": ["null", "string"]
+            },
+            "customer_user_id": {
+              "type": ["null", "string"]
+            },
+            "imei": {
+              "type": ["null", "string"]
+            },
+            "idfv": {
+              "type": ["null", "string"]
+            },
+            "platform": {
+              "type": ["null", "string"]
+            },
+            "device_type": {
+              "type": ["null", "string"]
+            },
+            "os_version": {
+              "type": ["null", "string"]
+            },
+            "app_version": {
+              "type": ["null", "string"]
+            },
+            "sdk_version": {
+              "type": ["null", "string"]
+            },
+            "app_id": {
+              "type": ["null", "string"]
+            },
+            "app_name": {
+              "type": ["null", "string"]
+            },
+            "bundle_id": {
+              "type": ["null", "string"]
+            },
+            "is_retargeting": {
+              "type": ["null", "boolean"]
+            },
+            "retargeting_conversion_type": {
+              "type": ["null", "string"]
+            },
+            "af_attribution_lookback": {
+              "type": ["null", "string"]
+            },
+            "af_reengagement_window": {
+              "type": ["null", "string"]
+            },
+            "is_primary_attribution": {
+              "type": ["null", "boolean"]
+            },
+            "user_agent": {
+              "type": ["null", "string"]
+            },
+            "http_referrer": {
+              "type": ["null", "string"]
+            },
+            "original_url": {
+              "type": ["null", "string"]
+            },
+            "app_type": {
+              "type": ["null", "string"]
+            },
+            "custom_data": {
+              "type": ["null", "string"]
+            },
+            "network_account_id": {
+              "type": ["null", "string"]
+            },
+            "install_app_store": {
+              "type": ["null", "string"]
+            },
+            "contributor1_match_type": {
+              "type": ["null", "string"]
+            },
+            "contributor2_match_type": {
+              "type": ["null", "string"]
+            },
+            "contributor3_match_type": {
+              "type": ["null", "string"]
+            },
+            "campaign_type": {
+              "type": ["null", "string"]
+            },
+            "conversion_type": {
+              "type": ["null", "string"]
+            },
+            "match_type": {
+              "type": ["null", "string"]
+            },
+            "gp_referrer": {
+              "type": ["null", "string"]
+            },
+            "gp_click_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "gp_install_begin": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "gp_broadcast_referrer": {
+              "type": ["null", "string"]
+            },
+            "keyword_match_type": {
+              "type": ["null", "string"]
+            },
+            "keyword_id": {
+              "type": ["null", "string"]
+            },
+            "att": {
+              "type": ["null", "string"]
+            },
+            "amazon_aid": {
+              "type": ["null", "string"]
+            },
+            "device_category": {
+              "type": ["null", "string"]
+            },
+            "device_model": {
+              "type": ["null", "string"]
+            },
+            "device_download_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "deeplink_url": {
+              "type": ["null", "string"]
+            },
+            "oaid": {
+              "type": ["null", "string"]
+            },
+            "is_lat": {
+              "type": ["null", "boolean"]
+            },
+            "store_reinstall": {
+              "type": ["null", "boolean"]
+            },
+            "placement": {
+              "type": ["null", "string"]
+            },
+            "mediation_network": {
+              "type": ["null", "string"]
+            },
+            "segment": {
+              "type": ["null", "string"]
+            },
+            "ad_unit": {
+              "type": ["null", "string"]
+            },
+            "monetization_network": {
+              "type": ["null", "string"]
+            },
+            "impressions": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason_value": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason_rule": {
+              "type": ["null", "string"]
+            },
+            "blocked_sub_reason": {
+              "type": ["null", "string"]
+            },
+            "rejected_reason": {
+              "type": ["null", "string"]
+            },
+            "rejected_reason_value": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["event_time"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "retargeting_conversions",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "attributed_touch_type": {
+              "type": ["null", "string"]
+            },
+            "attributed_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "install_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "event_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "event_name": {
+              "type": ["null", "string"]
+            },
+            "event_value": {
+              "type": ["null", "string"]
+            },
+            "event_revenue": {
+              "type": ["null", "string"]
+            },
+            "event_revenue_currency": {
+              "type": ["null", "string"]
+            },
+            "event_revenue_usd": {
+              "type": ["null", "string"]
+            },
+            "event_source": {
+              "type": ["null", "string"]
+            },
+            "is_receipt_validated": {
+              "type": ["null", "boolean"]
+            },
+            "af_prt": {
+              "type": ["null", "string"]
+            },
+            "media_source": {
+              "type": ["null", "string"]
+            },
+            "af_channel": {
+              "type": ["null", "string"]
+            },
+            "af_keywords": {
+              "type": ["null", "string"]
+            },
+            "campaign": {
+              "type": ["null", "string"]
+            },
+            "af_c_id": {
+              "type": ["null", "string"]
+            },
+            "af_adset": {
+              "type": ["null", "string"]
+            },
+            "af_adset_id": {
+              "type": ["null", "string"]
+            },
+            "af_ad": {
+              "type": ["null", "string"]
+            },
+            "af_ad_id": {
+              "type": ["null", "string"]
+            },
+            "af_ad_type": {
+              "type": ["null", "string"]
+            },
+            "af_siteid": {
+              "type": ["null", "string"]
+            },
+            "af_sub_siteid": {
+              "type": ["null", "string"]
+            },
+            "af_sub1": {
+              "type": ["null", "string"]
+            },
+            "af_sub2": {
+              "type": ["null", "string"]
+            },
+            "af_sub3": {
+              "type": ["null", "string"]
+            },
+            "af_sub4": {
+              "type": ["null", "string"]
+            },
+            "af_sub5": {
+              "type": ["null", "string"]
+            },
+            "af_cost_model": {
+              "type": ["null", "string"]
+            },
+            "af_cost_value": {
+              "type": ["null", "string"]
+            },
+            "af_cost_currency": {
+              "type": ["null", "string"]
+            },
+            "contributor1_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor1_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor1_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor1_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor1_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "contributor2_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor2_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor2_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor2_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor2_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "contributor3_af_prt": {
+              "type": ["null", "string"]
+            },
+            "contributor3_media_source": {
+              "type": ["null", "string"]
+            },
+            "contributor3_campaign": {
+              "type": ["null", "string"]
+            },
+            "contributor3_touch_type": {
+              "type": ["null", "string"]
+            },
+            "contributor3_touch_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "region": {
+              "type": ["null", "string"]
+            },
+            "country_code": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "city": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "dma": {
+              "type": ["null", "string"]
+            },
+            "ip": {
+              "type": ["null", "string"]
+            },
+            "wifi": {
+              "type": ["null", "boolean"]
+            },
+            "operator": {
+              "type": ["null", "string"]
+            },
+            "carrier": {
+              "type": ["null", "string"]
+            },
+            "language": {
+              "type": ["null", "string"]
+            },
+            "appsflyer_id": {
+              "type": ["null", "string"]
+            },
+            "advertising_id": {
+              "type": ["null", "string"]
+            },
+            "idfa": {
+              "type": ["null", "string"]
+            },
+            "android_id": {
+              "type": ["null", "string"]
+            },
+            "customer_user_id": {
+              "type": ["null", "string"]
+            },
+            "imei": {
+              "type": ["null", "string"]
+            },
+            "idfv": {
+              "type": ["null", "string"]
+            },
+            "platform": {
+              "type": ["null", "string"]
+            },
+            "device_type": {
+              "type": ["null", "string"]
+            },
+            "os_version": {
+              "type": ["null", "string"]
+            },
+            "app_version": {
+              "type": ["null", "string"]
+            },
+            "sdk_version": {
+              "type": ["null", "string"]
+            },
+            "app_id": {
+              "type": ["null", "string"]
+            },
+            "app_name": {
+              "type": ["null", "string"]
+            },
+            "bundle_id": {
+              "type": ["null", "string"]
+            },
+            "is_retargeting": {
+              "type": ["null", "boolean"]
+            },
+            "retargeting_conversion_type": {
+              "type": ["null", "string"]
+            },
+            "af_attribution_lookback": {
+              "type": ["null", "string"]
+            },
+            "af_reengagement_window": {
+              "type": ["null", "string"]
+            },
+            "is_primary_attribution": {
+              "type": ["null", "boolean"]
+            },
+            "user_agent": {
+              "type": ["null", "string"]
+            },
+            "http_referrer": {
+              "type": ["null", "string"]
+            },
+            "original_url": {
+              "type": ["null", "string"]
+            },
+            "app_type": {
+              "type": ["null", "string"]
+            },
+            "custom_data": {
+              "type": ["null", "string"]
+            },
+            "network_account_id": {
+              "type": ["null", "string"]
+            },
+            "install_app_store": {
+              "type": ["null", "string"]
+            },
+            "contributor1_match_type": {
+              "type": ["null", "string"]
+            },
+            "contributor2_match_type": {
+              "type": ["null", "string"]
+            },
+            "contributor3_match_type": {
+              "type": ["null", "string"]
+            },
+            "campaign_type": {
+              "type": ["null", "string"]
+            },
+            "conversion_type": {
+              "type": ["null", "string"]
+            },
+            "match_type": {
+              "type": ["null", "string"]
+            },
+            "gp_referrer": {
+              "type": ["null", "string"]
+            },
+            "gp_click_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "gp_install_begin": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "gp_broadcast_referrer": {
+              "type": ["null", "string"]
+            },
+            "keyword_match_type": {
+              "type": ["null", "string"]
+            },
+            "keyword_id": {
+              "type": ["null", "string"]
+            },
+            "att": {
+              "type": ["null", "string"]
+            },
+            "amazon_aid": {
+              "type": ["null", "string"]
+            },
+            "device_category": {
+              "type": ["null", "string"]
+            },
+            "device_model": {
+              "type": ["null", "string"]
+            },
+            "device_download_time": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "deeplink_url": {
+              "type": ["null", "string"]
+            },
+            "oaid": {
+              "type": ["null", "string"]
+            },
+            "is_lat": {
+              "type": ["null", "boolean"]
+            },
+            "store_reinstall": {
+              "type": ["null", "boolean"]
+            },
+            "placement": {
+              "type": ["null", "string"]
+            },
+            "mediation_network": {
+              "type": ["null", "string"]
+            },
+            "segment": {
+              "type": ["null", "string"]
+            },
+            "ad_unit": {
+              "type": ["null", "string"]
+            },
+            "monetization_network": {
+              "type": ["null", "string"]
+            },
+            "impressions": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason_value": {
+              "type": ["null", "string"]
+            },
+            "blocked_reason_rule": {
+              "type": ["null", "string"]
+            },
+            "blocked_sub_reason": {
+              "type": ["null", "string"]
+            },
+            "rejected_reason": {
+              "type": ["null", "string"]
+            },
+            "rejected_reason_value": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["install_time"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "partners_report",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": ["null", "string"],
+              "format": "date"
+            },
+            "af_prt": {
+              "type": ["null", "string"]
+            },
+            "media_source": {
+              "type": ["null", "string"]
+            },
+            "campaign": {
+              "type": ["null", "string"]
+            },
+            "impressions": {
+              "type": ["null", "number"]
+            },
+            "clicks": {
+              "type": ["null", "number"]
+            },
+            "click_through_rate": {
+              "type": ["null", "number"]
+            },
+            "installs": {
+              "type": ["null", "number"]
+            },
+            "conversion_rate": {
+              "type": ["null", "number"]
+            },
+            "sessions": {
+              "type": ["null", "number"]
+            },
+            "loyal_users": {
+              "type": ["null", "number"]
+            },
+            "loyal_users_rate": {
+              "type": ["null", "number"]
+            },
+            "total_revenue": {
+              "type": ["null", "number"]
+            },
+            "total_cost": {
+              "type": ["null", "number"]
+            },
+            "return_on_investment": {
+              "type": ["null", "number"]
+            },
+            "average_revenue_per_user": {
+              "type": ["null", "number"]
+            },
+            "average_ecpi": {
+              "type": ["null", "number"]
+            },
+            "account_login_unique_users": {
+              "type": ["null", "number"]
+            },
+            "account_login_event_counter": {
+              "type": ["null", "number"]
+            },
+            "account_login_sales": {
+              "type": ["null", "number"]
+            },
+            "af_complete_registration_unique_users": {
+              "type": ["null", "number"]
+            },
+            "af_complete_registration_event_counter": {
+              "type": ["null", "number"]
+            },
+            "af_complete_registration_sales": {
+              "type": ["null", "number"]
+            },
+            "af_purchase_registration_unique_users": {
+              "type": ["null", "number"]
+            },
+            "af_purchase_registration_event_counter": {
+              "type": ["null", "number"]
+            },
+            "af_purchase_registration_sales": {
+              "type": ["null", "number"]
+            },
+            "checkout_success_unique_users": {
+              "type": ["null", "number"]
+            },
+            "checkout_success_event_counter": {
+              "type": ["null", "number"]
+            },
+            "checkout_success_sales": {
+              "type": ["null", "number"]
+            },
+            "create_product_complete_unique_users": {
+              "type": ["null", "number"]
+            },
+            "create_product_complete_event_counter": {
+              "type": ["null", "number"]
+            },
+            "create_product_complete_sales": {
+              "type": ["null", "number"]
+            },
+            "init_appsflyer_id_unique_users": {
+              "type": ["null", "number"]
+            },
+            "init_appsflyer_id_event_counter": {
+              "type": ["null", "number"]
+            },
+            "init_appsflyer_id_sales": {
+              "type": ["null", "number"]
+            },
+            "pay_premium_pkg_unique_users": {
+              "type": ["null", "number"]
+            },
+            "pay_premium_pkg_event_counter": {
+              "type": ["null", "number"]
+            },
+            "pay_premium_pkg_sales": {
+              "type": ["null", "number"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "daily_report",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": ["null", "string"],
+              "format": "date"
+            },
+            "af_prt": {
+              "type": ["null", "string"]
+            },
+            "media_source": {
+              "type": ["null", "string"]
+            },
+            "campaign": {
+              "type": ["null", "string"]
+            },
+            "impressions": {
+              "type": ["null", "number"]
+            },
+            "clicks": {
+              "type": ["null", "number"]
+            },
+            "click_through_rate": {
+              "type": ["null", "number"]
+            },
+            "installs": {
+              "type": ["null", "number"]
+            },
+            "conversion_rate": {
+              "type": ["null", "number"]
+            },
+            "sessions": {
+              "type": ["null", "number"]
+            },
+            "loyal_users": {
+              "type": ["null", "number"]
+            },
+            "loyal_users_rate": {
+              "type": ["null", "number"]
+            },
+            "total_cost": {
+              "type": ["null", "number"]
+            },
+            "average_ecpi": {
+              "type": ["null", "number"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "geo_report",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": ["null", "string"],
+              "format": "date"
+            },
+            "country_code": {
+              "type": ["null", "string"]
+            },
+            "af_prt": {
+              "type": ["null", "string"]
+            },
+            "media_source": {
+              "type": ["null", "string"]
+            },
+            "campaign": {
+              "type": ["null", "string"]
+            },
+            "impressions": {
+              "type": ["null", "number"]
+            },
+            "clicks": {
+              "type": ["null", "number"]
+            },
+            "click_through_rate": {
+              "type": ["null", "number"]
+            },
+            "installs": {
+              "type": ["null", "number"]
+            },
+            "conversion_rate": {
+              "type": ["null", "number"]
+            },
+            "sessions": {
+              "type": ["null", "number"]
+            },
+            "loyal_users": {
+              "type": ["null", "number"]
+            },
+            "loyal_users_rate": {
+              "type": ["null", "number"]
+            },
+            "total_revenue": {
+              "type": ["null", "number"]
+            },
+            "total_cost": {
+              "type": ["null", "number"]
+            },
+            "return_on_investment": {
+              "type": ["null", "number"]
+            },
+            "average_revenue_per_user": {
+              "type": ["null", "number"]
+            },
+            "average_ecpi": {
+              "type": ["null", "number"]
+            },
+            "account_login_unique_users": {
+              "type": ["null", "number"]
+            },
+            "account_login_event_counter": {
+              "type": ["null", "number"]
+            },
+            "account_login_sales": {
+              "type": ["null", "number"]
+            },
+            "af_complete_registration_unique_users": {
+              "type": ["null", "number"]
+            },
+            "af_complete_registration_event_counter": {
+              "type": ["null", "number"]
+            },
+            "af_complete_registration_sales": {
+              "type": ["null", "number"]
+            },
+            "af_purchase_registration_unique_users": {
+              "type": ["null", "number"]
+            },
+            "af_purchase_registration_event_counter": {
+              "type": ["null", "number"]
+            },
+            "af_purchase_registration_sales": {
+              "type": ["null", "number"]
+            },
+            "checkout_success_unique_users": {
+              "type": ["null", "number"]
+            },
+            "checkout_success_event_counter": {
+              "type": ["null", "number"]
+            },
+            "checkout_success_sales": {
+              "type": ["null", "number"]
+            },
+            "create_product_complete_unique_users": {
+              "type": ["null", "number"]
+            },
+            "create_product_complete_event_counter": {
+              "type": ["null", "number"]
+            },
+            "create_product_complete_sales": {
+              "type": ["null", "number"]
+            },
+            "init_appsflyer_id_unique_users": {
+              "type": ["null", "number"]
+            },
+            "init_appsflyer_id_event_counter": {
+              "type": ["null", "number"]
+            },
+            "init_appsflyer_id_sales": {
+              "type": ["null", "number"]
+            },
+            "pay_premium_pkg_unique_users": {
+              "type": ["null", "number"]
+            },
+            "pay_premium_pkg_event_counter": {
+              "type": ["null", "number"]
+            },
+            "pay_premium_pkg_sales": {
+              "type": ["null", "number"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "retargeting_partners_report",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": ["null", "string"],
+              "format": "date"
+            },
+            "af_prt": {
+              "type": ["null", "string"]
+            },
+            "media_source": {
+              "type": ["null", "string"]
+            },
+            "campaign": {
+              "type": ["null", "string"]
+            },
+            "clicks": {
+              "type": ["null", "number"]
+            },
+            "conversions": {
+              "type": ["null", "number"]
+            },
+            "conversion_type": {
+              "type": ["null", "string"]
+            },
+            "conversion_rate": {
+              "type": ["null", "number"]
+            },
+            "sessions": {
+              "type": ["null", "number"]
+            },
+            "loyal_users": {
+              "type": ["null", "number"]
+            },
+            "loyal_users_rate": {
+              "type": ["null", "number"]
+            },
+            "total_revenue": {
+              "type": ["null", "number"]
+            },
+            "total_cost": {
+              "type": ["null", "number"]
+            },
+            "return_on_investment": {
+              "type": ["null", "number"]
+            },
+            "average_revenue_per_user": {
+              "type": ["null", "number"]
+            },
+            "average_ecpi": {
+              "type": ["null", "number"]
+            },
+            "account_login_unique_users": {
+              "type": ["null", "number"]
+            },
+            "account_login_event_counter": {
+              "type": ["null", "number"]
+            },
+            "account_login_sales": {
+              "type": ["null", "number"]
+            },
+            "af_complete_registration_unique_users": {
+              "type": ["null", "number"]
+            },
+            "af_complete_registration_event_counter": {
+              "type": ["null", "number"]
+            },
+            "af_complete_registration_sales": {
+              "type": ["null", "number"]
+            },
+            "checkout_success_unique_users": {
+              "type": ["null", "number"]
+            },
+            "checkout_success_event_counter": {
+              "type": ["null", "number"]
+            },
+            "checkout_success_sales": {
+              "type": ["null", "number"]
+            },
+            "create_product_complete_unique_users": {
+              "type": ["null", "number"]
+            },
+            "create_product_complete_event_counter": {
+              "type": ["null", "number"]
+            },
+            "create_product_complete_sales": {
+              "type": ["null", "number"]
+            },
+            "init_appsflyer_id_unique_users": {
+              "type": ["null", "number"]
+            },
+            "init_appsflyer_id_event_counter": {
+              "type": ["null", "number"]
+            },
+            "init_appsflyer_id_sales": {
+              "type": ["null", "number"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "retargeting_daily_report",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": ["null", "string"],
+              "format": "date"
+            },
+            "af_prt": {
+              "type": ["null", "string"]
+            },
+            "media_source": {
+              "type": ["null", "string"]
+            },
+            "campaign": {
+              "type": ["null", "string"]
+            },
+            "clicks": {
+              "type": ["null", "number"]
+            },
+            "conversions": {
+              "type": ["null", "number"]
+            },
+            "conversion_type": {
+              "type": ["null", "string"]
+            },
+            "conversion_rate": {
+              "type": ["null", "number"]
+            },
+            "sessions": {
+              "type": ["null", "number"]
+            },
+            "loyal_users": {
+              "type": ["null", "number"]
+            },
+            "loyal_users_rate": {
+              "type": ["null", "number"]
+            },
+            "total_cost": {
+              "type": ["null", "number"]
+            },
+            "average_ecpi": {
+              "type": ["null", "number"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "retargeting_geo_report",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": ["null", "string"],
+              "format": "date"
+            },
+            "country_code": {
+              "type": ["null", "string"]
+            },
+            "af_prt": {
+              "type": ["null", "string"]
+            },
+            "media_source": {
+              "type": ["null", "string"]
+            },
+            "campaign": {
+              "type": ["null", "string"]
+            },
+            "clicks": {
+              "type": ["null", "number"]
+            },
+            "conversions": {
+              "type": ["null", "number"]
+            },
+            "conversion_type": {
+              "type": ["null", "string"]
+            },
+            "conversion_rate": {
+              "type": ["null", "number"]
+            },
+            "sessions": {
+              "type": ["null", "number"]
+            },
+            "loyal_users": {
+              "type": ["null", "number"]
+            },
+            "loyal_users_rate": {
+              "type": ["null", "number"]
+            },
+            "total_revenue": {
+              "type": ["null", "number"]
+            },
+            "total_cost": {
+              "type": ["null", "number"]
+            },
+            "return_on_investment": {
+              "type": ["null", "number"]
+            },
+            "average_revenue_per_user": {
+              "type": ["null", "number"]
+            },
+            "average_ecpi": {
+              "type": ["null", "number"]
+            },
+            "account_login_unique_users": {
+              "type": ["null", "number"]
+            },
+            "account_login_event_counter": {
+              "type": ["null", "number"]
+            },
+            "account_login_sales": {
+              "type": ["null", "number"]
+            },
+            "af_complete_registration_unique_users": {
+              "type": ["null", "number"]
+            },
+            "af_complete_registration_event_counter": {
+              "type": ["null", "number"]
+            },
+            "af_complete_registration_sales": {
+              "type": ["null", "number"]
+            },
+            "checkout_success_unique_users": {
+              "type": ["null", "number"]
+            },
+            "checkout_success_event_counter": {
+              "type": ["null", "number"]
+            },
+            "checkout_success_sales": {
+              "type": ["null", "number"]
+            },
+            "create_product_complete_unique_users": {
+              "type": ["null", "number"]
+            },
+            "create_product_complete_event_counter": {
+              "type": ["null", "number"]
+            },
+            "create_product_complete_sales": {
+              "type": ["null", "number"]
+            },
+            "init_appsflyer_id_unique_users": {
+              "type": ["null", "number"]
+            },
+            "init_appsflyer_id_event_counter": {
+              "type": ["null", "number"]
+            },
+            "init_appsflyer_id_sales": {
+              "type": ["null", "number"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
