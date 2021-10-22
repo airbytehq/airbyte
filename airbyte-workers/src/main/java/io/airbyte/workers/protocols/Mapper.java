@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.protocols;
 
-import io.airbyte.commons.application.Application;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 
 public interface Mapper<T> {

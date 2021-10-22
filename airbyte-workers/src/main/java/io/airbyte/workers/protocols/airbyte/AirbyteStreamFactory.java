@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
-import io.airbyte.commons.application.Application;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
 import java.util.stream.Stream;

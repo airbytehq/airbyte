@@ -38,8 +38,7 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
       if (message.getType() == AirbyteMessage.Type.STATE) {
         outputState.set(new State().withState(message.getState().getData()));
       }
-    } catch (final Exception e) {
-    }
+    } catch (final Exception e) {}
   }
 
   @Override

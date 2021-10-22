@@ -42,8 +42,13 @@ public class LoggingHelper {
   }
 
   public static Map<String, String> getExtraMDCEntries(final Application application) {
-    return new HashMap<>() {{
-      put(LoggingHelper.LOG_SOURCE_MDC_KEY, LoggingHelper.applyColor(Color.GREEN, application.getApplicationName()));
-    }};
+    return new HashMap<>() {
+
+      {
+        put(LoggingHelper.LOG_SOURCE_MDC_KEY, LoggingHelper.applyColor(Color.GREEN, application.getApplicationName()));
+      }
+
+    };
   }
+
 }
