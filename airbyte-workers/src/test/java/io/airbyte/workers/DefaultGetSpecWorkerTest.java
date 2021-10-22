@@ -4,14 +4,6 @@
 
 package io.airbyte.workers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -24,8 +16,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class DefaultGetSpecWorkerTest {
 
@@ -42,10 +36,10 @@ class DefaultGetSpecWorkerTest {
   public void setup() throws IOException, WorkerException {
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "");
     config = new JobGetSpecConfig().withDockerImage(DUMMY_IMAGE_NAME);
-    integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
-    process = mock(Process.class);
-    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
-    when(integrationLauncher.spec(jobRoot)).thenReturn(process);
+    integrationLauncher = Mockito.mock(IntegrationLauncher.class, Mockito.RETURNS_DEEP_STUBS);
+    process = Mockito.mock(Process.class);
+    Mockito.when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+    Mockito.when(integrationLauncher.spec(jobRoot)).thenReturn(process);
 
     worker = new DefaultGetSpecWorker(integrationLauncher);
   }
@@ -58,32 +52,42 @@ class DefaultGetSpecWorkerTest {
         .withType(Type.SPEC)
         .withSpec(Jsons.deserialize(expectedSpecString, io.airbyte.protocol.models.ConnectorSpecification.class));
 
-    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));
-    when(process.waitFor(anyLong(), any())).thenReturn(true);
-    when(process.exitValue()).thenReturn(0);
+    Mockito.when(process.getInputStream()).thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));
+    Mockito.when(process.waitFor(Mockito.anyLong(), Mockito.any())).thenReturn(true);
+    Mockito.when(process.exitValue()).thenReturn(0);
 
     final ConnectorSpecification actualOutput = worker.run(config, jobRoot);
     final ConnectorSpecification expectedOutput = Jsons.deserialize(expectedSpecString, ConnectorSpecification.class);
 
-    assertEquals(expectedOutput, actualOutput);
+    Assertions.assertThat(actualOutput).isEqualTo(expectedOutput);
   }
 
   @Test
   public void testFailureOnInvalidSpec() throws InterruptedException {
     final String expectedSpecString = "{\"key\":\"value\"}";
-    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
-    when(process.waitFor(anyLong(), any())).thenReturn(true);
-    when(process.exitValue()).thenReturn(0);
+    Mockito.when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
+    Mockito.when(process.waitFor(Mockito.anyLong(), Mockito.any())).thenReturn(true);
+    Mockito.when(process.exitValue()).thenReturn(0);
 
-    assertThrows(WorkerException.class, () -> worker.run(config, jobRoot));
+    Assertions.assertThatThrownBy(() -> worker.run(config, jobRoot))
+        .isInstanceOf(WorkerException.class)
+        .getCause()
+        .isInstanceOf(WorkerException.class)
+        .hasMessageContaining("integration failed to output a spec struct.")
+        .hasNoCause();
   }
 
   @Test
   public void testFailureOnNonzeroExitCode() throws InterruptedException {
-    when(process.waitFor(anyLong(), any())).thenReturn(true);
-    when(process.exitValue()).thenReturn(1);
+    Mockito.when(process.waitFor(Mockito.anyLong(), Mockito.any())).thenReturn(true);
+    Mockito.when(process.exitValue()).thenReturn(1);
 
-    assertThrows(WorkerException.class, () -> worker.run(config, jobRoot));
+    Assertions.assertThatThrownBy(() -> worker.run(config, jobRoot))
+        .isInstanceOf(WorkerException.class)
+        .getCause()
+        .isInstanceOf(WorkerException.class)
+        .hasMessageContaining("Spec job subprocess finished with exit code")
+        .hasNoCause();
   }
 
 }
