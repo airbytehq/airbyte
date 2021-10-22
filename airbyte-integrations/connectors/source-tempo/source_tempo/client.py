@@ -10,6 +10,7 @@ from typing import Mapping, Tuple
 import requests
 from base_python import BaseClient
 from requests.exceptions import ConnectionError
+from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 
 class Client(BaseClient):
@@ -28,19 +29,49 @@ class Client(BaseClient):
         "workload-schemes": {"url": "/workload-schemes", "func": lambda v: v["results"], "params": PARAMS},
     }
 
-    def __init__(self, api_token):
-        self.headers = {"Authorization": "Bearer " + api_token}
+    def __init__(self, authorization):
+        self.auth = authorization
         self.base_api_url = f"https://api.tempo.io/core/{self.API_VERSION}"
         super().__init__()
 
     def lists(self, name, url, params, func, **kwargs):
         while True:
-            response = requests.get(f"{self.base_api_url}{url}?limit={params['limit']}&offset={params['offset']}", headers=self.headers)
+            response = requests.get(f"{self.base_api_url}{url}?limit={params['limit']}&offset={params['offset']}", headers=self.get_headers())
             data = func(response.json())
             yield from data
             if len(data) < self.DEFAULT_ITEMS_PER_PAGE:
                 break
             params["offset"] += self.DEFAULT_ITEMS_PER_PAGE
+
+    def get_headers(self):
+        if self.auth.get("auth_type") == "Token":
+            return {"Authorization": f"Bearer {self.auth.get('api_token')}"}
+        else:
+            return Oauth2Authenticator(
+                token_refresh_endpoint="https://api.tempo.io/oauth/token/",
+                client_id=self.auth.get("client_id"),
+                client_secret=self.auth.get("client_secret"),
+                refresh_token=self.auth.get("refresh_token"),
+                scopes=[
+                    "accounts:manage",
+                    "accounts:view",
+                    "activities:produce",
+                    "approvals:manage",
+                    "approvals:view",
+                    "audit:view",
+                    "periods:view",
+                    "plans:manage",
+                    "plans:view",
+                    "projects:manage",
+                    "projects:view",
+                    "schemes:manage",
+                    "schemes:view",
+                    "teams:manage",
+                    "teams:view",
+                    "worklogs:manage",
+                    "worklogs:view"
+                ]
+            ).get_auth_header()
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
         return {entity: partial(self.lists, name=entity, **value) for entity, value in self.ENTITIES_MAP.items()}

@@ -4,13 +4,70 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Tempo Spec",
     "type": "object",
-    "required": ["api_token"],
+    "required": ["authorization"],
     "additionalProperties": false,
     "properties": {
-      "api_token": {
-        "type": "string",
-        "description": "Tempo API Token.",
-        "airbyte_secret": true
+      "authorization": {
+        "type": "object",
+        "title": "Authentication Type",
+        "oneOf": [
+          {
+            "title": "Authenticate via Oauth",
+            "type": "object",
+            "required": [
+              "auth_type",
+              "client_id",
+              "client_secret",
+              "refresh_token"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "enum": ["Client"],
+                "default": "Client",
+                "order": 0
+              },
+              "client_id": {
+                "title": "Client ID",
+                "type": "string",
+                "description": "The Client ID of your developer application",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "The client secret of your developer application",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "title": "Refresh Token",
+                "type": "string",
+                "description": "A refresh token generated using the above client ID and secret",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Authentication via API Token",
+            "required": ["auth_type",  "api_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Token",
+                "enum": ["Token"],
+                "default": "Token",
+                "order": 0
+              },
+              "api_token": {
+                "type": "string",
+                "description": "Tempo API Token.",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
       }
     }
   }
