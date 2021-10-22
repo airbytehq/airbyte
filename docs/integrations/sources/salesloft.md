@@ -41,4 +41,4 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-09-08 | [5619](https://github.com/airbytehq/airbyte/pull/6962) | Salesloft Connector |
+| 0.1.0   | 2021-10-22 | [6962](https://github.com/airbytehq/airbyte/pull/6962) | Salesloft Connector |
