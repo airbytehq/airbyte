@@ -9,6 +9,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 # Basic full refresh stream
@@ -18,6 +19,7 @@ class PardotStream(HttpStream, ABC):
     time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
     primary_key = "id"
     is_integer_state = False
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Dict, **kwargs):
         super().__init__(**kwargs)
@@ -217,27 +219,3 @@ class Visits(PardotChildStream):
         params = super().request_params(stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params.update({"visitor_ids": stream_slice})
         return params
-
-
-class EmailStats(PardotChildStream):
-    object_name = "email"
-    data_key = "stats"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        id_list = set()
-        for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
-                if record.get("email_id") and record["email_id"] not in id_list:
-                    yield {"email_id": record["email_id"]}
-                    id_list.add(record["email_id"])
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"{self.object_name}/version/{self.api_version}/do/stats/id/{stream_slice['email_id']}"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        record = response.json().get("stats")
-        if record:
-            record["email_id"] = stream_slice["email_id"]
-            yield record
