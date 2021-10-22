@@ -154,6 +154,9 @@ class AbstractSource(Source, ABC):
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
 
+    def iterate_over_slices(self, slices: Iterator[Optional[Mapping[str, Any]]]) -> Iterator[Mapping[str, Any]]:
+        pass
+
     def _read_incremental(
         self,
         logger: AirbyteLogger,
@@ -170,7 +173,7 @@ class AbstractSource(Source, ABC):
         slices = stream_instance.stream_slices(
             cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
         )
-        for slice in slices:
+        for slice in self.iterate_over_slices(slices):
             record_counter = 0
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
