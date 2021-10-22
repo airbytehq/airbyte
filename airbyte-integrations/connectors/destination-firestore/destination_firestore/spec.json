@@ -11,7 +11,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Google Firestore",
     "type": "object",
-    "required": ["project_id", "collection"],
+    "required": ["project_id"],
     "additionalProperties": false,
     "properties": {
       "project_id": {
