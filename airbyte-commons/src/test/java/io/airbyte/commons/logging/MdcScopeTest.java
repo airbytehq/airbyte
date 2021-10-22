@@ -12,7 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 
-public class ScopedMDCChangeTest {
+public class MdcScopeTest {
 
   private static final Map<String, String> originalMap = new HashMap<>() {
 
@@ -34,14 +34,13 @@ public class ScopedMDCChangeTest {
 
   @BeforeEach
   public void init() {
-    MDC.clear();
     MDC.setContextMap(originalMap);
   }
 
   @Test
   @DisplayName("The MDC context is properly overrided")
   public void testMDCModified() {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(modificationInMDC)) {
+    try (final MdcScope mdcScope = new MdcScope(modificationInMDC)) {
       final Map<String, String> mdcState = MDC.getCopyOfContextMap();
 
       Assertions.assertThat(mdcState).containsExactlyInAnyOrderEntriesOf(
@@ -63,7 +62,8 @@ public class ScopedMDCChangeTest {
   @Test
   @DisplayName("The MDC context is properly restored")
   public void testMDCRestore() {
-    try (final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(modificationInMDC)) {} catch (final Exception e) {
+    try (final MdcScope mdcScope = new MdcScope(modificationInMDC)) {
+    } catch (final Exception e) {
       e.printStackTrace();
     }
     final Map<String, String> mdcState = MDC.getCopyOfContextMap();
