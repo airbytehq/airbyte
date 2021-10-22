@@ -70,7 +70,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| `0.1.3` | 2021-10-22 | [6513](https://github.com/airbytehq/airbyte/pull/6513) | support oAuth2 |
+| `0.1.3` | 2021-10-22 | [7281](https://github.com/airbytehq/airbyte/pull/7281) | support oAuth2 |
 | `0.1.2` | 2021-07-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | kubernetes support |
 | `0.1.1` | 2021-04-22 | [3022](https://github.com/airbytehq/airbyte/pull/3022) | fix normalization failure |
 | `0.1.0` | 2021-04-06 | [2775](https://github.com/airbytehq/airbyte/pull/2775) | created CDK native zendesk talk connector                   |
