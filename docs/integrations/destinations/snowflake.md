@@ -174,7 +174,7 @@ create storage INTEGRATION gcs_airbyte_integration
   STORAGE_ALLOWED_LOCATIONS = ('gcs://YOURBUCKETNAME');
 
 create stage gcs_airbyte_stage
-  url = 'gcs://io_airbyte_test_staging'
+  url = 'gcs://YOURBUCKETNAME'
   storage_integration = gcs_airbyte_integration;
 
 GRANT USAGE ON integration gcs_airbyte_integration TO ROLE AIRBYTE_ROLE;
