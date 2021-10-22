@@ -29,11 +29,11 @@ class SalesloftStream(HttpStream, ABC):
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-      try:
-        next_page = response.json()["metadata"]["paging"].get("next_page")
-        return None if not next_page else {"page": next_page}
-      except:
-        raise KeyError("error parsing next_page token")
+        try:
+            next_page = response.json()["metadata"]["paging"].get("next_page")
+            return None if not next_page else {"page": next_page}
+        except Exception as e:
+            raise KeyError(f"error parsing next_page token: {e}")
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
