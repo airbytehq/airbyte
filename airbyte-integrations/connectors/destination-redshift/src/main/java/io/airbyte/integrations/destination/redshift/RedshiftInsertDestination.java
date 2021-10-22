@@ -38,8 +38,8 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
   }
 
   private static void addSsl(final List<String> additionalProperties) {
-      additionalProperties.add("ssl=true");
-      additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
+    additionalProperties.add("ssl=true");
+    additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
   }
 
   public static JdbcDatabase getJdbcDatabase(final JsonNode config) {
