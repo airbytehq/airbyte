@@ -184,6 +184,7 @@ jobs:
           SOURCE_TIKTOK_MARKETING_PROD_TEST_CREDS: ${{ secrets.SOURCE_TIKTOK_MARKETING_PROD_TEST_CREDS }}
           DESTINATION_DATABRICKS_CREDS: ${{ secrets.DESTINATION_DATABRICKS_CREDS }}
           MONGODB_TEST_CREDS: ${{ secrets.MONGODB_TEST_CREDS }}
+          SOURCE_ONESIGNAL_TEST_CREDS: ${{ secrets.SOURCE_ONESIGNAL_TEST_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}

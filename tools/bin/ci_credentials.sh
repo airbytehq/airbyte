@@ -107,6 +107,7 @@ write_standard_creds source-mongodb-strict-encrypt "$MONGODB_TEST_CREDS" "creden
 write_standard_creds source-mongodb-v2 "$MONGODB_TEST_CREDS" "credentials.json"
 write_standard_creds source-mssql "$MSSQL_RDS_TEST_CREDS"
 write_standard_creds source-okta "$SOURCE_OKTA_TEST_CREDS"
+write_standard_creds source-onesignal "$SOURCE_ONESIGNAL_TEST_CREDS"
 write_standard_creds source-plaid "$PLAID_INTEGRATION_TEST_CREDS"
 write_standard_creds source-paypal-transaction "$PAYPAL_TRANSACTION_CREDS"
 write_standard_creds source-mysql "$MYSQL_SSH_KEY_TEST_CREDS" "ssh-key-config.json"
@@ -150,4 +151,3 @@ write_standard_creds source-zendesk-support "$ZENDESK_SUPPORT_OAUTH_TEST_CREDS" 
 write_standard_creds source-zendesk-talk "$ZENDESK_TALK_TEST_CREDS"
 write_standard_creds source-zoom-singer "$ZOOM_INTEGRATION_TEST_CREDS"
 write_standard_creds source-zuora "$SOURCE_ZUORA_TEST_CREDS"
-
