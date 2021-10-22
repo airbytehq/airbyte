@@ -28,20 +28,20 @@
         "type": "string",
         "title": "From Time",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00. Any data before this date will not be replicated.",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00. Any data before this date will not be replicated. Leave empty if you want to pull from the very start.",
         "examples": ["2017-01-25T00:00:00"]
       },
       "to_time": {
         "type": "string",
         "title": "To Time",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00. Any data after this date will not be replicated.",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00. Any data after this date will not be replicated. Leave empty if you want to pull util the latest.",
         "examples": ["2017-01-25T00:00:00"]
       },
       "by_receipt_time": {
         "type": "boolean",
         "title": "By Receipt Time",
-        "description": "Query logs by `_receipttime` instead of `_messagetime`, default is using `_messagetime`.",
+        "description": "Query logs by _receipttime instead of _messagetime, default is using _messagetime.",
         "default": "false"
       },
       "limit": {
