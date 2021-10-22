@@ -11,6 +11,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 # Basic full refresh stream
@@ -18,6 +19,7 @@ class FreshsalesStream(HttpStream, ABC):
     url_base = "https://{}/crm/sales/api/"
     primary_key = "id"
     order_field = "updated_at"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, domain_name: str, **kwargs):
         super().__init__(**kwargs)
@@ -231,19 +233,6 @@ class UpcomingAppointments(FreshsalesStream):
         return params
 
 
-class SalesActivities(FreshsalesStream):
-    """
-    API docs: https://developers.freshworks.com/crm/api/#sales-activities
-    """
-
-    object_name = "sales_activities"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"{self.object_name}"
-
-
 # Source
 class SourceFreshsales(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -269,5 +258,4 @@ class SourceFreshsales(AbstractSource):
             CompletedTasks(**args),
             PastAppointments(**args),
             UpcomingAppointments(**args),
-            SalesActivities(**args),
         ]
