@@ -6,8 +6,6 @@ package io.airbyte.workers.protocols.airbyte;
 
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.logging.MdcScope;
-import io.airbyte.commons.logging.MdcScope.MdcScopeBuilder;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.protocols.MessageTracker;
@@ -21,10 +19,6 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
   private final AtomicLong numBytes;
   private final AtomicReference<State> outputState;
 
-  private final MdcScope extraMdcEntries = new MdcScopeBuilder()
-      .setLogPrefix("airbyte-message-tracker")
-      .build();
-
   public AirbyteMessageTracker() {
     this.recordCount = new AtomicLong();
     this.numBytes = new AtomicLong();
@@ -33,16 +27,14 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
 
   @Override
   public void accept(final AirbyteMessage message) {
-    try (extraMdcEntries) {
-      if (message.getType() == AirbyteMessage.Type.RECORD) {
-        recordCount.incrementAndGet();
-        // todo (cgardens) - pretty wasteful to do an extra serialization just to get size.
-        numBytes.addAndGet(Jsons.serialize(message.getRecord().getData()).getBytes(Charsets.UTF_8).length);
-      }
-      if (message.getType() == AirbyteMessage.Type.STATE) {
-        outputState.set(new State().withState(message.getState().getData()));
-      }
-    } catch (final Exception e) {}
+    if (message.getType() == AirbyteMessage.Type.RECORD) {
+      recordCount.incrementAndGet();
+      // todo (cgardens) - pretty wasteful to do an extra serialization just to get size.
+      numBytes.addAndGet(Jsons.serialize(message.getRecord().getData()).getBytes(Charsets.UTF_8).length);
+    }
+    if (message.getType() == AirbyteMessage.Type.STATE) {
+      outputState.set(new State().withState(message.getState().getData()));
+    }
   }
 
   @Override
