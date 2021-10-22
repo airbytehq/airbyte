@@ -82,7 +82,9 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     }
   }
 
-  @Override public String getApplicationName() {
+  @Override
+  public String getApplicationName() {
     return "normalization-worker";
   }
+
 }

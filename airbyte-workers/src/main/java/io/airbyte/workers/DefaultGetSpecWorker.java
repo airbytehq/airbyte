@@ -81,7 +81,9 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
     WorkerUtils.cancelProcess(process);
   }
 
-  @Override public String getApplicationName() {
+  @Override
+  public String getApplicationName() {
     return "get-spec-worker";
   }
+
 }

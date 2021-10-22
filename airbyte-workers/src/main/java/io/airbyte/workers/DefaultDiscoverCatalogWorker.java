@@ -81,7 +81,9 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
     WorkerUtils.cancelProcess(process);
   }
 
-  @Override public String getApplicationName() {
+  @Override
+  public String getApplicationName() {
     return "discover-worker";
   }
+
 }

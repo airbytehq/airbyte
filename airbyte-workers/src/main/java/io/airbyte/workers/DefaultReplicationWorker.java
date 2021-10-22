@@ -66,13 +66,14 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   }
 
   /**
-   * Run executes two threads. The first pipes data from STDOUT of the source to STDIN of the destination. The second listen on STDOUT of the
-   * destination. The goal of this second thread is to detect when the destination emits state messages. Only state messages emitted by the
-   * destination should be treated as state that is safe to return from run. In the case when the destination emits no state, we fall back on whatever
-   * state is pass in as an argument to this method.
+   * Run executes two threads. The first pipes data from STDOUT of the source to STDIN of the
+   * destination. The second listen on STDOUT of the destination. The goal of this second thread is to
+   * detect when the destination emits state messages. Only state messages emitted by the destination
+   * should be treated as state that is safe to return from run. In the case when the destination
+   * emits no state, we fall back on whatever state is pass in as an argument to this method.
    *
    * @param syncInput all configuration for running replication
-   * @param jobRoot   file root that worker is allowed to use
+   * @param jobRoot file root that worker is allowed to use
    * @return output of the replication attempt (including state)
    * @throws WorkerException
    */
@@ -270,7 +271,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   }
 
-  @Override public String getApplicationName() {
+  @Override
+  public String getApplicationName() {
     return "sync-worker";
   }
+
 }

@@ -86,7 +86,9 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
     WorkerUtils.cancelProcess(process);
   }
 
-  @Override public String getApplicationName() {
+  @Override
+  public String getApplicationName() {
     return "check-connection-worker";
   }
+
 }
