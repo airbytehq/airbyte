@@ -45,7 +45,8 @@ public class ZendeskChatOAuthFlow extends BaseOAuthFlow {
         .addParameter("redirect_uri", redirectUrl)
         .addParameter("state", getState())
         .addParameter("response_type", "code")
-        .addParameter("scope", "read");
+        .addParameter("scope", "read")
+        .addParameter("subdomain", "d3v-airbyte"); // fixme: need to set the subdomain dynamicaly from user's input
     try {
       return builder.build().toString();
     } catch (final URISyntaxException e) {
