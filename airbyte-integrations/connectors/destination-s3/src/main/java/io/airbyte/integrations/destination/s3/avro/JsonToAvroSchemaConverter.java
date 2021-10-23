@@ -42,7 +42,6 @@ public class JsonToAvroSchemaConverter {
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonToAvroSchemaConverter.class);
   private static final Schema TIMESTAMP_MILLIS_SCHEMA = LogicalTypes.timestampMillis()
       .addToSchema(Schema.create(Schema.Type.LONG));
-  private static final AvroNameTransformer NAME_TRANSFORMER = new AvroNameTransformer();
 
   private final Map<String, String> standardizedNames = new HashMap<>();
 
@@ -99,7 +98,7 @@ public class JsonToAvroSchemaConverter {
                               final String name,
                               @Nullable final String namespace,
                               final boolean appendAirbyteFields) {
-    final String stdName = NAME_TRANSFORMER.getIdentifier(name);
+    final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
     RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
     if (!stdName.equals(name)) {
       standardizedNames.put(name, stdName);
@@ -131,7 +130,7 @@ public class JsonToAvroSchemaConverter {
     }
 
     for (final String fieldName : fieldNames) {
-      final String stdFieldName = NAME_TRANSFORMER.getIdentifier(fieldName);
+      final String stdFieldName = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName);
       final JsonNode fieldDefinition = properties.get(fieldName);
       SchemaBuilder.FieldBuilder<Schema> fieldBuilder = assembler.name(stdFieldName);
       if (!stdFieldName.equals(fieldName)) {
@@ -148,8 +147,8 @@ public class JsonToAvroSchemaConverter {
     }
 
     // support additional properties
-    if (!fieldNames.contains(AdditionalPropertyField.FIELD_NAME)) {
-      assembler = assembler.name(AdditionalPropertyField.FIELD_NAME)
+    if (!fieldNames.contains(AvroConstants.ADDITIONAL_PROPERTIES_FIELD_NAME)) {
+      assembler = assembler.name(AvroConstants.ADDITIONAL_PROPERTIES_FIELD_NAME)
           .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
     }
 
@@ -160,7 +159,7 @@ public class JsonToAvroSchemaConverter {
     Preconditions
         .checkState(fieldType != JsonSchemaType.NULL, "Null types should have been filtered out");
 
-    if (fieldName.equals(AdditionalPropertyField.FIELD_NAME)) {
+    if (fieldName.equals(AvroConstants.ADDITIONAL_PROPERTIES_FIELD_NAME)) {
       return AdditionalPropertyField.FIELD_SCHEMA;
     }
 
