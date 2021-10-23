@@ -3,8 +3,8 @@
 #
 from typing import Any, List, Mapping, Tuple
 
-import requests
 import pendulum
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -30,25 +30,18 @@ class SourcePaystack(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         try:
-            response = requests.get(
-                f"{PAYSTACK_API_BASE_URL}customer?page=1&perPage=1", 
-                headers={"Authorization": f"Bearer {config[AUTH_KEY_FIELD]}"},
-                verify=True
-            )
-            response.raise_for_status()
-        except Exception as e:
-            msg = e
-            if (
-                isinstance(e, requests.exceptions.HTTPError)
-                and e.response.status_code == 401
-            ):
-                msg = 'Connection to Paystack was not authorized. Please check that your secret key is correct.'
-            return False, msg
+            authenticator = TokenAuthenticator(token=config[AUTH_KEY_FIELD])
+            stream = Customers(authenticator=authenticator, start_date=config["start_date"])
+            records = stream.read_records(sync_mode=SyncMode.full_refresh)
+            next(records)
+            return True, None
 
-        response_json = response.json()
-        if response_json['status'] == False:
-            return False, 'Connection test failed due to error: ' + response_json['message']
-        return True, None
+        except StopIteration:
+            # there are no records, but connection was fine
+            return True, None
+
+        except Exception as e:
+            return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
