@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Zendesk Chat Spec",
     "type": "object",
-    "required": ["start_date", "authorization"],
+    "required": ["start_date", "credentials"],
     "additionalProperties": false,
     "properties": {
       "start_date": {
@@ -13,16 +13,16 @@
         "examples": ["2021-02-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       },
-      "authorization": {
+      "credentials": {
         "title": "Authorization Method",
         "type": "object",
         "oneOf": [
           {
             "type": "object",
             "title": "OAuth2.0",
-            "required": ["authorization"],
+            "required": ["credentials"],
             "properties": {
-              "authorization": {
+              "credentials": {
                 "type": "string",
                 "const": "oauth2.0",
                 "enum": ["oauth2"],
@@ -52,9 +52,9 @@
           {
             "type": "object",
             "title": "Access Token",
-            "required": ["authorization"],
+            "required": ["credentials"],
             "properties": {
-              "authorization": {
+              "credentials": {
                 "type": "string",
                 "const": "access_token",
                 "enum": ["access_token"],
@@ -76,7 +76,7 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": ["authorization", "0"],
+      "rootObject": ["credentials", "0"],
       "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
       "oauthFlowOutputParameters": [["access_token"]]
     }

@@ -1,7 +1,7 @@
 {
   "start_date": "2020-10-01T00:00:00Z",
-  "authorization": {
-      "authorization": "access_token",
+  "credentials": {
+      "credentials": "access_token",
       "access_token": "wrong_access_token"
   } 
 }

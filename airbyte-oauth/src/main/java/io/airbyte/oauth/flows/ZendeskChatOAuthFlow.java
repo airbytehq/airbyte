@@ -55,16 +55,16 @@ public class ZendeskChatOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected String getClientIdUnsafe(JsonNode config) {
-    // the config object containing client ID is nested inside the "authorization" object
-    Preconditions.checkArgument(config.hasNonNull("authorization"));
-    return super.getClientIdUnsafe(config.get("authorization"));
+    // the config object containing client ID is nested inside the "credentials" object
+    Preconditions.checkArgument(config.hasNonNull("credentials"));
+    return super.getClientIdUnsafe(config.get("credentials"));
   }
 
   @Override
   protected String getClientSecretUnsafe(JsonNode config) {
-    // the config object containing client SECRET is nested inside the "authorization" object
-    Preconditions.checkArgument(config.hasNonNull("authorization"));
-    return super.getClientSecretUnsafe(config.get("authorization"));
+    // the config object containing client SECRET is nested inside the "credentials" object
+    Preconditions.checkArgument(config.hasNonNull("credentials"));
+    return super.getClientSecretUnsafe(config.get("credentials"));
   }
 
   @Override
@@ -87,8 +87,9 @@ public class ZendeskChatOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
+    // the config object containing access_token is nested inside the "credentials" object
     if (data.has("access_token")) {
-      return Map.of("authorization", Map.of("access_token", data.get("access_token").asText()));
+      return Map.of("credentials", Map.of("access_token", data.get("access_token").asText()));
     } else {
       throw new IOException(String.format("Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL));
     }
