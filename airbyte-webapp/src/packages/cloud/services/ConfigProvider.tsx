@@ -10,13 +10,13 @@ import {
 
 import {
   cloudEnvConfigProvider,
-  fileConfigProvider,
+  // fileConfigProvider,
   defaultConfig,
   cloudWindowConfigProvider,
 } from "./config";
 
 const configProviders: ValueProvider<Config> = [
-  fileConfigProvider,
+  // fileConfigProvider,
   cloudEnvConfigProvider,
   cloudWindowConfigProvider,
   windowConfigProvider,
