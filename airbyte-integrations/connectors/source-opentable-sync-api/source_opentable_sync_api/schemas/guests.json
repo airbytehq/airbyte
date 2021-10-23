@@ -117,10 +117,10 @@
       "type": ["null", "string"]
     },
     "phone_numbers": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": [
         {
-          "type": ["null","object"],
+          "type": ["null", "object"],
           "properties": {
             "label": {
               "type": ["null", "string"]

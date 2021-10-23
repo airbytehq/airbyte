@@ -2,7 +2,7 @@
   "documentationUrl": "https://docsurl.com",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Opentable Spec",
+    "title": "Opentable Sync API Spec",
     "type": "object",
     "required": ["username", "password", "rid_list", "start_date"],
     "additionalProperties": false,
@@ -10,7 +10,7 @@
       "username": {
         "title": "username",
         "type": "string",
-        "description": "The Opentable Username for API login"
+        "description": "The Opentable Sync API Username for API login"
       },
       "password": {
         "title": "Password",
@@ -24,7 +24,8 @@
         "description": "Start Date for data extraction in <a href=\"https://datatracker.ietf.org/doc/html/rfc3339#section-5.6\">ISO format</a>.",
         "examples": ["2021-10-14T23:59:59Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-      },"rid_list": {
+      },
+      "rid_list": {
         "type": "string",
         "title": "List of restaurants",
         "description": "List of restaurants (coma separated)",

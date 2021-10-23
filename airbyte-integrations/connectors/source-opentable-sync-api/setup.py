@@ -16,8 +16,8 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_opentable",
-    description="Source implementation for Opentable.",
+    name="source_opentable_sync_api",
+    description="Source implementation for Opentable Sync API.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

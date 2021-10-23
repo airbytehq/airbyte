@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_opentable import SourceOpentable
+from source_opentable_sync_api import SourceOpentableSyncApi
 
 if __name__ == "__main__":
-    source = SourceOpentable()
+    source = SourceOpentableSyncApi()
     launch(source, sys.argv[1:])

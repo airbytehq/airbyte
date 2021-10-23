@@ -1,9 +1,9 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-opentable:dev
+connector_image: airbyte/source-opentable-sync-api:dev
 tests:
   spec:
-    - spec_path: "source_opentable/spec.json"
+    - spec_path: "source_opentable_sync_api/spec.json"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

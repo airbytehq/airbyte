@@ -91,7 +91,7 @@
     * [MySQL](integrations/sources/mysql.md)
     * [Okta](integrations/sources/okta.md)
 <<<<<<< HEAD
-    * [Opentable](integrations/source/opentable.md)
+    * [Opentable Sync API](integrations/source/opentable-sync-api.md)
 =======
     * [OneSignal](integrations/sources/onesignal.md)
 >>>>>>> c2f31de6b4758baa68da24d7effe81a1ca76e924

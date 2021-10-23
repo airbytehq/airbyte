@@ -2,6 +2,6 @@
 !Dockerfile
 !Dockerfile.test
 !main.py
-!source_opentable
+!source_opentable_sync_api
 !setup.py
 !secrets

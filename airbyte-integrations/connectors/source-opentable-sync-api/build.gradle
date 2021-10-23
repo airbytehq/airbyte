@@ -5,7 +5,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_opentable'
+    moduleDirectory 'source_opentable_sync_api'
 }
 
 dependencies {

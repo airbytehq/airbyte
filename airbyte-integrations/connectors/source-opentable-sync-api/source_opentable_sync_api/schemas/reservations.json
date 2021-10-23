@@ -9,7 +9,7 @@
       "type": ["null", "string"]
     },
     "rid": {
-      "type": ["null", "integer"],
+      "type": ["null", "integer"]
     },
     "sequence_id": {
       "type": ["null", "string"]
@@ -27,7 +27,7 @@
       "type": ["null", "string"]
     },
     "table_number": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": [
         {
           "type": ["null", "string"]
@@ -38,7 +38,7 @@
       "type": ["null", "integer"]
     },
     "visit_tags": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": [
         {
           "type": ["null", "string"]
@@ -49,7 +49,7 @@
       "type": ["null", "string"]
     },
     "pos_data": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "check_ids": {
           "type": ["null", "string"]
