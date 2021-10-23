@@ -14,6 +14,7 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import java.util.Collections;
 import java.util.stream.Stream;
 import org.apache.avro.Schema;
@@ -116,8 +117,14 @@ class JsonToAvroConverterTest {
         Jsons.deserialize(actualAvroSchema.toString()),
         String.format("Schema conversion for %s failed", schemaName));
 
-    final JsonAvroConverter objectConverter = new JsonAvroConverter();
-    final GenericData.Record actualAvroObject = objectConverter.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonObject), actualAvroSchema);
+    final NamingConventionTransformer nameUpdater = new AvroNameTransformer();
+    final JsonAvroConverter objectConverter = JsonAvroConverter.builder()
+        .setNameTransformer(nameUpdater::getIdentifier)
+        .build();
+    final Schema.Parser schemaParser = new Schema.Parser();
+    final GenericData.Record actualAvroObject = objectConverter.convertToGenericDataRecord(
+        WRITER.writeValueAsBytes(jsonObject),
+        schemaParser.parse(Jsons.serialize(avroSchema)));
     assertEquals(
         avroObject,
         Jsons.deserialize(actualAvroObject.toString()),
