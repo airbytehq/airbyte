@@ -578,3 +578,9 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
   sourceType: api
+- sourceDefinitionId: 6b8f5ecd-f25e-4a61-9c68-34ff2f2438e7
+  name: Opentable
+  dockerRepository: airbyte/source-opentable
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/opentable
+  sourceType: api
