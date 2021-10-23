@@ -218,22 +218,17 @@ public class ServerApp implements ServerRunnable {
     final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
     final SpecFetcher specFetcher = new SpecFetcher(cachingSchedulerClient);
 
-    // required before migration
-    configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.execute(dockerImage)));
-
-    Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
-      final boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
-      final boolean versionSupportsAutoMigrate =
-          new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
-      if (!isKubernetes || versionSupportsAutoMigrate) {
-        runAutomaticMigration(configRepository, jobPersistence, seed, specFetcher, airbyteVersion, airbyteDatabaseVersion.get());
-        // After migration, upgrade the DB version
-        airbyteDatabaseVersion = jobPersistence.getVersion();
-      } else {
-        LOGGER.info("Can not run automatic migration for Airbyte on KUBERNETES before version " + KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION.getVersion());
-      }
-    }
+    final Optional<String> airbyteDatabaseVersionBeforeMigration = jobPersistence.getVersion();
+    // todo (cgardens) - this method is deprecated. new migrations are not run using this code path. it
+    // is scheduled to be removed.
+    final Optional<String> airbyteDatabaseVersion = runFileMigration(
+        airbyteVersion,
+        airbyteDatabaseVersionBeforeMigration,
+        configRepository,
+        seed,
+        specFetcher,
+        jobPersistence,
+        configs);
 
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
@@ -256,6 +251,34 @@ public class ServerApp implements ServerRunnable {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);
     }
+  }
+
+  @Deprecated
+  @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "DeprecatedIsStillUsed"})
+  private static Optional<String> runFileMigration(final String airbyteVersion,
+                                                   final Optional<String> airbyteDatabaseVersion,
+                                                   final ConfigRepository configRepository,
+                                                   final ConfigPersistence seed,
+                                                   final SpecFetcher specFetcher,
+                                                   final JobPersistence jobPersistence,
+                                                   final Configs configs)
+      throws IOException {
+    // required before migration
+    configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.execute(dockerImage)));
+
+    if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
+      final boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
+      final boolean versionSupportsAutoMigrate =
+          new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
+      if (!isKubernetes || versionSupportsAutoMigrate) {
+        runAutomaticMigration(configRepository, jobPersistence, seed, specFetcher, airbyteVersion, airbyteDatabaseVersion.get());
+        // After migration, upgrade the DB version
+        return jobPersistence.getVersion();
+      } else {
+        LOGGER.info("Can not run automatic migration for Airbyte on KUBERNETES before version " + KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION.getVersion());
+      }
+    }
+    return airbyteDatabaseVersion;
   }
 
   public static void main(final String[] args) throws Exception {
