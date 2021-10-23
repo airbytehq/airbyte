@@ -113,7 +113,7 @@ Like most of the other Airbyte destination connectors, usually the output has th
 
 For example, given the following json object from a source:
 
-```javascript
+```json
 {
   "user_id": 123,
   "name": {
@@ -139,7 +139,7 @@ With root level normalization, the output CSV is:
 
 [Json Lines](https://jsonlines.org/) is a text format with one JSON per line. Each line has a structure as follows:
 
-```javascript
+```json
 {
   "_airbyte_ab_id": "<uuid>",
   "_airbyte_emitted_at": "<timestamp-in-millis>",
@@ -149,7 +149,7 @@ With root level normalization, the output CSV is:
 
 For example, given the following two json objects from a source:
 
-```javascript
+```json
 [
   {
     "user_id": 123,
