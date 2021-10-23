@@ -2,16 +2,15 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import uuid
 import math
+import uuid
 
 import pytest
-import pendulum
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_paystack.streams import IncrementalPaystackStream, Customers
+from source_paystack.streams import IncrementalPaystackStream
 
 START_DATE = "2020-08-01T00:00:00Z"
+
 
 @fixture
 def patch_incremental_base_class(mocker):
@@ -24,37 +23,31 @@ def patch_incremental_base_class(mocker):
 
 def test_get_updated_state_uses_timestamp_of_latest_record(patch_incremental_base_class):
     stream = IncrementalPaystackStream(start_date=START_DATE)
-    inputs = {
-        "current_stream_state": {stream.cursor_field: "2021-08-01"},
-        "latest_record": {stream.cursor_field: "2021-08-02T00:00:00Z"}
-    }
+    inputs = {"current_stream_state": {stream.cursor_field: "2021-08-01"}, "latest_record": {stream.cursor_field: "2021-08-02T00:00:00Z"}}
 
     updated_state = stream.get_updated_state(**inputs)
 
     assert updated_state == {stream.cursor_field: "2021-08-02T00:00:00Z"}
 
+
 def test_get_updated_state_returns_current_state_for_old_records(patch_incremental_base_class):
     stream = IncrementalPaystackStream(start_date=START_DATE)
     current_state = {stream.cursor_field: "2021-08-03"}
-    inputs = {
-        "current_stream_state": current_state,
-        "latest_record": {stream.cursor_field: "2021-08-02T00:00:00Z"}
-    }
+    inputs = {"current_stream_state": current_state, "latest_record": {stream.cursor_field: "2021-08-02T00:00:00Z"}}
 
     updated_state = stream.get_updated_state(**inputs)
 
     assert updated_state == current_state
 
+
 def test_get_updated_state_uses_timestamp_of_latest_record_when_no_current_state_exists(patch_incremental_base_class):
     stream = IncrementalPaystackStream(start_date=START_DATE)
-    inputs = {
-        "current_stream_state": {},
-        "latest_record": {stream.cursor_field: "2021-08-02T00:00:00Z"}
-    }
+    inputs = {"current_stream_state": {}, "latest_record": {stream.cursor_field: "2021-08-02T00:00:00Z"}}
 
     updated_state = stream.get_updated_state(**inputs)
 
     assert updated_state == {stream.cursor_field: "2021-08-02T00:00:00Z"}
+
 
 def test_request_params_includes_incremental_start_point(patch_incremental_base_class):
     stream = IncrementalPaystackStream(start_date=START_DATE)
@@ -68,6 +61,7 @@ def test_request_params_includes_incremental_start_point(patch_incremental_base_
 
     assert params == {"perPage": 200, "page": 37, "from": "2021-09-02T00:00:00Z"}
 
+
 @pytest.mark.parametrize(
     "lookback_window_days, current_state, expected, message",
     [
@@ -78,11 +72,7 @@ def test_request_params_includes_incremental_start_point(patch_incremental_base_
     ],
 )
 def test_request_params_incremental_start_point_applies_lookback_window(
-    patch_incremental_base_class,
-    lookback_window_days,
-    current_state,
-    expected,
-    message
+    patch_incremental_base_class, lookback_window_days, current_state, expected, message
 ):
     stream = IncrementalPaystackStream(start_date=START_DATE, lookback_window_days=lookback_window_days)
     inputs = {
@@ -96,6 +86,7 @@ def test_request_params_incremental_start_point_applies_lookback_window(
     assert params["perPage"] == 200
     assert params["from"] == expected, message
 
+
 def test_request_params_incremental_start_point_defaults_to_start_date(patch_incremental_base_class):
     stream = IncrementalPaystackStream(start_date=START_DATE)
     inputs = {"stream_slice": None, "next_page_token": None, "stream_state": None}
@@ -104,13 +95,16 @@ def test_request_params_incremental_start_point_defaults_to_start_date(patch_inc
 
     assert params == {"perPage": 200, "from": "2020-08-01T00:00:00Z"}
 
+
 def test_supports_incremental(patch_incremental_base_class):
     stream = IncrementalPaystackStream(start_date=START_DATE)
     assert stream.supports_incremental
 
+
 def test_source_defined_cursor(patch_incremental_base_class):
     stream = IncrementalPaystackStream(start_date=START_DATE)
     assert stream.source_defined_cursor
+
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
     stream = IncrementalPaystackStream(start_date=START_DATE)

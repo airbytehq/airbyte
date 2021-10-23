@@ -10,6 +10,7 @@ from source_paystack.streams import PaystackStream
 
 START_DATE = "2020-08-01T00:00:00Z"
 
+
 @pytest.fixture
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
@@ -26,6 +27,7 @@ def test_request_params_includes_pagination_limit(patch_base_class):
 
     assert params == {"perPage": 200}
 
+
 def test_request_params_for_includes_page_number_for_pagination(patch_base_class):
     stream = PaystackStream(start_date=START_DATE)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"page": 2}}
@@ -33,6 +35,7 @@ def test_request_params_for_includes_page_number_for_pagination(patch_base_class
     params = stream.request_params(**inputs)
 
     assert params == {"perPage": 200, "page": 2}
+
 
 def test_next_page_token_increments_page_number(patch_base_class):
     stream = PaystackStream(start_date=START_DATE)
@@ -44,6 +47,7 @@ def test_next_page_token_increments_page_number(patch_base_class):
 
     assert token == {"page": 3}
 
+
 def test_next_page_token_is_none_when_last_page_reached(patch_base_class):
     stream = PaystackStream(start_date=START_DATE)
     mock_response = MagicMock()
@@ -53,6 +57,7 @@ def test_next_page_token_is_none_when_last_page_reached(patch_base_class):
     token = stream.next_page_token(**inputs)
 
     assert token is None
+
 
 def test_next_page_token_is_none_when_no_pages_exist(patch_base_class):
     stream = PaystackStream(start_date=START_DATE)
@@ -64,17 +69,19 @@ def test_next_page_token_is_none_when_no_pages_exist(patch_base_class):
 
     assert token is None
 
+
 def test_parse_response_generates_data(patch_base_class):
     stream = PaystackStream(start_date=START_DATE)
     mock_response = MagicMock()
     mock_response.json.return_value = {"data": [{"id": 1137850082}, {"id": 1137850097}]}
     inputs = {"response": mock_response}
-    
+
     parsed = stream.parse_response(**inputs)
     first, second = next(parsed), next(parsed)
 
     assert first == {"id": 1137850082}
     assert second == {"id": 1137850097}
+
 
 @pytest.mark.parametrize(
     ("http_status", "should_retry"),

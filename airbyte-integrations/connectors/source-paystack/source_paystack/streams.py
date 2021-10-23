@@ -1,13 +1,13 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import math
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
-from datetime import datetime
 
-import requests
 import pendulum
+import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -21,17 +21,14 @@ class PaystackStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
-        page = decoded_response['meta']['page']
-        pageCount = decoded_response['meta']['pageCount']
+        page = decoded_response["meta"]["page"]
+        pageCount = decoded_response["meta"]["pageCount"]
 
         if page < pageCount:
-            return { "page": page + 1 }
+            return {"page": page + 1}
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
         params = {"perPage": 200}
@@ -61,11 +58,7 @@ class IncrementalPaystackStream(PaystackStream, ABC):
         """
         pass
 
-    def get_updated_state(
-        self,
-        current_stream_state: MutableMapping[str, Any],
-        latest_record: Mapping[str, Any]
-    ) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
@@ -75,7 +68,7 @@ class IncrementalPaystackStream(PaystackStream, ABC):
             self.cursor_field: max(
                 latest_record_created,
                 current_stream_state.get(self.cursor_field, None),
-                key=lambda d: pendulum.parse(d).int_timestamp if d else 0
+                key=lambda d: pendulum.parse(d).int_timestamp if d else 0,
             )
         }
 
@@ -89,10 +82,7 @@ class IncrementalPaystackStream(PaystackStream, ABC):
         start_point = self.start_date
         if stream_state and self.cursor_field in stream_state:
             stream_record_created = stream_state[self.cursor_field]
-            start_point = max(
-                start_point,
-                pendulum.parse(stream_record_created).int_timestamp
-            )
+            start_point = max(start_point, pendulum.parse(stream_record_created).int_timestamp)
 
         if start_point and self.lookback_window_days:
             self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")

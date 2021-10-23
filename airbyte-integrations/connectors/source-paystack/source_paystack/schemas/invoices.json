@@ -85,14 +85,14 @@
       "items": {
         "type": ["null", "object"],
         "properties": {
-            "sent_at": {
-                "type": ["null", "string"]
-            },
-            "channel": {
-                "type": ["null", "string"]
-            }
+          "sent_at": {
+            "type": ["null", "string"]
+          },
+          "channel": {
+            "type": ["null", "string"]
+          }
         }
-    }
+      }
     },
     "offline_reference": {
       "type": ["null", "string"]

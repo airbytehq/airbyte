@@ -1,23 +1,15 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Any, List, Mapping, Tuple
 
-import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from source_paystack.streams import (
-    Customers,
-    Disputes,
-    Invoices,
-    Refunds,
-    Settlements,
-    Subscriptions,
-    Transactions,
-    Transfers
-)
+from source_paystack.streams import Customers, Disputes, Invoices, Refunds, Settlements, Subscriptions, Transactions, Transfers
+
 
 class SourcePaystack(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -59,6 +51,5 @@ class SourcePaystack(AbstractSource):
             Settlements(**incremental_args),
             Subscriptions(**incremental_args),
             Transactions(**incremental_args),
-            Transfers(**incremental_args)
+            Transfers(**incremental_args),
         ]
-
