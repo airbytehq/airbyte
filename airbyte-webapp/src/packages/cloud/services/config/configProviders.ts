@@ -22,9 +22,15 @@ const fileConfigProvider: ConfigProvider<CloudConfig> = async () => {
 
 const cloudWindowConfigProvider: ConfigProvider<CloudConfig> = async () => {
   return {
+    fullstory: { devMode: window.FULLSTORY === "disabled" },
     intercom: {
       appId: window.REACT_APP_INTERCOM_APP_ID,
     },
+    firebase: {
+      apiKey: window.FIREBASE_API_KEY,
+      authDomain: window.FIREBASE_AUTH_DOMAIN,
+    },
+    cloudApiUrl: window.CLOUD_API_URL,
   };
 };
 
@@ -34,6 +40,9 @@ const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
     firebase: {
       apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
       authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+    },
+    fullstory: {
+      orgId: process.env.REACT_APP_FULL_STORY_ORG,
     },
     intercom: {
       appId: process.env.REACT_APP_INTERCOM_APP_ID,
