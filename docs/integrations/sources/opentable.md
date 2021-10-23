@@ -55,4 +55,4 @@ Follow the [Opentable documentation for obtaining your base URL](https://platfor
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| `0.1.0` | 2021-10-22 |  | Release Opentable CDK Connector|
+| `0.1.0` | 2021-10-22 | https://github.com/airbytehq/airbyte/pull/7299 | Release Opentable CDK Connector|
