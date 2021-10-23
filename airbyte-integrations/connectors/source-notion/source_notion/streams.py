@@ -146,13 +146,8 @@ class Users(NotionStream):
     Docs: https://developers.notion.com/reference/get-users
     """
 
-    def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
-        return self.name
+    def path(self, **kwargs) -> str:
+        return "users"
 
 
 class Databases(IncrementalNotionStream):
@@ -226,7 +221,7 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
 
         records = super().read_records(**kwargs)
         for record in records:
-            if record["has_children"]:
+            if record.get("has_children", False):
                 # do the depth first traversal recursive call, get children blocks
                 self.block_id_stack.append(record["id"])
                 yield from self.read_records(**kwargs)

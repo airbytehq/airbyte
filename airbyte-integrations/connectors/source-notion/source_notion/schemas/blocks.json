@@ -19,7 +19,7 @@
       "type": "boolean"
     },
     "has_children": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "type": {
       "enum": [
