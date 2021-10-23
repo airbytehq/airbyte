@@ -304,11 +304,11 @@ public class SecretsHelpers {
   }
 
   private static boolean isObjectSchema(final JsonNode schema) {
-    return schema.has("type") && schema.get("type").asText().equals("object") && schema.has("properties");
+    return schema.has("properties") && schema.get("properties").isObject();
   }
 
   private static boolean isArraySchema(final JsonNode schema) {
-    return schema.has("type") && schema.get("type").asText().equals("array") && schema.has("items");
+    return schema.has("items") && schema.get("items").isObject();
   }
 
   private static JsonNode getFieldOrEmptyNode(final JsonNode node, final String field) {

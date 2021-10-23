@@ -37,13 +37,46 @@
       "type": ["null", "string"]
     },
     "tags": {
-      "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": [
+        {
+          "type": ["null", "string"]
+        }
+      ]
     },
     "birth_date": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "year": {
+          "type": ["null", "integer"]
+        },
+        "month": {
+          "type": ["null", "integer"]
+        },
+        "day": {
+          "type": ["null", "integer"]
+        }
+      }
     },
     "anniversary_date": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "year": {
+          "type": ["null", "integer"]
+        },
+        "month": {
+          "type": ["null", "integer"]
+        },
+        "day": {
+          "type": ["null", "integer"]
+        }
+      }
     },
     "forgotten": {
       "type": ["null", "string"]
@@ -55,7 +88,27 @@
       "type": ["null", "string"]
     },
     "address": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "address_line1": {
+          "type": ["null", "string"]
+        },
+        "address_line2": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "zip": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "mail_opted_in": {
       "type": ["null", "string"]
@@ -64,22 +117,22 @@
       "type": ["null", "string"]
     },
     "phone_numbers": {
-      "type": "array",
+      "type": ["null","array"],
       "items": [
         {
-          "type": "object",
+          "type": ["null","object"],
           "properties": {
             "label": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "number": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "country_code": {
-              "type": "null"
+              "type": ["null", "string"]
             },
             "primary": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             }
           }
         }

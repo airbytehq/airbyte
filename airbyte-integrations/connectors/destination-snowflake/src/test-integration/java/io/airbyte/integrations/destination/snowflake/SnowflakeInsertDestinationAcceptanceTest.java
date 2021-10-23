@@ -9,16 +9,26 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -131,6 +141,25 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
     SnowflakeDatabase.getDatabase(baseConfig).execute(createSchemaQuery);
+  }
+
+  /**
+   * This test is disabled because it is very slow, and should only be run manually for now.
+   */
+  @Disabled
+  @ParameterizedTest
+  @ArgumentsSource(DataArgumentsProvider.class)
+  public void testSyncWithBillionRecords(final String messagesFilename, final String catalogFilename) throws Exception {
+    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+
+    final List<AirbyteMessage> largeNumberRecords =
+        Collections.nCopies(15000000, messages).stream().flatMap(List::stream).collect(Collectors.toList());
+
+    final JsonNode config = getConfig();
+    runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
   }
 
 }

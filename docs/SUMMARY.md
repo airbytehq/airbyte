@@ -90,7 +90,11 @@
     * [Mongo DB](integrations/sources/mongodb-v2.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Okta](integrations/sources/okta.md)
+<<<<<<< HEAD
     * [Opentable](integrations/source/opentable.md)
+=======
+    * [OneSignal](integrations/sources/onesignal.md)
+>>>>>>> c2f31de6b4758baa68da24d7effe81a1ca76e924
     * [Oracle DB](integrations/sources/oracle.md)
     * [Oracle Peoplesoft](integrations/sources/oracle-peoplesoft.md)
     * [Oracle Siebel CRM](integrations/sources/oracle-siebel-crm.md)
@@ -108,6 +112,7 @@
     * [S3](integrations/sources/s3.md)
     * [SAP Business One](integrations/sources/sap-business-one.md)
     * [Salesforce](integrations/sources/salesforce.md)
+    * [SalesLoft](integrations/sources/salesloft.md)
     * [Sendgrid](integrations/sources/sendgrid.md)
     * [Shopify](integrations/sources/shopify.md)
     * [Shortio](integrations/sources/shortio.md)
