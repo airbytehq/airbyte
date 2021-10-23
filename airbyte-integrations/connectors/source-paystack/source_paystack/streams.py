@@ -9,11 +9,10 @@ from datetime import datetime
 import requests
 import pendulum
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_paystack.constants import PAYSTACK_API_BASE_URL, PAYSTACK_CREATED_AT, PAYSTACK_CREATED_AT_MISC
 
 
 class PaystackStream(HttpStream, ABC):
-    url_base = PAYSTACK_API_BASE_URL
+    url_base = "https://api.paystack.co/"
     primary_key = "id"
 
     def __init__(self, start_date: str, **kwargs):
@@ -22,7 +21,8 @@ class PaystackStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
-        page, pageCount = decoded_response['meta']['page'], response.json()['meta']['pageCount']
+        page = decoded_response['meta']['page']
+        pageCount = decoded_response['meta']['pageCount']
 
         if page < pageCount:
             return { "page": page + 1 }
@@ -106,7 +106,7 @@ class Customers(IncrementalPaystackStream):
     API docs: https://paystack.com/docs/api/#customer-list
     """
 
-    cursor_field = PAYSTACK_CREATED_AT
+    cursor_field = "createdAt"
 
     def path(self, **kwargs) -> str:
         return "customer"
@@ -117,7 +117,7 @@ class Disputes(IncrementalPaystackStream):
     API docs: https://paystack.com/docs/api/#dispute-list
     """
 
-    cursor_field = PAYSTACK_CREATED_AT
+    cursor_field = "createdAt"
 
     def path(self, **kwargs) -> str:
         return "dispute"
@@ -128,7 +128,7 @@ class Invoices(IncrementalPaystackStream):
     API docs: https://paystack.com/docs/api/#invoice-list
     """
 
-    cursor_field = PAYSTACK_CREATED_AT_MISC
+    cursor_field = "created_at"
 
     def path(self, **kwargs) -> str:
         return "paymentrequest"
@@ -139,7 +139,7 @@ class Refunds(IncrementalPaystackStream):
     API docs: https://paystack.com/docs/api/#refund-list
     """
 
-    cursor_field = PAYSTACK_CREATED_AT
+    cursor_field = "createdAt"
 
     def path(self, **kwargs) -> str:
         return "refund"
@@ -150,7 +150,7 @@ class Settlements(IncrementalPaystackStream):
     API docs: https://paystack.com/docs/api/#settlement
     """
 
-    cursor_field = PAYSTACK_CREATED_AT
+    cursor_field = "createdAt"
 
     def path(self, **kwargs) -> str:
         return "settlement"
@@ -161,7 +161,7 @@ class Subscriptions(IncrementalPaystackStream):
     API docs: https://paystack.com/docs/api/#subscription-list
     """
 
-    cursor_field = PAYSTACK_CREATED_AT
+    cursor_field = "createdAt"
 
     def path(self, **kwargs) -> str:
         return "subscription"
@@ -172,7 +172,7 @@ class Transactions(IncrementalPaystackStream):
     API docs: https://paystack.com/docs/api/#transaction-list
     """
 
-    cursor_field = PAYSTACK_CREATED_AT
+    cursor_field = "createdAt"
 
     def path(self, **kwargs) -> str:
         return "transaction"
@@ -183,7 +183,7 @@ class Transfers(IncrementalPaystackStream):
     API docs: https://paystack.com/docs/api/#transfer-list
     """
 
-    cursor_field = PAYSTACK_CREATED_AT
+    cursor_field = "createdAt"
 
     def path(self, **kwargs) -> str:
         return "transfer"
