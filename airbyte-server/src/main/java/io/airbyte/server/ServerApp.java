@@ -236,14 +236,15 @@ public class ServerApp implements ServerRunnable {
         jobPersistence,
         configs);
 
-    // todo (cgardens) - this will exist in a single version of airbyte. to ensure all definitions
-    // contain specs.
-    migrateAllDefinitionsToContainSpec(configRepository, configPersistence, syncSchedulerClient);
-
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
 
       runFlywayMigration(configs, configDatabase, jobDatabase);
+
+      // todo (cgardens) - this will exist in a single version of airbyte. to ensure all definitions
+      // contain specs.
+      migrateAllDefinitionsToContainSpec(configRepository, configPersistence, syncSchedulerClient);
+
       configPersistence.loadData(seed);
 
       return apiFactory.create(
