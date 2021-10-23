@@ -205,7 +205,7 @@
               "type": ["null", "string"]
             },
             "pdf_url": {
-              "type": ["null", "null"]
+              "type": ["null", "string"]
             },
             "line_items": {
               "type": ["null", "array"],
@@ -252,7 +252,8 @@
               "format": "date-time"
             },
             "metadata": {
-              "type": ["null", "null"]
+              "type": ["null", "object"],
+              "properties": {}
             },
             "notifications": {
               "type": ["null", "array"],
@@ -476,7 +477,7 @@
               "type": ["null", "integer"]
             },
             "split_code": {
-              "type": ["null", "null"]
+              "type": ["null", "string"]
             },
             "payments_count": {
               "type": ["null", "integer"]
@@ -593,7 +594,7 @@
               "type": ["null", "integer"]
             },
             "fees_split": {
-              "type": ["null", "null"]
+              "type": ["null", "string"]
             },
             "customer": {
               "type": ["null", "object"],
@@ -639,7 +640,7 @@
                   "type": ["null", "string"]
                 },
                 "identifier": {
-                  "type": ["null", "null"]
+                  "type": ["null", "string"]
                 },
                 "entry_point": {
                   "type": ["null", "string"]
@@ -700,7 +701,7 @@
                       "type": ["null", "string"]
                     },
                     "account_name": {
-                      "type": ["null", "null"]
+                      "type": ["null", "string"]
                     },
                     "bank_code": {
                       "type": ["null", "string"]

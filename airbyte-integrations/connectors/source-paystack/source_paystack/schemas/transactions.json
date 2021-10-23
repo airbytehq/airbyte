@@ -95,7 +95,7 @@
       "type": ["null", "integer"]
     },
     "fees_split": {
-      "type": ["null", "null"]
+      "type": ["null", "string"]
     },
     "customer": {
       "type": ["null", "object"],
@@ -141,7 +141,7 @@
           "type": ["null", "string"]
         },
         "identifier": {
-          "type": ["null", "null"]
+          "type": ["null", "string"]
         },
         "entry_point": {
           "type": ["null", "string"]

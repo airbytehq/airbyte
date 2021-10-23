@@ -41,7 +41,7 @@
               "type": ["null", "string"]
             },
             "account_name": {
-              "type": ["null", "null"]
+              "type": ["null", "string"]
             },
             "bank_code": {
               "type": ["null", "string"]

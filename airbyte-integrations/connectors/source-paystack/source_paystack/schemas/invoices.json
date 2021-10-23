@@ -30,7 +30,7 @@
       "type": ["null", "string"]
     },
     "pdf_url": {
-      "type": ["null", "null"]
+      "type": ["null", "string"]
     },
     "line_items": {
       "type": ["null", "array"],
@@ -77,7 +77,8 @@
       "format": "date-time"
     },
     "metadata": {
-      "type": ["null", "null"]
+      "type": ["null", "object"],
+      "properties": {}
     },
     "notifications": {
       "type": ["null", "array"],

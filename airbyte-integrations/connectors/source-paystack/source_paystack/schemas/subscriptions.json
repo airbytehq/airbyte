@@ -58,7 +58,7 @@
       "type": ["null", "integer"]
     },
     "split_code": {
-      "type": ["null", "null"]
+      "type": ["null", "string"]
     },
     "payments_count": {
       "type": ["null", "integer"]
