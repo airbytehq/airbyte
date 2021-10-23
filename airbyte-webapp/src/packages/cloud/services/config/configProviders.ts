@@ -20,6 +20,14 @@ const fileConfigProvider: ConfigProvider<CloudConfig> = async () => {
   return {};
 };
 
+const cloudWindowConfigProvider: ConfigProvider<CloudConfig> = async () => {
+  return {
+    intercom: {
+      appId: window.REACT_APP_INTERCOM_APP_ID,
+    },
+  };
+};
+
 const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
   return {
     cloudApiUrl: process.env.REACT_APP_CLOUD_API_URL,
@@ -27,7 +35,14 @@ const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
       apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
       authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
     },
+    intercom: {
+      appId: process.env.REACT_APP_INTERCOM_APP_ID,
+    },
   };
 };
 
-export { fileConfigProvider, cloudEnvConfigProvider };
+export {
+  fileConfigProvider,
+  cloudWindowConfigProvider,
+  cloudEnvConfigProvider,
+};

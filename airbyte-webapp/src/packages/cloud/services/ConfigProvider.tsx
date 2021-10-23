@@ -12,11 +12,13 @@ import {
   cloudEnvConfigProvider,
   fileConfigProvider,
   defaultConfig,
+  cloudWindowConfigProvider,
 } from "./config";
 
 const configProviders: ValueProvider<Config> = [
   fileConfigProvider,
   cloudEnvConfigProvider,
+  cloudWindowConfigProvider,
   windowConfigProvider,
   envConfigProvider,
 ];

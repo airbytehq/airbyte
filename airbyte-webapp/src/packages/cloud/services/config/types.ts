@@ -6,6 +6,9 @@ export type CloudConfigExtension = {
     apiKey: string;
     authDomain: string;
   };
+  intercom: {
+    appId: string;
+  };
 };
 
 export type CloudConfig = Config & CloudConfigExtension;

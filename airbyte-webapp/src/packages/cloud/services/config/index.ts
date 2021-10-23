@@ -14,6 +14,9 @@ const cloudConfigExtensionDefault: CloudConfigExtension = {
     apiKey: "",
     authDomain: "",
   },
+  intercom: {
+    appId: "",
+  },
 };
 
 export const defaultConfig: CloudConfig = Object.assign(
