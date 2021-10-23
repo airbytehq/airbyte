@@ -77,6 +77,12 @@ Facebook heavily throttles API tokens generated from Facebook Apps by default, m
 
 See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) for more information on requesting a quota upgrade.
 
+## Custom Insights
+In order to retrieve specific fields from Facebook Ads Insights combined with other breakdowns, there is a mechanism to allow you to choose which fields and breakdowns to sync.
+It is highly recommended to follow the [documenation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns), as there are limitations related to breakdowns. Some fields can not be requested and many others just work combined with specific fields, for example, the breakdown **app_id** is only supported with the **total_postbacks** field.
+By now, the only check done when setting up a source is to check if the fields, breakdowns and action breakdowns are within the ones provided by Facebook. This is, if you enter a good input, it's gonna be validated, but after, if the calls to Facebook API with those pareameters fails you will receive an error from the API.
+As a summary, custom insights allows to replicate only some fields, resulting in sync speed increase.
+
 #### Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
@@ -90,6 +96,7 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.21  | 2021-10-05 | [4864](https://github.com/airbytehq/airbyte/pull/4864) | Update insights streams with custom entries for fields, breakdowns and action_breakdowns |
 | 0.2.20 | 2021-10-04 | [6719](https://github.com/airbytehq/airbyte/pull/6719) | Update version of facebook\_bussiness package to 12.0 |
 | 0.2.19 | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification |
 | 0.2.18 | 2021-09-28 | [6499](https://github.com/airbytehq/airbyte/pull/6499) | Fix field values converting fail |
@@ -113,4 +120,3 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 | 0.1.3 | 2021-02-15 | [1990](https://github.com/airbytehq/airbyte/pull/1990) | Support Insights stream via async queries |
 | 0.1.2 | 2021-01-22 | [1699](https://github.com/airbytehq/airbyte/pull/1699) | Add incremental support |
 | 0.1.1 | 2021-01-15 | [1552](https://github.com/airbytehq/airbyte/pull/1552) | Release Native Facebook Marketing Connector |
-

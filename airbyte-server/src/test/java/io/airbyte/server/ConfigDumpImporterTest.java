@@ -85,7 +85,8 @@ class ConfigDumpImporterTest {
         .withDockerRepository("test")
         .withDocumentationUrl("http://doc")
         .withIcon("hello")
-        .withDockerImageTag("dev");
+        .withDockerImageTag("dev")
+        .withSpec(new ConnectorSpecification());
     sourceConnection = new SourceConnection()
         .withSourceId(UUID.randomUUID())
         .withSourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
@@ -106,7 +107,8 @@ class ConfigDumpImporterTest {
         .withDockerRepository("test")
         .withDocumentationUrl("http://doc")
         .withIcon("hello")
-        .withDockerImageTag("dev");
+        .withDockerImageTag("dev")
+        .withSpec(new ConnectorSpecification());
     destinationConnection = new DestinationConnection()
         .withDestinationId(UUID.randomUUID())
         .withDestinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
