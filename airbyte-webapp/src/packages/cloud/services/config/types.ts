@@ -13,7 +13,7 @@ declare global {
 
 export type CloudConfigExtension = {
   cloudApiUrl: string;
-  fullstory: Fullstory.SnippetOptions;
+  fullstory: Fullstory.SnippetOptions & { enabled: boolean };
   firebase: {
     apiKey: string;
     authDomain: string;

@@ -228,7 +228,7 @@ const FirebaseActionRoute: React.FC = () => {
 export const Routing: React.FC = () => {
   const { user, inited, emailVerified } = useAuthService();
   const config = useConfig();
-  useFullStory(config.fullstory);
+  useFullStory(config.fullstory, config.fullstory.enabled);
 
   return (
     <Router>

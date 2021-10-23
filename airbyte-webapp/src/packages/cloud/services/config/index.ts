@@ -16,6 +16,7 @@ const cloudConfigExtensionDefault: CloudConfigExtension = {
   },
   fullstory: {
     orgId: "",
+    enabled: true,
   },
   intercom: {
     appId: "",
