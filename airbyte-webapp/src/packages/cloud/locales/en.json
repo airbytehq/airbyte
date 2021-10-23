@@ -91,7 +91,7 @@
   "workspaces.viewAllWorkspaces": "View all workspaces",
 
   "credits.date": "Date",
-  "credits.amount": "Amount",
+  "credits.amount": "Credits",
 
   "firebase.auth.success": "A new confirmation email has been sent to you",
   "firebase.auth.error.invalidPassword": "Incorrect password",

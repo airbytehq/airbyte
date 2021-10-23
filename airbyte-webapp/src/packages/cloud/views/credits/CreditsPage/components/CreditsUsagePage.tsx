@@ -16,18 +16,21 @@ export const ChartWrapper = styled.div`
 const LegendLabels = ["value"];
 
 const CreditsUsagePage: React.FC = () => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage, formatDate } = useIntl();
 
   const { workspaceId } = useCurrentWorkspace();
   const { data } = useGetUsage(workspaceId);
 
   const chartData = useMemo(
     () =>
-      data?.creditConsumptionByDay?.map((item) => ({
-        name: `${item.date?.[2]}.${item.date?.[1]}`,
-        value: item.creditsConsumed,
+      data?.creditConsumptionByDay?.map(({ creditsConsumed, date }) => ({
+        name: formatDate(new Date(...date), {
+          month: "short",
+          day: "numeric",
+        }),
+        value: creditsConsumed,
       })),
-    [data]
+    [data, formatDate]
   );
 
   return (
