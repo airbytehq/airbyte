@@ -14,6 +14,9 @@ const cloudConfigExtensionDefault: CloudConfigExtension = {
     apiKey: "",
     authDomain: "",
   },
+  fullstory: {
+    orgId: "",
+  },
   intercom: {
     appId: "",
   },
