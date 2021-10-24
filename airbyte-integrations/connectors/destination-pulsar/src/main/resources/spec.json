@@ -91,6 +91,12 @@
         "type": "integer",
         "default": 1000
       },
+      "enable_chunking": {
+        "title": "Enable chunking",
+        "description": "If message size is higher than allowed max publish-payload size by broker then enable chunking helps producer to split message into multiple chunks and publish them to broker separately and in order. NOTE: Batching and chunking cannot be enabled simultaneously. To enable chunking, you must disable batching and only is supported for persisted topics.",
+        "type": "boolean",
+        "default": false
+      },
       "block_if_queue_full": {
         "title": "Block if queue is full",
         "description": "If the send operation should block when the outgoing message queue is full.",

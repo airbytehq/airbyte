@@ -75,6 +75,7 @@ You should now have all the requirements needed to configure Pulsar as a destina
 * **Enable batching**
 * **Batching max publish delay**
 * **Batching max messages**
+* **Enable chunking**
 * **Block if queue is full**
 * **Auto update partitions**
 * **Auto update partitions interval**

@@ -102,6 +102,7 @@ public class PulsarRecordConsumerTest {
         .put("enable_batching", true)
         .put("batching_max_publish_delay", 1)
         .put("batching_max_messages", 1000)
+        .put("enable_chunking", false)
         .put("producer_name", "test-producer")
         .put("block_if_queue_full", true)
         .put("auto_update_partitions", true)

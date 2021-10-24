@@ -73,6 +73,7 @@ public class PulsarDestinationConfig {
     private final boolean enableBatching;
     private final boolean blockIfQueueFull;
     private final boolean autoUpdatePartitions;
+    private final boolean enableChunking;
     private final int autoUpdatePartitionsInterval;
     private final int batchingMaxPublishDelay;
     private final int batchingMaxMessages;
@@ -86,6 +87,7 @@ public class PulsarDestinationConfig {
       this.enableBatching = config.get("enable_batching").asBoolean();
       this.blockIfQueueFull = config.get("block_if_queue_full").asBoolean();
       this.autoUpdatePartitions = config.get("auto_update_partitions").asBoolean();
+      this.enableChunking = config.get("enable_chunking").asBoolean();
       this.autoUpdatePartitionsInterval = config.get("auto_update_partitions_interval").asInt();
       this.batchingMaxPublishDelay = config.get("batching_max_publish_delay").asInt();
       this.batchingMaxMessages = config.get("batching_max_messages").asInt();
@@ -105,6 +107,7 @@ public class PulsarDestinationConfig {
         .enableBatching(enableBatching)
         .batchingMaxPublishDelay(batchingMaxPublishDelay, TimeUnit.MILLISECONDS)
         .batchingMaxMessages(batchingMaxMessages)
+        .enableChunking(enableChunking)
         .blockIfQueueFull(blockIfQueueFull)
         .autoUpdatePartitions(autoUpdatePartitions)
         .autoUpdatePartitionsInterval(autoUpdatePartitionsInterval, TimeUnit.SECONDS)
