@@ -84,6 +84,7 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.ConfigPersistence2;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
@@ -145,6 +146,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final Configs configs;
 
   public ConfigurationApi(final ConfigRepository configRepository,
+                          final ConfigPersistence2 configPersistence2,
                           final JobPersistence jobPersistence,
                           final ConfigPersistence seed,
                           final SchedulerJobClient schedulerJobClient,
@@ -164,6 +166,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         trackingClient);
     schedulerHandler = new SchedulerHandler(
         configRepository,
+        configPersistence2,
         schedulerJobClient,
         synchronousSchedulerClient,
         jobPersistence,

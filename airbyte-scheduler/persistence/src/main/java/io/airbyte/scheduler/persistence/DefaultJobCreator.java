@@ -12,6 +12,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.persistence.ConfigPersistence2;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
@@ -22,9 +23,11 @@ import java.util.Optional;
 public class DefaultJobCreator implements JobCreator {
 
   private final JobPersistence jobPersistence;
+  private final ConfigPersistence2 configPersistence2;
 
-  public DefaultJobCreator(final JobPersistence jobPersistence) {
+  public DefaultJobCreator(final JobPersistence jobPersistence, final ConfigPersistence2 configPersistence2) {
     this.jobPersistence = jobPersistence;
+    this.configPersistence2 = configPersistence2;
   }
 
   @Override
@@ -49,7 +52,7 @@ public class DefaultJobCreator implements JobCreator {
         .withState(null)
         .withResourceRequirements(standardSync.getResourceRequirements());
 
-    jobPersistence.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
+    configPersistence2.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.SYNC)

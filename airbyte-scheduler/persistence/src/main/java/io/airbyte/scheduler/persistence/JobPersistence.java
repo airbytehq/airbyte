@@ -7,7 +7,6 @@ package io.airbyte.scheduler.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.config.State;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
@@ -146,19 +145,6 @@ public interface JobPersistence {
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
-
-  /**
-   * if a job does not succeed, we assume that it synced nothing. that is the most conservative
-   * assumption we can make. as long as all destinations write the final data output in a
-   * transactional way, this will be true. if this changes, then we may end up writing duplicate data
-   * with our incremental append only. this is preferable to failing to send data at all. our
-   * incremental append only most closely resembles a deliver at least once strategy anyway.
-   *
-   * @param connectionId - id of the connection whose state we want to fetch.
-   * @return the current state, if any of, the connection
-   * @throws IOException exception due to interaction with persistence
-   */
-  Optional<State> getCurrentState(UUID connectionId) throws IOException;
 
   Optional<Job> getNextJob() throws IOException;
 

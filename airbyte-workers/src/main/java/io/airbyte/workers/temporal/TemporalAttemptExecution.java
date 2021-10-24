@@ -137,7 +137,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
           configs.getConfigDatabasePassword(),
           configs.getConfigDatabaseUrl())
               .getInitialized();
-      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase, configDatabase);
+      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
       final String workflowId = workflowIdProvider.get();
       jobPersistence.setAttemptTemporalWorkflowId(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), workflowId);
     }

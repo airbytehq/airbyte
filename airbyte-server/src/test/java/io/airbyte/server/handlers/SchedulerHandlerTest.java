@@ -49,6 +49,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.State;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigPersistence2;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -117,6 +118,7 @@ class SchedulerHandlerTest {
 
   private SchedulerHandler schedulerHandler;
   private ConfigRepository configRepository;
+  private ConfigPersistence2 configPersistence2;
   private Job completedJob;
   private SchedulerJobClient schedulerJobClient;
   private SynchronousSchedulerClient synchronousSchedulerClient;
@@ -140,11 +142,13 @@ class SchedulerHandlerTest {
     schedulerJobClient = spy(SchedulerJobClient.class);
     synchronousSchedulerClient = mock(SynchronousSchedulerClient.class);
     configRepository = mock(ConfigRepository.class);
+    configPersistence2 = mock(ConfigPersistence2.class);
     jobPersistence = mock(JobPersistence.class);
     final JobNotifier jobNotifier = mock(JobNotifier.class);
 
     schedulerHandler = new SchedulerHandler(
         configRepository,
+        configPersistence2,
         schedulerJobClient,
         synchronousSchedulerClient,
         configurationUpdate,
@@ -557,7 +561,7 @@ class SchedulerHandlerTest {
   void testGetCurrentState() throws IOException {
     final UUID connectionId = UUID.randomUUID();
     final State state = new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 1)));
-    when(jobPersistence.getCurrentState(connectionId)).thenReturn(Optional.of(state));
+    when(configPersistence2.getCurrentState(connectionId)).thenReturn(Optional.of(state));
 
     final ConnectionState connectionState = schedulerHandler.getState(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(new ConnectionState().connectionId(connectionId).state(state.getState()), connectionState);
@@ -566,7 +570,7 @@ class SchedulerHandlerTest {
   @Test
   void testGetCurrentStateEmpty() throws IOException {
     final UUID connectionId = UUID.randomUUID();
-    when(jobPersistence.getCurrentState(connectionId)).thenReturn(Optional.empty());
+    when(configPersistence2.getCurrentState(connectionId)).thenReturn(Optional.empty());
 
     final ConnectionState connectionState = schedulerHandler.getState(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(new ConnectionState().connectionId(connectionId), connectionState);
