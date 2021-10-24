@@ -1,32 +1,34 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.cassandra;
 
 import org.testcontainers.containers.CassandraContainer;
 
 class CassandraContainerInitializr {
 
-    private static ConfiguredCassandraContainer cassandraContainer;
+  private static ConfiguredCassandraContainer cassandraContainer;
 
-    private CassandraContainerInitializr() {
+  private CassandraContainerInitializr() {
 
+  }
+
+  public static ConfiguredCassandraContainer initContainer() {
+    if (cassandraContainer == null) {
+      cassandraContainer = new ConfiguredCassandraContainer();
+    }
+    cassandraContainer.start();
+    return cassandraContainer;
+  }
+
+  public static class ConfiguredCassandraContainer extends CassandraContainer<ConfiguredCassandraContainer> {
+
+    ConfiguredCassandraContainer() {
+      // latest compatible version with the internal testcontainers datastax driver.
+      super("cassandra:3.11.11");
     }
 
-    public static ConfiguredCassandraContainer initContainer() {
-        if (cassandraContainer == null) {
-            cassandraContainer = new ConfiguredCassandraContainer();
-            // max heap size
-            // cassandraContainer.addEnv("MAX_HEAP_SIZE", "2048");
-        }
-        cassandraContainer.start();
-        return cassandraContainer;
-    }
-
-    public static class ConfiguredCassandraContainer extends CassandraContainer<ConfiguredCassandraContainer> {
-
-        ConfiguredCassandraContainer() {
-            //latest compatible version with the internal testcontainers datastax driver.
-            super("cassandra:3.11.11");
-        }
-
-    }
+  }
 
 }

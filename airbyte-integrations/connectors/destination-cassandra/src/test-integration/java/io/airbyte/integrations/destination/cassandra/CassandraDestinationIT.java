@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.cassandra;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,45 +15,43 @@ import org.junit.jupiter.api.TestInstance;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CassandraDestinationIT {
 
-    private CassandraDestination cassandraDestination;
+  private CassandraDestination cassandraDestination;
 
-    private ConfiguredCassandraContainer cassandraContainer;
+  private ConfiguredCassandraContainer cassandraContainer;
 
-    @BeforeAll
-    void setup() {
-        this.cassandraContainer = CassandraContainerInitializr.initContainer();
-        this.cassandraDestination = new CassandraDestination();
-    }
+  @BeforeAll
+  void setup() {
+    this.cassandraContainer = CassandraContainerInitializr.initContainer();
+    this.cassandraDestination = new CassandraDestination();
+  }
 
-    @Test
-    void testCheckWithStatusSucceeded() {
+  @Test
+  void testCheckWithStatusSucceeded() {
 
-        var jsonConfiguration = TestDataFactory.createJsonConfig(
-            cassandraContainer.getUsername(),
-            cassandraContainer.getPassword(),
-            cassandraContainer.getHost(),
-            cassandraContainer.getFirstMappedPort()
-        );
+    var jsonConfiguration = TestDataFactory.createJsonConfig(
+        cassandraContainer.getUsername(),
+        cassandraContainer.getPassword(),
+        cassandraContainer.getHost(),
+        cassandraContainer.getFirstMappedPort());
 
-        var connectionStatus = cassandraDestination.check(jsonConfiguration);
+    var connectionStatus = cassandraDestination.check(jsonConfiguration);
 
-        assertThat(connectionStatus.getStatus()).isEqualTo(AirbyteConnectionStatus.Status.SUCCEEDED);
-    }
+    assertThat(connectionStatus.getStatus()).isEqualTo(AirbyteConnectionStatus.Status.SUCCEEDED);
+  }
 
-    @Test
-    void testCheckWithStatusFailed() {
+  @Test
+  void testCheckWithStatusFailed() {
 
-        var jsonConfiguration = TestDataFactory.createJsonConfig(
-            "usr",
-            "pw",
-            "192.0.2.1",
-            8080
-        );
+    var jsonConfiguration = TestDataFactory.createJsonConfig(
+        "usr",
+        "pw",
+        "192.0.2.1",
+        8080);
 
-        var connectionStatus = cassandraDestination.check(jsonConfiguration);
+    var connectionStatus = cassandraDestination.check(jsonConfiguration);
 
-        assertThat(connectionStatus.getStatus()).isEqualTo(AirbyteConnectionStatus.Status.FAILED);
+    assertThat(connectionStatus.getStatus()).isEqualTo(AirbyteConnectionStatus.Status.FAILED);
 
-    }
+  }
 
 }

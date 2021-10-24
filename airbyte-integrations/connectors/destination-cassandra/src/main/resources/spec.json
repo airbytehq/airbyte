@@ -3,22 +3,12 @@
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
-  "supported_destination_sync_modes": [
-    "overwrite",
-    "append",
-    "append_dedup"
-  ],
+  "supported_destination_sync_modes": ["overwrite", "append"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Cassandra Destination Spec",
     "type": "object",
-    "required": [
-      "keyspace",
-      "username",
-      "password",
-      "address",
-      "port"
-    ],
+    "required": ["keyspace", "username", "password", "address", "port"],
     "additionalProperties": true,
     "properties": {
       "keyspace": {

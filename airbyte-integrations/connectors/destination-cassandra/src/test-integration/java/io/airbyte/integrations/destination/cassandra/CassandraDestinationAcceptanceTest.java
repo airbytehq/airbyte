@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.cassandra;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,77 +16,77 @@ import org.slf4j.LoggerFactory;
 
 public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CassandraDestinationAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CassandraDestinationAcceptanceTest.class);
 
-    private JsonNode configJson;
+  private JsonNode configJson;
 
-    private CassandraCqlProvider cassandraCqlProvider;
+  private CassandraCqlProvider cassandraCqlProvider;
 
-    private CassandraNameTransformer cassandraNameTransformer;
+  private CassandraNameTransformer cassandraNameTransformer;
 
-    private static CassandraContainerInitializr.ConfiguredCassandraContainer cassandraContainer;
+  private static CassandraContainerInitializr.ConfiguredCassandraContainer cassandraContainer;
 
-    @BeforeAll
-    static void initContainer() {
-        cassandraContainer = CassandraContainerInitializr.initContainer();
-    }
+  @BeforeAll
+  static void initContainer() {
+    cassandraContainer = CassandraContainerInitializr.initContainer();
+  }
 
-    @Override
-    protected void setup(TestDestinationEnv testEnv) {
-        configJson = TestDataFactory.createJsonConfig(
-            cassandraContainer.getUsername(),
-            cassandraContainer.getPassword(),
-            cassandraContainer.getHost(),
-            cassandraContainer.getFirstMappedPort()
-        );
-        var cassandraConfig = new CassandraConfig(configJson);
-        cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
-        cassandraNameTransformer = new CassandraNameTransformer(cassandraConfig);
-    }
+  @Override
+  protected void setup(TestDestinationEnv testEnv) {
+    configJson = TestDataFactory.createJsonConfig(
+        cassandraContainer.getUsername(),
+        cassandraContainer.getPassword(),
+        cassandraContainer.getHost(),
+        cassandraContainer.getFirstMappedPort());
+    var cassandraConfig = new CassandraConfig(configJson);
+    cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
+    cassandraNameTransformer = new CassandraNameTransformer(cassandraConfig);
+  }
 
-    @Override
-    protected void tearDown(TestDestinationEnv testEnv) {
-        cassandraCqlProvider.retrieveMetadata().forEach(meta -> {
-            var keyspace = meta.getKeyspace();
-            meta.getTables().forEach(table -> cassandraCqlProvider.truncate(keyspace, table));
-        });
-    }
+  @Override
+  protected void tearDown(TestDestinationEnv testEnv) {
+    cassandraCqlProvider.retrieveMetadata().forEach(meta -> {
+      var keyspace = meta.getKeyspace();
+      meta.getTables().forEach(table -> cassandraCqlProvider.truncate(keyspace, table));
+    });
+  }
 
-    @Override
-    protected String getImageName() {
-        return "airbyte/destination-cassandra:dev";
-    }
+  @Override
+  protected String getImageName() {
+    return "airbyte/destination-cassandra:dev";
+  }
 
-    @Override
-    protected JsonNode getConfig() {
-        return configJson;
-    }
+  @Override
+  protected JsonNode getConfig() {
+    return configJson;
+  }
 
-    @Override
-    protected boolean implementsNamespaces() {
-        return true;
-    }
+  @Override
+  protected boolean implementsNamespaces() {
+    return true;
+  }
 
-    @Override
-    protected JsonNode getFailCheckConfig() {
-        return TestDataFactory.createJsonConfig(
-            "usr",
-            "pw",
-            "127.0.192.1",
-            8080
-        );
-    }
+  @Override
+  protected JsonNode getFailCheckConfig() {
+    return TestDataFactory.createJsonConfig(
+        "usr",
+        "pw",
+        "127.0.192.1",
+        8080);
+  }
 
-    @Override
-    protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                             String streamName,
-                                             String namespace,
-                                             JsonNode streamSchema) {
-        var keyspace = cassandraNameTransformer.outputKeyspace(namespace);
-        var table = cassandraNameTransformer.outputTable(streamName);
-        return cassandraCqlProvider.select(keyspace, table).stream()
-            .map(tableRecord -> Jsons.jsonNode(tableRecord.getData()))
-            .collect(Collectors.toList());
-    }
+  @Override
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
+                                           String streamName,
+                                           String namespace,
+                                           JsonNode streamSchema) {
+    var keyspace = cassandraNameTransformer.outputKeyspace(namespace);
+    var table = cassandraNameTransformer.outputTable(streamName);
+    return cassandraCqlProvider.select(keyspace, table).stream()
+        .sorted(Comparator.comparing(TableRecord::getTimestamp))
+        .map(TableRecord::getData)
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList());
+  }
 
 }

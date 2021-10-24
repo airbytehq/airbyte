@@ -989,6 +989,7 @@ public abstract class DestinationAcceptanceTest {
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
       List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema, stream.getJsonSchema())
           .stream()
+          .peek(System.out::println)
           .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema).withData(data))
           .collect(Collectors.toList());
       actualMessages.addAll(msgList);

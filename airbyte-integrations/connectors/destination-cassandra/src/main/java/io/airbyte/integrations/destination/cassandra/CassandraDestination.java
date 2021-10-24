@@ -19,41 +19,48 @@ import org.slf4j.LoggerFactory;
 
 class CassandraDestination extends BaseConnector implements Destination {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CassandraDestination.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CassandraDestination.class);
 
-    public static void main(String[] args) throws Exception {
-        new IntegrationRunner(new CassandraDestination()).run(args);
-    }
+  public static void main(String[] args) throws Exception {
+    new IntegrationRunner(new CassandraDestination()).run(args);
+  }
 
-    @Override
-    public AirbyteConnectionStatus check(JsonNode config) {
-        var cassandraConfig = new CassandraConfig(config);
-        // add random uuid to avoid conflicts with existing tables.
-        String tableName = "table_" + UUID.randomUUID().toString().replace("-", "");
-        CassandraCqlProvider cassandraCqlProvider = null;
+  @Override
+  public AirbyteConnectionStatus check(JsonNode config) {
+    var cassandraConfig = new CassandraConfig(config);
+    // add random uuid to avoid conflicts with existing tables.
+    String tableName = "table_" + UUID.randomUUID().toString().replace("-", "");
+    CassandraCqlProvider cassandraCqlProvider = null;
+    try {
+      cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
+      // check connection and write permissions
+      cassandraCqlProvider.createKeySpaceIfNotExists(cassandraConfig.getKeyspace(),
+          cassandraConfig.getReplication());
+      cassandraCqlProvider.createTableIfNotExists(cassandraConfig.getKeyspace(), tableName);
+      cassandraCqlProvider.insert(cassandraConfig.getKeyspace(), tableName, "{}");
+      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+    } catch (Exception e) {
+      LOGGER.error("Can't establish Cassandra connection with reason: ", e);
+      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
+    } finally {
+      if (cassandraCqlProvider != null) {
         try {
-            cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
-            // check connection and write permissions
-            cassandraCqlProvider.createKeySpaceIfNotExists(cassandraConfig.getKeyspace(),
-                cassandraConfig.getReplication());
-            cassandraCqlProvider.createTableIfNotExists(cassandraConfig.getKeyspace(), tableName);
-            cassandraCqlProvider.insert(cassandraConfig.getKeyspace(), tableName, "{}");
-            return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-        } catch (Throwable e) {
-            LOGGER.error("Can't establish Cassandra connection with reason: ", e);
-            return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
-        } finally {
-            if (cassandraCqlProvider != null) {
-                cassandraCqlProvider.dropTableIfExists(cassandraConfig.getKeyspace(), tableName);
-            }
+          // handle exception if drop table fails, failing to do so will cause the resources
+          // behind CassandraCqlProvider to not be closed and the jvm to not exit.
+          cassandraCqlProvider.dropTableIfExists(cassandraConfig.getKeyspace(), tableName);
+        } catch (Exception e) {
+          LOGGER.error("Error while deleting temp table {} with reason: : ", tableName, e);
         }
+        cassandraCqlProvider.close();
+      }
     }
+  }
 
-    @Override
-    public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                              ConfiguredAirbyteCatalog configuredCatalog,
-                                              Consumer<AirbyteMessage> outputRecordCollector) {
-        return new CassandraMessageConsumer(new CassandraConfig(config), configuredCatalog, outputRecordCollector);
-    }
+  @Override
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog configuredCatalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector) {
+    return new CassandraMessageConsumer(new CassandraConfig(config), configuredCatalog, outputRecordCollector);
+  }
 
 }
