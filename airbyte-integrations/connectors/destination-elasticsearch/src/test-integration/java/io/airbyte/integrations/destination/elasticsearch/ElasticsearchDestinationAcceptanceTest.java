@@ -60,6 +60,11 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
     }
 
     @Override
+    protected boolean supportsNormalization() {
+        return true;
+    }
+
+    @Override
     protected JsonNode getConfig() {
         var configJson = mapper.createObjectNode();
         configJson.put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)));
@@ -80,11 +85,13 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
             throws IOException {
         // Records returned from this method will be compared against records provided to the connector
         // to verify they were written correctly
-
-        final String tableName = ElasticsearchAirbyteMessageConsumerFactory.streamToIndexName(namespace, streamName);
+        final String indexName = new ElasticsearchWriteConfig()
+                .setNamespace(namespace)
+                .setStreamName(streamName)
+                .getIndexName();
 
         ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
-        return connection.getRecords(tableName);
+        return connection.getRecords(indexName);
     }
 
     @Override
@@ -93,6 +100,8 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
 
     @Override
     protected void tearDown(TestDestinationEnv testEnv) {
+        ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
+        connection.allIndices().forEach(connection::deleteIndexIfPresent);
     }
 
 }

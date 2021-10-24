@@ -27,10 +27,6 @@ public class ElasticsearchDestinationTest {
     private static final Logger log = LoggerFactory.getLogger(ElasticsearchDestinationTest.class);
 
     private static ElasticsearchContainer container;
-    private static final String NAMESPACE = "public";
-    private static final String STREAM_NAME = "id_and_name";
-    private static final String INDEX_NAME = ElasticsearchAirbyteMessageConsumerFactory.streamToIndexName(NAMESPACE, STREAM_NAME);
-
     private static JsonNode config;
 
     @BeforeAll
@@ -55,45 +51,81 @@ public class ElasticsearchDestinationTest {
 
     @Test
     public void withAppend() throws Exception {
-        e2e(getCatalog(DestinationSyncMode.APPEND));
+
+        var primaryKey = new ArrayList<List<String>>();
+        primaryKey.add(List.of("id"));
+
+        final var namespace = "public";
+        final var streamName = "appended_records";
+        final var testConfig = new TestConfig(namespace, streamName, DestinationSyncMode.APPEND, primaryKey);
+        final var testMessages = generateTestMessages(namespace, streamName, 0, 10);
+        final var firstRecordSet = e2e(testConfig, testMessages);
+
+        assertEquals(
+                testMessages.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData).collect(Collectors.toList()),
+                firstRecordSet);
+
+        final var secondRecordSet = e2e(testConfig, testMessages);
+        assertEquals(testMessages.size() * 2, secondRecordSet.size(), "it should have appended the test messages twice");
     }
 
     @Test
     public void withOverwrite() throws Exception {
-        e2e(getCatalog(DestinationSyncMode.OVERWRITE));
+        var primaryKey = new ArrayList<List<String>>();
+        primaryKey.add(List.of("id"));
+
+        final var namespace = "public";
+        final var streamName = "overwritten_records";
+        final var testConfig = new TestConfig(namespace, streamName, DestinationSyncMode.OVERWRITE, primaryKey);
+        final var testMessages = generateTestMessages(namespace, streamName, 0, 10);
+        final var firstRecordSet = e2e(testConfig, testMessages);
+
+        assertEquals(
+                testMessages.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData).collect(Collectors.toList()),
+                firstRecordSet);
+
+        final var secondRecordSet = e2e(testConfig, testMessages);
+        assertEquals(testMessages.size(), secondRecordSet.size(), "it should only have 1 set of test messages");
     }
 
     @Test
     public void withAppendDedup() throws Exception {
-        e2e(getCatalog(DestinationSyncMode.APPEND_DEDUP));
-    }
-
-    private ConfiguredAirbyteCatalog getCatalog(DestinationSyncMode destinationSyncMode) {
         var primaryKey = new ArrayList<List<String>>();
         primaryKey.add(List.of("id"));
-        return new ConfiguredAirbyteCatalog().withStreams(List.of(
-                        CatalogHelpers.createConfiguredAirbyteStream(
-                                        STREAM_NAME,
-                                        NAMESPACE,
-                                        Field.of("id", JsonSchemaPrimitive.NUMBER),
-                                        Field.of("name", JsonSchemaPrimitive.STRING))
-                                .withDestinationSyncMode(destinationSyncMode)
-                                .withPrimaryKey(primaryKey)
-                )
-        );
+
+        final var namespace = "public";
+        final var streamName = "appended_and_deduped_records";
+        final var testConfig = new TestConfig(namespace, streamName, DestinationSyncMode.APPEND_DEDUP, primaryKey);
+        final var firstTestMessages = generateTestMessages(namespace, streamName, 0, 10);
+        final var firstRecordSet = e2e(testConfig, firstTestMessages);
+
+        assertEquals(
+                firstTestMessages.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData).collect(Collectors.toList()),
+                firstRecordSet);
+
+
+        final var secondTestMessages = generateTestMessages(namespace, streamName, 5, 15);
+
+        final var secondRecordSet = e2e(testConfig, secondTestMessages);
+        assertEquals(15, secondRecordSet.size(), "it should upsert records with matching primary keys");
     }
 
-    private void e2e(ConfiguredAirbyteCatalog catalog) throws Exception {
-        var destination = new ElasticsearchDestination();
 
-        var check = destination.check(config);
+
+    private List<JsonNode> e2e(final TestConfig testConfig, final List<AirbyteMessage> testMessages) throws Exception {
+        final var catalog = testConfig.getCatalog();
+        final var namespace = testConfig.getNamespace();
+        final var streamName = testConfig.getStreamName();
+        final var indexName = testConfig.getIndexName();
+        final var destination = new ElasticsearchDestination();
+
+        final var check = destination.check(config);
         log.info("check status: {}", check);
 
         final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
-        final List<AirbyteMessage> expectedRecords = getNRecords(10);
 
         consumer.start();
-        expectedRecords.forEach(m -> {
+        testMessages.forEach(m -> {
             try {
                 consumer.accept(m);
             } catch (final Exception e) {
@@ -102,34 +134,53 @@ public class ElasticsearchDestinationTest {
         });
         consumer.accept(new AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
-                .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(NAMESPACE + "." + STREAM_NAME, 10)))));
+                .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(namespace + "." + streamName, testMessages.size())))));
         consumer.close();
 
         final var connection = new ElasticsearchConnection(ConnectorConfiguration.fromJsonNode(config));
 
         final List<JsonNode> actualRecords =
-                connection.getRecords(INDEX_NAME);
+                connection.getRecords(indexName);
 
         for (var record :
                 actualRecords) {
             log.info("actual record: {}", record);
         }
-        assertEquals(
-                expectedRecords.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData).collect(Collectors.toList()),
-                actualRecords);
+
+        return actualRecords;
     }
 
     // generate some messages. Taken from the postgres destination test
-    private List<AirbyteMessage> getNRecords(final int n) {
-        return IntStream.range(0, n)
+    private List<AirbyteMessage> generateTestMessages(final String namespace, final String streamName, final int start, final int end) {
+        return IntStream.range(start, end)
                 .boxed()
                 .map(i -> new AirbyteMessage()
                         .withType(AirbyteMessage.Type.RECORD)
                         .withRecord(new AirbyteRecordMessage()
-                                .withStream(STREAM_NAME)
-                                .withNamespace(NAMESPACE)
+                                .withStream(streamName)
+                                .withNamespace(namespace)
                                 .withEmittedAt(Instant.now().toEpochMilli())
                                 .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
                 .collect(Collectors.toList());
+    }
+
+    private static class TestConfig extends ElasticsearchWriteConfig {
+
+        public TestConfig(String namespace, String streamName, DestinationSyncMode destinationSyncMode, ArrayList<List<String>> primaryKey) {
+            super(namespace, streamName, destinationSyncMode, primaryKey);
+        }
+
+        ConfiguredAirbyteCatalog getCatalog() {
+            return new ConfiguredAirbyteCatalog().withStreams(List.of(
+                            CatalogHelpers.createConfiguredAirbyteStream(
+                                            this.getStreamName(),
+                                            this.getNamespace(),
+                                            Field.of("id", JsonSchemaPrimitive.NUMBER),
+                                            Field.of("name", JsonSchemaPrimitive.STRING))
+                                    .withDestinationSyncMode(this.getSyncMode())
+                                    .withPrimaryKey(this.getPrimaryKey())
+                    )
+            );
+        }
     }
 }

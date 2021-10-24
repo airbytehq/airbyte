@@ -6,12 +6,10 @@ package io.airbyte.integrations.destination.elasticsearch;
 
 import co.elastic.clients.base.*;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._core.BulkRequest;
-import co.elastic.clients.elasticsearch._core.BulkResponse;
-import co.elastic.clients.elasticsearch._core.CreateResponse;
-import co.elastic.clients.elasticsearch._core.SearchResponse;
+import co.elastic.clients.elasticsearch._core.*;
 import co.elastic.clients.elasticsearch._core.search.Hit;
 import co.elastic.clients.elasticsearch._core.search.HitsMetadata;
+import co.elastic.clients.elasticsearch.cat.indices.IndicesRecord;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,6 +41,7 @@ public class ElasticsearchConnection {
     private final ElasticsearchClient client;
     private final RestClient restClient;
     private final HttpHost httpHost;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     /**
      * Creates a new ElasticsearchConnection that can be used to read/write records to indices
@@ -98,8 +97,11 @@ public class ElasticsearchConnection {
     public boolean ping() {
         try {
             return client.ping().value();
-        } catch (IOException e) {
-            log.error("failed to ping elasticsearch server", e);
+        } catch (ApiException e) {
+            log.error("failed to ping elasticsearch", unwrappedApiException("failed write operation", e));
+            return false;
+        } catch (Exception e) {
+            log.error("unknown exception while pinging elasticsearch server", e);
             return false;
         }
     }
@@ -189,13 +191,24 @@ public class ElasticsearchConnection {
         this.client.shutdown();
     }
 
+    public List<String> allIndices() {
+        try {
+            var response = client.cat().indices(r -> r);
+            return response.valueBody().stream().map(IndicesRecord::index).collect(Collectors.toList());
+        } catch (ApiException e) {
+            log.error("", unwrappedApiException("failed to get indices", e));
+        } catch (IOException e) {
+            log.error("unknown exception while getting indices", e);
+        }
+        return new ArrayList<>();
+    }
+
     /**
      * Creates an index on Elasticsearch if it's missing
      *
      * @param index the index name to create
-     * @throws IOException if there is communication error, or if the index fails to create
      */
-    public void createIndexIfMissing(String index) throws IOException {
+    public void createIndexIfMissing(String index) {
         try {
             BooleanResponse existsResponse = client.indices().exists(b -> b.index(index));
             if (existsResponse.value()) {
@@ -207,11 +220,12 @@ public class ElasticsearchConnection {
             if (createResponse.acknowledged() && createResponse.shardsAcknowledged()) {
                 log.info("created index: {}", index);
             } else {
-                log.info("did not create index: {}, {}", index, createResponse);
+                log.info("did not create index: {}, {}", index, mapper.writeValueAsString(createResponse));
             }
+        } catch (ApiException e) {
+            log.warn("", unwrappedApiException("failed to create index", e));
         } catch (IOException e) {
-            log.error("failed to create index: {}", e.getMessage());
-            throw e;
+            log.warn("unknown exception while creating index", e);
         }
     }
 
@@ -228,7 +242,7 @@ public class ElasticsearchConnection {
         } catch (ApiException e) {
             log.warn("", unwrappedApiException("failed to delete index", e));
         } catch (IOException e) {
-            log.warn("unknown exception", e);
+            log.warn("unknown exception while deleting index", e);
         }
     }
 
@@ -239,9 +253,21 @@ public class ElasticsearchConnection {
      * @param destinationIndexName The destination index name to clone to.
      */
     public void replaceIndex(String sourceIndexName, String destinationIndexName) {
-        // delete the destination if it exists
-        deleteIndexIfPresent(destinationIndexName);
+        log.info("replacing index: {}, with index: {}", destinationIndexName, sourceIndexName);
         try {
+            var sourceExists = client.indices().exists(i -> i.index(sourceIndexName));
+            if (!sourceExists.value()) {
+                throw new RuntimeException(
+                        String.format("the source index does not exist. unable to replace the destination index. source: %s, destination: %s", sourceIndexName, destinationIndexName));
+            }
+
+            // delete the destination if it exists
+            var destinationExists = client.indices().exists(i -> i.index(destinationIndexName));
+            if (destinationExists.value()) {
+                log.warn("deleting existing index: {}", destinationIndexName);
+                deleteIndexIfPresent(destinationIndexName);
+            }
+
             // make the source index read-only before cloning
             // I think theres a bug in the client
             // https://github.com/elastic/elasticsearch-java/issues/37
@@ -257,7 +283,7 @@ public class ElasticsearchConnection {
         } catch (ApiException e) {
             throw unwrappedApiException("failed to delete index", e);
         } catch (IOException e) {
-            throw new RuntimeException("unknown exception", e);
+            throw new RuntimeException("unknown exception while replacing index", e);
         }
     }
 

@@ -14,9 +14,7 @@ import io.airbyte.protocol.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class ElasticsearchDestination extends BaseConnector implements Destination {
@@ -61,22 +59,25 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
         final ConnectorConfiguration configObject = convertConfig(config);
         final ElasticsearchConnection connection = new ElasticsearchConnection(configObject);
 
-        final Map<String, ElasticsearchWriteConfig> writeConfigs = new HashMap<>();
+        final List<ElasticsearchWriteConfig> writeConfigs = new ArrayList<>();
         for (final ConfiguredAirbyteStream stream : configuredCatalog.getStreams()) {
+            final String namespace = stream.getStream().getNamespace();
             final String streamName = stream.getStream().getName();
             final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
             if (syncMode == null) {
                 throw new IllegalStateException("Undefined destination sync mode");
             }
-            final boolean unsupportedMode = syncMode != DestinationSyncMode.APPEND;
-            if (unsupportedMode) {
-                LOGGER.warn("upserting records");
+            List<List<String>> primaryKey = null;
+            if (syncMode != DestinationSyncMode.APPEND) {
+                LOGGER.info("not using DestinationSyncMode.APPEND, so using primary key");
+                primaryKey = stream.getPrimaryKey();
             }
-            LOGGER.info("adding write config. stream: {}, syncMode: {}", streamName, syncMode);
-            writeConfigs.put(stream.getStream().getName(), new ElasticsearchWriteConfig()
+            LOGGER.info("adding write config. namespace: {}, stream: {}, syncMode: {}", namespace, streamName, syncMode);
+            writeConfigs.add(new ElasticsearchWriteConfig()
                     .setSyncMode(syncMode)
-                    .setNamespace(stream.getStream().getNamespace())
-                    .setPrimaryKey(stream.getPrimaryKey()));
+                    .setNamespace(namespace)
+                    .setStreamName(stream.getStream().getName())
+                    .setPrimaryKey(primaryKey));
         }
 
         return ElasticsearchAirbyteMessageConsumerFactory.create(outputRecordCollector, connection, writeConfigs, configuredCatalog);
