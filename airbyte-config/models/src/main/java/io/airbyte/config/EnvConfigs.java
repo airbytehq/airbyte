@@ -7,6 +7,7 @@ package io.airbyte.config;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogClientSingleton;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -132,11 +133,18 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getDevVersion() {
-    final String devVersion = Objects.requireNonNullElse(getEnv(DEV_VERSION), "dev");
-    if (!devVersion.equals("dev")) {
-      LOGGER.info("Overriding dev version to {}", devVersion);
+    final String devVersion = getEnv(DEV_VERSION);
+    if (devVersion == null || devVersion.isBlank() || devVersion.equalsIgnoreCase("dev")) {
+      return "dev";
     }
-    return devVersion;
+
+    LOGGER.info("Overriding dev version to {}", devVersion);
+    try {
+      return new AirbyteVersion(devVersion).getVersion();
+    } catch (Exception e) {
+      LOGGER.error("Dev version is invalid: " + devVersion, e);
+      return "dev";
+    }
   }
 
   @Override

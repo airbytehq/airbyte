@@ -51,8 +51,8 @@ class EnvConfigsTest {
 
     // under dev mode, the dev version can override the airbyte version
     // for the purpose of testing version specific changes locally
-    when(function.apply(EnvConfigs.DEV_VERSION)).thenReturn("arbitrary-dev-version");
-    Assertions.assertEquals("arbitrary-dev-version", config.getAirbyteVersion());
+    when(function.apply(EnvConfigs.DEV_VERSION)).thenReturn("0.43.19");
+    Assertions.assertEquals("0.43.19", config.getAirbyteVersion());
   }
 
   @Test
@@ -60,8 +60,14 @@ class EnvConfigsTest {
     when(function.apply(EnvConfigs.DEV_VERSION)).thenReturn(null);
     Assertions.assertEquals("dev", config.getDevVersion());
 
-    when(function.apply(EnvConfigs.DEV_VERSION)).thenReturn("arbitrary-version");
-    Assertions.assertEquals("arbitrary-version", config.getDevVersion());
+    when(function.apply(EnvConfigs.DEV_VERSION)).thenReturn("   ");
+    Assertions.assertEquals("dev", config.getDevVersion());
+
+    when(function.apply(EnvConfigs.DEV_VERSION)).thenReturn("invalid-version");
+    Assertions.assertEquals("dev", config.getDevVersion());
+
+    when(function.apply(EnvConfigs.DEV_VERSION)).thenReturn("1.1.1-beta");
+    Assertions.assertEquals("1.1.1-beta", config.getDevVersion());
   }
 
   @Test
