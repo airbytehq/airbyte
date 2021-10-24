@@ -84,6 +84,13 @@ The build will take a few minutes. Once it completes, Airbyte compiled at curren
 
 In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 
+The `dev` version is considered compatible with any specific version. If you want to test version specific changes, you can run the `dev` mode at a specific version by setting the `DEV_VERSION` environment variable. When `VERSION=dev`, the `DEV_VERSION` variable will override the version the server is running on. For example:
+
+```bash
+SUB_BUILD=PLATFORM ./gradlew build
+VERSION=dev DEV_VERSION=0.30.20-alpha docker-compose up
+```
+
 ## Run acceptance tests
 
 To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
