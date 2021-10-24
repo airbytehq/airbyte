@@ -43,11 +43,11 @@ class JsonSchemaValidatorTest {
   void testValidateSuccess() {
     final JsonSchemaValidator validator = new JsonSchemaValidator();
 
-    JsonNode object1 = Jsons.deserialize("{\"host\":\"abc\"}");
+    final JsonNode object1 = Jsons.deserialize("{\"host\":\"abc\"}");
     assertTrue(validator.validate(VALID_SCHEMA, object1).isEmpty());
     assertDoesNotThrow(() -> validator.ensure(VALID_SCHEMA, object1));
 
-    JsonNode object2 = Jsons.deserialize("{\"host\":\"abc\", \"port\":1}");
+    final JsonNode object2 = Jsons.deserialize("{\"host\":\"abc\", \"port\":1}");
     assertTrue(validator.validate(VALID_SCHEMA, object2).isEmpty());
     assertDoesNotThrow(() -> validator.ensure(VALID_SCHEMA, object2));
   }
@@ -56,11 +56,11 @@ class JsonSchemaValidatorTest {
   void testValidateFail() {
     final JsonSchemaValidator validator = new JsonSchemaValidator();
 
-    JsonNode object1 = Jsons.deserialize("{}");
+    final JsonNode object1 = Jsons.deserialize("{}");
     assertFalse(validator.validate(VALID_SCHEMA, object1).isEmpty());
     assertThrows(JsonValidationException.class, () -> validator.ensure(VALID_SCHEMA, object1));
 
-    JsonNode object2 = Jsons.deserialize("{\"host\":\"abc\", \"port\":9999999}");
+    final JsonNode object2 = Jsons.deserialize("{\"host\":\"abc\", \"port\":9999999}");
     assertFalse(validator.validate(VALID_SCHEMA, object2).isEmpty());
     assertThrows(JsonValidationException.class, () -> validator.ensure(VALID_SCHEMA, object2));
   }

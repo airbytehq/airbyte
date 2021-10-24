@@ -84,7 +84,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected String getDefaultSchema(JsonNode config) {
+  protected String getDefaultSchema(final JsonNode config) {
     if (config.get("database") == null) {
       return null;
     }
@@ -92,10 +92,10 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -103,7 +103,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     return Databases.createDatabase(
         db.getUsername(),
         db.getPassword(),
@@ -123,14 +123,15 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
-    String schema = namingResolver.getIdentifier(namespace);
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+      throws Exception {
+    final String tableName = namingResolver.getIdentifier(streamName);
+    final String schema = namingResolver.getIdentifier(namespace);
     return retrieveRecordsFromTable(tableName, schema);
   }
 
   @Override
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     final String resolved = namingResolver.getIdentifier(identifier);
     result.add(identifier);
@@ -142,7 +143,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
     setLocalInFileToTrue();
@@ -162,7 +163,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
     executeQuery("GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
   }
 
-  private void executeQuery(String query) {
+  private void executeQuery(final String query) {
     try {
       Databases.createDatabase(
           "root",
@@ -175,13 +176,13 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
           SQLDialect.MYSQL).query(
               ctx -> ctx
                   .execute(query));
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     db.stop();
     db.close();
   }
@@ -243,7 +244,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
     // overrides test with a no-op until we handle full UTF-8 in the destination
   }
 
-  protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
+  protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
     if (expectedValue.isBoolean()) {
       // Boolean in MySQL are stored as TINYINT (0 or 1) so we force them to boolean values here
       assertEquals(expectedValue.asBoolean(), actualValue.asBoolean());

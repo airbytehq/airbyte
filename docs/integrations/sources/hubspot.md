@@ -34,6 +34,8 @@ This source is capable of syncing the following tables and their data:
 * [Tickets](https://developers.hubspot.com/docs/api/crm/tickets)
 * [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows)
 
+**Note**: Hubspot API currently only supports `quotes` endpoint using API Key, using Oauth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)). 
+
 ## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
 
 #### Requirements
@@ -93,6 +95,7 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.17 | 2021-10-14 | [6995](https://github.com/airbytehq/airbyte/pull/6995) | Update `discover` method: disable `quotes` stream when using OAuth config  |
 | 0.1.16 | 2021-09-27 | [6465](https://github.com/airbytehq/airbyte/pull/6465) | Implement OAuth support. Use CDK authenticator instead of connector specific authenticator |
 | 0.1.15 | 2021-09-23 | [6374](https://github.com/airbytehq/airbyte/pull/6374) | Use correct schema for `owners` stream |
 | 0.1.14 | 2021-09-08 | [5693](https://github.com/airbytehq/airbyte/pull/5693) | Include deal\_to\_contact association when pulling deal stream and include contact ID in contact stream |

@@ -159,7 +159,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return new JdbcSourceOperations();
   }
 
-  protected String createTableQuery(String tableName, String columnClause, String primaryKeyClause) {
+  protected String createTableQuery(final String tableName, final String columnClause, final String primaryKeyClause) {
     return String.format("CREATE TABLE %s(%s %s %s)",
         tableName, columnClause, primaryKeyClause.equals("") ? "" : ",", primaryKeyClause);
   }

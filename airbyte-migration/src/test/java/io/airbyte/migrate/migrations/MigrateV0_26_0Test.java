@@ -38,7 +38,7 @@ public class MigrateV0_26_0Test {
   public static final ResourceId STANDARD_WORKSPACE_RESOURCE_ID = ResourceId
       .fromConstantCase(ResourceType.CONFIG, "STANDARD_WORKSPACE");
 
-  private Stream<JsonNode> getResourceStream(String resourcePath) throws IOException {
+  private Stream<JsonNode> getResourceStream(final String resourcePath) throws IOException {
     final ArrayNode nodeArray = (ArrayNode) Yamls
         .deserialize(MoreResources.readResource(resourcePath));
     return StreamSupport
@@ -92,7 +92,7 @@ public class MigrateV0_26_0Test {
 
   public static class MigrationTest extends MigrationV0_26_0 {
 
-    public MigrationTest(Migration previousMigration) {
+    public MigrationTest(final Migration previousMigration) {
       super(previousMigration);
     }
 

@@ -24,8 +24,8 @@ class DataAdapterTest {
 
   @Test
   public void checkSkipAll() {
-    JsonNode data = testData.deepCopy();
-    DataAdapter adapter = new DataAdapter(jsonNode -> false, replaceCCCFunction);
+    final JsonNode data = testData.deepCopy();
+    final DataAdapter adapter = new DataAdapter(jsonNode -> false, replaceCCCFunction);
     adapter.adapt(data);
 
     assertEquals(testData, data);
@@ -33,8 +33,8 @@ class DataAdapterTest {
 
   @Test
   public void checkSkip() {
-    JsonNode data = testData.deepCopy();
-    DataAdapter adapter = new DataAdapter(jsonNode -> jsonNode.isTextual() && jsonNode.textValue().contains("BBB"), replaceCCCFunction);
+    final JsonNode data = testData.deepCopy();
+    final DataAdapter adapter = new DataAdapter(jsonNode -> jsonNode.isTextual() && jsonNode.textValue().contains("BBB"), replaceCCCFunction);
     adapter.adapt(data);
 
     assertEquals(testData, data);
@@ -42,8 +42,8 @@ class DataAdapterTest {
 
   @Test
   public void checkAdapt() {
-    JsonNode data = testData.deepCopy();
-    DataAdapter adapter = new DataAdapter(jsonNode -> jsonNode.isTextual() && jsonNode.textValue().contains("CCC"), replaceCCCFunction);
+    final JsonNode data = testData.deepCopy();
+    final DataAdapter adapter = new DataAdapter(jsonNode -> jsonNode.isTextual() && jsonNode.textValue().contains("CCC"), replaceCCCFunction);
     adapter.adapt(data);
     System.out.println(data);
 

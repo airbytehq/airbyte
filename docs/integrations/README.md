@@ -102,6 +102,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Sugar CRM](sources/sugar-crm.md) | Beta |
 | [SurveyMonkey](sources/surveymonkey.md) | Beta |
 | [Tempo](sources/tempo.md) | Beta |
+| [TikTok Marketing](./sources/tiktok-marketing.md)| Alpha |
 | [Trello](sources/trello.md) | Beta |
 | [Twilio](sources/twilio.md) | Beta |
 | [US Census](sources/us-census.md) | Alpha |
@@ -121,12 +122,12 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | :--- | :--- |
 | [AzureBlobStorage](destinations/azureblobstorage.md) | Alpha |
 | [BigQuery](destinations/bigquery.md) | Certified |
-| [Chargify \(Keen\)]() | Alpha |
+| [Chargify \(Keen\)](destinations/chargify.md) | Alpha |
 | [Databricks](destinations/databricks.md) | Beta |
 | [Google Cloud Storage \(GCS\)](destinations/gcs.md) | Alpha |
 | [Google Pubsub](destinations/pubsub.md) | Alpha |
 | [Kafka](destinations/kafka.md) | Alpha |
-| [Keen]() | Alpha |
+| [Keen](destinations/keen.md) | Alpha |
 | [Local CSV](destinations/local-csv.md) | Certified |
 | [Local JSON](destinations/local-json.md) | Certified |
 | [MeiliSearch](destinations/meilisearch.md) | Beta |

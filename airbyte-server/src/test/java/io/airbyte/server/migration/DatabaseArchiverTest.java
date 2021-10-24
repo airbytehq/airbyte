@@ -40,7 +40,7 @@ public class DatabaseArchiverTest {
     container.start();
 
     database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    JobPersistence persistence = new DefaultJobPersistence(database);
+    final JobPersistence persistence = new DefaultJobPersistence(database);
     databaseArchiver = new DatabaseArchiver(persistence);
   }
 

@@ -18,12 +18,14 @@ public class WebBackendDestinationsHandler {
   private final DestinationHandler destinationHandler;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  public WebBackendDestinationsHandler(DestinationHandler destinationHandler, ConfigRepository configRepository, TrackingClient trackingClient) {
+  public WebBackendDestinationsHandler(final DestinationHandler destinationHandler,
+                                       final ConfigRepository configRepository,
+                                       final TrackingClient trackingClient) {
     this.destinationHandler = destinationHandler;
     oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
   }
 
-  public DestinationRead webBackendCreateDestination(DestinationCreate destinationCreate)
+  public DestinationRead webBackendCreateDestination(final DestinationCreate destinationCreate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     destinationCreate.connectionConfiguration(
         oAuthConfigSupplier.injectDestinationOAuthParameters(

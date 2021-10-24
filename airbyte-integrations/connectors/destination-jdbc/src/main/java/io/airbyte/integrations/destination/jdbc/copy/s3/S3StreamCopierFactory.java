@@ -20,21 +20,21 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Con
    * Used by the copy consumer.
    */
   @Override
-  public StreamCopier create(String configuredSchema,
-                             S3Config s3Config,
-                             String stagingFolder,
-                             ConfiguredAirbyteStream configuredStream,
-                             ExtendedNameTransformer nameTransformer,
-                             JdbcDatabase db,
-                             SqlOperations sqlOperations) {
+  public StreamCopier create(final String configuredSchema,
+                             final S3Config s3Config,
+                             final String stagingFolder,
+                             final ConfiguredAirbyteStream configuredStream,
+                             final ExtendedNameTransformer nameTransformer,
+                             final JdbcDatabase db,
+                             final SqlOperations sqlOperations) {
     try {
-      AirbyteStream stream = configuredStream.getStream();
-      DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
-      String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
-      AmazonS3 s3Client = S3StreamCopier.getAmazonS3(s3Config);
+      final AirbyteStream stream = configuredStream.getStream();
+      final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
+      final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      final AmazonS3 s3Client = S3StreamCopier.getAmazonS3(s3Config);
 
       return create(stagingFolder, syncMode, schema, stream.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }

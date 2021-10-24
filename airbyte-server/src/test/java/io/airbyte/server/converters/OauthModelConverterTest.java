@@ -44,8 +44,8 @@ class OauthModelConverterTest {
 
   @ParameterizedTest
   @MethodSource("testProvider")
-  public void testIt(List<List<String>> initParams, List<List<String>> outputParams, List<String> rootObject) {
-    ConnectorSpecification input = new ConnectorSpecification().withAuthSpecification(
+  public void testIt(final List<List<String>> initParams, final List<List<String>> outputParams, final List<String> rootObject) {
+    final ConnectorSpecification input = new ConnectorSpecification().withAuthSpecification(
         new AuthSpecification()
             .withAuthType(AuthSpecification.AuthType.OAUTH_2_0)
             .withOauth2Specification(new OAuth2Specification()
@@ -53,7 +53,7 @@ class OauthModelConverterTest {
                 .withOauthFlowOutputParameters(outputParams)
                 .withRootObject(rootObject)));
 
-    io.airbyte.api.model.AuthSpecification expected = new io.airbyte.api.model.AuthSpecification()
+    final io.airbyte.api.model.AuthSpecification expected = new io.airbyte.api.model.AuthSpecification()
         .authType(io.airbyte.api.model.AuthSpecification.AuthTypeEnum.OAUTH2_0)
         .oauth2Specification(
             new io.airbyte.api.model.OAuth2Specification()
@@ -61,7 +61,7 @@ class OauthModelConverterTest {
                 .oauthFlowOutputParameters(outputParams)
                 .rootObject(rootObject));
 
-    Optional<io.airbyte.api.model.AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(input);
+    final Optional<io.airbyte.api.model.AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(input);
     assertTrue(authSpec.isPresent());
     assertEquals(expected, authSpec.get());
   }

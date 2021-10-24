@@ -40,7 +40,7 @@ public class LoggingDestination extends BaseConnector implements Destination {
 
     private final Consumer<AirbyteMessage> outputRecordCollector;
 
-    public RecordConsumer(Consumer<AirbyteMessage> outputRecordCollector) {
+    public RecordConsumer(final Consumer<AirbyteMessage> outputRecordCollector) {
       this.outputRecordCollector = outputRecordCollector;
     }
 

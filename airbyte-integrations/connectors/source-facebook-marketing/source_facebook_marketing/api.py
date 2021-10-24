@@ -6,13 +6,15 @@ import json
 from time import sleep
 
 import pendulum
-from airbyte_cdk.entrypoint import logger
+import logging
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.common import FacebookAPIException
+
+logger = logging.getLogger(__name__)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):

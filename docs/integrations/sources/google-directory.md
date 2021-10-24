@@ -53,3 +53,9 @@ At the end of this process, you should have JSON credentials to this Google Serv
 
 You should now be ready to use the Google Directory connector in Airbyte.
 
+
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.4  | 2021-10-19 | [7167](https://github.com/airbytehq/airbyte/pull/7167) | Add organizations and phones to `users` schema |

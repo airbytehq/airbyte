@@ -42,7 +42,7 @@ public class SilentDestination extends BaseConnector implements Destination {
 
     private final Consumer<AirbyteMessage> outputRecordCollector;
 
-    public RecordConsumer(Consumer<AirbyteMessage> outputRecordCollector) {
+    public RecordConsumer(final Consumer<AirbyteMessage> outputRecordCollector) {
       this.outputRecordCollector = outputRecordCollector;
     }
 
@@ -56,7 +56,7 @@ public class SilentDestination extends BaseConnector implements Destination {
         outputRecordCollector.accept(message);
       }
 
-      var curr = counter.incrementAndGet();
+      final var curr = counter.incrementAndGet();
       if (curr % 1000 == 0) {
         LOGGER.info("Record count: {}", curr);
       }
