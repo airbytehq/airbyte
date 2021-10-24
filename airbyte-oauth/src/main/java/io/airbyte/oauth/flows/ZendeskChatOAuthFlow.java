@@ -43,9 +43,9 @@ public class ZendeskChatOAuthFlow extends BaseOAuthFlow {
         // required
         .addParameter("client_id", clientId)
         .addParameter("redirect_uri", redirectUrl)
-        .addParameter("state", getState())
         .addParameter("response_type", "code")
-        .addParameter("scope", "read%20chat");
+        .addParameter("scope", "read%20chat")
+        .addParameter("state", getState());
     try {
       return builder.build().toString();
     } catch (final URISyntaxException e) {
