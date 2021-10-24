@@ -142,7 +142,7 @@ public class EnvConfigs implements Configs {
     try {
       return new AirbyteVersion(devVersion).getVersion();
     } catch (Exception e) {
-      LOGGER.error("Dev version is invalid: " + devVersion, e);
+      LOGGER.error("Dev version \"{}\" is invalid; it will fall back to \"dev\"", devVersion);
       return "dev";
     }
   }
