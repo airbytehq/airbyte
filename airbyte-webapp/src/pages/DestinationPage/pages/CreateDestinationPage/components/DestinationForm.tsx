@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { Button } from "components";
 import ContentCard from "components/ContentCard";
+import { SetupGuide } from "components/SetupGuide";
+import { SetupGuideRef } from "components/SetupGuide/SetupGuide";
 import ServiceForm from "views/Connector/ServiceForm";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionSpecificationLoad } from "hooks/services/useDestinationHook";
@@ -11,6 +14,7 @@ import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { useAnalytics } from "hooks/useAnalytics";
+import useDocumentation from "hooks/services/useDocumentation";
 
 type IProps = {
   onSubmit: (values: {
@@ -34,6 +38,8 @@ const DestinationForm: React.FC<IProps> = ({
   jobInfo,
   afterSelectConnector,
 }) => {
+  const setupGuideRef = useRef<SetupGuideRef>({} as SetupGuideRef);
+
   const { location } = useRouter();
   const analyticsService = useAnalytics();
 
@@ -46,7 +52,9 @@ const DestinationForm: React.FC<IProps> = ({
     sourceDefinitionError,
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
 
-  console.log(sourceDefinitionError);
+  const { data: destinationDefinitionDocs } = useDocumentation(
+    destinationDefinitionSpecification?.documentationUrl
+  );
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
@@ -79,26 +87,42 @@ const DestinationForm: React.FC<IProps> = ({
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
-    <ContentCard title={<FormattedMessage id="onboarding.destinationSetUp" />}>
-      <ServiceForm
-        onServiceSelect={onDropDownSelect}
-        fetchingConnectorError={sourceDefinitionError}
-        onSubmit={onSubmitForm}
-        formType="destination"
-        availableServices={destinationDefinitions}
-        selectedConnector={destinationDefinitionSpecification}
-        hasSuccess={hasSuccess}
-        errorMessage={errorMessage}
-        isLoading={isLoading}
-        formValues={
-          destinationDefinitionId
-            ? { serviceType: destinationDefinitionId }
-            : undefined
-        }
-        allowChangeConnector
+    <>
+      <SetupGuide
+        ref={setupGuideRef}
+        content={destinationDefinitionDocs}
+        shouldBeShown={!!destinationDefinitionDocs}
       />
-      <JobsLogItem jobInfo={jobInfo} />
-    </ContentCard>
+      <ContentCard
+        actions={
+          !!destinationDefinitionDocs && (
+            <Button secondary onClick={setupGuideRef?.current.open}>
+              <FormattedMessage id="form.setupGuide" />
+            </Button>
+          )
+        }
+        title={<FormattedMessage id="onboarding.destinationSetUp" />}
+      >
+        <ServiceForm
+          onServiceSelect={onDropDownSelect}
+          fetchingConnectorError={sourceDefinitionError}
+          onSubmit={onSubmitForm}
+          formType="destination"
+          availableServices={destinationDefinitions}
+          selectedConnector={destinationDefinitionSpecification}
+          hasSuccess={hasSuccess}
+          errorMessage={errorMessage}
+          isLoading={isLoading}
+          formValues={
+            destinationDefinitionId
+              ? { serviceType: destinationDefinitionId }
+              : undefined
+          }
+          allowChangeConnector
+        />
+        <JobsLogItem jobInfo={jobInfo} />
+      </ContentCard>
+    </>
   );
 };
 

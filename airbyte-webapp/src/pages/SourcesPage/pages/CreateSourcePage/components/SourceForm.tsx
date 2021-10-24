@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useRef } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
+import { Button } from "components";
 import ContentCard from "components/ContentCard";
+import { SetupGuide } from "components/SetupGuide";
+import { SetupGuideRef } from "components/SetupGuide/SetupGuide";
 import ServiceForm from "views/Connector/ServiceForm";
 import useRouter from "hooks/useRouter";
 import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
@@ -30,20 +30,6 @@ type IProps = {
   jobInfo?: JobInfo;
 };
 
-const SetupGuide = styled.div`
-  background-color: #fff;
-  position: absolute;
-  height: 100vh;
-  width: 60vw;
-  top: 0;
-  right: 0;
-  z-index: 99999;
-  box-shadow: 0 8px 10px 0 rgba(11, 10, 26, 0.04),
-    0 3px 14px 0 rgba(11, 10, 26, 0.08), 0 5px 5px 0 rgba(11, 10, 26, 0.12);
-  padding: 50px;
-  overflow: scroll;
-`;
-
 const SourceForm: React.FC<IProps> = ({
   onSubmit,
   sourceDefinitions,
@@ -52,6 +38,8 @@ const SourceForm: React.FC<IProps> = ({
   jobInfo,
   afterSelectConnector,
 }) => {
+  const setupGuideRef = useRef<SetupGuideRef>({} as SetupGuideRef);
+
   const { location } = useRouter();
   const analyticsService = useAnalytics();
 
@@ -64,6 +52,10 @@ const SourceForm: React.FC<IProps> = ({
     sourceDefinitionError,
     isLoading,
   } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+
+  const { data: sourceDefinitionDocs } = useDocumentation(
+    sourceDefinitionSpecification?.documentationUrl
+  );
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
@@ -93,26 +85,23 @@ const SourceForm: React.FC<IProps> = ({
   };
 
   const errorMessage = error ? createFormErrorMessage(error) : null;
-  const [sg, setSg] = useState<boolean>(false);
-
-  const docs = useDocumentation();
-
-  useEffect(() => {
-    if (sourceDefinitionSpecification) {
-      docs.mutate(sourceDefinitionSpecification);
-    }
-  }, [sourceDefinitionSpecification, docs]);
 
   return (
     <>
-      {sg && docs.data && (
-        <SetupGuide onClick={() => setSg(false)}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]} children={docs.data} />
-        </SetupGuide>
-      )}
+      <SetupGuide
+        ref={setupGuideRef}
+        content={sourceDefinitionDocs}
+        shouldBeShown={!!sourceDefinitionDocs}
+      />
       <ContentCard
-        onButtonClick={() => setSg(true)}
         title={<FormattedMessage id="onboarding.sourceSetUp" />}
+        actions={
+          !!sourceDefinitionDocs && (
+            <Button secondary onClick={setupGuideRef?.current.open}>
+              <FormattedMessage id="form.setupGuide" />
+            </Button>
+          )
+        }
       >
         <ServiceForm
           onServiceSelect={onDropDownSelect}

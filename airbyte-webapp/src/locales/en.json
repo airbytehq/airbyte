@@ -95,6 +95,7 @@
   "form.noteStartSync": "Note that it will delete all the data in your destination and start syncing from scratch. ",
   "form.pkSelected": "{count, plural, =0 { } one {{items}} other {# keys selected}}",
   "form.url.error": "field must be a valid URL",
+  "form.setupGuide": "Setup Guide",
 
   "connectionForm.validation.error": "The form is invalid. Please make sure that all fields are correct.",
   "connectionForm.normalization.title": "Normalization",

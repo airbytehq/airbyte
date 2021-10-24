@@ -1,11 +1,11 @@
 import React from "react";
 import styled from "styled-components";
 
-import { H5, Card, Button } from "components";
+import { H5, Card } from "components";
 
 type IProps = {
+  actions?: string | React.ReactNode;
   title?: string | React.ReactNode;
-  onButtonClick?: () => void;
   className?: string;
   onClick?: () => void;
   full?: boolean;
@@ -26,18 +26,14 @@ const Header = styled.div<{ $light?: boolean }>`
   align-items: center;
   justify-content: space-between;
   border-radius: 10px 10px 0 0;
+  height: 80px;
 `;
 
 const ContentCard: React.FC<IProps> = (props) => (
   <Card className={props.className} onClick={props.onClick} full={props.full}>
     <Header $light={props.$light}>
       {props.title ? <Title>{props.title}</Title> : null}
-      <Button
-        secondary
-        onClick={() => props.onButtonClick && props.onButtonClick()}
-      >
-        Setup Guide
-      </Button>
+      {props.actions || null}
     </Header>
     {props.children}
   </Card>

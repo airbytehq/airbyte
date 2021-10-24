@@ -1,20 +1,24 @@
 import { useConfig } from "config";
-import { useMutation, UseMutationResult } from "react-query";
+import { UseQueryResult, useQuery } from "react-query";
 
-import { SourceDefinitionSpecification } from "core/domain/connector";
 import { fetchDocumentation } from "core/resources/Documentation";
 
-type UseDocumentationResult = UseMutationResult<
-  string,
-  Error,
-  SourceDefinitionSpecification
->;
+type UseDocumentationResult = UseQueryResult<string, Error>;
 
-const useDocumentation = (): UseDocumentationResult => {
+export const documentationKeys = {
+  text: (integrationUrl: string | undefined) =>
+    ["document", integrationUrl] as const,
+};
+
+const useDocumentation = (
+  documentationUrl: string | undefined
+): UseDocumentationResult => {
   const { integrationUrl } = useConfig();
 
-  return useMutation("doc", (spec: SourceDefinitionSpecification) =>
-    fetchDocumentation(spec, integrationUrl)
+  return useQuery(documentationKeys.text(documentationUrl), () =>
+    documentationUrl
+      ? fetchDocumentation(documentationUrl, integrationUrl)
+      : Promise.resolve("")
   );
 };
 
