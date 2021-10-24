@@ -15,6 +15,8 @@ public interface Configs {
 
   String getAirbyteVersion();
 
+  String getDevVersion();
+
   String getAirbyteApiHost();
 
   int getAirbyteApiPort();

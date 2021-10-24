@@ -29,6 +29,7 @@ public class EnvConfigs implements Configs {
   // env variable names
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
+  public static final String DEV_VERSION = "DEV_VERSION";
   public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String SPEC_CACHE_BUCKET = "SPEC_CACHE_BUCKET";
@@ -116,9 +117,26 @@ public class EnvConfigs implements Configs {
     return Integer.parseInt(getEnsureEnv(INTERNAL_API_HOST).split(":")[1]);
   }
 
+  /**
+   * When version is "dev", delegate to DEV_VERSION to set an arbitrary version.
+   */
   @Override
   public String getAirbyteVersion() {
-    return getEnsureEnv(AIRBYTE_VERSION);
+    final String airbyteVersion = getEnsureEnv(AIRBYTE_VERSION);
+    if (airbyteVersion.equalsIgnoreCase("dev")) {
+      return getDevVersion();
+    } else {
+      return airbyteVersion;
+    }
+  }
+
+  @Override
+  public String getDevVersion() {
+    final String devVersion = Objects.requireNonNullElse(getEnv(DEV_VERSION), "dev");
+    if (!devVersion.equals("dev")) {
+      LOGGER.info("Overriding dev version to {}", devVersion);
+    }
+    return devVersion;
   }
 
   @Override
