@@ -18,6 +18,7 @@
       "batching_max_publish_delay",
       "batching_max_messages",
       "block_if_queue_full",
+      "enable_chunking",
       "auto_update_partitions",
       "auto_update_partitions_interval"
     ],

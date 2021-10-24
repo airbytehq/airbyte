@@ -81,5 +81,3 @@ You should now have all the requirements needed to configure Pulsar as a destina
 * **Auto update partitions interval**
 
 More info about this can be found in the [Pulsar producer configs documentation site](https://pulsar.apache.org/docs/en/client-libraries-java/#producer).
-
-_NOTE_: Some configurations for the authentication are not available yet.

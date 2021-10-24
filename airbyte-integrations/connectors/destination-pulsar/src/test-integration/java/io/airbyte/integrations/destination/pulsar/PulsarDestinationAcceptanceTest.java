@@ -40,17 +40,17 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("pulsar_brokers", PULSAR.getPulsarBrokerUrl().replaceAll("pulsar://", ""))
-        .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
+        .put("pulsar_brokers", PULSAR.getHost() + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT))
+        .put("topic_pattern", TOPIC_NAME)
         .put("use_tls", false)
+        .put("producer_name", "test-producer")
         .put("access_mode", "Shared")
         .put("sync_producer", true)
         .put("compression_type", "NONE")
-        .put("enable_batching", true)
+        .put("enable_batching", false)
         .put("batching_max_publish_delay", 1)
         .put("batching_max_messages", 1000)
         .put("enable_chunking", false)
-        .put("producer_name", "test-producer")
         .put("block_if_queue_full", true)
         .put("auto_update_partitions", true)
         .put("auto_update_partitions_interval", 60)
@@ -60,8 +60,8 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("pulsar_brokers", PULSAR.getPulsarBrokerUrl())
-        .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
+        .put("pulsar_brokers", PULSAR.getHost() + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT))
+        .put("topic_pattern", TOPIC_NAME)
         .put("use_tls", false)
         .put("sync_producer", true)
         .put("access_mode", "Shared")

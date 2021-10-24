@@ -64,7 +64,7 @@ public class PulsarRecordConsumerTest {
   @SuppressWarnings("unchecked")
   public void testBuildProducerMap(final String topicPattern, final String expectedTopic) {
     final PulsarDestinationConfig config = PulsarDestinationConfig
-      .getPulsarDestinationConfig(getConfig(PULSAR.getPulsarBrokerUrl().replaceAll("pulsar://", ""), topicPattern));
+      .getPulsarDestinationConfig(getConfig(PULSAR.getHost() + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT), topicPattern));
     final PulsarRecordConsumer recordConsumer = new PulsarRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
 
     final Map<AirbyteStreamNameNamespacePair, Producer<JsonNode>> producerMap = recordConsumer.buildProducerMap();
@@ -77,7 +77,8 @@ public class PulsarRecordConsumerTest {
   @Test
   @SuppressWarnings("unchecked")
   void testCannotConnectToBrokers() throws Exception {
-    final PulsarDestinationConfig config = PulsarDestinationConfig.getPulsarDestinationConfig(getConfig("localhost:33233", TOPIC_NAME));
+    final PulsarDestinationConfig config = PulsarDestinationConfig
+      .getPulsarDestinationConfig(getConfig(PULSAR.getHost() + ":" + (PULSAR.getMappedPort(PulsarContainer.BROKER_PORT) + 10), TOPIC_NAME));
     final PulsarRecordConsumer consumer = new PulsarRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
     final List<AirbyteMessage> expectedRecords = getNRecords(10);
 
