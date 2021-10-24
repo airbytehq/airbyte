@@ -21,8 +21,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class VersionMismatchServerTest {
 
-  private static final AirbyteVersion VERSION1 = new AirbyteVersion("v1");
-  private static final AirbyteVersion VERSION2 = new AirbyteVersion("v2");
+  private static final AirbyteVersion VERSION1 = new AirbyteVersion("0.1.0-alpha");
+  private static final AirbyteVersion VERSION2 = new AirbyteVersion("0.2.0-alpha");
 
   private static URI rootUri;
   private static Server server;
