@@ -152,6 +152,7 @@ class FileStream(Stream, ABC):
 
         :return: list in time-ascending order
         """
+
         def get_storagefile_with_lastmod(filepath: str) -> Tuple[datetime, str]:
             fc = self.storagefile_class(filepath, self._provider)
             return (fc.last_modified, filepath)
