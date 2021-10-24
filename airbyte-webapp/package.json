@@ -20,7 +20,6 @@
     "@rest-hooks/legacy": "^2.0.5",
     "@sentry/react": "^6.11.0",
     "@sentry/tracing": "^6.11.0",
-    "axios": "^0.23.0",
     "dayjs": "^1.8.35",
     "firebase": "^9.0.1",
     "flat": "^5.0.2",
@@ -48,7 +47,6 @@
     "remark-gfm": "^3.0.0",
     "rest-hooks": "^5.0.20",
     "sanitize-html": "^2.3.3",
-    "styled-animated": "^1.0.0",
     "styled-components": "^5.1.1",
     "typesafe-actions": "^5.1.0",
     "yup": "^0.32.9"
