@@ -28,6 +28,8 @@ import org.slf4j.MDC;
  */
 public class MdcScope implements AutoCloseable {
 
+  public final static MdcScope DEFAULT = new Builder().build();
+
   private final Map<String, String> originalContextMap;
 
   public MdcScope(final Map<String, String> keyValuesToAdd) {
@@ -38,22 +40,22 @@ public class MdcScope implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     MDC.setContextMap(originalContextMap);
   }
 
-  public static class MdcScopeBuilder {
+  public static class Builder {
 
     private Optional<String> maybeLogPrefix = Optional.empty();
     private Optional<Color> maybePrefixColor = Optional.empty();
 
-    public MdcScopeBuilder setLogPrefix(final String logPrefix) {
+    public Builder setLogPrefix(final String logPrefix) {
       this.maybeLogPrefix = Optional.ofNullable(logPrefix);
 
       return this;
     }
 
-    public MdcScopeBuilder setPrefixColor(final Color color) {
+    public Builder setPrefixColor(final Color color) {
       this.maybePrefixColor = Optional.ofNullable(color);
 
       return this;
