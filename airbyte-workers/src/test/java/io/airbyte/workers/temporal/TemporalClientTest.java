@@ -26,6 +26,7 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
+import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.temporal.client.WorkflowClient;
 import java.io.IOException;
 import java.nio.file.Files;
