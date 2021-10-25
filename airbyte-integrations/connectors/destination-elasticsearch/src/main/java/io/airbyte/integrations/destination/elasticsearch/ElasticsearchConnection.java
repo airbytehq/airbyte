@@ -58,7 +58,6 @@ public class ElasticsearchConnection {
     httpHost = HttpHost.create(config.getEndpoint());
     restClient = RestClient.builder(httpHost)
         .setDefaultHeaders(configureHeaders(config))
-        .setHttpClientConfigCallback(new ElasticsearchHttpClientConfigCallback(config))
         .setFailureListener(new FailureListener())
         .build();
     // Create the transport that provides JSON and http services to API clients
@@ -82,14 +81,21 @@ public class ElasticsearchConnection {
    * @param config connection information
    * @return the default headers
    */
-  private Header[] configureHeaders(ConnectorConfiguration config) {
+  protected Header[] configureHeaders(ConnectorConfiguration config) {
     final var headerList = new ArrayList<Header>();
     // add Authorization header if credentials are present
     final var auth = config.getAuthenticationMethod();
-    if (auth.getMethod().equals(ElasticsearchAuthenticationMethod.secret)) {
-      var bytes = (auth.getApiKeyId() + ":" + auth.getApiKeySecret()).getBytes(StandardCharsets.UTF_8);
-      var header = "ApiKey " + Base64.getEncoder().encodeToString(bytes);
-      headerList.add(new BasicHeader("Authorization", header));
+    switch (auth.getMethod()) {
+      case secret -> {
+        var bytes = (auth.getApiKeyId() + ":" + auth.getApiKeySecret()).getBytes(StandardCharsets.UTF_8);
+        var header = "ApiKey " + Base64.getEncoder().encodeToString(bytes);
+        headerList.add(new BasicHeader("Authorization", header));
+      }
+      case basic -> {
+        var basicBytes = (auth.getUsername() + ":" + auth.getPassword()).getBytes(StandardCharsets.UTF_8);
+        var basicHeader = "Basic " + Base64.getEncoder().encodeToString(basicBytes);
+        headerList.add(new BasicHeader("Authorization", basicHeader));
+      }
     }
     return headerList.toArray(new Header[headerList.size()]);
   }
