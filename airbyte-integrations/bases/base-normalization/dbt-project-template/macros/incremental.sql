@@ -20,6 +20,6 @@
 
 {%- macro incremental_clause(col_emitted_at) -%}
 {% if is_incremental() %}
-and {{ col_emitted_at }} >= '{{ get_max_normalized_cursor(col_emitted_at) }}'
+and {{ col_emitted_at }} >= cast('{{ get_max_normalized_cursor(col_emitted_at) }}' as {{ type_timestamp_with_timezone() }})
 {% endif %}
 {%- endmacro -%}
