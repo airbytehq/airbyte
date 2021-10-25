@@ -7,10 +7,13 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": "integer"
+              "type": "number"
             },
             "currency": {
               "type": "string"
+            },
+            "new_column": {
+              "type": "number"
             },
             "date": {
               "type": "string",
@@ -22,9 +25,6 @@
             },
             "HKD@spéçiäl & characters": {
               "type": "number"
-            },
-            "HKD_special___characters": {
-              "type": "string"
             },
             "NZD": {
               "type": "number"
@@ -49,10 +49,13 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": "integer"
+              "type": "number"
             },
             "currency": {
               "type": "string"
+            },
+            "new_column": {
+              "type": "number"
             },
             "date": {
               "type": "string",
@@ -65,14 +68,11 @@
             "HKD@spéçiäl & characters": {
               "type": "number"
             },
-            "HKD_special___characters": {
-              "type": "string"
-            },
             "NZD": {
               "type": "number"
             },
             "USD": {
-              "type": "number"
+              "type": "integer"
             }
           }
         },
@@ -93,26 +93,6 @@
           "properties": {
             "id": {
               "type": "integer"
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
-      },
-      "sync_mode": "incremental",
-      "cursor_field": [],
-      "destination_sync_mode": "append_dedup",
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "dedup_cdc_excluded",
-        "json_schema": {
-          "type": ["null", "object"],
-          "properties": {
-            "id": {
-              "type": "integer"
             },
             "name": {
               "type": ["string", "null"]
@@ -133,41 +113,6 @@
         "default_cursor_field": []
       },
       "sync_mode": "incremental",
-      "cursor_field": [],
-      "destination_sync_mode": "append_dedup",
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "pos_dedup_cdcx",
-        "json_schema": {
-          "type": ["null", "object"],
-          "properties": {
-            "id": {
-              "type": "integer"
-            },
-            "name": {
-              "type": ["string", "null"]
-            },
-            "_ab_cdc_lsn": {
-              "type": ["null", "number"]
-            },
-            "_ab_cdc_updated_at": {
-              "type": ["null", "number"]
-            },
-            "_ab_cdc_deleted_at": {
-              "type": ["null", "number"]
-            },
-            "_ab_cdc_log_pos": {
-              "type": ["null", "number"]
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
-      },
-      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
