@@ -3,7 +3,7 @@
 #
 
 
-from typing import Iterator, Tuple
+from typing import Dict, Iterator, Tuple
 
 from airbyte_cdk.sources.deprecated.client import BaseClient
 
@@ -12,9 +12,9 @@ from .common import AuthError, ValidationError
 
 
 class Client(BaseClient):
-    def __init__(self, access_token: str):
+    def __init__(self, **config: Dict):
         super().__init__()
-        self._client = APIClient(access_token)
+        self._client = APIClient(access_token=config["credentials"]["access_token"])
 
     def stream__accounts(self, **kwargs) -> Iterator[dict]:
         yield from self._client.accounts.list()
