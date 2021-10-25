@@ -3271,7 +3271,7 @@ components:
           description: The url to redirect to after getting the user consent
           type: string
         inputParams:
-          description: Parameters that required for oAuth flow from user input.
+          description: Parameters that are required for oAuth flow from user input.
           type: object
           additionalProperties: true # Oauth parameters like authorization subdomain. Need to be provided by user when over UI.
     OAuthConsentRead:
@@ -3299,7 +3299,7 @@ components:
           type: object
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
         inputParams:
-          description: Parameters that required for oAuth flow from user input.
+          description: Parameters that are required for oAuth flow from user input.
           type: object
           additionalProperties: true # Oauth parameters like authorization subdomain. Need to be provided by user when over UI.
     CompleteDestinationOAuthRequest:
@@ -3320,7 +3320,7 @@ components:
           type: object
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
         inputParams:
-          description: Parameters that required for oAuth flow from user input.
+          description: Parameters that are required for oAuth flow from user input.
           type: object
           additionalProperties: true # Oauth parameters like authorization subdomain. Need to be provided by user when over UI.
     CompleteOauthResponse:
