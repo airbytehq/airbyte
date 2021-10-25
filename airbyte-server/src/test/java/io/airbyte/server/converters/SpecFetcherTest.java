@@ -65,10 +65,10 @@ class SpecFetcherTest {
 
   @Test
   void testGetSpecFromSourceDefinitionNotNull() throws IOException {
-    sourceDefinition = sourceDefinition.withSpec(connectorSpecification);
+    final StandardSourceDefinition sourceDefinitionWithSpec = Jsons.clone(sourceDefinition).withSpec(connectorSpecification);
 
     final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
-    assertEquals(connectorSpecification, specFetcher.getSpec(sourceDefinition));
+    assertEquals(connectorSpecification, specFetcher.getSpec(sourceDefinitionWithSpec));
   }
 
   @Test
@@ -83,10 +83,10 @@ class SpecFetcherTest {
 
   @Test
   void testGetSpecFromDestinationDefinitionNotNull() throws IOException {
-    destinationDefinition = destinationDefinition.withSpec(connectorSpecification);
+    final StandardDestinationDefinition destinationDefinitionWithSpec = Jsons.clone(destinationDefinition).withSpec(connectorSpecification);
 
     final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
-    assertEquals(connectorSpecification, specFetcher.getSpec(destinationDefinition));
+    assertEquals(connectorSpecification, specFetcher.getSpec(destinationDefinitionWithSpec));
   }
 
   @Test
@@ -101,10 +101,10 @@ class SpecFetcherTest {
 
   @Test
   void testGetSpecJobResponseFromSourceReturnsMockedJobMetadata() throws IOException {
-    sourceDefinition = sourceDefinition.withSpec(connectorSpecification);
+    final StandardSourceDefinition sourceDefinitionWithSpec = Jsons.clone(sourceDefinition).withSpec(connectorSpecification);
 
     final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
-    final SynchronousResponse<ConnectorSpecification> response = specFetcher.getSpecJobResponse(sourceDefinition);
+    final SynchronousResponse<ConnectorSpecification> response = specFetcher.getSpecJobResponse(sourceDefinitionWithSpec);
 
     assertEquals(ConfigType.GET_SPEC, response.getMetadata().getConfigType());
     assertEquals(Optional.empty(), response.getMetadata().getConfigId());
@@ -113,10 +113,10 @@ class SpecFetcherTest {
 
   @Test
   void testGetSpecJobResponseFromDestinationReturnsMockedJobMetadata() throws IOException {
-    destinationDefinition = destinationDefinition.withSpec(connectorSpecification);
+    final StandardDestinationDefinition destinationDefinitionWithSpec = Jsons.clone(destinationDefinition).withSpec(connectorSpecification);
 
     final SpecFetcher specFetcher = new SpecFetcher(schedulerJobClient);
-    final SynchronousResponse<ConnectorSpecification> response = specFetcher.getSpecJobResponse(destinationDefinition);
+    final SynchronousResponse<ConnectorSpecification> response = specFetcher.getSpecJobResponse(destinationDefinitionWithSpec);
 
     assertEquals(ConfigType.GET_SPEC, response.getMetadata().getConfigType());
     assertEquals(Optional.empty(), response.getMetadata().getConfigId());
