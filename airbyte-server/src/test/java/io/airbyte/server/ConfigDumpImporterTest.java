@@ -70,7 +70,8 @@ class ConfigDumpImporterTest {
     specFetcher = mock(SpecFetcher.class);
     emptyConnectorSpec = mock(ConnectorSpecification.class);
     when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
-    when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
+    when(specFetcher.getSpec(any(StandardSourceDefinition.class))).thenReturn(emptyConnectorSpec);
+    when(specFetcher.getSpec(any(StandardDestinationDefinition.class))).thenReturn(emptyConnectorSpec);
 
     configDumpImporter =
         new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class), specFetcher, true);

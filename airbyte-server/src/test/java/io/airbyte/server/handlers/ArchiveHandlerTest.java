@@ -23,6 +23,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -116,7 +117,8 @@ public class ArchiveHandlerTest {
     final SpecFetcher specFetcher = mock(SpecFetcher.class);
     final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
     when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
-    when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
+    when(specFetcher.getSpec(any(StandardSourceDefinition.class))).thenReturn(emptyConnectorSpec);
+    when(specFetcher.getSpec(any(StandardDestinationDefinition.class))).thenReturn(emptyConnectorSpec);
 
     archiveHandler = new ArchiveHandler(
         VERSION,
