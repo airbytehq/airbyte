@@ -66,8 +66,9 @@ public class SpecFetcher {
     }
 
     LOGGER.debug("Spec Fetcher: Spec not found in Destination Definition, fetching with scheduler job instead.");
-    final String dockerImageName = DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(),
-                                                                  destinationDefinition.getDockerImageTag());
+    final String dockerImageName = DockerUtils.getTaggedImageName(
+        destinationDefinition.getDockerRepository(),
+        destinationDefinition.getDockerImageTag());
     return schedulerJobClient.createGetSpecJob(dockerImageName);
   }
 

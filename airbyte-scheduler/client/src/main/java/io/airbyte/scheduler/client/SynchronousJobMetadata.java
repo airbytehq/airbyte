@@ -128,7 +128,6 @@ public class SynchronousJobMetadata {
         now,
         now,
         succeeded,
-        logPath
-    );
+        logPath);
   }
 }
