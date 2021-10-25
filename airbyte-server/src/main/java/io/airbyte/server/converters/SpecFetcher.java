@@ -54,7 +54,8 @@ public class SpecFetcher {
     return schedulerJobClient.createGetSpecJob(dockerImageName);
   }
 
-  // TODO: remove this method once the spec is a required field on the StandardDestinationDefinition struct
+  // TODO: remove this method once the spec is a required field on the StandardDestinationDefinition
+  // struct
   public SynchronousResponse<ConnectorSpecification> getSpecJobResponse(final StandardDestinationDefinition destinationDefinition)
       throws IOException {
     LOGGER.debug("Spec Fetcher: Getting spec for Destination Definition.");

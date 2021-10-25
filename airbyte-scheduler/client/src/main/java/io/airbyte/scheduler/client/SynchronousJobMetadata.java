@@ -130,4 +130,5 @@ public class SynchronousJobMetadata {
         succeeded,
         logPath);
   }
+
 }
