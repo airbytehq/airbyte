@@ -40,6 +40,11 @@ public abstract class OAuthFlowIntegrationTest {
 
   protected abstract Path get_credentials_path();
 
+
+  protected String getRedirectUrl() {
+    return REDIRECT_URL;
+  }
+
   protected abstract OAuthFlowImplementation getFlowObject(ConfigRepository configRepository);
 
   @BeforeEach
