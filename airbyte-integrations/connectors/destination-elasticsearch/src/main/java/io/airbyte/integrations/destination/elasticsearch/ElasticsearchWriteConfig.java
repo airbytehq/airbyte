@@ -15,14 +15,21 @@ public class ElasticsearchWriteConfig {
     private String streamName;
     private DestinationSyncMode syncMode;
     private List<List<String>> primaryKey;
+    private boolean upsert;
 
     ElasticsearchWriteConfig(){}
 
-    ElasticsearchWriteConfig(String namespace, String streamName, DestinationSyncMode destinationSyncMode, List<List<String>> primaryKey) {
+    ElasticsearchWriteConfig(
+            String namespace,
+            String streamName,
+            DestinationSyncMode destinationSyncMode,
+            List<List<String>> primaryKey,
+            boolean upsert) {
         this.namespace = namespace;
         this.streamName = streamName;
         this.syncMode = destinationSyncMode;
         this.primaryKey = primaryKey;
+        this.upsert = upsert;
     }
 
     public String getNamespace() {
@@ -56,13 +63,20 @@ public class ElasticsearchWriteConfig {
         this.primaryKey = primaryKey;
         return this;
     }
-
     public boolean hasPrimaryKey() {
         return Objects.nonNull(this.primaryKey) && this.primaryKey.size() > 0;
     }
 
+    public boolean isUpsert() {
+        return upsert;
+    }
+    public ElasticsearchWriteConfig setUpsert(boolean upsert) {
+        this.upsert = upsert;
+        return this;
+    }
+
     public boolean useTempIndex() {
-        return this.syncMode == DestinationSyncMode.OVERWRITE;
+        return (this.syncMode == DestinationSyncMode.OVERWRITE) && !(this.upsert);
     }
 
     public String getIndexName() {
