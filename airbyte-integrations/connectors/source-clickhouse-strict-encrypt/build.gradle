@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.clickhouse.ClickHouseSource'
+    mainClass = 'io.airbyte.integrations.source.clickhouse.ClickHouseStrictEncryptSource'
     applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
@@ -14,6 +14,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
+    implementation project(':airbyte-integrations:connectors:source-clickhouse')
     implementation project(':airbyte-protocol:models')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
@@ -21,6 +22,7 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse-strict-encrypt')
     integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     integrationTestJavaImplementation "org.testcontainers:clickhouse:1.16.0"
 }
