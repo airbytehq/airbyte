@@ -368,13 +368,13 @@
 - sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
   name: ClickHouse
   dockerRepository: airbyte/source-clickhouse
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/clickhouse
   sourceType: database
 - sourceDefinitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
   name: Recharge
   dockerRepository: airbyte/source-recharge
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/recharge
   sourceType: api
 - sourceDefinitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
@@ -550,7 +550,7 @@
 - sourceDefinitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   name: MongoDb
   dockerRepository: airbyte/source-mongodb-v2
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb-v2
   icon: mongodb.svg
   sourceType: database
