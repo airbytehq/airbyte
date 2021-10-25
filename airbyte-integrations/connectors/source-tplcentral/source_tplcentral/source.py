@@ -92,8 +92,8 @@ class SourceTplcentral(AbstractSource):
             token_refresh_endpoint=f"{config['url_base']}AuthServer/api/Token",
             client_id=config["client_id"],
             client_secret=config["client_secret"],
-            user_login_id=config.get("user_login_id", None),
-            user_login=config.get("user_login", None),
+            user_login_id=config.get("user_login_id"),
+            user_login=config.get("user_login"),
         )
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
