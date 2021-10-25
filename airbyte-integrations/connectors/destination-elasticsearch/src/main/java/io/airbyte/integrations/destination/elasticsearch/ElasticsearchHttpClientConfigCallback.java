@@ -1,5 +1,10 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.elasticsearch;
 
+import java.security.Principal;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -10,42 +15,42 @@ import org.elasticsearch.client.RestClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.Principal;
-
 public class ElasticsearchHttpClientConfigCallback implements RestClientBuilder.HttpClientConfigCallback {
 
-    private static final Logger log = LoggerFactory.getLogger(ElasticsearchHttpClientConfigCallback.class);
+  private static final Logger log = LoggerFactory.getLogger(ElasticsearchHttpClientConfigCallback.class);
 
-    ConnectorConfiguration config;
+  ConnectorConfiguration config;
 
-    ElasticsearchHttpClientConfigCallback(ConnectorConfiguration config) {
-        this.config = config;
-    }
+  ElasticsearchHttpClientConfigCallback(ConnectorConfiguration config) {
+    this.config = config;
+  }
 
-    @Override
-    public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-        final var auth = config.getAuthenticationMethod();
-        if (auth.getMethod().equals(ElasticsearchAuthenticationMethod.basic)) {
-            // Configure basic auth
-            var httpHost = HttpHost.create(config.getEndpoint());
-            var authScope = new AuthScope(httpHost.getHostName(), httpHost.getPort());
-            var credProvider = new BasicCredentialsProvider();
-            Credentials creds = new Credentials() {
-                @Override
-                public Principal getUserPrincipal() {
-                    return new BasicUserPrincipal(auth.getUsername());
-                }
+  @Override
+  public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+    final var auth = config.getAuthenticationMethod();
+    if (auth.getMethod().equals(ElasticsearchAuthenticationMethod.basic)) {
+      // Configure basic auth
+      var httpHost = HttpHost.create(config.getEndpoint());
+      var authScope = new AuthScope(httpHost.getHostName(), httpHost.getPort());
+      var credProvider = new BasicCredentialsProvider();
+      Credentials creds = new Credentials() {
 
-                @Override
-                public String getPassword() {
-                    return auth.getPassword();
-                }
-            };
-            credProvider.setCredentials(authScope, creds);
-            httpClientBuilder.setDefaultCredentialsProvider(credProvider);
+        @Override
+        public Principal getUserPrincipal() {
+          return new BasicUserPrincipal(auth.getUsername());
         }
 
-        return httpClientBuilder;
+        @Override
+        public String getPassword() {
+          return auth.getPassword();
+        }
+
+      };
+      credProvider.setCredentials(authScope, creds);
+      httpClientBuilder.setDefaultCredentialsProvider(credProvider);
     }
+
+    return httpClientBuilder;
+  }
 
 }
