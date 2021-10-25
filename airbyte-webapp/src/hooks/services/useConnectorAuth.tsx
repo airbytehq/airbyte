@@ -18,6 +18,7 @@ import { DestinationAuthService } from "core/domain/connector/DestinationAuthSer
 import { useGetService } from "core/servicesProvider";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
+import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 import useRouter from "../useRouter";
 
 export function useConnectorAuth() {
@@ -122,9 +123,11 @@ export function useRunOauthFlow(
   };
   const oAuthFieldsToValidate = getoAuthInputFields();
 
-  const getoAuthInputParameters = (values: any) => {
-    const oAuthValues = new Map();
-    const flatValues: any = flatten((values as any).connectionConfiguration);
+  const getoAuthInputParameters = (values: ServiceFormValues) => {
+    const oAuthValues: Map<string, string> = new Map();
+    const flatValues: Record<string, string> = flatten(
+      values.connectionConfiguration
+    );
     oAuthFieldsToValidate.forEach((field) => {
       oAuthValues.set(field, flatValues[field]);
     });
@@ -136,26 +139,24 @@ export function useRunOauthFlow(
   >();
 
   const [{ loading }, onStartOauth] = useAsyncFn(async () => {
-    validateForm(values).then(async (errors) => {
-      const oAuthErrors = Object.keys(
-        flatten((errors as any).connectionConfiguration)
-      ).filter((path) => oAuthFieldsToValidate.indexOf(path) != -1);
+    const errors = await validateForm(values);
+    const oAuthErrors = Object.keys(
+      flatten((errors as ServiceFormValues).connectionConfiguration)
+    ).filter((path) => oAuthFieldsToValidate.indexOf(path) != -1);
 
-      console.log(oAuthErrors);
-      if (oAuthErrors.length) {
-        oAuthErrors.forEach((path) => {
-          setFieldTouched("connectionConfiguration." + path, true, false);
-        });
-      } else {
-        const consentRequestInProgress = await getConsentUrl(
-          connector,
-          getoAuthInputParameters(values)
-        );
+    if (oAuthErrors.length) {
+      oAuthErrors.forEach((path) => {
+        setFieldTouched(`connectionConfiguration.${path}`, true, false);
+      });
+    } else {
+      const consentRequestInProgress = await getConsentUrl(
+        connector,
+        getoAuthInputParameters(values as ServiceFormValues)
+      );
 
-        param.current = consentRequestInProgress.payload;
-        openWindow(consentRequestInProgress.consentUrl);
-      }
-    });
+      param.current = consentRequestInProgress.payload;
+      openWindow(consentRequestInProgress.consentUrl);
+    }
   }, [connector, values]);
 
   const [{ loading: loadingCompleteOauth, value }, completeOauth] = useAsyncFn(
@@ -166,7 +167,7 @@ export function useRunOauthFlow(
         const connectionConfiguration = await completeOauthRequest(
           oauthStartedPayload,
           queryParams,
-          getoAuthInputParameters(values)
+          getoAuthInputParameters(values as ServiceFormValues)
         );
 
         setValues(merge(values, { connectionConfiguration }));
