@@ -57,9 +57,6 @@ class TemporalAttemptExecutionTest {
     when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
     when(configs.getDatabaseUser()).thenReturn(SOURCE_USERNAME);
     when(configs.getDatabasePassword()).thenReturn(SOURCE_PASSWORD);
-    when(configs.getConfigDatabaseUrl()).thenReturn(container.getJdbcUrl());
-    when(configs.getConfigDatabaseUser()).thenReturn(SOURCE_USERNAME);
-    when(configs.getConfigDatabasePassword()).thenReturn(SOURCE_PASSWORD);
   }
 
   @SuppressWarnings("unchecked")
@@ -67,7 +64,6 @@ class TemporalAttemptExecutionTest {
   void setup() throws IOException {
     final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
     databaseProviders.createNewJobsDatabase();
-    databaseProviders.createNewConfigsDatabase();
 
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");
     jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_ID));
