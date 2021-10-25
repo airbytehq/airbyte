@@ -4,7 +4,6 @@
 
 package io.airbyte.scheduler.persistence;
 
-import static io.airbyte.db.instance.configs.jooq.Tables.SYNC_STATE;
 import static io.airbyte.db.instance.jobs.jooq.Tables.AIRBYTE_METADATA;
 import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
@@ -177,9 +176,6 @@ class DefaultJobPersistenceTest {
     jobDatabase.query(ctx -> ctx.truncateTable(JOBS).execute());
     jobDatabase.query(ctx -> ctx.truncateTable(ATTEMPTS).execute());
     jobDatabase.query(ctx -> ctx.truncateTable(AIRBYTE_METADATA).execute());
-    // the airbyte_configs table cannot be truncated because the config database
-    // is considered ready for consumption only when there are records in this table
-    configDatabase.query(ctx -> ctx.truncateTable(SYNC_STATE).execute());
   }
 
   private Result<Record> getJobRecord(final long jobId) throws SQLException {

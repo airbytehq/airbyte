@@ -11,6 +11,7 @@ import static io.airbyte.db.instance.configs.migrations.V0_30_22_001__Store_last
 import static io.airbyte.db.instance.configs.migrations.V0_30_22_001__Store_last_sync_state.COLUMN_UPDATED_AT;
 import static io.airbyte.db.instance.configs.migrations.V0_30_22_001__Store_last_sync_state.STANDARD_SYNC_STATE;
 import static io.airbyte.db.instance.configs.migrations.V0_30_22_001__Store_last_sync_state.TABLE_AIRBYTE_CONFIGS;
+import static io.airbyte.db.instance.configs.migrations.V0_30_22_001__Store_last_sync_state.getStandardSyncState;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -70,8 +71,8 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   private static final JsonNode CONNECTION_2_STATE = Jsons.deserialize("{ \"state\": { \"cursor\": 2222 } }");
   private static final JsonNode CONNECTION_3_STATE = Jsons.deserialize("{ \"state\": { \"cursor\": 3333 } }");
 
-  private static final JsonNode STD_CONNECTION_STATE_2 = V0_30_22_001__Store_last_sync_state.getStandardSyncState(CONNECTION_2_ID.toString(), CONNECTION_2_STATE);
-  private static final JsonNode STD_CONNECTION_STATE_3 = V0_30_22_001__Store_last_sync_state.getStandardSyncState(CONNECTION_3_ID.toString(), CONNECTION_3_STATE);
+  private static final JsonNode STD_CONNECTION_STATE_2 = getStandardSyncState(CONNECTION_2_ID.toString(), CONNECTION_2_STATE);
+  private static final JsonNode STD_CONNECTION_STATE_3 = getStandardSyncState(CONNECTION_3_ID.toString(), CONNECTION_3_STATE);
   private static final Map<String, JsonNode> CONNECTION_STATE_MAP = Map.of(
       CONNECTION_2_ID.toString(), STD_CONNECTION_STATE_2,
       CONNECTION_3_ID.toString(), STD_CONNECTION_STATE_3);

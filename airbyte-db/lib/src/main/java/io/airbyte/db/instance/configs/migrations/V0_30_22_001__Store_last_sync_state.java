@@ -113,7 +113,6 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
       return Optional.of(jobsDatabase);
     } catch (final IllegalArgumentException e) {
       // If the environment variables do not exist, it means the migration is run in development.
-      // Connect to a mock job database, because we don't need to copy any data in test.
       LOGGER.info("[{}] This is the dev environment; there is no jobs database", MIGRATION_NAME);
       return Optional.empty();
     } catch (final IOException e) {

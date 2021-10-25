@@ -22,12 +22,6 @@ create table "public"."airbyte_configs_migrations"(
   constraint "airbyte_configs_migrations_pk"
     primary key ("installed_rank")
 );
-create table "public"."sync_state"(
-  "sync_id" uuid not null,
-  "state" jsonb not null,
-  "created_at" timestamptz(35) not null default null,
-  "updated_at" timestamptz(35) not null default null
-);
 create index "airbyte_configs_id_idx" on "public"."airbyte_configs"("config_id" asc);
 create unique index "airbyte_configs_pkey" on "public"."airbyte_configs"("id" asc);
 create unique index "airbyte_configs_type_id_idx" on "public"."airbyte_configs"(
@@ -36,4 +30,3 @@ create unique index "airbyte_configs_type_id_idx" on "public"."airbyte_configs"(
 );
 create unique index "airbyte_configs_migrations_pk" on "public"."airbyte_configs_migrations"("installed_rank" asc);
 create index "airbyte_configs_migrations_s_idx" on "public"."airbyte_configs_migrations"("success" asc);
-create unique index "sync_state_sync_id_idx" on "public"."sync_state"("sync_id" asc);
