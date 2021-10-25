@@ -303,6 +303,11 @@ To enable basic normalization \(which is optional\), you can toggle it on or dis
 
 ![](../.gitbook/assets/basic-normalization-configuration.png)
 
+## Incremental runs
+
+When the source is configured with incremental sync modes such as ([incremental append](connections/incremental-append.md) or  [incremental deduped history](connections/incremental-deduped-history.md)), only rows that have changed in the source are transferred over the network and written by the destination connector.
+Normalization will then try to build the normalized tables incrementally as the rows in the raw tables that have been created or updated since the last time dbt ran. As such, on each dbt run, the models get built incrementally. This limits the amount of data that needs to be transformed, vastly reducing the runtime of the transformations. This improves warehouse performance and reduces compute costs.
+
 ## Extending Basic Normalization
 
 Note that all the choices made by Normalization as described in this documentation page in terms of naming (and more) could be overridden by your own custom choices. To do so, you can follow the following tutorials:
