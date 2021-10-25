@@ -4,6 +4,6 @@
 
 {%- macro incremental_clause(col_emitted_at) -%}
 {% if is_incremental() %}
-and {{ col_emitted_at }} > (select max({{ col_emitted_at }}) from {{ this }})
+and {{ col_emitted_at }} >= (select max({{ col_emitted_at }}) from {{ this }})
 {% endif %}
 {%- endmacro -%}
