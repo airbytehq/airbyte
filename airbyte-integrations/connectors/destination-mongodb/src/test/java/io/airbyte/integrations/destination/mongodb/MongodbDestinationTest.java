@@ -62,8 +62,8 @@ class MongodbDestinationTest {
 
   @ParameterizedTest
   @MethodSource("configAndDataProvider")
-  void testGetConnectionString(JsonNode config, String expected) throws Exception {
-    var actual = mongodbDestination.getConnectionString(config);
+  void testGetConnectionString(final JsonNode config, final String expected) {
+    final var actual = mongodbDestination.getConnectionString(config);
     assertEquals(expected, actual);
   }
 
@@ -73,45 +73,45 @@ class MongodbDestinationTest {
             .put("instance_type", standaloneConfig)
             .put("database", "dbName")
             .put("auth_type", authConfig).build()),
-            "mongodb://user:pass@localhost:27017/?authSource=dbName&ssl=false"),
+            "mongodb://user:pass@localhost:27017/dbName?authSource=admin&ssl=false"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put("instance_type", standaloneTlsConfig)
             .put("database", "dbName")
             .put("auth_type", noneAuthConfig).build()),
-            "mongodb://localhost:27017/?authSource=dbName&ssl=true"),
+            "mongodb://localhost:27017/dbName?authSource=admin&ssl=true"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put("instance_type", replicaWithNameConfig)
             .put("database", "dbName")
             .put("auth_type", authConfig).build()),
-            "mongodb://user:pass@localhost1:27017,localhost2:27017/dbName?authSource=dbName&directConnection=false&ssl=true&replicaSet=replicaName"),
+            "mongodb://user:pass@localhost1:27017,localhost2:27017/dbName?authSource=admin&directConnection=false&ssl=true&replicaSet=replicaName"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put("instance_type", replicaWithoutNameConfig)
             .put("database", "dbName")
             .put("auth_type", noneAuthConfig).build()),
-            "mongodb://localhost1:27017,localhost2:27017/dbName?authSource=dbName&directConnection=false&ssl=true"),
+            "mongodb://localhost1:27017,localhost2:27017/dbName?authSource=admin&directConnection=false&ssl=true"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put("instance_type", atlasConfig)
             .put("database", "dbName")
             .put("auth_type", authConfig).build()),
-            "mongodb+srv://user:pass@cluster.shard.url/dbName?authSource=dbName&retryWrites=true&w=majority&tls=true"),
+            "mongodb+srv://user:pass@cluster.shard.url/dbName?retryWrites=true&w=majority&tls=true"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put("instance_type", atlasConfig)
             .put("database", "dbName")
             .put("auth_type", noneAuthConfig).build()),
-            "mongodb+srv://cluster.shard.url/dbName?authSource=dbName&retryWrites=true&w=majority&tls=true"),
+            "mongodb+srv://cluster.shard.url/dbName?retryWrites=true&w=majority&tls=true"),
         // older versions support
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put("host", "localhost")
             .put("port", "27017")
             .put("database", "dbName")
             .put("auth_type", authConfig).build()),
-            "mongodb://user:pass@localhost:27017/?authSource=dbName&ssl=false"),
+            "mongodb://user:pass@localhost:27017/dbName?authSource=admin&ssl=false"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put("host", "localhost")
             .put("port", "27017")
             .put("database", "dbName")
             .put("auth_type", noneAuthConfig).build()),
-            "mongodb://localhost:27017/?authSource=dbName&ssl=false"));
+            "mongodb://localhost:27017/dbName?authSource=admin&ssl=false"));
   }
 
 }

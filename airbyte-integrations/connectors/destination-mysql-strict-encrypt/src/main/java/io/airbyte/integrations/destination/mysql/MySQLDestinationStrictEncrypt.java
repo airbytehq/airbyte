@@ -22,13 +22,13 @@ public class MySQLDestinationStrictEncrypt extends SpecModifyingDestination impl
   }
 
   @Override
-  public ConnectorSpecification modifySpec(ConnectorSpecification originalSpec) {
+  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("ssl");
     return spec;
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new MySQLDestinationStrictEncrypt();
     LOGGER.info("starting destination: {}", MySQLDestinationStrictEncrypt.class);
     new IntegrationRunner(destination).run(args);

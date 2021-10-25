@@ -53,7 +53,7 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
           "Must provide path to a MongoDB credentials file. By default {module-root}/" + CREDENTIALS_PATH
@@ -77,7 +77,7 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
         .put("auth_source", "admin")
         .build());
 
-    String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&ssl=true",
+    final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&ssl=true",
         config.get("user").asText(),
         config.get("password").asText(),
         config.get("instance_type").get("host").asText(),
@@ -86,16 +86,16 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
 
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 
-    MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
-    var doc1 = new Document("id", "0001").append("name", "Test");
-    var doc2 = new Document("id", "0002").append("name", "Mongo");
-    var doc3 = new Document("id", "0003").append("name", "Source");
+    final MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
+    final var doc1 = new Document("id", "0001").append("name", "Test");
+    final var doc2 = new Document("id", "0002").append("name", "Mongo");
+    final var doc3 = new Document("id", "0003").append("name", "Source");
 
     collection.insertMany(List.of(doc1, doc2, doc3));
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     database.getDatabase().getCollection(COLLECTION_NAME).drop();
     database.close();
   }

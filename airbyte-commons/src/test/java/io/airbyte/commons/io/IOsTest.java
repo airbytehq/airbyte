@@ -55,35 +55,35 @@ class IOsTest {
 
   @Test
   public void testGetTailDoesNotExist() throws IOException {
-    List<String> tail = IOs.getTail(100, Path.of(RandomStringUtils.random(100)));
+    final List<String> tail = IOs.getTail(100, Path.of(RandomStringUtils.random(100)));
     assertEquals(Collections.emptyList(), tail);
   }
 
   @Test
   public void testGetTailExists() throws IOException {
-    Path stdoutFile = Files.createTempFile("job-history-handler-test", "stdout");
+    final Path stdoutFile = Files.createTempFile("job-history-handler-test", "stdout");
 
-    List<String> head = List.of(
+    final List<String> head = List.of(
         "line1",
         "line2",
         "line3",
         "line4");
 
-    List<String> expectedTail = List.of(
+    final List<String> expectedTail = List.of(
         "line5",
         "line6",
         "line7",
         "line8");
 
-    Writer writer = new BufferedWriter(new FileWriter(stdoutFile.toString(), true));
+    final Writer writer = new BufferedWriter(new FileWriter(stdoutFile.toString(), true));
 
-    for (String line : Iterables.concat(head, expectedTail)) {
+    for (final String line : Iterables.concat(head, expectedTail)) {
       writer.write(line + "\n");
     }
 
     writer.close();
 
-    List<String> tail = IOs.getTail(expectedTail.size(), stdoutFile);
+    final List<String> tail = IOs.getTail(expectedTail.size(), stdoutFile);
     assertEquals(expectedTail, tail);
   }
 
@@ -96,7 +96,7 @@ class IOsTest {
 
   @Test
   void testSilentClose() throws IOException {
-    Closeable closeable = Mockito.mock(Closeable.class);
+    final Closeable closeable = Mockito.mock(Closeable.class);
 
     assertDoesNotThrow(() -> IOs.silentClose(closeable));
 

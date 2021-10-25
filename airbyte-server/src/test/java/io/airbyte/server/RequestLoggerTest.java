@@ -88,7 +88,7 @@ public class RequestLoggerTest {
   @ParameterizedTest
   @MethodSource("logScenarios")
   @DisplayName("Check that the proper log is produced based on the scenario")
-  public void test(String inputByteBuffer, String contentType, int status, String expectedLog) throws IOException {
+  public void test(final String inputByteBuffer, final String contentType, final int status, final String expectedLog) throws IOException {
     // set up the mdc so that actually log to a file, so that we can verify that file logging captures
     // threads.
     final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
@@ -111,7 +111,7 @@ public class RequestLoggerTest {
     requestLogger.filter(mRequestContext);
     requestLogger.filter(mRequestContext, mResponseContext);
 
-    String expectedLogLevel = status == SUCCESS_CODE ? "INFO" : "ERROR";
+    final String expectedLogLevel = status == SUCCESS_CODE ? "INFO" : "ERROR";
 
     final Path logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     final String logs = IOs.readFile(logPath);

@@ -9,12 +9,12 @@ public class Entry {
   public final String url;
   public final Boolean mandatory;
 
-  public Entry(String url, Boolean mandatory) {
+  public Entry(final String url, final Boolean mandatory) {
     this.url = url;
     this.mandatory = mandatory;
   }
 
-  public Entry(String url) {
+  public Entry(final String url) {
     this(url, true);
   }
 

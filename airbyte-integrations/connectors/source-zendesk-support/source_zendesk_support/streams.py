@@ -6,6 +6,7 @@
 import calendar
 import time
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
@@ -14,8 +15,10 @@ import pytz
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+LAST_END_TIME_KEY = "_last_end_time"
 
 
 class SourceZendeskException(Exception):
@@ -44,7 +47,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
     @staticmethod
     def _parse_next_page_number(response: requests.Response) -> Optional[int]:
         """Parses a response and tries to find next page number"""
-        next_page = response.json()["next_page"]
+        next_page = response.json().get("next_page")
         if next_page:
             return dict(parse_qsl(urlparse(next_page).query)).get("page")
         return None
@@ -126,6 +129,13 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
         self._finished = False
 
     @property
+    def authenticator(self) -> HttpAuthenticator:
+        """This function was redefined because CDK return NoAuth for some authenticator class.
+        It is bug and I hope it will be fixed in the future
+        """
+        return self._session.auth or super().authenticator
+
+    @property
     def is_finished(self):
         return self._finished
 
@@ -146,6 +156,17 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
         new_value = str((latest_record or {}).get(self.cursor_field, ""))
         return {self.cursor_field: max(new_value, old_value)}
 
+    @staticmethod
+    def str2unixtime(str_dt: str) -> Optional[int]:
+        """convert string to unixtime number
+        Input example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
+        Output example: 1626936955"
+        """
+        if not str_dt:
+            return None
+        dt = datetime.strptime(str_dt, DATETIME_FORMAT)
+        return calendar.timegm(dt.utctimetuple())
+
 
 class IncrementalExportStream(IncrementalEntityStream, ABC):
     """Use the incremental export API to get items that changed or
@@ -164,25 +185,15 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
         # for saving of last page cursor value
         # endpoints can have different cursor format but incremental logic uses unixtime format only
-        self._last_end_time = None
-
-    @staticmethod
-    def str2unixtime(str_dt: str) -> int:
-        """convert string to unixtime number
-        Input example: '2021-07-22T06:55:55Z' FROMAT : "%Y-%m-%dT%H:%M:%SZ"
-        Output example: 1626936955"
-        """
-        if not str_dt:
-            return None
-        dt = datetime.strptime(str_dt, DATETIME_FORMAT)
-        return calendar.timegm(dt.utctimetuple())
+        self.last_end_time = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if self.is_finished:
             return None
-        return {"start_time": self._last_end_time}
+        return {"start_time": self.last_end_time}
 
     def path(self, *args, **kwargs) -> str:
         return f"incremental/{self.name}.json"
@@ -193,13 +204,14 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
 
         params = {"per_page": self.page_size}
         if not next_page_token:
-            current_state = stream_state.get("_last_end_time")
+            current_state = stream_state.get(LAST_END_TIME_KEY)
             if not current_state:
                 # try to search all reconds with generated_timestamp > start_time
                 current_state = stream_state.get(self.cursor_field)
                 if current_state and isinstance(current_state, str) and not current_state.isdigit():
                     current_state = self.str2unixtime(current_state)
-
+            elif not self.last_end_time:
+                self.last_end_time = current_state
             start_time = int(current_state or time.mktime(self._start_date.timetuple()))
             # +1 because the API returns all records where  generated_timestamp >= start_time
 
@@ -215,23 +227,36 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # try to save maximum value of a cursor field
+
         state = super().get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
 
-        if self._last_end_time:
-            state["_last_end_time"] = self._last_end_time
+        if self.last_end_time:
+            state[LAST_END_TIME_KEY] = self.last_end_time
         current_stream_state.update(state)
         return current_stream_state
+
+    def get_last_end_time(self) -> Optional[Union[str, int]]:
+        """Updating of last_end_time for comparing with cursor fields"""
+        if not self.last_end_time:
+            return self.last_end_time
+        return self.datetime2str(datetime.fromtimestamp(self.last_end_time))
 
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
 
+        # save  previous end time for filtering of a current response
+        previous_end_time = self.get_last_end_time()
+
         data = response.json()
         # save a last end time for the next attempt
-        self._last_end_time = data["end_time"]
+        self.last_end_time = data["end_time"]
         # end_of_stream is true if the current request has returned all the results up to the current time; false otherwise
         self._finished = data["end_of_stream"]
-        yield from super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        for record in super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs):
+            if previous_end_time and record.get(self.cursor_field) <= previous_end_time:
+                continue
+            yield record
 
 
 class IncrementalUnsortedStream(IncrementalEntityStream, ABC):
@@ -286,7 +311,12 @@ class IncrementalUnsortedPageStream(IncrementalUnsortedStream, ABC):
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token=next_page_token, **kwargs)
-        params["page"] = next_page_token or 1
+        params.update(
+            {
+                "page": next_page_token or 1,
+                "per_page": self.page_size,
+            }
+        )
         return params
 
 
@@ -330,6 +360,10 @@ class TicketComments(IncrementalSortedPageStream):
     Thus at first we loads all updated tickets and after this tries to load all created/updated
     comments per every ticket"""
 
+    # Tickets can be removed throughout synchronization. The ZendDesk API will return a response
+    # with 404 code if a ticket is not exists. But it shouldn't break loading of other comments.
+    raise_on_http_errors = False
+
     response_list_name = "comments"
     cursor_field = IncrementalSortedPageStream.created_at_field
 
@@ -337,18 +371,11 @@ class TicketComments(IncrementalSortedPageStream):
         super().__init__(**kwargs)
         # need to save a slice ticket state
         # because the function get_updated_state doesn't have a stream_slice as argument
-        self._slice_cursor_date = None
+        self._ticket_last_end_time = None
 
     def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         ticket_id = stream_slice["id"]
         return f"tickets/{ticket_id}/comments.json"
-
-    def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping]:
-        # save a slice ticket state
-        self._cursor_ticket_date = stream_slice[Tickets.cursor_field]
-        yield from super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
 
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -363,32 +390,65 @@ class TicketComments(IncrementalSortedPageStream):
         ticket_stream_value = stream_state.get(Tickets.cursor_field)
         if not ticket_stream_value:
             # for backward compatibility because not all relevant states can have some last ticket state
-            ticket_stream_value = Tickets.str2unixtime(stream_state.get(self.cursor_field))
+            ticket_stream_value = self.str2unixtime(stream_state.get(self.cursor_field))
 
-        tickets = Tickets(start_date=self._start_date, subdomain=self._subdomain, authenticator=self.authenticator).read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_state={Tickets.cursor_field: ticket_stream_value}
-        )
+        tickets_stream = Tickets(start_date=self._start_date, subdomain=self._subdomain, authenticator=self.authenticator)
+        ticket_pages = defaultdict(list)
+        last_end_time = stream_state.get(LAST_END_TIME_KEY, 0)
+        ticket_count = 0
+        for ticket in tickets_stream.read_records(
+            sync_mode=sync_mode,
+            cursor_field=cursor_field,
+            stream_state={Tickets.cursor_field: ticket_stream_value, LAST_END_TIME_KEY: last_end_time},
+        ):
+            if not ticket["comment_count"]:
+                # skip tickets without comments
+                continue
+            ticket_count += 1
+            ticket_pages[tickets_stream.last_end_time].append(
+                {
+                    "id": ticket["id"],
+                    Tickets.cursor_field: ticket[Tickets.cursor_field],
+                }
+            )
 
-        # selects all tickets what have at least one comment
-        ticket_ids = [
-            {
-                "id": ticket["id"],
-                Tickets.cursor_field: ticket[Tickets.cursor_field],
-            }
-            for ticket in tickets
-            if ticket["comment_count"]
-        ]
-        self.logger.info(f"Found updated {len(ticket_ids)} ticket(s) with comments")
-        # sort slices by generated_timestamp
-        ticket_ids.sort(key=lambda ticket: ticket[Tickets.cursor_field])
-        return ticket_ids
+        if ticket_pages:
+            last_times = sorted(ticket_pages.keys())
+            # tickets' loading is implemented per page but the stream 'tickets' has
+            # the addl stream state fields "_last_end_time" and its value is not compatible
+            # with comments' cursor fields. Thus we need to save it separately and add
+            # last_end_time info for every slice
+            last_page = {last_times[-1]: [ticket_pages[last_times[-1]].pop(-1)]}
+
+            new_last_times = [last_end_time] + last_times[:-1]
+            ticket_pages = {new_last_times[i]: ticket_pages[last_times[i]] for i in range(len(last_times))}
+            ticket_pages.update(last_page)
+
+        self.logger.info(f"Found {ticket_count} ticket(s) with comments")
+        for end_time, tickets in sorted(ticket_pages.items(), key=lambda t: t[0]):
+            self._ticket_last_end_time = end_time
+            yield from sorted(tickets, key=lambda ticket: ticket[Tickets.cursor_field])
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """Adds a last cursor ticket updated time for a comment state"""
         new_state = super().get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
-        if new_state:
-            new_state[Tickets.cursor_field] = self._cursor_ticket_date
+        if self._ticket_last_end_time:
+
+            new_state[LAST_END_TIME_KEY] = self._ticket_last_end_time
         return new_state
+
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+        """Handle response status"""
+        if response.status_code == 200:
+            yield from super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        elif response.status_code == 404:
+            ticket_id = stream_slice["id"]
+            # skip 404 errors for not found tickets
+            self.logger.info(f"ticket {ticket_id} not found (404 error). It could have been deleted.")
+        else:
+            response.raise_for_status()
 
 
 # NOTE: all Zendesk endpoints can be splitted into several templates of data loading.
@@ -399,6 +459,8 @@ class TicketComments(IncrementalSortedPageStream):
 # 5) without created_at/updated_at fields
 
 # endpoints provide a built-in incremental approach
+
+
 class Users(IncrementalExportStream):
     """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
@@ -415,18 +477,22 @@ class Tickets(IncrementalExportStream):
     # If a system update occurs after a event, the unchanged updated_at time will become earlier relative to the updated generated_timestamp time.
     cursor_field = "generated_timestamp"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Save state as integer"""
-        state = super().get_updated_state(current_stream_state, latest_record)
-        if state:
-            state[self.cursor_field] = int(state[self.cursor_field])
-        return state
-
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         """Adds the field 'comment_count'"""
         params = super().request_params(**kwargs)
         params["include"] = "comment_count"
         return params
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Need to save a cursor values as integer"""
+        state = super().get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
+        if state and state.get(self.cursor_field):
+            state[self.cursor_field] = int(state[self.cursor_field])
+        return state
+
+    def get_last_end_time(self) -> Optional[Union[str, int]]:
+        """A response with tickets provides cursor data as unixtime"""
+        return self.last_end_time
 
 
 # endpoints provide a pagination mechanism but we can't manage a response order
@@ -441,7 +507,27 @@ class GroupMemberships(IncrementalUnsortedPageStream):
 
 
 class SatisfactionRatings(IncrementalUnsortedPageStream):
-    """SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/"""
+    """SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
+
+    The ZenDesk API for this stream provides the filter "start_time" that can be used for incremental logic
+    """
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        """Adds the filtering field 'start_time'"""
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
+
+        if not start_time:
+            start_time = int(time.mktime(self._start_date.timetuple()))
+        params.update(
+            {
+                "start_time": start_time,
+                "sort_by": "asc",
+            }
+        )
+        return params
 
 
 class TicketFields(IncrementalUnsortedPageStream):
