@@ -200,8 +200,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
     final Map<String, Object> result = new HashMap<>();
     if (data.has("refresh_token")) {
       result.put("refresh_token", data.get("refresh_token").asText());
-    }
-    if (data.has("access_token")) {
+    } else if (data.has("access_token")) {
       result.put("access_token", data.get("access_token").asText());
     }
     if (result.isEmpty()) {
