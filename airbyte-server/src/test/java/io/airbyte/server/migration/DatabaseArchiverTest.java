@@ -9,9 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
@@ -41,8 +40,9 @@ public class DatabaseArchiverTest {
         .withPassword("docker");
     container.start();
 
-    jobDatabase = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configDatabase = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    jobDatabase = databaseProviders.createNewJobsDatabase();
+    configDatabase = databaseProviders.createNewConfigsDatabase();
     final JobPersistence persistence = new DefaultJobPersistence(jobDatabase);
     databaseArchiver = new DatabaseArchiver(persistence);
   }

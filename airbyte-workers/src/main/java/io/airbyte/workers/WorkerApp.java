@@ -153,7 +153,6 @@ public class WorkerApp {
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
 
-    // todo (cgardens) - make sure appropriate env variables are passed to this container.
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),

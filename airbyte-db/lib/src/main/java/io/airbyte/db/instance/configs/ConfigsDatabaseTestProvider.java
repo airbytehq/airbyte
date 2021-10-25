@@ -7,6 +7,7 @@ package io.airbyte.db.instance.configs;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.DatabaseMigrator;
@@ -22,7 +23,7 @@ public class ConfigsDatabaseTestProvider implements TestDatabaseProvider {
   private final String password;
   private final String jdbcUrl;
 
-  public ConfigsDatabaseTestProvider(String user, String password, String jdbcUrl) {
+  public ConfigsDatabaseTestProvider(final String user, final String password, final String jdbcUrl) {
     this.user = user;
     this.password = password;
     this.jdbcUrl = jdbcUrl;
@@ -43,10 +44,10 @@ public class ConfigsDatabaseTestProvider implements TestDatabaseProvider {
 
     // The configs database is considered ready only if there are some seed records.
     // So we need to create at least one record here.
-    OffsetDateTime timestamp = OffsetDateTime.now();
+    final OffsetDateTime timestamp = OffsetDateTime.now();
     new ExceptionWrappingDatabase(database).transaction(ctx -> ctx.insertInto(table("airbyte_configs"))
         .set(field("config_id"), UUID.randomUUID().toString())
-        .set(field("config_type"), "STANDARD_SOURCE_DEFINITION")
+        .set(field("config_type"), ConfigSchema.STATE.name())
         .set(field("config_blob"), JSONB.valueOf("{}"))
         .set(field("created_at"), timestamp)
         .set(field("updated_at"), timestamp)

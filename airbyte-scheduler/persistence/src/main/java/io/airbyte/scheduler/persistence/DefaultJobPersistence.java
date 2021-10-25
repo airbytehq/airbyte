@@ -784,6 +784,4 @@ public class DefaultJobPersistence implements JobPersistence {
     return DSL.table(String.format("%s.%s", schema, tableName));
   }
 
-  // TODO: add a method to update attempt state in job database, and another in config database
-
 }

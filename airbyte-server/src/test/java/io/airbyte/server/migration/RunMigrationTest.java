@@ -144,9 +144,8 @@ public class RunMigrationTest {
     final Configs configs = mock(Configs.class);
     when(configs.getConfigRoot()).thenReturn(configRoot);
     // The database provider creates a config database that is ready to use, which contains a mock
-    // config
-    // entry. However, the migrateFileConfigs method will only copy the file configs if the database is
-    // empty. So we need to purge the database first.
+    // config entry. However, the migrateFileConfigs method will only copy the file configs if the
+    // database is empty. So we need to purge the database first.
     configDatabase.transaction(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs;"));
     return new DatabaseConfigPersistence(configDatabase)
         .migrateFileConfigs(configs);

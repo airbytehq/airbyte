@@ -34,9 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Create a new table to store the latest job state for each standard sync.
- * <li>Column sync_id: the connectionId in StandardSync</><li>Column state: a json node representing
- * a State object</li>
+ * Copy the latest job state for each standard sync to the config database.
  */
 public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
 
@@ -77,6 +75,8 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
 
   @VisibleForTesting
   static void copyData(final DSLContext ctx, final Set<StandardSyncState> standardSyncStates, final OffsetDateTime timestamp) {
+    LOGGER.info("[{}] Number of connection states to copy: {}", MIGRATION_NAME, standardSyncStates.size());
+
     for (final StandardSyncState standardSyncState : standardSyncStates) {
       ctx.insertInto(TABLE_AIRBYTE_CONFIGS)
           .set(COLUMN_CONFIG_TYPE, ConfigSchema.STANDARD_SYNC_STATE.name())

@@ -117,6 +117,11 @@ public interface JobPersistence {
    */
   Optional<String> getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException;
 
+  /**
+   * When the output is a StandardSyncOutput, caller of this method should persiste
+   * StandardSyncOutput#state in the configs database by calling
+   * ConfigRepository#updateConnectionState, which takes care of persisting the connection state.
+   */
   <T> void writeOutput(long jobId, int attemptNumber, T output) throws IOException;
 
   /**
