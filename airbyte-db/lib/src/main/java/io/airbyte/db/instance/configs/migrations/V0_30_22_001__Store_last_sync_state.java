@@ -5,7 +5,9 @@
 package io.airbyte.db.instance.configs.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
@@ -14,7 +16,6 @@ import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,28 +37,30 @@ import org.slf4j.LoggerFactory;
  * <li>Column sync_id: the connectionId in StandardSync</><li>Column state: a json node representing
  * a State object</li>
  */
-public class V0_29_21_001__Store_last_sync_state extends BaseJavaMigration {
+public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
 
-  private static final String MIGRATION_NAME = "Configs db migration 0.29.21.001";
-  private static final Logger LOGGER = LoggerFactory.getLogger(V0_29_21_001__Store_last_sync_state.class);
+  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
+  private static final String MIGRATION_NAME = "Configs db migration 0.30.22.001";
+  private static final Logger LOGGER = LoggerFactory.getLogger(V0_30_22_001__Store_last_sync_state.class);
 
-  // sync state table
-  static final Table<?> SYNC_STATE_TABLE = DSL.table("sync_state");
-  static final Field<UUID> COLUMN_SYNC_ID = DSL.field("sync_id", SQLDataType.UUID.nullable(false));
-  static final Field<JSONB> COLUMN_STATE = DSL.field("state", SQLDataType.JSONB.nullable(false));
-  static final Field<OffsetDateTime> COLUMN_CREATED_AT = DSL.field("created_at",
-      SQLDataType.OFFSETDATETIME.nullable(false).defaultValue(DSL.currentOffsetDateTime()));
-  static final Field<OffsetDateTime> COLUMN_UPDATED_AT = DSL.field("updated_at",
-      SQLDataType.OFFSETDATETIME.nullable(false).defaultValue(DSL.currentOffsetDateTime()));
+  // airbyte configs table
+  // (we cannot use the jooq generated code here to avoid circular dependency)
+  static final String STANDARD_SYNC_STATE = "STANDARD_SYNC_STATE";
+  static final Table<?> TABLE_AIRBYTE_CONFIGS = DSL.table("airbyte_configs");
+  static final Field<String> COLUMN_CONFIG_TYPE = DSL.field("config_type", SQLDataType.VARCHAR(60).nullable(false));
+  static final Field<String> COLUMN_CONFIG_ID = DSL.field("config_id", SQLDataType.VARCHAR(36).nullable(false));
+  static final Field<JSONB> COLUMN_CONFIG_BLOB = DSL.field("config_blob", SQLDataType.JSONB.nullable(false));
+  static final Field<OffsetDateTime> COLUMN_CREATED_AT = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE);
+  static final Field<OffsetDateTime> COLUMN_UPDATED_AT = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE);
 
   private final Configs configs;
 
-  public V0_29_21_001__Store_last_sync_state() {
+  public V0_30_22_001__Store_last_sync_state() {
     this.configs = new EnvConfigs();
   }
 
   @VisibleForTesting
-  V0_29_21_001__Store_last_sync_state(final Configs configs) {
+  V0_30_22_001__Store_last_sync_state(final Configs configs) {
     this.configs = configs;
   }
 
@@ -66,33 +69,19 @@ public class V0_29_21_001__Store_last_sync_state extends BaseJavaMigration {
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
     final DSLContext ctx = DSL.using(context.getConnection());
 
-    createTable(ctx);
-
     final Optional<Database> jobsDatabase = getJobsDatabase(configs);
     if (jobsDatabase.isPresent()) {
-      copyData(ctx, getSyncToStateMap(jobsDatabase.get()), OffsetDateTime.now());
+      copyData(ctx, getStandardSyncStates(jobsDatabase.get()), OffsetDateTime.now());
     }
-  }
-
-  @VisibleForTesting
-  static void createTable(final DSLContext ctx) {
-    ctx.createTableIfNotExists(SYNC_STATE_TABLE)
-        .column(COLUMN_SYNC_ID)
-        .column(COLUMN_STATE)
-        .column(COLUMN_CREATED_AT)
-        .column(COLUMN_UPDATED_AT)
-        .execute();
-    ctx.createUniqueIndexIfNotExists(String.format("%s_sync_id_idx", SYNC_STATE_TABLE))
-        .on(SYNC_STATE_TABLE, Collections.singleton(COLUMN_SYNC_ID))
-        .execute();
   }
 
   @VisibleForTesting
   static void copyData(final DSLContext ctx, final Map<String, JsonNode> syncToStateMap, final OffsetDateTime timestamp) {
     for (final Map.Entry<String, JsonNode> entry : syncToStateMap.entrySet()) {
-      ctx.insertInto(SYNC_STATE_TABLE)
-          .set(COLUMN_SYNC_ID, UUID.fromString(entry.getKey()))
-          .set(COLUMN_STATE, JSONB.valueOf(Jsons.serialize(entry.getValue())))
+      ctx.insertInto(TABLE_AIRBYTE_CONFIGS)
+          .set(COLUMN_CONFIG_TYPE, STANDARD_SYNC_STATE)
+          .set(COLUMN_CONFIG_ID, UUID.fromString(entry.getKey()).toString())
+          .set(COLUMN_CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(entry.getValue())))
           .set(COLUMN_CREATED_AT, timestamp)
           .set(COLUMN_UPDATED_AT, timestamp)
           // This migration is idempotent. If the record for a sync_id already exists,
@@ -133,10 +122,10 @@ public class V0_29_21_001__Store_last_sync_state extends BaseJavaMigration {
   }
 
   /**
-   * @return a map from sync id to last job attempt state.
+   * @return a map from connection id (UUID) to connection state (StandardSyncState).
    */
   @VisibleForTesting
-  static Map<String, JsonNode> getSyncToStateMap(final Database jobsDatabase) throws SQLException {
+  static Map<String, JsonNode> getStandardSyncStates(final Database jobsDatabase) throws SQLException {
     final Table<?> jobsTable = DSL.table("jobs");
     final Field<Long> jobIdField = DSL.field("jobs.id", SQLDataType.BIGINT);
     final Field<String> syncIdField = DSL.field("jobs.scope", SQLDataType.VARCHAR);
@@ -147,7 +136,7 @@ public class V0_29_21_001__Store_last_sync_state extends BaseJavaMigration {
 
     // output schema: JobOutput.yaml
     // sync schema: StandardSyncOutput.yaml
-    // state schema: State.yaml
+    // state schema: State.yaml, e.g. { "state": { "cursor": 1000 } }
     final Field<JSONB> attemptStateField = DSL.field("attempts.output -> 'sync' -> 'state'", SQLDataType.JSONB);
 
     return jobsDatabase.query(ctx -> ctx
@@ -165,7 +154,14 @@ public class V0_29_21_001__Store_last_sync_state extends BaseJavaMigration {
         .stream()
         .collect(Collectors.toMap(
             Record2::value1,
-            r -> Jsons.deserialize(r.value2().data()))));
+            r -> getStandardSyncState(r.value1(), Jsons.deserialize(r.value2().data())))));
+  }
+
+  @VisibleForTesting
+  static JsonNode getStandardSyncState(final String connectionId, final JsonNode state) {
+    return MAPPER.createObjectNode()
+        .put("connectionId", connectionId)
+        .set("state", state);
   }
 
 }
