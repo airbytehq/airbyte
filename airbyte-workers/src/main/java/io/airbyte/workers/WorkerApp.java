@@ -16,11 +16,12 @@ import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
 import io.airbyte.workers.temporal.CheckConnectionWorkflow;
-import io.airbyte.workers.temporal.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.SpecWorkflow;
 import io.airbyte.workers.temporal.SyncWorkflow;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
+import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -93,9 +94,9 @@ public class WorkerApp {
         .registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(processFactory, secretsHydrator, workspaceRoot));
 
     final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
-    discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflow.WorkflowImpl.class);
+    discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflowImpl.class);
     discoverWorker
-        .registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(processFactory, secretsHydrator, workspaceRoot));
+        .registerActivitiesImplementations(new DiscoverCatalogActivityImpl(processFactory, secretsHydrator, workspaceRoot));
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
