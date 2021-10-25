@@ -136,11 +136,9 @@ public class SchedulerHandler {
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(final SourceCoreConfig sourceConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-
     final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
         sourceConfig.getConnectionConfiguration(),
-        specFetcher.execute(imageName));
+        specFetcher.getSpec(sourceDef));
 
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
@@ -148,6 +146,7 @@ public class SchedulerHandler {
         .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
         .withConfiguration(partialConfig);
 
+    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName));
   }
 
@@ -177,11 +176,9 @@ public class SchedulerHandler {
   public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(final DestinationCoreConfig destinationConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
-
     final var partialConfig = configRepository.statefulSplitEphemeralSecrets(
         destinationConfig.getConnectionConfiguration(),
-        specFetcher.execute(imageName));
+        specFetcher.getSpec(destDef));
 
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
@@ -189,6 +186,7 @@ public class SchedulerHandler {
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
         .withConfiguration(partialConfig);
 
+    final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
     return reportConnectionStatus(synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName));
   }
 
@@ -244,8 +242,7 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID sourceDefinitionId = sourceDefinitionIdRequestBody.getSourceDefinitionId();
     final StandardSourceDefinition source = configRepository.getStandardSourceDefinition(sourceDefinitionId);
-    final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
-    final SynchronousResponse<ConnectorSpecification> response = getConnectorSpecification(imageName);
+    final SynchronousResponse<ConnectorSpecification> response = specFetcher.getSpecJobResponse(source);
     final ConnectorSpecification spec = response.getOutput();
     final SourceDefinitionSpecificationRead specRead = new SourceDefinitionSpecificationRead()
         .jobInfo(JobConverter.getSynchronousJobRead(response))
@@ -265,8 +262,7 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID destinationDefinitionId = destinationDefinitionIdRequestBody.getDestinationDefinitionId();
     final StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
-    final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
-    final SynchronousResponse<ConnectorSpecification> response = getConnectorSpecification(imageName);
+    final SynchronousResponse<ConnectorSpecification> response = specFetcher.getSpecJobResponse(destination);
     final ConnectorSpecification spec = response.getOutput();
 
     final DestinationDefinitionSpecificationRead specRead = new DestinationDefinitionSpecificationRead()
@@ -284,10 +280,6 @@ public class SchedulerHandler {
     }
 
     return specRead;
-  }
-
-  public SynchronousResponse<ConnectorSpecification> getConnectorSpecification(final String dockerImage) throws IOException {
-    return synchronousSchedulerClient.createGetSpecJob(dockerImage);
   }
 
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
@@ -378,9 +370,9 @@ public class SchedulerHandler {
   }
 
   private void cancelTemporalWorkflowIfPresent(final long jobId) throws IOException {
-    final var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1; // attempts ids are monotonically increasing starting from 0
-                                                                                       // and
-    // specific to a job id, allowing us to do this.
+    // attempts ids are monotonically increasing starting from 0 and specific to a job id, allowing us
+    // to do this.
+    final var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1;
     final var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, latestAttemptId);
 
     if (workflowId.isPresent()) {
@@ -416,15 +408,13 @@ public class SchedulerHandler {
   private ConnectorSpecification getSpecFromSourceDefinitionId(final UUID sourceDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    return specFetcher.execute(imageName);
+    return specFetcher.getSpec(sourceDef);
   }
 
   private ConnectorSpecification getSpecFromDestinationDefinitionId(final UUID destDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destDefId);
-    final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
-    return specFetcher.execute(imageName);
+    return specFetcher.getSpec(destinationDef);
   }
 
 }

@@ -23,9 +23,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,16 +81,7 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
 
     if (cachedSpecOptional.isPresent()) {
       LOGGER.debug("Spec bucket cache: Cache hit.");
-      final long now = Instant.now().toEpochMilli();
-      final SynchronousJobMetadata mockMetadata = new SynchronousJobMetadata(
-          UUID.randomUUID(),
-          ConfigType.GET_SPEC,
-          null,
-          now,
-          now,
-          true,
-          null);
-      return new SynchronousResponse<>(cachedSpecOptional.get(), mockMetadata);
+      return new SynchronousResponse<>(cachedSpecOptional.get(), SynchronousJobMetadata.mock(ConfigType.GET_SPEC));
     } else {
       LOGGER.debug("Spec bucket cache: Cache miss.");
       return client.createGetSpecJob(dockerImage);
