@@ -14,7 +14,10 @@ import io.airbyte.protocol.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class ElasticsearchDestination extends BaseConnector implements Destination {
@@ -24,8 +27,9 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
 
 
     public static void main(String[] args) throws Exception {
+        final var destination = new ElasticsearchDestination();
         LOGGER.info("starting destination: {}", ElasticsearchDestination.class);
-        new IntegrationRunner(new ElasticsearchDestination()).run(args);
+        new IntegrationRunner(destination).run(args);
         LOGGER.info("completed destination: {}", ElasticsearchDestination.class);
     }
 
@@ -36,14 +40,19 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
             return new AirbyteConnectionStatus()
                     .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("endpoint must not be empty");
         }
-        if (configObject.isUsingApiKey() && configObject.isUsingBasicAuth()) {
+        if (!configObject.getAuthenticationMethod().isValid()) {
             return new AirbyteConnectionStatus()
-                    .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("only one authentication method can be used.");
+                    .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("authentication options are invalid");
         }
 
         final ElasticsearchConnection connection = new ElasticsearchConnection(configObject);
-
-        if (connection.ping()) {
+        final var result = connection.checkConnection();
+        try {
+            connection.close();
+        } catch (IOException e) {
+            LOGGER.warn("failed while closing connection", e);
+        }
+        if (result) {
             return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
         } else {
             return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("failed to ping elasticsearch");
@@ -77,7 +86,8 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
                     .setSyncMode(syncMode)
                     .setNamespace(namespace)
                     .setStreamName(stream.getStream().getName())
-                    .setPrimaryKey(primaryKey));
+                    .setPrimaryKey(primaryKey)
+                    .setUpsert(configObject.isUpsert()));
         }
 
         return ElasticsearchAirbyteMessageConsumerFactory.create(outputRecordCollector, connection, writeConfigs, configuredCatalog);

@@ -4,8 +4,6 @@ import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.apache.http.auth.Credentials;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.params.HttpClientParamConfig;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.elasticsearch.client.RestClientBuilder;
@@ -26,8 +24,8 @@ public class ElasticsearchHttpClientConfigCallback implements RestClientBuilder.
 
     @Override
     public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-
-        if (config.isUsingBasicAuth()) {
+        final var auth = config.getAuthenticationMethod();
+        if (auth.getMethod().equals(ElasticsearchAuthenticationMethod.basic)) {
             // Configure basic auth
             var httpHost = HttpHost.create(config.getEndpoint());
             var authScope = new AuthScope(httpHost.getHostName(), httpHost.getPort());
@@ -35,12 +33,12 @@ public class ElasticsearchHttpClientConfigCallback implements RestClientBuilder.
             Credentials creds = new Credentials() {
                 @Override
                 public Principal getUserPrincipal() {
-                    return new BasicUserPrincipal(config.getUsername());
+                    return new BasicUserPrincipal(auth.getUsername());
                 }
 
                 @Override
                 public String getPassword() {
-                    return config.getPassword();
+                    return auth.getPassword();
                 }
             };
             credProvider.setCredentials(authScope, creds);

@@ -6,7 +6,10 @@ package io.airbyte.integrations.destination.elasticsearch;
 
 import co.elastic.clients.base.*;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._core.*;
+import co.elastic.clients.elasticsearch._core.BulkRequest;
+import co.elastic.clients.elasticsearch._core.BulkResponse;
+import co.elastic.clients.elasticsearch._core.CreateResponse;
+import co.elastic.clients.elasticsearch._core.SearchResponse;
 import co.elastic.clients.elasticsearch._core.search.Hit;
 import co.elastic.clients.elasticsearch._core.search.HitsMetadata;
 import co.elastic.clients.elasticsearch.cat.indices.IndicesRecord;
@@ -79,10 +82,11 @@ public class ElasticsearchConnection {
      * @return the default headers
      */
     private Header[] configureHeaders(ConnectorConfiguration config) {
-        var headerList = new ArrayList<Header>();
+        final var headerList = new ArrayList<Header>();
         // add Authorization header if credentials are present
-        if (config.isUsingApiKey()) {
-            var bytes = (config.getApiKeyId() + ":" + config.getApiKeySecret()).getBytes(StandardCharsets.UTF_8);
+        final var auth = config.getAuthenticationMethod();
+        if (auth.getMethod().equals(ElasticsearchAuthenticationMethod.secret)) {
+            var bytes = (auth.getApiKeyId() + ":" + auth.getApiKeySecret()).getBytes(StandardCharsets.UTF_8);
             var header = "ApiKey " + Base64.getEncoder().encodeToString(bytes);
             headerList.add(new BasicHeader("Authorization", header));
         }
@@ -94,9 +98,12 @@ public class ElasticsearchConnection {
      *
      * @return true if connection was successful
      */
-    public boolean ping() {
+    public boolean checkConnection() {
+        log.info("checking elasticsearch connection");
         try {
-            return client.ping().value();
+            final var info = client.info();
+            log.info("checked elasticsearch connection: {}, version: {}", info.clusterName(), info.version());
+            return true;
         } catch (ApiException e) {
             log.error("failed to ping elasticsearch", unwrappedApiException("failed write operation", e));
             return false;
@@ -231,6 +238,7 @@ public class ElasticsearchConnection {
 
     /**
      * Deletes an index if present, suppressing any exceptions
+     *
      * @param indexName The index to delete
      */
     public void deleteIndexIfPresent(String indexName) {
@@ -249,7 +257,8 @@ public class ElasticsearchConnection {
     /**
      * Clones a source index to a destination index.
      * If the destination index already exists, it deletes it before cloning
-     * @param sourceIndexName The index to clone
+     *
+     * @param sourceIndexName      The index to clone
      * @param destinationIndexName The destination index name to clone to.
      */
     public void replaceIndex(String sourceIndexName, String destinationIndexName) {
@@ -289,8 +298,9 @@ public class ElasticsearchConnection {
 
     /**
      * Unwraps a rest client ApiException, so we can log the details
+     *
      * @param message message to add to the log entry
-     * @param e source ApiException
+     * @param e       source ApiException
      * @return a new RuntimeException with the ApiException as the source
      */
     private RuntimeException unwrappedApiException(String message, ApiException e) {

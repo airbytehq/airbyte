@@ -17,6 +17,7 @@ public class SerializationTest {
     public void test() {
 
         ObjectNode node = mapper.createObjectNode();
+        ObjectNode authNode = mapper.createObjectNode();
 
         String endpoint = "http://localhost:123";
         String indexPrefix = "data";
@@ -26,13 +27,17 @@ public class SerializationTest {
         node
                 .put("endpoint", endpoint)
                 .put("indexPrefix", indexPrefix)
+                .set("authenticationMethod", authNode);
+
+        authNode
                 .put("apiKeyId", apiKeyId)
                 .put("apiKeySecret", apiKeySecret);
 
         ConnectorConfiguration config = mapper.convertValue(node, ConnectorConfiguration.class);
+        Assertions.assertTrue(config.getAuthenticationMethod().isValid());
         Assertions.assertEquals(endpoint, config.getEndpoint());
-        Assertions.assertEquals(apiKeyId, config.getApiKeyId());
-        Assertions.assertEquals(apiKeySecret, config.getApiKeySecret());
+        Assertions.assertEquals(apiKeyId, config.getAuthenticationMethod().getApiKeyId());
+        Assertions.assertEquals(apiKeySecret, config.getAuthenticationMethod().getApiKeySecret());
     }
 
 }

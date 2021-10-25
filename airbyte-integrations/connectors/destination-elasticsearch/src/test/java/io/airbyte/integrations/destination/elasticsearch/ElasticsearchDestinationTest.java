@@ -167,7 +167,7 @@ public class ElasticsearchDestinationTest {
     private static class TestConfig extends ElasticsearchWriteConfig {
 
         public TestConfig(String namespace, String streamName, DestinationSyncMode destinationSyncMode, ArrayList<List<String>> primaryKey) {
-            super(namespace, streamName, destinationSyncMode, primaryKey);
+            super(namespace, streamName, destinationSyncMode, primaryKey, false);
         }
 
         ConfiguredAirbyteCatalog getCatalog() {
