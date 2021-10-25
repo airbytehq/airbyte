@@ -219,7 +219,8 @@ public class ServerApp implements ServerRunnable {
     final SpecFetcher specFetcher = new SpecFetcher(cachingSchedulerClient);
 
     // required before migration
-    configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.execute(dockerImage)));
+    // TODO: remove this specFetcherFn logic once file migrations are deprecated
+    configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.getSpec(dockerImage)));
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
     if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
