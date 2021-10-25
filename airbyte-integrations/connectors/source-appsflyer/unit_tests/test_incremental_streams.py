@@ -1,27 +1,26 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-from datetime import timezone
+
 import pendulum
 import pytest
-from pytest import fixture, raises
-from unittest.mock import MagicMock
-from pendulum.parsing.exceptions import ParserError
-
 from airbyte_cdk.models import SyncMode
-from source_appsflyer.source import IncrementalAppsflyerStream
-from source_appsflyer.source import InAppEvents
-from source_appsflyer.source import UninstallEvents
-from source_appsflyer.source import Installs
-from source_appsflyer.source import RetargetingInAppEvents
-from source_appsflyer.source import RetargetingConversions
-from source_appsflyer.source import PartnersReport
-from source_appsflyer.source import DailyReport
-from source_appsflyer.source import GeoReport
-from source_appsflyer.source import RetargetingPartnersReport
-from source_appsflyer.source import RetargetingDailyReport
-from source_appsflyer.source import RetargetingGeoReport
+from pytest import fixture, raises
 from source_appsflyer import fields
+from source_appsflyer.source import (
+    DailyReport,
+    GeoReport,
+    InAppEvents,
+    IncrementalAppsflyerStream,
+    Installs,
+    PartnersReport,
+    RetargetingConversions,
+    RetargetingDailyReport,
+    RetargetingGeoReport,
+    RetargetingInAppEvents,
+    RetargetingPartnersReport,
+    UninstallEvents,
+)
 
 
 @fixture
@@ -71,31 +70,22 @@ def test_cursor_field(patch_incremental_base_class, mocker, class_, expected_cur
         (RetargetingGeoReport, "date", True, None, True, None),
     ],
 )
-def test_request_params(
-    mocker,
-    class_,
-    cursor_field,
-    date_only,
-    additional_fields,
-    retargeting,
-    currency
-):
+def test_request_params(mocker, class_, cursor_field, date_only, additional_fields, retargeting, currency):
     timezone = "UTC"
+
     def __init__(self):
         self.api_token = "secret"
         self.timezone = pendulum.timezone("UTC")
         self.start_date = pendulum.yesterday(timezone)
         self.end_date = pendulum.today(timezone)
+
     mocker.patch.object(class_, "__init__", __init__)
     mocker.patch.object(class_, "cursor_field", cursor_field)
     stream = class_()
     start = pendulum.yesterday(timezone)
     end = pendulum.today(timezone)
     inputs = dict()
-    inputs["stream_slice"] = {
-        cursor_field: start,
-        cursor_field + "_end": end
-    }
+    inputs["stream_slice"] = {cursor_field: start, cursor_field + "_end": end}
     inputs["next_page_token"] = None
     inputs["stream_state"] = None
     expected_params = dict()
@@ -124,14 +114,10 @@ def test_request_params(
         ({}, {}, {}),
     ],
 )
-def test_get_updated_state(
-    patch_incremental_base_class,
-    mocker,
-    current_stream_state,
-    latest_record,
-    expected_state
-):
-    def __init__(self): self.timezone= pendulum.timezone("UTC")
+def test_get_updated_state(patch_incremental_base_class, mocker, current_stream_state, latest_record, expected_state):
+    def __init__(self):
+        self.timezone = pendulum.timezone("UTC")
+
     mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
     mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "event_time")
     stream = IncrementalAppsflyerStream()
@@ -141,34 +127,31 @@ def test_get_updated_state(
 
 def test_get_updated_state_exists_current_stream_and_empty_latest_record(patch_incremental_base_class, mocker):
     with raises(TypeError, match=r"Expected (.*) type '(.*)' but returned type '(.*)'."):
-        def __init__(self): self.timezone= pendulum.timezone("UTC")
+
+        def __init__(self):
+            self.timezone = pendulum.timezone("UTC")
+
         mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
         mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "event_time")
         stream = IncrementalAppsflyerStream()
-        inputs = {"current_stream_state": dict(event_time="2021-09-09"), "latest_record": {"event_time":None}}
+        inputs = {"current_stream_state": dict(event_time="2021-09-09"), "latest_record": {"event_time": None}}
         stream.get_updated_state(**inputs)
 
 
 def test_stream_slices(patch_incremental_base_class, mocker):
     timezone = "UTC"
+
     def __init__(self):
-        self.api_token= "secret"
-        self.timezone= pendulum.timezone("UTC")
-        self.start_date= pendulum.yesterday("UTC")
-        self.end_date= pendulum.today("UTC")
+        self.api_token = "secret"
+        self.timezone = pendulum.timezone("UTC")
+        self.start_date = pendulum.yesterday("UTC")
+        self.end_date = pendulum.today("UTC")
 
     mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
     mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "date")
     stream = IncrementalAppsflyerStream()
-    inputs = {
-        "sync_mode": SyncMode.incremental,
-        "cursor_field": [],
-        "stream_state": dict(date=pendulum.yesterday(timezone))
-    }
-    expected_stream_slice = [{
-        "date":pendulum.yesterday("UTC"),
-        "date_end":pendulum.today("UTC")
-    }]
+    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": dict(date=pendulum.yesterday(timezone))}
+    expected_stream_slice = [{"date": pendulum.yesterday("UTC"), "date_end": pendulum.today("UTC")}]
     assert stream.stream_slices(**inputs) == expected_stream_slice
 
 

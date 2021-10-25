@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 # This order matters
 main_fields = (
     "date",
@@ -12,5 +16,5 @@ main_fields = (
     "loyal_users",
     "loyal_users_rate",
     "total_cost",
-    "average_ecpi"
+    "average_ecpi",
 )
