@@ -19,8 +19,7 @@
     },
     "field": {
       "properties": {},
-      "type": ["null", "object"],
-      "additionalProperties": true
+      "type": ["null", "object"]
     },
     "id": {
       "type": ["null", "integer"]
@@ -51,8 +50,7 @@
     },
     "ui_config": {
       "properties": {},
-      "type": ["null", "object"],
-      "additionalProperties": true
+      "type": ["null", "object"]
     }
   }
 }

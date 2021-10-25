@@ -68,8 +68,7 @@
                 "type": ["null", "integer"]
               }
             },
-            "type": ["null", "object"],
-            "additionalProperties": true
+            "type": ["null", "object"]
           },
           "hidden": {
             "type": ["null", "boolean"]
@@ -86,8 +85,7 @@
                 "type": ["null", "string"]
               }
             },
-            "type": ["null", "object"],
-            "additionalProperties": true
+            "type": ["null", "object"]
           },
           "query_timezone": {
             "type": ["null", "string"]
@@ -146,8 +144,7 @@
                 "type": ["null", "integer"]
               }
             },
-            "type": ["null", "object"],
-            "additionalProperties": true
+            "type": ["null", "object"]
           },
           "title": {
             "type": ["null", "string"]
@@ -156,8 +153,7 @@
             "type": ["null", "string"]
           }
         },
-        "type": ["null", "object"],
-        "additionalProperties": true
+        "type": ["null", "object"]
       },
       "type": ["null", "array"]
     },
@@ -258,8 +254,7 @@
                       "type": ["null", "integer"]
                     }
                   },
-                  "type": ["null", "object"],
-                  "additionalProperties": true
+                  "type": ["null", "object"]
                 },
                 "hidden": {
                   "type": ["null", "boolean"]
@@ -276,8 +271,7 @@
                       "type": ["null", "string"]
                     }
                   },
-                  "type": ["null", "object"],
-                  "additionalProperties": true
+                  "type": ["null", "object"]
                 },
                 "query_timezone": {
                   "type": ["null", "string"]
@@ -336,8 +330,7 @@
                       "type": ["null", "integer"]
                     }
                   },
-                  "type": ["null", "object"],
-                  "additionalProperties": true
+                  "type": ["null", "object"]
                 },
                 "title": {
                   "type": ["null", "string"]
@@ -346,8 +339,7 @@
                   "type": ["null", "string"]
                 }
               },
-              "type": ["null", "object"],
-              "additionalProperties": true
+              "type": ["null", "object"]
             },
             "type": ["null", "array"]
           },
@@ -418,8 +410,7 @@
                 "type": ["null", "integer"]
               }
             },
-            "type": ["null", "object"],
-            "additionalProperties": true
+            "type": ["null", "object"]
           },
           "folder_id": {
             "type": ["null", "string"]
@@ -456,8 +447,7 @@
                 "type": ["null", "string"]
               }
             },
-            "type": ["null", "object"],
-            "additionalProperties": true
+            "type": ["null", "object"]
           },
           "public": {
             "type": ["null", "boolean"]
@@ -519,8 +509,7 @@
                 "type": ["null", "integer"]
               }
             },
-            "type": ["null", "object"],
-            "additionalProperties": true
+            "type": ["null", "object"]
           },
           "space_id": {
             "type": ["null", "string"]
@@ -538,8 +527,7 @@
                 "type": ["null", "integer"]
               }
             },
-            "type": ["null", "object"],
-            "additionalProperties": true
+            "type": ["null", "object"]
           },
           "user_id": {
             "type": ["null", "string"]
@@ -548,8 +536,7 @@
             "type": ["null", "integer"]
           }
         },
-        "type": ["null", "object"],
-        "additionalProperties": true
+        "type": ["null", "object"]
       },
       "type": ["null", "array"]
     },

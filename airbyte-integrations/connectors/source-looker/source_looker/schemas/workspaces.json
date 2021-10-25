@@ -57,8 +57,7 @@
             "type": ["null", "boolean"]
           }
         },
-        "type": ["null", "object"],
-        "additionalProperties": true
+        "type": ["null", "object"]
       },
       "type": ["null", "array"]
     }
