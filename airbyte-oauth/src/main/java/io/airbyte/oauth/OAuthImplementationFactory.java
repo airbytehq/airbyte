@@ -9,6 +9,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.flows.AsanaOAuthFlow;
+import io.airbyte.oauth.flows.DriftOAuthFlow;
 import io.airbyte.oauth.flows.GithubOAuthFlow;
 import io.airbyte.oauth.flows.HubspotOAuthFlow;
 import io.airbyte.oauth.flows.IntercomOAuthFlow;
@@ -50,6 +51,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-snapchat-marketing", new SnapchatMarketingOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-drift", new DriftOAuthFlow(configRepository))
         .build();
   }
 
