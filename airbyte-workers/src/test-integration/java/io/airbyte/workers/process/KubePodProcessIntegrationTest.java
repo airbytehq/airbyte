@@ -36,8 +36,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 // requires kube running locally to run. If using Minikube it requires MINIKUBE=true
-// Must have a timeout on this class because it tests child processes that may misbehave; otherwise this can hang forever during failures.
-@Timeout(value = 5, unit = TimeUnit.MINUTES)
+// Must have a timeout on this class because it tests child processes that may misbehave; otherwise
+// this can hang forever during failures.
+@Timeout(value = 5,
+         unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
@@ -215,4 +217,5 @@ public class KubePodProcessIntegrationTest {
       throw new RuntimeException(e);
     }
   }
+
 }
