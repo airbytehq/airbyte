@@ -2,11 +2,11 @@ FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
 
-ENV APPLICATION source-clickhouse
+ENV APPLICATION source-clickhouse-strict-encrypt
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 
-LABEL io.airbyte.version=0.1.3
-LABEL io.airbyte.name=airbyte/source-clickhouse
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-clickhouse-strict-encrypt
