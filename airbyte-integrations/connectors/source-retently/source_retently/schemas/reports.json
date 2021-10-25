@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "last": { "type": "object" }, 
+    "trend": { "type": "array" }, 
+    "campaignId": { "type": "string" }, 
+    "deliveryStats": { "type": "object" }
+  }
+}
