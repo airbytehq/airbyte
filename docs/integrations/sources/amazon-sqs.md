@@ -22,8 +22,6 @@ The stream record data will have three fields:
 
 ### Performance considerations
 
-
-
 ## Getting started
 
 ### Requirements
@@ -34,11 +32,14 @@ The stream record data will have three fields:
 
 ### Properties
 
+Required properties are 'Queue URL', 'AWS Region' and 'Delete Messages After Read' as noted in **bold** below.
+
 * **Queue URL** (STRING)
   * The full AWS endpoint URL of the queue e.g. https://sqs.eu-west-1.amazonaws.com/1234567890/example-queue-url
 * **AWS Region** (STRING)
   * The region code for the SQS Queue e.g. eu-west-1
 * **Delete Messages After Read** (BOOLEAN)
+  * **WARNING:** Setting this option to TRUE can result in data loss, do not enable this option unless you understand the risk. See the **Data loss warning** section below.
   * Should the message be deleted from the SQS Queue after being read? This prevents the message being read more than once
   * By default messages are NOT deleted, thus can be re-read after the `Message Visibility Timeout`
   * Default: False
@@ -57,12 +58,18 @@ The stream record data will have three fields:
   * After a message is read, how much time (in seconds) should the message be hidden from other consumers
   * After this timeout, the message is not deleted and can be re-read
   * Default: 30
-* **AWS IAM Access Key ID** (STRING)
+* AWS IAM Access Key ID (STRING)
   * The Access Key for the IAM User with permissions on this Queue
   * If `Delete Messages After Read` is `false` then only `sqs:ReceiveMessage`
   * If `Delete Messages After Read` is `true` then `sqs:DeleteMessage` is also needed
-* **AWS IAM Secret Key** (STRING)
+* AWS IAM Secret Key (STRING)
   * The Secret Key for the IAM User with permissions on this Queue
+
+### Data loss warning
+
+When enabling **Delete Messages After Read**, the Source will delete messages from the SQS Queue after reading them. The message is deleted *after* the configured Destination takes the message from this Source, but makes no guarentee that the downstream destination has commited/persisted the message. This means that it is possible for the Airbyte Destination to read the message from the Source, the Source deletes the message, then the downstream application fails - resulting in the message being lost permanently.
+
+Extra care should be taken to understand this risk before enabling this option.
 
 ### Setup guide
 
