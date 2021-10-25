@@ -116,7 +116,7 @@ public class DefaultDiscoverCatalogWorkerTest {
 
   @Test
   public void testCancel() throws WorkerException {
-    DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
     worker.run(INPUT, jobRoot);
 
     worker.cancel();

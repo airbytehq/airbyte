@@ -45,7 +45,7 @@ public class SecretCoordinate {
    * @param fullCoordinate coordinate with version
    * @return secret coordinate object
    */
-  public static SecretCoordinate fromFullCoordinate(String fullCoordinate) {
+  public static SecretCoordinate fromFullCoordinate(final String fullCoordinate) {
     final var splits = fullCoordinate.split("_v");
     Preconditions.checkArgument(splits.length == 2);
 
@@ -65,12 +65,12 @@ public class SecretCoordinate {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o)
       return true;
     if (o == null || getClass() != o.getClass())
       return false;
-    SecretCoordinate that = (SecretCoordinate) o;
+    final SecretCoordinate that = (SecretCoordinate) o;
     return toString().equals(that.toString());
   }
 

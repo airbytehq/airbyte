@@ -73,7 +73,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 

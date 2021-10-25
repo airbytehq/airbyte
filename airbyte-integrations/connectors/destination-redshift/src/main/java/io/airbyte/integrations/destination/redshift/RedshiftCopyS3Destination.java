@@ -33,9 +33,9 @@ import java.util.function.Consumer;
 public class RedshiftCopyS3Destination extends CopyDestination {
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return CopyConsumerFactory.create(
         outputRecordCollector,
@@ -49,7 +49,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
   }
 
   @Override
-  public void checkPersistence(JsonNode config) throws Exception {
+  public void checkPersistence(final JsonNode config) throws Exception {
     S3StreamCopier.attemptS3WriteAndDelete(getS3Config(config));
   }
 
@@ -59,7 +59,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
   }
 
   @Override
-  public JdbcDatabase getDatabase(JsonNode config) {
+  public JdbcDatabase getDatabase(final JsonNode config) {
     return getJdbcDatabase(config);
   }
 
@@ -68,11 +68,11 @@ public class RedshiftCopyS3Destination extends CopyDestination {
     return new RedshiftSqlOperations();
   }
 
-  private String getConfiguredSchema(JsonNode config) {
+  private String getConfiguredSchema(final JsonNode config) {
     return config.get("schema").asText();
   }
 
-  private S3Config getS3Config(JsonNode config) {
+  private S3Config getS3Config(final JsonNode config) {
     return S3Config.getS3Config(config);
   }
 

@@ -47,7 +47,7 @@ class ExceptionAfterNSourceTest {
     assertThrows(IllegalStateException.class, read::next);
   }
 
-  private static AirbyteMessage getRecordMessage(long i) {
+  private static AirbyteMessage getRecordMessage(final long i) {
     return new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -56,7 +56,7 @@ class ExceptionAfterNSourceTest {
             .withData(Jsons.jsonNode(ImmutableMap.of("column1", i))));
   }
 
-  private static AirbyteMessage getStateMessage(long i) {
+  private static AirbyteMessage getStateMessage(final long i) {
     return new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("column1", i))));

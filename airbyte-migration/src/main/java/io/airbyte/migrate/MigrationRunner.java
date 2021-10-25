@@ -22,8 +22,8 @@ public class MigrationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationRunner.class);
 
-  public static void run(String[] args) throws IOException {
-    MigrateConfig migrateConfig = parse(args);
+  public static void run(final String[] args) throws IOException {
+    final MigrateConfig migrateConfig = parse(args);
     run(migrateConfig);
   }
 
@@ -60,7 +60,7 @@ public class MigrationRunner {
     LOGGER.info("Migration output written to {}", outputPath);
   }
 
-  private static MigrateConfig parse(String[] args) {
+  private static MigrateConfig parse(final String[] args) {
     LOGGER.info("args: {}", Arrays.asList(args));
     final ArgumentParser parser = ArgumentParsers.newFor(Migrate.class.getName()).build()
         .defaultHelp(true)
@@ -86,13 +86,13 @@ public class MigrationRunner {
       final String targetVersion =
           Objects.isNull(targetVersionFromCli) ? Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1).getVersion() : targetVersionFromCli;
       return new MigrateConfig(inputPath, outputPath, targetVersion);
-    } catch (ArgumentParserException e) {
+    } catch (final ArgumentParserException e) {
       parser.handleError(e);
       throw new IllegalArgumentException(e);
     }
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(final String[] args) throws IOException {
     MigrationRunner.run(args);
   }
 

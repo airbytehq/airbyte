@@ -40,7 +40,7 @@ public interface SpecWorkflow {
     private final SpecActivity activity = Workflow.newActivityStub(SpecActivity.class, options);
 
     @Override
-    public ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig) {
+    public ConnectorSpecification run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
       return activity.run(jobRunConfig, launcherConfig);
     }
 
@@ -59,12 +59,12 @@ public interface SpecWorkflow {
     private final ProcessFactory processFactory;
     private final Path workspaceRoot;
 
-    public SpecActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
+    public SpecActivityImpl(final ProcessFactory processFactory, final Path workspaceRoot) {
       this.processFactory = processFactory;
       this.workspaceRoot = workspaceRoot;
     }
 
-    public ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig) {
+    public ConnectorSpecification run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
       final Supplier<JobGetSpecConfig> inputSupplier = () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
 
       final TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification> temporalAttemptExecution = new TemporalAttemptExecution<>(
@@ -77,7 +77,7 @@ public interface SpecWorkflow {
       return temporalAttemptExecution.get();
     }
 
-    private CheckedSupplier<Worker<JobGetSpecConfig, ConnectorSpecification>, Exception> getWorkerFactory(IntegrationLauncherConfig launcherConfig) {
+    private CheckedSupplier<Worker<JobGetSpecConfig, ConnectorSpecification>, Exception> getWorkerFactory(final IntegrationLauncherConfig launcherConfig) {
       return () -> {
         final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
             launcherConfig.getJobId(),

@@ -35,7 +35,7 @@ public class BigQuerySourceAcceptanceTest extends SourceAcceptanceTest {
   private JsonNode config;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv testEnv) throws IOException, SQLException {
+  protected void setupEnvironment(final TestDestinationEnv testEnv) throws IOException, SQLException {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
           "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
@@ -67,7 +67,7 @@ public class BigQuerySourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     database.cleanDataSet(dataset.getDatasetId().getDataset());
   }
 

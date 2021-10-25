@@ -41,9 +41,9 @@ public abstract class BaseGcsWriter implements S3Writer {
   protected final DestinationSyncMode syncMode;
   protected final String outputPrefix;
 
-  protected BaseGcsWriter(GcsDestinationConfig config,
-                          AmazonS3 s3Client,
-                          ConfiguredAirbyteStream configuredStream) {
+  protected BaseGcsWriter(final GcsDestinationConfig config,
+                          final AmazonS3 s3Client,
+                          final ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
@@ -57,7 +57,7 @@ public abstract class BaseGcsWriter implements S3Writer {
    */
   @Override
   public void initialize() {
-    String bucket = config.getBucketName();
+    final String bucket = config.getBucketName();
     if (!gcsBucketExist(s3Client, bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
       s3Client.createBucket(bucket);
@@ -66,17 +66,17 @@ public abstract class BaseGcsWriter implements S3Writer {
 
     if (syncMode == DestinationSyncMode.OVERWRITE) {
       LOGGER.info("Overwrite mode");
-      List<KeyVersion> keysToDelete = new LinkedList<>();
-      List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
+      final List<KeyVersion> keysToDelete = new LinkedList<>();
+      final List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
           .getObjectSummaries();
-      for (S3ObjectSummary object : objects) {
+      for (final S3ObjectSummary object : objects) {
         keysToDelete.add(new KeyVersion(object.getKey()));
       }
 
       if (keysToDelete.size() > 0) {
         LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...", stream.getName());
         // Google Cloud Storage doesn't accept request to delete multiple objects
-        for (KeyVersion keyToDelete : keysToDelete) {
+        for (final KeyVersion keyToDelete : keysToDelete) {
           s3Client.deleteObject(bucket, keyToDelete.getKey());
         }
         LOGGER.info("Deleted {} file(s) for stream '{}'.", keysToDelete.size(),
@@ -90,17 +90,17 @@ public abstract class BaseGcsWriter implements S3Writer {
    * method does not work for GCS. So we use {@link AmazonS3#headBucket} instead, which will throw an
    * exception if the bucket does not exist, or there is no permission to access it.
    */
-  public boolean gcsBucketExist(AmazonS3 s3Client, String bucket) {
+  public boolean gcsBucketExist(final AmazonS3 s3Client, final String bucket) {
     try {
       s3Client.headBucket(new HeadBucketRequest(bucket));
       return true;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return false;
     }
   }
 
   @Override
-  public void close(boolean hasFailed) throws IOException {
+  public void close(final boolean hasFailed) throws IOException {
     if (hasFailed) {
       LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
       closeWhenFail();
@@ -127,8 +127,8 @@ public abstract class BaseGcsWriter implements S3Writer {
   }
 
   // Filename: <upload-date>_<upload-millis>_0.<format-extension>
-  public static String getOutputFilename(Timestamp timestamp, S3Format format) {
-    DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+  public static String getOutputFilename(final Timestamp timestamp, final S3Format format) {
+    final DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String.format(
         "%s_%d_0.%s",

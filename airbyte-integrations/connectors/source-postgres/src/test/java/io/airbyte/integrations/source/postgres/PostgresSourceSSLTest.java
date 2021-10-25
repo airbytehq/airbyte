@@ -117,7 +117,7 @@ class PostgresSourceSSLTest {
     database.close();
   }
 
-  private Database getDatabaseFromConfig(JsonNode config) {
+  private Database getDatabaseFromConfig(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -129,7 +129,7 @@ class PostgresSourceSSLTest {
         SQLDialect.POSTGRES);
   }
 
-  private JsonNode getConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
+  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
@@ -140,7 +140,7 @@ class PostgresSourceSSLTest {
         .build());
   }
 
-  private JsonNode getConfig(PostgreSQLContainer<?> psqlDb) {
+  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb) {
     return getConfig(psqlDb, psqlDb.getDatabaseName());
   }
 
@@ -149,8 +149,8 @@ class PostgresSourceSSLTest {
     PSQL_DB.close();
   }
 
-  private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
-    for (AirbyteMessage actualMessage : messages) {
+  private static void setEmittedAtToNull(final Iterable<AirbyteMessage> messages) {
+    for (final AirbyteMessage actualMessage : messages) {
       if (actualMessage.getRecord() != null) {
         actualMessage.getRecord().setEmittedAt(null);
       }
@@ -192,12 +192,12 @@ class PostgresSourceSSLTest {
     assertTrue(PostgresSource.isCdc(config));
   }
 
-  private static AirbyteMessage createRecord(String stream, Map<Object, Object> data) {
+  private static AirbyteMessage createRecord(final String stream, final Map<Object, Object> data) {
     return new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream).withNamespace(SCHEMA_NAME));
   }
 
-  private static Map<Object, Object> map(Object... entries) {
+  private static Map<Object, Object> map(final Object... entries) {
     if (entries.length % 2 != 0) {
       throw new IllegalArgumentException("Entries must have even length");
     }

@@ -82,15 +82,15 @@ public class SchedulerApp {
   private final int maxSyncJobAttempts;
   private final String airbyteVersionOrWarnings;
 
-  public SchedulerApp(Path workspaceRoot,
-                      JobPersistence jobPersistence,
-                      ConfigRepository configRepository,
-                      JobCleaner jobCleaner,
-                      JobNotifier jobNotifier,
-                      TemporalClient temporalClient,
-                      Integer submitterNumThreads,
-                      Integer maxSyncJobAttempts,
-                      String airbyteVersionOrWarnings) {
+  public SchedulerApp(final Path workspaceRoot,
+                      final JobPersistence jobPersistence,
+                      final ConfigRepository configRepository,
+                      final JobCleaner jobCleaner,
+                      final JobNotifier jobNotifier,
+                      final TemporalClient temporalClient,
+                      final Integer submitterNumThreads,
+                      final Integer maxSyncJobAttempts,
+                      final String airbyteVersionOrWarnings) {
     this.workspaceRoot = workspaceRoot;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
@@ -118,7 +118,7 @@ public class SchedulerApp {
         new JobTracker(configRepository, jobPersistence, trackingClient),
         jobNotifier);
 
-    Map<String, String> mdc = MDC.getCopyOfContextMap();
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
     // We cancel jobs that where running before the restart. They are not being monitored by the worker
     // anymore.
@@ -157,14 +157,14 @@ public class SchedulerApp {
         scheduleJobsPool, executeJobsPool, cleanupJobsPool));
   }
 
-  private void cleanupZombies(JobPersistence jobPersistence, JobNotifier jobNotifier) throws IOException {
-    for (Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
+  private void cleanupZombies(final JobPersistence jobPersistence, final JobNotifier jobNotifier) throws IOException {
+    for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
       jobNotifier.failJob("zombie job was cancelled", zombieJob);
       jobPersistence.cancelJob(zombieJob.getId());
     }
   }
 
-  public static void waitForServer(Configs configs) throws InterruptedException {
+  public static void waitForServer(final Configs configs) throws InterruptedException {
     final AirbyteApiClient apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost(configs.getAirbyteApiHost())
@@ -174,16 +174,16 @@ public class SchedulerApp {
     boolean isHealthy = false;
     while (!isHealthy) {
       try {
-        HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
+        final HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
         isHealthy = healthCheck.getDb();
-      } catch (ApiException e) {
+      } catch (final ApiException e) {
         LOGGER.info("Waiting for server to become available...");
         Thread.sleep(2000);
       }
     }
   }
 
-  public static void main(String[] args) throws IOException, InterruptedException {
+  public static void main(final String[] args) throws IOException, InterruptedException {
 
     final Configs configs = new EnvConfigs();
 

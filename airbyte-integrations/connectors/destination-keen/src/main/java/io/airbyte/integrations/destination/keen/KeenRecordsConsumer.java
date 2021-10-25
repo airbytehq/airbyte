@@ -44,9 +44,9 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   private AirbyteMessage lastStateMessage;
   private Set<String> streamNames;
 
-  public KeenRecordsConsumer(JsonNode config,
-                             ConfiguredAirbyteCatalog catalog,
-                             Consumer<AirbyteMessage> outputRecordCollector) {
+  public KeenRecordsConsumer(final JsonNode config,
+                             final ConfiguredAirbyteCatalog catalog,
+                             final Consumer<AirbyteMessage> outputRecordCollector) {
     this.config = config;
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
@@ -60,7 +60,7 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void startTracked() throws IOException, InterruptedException {
     projectId = config.get(CONFIG_PROJECT_ID).textValue();
     apiKey = config.get(CONFIG_API_KEY).textValue();
-    boolean timestampInferenceEnabled = Optional.ofNullable(config.get(INFER_TIMESTAMP))
+    final boolean timestampInferenceEnabled = Optional.ofNullable(config.get(INFER_TIMESTAMP))
         .map(JsonNode::booleanValue)
         .orElse(true);
     this.kafkaProducer = KeenDestination.KafkaProducerFactory.create(projectId, apiKey);
@@ -70,7 +70,7 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage msg) {
+  protected void acceptTracked(final AirbyteMessage msg) {
     if (msg.getType() == Type.STATE) {
       lastStateMessage = msg;
       outputRecordCollector.accept(lastStateMessage);
@@ -80,7 +80,7 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
     }
 
     final String streamName = getStreamName(msg.getRecord());
-    JsonNode data = this.timestampService.injectTimestamp(msg.getRecord());
+    final JsonNode data = this.timestampService.injectTimestamp(msg.getRecord());
 
     kafkaProducer.send(new ProducerRecord<>(streamName, data.toString()));
   }
@@ -95,21 +95,21 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   private void eraseOverwriteStreams() throws IOException, InterruptedException {
-    KeenHttpClient keenHttpClient = new KeenHttpClient();
+    final KeenHttpClient keenHttpClient = new KeenHttpClient();
     LOGGER.info("erasing streams with override options selected.");
 
-    List<String> streamsToDelete = this.catalog.getStreams().stream()
+    final List<String> streamsToDelete = this.catalog.getStreams().stream()
         .filter(stream -> stream.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE)
         .map(stream -> KeenCharactersStripper.stripSpecialCharactersFromStreamName(stream.getStream().getName()))
         .collect(Collectors.toList());
 
-    for (String streamToDelete : streamsToDelete) {
+    for (final String streamToDelete : streamsToDelete) {
       LOGGER.info("erasing stream " + streamToDelete);
       keenHttpClient.eraseStream(streamToDelete, projectId, apiKey);
     }
   }
 
-  private String getStreamName(AirbyteRecordMessage recordMessage) {
+  private String getStreamName(final AirbyteRecordMessage recordMessage) {
     String streamName = recordMessage.getStream();
     if (streamNames.contains(streamName)) {
       return streamName;
@@ -125,7 +125,7 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void close(boolean hasFailed) {
+  protected void close(final boolean hasFailed) {
     kafkaProducer.flush();
     kafkaProducer.close();
     if (!hasFailed) {

@@ -28,7 +28,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 
@@ -86,8 +86,8 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             + container.getUsername() + "@'%';");
   }
 
-  private void executeQuery(String query) {
-    try (Database database = Databases.createDatabase(
+  private void executeQuery(final String query) {
+    try (final Database database = Databases.createDatabase(
         "root",
         "test",
         String.format("jdbc:mysql://%s:%s/%s",
@@ -99,7 +99,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       database.query(
           ctx -> ctx
               .execute(query));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -359,10 +359,10 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   }
 
-  private String getLogString(int length) {
-    int maxLpadLength = 262144;
-    StringBuilder stringBuilder = new StringBuilder("concat(");
-    int fullChunks = length / maxLpadLength;
+  private String getLogString(final int length) {
+    final int maxLpadLength = 262144;
+    final StringBuilder stringBuilder = new StringBuilder("concat(");
+    final int fullChunks = length / maxLpadLength;
     for (int i = 1; i <= fullChunks; i++) {
       stringBuilder.append("lpad('0', 262144, '0'),");
     }

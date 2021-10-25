@@ -53,7 +53,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   private final ExceptionWrappingDatabase database;
 
-  public DatabaseConfigPersistence(Database database) {
+  public DatabaseConfigPersistence(final Database database) {
     this.database = new ExceptionWrappingDatabase(database);
   }
 
@@ -61,7 +61,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    * If this is a migration deployment from an old version that relies on file system config
    * persistence, copy the existing configs from local files.
    */
-  public void migrateFileConfigs(Configs serverConfigs) throws IOException {
+  public void migrateFileConfigs(final Configs serverConfigs) throws IOException {
     database.transaction(ctx -> {
       final boolean isInitialized = ctx.fetchExists(AIRBYTE_CONFIGS);
       if (isInitialized) {
@@ -71,7 +71,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       final boolean hasExistingFileConfigs = FileSystemConfigPersistence.hasExistingConfigs(serverConfigs.getConfigRoot());
       if (hasExistingFileConfigs) {
         LOGGER.info("Load existing local config directory into configs database");
-        ConfigPersistence fileSystemPersistence = new FileSystemConfigPersistence(serverConfigs.getConfigRoot());
+        final ConfigPersistence fileSystemPersistence = new FileSystemConfigPersistence(serverConfigs.getConfigRoot());
         copyConfigsFromSeed(ctx, fileSystemPersistence);
       }
 
@@ -80,7 +80,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void loadData(ConfigPersistence seedConfigPersistence) throws IOException {
+  public void loadData(final ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
       updateConfigsFromSeed(ctx, seedConfigPersistence);
       return null;
@@ -92,9 +92,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz)
+  public <T> T getConfig(final AirbyteConfig configType, final String configId, final Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
-    Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(AIRBYTE_CONFIGS)
         .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId))
         .fetch());
@@ -109,8 +109,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) throws IOException {
-    Result<Record> results = database.query(ctx -> ctx.select(asterisk())
+  public <T> List<T> listConfigs(final AirbyteConfig configType, final Class<T> clazz) throws IOException {
+    final Result<Record> results = database.query(ctx -> ctx.select(asterisk())
         .from(AIRBYTE_CONFIGS)
         .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()))
         .orderBy(AIRBYTE_CONFIGS.CONFIG_TYPE, AIRBYTE_CONFIGS.CONFIG_ID)
@@ -121,13 +121,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws IOException {
+  public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws IOException {
     database.transaction(ctx -> {
-      boolean isExistingConfig = ctx.fetchExists(select()
+      final boolean isExistingConfig = ctx.fetchExists(select()
           .from(AIRBYTE_CONFIGS)
           .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId)));
 
-      OffsetDateTime timestamp = OffsetDateTime.now();
+      final OffsetDateTime timestamp = OffsetDateTime.now();
 
       if (isExistingConfig) {
         updateConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configId);
@@ -140,9 +140,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void deleteConfig(AirbyteConfig configType, String configId) throws IOException {
+  public void deleteConfig(final AirbyteConfig configType, final String configId) throws IOException {
     database.transaction(ctx -> {
-      boolean isExistingConfig = ctx.fetchExists(select()
+      final boolean isExistingConfig = ctx.fetchExists(select()
           .from(AIRBYTE_CONFIGS)
           .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId)));
 
@@ -157,19 +157,19 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException {
+  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     if (dryRun) {
       return;
     }
 
     LOGGER.info("Replacing all configs");
 
-    OffsetDateTime timestamp = OffsetDateTime.now();
-    int insertionCount = database.transaction(ctx -> {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    final int insertionCount = database.transaction(ctx -> {
       ctx.truncate(AIRBYTE_CONFIGS).restartIdentity().execute();
 
       return configs.entrySet().stream().map(entry -> {
-        AirbyteConfig configType = entry.getKey();
+        final AirbyteConfig configType = entry.getKey();
         return entry.getValue()
             .map(configObject -> insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(configObject), configType.getIdFieldName()))
             .reduce(0, Integer::sum);
@@ -183,7 +183,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
     LOGGER.info("Exporting all configs...");
 
-    Map<String, Result<Record>> results = database.query(ctx -> ctx.select(asterisk())
+    final Map<String, Result<Record>> results = database.query(ctx -> ctx.select(asterisk())
         .from(AIRBYTE_CONFIGS)
         .orderBy(AIRBYTE_CONFIGS.CONFIG_TYPE, AIRBYTE_CONFIGS.CONFIG_ID)
         .fetchGroups(AIRBYTE_CONFIGS.CONFIG_TYPE));
@@ -196,13 +196,18 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    * @return the number of inserted records for convenience, which is always 1.
    */
   @VisibleForTesting
-  int insertConfigRecord(DSLContext ctx, OffsetDateTime timestamp, String configType, JsonNode configJson, @Nullable String idFieldName) {
-    String configId = idFieldName == null
+  int insertConfigRecord(
+                         final DSLContext ctx,
+                         final OffsetDateTime timestamp,
+                         final String configType,
+                         final JsonNode configJson,
+                         @Nullable final String idFieldName) {
+    final String configId = idFieldName == null
         ? UUID.randomUUID().toString()
         : configJson.get(idFieldName).asText();
     LOGGER.info("Inserting {} record {}", configType, configId);
 
-    int insertionCount = ctx.insertInto(AIRBYTE_CONFIGS)
+    final int insertionCount = ctx.insertInto(AIRBYTE_CONFIGS)
         .set(AIRBYTE_CONFIGS.CONFIG_ID, configId)
         .set(AIRBYTE_CONFIGS.CONFIG_TYPE, configType)
         .set(AIRBYTE_CONFIGS.CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(configJson)))
@@ -221,10 +226,14 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    * @return the number of updated records.
    */
   @VisibleForTesting
-  int updateConfigRecord(DSLContext ctx, OffsetDateTime timestamp, String configType, JsonNode configJson, String configId) {
+  int updateConfigRecord(final DSLContext ctx,
+                         final OffsetDateTime timestamp,
+                         final String configType,
+                         final JsonNode configJson,
+                         final String configId) {
     LOGGER.info("Updating {} record {}", configType, configId);
 
-    int updateCount = ctx.update(AIRBYTE_CONFIGS)
+    final int updateCount = ctx.update(AIRBYTE_CONFIGS)
         .set(AIRBYTE_CONFIGS.CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(configJson)))
         .set(AIRBYTE_CONFIGS.UPDATED_AT, timestamp)
         .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId))
@@ -236,21 +245,21 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @VisibleForTesting
-  void copyConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence) throws SQLException {
+  void copyConfigsFromSeed(final DSLContext ctx, final ConfigPersistence seedConfigPersistence) throws SQLException {
     LOGGER.info("Loading seed data to config database...");
 
-    Map<String, Stream<JsonNode>> seedConfigs;
+    final Map<String, Stream<JsonNode>> seedConfigs;
     try {
       seedConfigs = seedConfigPersistence.dumpConfigs();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new SQLException(e);
     }
 
-    OffsetDateTime timestamp = OffsetDateTime.now();
-    int insertionCount = seedConfigs.entrySet().stream().map(entry -> {
-      String configType = entry.getKey();
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    final int insertionCount = seedConfigs.entrySet().stream().map(entry -> {
+      final String configType = entry.getKey();
       return entry.getValue().map(configJson -> {
-        String idFieldName = ConfigSchemaMigrationSupport.CONFIG_SCHEMA_ID_FIELD_NAMES.get(configType);
+        final String idFieldName = ConfigSchemaMigrationSupport.CONFIG_SCHEMA_ID_FIELD_NAMES.get(configType);
         return insertConfigRecord(ctx, timestamp, configType, configJson, idFieldName);
       }).reduce(0, Integer::sum);
     }).reduce(0, Integer::sum);
@@ -265,7 +274,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     final String dockerRepository;
     final String dockerImageTag;
 
-    ConnectorInfo(String definitionId, JsonNode definition) {
+    ConnectorInfo(final String definitionId, final JsonNode definition) {
       this.definitionId = definitionId;
       this.definition = definition;
       this.dockerRepository = definition.get("dockerRepository").asText();
@@ -284,7 +293,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     private final int newCount;
     private final int updateCount;
 
-    private ConnectorCounter(int newCount, int updateCount) {
+    private ConnectorCounter(final int newCount, final int updateCount) {
       this.newCount = newCount;
       this.updateCount = updateCount;
     }
@@ -292,36 +301,36 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @VisibleForTesting
-  void updateConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence) throws SQLException {
+  void updateConfigsFromSeed(final DSLContext ctx, final ConfigPersistence seedConfigPersistence) throws SQLException {
     LOGGER.info("Updating connector definitions from the seed if necessary...");
 
     try {
-      Set<String> connectorRepositoriesInUse = getConnectorRepositoriesInUse(ctx);
+      final Set<String> connectorRepositoriesInUse = getConnectorRepositoriesInUse(ctx);
       LOGGER.info("Connectors in use: {}", connectorRepositoriesInUse);
 
-      Map<String, ConnectorInfo> connectorRepositoryToInfoMap = getConnectorRepositoryToInfoMap(ctx);
+      final Map<String, ConnectorInfo> connectorRepositoryToInfoMap = getConnectorRepositoryToInfoMap(ctx);
       LOGGER.info("Current connector versions: {}", connectorRepositoryToInfoMap.values());
 
-      OffsetDateTime timestamp = OffsetDateTime.now();
+      final OffsetDateTime timestamp = OffsetDateTime.now();
       int newConnectorCount = 0;
       int updatedConnectorCount = 0;
 
-      List<StandardSourceDefinition> latestSources = seedConfigPersistence.listConfigs(
+      final List<StandardSourceDefinition> latestSources = seedConfigPersistence.listConfigs(
           ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
-      ConnectorCounter sourceConnectorCounter = updateConnectorDefinitions(ctx, timestamp, ConfigSchema.STANDARD_SOURCE_DEFINITION,
+      final ConnectorCounter sourceConnectorCounter = updateConnectorDefinitions(ctx, timestamp, ConfigSchema.STANDARD_SOURCE_DEFINITION,
           latestSources, connectorRepositoriesInUse, connectorRepositoryToInfoMap);
       newConnectorCount += sourceConnectorCounter.newCount;
       updatedConnectorCount += sourceConnectorCounter.updateCount;
 
-      List<StandardDestinationDefinition> latestDestinations = seedConfigPersistence.listConfigs(
+      final List<StandardDestinationDefinition> latestDestinations = seedConfigPersistence.listConfigs(
           ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
-      ConnectorCounter destinationConnectorCounter = updateConnectorDefinitions(ctx, timestamp, ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+      final ConnectorCounter destinationConnectorCounter = updateConnectorDefinitions(ctx, timestamp, ConfigSchema.STANDARD_DESTINATION_DEFINITION,
           latestDestinations, connectorRepositoriesInUse, connectorRepositoryToInfoMap);
       newConnectorCount += destinationConnectorCounter.newCount;
       updatedConnectorCount += destinationConnectorCounter.updateCount;
 
       LOGGER.info("Connector definitions have been updated ({} new connectors, and {} updates)", newConnectorCount, updatedConnectorCount);
-    } catch (IOException | JsonValidationException e) {
+    } catch (final IOException | JsonValidationException e) {
       throw new SQLException(e);
     }
   }
@@ -332,19 +341,19 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    *        backward compatible.
    */
   @VisibleForTesting
-  <T> ConnectorCounter updateConnectorDefinitions(DSLContext ctx,
-                                                  OffsetDateTime timestamp,
-                                                  AirbyteConfig configType,
-                                                  List<T> latestDefinitions,
-                                                  Set<String> connectorRepositoriesInUse,
-                                                  Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap)
+  <T> ConnectorCounter updateConnectorDefinitions(final DSLContext ctx,
+                                                  final OffsetDateTime timestamp,
+                                                  final AirbyteConfig configType,
+                                                  final List<T> latestDefinitions,
+                                                  final Set<String> connectorRepositoriesInUse,
+                                                  final Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap)
       throws IOException {
     int newCount = 0;
     int updatedCount = 0;
 
-    for (T definition : latestDefinitions) {
-      JsonNode latestDefinition = Jsons.jsonNode(definition);
-      String repository = latestDefinition.get("dockerRepository").asText();
+    for (final T definition : latestDefinitions) {
+      final JsonNode latestDefinition = Jsons.jsonNode(definition);
+      final String repository = latestDefinition.get("dockerRepository").asText();
 
       // Add new connector
       if (!connectorRepositoryToIdVersionMap.containsKey(repository)) {
@@ -353,9 +362,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         continue;
       }
 
-      ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
-      JsonNode currentDefinition = connectorInfo.definition;
-      Set<String> newFields = getNewFields(currentDefinition, latestDefinition);
+      final ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
+      final JsonNode currentDefinition = connectorInfo.definition;
+      final Set<String> newFields = getNewFields(currentDefinition, latestDefinition);
 
       // Process connector in use
       if (connectorRepositoriesInUse.contains(repository)) {
@@ -363,7 +372,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           LOGGER.info("Connector {} is in use and has all fields; skip updating", repository);
         } else {
           // Add new fields to the connector definition
-          JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
+          final JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
           LOGGER.info("Connector {} has new fields: {}", repository, String.join(", ", newFields));
           updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), definitionToUpdate, connectorInfo.definitionId);
         }
@@ -371,14 +380,14 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       }
 
       // Process unused connector
-      String latestImageTag = latestDefinition.get("dockerImageTag").asText();
+      final String latestImageTag = latestDefinition.get("dockerImageTag").asText();
       if (hasNewVersion(connectorInfo.dockerImageTag, latestImageTag)) {
         // Update connector to the latest version
         LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
         updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), latestDefinition, connectorInfo.definitionId);
       } else if (newFields.size() > 0) {
         // Add new fields to the connector definition
-        JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
+        final JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
         LOGGER.info("Connector {} has new fields: {}", repository, String.join(", ", newFields));
         updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), definitionToUpdate, connectorInfo.definitionId);
       } else {
@@ -389,10 +398,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     return new ConnectorCounter(newCount, updatedCount);
   }
 
-  static boolean hasNewVersion(String currentVersion, String latestVersion) {
+  static boolean hasNewVersion(final String currentVersion, final String latestVersion) {
     try {
       return new AirbyteVersion(latestVersion).patchVersionCompareTo(new AirbyteVersion(currentVersion)) > 0;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Failed to check version: {} vs {}", currentVersion, latestVersion);
       return false;
     }
@@ -401,17 +410,17 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   /**
    * @return new fields from the latest definition
    */
-  static Set<String> getNewFields(JsonNode currentDefinition, JsonNode latestDefinition) {
-    Set<String> currentFields = MoreIterators.toSet(currentDefinition.fieldNames());
-    Set<String> latestFields = MoreIterators.toSet(latestDefinition.fieldNames());
+  static Set<String> getNewFields(final JsonNode currentDefinition, final JsonNode latestDefinition) {
+    final Set<String> currentFields = MoreIterators.toSet(currentDefinition.fieldNames());
+    final Set<String> latestFields = MoreIterators.toSet(latestDefinition.fieldNames());
     return Sets.difference(latestFields, currentFields);
   }
 
   /**
    * @return a clone of the current definition with the new fields from the latest definition.
    */
-  static JsonNode getDefinitionWithNewFields(JsonNode currentDefinition, JsonNode latestDefinition, Set<String> newFields) {
-    ObjectNode currentClone = (ObjectNode) Jsons.clone(currentDefinition);
+  static JsonNode getDefinitionWithNewFields(final JsonNode currentDefinition, final JsonNode latestDefinition, final Set<String> newFields) {
+    final ObjectNode currentClone = (ObjectNode) Jsons.clone(currentDefinition);
     newFields.forEach(field -> currentClone.set(field, latestDefinition.get(field)));
     return currentClone;
   }
@@ -423,9 +432,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    *         users, and are not always the same as those in the seed.
    */
   @VisibleForTesting
-  Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(DSLContext ctx) {
-    Field<JSONB> configField = field("config_blob", SQLDataType.JSONB).as("definition");
-    Field<String> repoField = field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR).as("repository");
+  Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(final DSLContext ctx) {
+    final Field<JSONB> configField = field("config_blob", SQLDataType.JSONB).as("definition");
+    final Field<String> repoField = field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR).as("repository");
     return ctx.select(AIRBYTE_CONFIGS.CONFIG_ID, repoField, configField)
         .from(AIRBYTE_CONFIGS)
         .where(AIRBYTE_CONFIGS.CONFIG_TYPE.in(ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()))
@@ -435,11 +444,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             row -> new ConnectorInfo(row.getValue(AIRBYTE_CONFIGS.CONFIG_ID), Jsons.deserialize(row.getValue(configField).data())),
             // when there are duplicated connector definitions, return the latest one
             (c1, c2) -> {
-              AirbyteVersion v1 = new AirbyteVersion(c1.dockerImageTag);
-              AirbyteVersion v2 = new AirbyteVersion(c2.dockerImageTag);
+              final AirbyteVersion v1 = new AirbyteVersion(c1.dockerImageTag);
+              final AirbyteVersion v2 = new AirbyteVersion(c2.dockerImageTag);
               LOGGER.warn("Duplicated connector version found for {}: {} ({}) vs {} ({})",
                   c1.dockerRepository, c1.dockerImageTag, c1.definitionId, c2.dockerImageTag, c2.definitionId);
-              int comparison = v1.patchVersionCompareTo(v2);
+              final int comparison = v1.patchVersionCompareTo(v2);
               if (comparison >= 0) {
                 return c1;
               } else {
@@ -454,8 +463,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    *         connectors can be added manually by users, and their config ids are not always the same
    *         as those in the seed.
    */
-  private Set<String> getConnectorRepositoriesInUse(DSLContext ctx) {
-    Set<String> usedConnectorDefinitionIds = new HashSet<>();
+  private Set<String> getConnectorRepositoriesInUse(final DSLContext ctx) {
+    final Set<String> usedConnectorDefinitionIds = new HashSet<>();
     // query for used source definitions
     usedConnectorDefinitionIds.addAll(ctx
         .select(field("config_blob ->> 'sourceDefinitionId'", SQLDataType.VARCHAR))

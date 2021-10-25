@@ -23,17 +23,17 @@ public class DefaultJobCreator implements JobCreator {
 
   private final JobPersistence jobPersistence;
 
-  public DefaultJobCreator(JobPersistence jobPersistence) {
+  public DefaultJobCreator(final JobPersistence jobPersistence) {
     this.jobPersistence = jobPersistence;
   }
 
   @Override
-  public Optional<Long> createSyncJob(SourceConnection source,
-                                      DestinationConnection destination,
-                                      StandardSync standardSync,
-                                      String sourceDockerImageName,
-                                      String destinationDockerImageName,
-                                      List<StandardSyncOperation> standardSyncOperations)
+  public Optional<Long> createSyncJob(final SourceConnection source,
+                                      final DestinationConnection destination,
+                                      final StandardSync standardSync,
+                                      final String sourceDockerImageName,
+                                      final String destinationDockerImageName,
+                                      final List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
     // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
@@ -65,10 +65,10 @@ public class DefaultJobCreator implements JobCreator {
   // 4. The Empty source emits no state message, so state will start at null (i.e. start from the
   // beginning on the next sync).
   @Override
-  public Optional<Long> createResetConnectionJob(DestinationConnection destination,
-                                                 StandardSync standardSync,
-                                                 String destinationDockerImage,
-                                                 List<StandardSyncOperation> standardSyncOperations)
+  public Optional<Long> createResetConnectionJob(final DestinationConnection destination,
+                                                 final StandardSync standardSync,
+                                                 final String destinationDockerImage,
+                                                 final List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = standardSync.getCatalog();
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> {
