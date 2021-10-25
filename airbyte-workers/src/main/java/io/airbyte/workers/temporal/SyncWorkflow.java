@@ -428,7 +428,7 @@ public interface SyncWorkflow {
       final State state = syncOutput.getState();
       if (state != null) {
         try {
-          configRepository.updateSyncState(connectionId, state);
+          configRepository.updateConnectionState(connectionId, state);
         } catch (final IOException e) {
           throw new RuntimeException(e);
         }

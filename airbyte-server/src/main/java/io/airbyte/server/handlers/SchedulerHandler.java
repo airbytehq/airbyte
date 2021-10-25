@@ -353,7 +353,7 @@ public class SchedulerHandler {
   }
 
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
-    final Optional<State> currentState = configRepository.getCurrentState(connectionIdRequestBody.getConnectionId());
+    final Optional<State> currentState = configRepository.getConnectionState(connectionIdRequestBody.getConnectionId());
     LOGGER.info("currentState server: {}", currentState);
 
     final ConnectionState connectionState = new ConnectionState()

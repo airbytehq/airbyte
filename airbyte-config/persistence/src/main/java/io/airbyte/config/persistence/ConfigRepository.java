@@ -435,7 +435,7 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class);
   }
 
-  public Optional<State> getCurrentState(final UUID connectionId) throws IOException {
+  public Optional<State> getConnectionState(final UUID connectionId) throws IOException {
     try {
       final StandardSyncState connectionState = persistence.getConfig(
           ConfigSchema.STANDARD_SYNC_STATE,
@@ -449,7 +449,7 @@ public class ConfigRepository {
     }
   }
 
-  public void updateSyncState(final UUID connectionId, final State state) throws IOException {
+  public void updateConnectionState(final UUID connectionId, final State state) throws IOException {
     final StandardSyncState connectionState = new StandardSyncState().withConnectionId(connectionId).withState(state);
     try {
       persistence.writeConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(), connectionState);

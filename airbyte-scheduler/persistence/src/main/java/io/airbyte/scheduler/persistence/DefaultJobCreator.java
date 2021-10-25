@@ -52,7 +52,7 @@ public class DefaultJobCreator implements JobCreator {
         .withState(null)
         .withResourceRequirements(standardSync.getResourceRequirements());
 
-    configRepository.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
+    configRepository.getConnectionState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.SYNC)
