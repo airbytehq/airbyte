@@ -97,6 +97,7 @@ public interface SyncWorkflow {
                                   final StandardSyncInput syncInput,
                                   final UUID connectionId) {
       final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+      persistActivity.persist(connectionId, run);
 
       if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {
         for (final StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
@@ -118,7 +119,6 @@ public interface SyncWorkflow {
             LOGGER.error(message);
             throw new IllegalArgumentException(message);
           }
-          persistActivity.persist(connectionId, run);
         }
       }
 

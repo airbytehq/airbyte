@@ -450,6 +450,7 @@ public class ConfigRepository {
   }
 
   public void updateConnectionState(final UUID connectionId, final State state) throws IOException {
+    LOGGER.info("Updating connection {} state: {}", connectionId, state);
     final StandardSyncState connectionState = new StandardSyncState().withConnectionId(connectionId).withState(state);
     try {
       persistence.writeConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(), connectionState);
