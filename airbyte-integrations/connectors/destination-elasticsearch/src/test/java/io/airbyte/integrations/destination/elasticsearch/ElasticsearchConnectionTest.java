@@ -43,11 +43,17 @@ public class ElasticsearchConnectionTest {
   public void testDefaultHeadersAuthSecret() {
     var config = new ConnectorConfiguration();
     config.setEndpoint(endpoint);
+    config.getAuthenticationMethod().setApiKeyId("id");
+    config.getAuthenticationMethod().setApiKeySecret("secret");
     config.getAuthenticationMethod().setMethod(ElasticsearchAuthenticationMethod.secret);
     var connection = new ElasticsearchConnection(config);
     var headers = connection.configureHeaders(config);
-    Assertions.assertTrue(headers.length == 1);
-    Assertions.assertTrue(headers[0].getValue().contains("Basic "));
+    Assertions.assertEquals(1, headers.length);
+
+    var headerValues = headers[0].getValue().split(" ");
+    Assertions.assertEquals("ApiKey", headerValues[0]);
+    var decoded = Base64.getDecoder().decode(headerValues[1]);
+    Assertions.assertTrue("id:secret".contentEquals(new String(decoded)));
   }
 
 }
