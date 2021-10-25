@@ -20,7 +20,9 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.State;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -431,6 +433,29 @@ public class ConfigRepository {
 
   public List<DestinationOAuthParameter> listDestinationOAuthParam() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class);
+  }
+
+  public Optional<State> getCurrentState(final UUID connectionId) throws IOException {
+    try {
+      final StandardSyncState connectionState = persistence.getConfig(
+          ConfigSchema.STANDARD_SYNC_STATE,
+          connectionId.toString(),
+          StandardSyncState.class);
+      return Optional.of(connectionState.getState());
+    } catch (final ConfigNotFoundException e) {
+      return Optional.empty();
+    } catch (final JsonValidationException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public void updateSyncState(final UUID connectionId, final State state) throws IOException {
+    final StandardSyncState connectionState = new StandardSyncState().withConnectionId(connectionId).withState(state);
+    try {
+      persistence.writeConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(), connectionState);
+    } catch (final JsonValidationException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   /**

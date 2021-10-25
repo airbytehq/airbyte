@@ -18,7 +18,6 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigPersistence;
-import io.airbyte.config.persistence.ConfigPersistence2;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
@@ -76,7 +75,6 @@ public class SchedulerApp {
   private final Path workspaceRoot;
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
-  private final ConfigPersistence2 configPersistence2;
   private final JobCleaner jobCleaner;
   private final JobNotifier jobNotifier;
   private final TemporalClient temporalClient;
@@ -87,7 +85,6 @@ public class SchedulerApp {
   public SchedulerApp(final Path workspaceRoot,
                       final JobPersistence jobPersistence,
                       final ConfigRepository configRepository,
-                      final ConfigPersistence2 configPersistence2,
                       final JobCleaner jobCleaner,
                       final JobNotifier jobNotifier,
                       final TemporalClient temporalClient,
@@ -97,7 +94,6 @@ public class SchedulerApp {
     this.workspaceRoot = workspaceRoot;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
-    this.configPersistence2 = configPersistence2;
     this.jobCleaner = jobCleaner;
     this.jobNotifier = jobNotifier;
     this.temporalClient = temporalClient;
@@ -114,7 +110,7 @@ public class SchedulerApp {
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot, airbyteVersionOrWarnings);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
-    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configPersistence2, configRepository, trackingClient);
+    final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);
     final JobSubmitter jobSubmitter = new JobSubmitter(
         workerThreadPool,
         jobPersistence,
@@ -213,7 +209,6 @@ public class SchedulerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final ConfigPersistence2 configPersistence2 = new ConfigPersistence2(configDatabase);
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
@@ -248,7 +243,6 @@ public class SchedulerApp {
         workspaceRoot,
         jobPersistence,
         configRepository,
-        configPersistence2,
         jobCleaner,
         jobNotifier,
         temporalClient,

@@ -21,7 +21,7 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.State;
-import io.airbyte.config.persistence.ConfigPersistence2;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -416,11 +416,11 @@ public interface SyncWorkflow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PersistStateActivityImpl.class);
     private final Path workspaceRoot;
-    private final ConfigPersistence2 configPersistence2;
+    private final ConfigRepository configRepository;
 
-    public PersistStateActivityImpl(final Path workspaceRoot, final ConfigPersistence2 configPersistence2) {
+    public PersistStateActivityImpl(final Path workspaceRoot, final ConfigRepository configRepository) {
       this.workspaceRoot = workspaceRoot;
-      this.configPersistence2 = configPersistence2;
+      this.configRepository = configRepository;
     }
 
     @Override
@@ -428,7 +428,7 @@ public interface SyncWorkflow {
       final State state = syncOutput.getState();
       if (state != null) {
         try {
-          configPersistence2.updateSyncState(connectionId, state);
+          configRepository.updateSyncState(connectionId, state);
         } catch (final IOException e) {
           throw new RuntimeException(e);
         }

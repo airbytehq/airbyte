@@ -37,7 +37,6 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.State;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigPersistence2;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -80,10 +79,8 @@ public class SchedulerHandler {
   private final JobNotifier jobNotifier;
   private final WorkflowServiceStubs temporalService;
   private final OAuthConfigSupplier oAuthConfigSupplier;
-  private final ConfigPersistence2 configPersistence2;
 
   public SchedulerHandler(final ConfigRepository configRepository,
-                          final ConfigPersistence2 configPersistence2,
                           final SchedulerJobClient schedulerJobClient,
                           final SynchronousSchedulerClient synchronousSchedulerClient,
                           final JobPersistence jobPersistence,
@@ -92,7 +89,6 @@ public class SchedulerHandler {
                           final OAuthConfigSupplier oAuthConfigSupplier) {
     this(
         configRepository,
-        configPersistence2,
         schedulerJobClient,
         synchronousSchedulerClient,
         new ConfigurationUpdate(configRepository, new SpecFetcher(synchronousSchedulerClient)),
@@ -106,7 +102,6 @@ public class SchedulerHandler {
 
   @VisibleForTesting
   SchedulerHandler(final ConfigRepository configRepository,
-                   final ConfigPersistence2 configPersistence2,
                    final SchedulerJobClient schedulerJobClient,
                    final SynchronousSchedulerClient synchronousSchedulerClient,
                    final ConfigurationUpdate configurationUpdate,
@@ -117,7 +112,6 @@ public class SchedulerHandler {
                    final WorkflowServiceStubs temporalService,
                    final OAuthConfigSupplier oAuthConfigSupplier) {
     this.configRepository = configRepository;
-    this.configPersistence2 = configPersistence2;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
     this.configurationUpdate = configurationUpdate;
@@ -359,7 +353,7 @@ public class SchedulerHandler {
   }
 
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
-    final Optional<State> currentState = configPersistence2.getCurrentState(connectionIdRequestBody.getConnectionId());
+    final Optional<State> currentState = configRepository.getCurrentState(connectionIdRequestBody.getConnectionId());
     LOGGER.info("currentState server: {}", currentState);
 
     final ConnectionState connectionState = new ConnectionState()

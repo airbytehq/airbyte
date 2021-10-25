@@ -9,7 +9,9 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.persistence.ConfigPersistence2;
+import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
@@ -37,6 +39,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +56,7 @@ public class WorkerApp {
   private final WorkflowServiceStubs temporalService;
   private final MaxWorkersConfig maxWorkers;
   private final WorkerEnvironment workerEnvironment;
-  private final ConfigPersistence2 configPersistence2;
+  private final ConfigRepository configRepository;
 
   public WorkerApp(final Path workspaceRoot,
                    final ProcessFactory processFactory,
@@ -61,14 +64,14 @@ public class WorkerApp {
                    final WorkflowServiceStubs temporalService,
                    final MaxWorkersConfig maxWorkers,
                    final WorkerEnvironment workerEnvironment,
-                   final ConfigPersistence2 configPersistence2) {
+                   final ConfigRepository configRepository) {
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.temporalService = temporalService;
     this.maxWorkers = maxWorkers;
     this.workerEnvironment = workerEnvironment;
-    this.configPersistence2 = configPersistence2;
+    this.configRepository = configRepository;
   }
 
   public void start() {
@@ -106,7 +109,7 @@ public class WorkerApp {
         new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
         new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment),
         new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
-        new SyncWorkflow.PersistStateActivityImpl(workspaceRoot, configPersistence2));
+        new SyncWorkflow.PersistStateActivityImpl(workspaceRoot, configRepository));
     factory.start();
   }
 
@@ -156,7 +159,10 @@ public class WorkerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final ConfigPersistence2 configPersistence2 = new ConfigPersistence2(configDatabase);
+    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
+    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
     new WorkerApp(
         workspaceRoot,
@@ -165,7 +171,7 @@ public class WorkerApp {
         temporalService,
         configs.getMaxWorkers(),
         configs.getWorkerEnvironment(),
-        configPersistence2).start();
+        configRepository).start();
   }
 
 }

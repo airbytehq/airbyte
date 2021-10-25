@@ -9,7 +9,6 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigPersistence2;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
@@ -48,7 +47,6 @@ public class JobScheduler implements Runnable {
   }
 
   public JobScheduler(final JobPersistence jobPersistence,
-                      final ConfigPersistence2 configPersistence2,
                       final ConfigRepository configRepository,
                       final TrackingClient trackingClient) {
     this(
@@ -56,7 +54,7 @@ public class JobScheduler implements Runnable {
         configRepository,
         new ScheduleJobPredicate(Instant::now),
         new DefaultSyncJobFactory(
-            new DefaultJobCreator(jobPersistence, configPersistence2),
+            new DefaultJobCreator(jobPersistence, configRepository),
             configRepository,
             new OAuthConfigSupplier(configRepository, false, trackingClient)));
   }
