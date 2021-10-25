@@ -5,22 +5,27 @@ tests:
   spec:
     - spec_path: "source_zendesk_talk/spec.json"
   connection:
+    # for old spec config (without oneOf)
     - config_path: "secrets/config.json"
       status: "succeed"
+    # for auth with API token
     - config_path: "secrets/config_api.json"
       status: "succeed"
+    # for auth with oauth2 token
     - config_path: "secrets/config_oauth.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "exception"
   discovery:
+    # for old spec config (without oneOf)
     - config_path: "secrets/config.json"
+    # for auth with API token
     - config_path: "secrets/config_api.json"
+    # for auth with oauth2 token
     - config_path: "secrets/config_oauth.json"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-  
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
@@ -28,7 +33,6 @@ tests:
       cursor_paths:
         calls: ["updated_at"]
         call_legs: ["updated_at"]
-  
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

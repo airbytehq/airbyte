@@ -56,18 +56,14 @@ class Client(BaseClient):
         # }
 
         if not auth_method or auth_method == "api_token":
-            api_token = kwargs.get(
-                "access_token") if not auth_method else kwargs["auth_method"].get("api_token")
-            email = kwargs.get(
-                "email") if not auth_method else kwargs["auth_method"].get("email")
+            api_token = kwargs.get("access_token") if not auth_method else kwargs["auth_method"].get("api_token")
+            email = kwargs.get("email") if not auth_method else kwargs["auth_method"].get("email")
             if not api_token or not email:
                 raise ZendeskTalkException("not set api_token/email values")
-            self._api = ApiTokenAuth(
-                subdomain=subdomain, api_token=api_token, email=email)
+            self._api = ApiTokenAuth(subdomain=subdomain, api_token=api_token, email=email)
         elif auth_method == "access_token":
             access_token = kwargs["auth_method"]["access_token"]
-            self._api = OauthTokenAuth(
-                subdomain=subdomain, access_token=access_token)
+            self._api = OauthTokenAuth(subdomain=subdomain, access_token=access_token)
         else:
             raise ZendeskTalkException(f"incorrect input parameters: {kwargs}")
 

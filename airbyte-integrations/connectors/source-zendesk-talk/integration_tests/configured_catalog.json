@@ -4,9 +4,7 @@
       "stream": {
         "name": "phone_numbers",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -16,9 +14,7 @@
       "stream": {
         "name": "addresses",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -28,9 +24,7 @@
       "stream": {
         "name": "greeting_categories",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -40,9 +34,7 @@
       "stream": {
         "name": "greetings",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -52,9 +44,7 @@
       "stream": {
         "name": "ivrs",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -64,9 +54,7 @@
       "stream": {
         "name": "ivr_menus",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -76,9 +64,7 @@
       "stream": {
         "name": "ivr_routes",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -88,9 +74,7 @@
       "stream": {
         "name": "account_overview",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -100,9 +84,7 @@
       "stream": {
         "name": "agents_activity",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -112,9 +94,7 @@
       "stream": {
         "name": "agents_overview",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -124,9 +104,7 @@
       "stream": {
         "name": "current_queue_activity",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -136,20 +114,11 @@
       "stream": {
         "name": "calls",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "source_defined_primary_key": [["id"]]
       },
-      "cursor_field": [
-        "updated_at"
-      ],
+      "cursor_field": ["updated_at"],
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
     },
@@ -157,19 +126,10 @@
       "stream": {
         "name": "call_legs",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"

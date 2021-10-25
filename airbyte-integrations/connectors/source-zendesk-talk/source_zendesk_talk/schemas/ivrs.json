@@ -3,98 +3,53 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "menus": {
-      "type": [
-        "null",
-        "array"
-      ],
+      "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "default": {
-            "type": [
-              "null",
-              "boolean"
-            ]
+            "type": ["null", "boolean"]
           },
           "greeting_id": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "id": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "ivr_id": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "routes": {
-            "type": [
-              "array",
-              "null"
-            ],
+            "type": ["array", "null"],
             "items": {
               "type": "object",
               "properties": {
                 "action": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "greeting": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "id": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "keypress": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "option_text": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "options": {
-                  "type": [
-                    "null",
-                    "object"
-                  ]
+                  "type": ["null", "object"]
                 },
                 "overflow_options": {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
+                  "type": ["null", "array"],
                   "items": {
                     "type": "object"
                   }
@@ -105,33 +60,18 @@
         }
       },
       "name": {
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": ["null", "string"]
       },
       "phone_number_ids": {
-        "type": [
-          "null",
-          "array"
-        ],
+        "type": ["null", "array"],
         "items": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "type": ["string", "integer"]
         }
       },
       "phone_number_names": {
-        "type": [
-          "null",
-          "array"
-        ],
+        "type": ["null", "array"],
         "items": {
-          "type": [
-            "integer",
-            "string"
-          ]
+          "type": ["integer", "string"]
         }
       }
     }
