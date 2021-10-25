@@ -37,7 +37,7 @@ public enum ConfigSchema implements AirbyteConfig {
       destinationConnection -> destinationConnection.getDestinationId().toString(),
       "destinationId"),
 
-  // sync
+  // sync (i.e. connection)
   STANDARD_SYNC("StandardSync.yaml",
       StandardSync.class,
       standardSync -> standardSync.getConnectionId().toString(),
