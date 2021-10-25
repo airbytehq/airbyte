@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
+import re
 import math
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
@@ -348,3 +348,40 @@ class BankAccounts(StripeStream):
         customers_stream = Customers(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"customer_id": customer["id"]}, **kwargs)
+
+
+class CheckoutSessions(StripeStream):
+    """
+    API docs: https://stripe.com/docs/api/checkout/sessions/list
+    """
+
+    name = "checkout_sessions"
+
+    def path(self, **kwargs):
+        return "checkout/sessions"
+
+
+class CheckoutSessionsLineItems(StripeStream):
+    """
+    API docs: https://stripe.com/docs/api/checkout/sessions/line_items
+    """
+
+    name = "checkout_sessions_line_items"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"checkout/sessions/{stream_slice['checkout_session_id']}/line_items"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        checkout_session_stream = CheckoutSessions(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+        for checkout_session in checkout_session_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"checkout_session_id": checkout_session["id"]}, **kwargs)
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+
+        response_json = response.json()
+        data = response_json.get("data", [])
+        if data:
+            for e in data:
+                checkout_session_id = re.search(r'/sessions/(cs_[^/].+)/line_items', response.url)
+                e['checkout_session_id'] = checkout_session_id.group(1) if checkout_session_id else None
+        yield from data
