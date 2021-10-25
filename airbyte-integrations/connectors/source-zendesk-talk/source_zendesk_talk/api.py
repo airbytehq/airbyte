@@ -78,12 +78,12 @@ class ApiTokenAuth:
 
 
 class OauthTokenAuth(ApiTokenAuth):
+    """Implementation of oAuth2 Bearer token header"""
+
     def __init__(self, subdomain: str, access_token: str):
         super().__init__(subdomain=subdomain, api_token="", email="")
         self._session.headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer { access_token}"
-        }
+            "Content-Type": "application/json", "Authorization": f"Bearer { access_token}"}
 
 
 class Stream(ABC):
@@ -157,13 +157,14 @@ class IncrementalStream(Stream, ABC):
     def state(self) -> Optional[Mapping[str, Any]]:
         """Current state, if wasn't set return None"""
         if self._state:
-            return {self.state_pk: str(self._state)}
+            return {self.state_pk: self._state, self.cursor_field: self._state}
         return None
 
     @state.setter
     def state(self, value):
-        self._state = pendulum.parse(value[self.state_pk])
-        self._start_date = max(self._state, self._start_date)
+        self._state = value[self.state_pk]
+        self._start_date = pendulum.parse(
+            max(self._state, str(self._start_date)))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -174,7 +175,7 @@ class IncrementalStream(Stream, ABC):
         latest_cursor = None
         for record in self._paginator(getter):
             yield record
-            cursor = pendulum.parse(record[self.updated_at_field])
+            cursor = record[self.updated_at_field]
             latest_cursor = max(
                 cursor, latest_cursor) if latest_cursor else cursor
 
@@ -311,6 +312,7 @@ class CallsStream(IncrementalStream):
     url = "/stats/incremental/calls"
     data_field = "calls"
     updated_at_field = "updated_at"
+    cursor_field = "updated_at"
 
     def list(self, fields) -> Iterable:
         params = {"start_time": int(self._start_date.timestamp())}
@@ -325,6 +327,7 @@ class CallLegsStream(IncrementalStream):
     url = "/stats/incremental/legs"
     data_field = "legs"
     updated_at_field = "updated_at"
+    cursor_field = "updated_at"
 
     def list(self, fields) -> Iterable:
         params = {"start_time": int(self._start_date.timestamp())}

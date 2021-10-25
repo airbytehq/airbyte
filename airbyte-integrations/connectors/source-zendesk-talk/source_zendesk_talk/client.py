@@ -9,12 +9,11 @@ from base_python import BaseClient
 from requests import HTTPError
 
 from .api import (
-    ApiTokenAuth,
-    OauthTokenAuth,
     AccountOverviewStream,
     AddressesStream,
     AgentsActivityStream,
     AgentsOverviewStream,
+    ApiTokenAuth,
     CallLegsStream,
     CallsStream,
     CurrentQueueActivityStream,
@@ -23,6 +22,7 @@ from .api import (
     IVRMenusStream,
     IVRRoutesStream,
     IVRsStream,
+    OauthTokenAuth,
     PhoneNumbersStream,
 )
 
@@ -36,20 +36,38 @@ class Client(BaseClient):
 
     def __init__(self, start_date: str, subdomain: str, **kwargs):
         auth_method = kwargs.get("auth_method", {}).get("auth_method")
+        # need to support 2 different config combinations:
+        # 1) what was used before addition of oauth2
+        # {
+        #   "subdomain": "<subdomain>",
+        #   "start_date": "2020-01-01T00:00:00Z",
+        #     "email": "test@test.com",
+        #     "access_token": "<api_token>"
+        # }
+        # 2) what is used now
+        # {
+        #   "subdomain": "<subdomain>",
+        #   "start_date": "2020-01-01T00:00:00Z",
+        #   "auth_method": {
+        #     "auth_method": "api_token",
+        #     "email": "test@test.com",
+        #     "access_token": "<api_token>"
+        #   }
+        # }
+
         if not auth_method or auth_method == "api_token":
-            api_token = kwargs["access_token"] if not auth_method else kwargs["auth_method"]["api_token"]
-            email = kwargs["email"] if not auth_method else kwargs["auth_method"]["email"]
+            api_token = kwargs.get(
+                "access_token") if not auth_method else kwargs["auth_method"].get("api_token")
+            email = kwargs.get(
+                "email") if not auth_method else kwargs["auth_method"].get("email")
+            if not api_token or not email:
+                raise ZendeskTalkException("not set api_token/email values")
             self._api = ApiTokenAuth(
-                subdomain=subdomain,
-                api_token=api_token,
-                email=email
-            )
+                subdomain=subdomain, api_token=api_token, email=email)
         elif auth_method == "access_token":
             access_token = kwargs["auth_method"]["access_token"]
             self._api = OauthTokenAuth(
-                subdomain=subdomain,
-                access_token=access_token
-            )
+                subdomain=subdomain, access_token=access_token)
         else:
             raise ZendeskTalkException(f"incorrect input parameters: {kwargs}")
 
