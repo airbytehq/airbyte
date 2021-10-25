@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.temporal.client.WorkflowClient;
 import java.nio.file.Path;
 import java.util.UUID;
