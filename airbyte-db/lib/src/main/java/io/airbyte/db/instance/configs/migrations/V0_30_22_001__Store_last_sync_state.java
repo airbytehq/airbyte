@@ -4,20 +4,22 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.StandardSyncState;
+import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
@@ -25,7 +27,6 @@ import org.flywaydb.core.api.migration.Context;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONB;
-import org.jooq.Record2;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -45,7 +46,6 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
 
   // airbyte configs table
   // (we cannot use the jooq generated code here to avoid circular dependency)
-  static final String STANDARD_SYNC_STATE = "STANDARD_SYNC_STATE";
   static final Table<?> TABLE_AIRBYTE_CONFIGS = DSL.table("airbyte_configs");
   static final Field<String> COLUMN_CONFIG_TYPE = DSL.field("config_type", SQLDataType.VARCHAR(60).nullable(false));
   static final Field<String> COLUMN_CONFIG_ID = DSL.field("config_id", SQLDataType.VARCHAR(36).nullable(false));
@@ -76,12 +76,12 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
   }
 
   @VisibleForTesting
-  static void copyData(final DSLContext ctx, final Map<String, JsonNode> syncToStateMap, final OffsetDateTime timestamp) {
-    for (final Map.Entry<String, JsonNode> entry : syncToStateMap.entrySet()) {
+  static void copyData(final DSLContext ctx, final Set<StandardSyncState> standardSyncStates, final OffsetDateTime timestamp) {
+    for (final StandardSyncState standardSyncState : standardSyncStates) {
       ctx.insertInto(TABLE_AIRBYTE_CONFIGS)
-          .set(COLUMN_CONFIG_TYPE, STANDARD_SYNC_STATE)
-          .set(COLUMN_CONFIG_ID, UUID.fromString(entry.getKey()).toString())
-          .set(COLUMN_CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(entry.getValue())))
+          .set(COLUMN_CONFIG_TYPE, ConfigSchema.STANDARD_SYNC_STATE.name())
+          .set(COLUMN_CONFIG_ID, standardSyncState.getConnectionId().toString())
+          .set(COLUMN_CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(standardSyncState)))
           .set(COLUMN_CREATED_AT, timestamp)
           .set(COLUMN_UPDATED_AT, timestamp)
           // This migration is idempotent. If the record for a sync_id already exists,
@@ -121,10 +121,10 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
   }
 
   /**
-   * @return a map from connection id (UUID) to connection state (StandardSyncState).
+   * @return a set of StandardSyncStates from the latest attempt for each connection.
    */
   @VisibleForTesting
-  static Map<String, JsonNode> getStandardSyncStates(final Database jobsDatabase) throws SQLException {
+  static Set<StandardSyncState> getStandardSyncStates(final Database jobsDatabase) throws SQLException {
     final Table<?> jobsTable = DSL.table("jobs");
     final Field<Long> jobIdField = DSL.field("jobs.id", SQLDataType.BIGINT);
     final Field<String> syncIdField = DSL.field("jobs.scope", SQLDataType.VARCHAR);
@@ -151,16 +151,13 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
                 .groupBy(attemptJobIdField)))
         .fetch()
         .stream()
-        .collect(Collectors.toMap(
-            Record2::value1,
-            r -> getStandardSyncState(r.value1(), Jsons.deserialize(r.value2().data())))));
+        .map(r -> getStandardSyncState(UUID.fromString(r.value1()), Jsons.deserialize(r.value2().data(), State.class))))
+        .collect(Collectors.toSet());
   }
 
   @VisibleForTesting
-  static JsonNode getStandardSyncState(final String connectionId, final JsonNode state) {
-    return MAPPER.createObjectNode()
-        .put("connectionId", connectionId)
-        .set("state", state);
+  static StandardSyncState getStandardSyncState(final UUID connectionId, final State state) {
+    return new StandardSyncState().withConnectionId(connectionId).withState(state);
   }
 
 }

@@ -9,7 +9,6 @@ import static io.airbyte.db.instance.configs.migrations.V0_30_22_001__Store_last
 import static io.airbyte.db.instance.configs.migrations.V0_30_22_001__Store_last_sync_state.COLUMN_CONFIG_TYPE;
 import static io.airbyte.db.instance.configs.migrations.V0_30_22_001__Store_last_sync_state.COLUMN_CREATED_AT;
 import static io.airbyte.db.instance.configs.migrations.V0_30_22_001__Store_last_sync_state.COLUMN_UPDATED_AT;
-import static io.airbyte.db.instance.configs.migrations.V0_30_22_001__Store_last_sync_state.STANDARD_SYNC_STATE;
 import static io.airbyte.db.instance.configs.migrations.V0_30_22_001__Store_last_sync_state.TABLE_AIRBYTE_CONFIGS;
 import static io.airbyte.db.instance.configs.migrations.V0_30_22_001__Store_last_sync_state.getStandardSyncState;
 import static org.jooq.impl.DSL.field;
@@ -19,20 +18,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobOutput.OutputType;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncState;
+import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.AbstractConfigsDatabaseTest;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.util.Map;
+import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import org.flywaydb.core.api.configuration.Configuration;
@@ -66,16 +70,13 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   private static final UUID CONNECTION_1_ID = UUID.randomUUID();
   private static final UUID CONNECTION_2_ID = UUID.randomUUID();
   private static final UUID CONNECTION_3_ID = UUID.randomUUID();
-  // these are State objects, see State.yaml for its schema;
-  // we cannot construct the POJO directly because State is defined in an downstream module
-  private static final JsonNode CONNECTION_2_STATE = Jsons.deserialize("{ \"state\": { \"cursor\": 2222 } }");
-  private static final JsonNode CONNECTION_3_STATE = Jsons.deserialize("{ \"state\": { \"cursor\": 3333 } }");
 
-  private static final JsonNode STD_CONNECTION_STATE_2 = getStandardSyncState(CONNECTION_2_ID.toString(), CONNECTION_2_STATE);
-  private static final JsonNode STD_CONNECTION_STATE_3 = getStandardSyncState(CONNECTION_3_ID.toString(), CONNECTION_3_STATE);
-  private static final Map<String, JsonNode> CONNECTION_STATE_MAP = Map.of(
-      CONNECTION_2_ID.toString(), STD_CONNECTION_STATE_2,
-      CONNECTION_3_ID.toString(), STD_CONNECTION_STATE_3);
+  private static final State CONNECTION_2_STATE = Jsons.deserialize("{ \"state\": { \"cursor\": 2222 } }", State.class);
+  private static final State CONNECTION_3_STATE = Jsons.deserialize("{ \"state\": { \"cursor\": 3333 } }", State.class);
+
+  private static final StandardSyncState STD_CONNECTION_STATE_2 = getStandardSyncState(CONNECTION_2_ID, CONNECTION_2_STATE);
+  private static final StandardSyncState STD_CONNECTION_STATE_3 = getStandardSyncState(CONNECTION_3_ID, CONNECTION_3_STATE);
+  private static final Set<StandardSyncState> STD_CONNECTION_STATES = Set.of(STD_CONNECTION_STATE_2, STD_CONNECTION_STATE_3);
 
   private static Database jobDatabase;
 
@@ -117,17 +118,14 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
 
       // The third job has multiple attempts. The third attempt has the latest state.
       final long job3 = createJob(ctx, CONNECTION_3_ID);
-      final JsonNode attempt31State = Jsons.deserialize("{ \"state\": { \"cursor\": 31 } }");
+      final State attempt31State = new State().withState(Jsons.deserialize("{\"cursor\": 31 }"));
       createAttempt(ctx, job3, 1, createAttemptOutput(attempt31State));
       createAttempt(ctx, job3, 2, null);
       createAttempt(ctx, job3, 3, createAttemptOutput(CONNECTION_3_STATE));
       createAttempt(ctx, job3, 4, null);
       createAttempt(ctx, job3, 5, null);
 
-      final Map<String, JsonNode> syncToStateMap = V0_30_22_001__Store_last_sync_state.getStandardSyncStates(jobDatabase);
-      assertEquals(2, syncToStateMap.size());
-      assertEquals(STD_CONNECTION_STATE_2, syncToStateMap.get(CONNECTION_2_ID.toString()));
-      assertEquals(STD_CONNECTION_STATE_3, syncToStateMap.get(CONNECTION_3_ID.toString()));
+      assertEquals(STD_CONNECTION_STATES, V0_30_22_001__Store_last_sync_state.getStandardSyncStates(jobDatabase));
 
       return null;
     });
@@ -136,20 +134,22 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   @Test
   @Order(30)
   public void testCopyData() throws SQLException {
-    final Map<String, JsonNode> newConnectionStateMap = Map.of(
-        CONNECTION_2_ID.toString(),
-        Jsons.deserialize("{ \"connectionId\": \"invalid\", \"state\": { \"state\": { \"cursor\": 3 } } }"));
+
+    final Set<StandardSyncState> newConnectionStates = Collections.singleton(
+        new StandardSyncState()
+            .withConnectionId(CONNECTION_2_ID)
+            .withState(new State().withState(Jsons.deserialize("{ \"cursor\": 3 }"))));
 
     final OffsetDateTime timestamp = OffsetDateTime.now();
 
     database.query(ctx -> {
-      V0_30_22_001__Store_last_sync_state.copyData(ctx, CONNECTION_STATE_MAP, timestamp);
-      checkSyncStates(ctx, CONNECTION_STATE_MAP, timestamp);
+      V0_30_22_001__Store_last_sync_state.copyData(ctx, STD_CONNECTION_STATES, timestamp);
+      checkSyncStates(ctx, STD_CONNECTION_STATES, timestamp);
 
       // call the copyData method again with different data will not affect existing records
-      V0_30_22_001__Store_last_sync_state.copyData(ctx, CONNECTION_STATE_MAP, OffsetDateTime.now());
-      // the states remain the same as those in syncStateMap1
-      checkSyncStates(ctx, CONNECTION_STATE_MAP, timestamp);
+      V0_30_22_001__Store_last_sync_state.copyData(ctx, newConnectionStates, OffsetDateTime.now());
+      // the states remain the same as those in STD_CONNECTION_STATES
+      checkSyncStates(ctx, STD_CONNECTION_STATES, timestamp);
 
       return null;
     });
@@ -162,7 +162,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   @Order(40)
   public void testMigration() throws Exception {
     database.query(ctx -> ctx.deleteFrom(TABLE_AIRBYTE_CONFIGS)
-        .where(COLUMN_CONFIG_TYPE.eq(STANDARD_SYNC_STATE))
+        .where(COLUMN_CONFIG_TYPE.eq(ConfigSchema.STANDARD_SYNC_STATE.name()))
         .execute());
 
     final Configs configs = mock(Configs.class);
@@ -191,7 +191,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
     };
     migration.migrate(context);
     database.query(ctx -> {
-      checkSyncStates(ctx, CONNECTION_STATE_MAP, null);
+      checkSyncStates(ctx, STD_CONNECTION_STATES, null);
       return null;
     });
   }
@@ -212,7 +212,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
         .get(JOB_ID_FIELD);
   }
 
-  private static void createAttempt(final DSLContext ctx, final long jobId, final int attemptNumber, final JsonNode attemptOutput) {
+  private static void createAttempt(final DSLContext ctx, final long jobId, final int attemptNumber, final JobOutput attemptOutput) {
     final int insertCount = ctx.insertInto(ATTEMPTS_TABLE, ATTEMPT_JOB_ID_FIELD, ATTEMPT_NUMBER_FIELD, ATTEMPT_OUTPUT_FIELD)
         .values(jobId, attemptNumber, JSONB.valueOf(Jsons.serialize(attemptOutput)))
         .execute();
@@ -230,27 +230,24 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
    *
    * @param state The state object within a StandardSyncOutput.
    */
-  private static JsonNode createAttemptOutput(final JsonNode state) {
-    final ObjectNode standardSyncOutput = OBJECT_MAPPER.createObjectNode()
-        .set("state", state);
-    return OBJECT_MAPPER.createObjectNode()
-        .put("output_type", "sync")
-        .set("sync", standardSyncOutput);
+  private static JobOutput createAttemptOutput(final State state) {
+    final StandardSyncOutput standardSyncOutput = new StandardSyncOutput().withState(state);
+    return new JobOutput().withOutputType(OutputType.SYNC).withSync(standardSyncOutput);
   }
 
   private static void checkSyncStates(final DSLContext ctx,
-                                      final Map<String, JsonNode> expectedSyncStates,
+                                      final Set<StandardSyncState> standardSyncStates,
                                       @Nullable final OffsetDateTime expectedTimestamp) {
-    for (final Map.Entry<String, JsonNode> entry : expectedSyncStates.entrySet()) {
+    for (final StandardSyncState standardSyncState : standardSyncStates) {
       final var record = ctx
           .select(COLUMN_CONFIG_BLOB,
               COLUMN_CREATED_AT,
               COLUMN_UPDATED_AT)
           .from(TABLE_AIRBYTE_CONFIGS)
-          .where(COLUMN_CONFIG_ID.eq(entry.getKey()),
-              COLUMN_CONFIG_TYPE.eq(STANDARD_SYNC_STATE))
+          .where(COLUMN_CONFIG_ID.eq(standardSyncState.getConnectionId().toString()),
+              COLUMN_CONFIG_TYPE.eq(ConfigSchema.STANDARD_SYNC_STATE.name()))
           .fetchOne();
-      assertEquals(entry.getValue(), Jsons.deserialize(record.value1().data()));
+      assertEquals(standardSyncState, Jsons.deserialize(record.value1().data(), StandardSyncState.class));
       if (expectedTimestamp != null) {
         assertEquals(expectedTimestamp, record.value2());
         assertEquals(expectedTimestamp, record.value3());
