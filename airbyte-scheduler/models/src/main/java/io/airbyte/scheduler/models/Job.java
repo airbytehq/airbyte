@@ -126,14 +126,14 @@ public class Job {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Job job = (Job) o;
+    final Job job = (Job) o;
     return id == job.id &&
         createdAtInSecond == job.createdAtInSecond &&
         updatedAtInSecond == job.updatedAtInSecond &&

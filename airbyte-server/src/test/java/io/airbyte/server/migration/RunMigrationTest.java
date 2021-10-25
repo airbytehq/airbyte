@@ -113,7 +113,7 @@ public class RunMigrationTest {
     final ConfigRepository configRepository =
         new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot), new NoOpSecretsHydrator(), Optional.of(secretPersistence),
             Optional.of(secretPersistence));
-    final Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSources().stream()
+    final Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSourceDefinitions().stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
     assertTrue(sourceDefinitionsBeforeMigration.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
     assertTrue(sourceDefinitionsBeforeMigration.containsKey(DEPRECATED_SOURCE_DEFINITION_BEING_USED));
@@ -144,7 +144,7 @@ public class RunMigrationTest {
   }
 
   private void assertSourceDefinitions(final ConfigRepository configRepository) throws JsonValidationException, IOException {
-    final Map<String, StandardSourceDefinition> sourceDefinitions = configRepository.listStandardSources()
+    final Map<String, StandardSourceDefinition> sourceDefinitions = configRepository.listStandardSourceDefinitions()
         .stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
     assertTrue(sourceDefinitions.size() >= 59);

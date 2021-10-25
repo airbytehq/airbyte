@@ -96,7 +96,7 @@ class MssqlSourceTest {
     assertEquals(CATALOG, actual);
   }
 
-  private JsonNode getConfig(MSSQLServerContainer<?> db) {
+  private JsonNode getConfig(final MSSQLServerContainer<?> db) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
@@ -105,7 +105,7 @@ class MssqlSourceTest {
         .build());
   }
 
-  public static Database getDatabase(JsonNode config) {
+  public static Database getDatabase(final JsonNode config) {
     // todo (cgardens) - rework this abstraction so that we do not have to pass a null into the
     // constructor. at least explicitly handle it, even if the impl doesn't change.
     return Databases.createDatabase(

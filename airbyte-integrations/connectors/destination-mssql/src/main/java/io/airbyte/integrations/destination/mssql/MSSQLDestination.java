@@ -31,10 +31,10 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toJdbcConfig(final JsonNode config) {
     final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
 
-    List<String> additionalParameters = new ArrayList<>();
+    final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
         config.get("host").asText(),
@@ -58,7 +58,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private void readSsl(JsonNode config, List<String> additionalParameters) {
+  private void readSsl(final JsonNode config, final List<String> additionalParameters) {
     switch (config.get("ssl_method").asText()) {
       case "unencrypted":
         additionalParameters.add("encrypt=false");
@@ -71,14 +71,14 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
         additionalParameters.add("encrypt=true");
 
         // trust store location code found at https://stackoverflow.com/a/56570588
-        String trustStoreLocation = Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
+        final String trustStoreLocation = Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
             .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
-        File trustStoreFile = new File(trustStoreLocation);
+        final File trustStoreFile = new File(trustStoreLocation);
         if (!trustStoreFile.exists()) {
           throw new RuntimeException("Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
               + trustStoreLocation + " does not exist.");
         }
-        String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+        final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
 
         additionalParameters.add("trustStore=" + trustStoreLocation);
         if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
@@ -95,7 +95,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     return new SshWrappedDestination(new MSSQLDestination(), HOST_KEY, PORT_KEY);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = MSSQLDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", MSSQLDestination.class);
     new IntegrationRunner(destination).run(args);

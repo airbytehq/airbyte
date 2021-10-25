@@ -59,7 +59,7 @@ public class MongoUtils {
     return objectNode;
   }
 
-  public static Object getBsonValue(BsonType type, String value) {
+  public static Object getBsonValue(final BsonType type, final String value) {
     try {
       return switch (type) {
         case INT32 -> new BsonInt32(Integer.parseInt(value));
@@ -73,7 +73,7 @@ public class MongoUtils {
         case STRING -> new BsonString(value);
         default -> value;
       };
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Failed to get BsonValue for field type " + type, e.getMessage());
       return value;
     }
@@ -81,7 +81,7 @@ public class MongoUtils {
 
   private static void readBson(final Document document, final ObjectNode o, final List<String> columnNames) {
     final BsonDocument bsonDocument = toBsonDocument(document);
-    try (BsonReader reader = new BsonDocumentReader(bsonDocument)) {
+    try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       reader.readStartDocument();
       while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
         final var fieldName = reader.readName();
@@ -112,7 +112,7 @@ public class MongoUtils {
         }
       }
       reader.readEndDocument();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception while parsing BsonDocument: ", e.getMessage());
       throw new RuntimeException(e);
     }
@@ -125,16 +125,16 @@ public class MongoUtils {
    * @param collection mongo collection
    * @return map of unique fields and its type
    */
-  public static Map<String, BsonType> getUniqueFields(MongoCollection<Document> collection) {
-    Map<String, BsonType> uniqueFields = new HashMap<>();
-    try (MongoCursor<Document> cursor = collection.find().batchSize(DISCOVERY_BATCH_SIZE).iterator()) {
+  public static Map<String, BsonType> getUniqueFields(final MongoCollection<Document> collection) {
+    final Map<String, BsonType> uniqueFields = new HashMap<>();
+    try (final MongoCursor<Document> cursor = collection.find().batchSize(DISCOVERY_BATCH_SIZE).iterator()) {
       while (cursor.hasNext()) {
-        BsonDocument document = toBsonDocument(cursor.next());
-        try (BsonReader reader = new BsonDocumentReader(document)) {
+        final BsonDocument document = toBsonDocument(cursor.next());
+        try (final BsonReader reader = new BsonDocumentReader(document)) {
           reader.readStartDocument();
           while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-            var fieldName = reader.readName();
-            var fieldType = reader.getCurrentBsonType();
+            final var fieldName = reader.readName();
+            final var fieldType = reader.getCurrentBsonType();
             reader.skipValue();
             if (uniqueFields.containsKey(fieldName) && fieldType.compareTo(uniqueFields.get(fieldName)) != 0) {
               uniqueFields.replace(fieldName + AIRBYTE_SUFFIX, BsonType.STRING);
@@ -152,42 +152,42 @@ public class MongoUtils {
   private static BsonDocument toBsonDocument(final Document document) {
     try {
       return document.toBsonDocument(BsonDocument.class, Bson.DEFAULT_CODEC_REGISTRY);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception while converting Document to BsonDocument: ", e.getMessage());
       throw new RuntimeException(e);
     }
   }
 
-  private static String toString(Object value) {
+  private static String toString(final Object value) {
     return value == null ? null : value.toString();
   }
 
-  private static Double toDouble(Decimal128 value) {
+  private static Double toDouble(final Decimal128 value) {
     return value == null ? null : value.doubleValue();
   }
 
-  private static byte[] toByteArray(BsonBinary value) {
+  private static byte[] toByteArray(final BsonBinary value) {
     return value == null ? null : value.getData();
   }
 
   // temporary method for MVP
-  private static String documentToString(Object obj, BsonReader reader) {
+  private static String documentToString(final Object obj, final BsonReader reader) {
     try {
       reader.skipValue();
-      Document document = (Document) obj;
+      final Document document = (Document) obj;
       return document.toJson();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Failed to convert document to a String: ", e.getMessage());
       return null;
     }
   }
 
   // temporary method for MVP
-  private static String arrayToString(Object obj, BsonReader reader) {
+  private static String arrayToString(final Object obj, final BsonReader reader) {
     try {
       reader.skipValue();
       return obj.toString();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Failed to convert array to a String: ", e.getMessage());
       return null;
     }
@@ -205,12 +205,12 @@ public class MongoUtils {
       return this.type;
     }
 
-    MongoInstanceType(String type) {
+    MongoInstanceType(final String type) {
       this.type = type;
     }
 
-    public static MongoInstanceType fromValue(String value) {
-      for (MongoInstanceType instance : values()) {
+    public static MongoInstanceType fromValue(final String value) {
+      for (final MongoInstanceType instance : values()) {
         if (value.equalsIgnoreCase(instance.type)) {
           return instance;
         }

@@ -1,5 +1,10 @@
 # MySQL
 
+There are two flavors of connectors for this destination:
+1. destination-mysql connector. Supports both SSL and non SSL connections.
+2. destination-mysql-strict-encrypt connector. Pretty same as connector above, but supports SSL connections only.
+
+
 ## Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
@@ -103,3 +108,9 @@ Using this feature requires additional configuration, when creating the destinat
 | 0.1.1 | 2021-07-03 | [\#3289](https://github.com/airbytehq/airbyte/pull/3289) | Added support for outputting messages. |
 | 0.1.0 | 2021-05-06 | [\#3242](https://github.com/airbytehq/airbyte/pull/3242) | Added MySQL destination. |
 
+
+## CHANGELOG destination-mysql-strict-encrypt
+
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.1.0 | 06.10.2021 | [\#6763](https://github.com/airbytehq/airbyte/pull/6763) | Added destination-mysql-strict-encrypt that supports SSL connections only. |

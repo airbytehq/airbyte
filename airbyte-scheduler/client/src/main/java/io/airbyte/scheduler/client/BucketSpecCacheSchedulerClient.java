@@ -105,9 +105,9 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
     jsonSchemaValidator.ensure(specJsonSchema, json);
   }
 
-  private static Optional<ConnectorSpecification> attemptToFetchSpecFromBucket(final Storage storage,
-                                                                               final String bucketName,
-                                                                               final String dockerImage) {
+  public static Optional<ConnectorSpecification> attemptToFetchSpecFromBucket(final Storage storage,
+                                                                              final String bucketName,
+                                                                              final String dockerImage) {
     final String[] dockerImageComponents = dockerImage.split(":");
     Preconditions.checkArgument(dockerImageComponents.length == 2, "Invalidate docker image: " + dockerImage);
     final String dockerImageName = dockerImageComponents[0];
@@ -127,7 +127,7 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
     try {
       validateConfig(Jsons.deserialize(specAsString));
     } catch (final JsonValidationException e) {
-      LOGGER.error("Received invalid spec from bucket store. Received: {}", specAsString);
+      LOGGER.error("Received invalid spec from bucket store. {}", e.toString());
       return Optional.empty();
     }
     return Optional.of(Jsons.deserialize(specAsString, ConnectorSpecification.class));

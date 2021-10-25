@@ -22,7 +22,7 @@ public class AutoCloseableIterators {
    * @param <T> type
    * @return closeable iterator
    */
-  public static <T> AutoCloseableIterator<T> fromIterator(Iterator<T> iterator) {
+  public static <T> AutoCloseableIterator<T> fromIterator(final Iterator<T> iterator) {
     return new DefaultAutoCloseableIterator<>(iterator, VoidCallable.NOOP);
   }
 
@@ -35,7 +35,7 @@ public class AutoCloseableIterators {
    * @param <T> type
    * @return new autocloseable iterator with the close function appended
    */
-  public static <T> AutoCloseableIterator<T> fromIterator(Iterator<T> iterator, VoidCallable onClose) {
+  public static <T> AutoCloseableIterator<T> fromIterator(final Iterator<T> iterator, final VoidCallable onClose) {
     return new DefaultAutoCloseableIterator<>(iterator, onClose::call);
   }
 
@@ -48,14 +48,14 @@ public class AutoCloseableIterators {
    * @param <T> type
    * @return autocloseable iterator
    */
-  public static <T> AutoCloseableIterator<T> fromStream(Stream<T> stream) {
+  public static <T> AutoCloseableIterator<T> fromStream(final Stream<T> stream) {
     return new DefaultAutoCloseableIterator<>(stream.iterator(), stream::close);
   }
 
   /**
    * Consumes entire iterator and collect it into a list. Then it closes the iterator.
    */
-  public static <T> List<T> toListAndClose(AutoCloseableIterator<T> iterator) throws Exception {
+  public static <T> List<T> toListAndClose(final AutoCloseableIterator<T> iterator) throws Exception {
     try (iterator) {
       return MoreIterators.toList(iterator);
     }
@@ -71,7 +71,7 @@ public class AutoCloseableIterators {
    * @param <T> type
    * @return autocloseable iterator
    */
-  public static <T> AutoCloseableIterator<T> lazyIterator(Supplier<AutoCloseableIterator<T>> iteratorSupplier) {
+  public static <T> AutoCloseableIterator<T> lazyIterator(final Supplier<AutoCloseableIterator<T>> iteratorSupplier) {
     return new LazyAutoCloseableIterator<>(iteratorSupplier);
   }
 
@@ -83,7 +83,7 @@ public class AutoCloseableIterators {
    * @param <T> type
    * @return new autocloseable iterator with the close function appended
    */
-  public static <T> AutoCloseableIterator<T> appendOnClose(AutoCloseableIterator<T> autoCloseableIterator, VoidCallable voidCallable) {
+  public static <T> AutoCloseableIterator<T> appendOnClose(final AutoCloseableIterator<T> autoCloseableIterator, final VoidCallable voidCallable) {
     return new DefaultAutoCloseableIterator<>(autoCloseableIterator, () -> {
       autoCloseableIterator.close();
       voidCallable.call();
@@ -100,7 +100,8 @@ public class AutoCloseableIterators {
    * @param <T> output type
    * @return mapped autocloseable iterator
    */
-  public static <F, T> AutoCloseableIterator<T> transform(AutoCloseableIterator<F> fromIterator, Function<? super F, ? extends T> function) {
+  public static <F, T> AutoCloseableIterator<T> transform(final AutoCloseableIterator<F> fromIterator,
+                                                          final Function<? super F, ? extends T> function) {
     return new DefaultAutoCloseableIterator<>(Iterators.transform(fromIterator, function::apply), fromIterator::close);
   }
 
@@ -115,17 +116,17 @@ public class AutoCloseableIterators {
    * @return autocloseable iterator that still has the close functionality of the original input
    *         iterator but is transformed by the iterator output by the iteratorCreator
    */
-  public static <T> AutoCloseableIterator<T> transform(Function<AutoCloseableIterator<T>, Iterator<T>> iteratorCreator,
-                                                       AutoCloseableIterator<T> autoCloseableIterator) {
+  public static <T> AutoCloseableIterator<T> transform(final Function<AutoCloseableIterator<T>, Iterator<T>> iteratorCreator,
+                                                       final AutoCloseableIterator<T> autoCloseableIterator) {
     return new DefaultAutoCloseableIterator<>(iteratorCreator.apply(autoCloseableIterator), autoCloseableIterator::close);
   }
 
   @SafeVarargs
-  public static <T> CompositeIterator<T> concatWithEagerClose(AutoCloseableIterator<T>... iterators) {
+  public static <T> CompositeIterator<T> concatWithEagerClose(final AutoCloseableIterator<T>... iterators) {
     return concatWithEagerClose(List.of(iterators));
   }
 
-  public static <T> CompositeIterator<T> concatWithEagerClose(List<AutoCloseableIterator<T>> iterators) {
+  public static <T> CompositeIterator<T> concatWithEagerClose(final List<AutoCloseableIterator<T>> iterators) {
     return new CompositeIterator<>(iterators);
   }
 

@@ -117,8 +117,8 @@ class DefaultAirbyteStreamFactoryTest {
     verifyNoMoreInteractions(logger);
   }
 
-  private Stream<AirbyteMessage> stringToMessageStream(String inputString) {
-    InputStream inputStream = new ByteArrayInputStream(inputString.getBytes());
+  private Stream<AirbyteMessage> stringToMessageStream(final String inputString) {
+    final InputStream inputStream = new ByteArrayInputStream(inputString.getBytes());
     final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
     return new DefaultAirbyteStreamFactory(protocolPredicate, logger).create(bufferedReader);
   }
