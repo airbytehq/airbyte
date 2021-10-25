@@ -150,8 +150,9 @@ public class AcceptanceTests {
   private static final String SOURCE_PASSWORD = "hunter2";
 
   /**
-   * When the acceptance tests are run against a local instance of docker-compose or KUBE then these test containers are used. When we run these tests
-   * in GKE, we spawn a source and destination postgres database ane use them for testing.
+   * When the acceptance tests are run against a local instance of docker-compose or KUBE then these
+   * test containers are used. When we run these tests in GKE, we spawn a source and destination
+   * postgres database ane use them for testing.
    */
   private static PostgreSQLContainer sourcePsql;
   private static PostgreSQLContainer destinationPsql;
@@ -282,7 +283,7 @@ public class AcceptanceTests {
   @Test
   @Order(-2)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testGetDestinationSpec() throws ApiException {
     final UUID destinationDefinitionId = getDestinationDefId();
     final DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
@@ -294,7 +295,7 @@ public class AcceptanceTests {
   @Test
   @Order(-1)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testFailedGet404() {
     final var e = assertThrows(ApiException.class, () -> apiClient.getDestinationDefinitionSpecificationApi()
         .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(UUID.randomUUID())));
@@ -304,7 +305,7 @@ public class AcceptanceTests {
   @Test
   @Order(0)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testGetSourceSpec() throws ApiException {
     final UUID sourceDefId = getPostgresSourceDefinitionId();
     final SourceDefinitionSpecificationRead spec = apiClient.getSourceDefinitionSpecificationApi()
@@ -316,7 +317,7 @@ public class AcceptanceTests {
   @Test
   @Order(1)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testCreateDestination() throws ApiException {
     final UUID destinationDefId = getDestinationDefId();
     final JsonNode destinationConfig = getDestinationDbConfig();
@@ -337,7 +338,7 @@ public class AcceptanceTests {
   @Test
   @Order(2)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testDestinationCheckConnection() throws ApiException {
     final UUID destinationId = createDestination().getDestinationId();
 
@@ -351,7 +352,7 @@ public class AcceptanceTests {
   @Test
   @Order(3)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testCreateSource() throws ApiException {
     final String dbName = "acc-test-db";
     final UUID postgresSourceDefinitionId = getPostgresSourceDefinitionId();
@@ -375,7 +376,7 @@ public class AcceptanceTests {
   @Test
   @Order(4)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testSourceCheckConnection() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
 
@@ -426,7 +427,7 @@ public class AcceptanceTests {
   @Test
   @Order(6)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testCreateConnection() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
@@ -564,7 +565,7 @@ public class AcceptanceTests {
   @Test
   @Order(10)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testScheduledSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -591,7 +592,7 @@ public class AcceptanceTests {
   @Test
   @Order(11)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testMultipleSchemasAndTablesSync() throws Exception {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
@@ -616,7 +617,7 @@ public class AcceptanceTests {
   @Test
   @Order(12)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testMultipleSchemasSameTablesSync() throws Exception {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"), sourcePsql);
@@ -641,7 +642,7 @@ public class AcceptanceTests {
   @Test
   @Order(13)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testIncrementalDedupeSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -688,7 +689,7 @@ public class AcceptanceTests {
   @Test
   @Order(14)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testCheckpointing() throws Exception {
     final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
         .name("E2E Test Source")
@@ -787,7 +788,7 @@ public class AcceptanceTests {
   @Test
   @Order(16)
   @DisabledIfEnvironmentVariable(named = "KUBE",
-      matches = "true")
+                                 matches = "true")
   public void testBackpressure() throws Exception {
     final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
         .name("E2E Test Source")
@@ -958,11 +959,11 @@ public class AcceptanceTests {
   }
 
   private ConnectionRead createConnection(final String name,
-      final UUID sourceId,
-      final UUID destinationId,
-      final List<UUID> operationIds,
-      final AirbyteCatalog catalog,
-      final ConnectionSchedule schedule)
+                                          final UUID sourceId,
+                                          final UUID destinationId,
+                                          final List<UUID> operationIds,
+                                          final AirbyteCatalog catalog,
+                                          final ConnectionSchedule schedule)
       throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
