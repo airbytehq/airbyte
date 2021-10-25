@@ -14,8 +14,6 @@ import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import java.io.IOException;
-import java.time.Instant;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +45,7 @@ public class SpecFetcher {
 
     if (spec != null) {
       LOGGER.debug("Spec Fetcher: Spec found in Source Definition.");
-      return new SynchronousResponse<>(spec, mockJobMetadata());
+      return new SynchronousResponse<>(spec, SynchronousJobMetadata.mock(ConfigType.GET_SPEC));
     }
 
     LOGGER.debug("Spec Fetcher: Spec not found in Source Definition, fetching with scheduler job instead.");
@@ -62,25 +60,13 @@ public class SpecFetcher {
 
     if (spec != null) {
       LOGGER.debug("Spec Fetcher: Spec found in Destination Definition.");
-      return new SynchronousResponse<>(spec, mockJobMetadata());
+      return new SynchronousResponse<>(spec, SynchronousJobMetadata.mock(ConfigType.GET_SPEC));
     }
 
     LOGGER.debug("Spec Fetcher: Spec not found in Destination Definition, fetching with scheduler job instead.");
     final String dockerImageName = DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(),
-        destinationDefinition.getDockerImageTag());
+                                                                  destinationDefinition.getDockerImageTag());
     return schedulerJobClient.createGetSpecJob(dockerImageName);
-  }
-
-  private static SynchronousJobMetadata mockJobMetadata() {
-    final long now = Instant.now().toEpochMilli();
-    return new SynchronousJobMetadata(
-        UUID.randomUUID(),
-        ConfigType.GET_SPEC,
-        null,
-        now,
-        now,
-        true,
-        null);
   }
 
   private static ConnectorSpecification getSpecFromJob(final SynchronousResponse<ConnectorSpecification> response) {
