@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.check.connection;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -53,7 +57,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   }
 
   private CheckedSupplier<Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput>, Exception> getWorkerFactory(
-      final IntegrationLauncherConfig launcherConfig) {
+                                                                                                                           final IntegrationLauncherConfig launcherConfig) {
     return () -> {
       final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
           launcherConfig.getJobId(),
