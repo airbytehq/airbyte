@@ -313,15 +313,6 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public <T> void writeOutput(final long jobId, final int attemptNumber, final T output) throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-    writeOutputToAttemptTable(jobId, attemptNumber, output, now);
-    // writeOutputToSyncStateTable(jobId, output, now);
-  }
-
-  private <T> void writeOutputToAttemptTable(final long jobId,
-                                             final int attemptNumber,
-                                             final T output,
-                                             final OffsetDateTime now)
-      throws IOException {
     jobDatabase.transaction(
         ctx -> ctx.update(ATTEMPTS)
             .set(ATTEMPTS.OUTPUT, JSONB.valueOf(Jsons.serialize(output)))
