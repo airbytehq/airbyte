@@ -48,6 +48,15 @@ class MondayStream(HttpStream, ABC):
                     graphql_schema.append(col)
         return ",".join(graphql_schema)
 
+    def should_retry(self, response: requests.Response) -> bool:
+        # Monday API return code 200 with and errors key if complexity is too high.
+        # https://api.developer.monday.com/docs/complexity-queries
+        is_complex_query = response.json().get("errors")
+        return response.status_code == 429 or 500 <= response.status_code < 600 or is_complex_query
+
+    def retry_factor(self) -> int:
+        return 15
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
