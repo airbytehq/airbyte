@@ -97,6 +97,9 @@ public interface SyncWorkflow {
                                   final StandardSyncInput syncInput,
                                   final UUID connectionId) {
       final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+      // the state is persisted immediately after the replication succeeded, because the
+      // state is a checkpoint of the raw data that has been copied to the destination;
+      // normalization & dbt does not depend on it
       persistActivity.persist(connectionId, run);
 
       if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {
