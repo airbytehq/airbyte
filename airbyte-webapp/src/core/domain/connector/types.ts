@@ -14,6 +14,7 @@ interface ConnectorDefinitionSpecificationBase {
       rootObject?: string[];
       oauthFlowInitParameters?: string[][];
       oauthFlowOutputParameters?: string[][];
+      oauthFlowInputFields?: string[][];
     };
   };
 }
@@ -39,6 +40,7 @@ export interface SourceGetConsentPayload {
   redirectUrl: string;
   sourceDefinitionId: string;
   workspaceId: string;
+  inputParams: Record<string, unknown>;
 }
 
 export interface DestinationGetConsentPayload {

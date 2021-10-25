@@ -1,6 +1,7 @@
 import { useFormikContext } from "formik";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useAsyncFn } from "react-use";
+import { unflatten, flatten } from "flat";
 import merge from "lodash.merge";
 
 import {
@@ -37,7 +38,8 @@ export function useConnectorAuth() {
 
   return {
     getConsentUrl: async (
-      connector: ConnectorDefinitionSpecification
+      connector: ConnectorDefinitionSpecification,
+      inputParams: Record<string, unknown>
     ): Promise<{
       payload: SourceGetConsentPayload | DestinationGetConsentPayload;
       consentUrl: string;
@@ -47,9 +49,9 @@ export function useConnectorAuth() {
           workspaceId,
           sourceDefinitionId: ConnectorSpecification.id(connector),
           redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+          inputParams,
         };
         const response = await sourceAuthService.getConsentUrl(payload);
-
         return { consentUrl: response.consentUrl, payload };
       } else {
         const payload = {
@@ -64,11 +66,13 @@ export function useConnectorAuth() {
     },
     completeOauthRequest: async (
       params: SourceGetConsentPayload | DestinationGetConsentPayload,
-      queryParams: Record<string, unknown>
+      queryParams: Record<string, unknown>,
+      inputParams: Record<string, unknown>
     ): Promise<Record<string, unknown>> => {
       const payload: any = {
         ...params,
         queryParams,
+        inputParams,
       };
       return (payload as SourceGetConsentPayload).sourceDefinitionId
         ? sourceAuthService.completeOauth(payload)
@@ -105,18 +109,54 @@ export function useRunOauthFlow(
   done?: boolean;
   run: () => void;
 } {
-  const { values, setValues } = useFormikContext();
+  const {
+    values,
+    setValues,
+    validateForm,
+    setFieldTouched,
+  } = useFormikContext();
+  const getoAuthInputFields = () => {
+    const oAuthRequired =
+      connector?.authSpecification?.oauth2Specification?.oauthFlowInputFields;
+    return oAuthRequired ? oAuthRequired.map((value) => value.join(".")) : [];
+  };
+  const oAuthFieldsToValidate = getoAuthInputFields();
+
+  const getoAuthInputParameters = (values: any) => {
+    const oAuthValues = new Map();
+    const flatValues: any = flatten((values as any).connectionConfiguration);
+    oAuthFieldsToValidate.forEach((field) => {
+      oAuthValues.set(field, flatValues[field]);
+    });
+    return Object.fromEntries(unflatten(oAuthValues));
+  };
   const { getConsentUrl, completeOauthRequest } = useConnectorAuth();
   const param = useRef<
     SourceGetConsentPayload | DestinationGetConsentPayload
   >();
 
   const [{ loading }, onStartOauth] = useAsyncFn(async () => {
-    const consentRequestInProgress = await getConsentUrl(connector);
+    validateForm(values).then(async (errors) => {
+      const oAuthErrors = Object.keys(
+        flatten((errors as any).connectionConfiguration)
+      ).filter((path) => oAuthFieldsToValidate.indexOf(path) != -1);
 
-    param.current = consentRequestInProgress.payload;
-    openWindow(consentRequestInProgress.consentUrl);
-  }, [connector]);
+      console.log(oAuthErrors);
+      if (oAuthErrors.length) {
+        oAuthErrors.forEach((path) => {
+          setFieldTouched("connectionConfiguration." + path, true, false);
+        });
+      } else {
+        const consentRequestInProgress = await getConsentUrl(
+          connector,
+          getoAuthInputParameters(values)
+        );
+
+        param.current = consentRequestInProgress.payload;
+        openWindow(consentRequestInProgress.consentUrl);
+      }
+    });
+  }, [connector, values]);
 
   const [{ loading: loadingCompleteOauth, value }, completeOauth] = useAsyncFn(
     async (queryParams: Record<string, unknown>) => {
@@ -125,7 +165,8 @@ export function useRunOauthFlow(
       if (oauthStartedPayload) {
         const connectionConfiguration = await completeOauthRequest(
           oauthStartedPayload,
-          queryParams
+          queryParams,
+          getoAuthInputParameters(values)
         );
 
         setValues(merge(values, { connectionConfiguration }));
