@@ -12,6 +12,7 @@ import {
   useGetWorkspace,
   useWorkspaceService,
 } from "packages/cloud/services/workspaces/WorkspacesService";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 const Header = styled.div`
   display: flex;
@@ -38,9 +39,11 @@ export const WorkspaceSettingsView: React.FC = () => {
     selectWorkspace,
     removeWorkspace,
     updateWorkspace,
-    currentWorkspaceId,
   } = useWorkspaceService();
-  const { data: workspace, isLoading } = useGetWorkspace(currentWorkspaceId);
+  const currentWorkspace = useCurrentWorkspace();
+  const { data: workspace, isLoading } = useGetWorkspace(
+    currentWorkspace.workspaceId
+  );
 
   return (
     <>
