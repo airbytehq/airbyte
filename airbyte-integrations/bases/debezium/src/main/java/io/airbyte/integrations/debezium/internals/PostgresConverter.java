@@ -25,8 +25,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private final String[] TEXT_TYPES = {"VARCHAR", "VARBINARY", "BLOB", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT", "INVENTORY_ITEM", "TSVECTOR"};
 
   @Override
-  public void configure(Properties props) {
-  }
+  public void configure(Properties props) {}
 
   @Override
   public void converterFor(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
@@ -129,4 +128,5 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         || pgInterval.getMinutes() < 0
         || pgInterval.getWholeSeconds() < 0;
   }
+
 }

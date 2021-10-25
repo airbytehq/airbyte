@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.debezium.internals;
 
 import io.airbyte.db.DataTypeUtils;
@@ -12,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 public class DebeziumConverterUtils {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresConverter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumConverterUtils.class);
 
   public static String convertDate(Object x) {
     /**
@@ -53,4 +57,5 @@ public class DebeziumConverterUtils {
     }
     return null;
   }
+
 }

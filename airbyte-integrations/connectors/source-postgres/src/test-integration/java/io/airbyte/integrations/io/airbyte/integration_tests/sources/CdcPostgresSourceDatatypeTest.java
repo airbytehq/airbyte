@@ -17,7 +17,6 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-
 public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final String SLOT_NAME_BASE = "debezium_slot";
@@ -306,8 +305,9 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .build());
 
     // Max values for Money type should be: "-92233720368547758.08", "92233720368547758.07",
-    // debezium return rounded value for values more than 999999999999999 and less than -999999999999999, we maps value as null;
-    //opened issue https://github.com/airbytehq/airbyte/issues/7338
+    // debezium return rounded value for values more than 999999999999999 and less than
+    // -999999999999999, we maps value as null;
+    // opened issue https://github.com/airbytehq/airbyte/issues/7338
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("money")
@@ -316,7 +316,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
                 "'-92233720368547758.08'", "'92233720368547758.07'")
             .addExpectedValues(null, "999.99", "1000.01", "-999999999999.99", "-999999999999999", "999999999999.99", "999999999999999",
                 null, null)
-                /*, "-92233720368547758.08", "92233720368547758.07")*/
+            /* , "-92233720368547758.08", "92233720368547758.07") */
             .build());
 
     addDataTypeTestData(
@@ -510,4 +510,5 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("((3.0,7.0),(15.0,18.0))", "((0.0,0.0),(0.0,0.0))", "((0.0,0.0),(1.0E24,0.0))", null)
             .build());
   }
+
 }
