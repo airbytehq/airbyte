@@ -78,10 +78,7 @@
         "description": "When running custom transformations or Basic normalization, running queries on interactive mode can hit BQ limits, choosing batch will solve those limitss.",
         "title": "Transformation Query Run Type",
         "default": "interactive",
-        "enum": [
-          "interactive",
-          "batch"
-        ]
+        "enum": ["interactive", "batch"]
       },
       "loading_method": {
         "type": "object",

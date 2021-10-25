@@ -3,10 +3,10 @@
 #
 
 import json
+import logging
 from time import sleep
 
 import pendulum
-import logging
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user

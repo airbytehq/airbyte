@@ -31,6 +31,24 @@ def test_formatter(logger, caplog):
     assert message == "Test formatter"
 
 
+def test_level_transform(logger, caplog):
+    formatter = AirbyteLogFormatter()
+    logger.warning("Test level transform warn")
+    logger.critical("Test level transform critical")
+    record_warn = caplog.records[0]
+    record_critical = caplog.records[1]
+    formatted_record_warn = formatter.format(record_warn)
+    formatted_record_warn_data = json.loads(formatted_record_warn)
+    log_warn = formatted_record_warn_data.get("log")
+    level_warn = log_warn.get("level")
+    formatted_record_critical = formatter.format(record_critical)
+    formatted_record_critical_data = json.loads(formatted_record_critical)
+    log_critical = formatted_record_critical_data.get("log")
+    level_critical = log_critical.get("level")
+    assert level_warn == "WARN"
+    assert level_critical == "FATAL"
+
+
 def test_trace(logger, caplog):
     logger.trace("Test trace 1")
     record = caplog.records[0]

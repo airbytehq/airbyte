@@ -141,7 +141,13 @@
                       "type": "string"
                     }
                   },
-                  "required": ["name", "title", "primary", "customType", "description"]
+                  "required": [
+                    "name",
+                    "title",
+                    "primary",
+                    "customType",
+                    "description"
+                  ]
                 }
               ]
             },
