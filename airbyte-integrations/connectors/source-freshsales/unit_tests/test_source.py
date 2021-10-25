@@ -17,5 +17,5 @@ def test_count_streams(mocker):
     source = SourceFreshsales()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
-    expected_streams_number = 10
+    expected_streams_number = 9
     assert len(streams) == expected_streams_number

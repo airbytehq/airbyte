@@ -3,44 +3,7 @@
     {
       "stream": {
         "name": "contacts",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "array",
-          "properties": {
-            "id": { "type": "integer" },
-            "first_name": { "type": "string" },
-            "last_name": { "type": "string" },
-            "subscription_status": { "type": "array" },
-            "job_title": { "type": "string" },
-            "email": { "type": "string" },
-            "emails": { "type": "string" },
-            "work_number": { "type": "string" },
-            "external_id": { "type": "string" },
-            "mobile_number": { "type": "string" },
-            "address": { "type": "string" },
-            "city": { "type": "string" },
-            "state": { "type": "string" },
-            "zipcode": { "type": "string" },
-            "country": { "type": "string" },
-            "sales_accounts": { "type": "array" },
-            "territory_id": { "type": "integer" },
-            "lead_source_id": { "type": "integer" },
-            "owner_id": { "type": "integer" },
-            "subscription_types": { "type": "array" },
-            "medium": { "type": "string" },
-            "campaign_id": { "type": "integer" },
-            "keyword": { "type": "string" },
-            "time_zone": { "type": "string" },
-            "facebook": { "type": "string" },
-            "twitter": { "type": "string" },
-            "linkedin": { "type": "string" },
-            "created_at": { "type": "string" },
-            "updated_at": { "type": "string" },
-            "contact_status_id": { "type": "integer" },
-            "sales_account_id": { "type": "integer" },
-            "lifecycle_stage_id": { "type": "integer" }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
@@ -50,33 +13,7 @@
     {
       "stream": {
         "name": "accounts",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" },
-            "name": { "type": "string" },
-            "address": { "type": "string" },
-            "city": { "type": "string" },
-            "state": { "type": "string" },
-            "zipcode": { "type": "string" },
-            "country": { "type": "string" },
-            "industry_type_id": { "type": "integer" },
-            "business_type_id": { "type": "integer" },
-            "number_of_employees": { "type": "integer" },
-            "annual_revenue": { "type": "number" },
-            "website": { "type": "string" },
-            "phone": { "type": "string" },
-            "owner_id": { "type": "integer" },
-            "facebook": { "type": "string" },
-            "twitter": { "type": "string" },
-            "linkedin": { "type": "string" },
-            "territory_id": { "type": "integer" },
-            "created_at": { "type": "string" },
-            "updated_at": { "type": "string" },
-            "parent_sales_account_id": { "type": "integer" }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
@@ -86,33 +23,7 @@
     {
       "stream": {
         "name": "open_deals",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" },
-            "name": { "type": "string" },
-            "amount": { "type": "number" },
-            "currency_id": { "type": "integer" },
-            "base_currency_amount": { "type": "number" },
-            "sales_account_id": { "type": "integer" },
-            "deal_stage_id": { "type": "integer" },
-            "deal_reason_id": { "type": "integer" },
-            "deal_type_id": { "type": "integer" },
-            "owner_id": { "type": "integer" },
-            "expected_close": { "type": "string" },
-            "closed_date": { "type": "string" },
-            "lead_source_id": { "type": "integer" },
-            "campaign_id": { "type": "integer" },
-            "deal_product_id": { "type": "integer" },
-            "deal_payment_status_id": { "type": "integer" },
-            "probability": { "type": "integer" },
-            "created_at": { "type": "string" },
-            "updated_at": { "type": "string" },
-            "territory_id": { "type": "integer" },
-            "deal_pipeline_id": { "type": "integer" }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
@@ -122,33 +33,7 @@
     {
       "stream": {
         "name": "won_deals",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" },
-            "name": { "type": "string" },
-            "amount": { "type": "number" },
-            "currency_id": { "type": "integer" },
-            "base_currency_amount": { "type": "number" },
-            "sales_account_id": { "type": "integer" },
-            "deal_stage_id": { "type": "integer" },
-            "deal_reason_id": { "type": "integer" },
-            "deal_type_id": { "type": "integer" },
-            "owner_id": { "type": "integer" },
-            "expected_close": { "type": "string" },
-            "closed_date": { "type": "string" },
-            "lead_source_id": { "type": "integer" },
-            "campaign_id": { "type": "integer" },
-            "deal_product_id": { "type": "integer" },
-            "deal_payment_status_id": { "type": "integer" },
-            "probability": { "type": "integer" },
-            "created_at": { "type": "string" },
-            "updated_at": { "type": "string" },
-            "territory_id": { "type": "integer" },
-            "deal_pipeline_id": { "type": "integer" }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
@@ -158,33 +43,7 @@
     {
       "stream": {
         "name": "lost_deals",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" },
-            "name": { "type": "string" },
-            "amount": { "type": "number" },
-            "currency_id": { "type": "integer" },
-            "base_currency_amount": { "type": "number" },
-            "sales_account_id": { "type": "integer" },
-            "deal_stage_id": { "type": "integer" },
-            "deal_reason_id": { "type": "integer" },
-            "deal_type_id": { "type": "integer" },
-            "owner_id": { "type": "integer" },
-            "expected_close": { "type": "string" },
-            "closed_date": { "type": "string" },
-            "lead_source_id": { "type": "integer" },
-            "campaign_id": { "type": "integer" },
-            "deal_product_id": { "type": "integer" },
-            "deal_payment_status_id": { "type": "integer" },
-            "probability": { "type": "integer" },
-            "created_at": { "type": "string" },
-            "updated_at": { "type": "string" },
-            "territory_id": { "type": "integer" },
-            "deal_pipeline_id": { "type": "integer" }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
@@ -194,26 +53,7 @@
     {
       "stream": {
         "name": "open_tasks",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" },
-            "title": { "type": "string" },
-            "description": { "type": "string" },
-            "due_date": { "type": "string" },
-            "targetable_id": { "type": "integer" },
-            "targetable_type": { "type": "string" },
-            "Possible": { "type": "string" },
-            "owner_id": { "type": "integer" },
-            "status": { "type": "boolean" },
-            "creater_id": { "type": "integer" },
-            "created_at": { "type": "string" },
-            "updated_at": { "type": "string" },
-            "outcome_id": { "type": "integer" },
-            "task_type_id": { "type": "integer" }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
@@ -223,26 +63,7 @@
     {
       "stream": {
         "name": "completed_tasks",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" },
-            "title": { "type": "string" },
-            "description": { "type": "string" },
-            "due_date": { "type": "string" },
-            "targetable_id": { "type": "integer" },
-            "targetable_type": { "type": "string" },
-            "Possible": { "type": "string" },
-            "owner_id": { "type": "integer" },
-            "status": { "type": "boolean" },
-            "creater_id": { "type": "integer" },
-            "created_at": { "type": "string" },
-            "updated_at": { "type": "string" },
-            "outcome_id": { "type": "integer" },
-            "task_type_id": { "type": "integer" }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
@@ -252,34 +73,7 @@
     {
       "stream": {
         "name": "past_appointments",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" },
-            "from_date": { "type": "string" },
-            "date": { "type": "string" },
-            "Start": { "type": "string" },
-            "end_date": { "type": "string" },
-            "End": { "type": "string" },
-            "time_zone": { "type": "string" },
-            "title": { "type": "string" },
-            "description": { "type": "string" },
-            "creater_id": { "type": "integer" },
-            "targetable_id": { "type": "integer" },
-            "targetable_type": { "type": "string" },
-            "Possible": { "type": "string" },
-            "location": { "type": "string" },
-            "created_at": { "type": "string" },
-            "updated_at": { "type": "string" },
-            "is_allday": { "type": "boolean" },
-            "appointment_attendees_attributes": { "type": "array" },
-            "outcome_id": { "type": "integer" },
-            "latitude": { "type": "string" },
-            "longitude": { "type": "string" },
-            "checkedin_at": { "type": "string" }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
@@ -289,67 +83,7 @@
     {
       "stream": {
         "name": "upcoming_appointments",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" },
-            "from_date": { "type": "string" },
-            "date": { "type": "string" },
-            "Start": { "type": "string" },
-            "end_date": { "type": "string" },
-            "End": { "type": "string" },
-            "time_zone": { "type": "string" },
-            "title": { "type": "string" },
-            "description": { "type": "string" },
-            "creater_id": { "type": "integer" },
-            "targetable_id": { "type": "integer" },
-            "targetable_type": { "type": "string" },
-            "Possible": { "type": "string" },
-            "location": { "type": "string" },
-            "created_at": { "type": "string" },
-            "updated_at": { "type": "string" },
-            "is_allday": { "type": "boolean" },
-            "appointment_attendees_attributes": { "type": "array" },
-            "outcome_id": { "type": "integer" },
-            "latitude": { "type": "string" },
-            "longitude": { "type": "string" },
-            "checkedin_at": { "type": "string" }
-          }
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "sales_activities",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": { "type": "integer" },
-            "title": { "type": "string" },
-            "sales_activity_type_id": { "type": "integer" },
-            "sales_activity_outcome_id": { "type": "integer" },
-            "start_date": { "type": "string" },
-            "end_date": { "type": "string" },
-            "notes": { "type": "string" },
-            "owner_id": { "type": "integer" },
-            "targetable_id": { "type": "integer" },
-            "targetable_type": { "type": "string" },
-            "Possible": { "type": "values" },
-            "creater_id": { "type": "integer" },
-            "created_at": { "type": "string" },
-            "updated_at": { "type": "string" },
-            "location": { "type": "string" },
-            "latitude": { "type": "string" },
-            "longitude": { "type": "string" },
-            "checkedin_at": { "type": "string" }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
