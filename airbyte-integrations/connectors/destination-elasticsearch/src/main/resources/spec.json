@@ -18,10 +18,13 @@
         "description": "The full url of the Elasticsearch server"
       },
       "upsert": {
+        "type": "boolean",
         "title": "Upsert Records",
-        "description": "If a primary key identifier is defined, an upsert will be performed using the primary key value as the elasticsearch doc id. Does not support composite primary keys."
+        "description": "If a primary key identifier is defined in the source, an upsert will be performed using the primary key value as the elasticsearch doc id. Does not support composite primary keys.",
+        "default": true
       },
       "authenticationMethod": {
+        "title": "Authentication Method",
         "type": "object",
         "description": "The type of authentication to be used",
         "oneOf": [
