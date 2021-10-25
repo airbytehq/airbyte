@@ -155,7 +155,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.4.2 | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables |
+| 0.5.0 | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables |
 | 0.4.1 | 2021-10-04 | [\#6733](https://github.com/airbytehq/airbyte/issues/6733) | Support dataset starting with numbers |
 | 0.4.0 | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option |
 | 0.3.12 | 2021-08-03 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size |
@@ -169,6 +169,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.7 | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables |
 | 0.1.6 | 2021-09-16 | [\#6145](https://github.com/airbytehq/airbyte/pull/6145) | BigQuery Denormalized support for date, datetime & timestamp types through the json "format" key |
 | 0.1.5 | 2021-09-07 | [\#5881](https://github.com/airbytehq/airbyte/pull/5881) | BigQuery Denormalized NPE fix |
 | 0.1.4 | 2021-09-04 | [\#5813](https://github.com/airbytehq/airbyte/pull/5813) | fix Stackoverflow error when receive a schema from source where "Array" type doesn't contain a required "items" element |
