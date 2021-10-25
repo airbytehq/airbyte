@@ -50,13 +50,13 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
 
     try (final JdbcDatabase database = getDatabase(config)) {
-      String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
+      final String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -64,23 +64,23 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     }
   }
 
-  public static void attemptSQLCreateAndDropTableOperations(String outputSchema,
-                                                            JdbcDatabase database,
-                                                            NamingConventionTransformer namingResolver,
-                                                            SqlOperations sqlOps)
+  public static void attemptSQLCreateAndDropTableOperations(final String outputSchema,
+                                                            final JdbcDatabase database,
+                                                            final NamingConventionTransformer namingResolver,
+                                                            final SqlOperations sqlOps)
       throws Exception {
     // attempt to get metadata from the database as a cheap way of seeing if we can connect.
     database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
     // verify we have write permissions on the target schema by creating a table with a random name,
     // then dropping that table
-    String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
+    final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
     sqlOps.createSchemaIfNotExists(database, outputSchema);
     sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
     sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
   }
 
-  protected JdbcDatabase getDatabase(JsonNode config) {
+  protected JdbcDatabase getDatabase(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
 
     return Databases.createJdbcDatabase(
@@ -93,7 +93,9 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
 

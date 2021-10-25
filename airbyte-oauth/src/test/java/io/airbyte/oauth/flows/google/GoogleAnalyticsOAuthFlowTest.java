@@ -149,7 +149,7 @@ public class GoogleAnalyticsOAuthFlowTest {
             .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
             .build())))));
-    Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
@@ -168,7 +168,7 @@ public class GoogleAnalyticsOAuthFlowTest {
             .put("client_id", getClientId())
             .put("client_secret", "test_client_secret")
             .build())))));
-    Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);

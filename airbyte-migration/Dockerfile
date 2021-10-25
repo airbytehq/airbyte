@@ -1,4 +1,5 @@
-FROM openjdk:14.0.2-slim AS migrate
+ARG JDK_VERSION=14.0.2
+FROM openjdk:${JDK_VERSION}-slim AS migrate
 
 ENV APPLICATION airbyte-migration
 

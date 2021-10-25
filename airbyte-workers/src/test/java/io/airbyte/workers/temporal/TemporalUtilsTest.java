@@ -87,9 +87,9 @@ public class TemporalUtilsTest {
 
   @Test
   public void testWaitForTemporalServerAndLogThrowsException() {
-    WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
-    DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
-    NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
+    final WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
+    final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
+    final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
 
     when(namespaceInfo.getName()).thenReturn("default");
     when(describeNamespaceResponse.getNamespaceInfo()).thenReturn(namespaceInfo);
@@ -119,7 +119,7 @@ public class TemporalUtilsTest {
       private final Activity1 activity2 = Workflow.newActivityStub(Activity1.class, options);
 
       @Override
-      public String run(String arg) {
+      public String run(final String arg) {
         LOGGER.info("workflow before activity 1");
         activity1.activity();
         LOGGER.info("workflow before activity 2");
@@ -146,7 +146,7 @@ public class TemporalUtilsTest {
 
       private final VoidCallable callable;
 
-      public Activity1Impl(VoidCallable callable) {
+      public Activity1Impl(final VoidCallable callable) {
         this.callable = callable;
       }
 
@@ -154,7 +154,7 @@ public class TemporalUtilsTest {
         LOGGER.info("before: {}", ACTIVITY1);
         try {
           callable.call();
-        } catch (Exception e) {
+        } catch (final Exception e) {
           throw new RuntimeException(e);
         }
         LOGGER.info("before: {}", ACTIVITY1);

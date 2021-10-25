@@ -89,7 +89,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) {
+  protected void setupEnvironment(final TestDestinationEnv environment) {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
 
@@ -126,8 +126,8 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             + container.getUsername() + "@'%';");
   }
 
-  private void executeQuery(String query) {
-    try (Database database = Databases.createDatabase(
+  private void executeQuery(final String query) {
+    try (final Database database = Databases.createDatabase(
         "root",
         "test",
         String.format("jdbc:mysql://%s:%s/%s",
@@ -139,13 +139,13 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
       database.query(
           ctx -> ctx
               .execute(query));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 

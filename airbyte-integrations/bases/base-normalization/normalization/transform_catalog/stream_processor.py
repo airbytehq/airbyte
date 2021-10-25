@@ -603,7 +603,7 @@ from {{ from_table }}
 
         order_null = "is null asc"
         if self.destination_type == DestinationType.ORACLE:
-            order_null = "asc nulls first"
+            order_null = "asc nulls last"
         if self.destination_type == DestinationType.MSSQL:
             # SQL Server treats NULL values as the lowest values, then sorted in ascending order, NULLs come first.
             order_null = "desc"

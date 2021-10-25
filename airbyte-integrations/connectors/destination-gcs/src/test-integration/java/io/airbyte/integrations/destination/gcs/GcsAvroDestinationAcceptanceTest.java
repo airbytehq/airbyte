@@ -38,21 +38,25 @@ public class GcsAvroDestinationAcceptanceTest extends GcsDestinationAcceptanceTe
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace, JsonNode streamSchema) throws Exception {
-    JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
+      throws Exception {
+    final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
-    List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
-    List<JsonNode> jsonRecords = new LinkedList<>();
+    final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
+    final List<JsonNode> jsonRecords = new LinkedList<>();
 
-    for (S3ObjectSummary objectSummary : objectSummaries) {
-      S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      try (DataFileReader<Record> dataFileReader = new DataFileReader<>(
+    for (final S3ObjectSummary objectSummary : objectSummaries) {
+      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      try (final DataFileReader<Record> dataFileReader = new DataFileReader<>(
           new SeekableByteArrayInput(object.getObjectContent().readAllBytes()),
           new GenericDatumReader<>())) {
-        ObjectReader jsonReader = MAPPER.reader();
+        final ObjectReader jsonReader = MAPPER.reader();
         while (dataFileReader.hasNext()) {
-          GenericData.Record record = dataFileReader.next();
-          byte[] jsonBytes = converter.convertToJson(record);
+          final GenericData.Record record = dataFileReader.next();
+          final byte[] jsonBytes = converter.convertToJson(record);
           JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
           jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
           jsonRecords.add(AvroRecordHelper.pruneAirbyteJson(jsonRecord));

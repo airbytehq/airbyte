@@ -16,18 +16,18 @@ import java.util.Optional;
 import java.util.UUID;
 
 /*
- * Class with methods for getting oAuth config parameters for source and
- * destination oAuth flow from config repository.
+ * Class with methods for getting oAuth config parameters for source and destination oAuth flow from
+ * config repository.
  */
 public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
 
   private final ConfigRepository configRepository;
 
-  public BaseOAuthConfig(ConfigRepository configRepository) {
+  public BaseOAuthConfig(final ConfigRepository configRepository) {
     this.configRepository = configRepository;
   }
 
-  protected JsonNode getSourceOAuthParamConfig(UUID workspaceId, UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
+  protected JsonNode getSourceOAuthParamConfig(final UUID workspaceId, final UUID sourceDefinitionId) throws IOException, ConfigNotFoundException {
     try {
       final Optional<SourceOAuthParameter> param = MoreOAuthParameters.getSourceOAuthParameter(
           configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId);
@@ -36,12 +36,13 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
       } else {
         throw new ConfigNotFoundException(ConfigSchema.SOURCE_OAUTH_PARAM, "Undefined OAuth Parameter.");
       }
-    } catch (JsonValidationException e) {
+    } catch (final JsonValidationException e) {
       throw new IOException("Failed to load OAuth Parameters", e);
     }
   }
 
-  protected JsonNode getDestinationOAuthParamConfig(UUID workspaceId, UUID destinationDefinitionId) throws IOException, ConfigNotFoundException {
+  protected JsonNode getDestinationOAuthParamConfig(final UUID workspaceId, final UUID destinationDefinitionId)
+      throws IOException, ConfigNotFoundException {
     try {
       final Optional<DestinationOAuthParameter> param = MoreOAuthParameters.getDestinationOAuthParameter(
           configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId);
@@ -50,7 +51,7 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
       } else {
         throw new ConfigNotFoundException(ConfigSchema.DESTINATION_OAUTH_PARAM, "Undefined OAuth Parameter.");
       }
-    } catch (JsonValidationException e) {
+    } catch (final JsonValidationException e) {
       throw new IOException("Failed to load OAuth Parameters", e);
     }
   }
@@ -59,9 +60,9 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
    * Throws an exception if the client ID cannot be extracted. Subclasses should override this to
    * parse the config differently.
    *
-   * @return
+   * @return The configured Client ID used for this oauth flow
    */
-  protected String getClientIdUnsafe(JsonNode oauthConfig) {
+  protected String getClientIdUnsafe(final JsonNode oauthConfig) {
     if (oauthConfig.get("client_id") != null) {
       return oauthConfig.get("client_id").asText();
     } else {
@@ -73,9 +74,9 @@ public abstract class BaseOAuthConfig implements OAuthFlowImplementation {
    * Throws an exception if the client secret cannot be extracted. Subclasses should override this to
    * parse the config differently.
    *
-   * @return
+   * @return The configured client secret for this OAuthFlow
    */
-  protected String getClientSecretUnsafe(JsonNode oauthConfig) {
+  protected String getClientSecretUnsafe(final JsonNode oauthConfig) {
     if (oauthConfig.get("client_secret") != null) {
       return oauthConfig.get("client_secret").asText();
     } else {

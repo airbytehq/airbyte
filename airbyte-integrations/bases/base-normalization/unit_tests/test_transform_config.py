@@ -134,6 +134,7 @@ class TestTransformConfig:
             "project_id": "my_project_id",
             "dataset_id": "my_dataset_id",
             "credentials_json": '{ "type": "service_account-json" }',
+            "transformation_priority": "interactive",
             "dataset_location": "EU",
         }
 
@@ -143,6 +144,7 @@ class TestTransformConfig:
             "method": "service-account-json",
             "project": "my_project_id",
             "dataset": "my_dataset_id",
+            "priority": "interactive",
             "keyfile_json": {"type": "service_account-json"},
             "location": "EU",
             "retries": 1,
@@ -164,6 +166,7 @@ class TestTransformConfig:
             "method": "oauth",
             "project": "my_project_id",
             "dataset": "my_dataset_id",
+            "priority": "interactive",
             "retries": 1,
             "threads": 32,
         }

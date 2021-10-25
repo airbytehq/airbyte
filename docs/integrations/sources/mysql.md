@@ -145,8 +145,8 @@ MySQL data types are mapped to the following data types when synchronizing data.
 | `bigint` | number |  |
 | `binary` | string |  |
 | `blob` | string |  |
-| `date` | string |  |
-| `datetime` | string |  |
+| `date` | string | MySql JDBC driver has limitation. ZERO-DATE value will be converted to NULL. |
+| `datetime` | string | MySql JDBC driver has limitation. ZERO-DATE value will be converted to NULL. |
 | `decimal` | number |  |
 | `decimal(19, 2)` | number |  |
 | `double` | number |  |
@@ -166,8 +166,8 @@ MySQL data types are mapped to the following data types when synchronizing data.
 | `string` | string |  |
 | `tinyint` | number |  |
 | `text` | string |  |
-| `time` | string |  |
-| `timestamp` | string |  |
+| `time` | string | MySql JDBC driver has limitation. Value should be in range between 00:00:00 and 23:59:59. |
+| `timestamp` | string | MySql JDBC driver has limitation. ZERO-DATE value will be converted to NULL. |
 | `tinytext` | string |  |
 | `varbinary(256)` | string |  |
 | `varchar` | string |  |
@@ -180,6 +180,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.4.8 | 2021-09-16 | [6093](https://github.com/airbytehq/airbyte/pull/6093) | Improve reliability of processing various data types like decimals, dates, datetime, binary, and text |
 | 0.4.7 | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
 | 0.4.6 | 2021-09-29 | [6510](https://github.com/airbytehq/airbyte/pull/6510) | Support SSL connection |
 | 0.4.5 | 2021-09-17 | [6146](https://github.com/airbytehq/airbyte/pull/6146) | Added option to connect to DB via SSH |
