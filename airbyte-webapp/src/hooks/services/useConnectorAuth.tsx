@@ -1,7 +1,8 @@
 import { useFormikContext } from "formik";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useAsyncFn } from "react-use";
-import { unflatten, flatten } from "flat";
+import { flatten } from "flat";
+import { pick } from "lodash";
 import merge from "lodash.merge";
 
 import {
@@ -116,22 +117,14 @@ export function useRunOauthFlow(
     validateForm,
     setFieldTouched,
   } = useFormikContext();
-  const getoAuthInputFields = () => {
+  const oAuthFieldsToValidate = useMemo(() => {
     const oAuthRequired =
       connector?.authSpecification?.oauth2Specification?.oauthFlowInputFields;
     return oAuthRequired ? oAuthRequired.map((value) => value.join(".")) : [];
-  };
-  const oAuthFieldsToValidate = getoAuthInputFields();
+  }, [connector]);
 
   const getoAuthInputParameters = (values: ServiceFormValues) => {
-    const oAuthValues: Map<string, string> = new Map();
-    const flatValues: Record<string, string> = flatten(
-      values.connectionConfiguration
-    );
-    oAuthFieldsToValidate.forEach((field) => {
-      oAuthValues.set(field, flatValues[field]);
-    });
-    return Object.fromEntries(unflatten(oAuthValues));
+    return pick(values.connectionConfiguration, oAuthFieldsToValidate);
   };
   const { getConsentUrl, completeOauthRequest } = useConnectorAuth();
   const param = useRef<
@@ -139,9 +132,9 @@ export function useRunOauthFlow(
   >();
 
   const [{ loading }, onStartOauth] = useAsyncFn(async () => {
-    const errors = await validateForm(values);
+    const errors = (await validateForm(values)) as ServiceFormValues;
     const oAuthErrors = Object.keys(
-      flatten((errors as ServiceFormValues).connectionConfiguration)
+      flatten(errors.connectionConfiguration)
     ).filter((path) => oAuthFieldsToValidate.indexOf(path) != -1);
 
     if (oAuthErrors.length) {
