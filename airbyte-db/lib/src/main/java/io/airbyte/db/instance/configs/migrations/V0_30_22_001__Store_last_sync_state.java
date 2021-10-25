@@ -126,29 +126,28 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
   @VisibleForTesting
   static Set<StandardSyncState> getStandardSyncStates(final Database jobsDatabase) throws SQLException {
     final Table<?> jobsTable = DSL.table("jobs");
-    final Field<Long> jobIdField = DSL.field("jobs.id", SQLDataType.BIGINT);
-    final Field<String> syncIdField = DSL.field("jobs.scope", SQLDataType.VARCHAR);
+    final Field<Long> jobId = DSL.field("jobs.id", SQLDataType.BIGINT);
+    final Field<String> connectionId = DSL.field("jobs.scope", SQLDataType.VARCHAR);
 
     final Table<?> attemptsTable = DSL.table("attempts");
-    final Field<Long> attemptJobIdField = DSL.field("attempts.job_id", SQLDataType.BIGINT);
-    final Field<Integer> attemptNumberField = DSL.field("attempts.attempt_number", SQLDataType.INTEGER);
+    final Field<Long> attemptJobId = DSL.field("attempts.job_id", SQLDataType.BIGINT);
+    final Field<Integer> attemptNumber = DSL.field("attempts.attempt_number", SQLDataType.INTEGER);
+    final Field<OffsetDateTime> attemptCreatedAt = DSL.field("attempts.created_at", SQLDataType.TIMESTAMPWITHTIMEZONE);
 
     // output schema: JobOutput.yaml
     // sync schema: StandardSyncOutput.yaml
     // state schema: State.yaml, e.g. { "state": { "cursor": 1000 } }
-    final Field<JSONB> attemptStateField = DSL.field("attempts.output -> 'sync' -> 'state'", SQLDataType.JSONB);
+    final Field<JSONB> attemptState = DSL.field("attempts.output -> 'sync' -> 'state'", SQLDataType.JSONB);
 
     return jobsDatabase.query(ctx -> ctx
-        .select(syncIdField, attemptStateField)
+        .select(connectionId, attemptState)
+        .distinctOn(connectionId)
         .from(attemptsTable)
         .innerJoin(jobsTable)
-        .on(jobIdField.eq(attemptJobIdField))
-        .where(DSL.row(attemptJobIdField, attemptNumberField).in(
-            // for each job id, find the last attempt with a state
-            DSL.select(attemptJobIdField, DSL.max(attemptNumberField))
-                .from(attemptsTable)
-                .where(attemptStateField.isNotNull())
-                .groupBy(attemptJobIdField)))
+        .on(jobId.eq(attemptJobId))
+        .where(attemptState.isNotNull())
+        // this query assumes that an attempt with larger created_at field is always a newer attempt
+        .orderBy(connectionId, attemptCreatedAt.desc())
         .fetch()
         .stream()
         .map(r -> getStandardSyncState(UUID.fromString(r.value1()), Jsons.deserialize(r.value2().data(), State.class))))
