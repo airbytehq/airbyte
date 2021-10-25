@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.oauth.flows;
+package io.airbyte.oauth.flows.google;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -33,14 +33,14 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AsanaOAuthFlowIntegrationTest {
+public class GoogleSheetsOAuthFlowIntegrationTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AsanaOAuthFlowIntegrationTest.class);
-  private static final String REDIRECT_URL = "http://localhost:8000/code";
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/asana.json");
+  private static final Logger LOGGER = LoggerFactory.getLogger(GoogleSheetsOAuthFlowIntegrationTest.class);
+  private static final String REDIRECT_URL = "http://localhost/code";
+  private static final Path CREDENTIALS_PATH = Path.of("secrets/google_sheets.json");
 
   private ConfigRepository configRepository;
-  private AsanaOAuthFlow asanaOAuthFlow;
+  private GoogleSheetsOAuthFlow googleSheetsOAuthFlow;
   private HttpServer server;
   private ServerHandler serverHandler;
 
@@ -51,9 +51,9 @@ public class AsanaOAuthFlowIntegrationTest {
           "Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
-    asanaOAuthFlow = new AsanaOAuthFlow(configRepository);
+    googleSheetsOAuthFlow = new GoogleSheetsOAuthFlow(configRepository);
 
-    server = HttpServer.create(new InetSocketAddress(8000), 0);
+    server = HttpServer.create(new InetSocketAddress(80), 0);
     server.setExecutor(null); // creates a default executor
     server.start();
     serverHandler = new ServerHandler("code");
@@ -66,22 +66,21 @@ public class AsanaOAuthFlowIntegrationTest {
   }
 
   @Test
-  public void testFullAsanaOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
+  public void testFullGoogleOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
     final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
-    final String clientId = credentialsJson.get("client_id").asText();
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", clientId)
-            .put("client_secret", credentialsJson.get("client_secret").asText())
-            .build()))));
-    final String url = asanaOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
+            .put("client_id", credentialsJson.get("credentials").get("client_id").asText())
+            .put("client_secret", credentialsJson.get("credentials").get("client_secret").asText())
+            .build())))));
+    final String url = googleSheetsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -90,23 +89,24 @@ public class AsanaOAuthFlowIntegrationTest {
       limit -= 1;
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
-    final Map<String, Object> params = asanaOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
+    final Map<String, Object> params = googleSheetsOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
         Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("credentials"));
-    final Map creds = (Map) params.get("credentials");
-    assertTrue(creds.containsKey("refresh_token"));
-    assertTrue(creds.get("refresh_token").toString().length() > 0);
+    final Map<String, Object> credentials = (Map<String, Object>) params.get("credentials");
+    assertTrue(credentials.containsKey("refresh_token"));
+    assertTrue(credentials.get("refresh_token").toString().length() > 0);
+    assertTrue(credentials.containsKey("access_token"));
+    assertTrue(credentials.get("access_token").toString().length() > 0);
   }
 
   static class ServerHandler implements HttpHandler {
 
     final private String expectedParam;
-    private Map responseQuery;
     private String paramValue;
     private boolean succeeded;
 
-    public ServerHandler(String expectedParam) {
+    public ServerHandler(final String expectedParam) {
       this.expectedParam = expectedParam;
       this.paramValue = "";
       this.succeeded = false;
@@ -120,12 +120,8 @@ public class AsanaOAuthFlowIntegrationTest {
       return paramValue;
     }
 
-    public Map getResponseQuery() {
-      return responseQuery;
-    }
-
     @Override
-    public void handle(HttpExchange t) {
+    public void handle(final HttpExchange t) {
       final String query = t.getRequestURI().getQuery();
       LOGGER.info("Received query: '{}'", query);
       final Map<String, String> data;
@@ -136,7 +132,6 @@ public class AsanaOAuthFlowIntegrationTest {
           paramValue = data.get(expectedParam);
           response = String.format("Successfully extracted %s:\n'%s'\nTest should be continuing the OAuth Flow to retrieve the refresh_token...",
               expectedParam, paramValue);
-          responseQuery = data;
           LOGGER.info(response);
           t.sendResponseHeaders(200, response.length());
           succeeded = true;
@@ -147,18 +142,18 @@ public class AsanaOAuthFlowIntegrationTest {
         final OutputStream os = t.getResponseBody();
         os.write(response.getBytes());
         os.close();
-      } catch (RuntimeException | IOException e) {
+      } catch (final RuntimeException | IOException e) {
         LOGGER.error("Failed to parse from body {}", query, e);
       }
     }
 
-    private static Map<String, String> deserialize(String query) {
+    private static Map<String, String> deserialize(final String query) {
       if (query == null) {
         return null;
       }
       final Map<String, String> result = new HashMap<>();
-      for (String param : query.split("&")) {
-        String[] entry = param.split("=");
+      for (final String param : query.split("&")) {
+        final String[] entry = param.split("=");
         if (entry.length > 1) {
           result.put(entry[0], entry[1]);
         } else {
