@@ -27,6 +27,8 @@ public class SpecFetcher {
     this.schedulerJobClient = schedulerJobClient;
   }
 
+  // TODO: remove this once file migrations are deprecated, as that is the only time this function is used
+  @Deprecated
   public ConnectorSpecification getSpec(final String dockerImage) throws IOException {
     return getSpecFromJob(schedulerJobClient.createGetSpecJob(dockerImage));
   }
@@ -73,7 +75,7 @@ public class SpecFetcher {
     return schedulerJobClient.createGetSpecJob(dockerImageName);
   }
 
-  private static ConnectorSpecification getSpecFromJob(final SynchronousResponse<ConnectorSpecification> response) {
+  public static ConnectorSpecification getSpecFromJob(final SynchronousResponse<ConnectorSpecification> response) {
     Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
     Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
 
