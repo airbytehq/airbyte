@@ -60,6 +60,12 @@ class ScaffoldJavaJdbcJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest 
     return ScaffoldJavaJdbcSource.DRIVER_CLASS;
   }
 
+  @Override
+  public AbstractJdbcSource getJdbcSource() {
+    // TODO
+    return null;
+  }
+
   @AfterAll
   static void cleanUp() {
     // TODO close the container. Ex: "container.close();"

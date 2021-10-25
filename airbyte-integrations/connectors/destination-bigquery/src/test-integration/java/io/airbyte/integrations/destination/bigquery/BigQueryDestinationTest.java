@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.bigquery;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
@@ -18,7 +19,12 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.StandardSQLTypeName;
+import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.TableId;
+import com.google.cloud.bigquery.TableInfo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -39,6 +45,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.io.ByteArrayInputStream;
@@ -50,6 +57,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -130,7 +138,8 @@ class BigQueryDestinationTest {
         CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datasetId,
             io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
             io.airbyte.protocol.models.Field
-                .of("id", JsonSchemaPrimitive.STRING)),
+                .of("id", JsonSchemaPrimitive.STRING))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND),
         CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
@@ -294,6 +303,70 @@ class BigQueryDestinationTest {
         .map(v -> v.get(JavaBaseConstants.COLUMN_NAME_DATA).getStringValue())
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
+  }
+
+  @Test
+  void testWritePartitionOverUnpartitioned() throws Exception {
+    final String raw_table_name = String.format("_airbyte_raw_%s", USERS_STREAM_NAME);
+    createUnpartitionedTable(bigquery, dataset, raw_table_name);
+    assertFalse(isTablePartitioned(bigquery, dataset, raw_table_name));
+    final BigQueryDestination destination = new BigQueryDestination();
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+
+    consumer.accept(MESSAGE_USERS1);
+    consumer.accept(MESSAGE_TASKS1);
+    consumer.accept(MESSAGE_USERS2);
+    consumer.accept(MESSAGE_TASKS2);
+    consumer.accept(MESSAGE_STATE);
+    consumer.close();
+
+    final List<JsonNode> usersActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(USERS_STREAM_NAME));
+    final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
+    assertEquals(expectedUsersJson.size(), usersActual.size());
+    assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
+
+    final List<JsonNode> tasksActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(TASKS_STREAM_NAME));
+    final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
+    assertEquals(expectedTasksJson.size(), tasksActual.size());
+    assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));
+
+    assertTmpTablesNotPresent(catalog.getStreams()
+        .stream()
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(AirbyteStream::getName)
+        .collect(Collectors.toList()));
+    assertTrue(isTablePartitioned(bigquery, dataset, raw_table_name));
+  }
+
+  private void createUnpartitionedTable(final BigQuery bigquery, final Dataset dataset, final String tableName) {
+    final TableId tableId = TableId.of(dataset.getDatasetId().getDataset(), tableName);
+    bigquery.delete(tableId);
+    final com.google.cloud.bigquery.Schema schema = com.google.cloud.bigquery.Schema.of(
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
+    final StandardTableDefinition tableDefinition =
+        StandardTableDefinition.newBuilder()
+            .setSchema(schema)
+            .build();
+    final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
+    bigquery.create(tableInfo);
+  }
+
+  private boolean isTablePartitioned(final BigQuery bigquery, final Dataset dataset, final String tableName) throws InterruptedException {
+    final QueryJobConfiguration queryConfig = QueryJobConfiguration
+        .newBuilder(
+            String.format("SELECT max(is_partitioning_column) as is_partitioned FROM `%s.%s.INFORMATION_SCHEMA.COLUMNS` WHERE TABLE_NAME = '%s';",
+                bigquery.getOptions().getProjectId(),
+                dataset.getDatasetId().getDataset(),
+                tableName))
+        .setUseLegacySql(false)
+        .build();
+    final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
+    for (final com.google.cloud.bigquery.FieldValueList row : result.getLeft().getQueryResults().getValues()) {
+      return !row.get("is_partitioned").isNull() && row.get("is_partitioned").getStringValue().equals("YES");
+    }
+    return false;
   }
 
 }

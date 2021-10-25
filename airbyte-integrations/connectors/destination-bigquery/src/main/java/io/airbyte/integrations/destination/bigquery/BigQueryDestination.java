@@ -60,9 +60,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
-      // GCS works with only date\datetime formats, so need to have it a string for a while
-      // https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types
-      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.STRING),
+      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
       Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
 
   private final BigQuerySQLNameTransformer namingResolver;
@@ -318,10 +316,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     if (loadingMethod != null && loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES) != null
         && BigQueryConsts.KEEP_GCS_FILES_VAL
             .equals(loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES).asText())) {
-      LOGGER.info("All tmp files GCS will be kept in bucket when migration is finished");
+      LOGGER.info("All tmp files GCS will be kept in bucket when replication is finished");
       return true;
     } else {
-      LOGGER.info("All tmp files will be removed from GCS when migration is finished");
+      LOGGER.info("All tmp files will be removed from GCS when replication is finished");
       return false;
     }
   }

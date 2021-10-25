@@ -86,4 +86,8 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
     return gcsCsvFileLocation;
   }
 
+  public CSVPrinter getCsvPrinter() {
+    return csvPrinter;
+  }
+
 }
