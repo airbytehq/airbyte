@@ -27,35 +27,35 @@ def fake_properties_list():
     return [f"property_number_{i}" for i in range(NUMBER_OF_PROPERTIES)]
 
 
-# def test_client_backoff_on_limit_reached(requests_mock, some_credentials):
-#     """Error once, check that we retry and not fail"""
-#     responses = [
-#         {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
-#         {"json": [], "status_code": 200},
-#     ]
-#
-#     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-#     client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
-#
-#     alive, error = client.health_check()
-#
-#     assert alive
-#     assert not error
+def test_client_backoff_on_limit_reached(requests_mock, some_credentials):
+    """Error once, check that we retry and not fail"""
+    responses = [
+        {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
+        {"json": [], "status_code": 200},
+    ]
+
+    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
+    client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
+
+    alive, error = client.health_check()
+
+    assert alive
+    assert not error
 
 
-# def test_client_backoff_on_server_error(requests_mock, some_credentials):
-#     """Error once, check that we retry and not fail"""
-#     responses = [
-#         {"json": {"error": "something bad"}, "status_code": 500},
-#         {"json": [], "status_code": 200},
-#     ]
-#     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-#     client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
-#
-#     alive, error = client.health_check()
-#
-#     assert alive
-#     assert not error
+def test_client_backoff_on_server_error(requests_mock, some_credentials):
+    """Error once, check that we retry and not fail"""
+    responses = [
+        {"json": {"error": "something bad"}, "status_code": 500},
+        {"json": [], "status_code": 200},
+    ]
+    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
+    client = Client(start_date="2021-02-01T00:00:00Z", credentials=some_credentials)
+
+    alive, error = client.health_check()
+
+    assert alive
+    assert not error
 
 
 def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions):
