@@ -20,6 +20,7 @@
     "@rest-hooks/legacy": "^2.0.5",
     "@sentry/react": "^6.11.0",
     "@sentry/tracing": "^6.11.0",
+    "cron-validate": "1.4.3",
     "dayjs": "^1.8.35",
     "firebase": "^9.0.1",
     "flat": "^5.0.2",

@@ -20,8 +20,6 @@ import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
-import io.airbyte.api.model.ConnectionSchedule;
-import io.airbyte.api.model.ConnectionSchedule.TimeUnitEnum;
 import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
@@ -291,7 +289,7 @@ class WebBackendConnectionsHandlerTest {
     final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
     catalog.getStreams().get(0).getStream().setName("azkaban_users");
 
-    final ConnectionSchedule schedule = new ConnectionSchedule().units(1L).timeUnit(TimeUnitEnum.MINUTES);
+    final String schedule = "*/1 * * * *";
 
     final UUID newSourceId = UUID.randomUUID();
     final UUID newDestinationId = UUID.randomUUID();
@@ -335,7 +333,7 @@ class WebBackendConnectionsHandlerTest {
     final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
     catalog.getStreams().get(0).getStream().setName("azkaban_users");
 
-    final ConnectionSchedule schedule = new ConnectionSchedule().units(1L).timeUnit(TimeUnitEnum.MINUTES);
+    final String schedule = "*/1 * * * *";
 
     final UUID newOperationId = UUID.randomUUID();
     final WebBackendConnectionUpdate input = new WebBackendConnectionUpdate()

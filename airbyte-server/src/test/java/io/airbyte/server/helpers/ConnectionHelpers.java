@@ -11,15 +11,11 @@ import io.airbyte.api.model.AirbyteStream;
 import io.airbyte.api.model.AirbyteStreamAndConfiguration;
 import io.airbyte.api.model.AirbyteStreamConfiguration;
 import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionSchedule;
-import io.airbyte.api.model.ConnectionSchedule.TimeUnitEnum;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.commons.text.Names;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
-import io.airbyte.config.Schedule;
-import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.StandardSync;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -37,8 +33,7 @@ public class ConnectionHelpers {
 
   private static final String STREAM_NAME = "users-data";
   private static final String FIELD_NAME = "id";
-  private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
-  private static final long BASIC_SCHEDULE_UNITS = 1L;
+  private static final String BASIC_SCHEDULE = "0 0 */1 * *";
 
   public static StandardSync generateSyncWithSourceId(final UUID sourceId) {
     final UUID connectionId = UUID.randomUUID();
@@ -76,16 +71,12 @@ public class ConnectionHelpers {
         .withManual(true);
   }
 
-  public static ConnectionSchedule generateBasicConnectionSchedule() {
-    return new ConnectionSchedule()
-        .timeUnit(ConnectionSchedule.TimeUnitEnum.fromValue(BASIC_SCHEDULE_TIME_UNIT))
-        .units(BASIC_SCHEDULE_UNITS);
+  public static String generateBasicConnectionSchedule() {
+    return BASIC_SCHEDULE;
   }
 
-  public static Schedule generateBasicSchedule() {
-    return new Schedule()
-        .withTimeUnit(TimeUnit.fromValue(BASIC_SCHEDULE_TIME_UNIT))
-        .withUnits(BASIC_SCHEDULE_UNITS);
+  public static String generateBasicSchedule() {
+    return BASIC_SCHEDULE;
   }
 
   public static ConnectionRead generateExpectedConnectionRead(final UUID connectionId,
@@ -122,9 +113,7 @@ public class ConnectionHelpers {
     if (standardSync.getSchedule() == null) {
       connectionRead.schedule(null);
     } else {
-      connectionRead.schedule(new ConnectionSchedule()
-          .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
-          .units(standardSync.getSchedule().getUnits()));
+      connectionRead.schedule(standardSync.getSchedule());
     }
 
     return connectionRead;
@@ -149,9 +138,7 @@ public class ConnectionHelpers {
       connectionRead.status(io.airbyte.api.model.ConnectionStatus.fromValue(standardSync.getStatus().value()));
     }
     if (standardSync.getSchedule() != null) {
-      connectionRead.schedule(new io.airbyte.api.model.ConnectionSchedule()
-          .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
-          .units(standardSync.getSchedule().getUnits()));
+      connectionRead.schedule(standardSync.getSchedule());
     }
     if (standardSync.getCatalog() != null) {
       connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));

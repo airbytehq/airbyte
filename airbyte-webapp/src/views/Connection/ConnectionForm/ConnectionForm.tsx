@@ -28,7 +28,7 @@ import CreateControls from "./components/CreateControls";
 import Connector from "./components/Connector";
 import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
-import { Connection, ScheduleProperties } from "core/resources/Connection";
+import { Connection } from "core/resources/Connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
 const FormContainer = styled(Form)`
@@ -182,7 +182,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               <Connector name={destination.name} icon={destinationIcon} />
             </ConnectorLabel>
             <Field name="schedule">
-              {({ field, meta }: FieldProps<ScheduleProperties>) => (
+              {({ field, meta }: FieldProps<string>) => (
                 <ConnectorLabel
                   error={!!meta.error && meta.touched}
                   label={formatMessage({

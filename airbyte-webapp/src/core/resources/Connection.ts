@@ -16,11 +16,10 @@ import BaseResource from "./BaseResource";
 import {
   ConnectionNamespaceDefinition,
   Connection,
-  ScheduleProperties,
   Operation,
 } from "core/domain/connection";
 
-export type { Connection, ScheduleProperties };
+export type { Connection };
 
 export default class ConnectionResource
   extends BaseResource
@@ -35,7 +34,7 @@ export default class ConnectionResource
   readonly namespaceFormat: string = "";
   readonly namespaceDefinition: ConnectionNamespaceDefinition =
     ConnectionNamespaceDefinition.Source;
-  readonly schedule: ScheduleProperties | null = null;
+  readonly schedule: string | null = null;
   readonly operations: Operation[] = [];
   readonly source: Source = {} as Source;
   readonly destination: Destination = {} as Destination;

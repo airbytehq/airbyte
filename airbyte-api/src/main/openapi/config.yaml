@@ -2436,7 +2436,7 @@ components:
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
+          type: string
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -2473,7 +2473,7 @@ components:
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
+          type: string
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -2508,7 +2508,7 @@ components:
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
+          type: string
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -2539,7 +2539,7 @@ components:
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
+          type: string
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -2585,7 +2585,7 @@ components:
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
+          type: string
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
@@ -2612,7 +2612,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
+          type: string
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         source:
@@ -2641,7 +2641,7 @@ components:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
+          type: string
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         source:
@@ -2664,24 +2664,6 @@ components:
         - active
         - inactive
         - deprecated
-    ConnectionSchedule:
-      description: if null, then no schedule is set.
-      type: object
-      required:
-        - units
-        - timeUnit
-      properties:
-        units:
-          type: integer
-          format: int64
-        timeUnit:
-          type: string
-          enum:
-            - minutes
-            - hours
-            - days
-            - weeks
-            - months
     NamespaceDefinitionType:
       type: string
       description: Method used for computing final namespace in destination
@@ -3356,7 +3338,7 @@ components:
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
-          $ref: "#/components/schemas/ConnectionSchedule"
+          type: string
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         operationIds:

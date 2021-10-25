@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation "com.cronutils:cron-utils:9.1.5"
+
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-config:models')

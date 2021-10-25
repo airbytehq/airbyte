@@ -12,11 +12,10 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.helpers.ScheduleHelpers;
+import io.airbyte.scheduler.ScheduleHelper;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.util.Strings;
 
 public class TrackingMetadata {
@@ -29,7 +28,7 @@ public class TrackingMetadata {
     if (standardSync.getManual()) {
       frequencyString = "manual";
     } else {
-      final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
+      final long intervalInMinutes = ScheduleHelper.intervalInMinutes(standardSync.getSchedule());
       frequencyString = intervalInMinutes + " min";
     }
     metadata.put("frequency", frequencyString);

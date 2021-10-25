@@ -1,5 +1,3 @@
-import { ScheduleProperties } from "core/resources/Connection";
-
 type EntityTableDataItem = {
   entityId: string;
   entityName: string;
@@ -23,7 +21,7 @@ type ITableDataItem = {
   isSyncing?: boolean;
   status?: string;
   lastSync?: number | null;
-  schedule: ScheduleProperties | null;
+  schedule: string | null;
   lastSyncStatus: string | null;
   connectorIcon?: string;
   entityIcon?: string;

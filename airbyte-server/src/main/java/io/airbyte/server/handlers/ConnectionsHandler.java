@@ -14,7 +14,6 @@ import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
-import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
@@ -28,12 +27,10 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
-import io.airbyte.config.Schedule;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -50,7 +47,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,12 +138,9 @@ public class ConnectionsHandler {
     }
 
     if (connectionCreate.getSchedule() != null) {
-      final Schedule schedule = new Schedule()
-          .withTimeUnit(toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()))
-          .withUnits(connectionCreate.getSchedule().getUnits());
       standardSync
           .withManual(false)
-          .withSchedule(schedule);
+          .withSchedule(connectionCreate.getSchedule());
     } else {
       standardSync.withManual(true);
     }
@@ -187,7 +180,8 @@ public class ConnectionsHandler {
     if (standardSync.getManual()) {
       frequencyString = "manual";
     } else {
-      final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
+      // TODO(pras): fix
+      final long intervalInMinutes = 1;
       frequencyString = intervalInMinutes + " min";
     }
     metadata.put("frequency", frequencyString);
@@ -222,10 +216,7 @@ public class ConnectionsHandler {
 
     // update sync schedule
     if (connectionUpdate.getSchedule() != null) {
-      final Schedule newSchedule = new Schedule()
-          .withTimeUnit(toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()))
-          .withUnits(connectionUpdate.getSchedule().getUnits());
-      newConnection.withManual(false).withSchedule(newSchedule);
+      newConnection.withManual(false).withSchedule(connectionUpdate.getSchedule());
     } else {
       newConnection.withManual(true).withSchedule(null);
     }
@@ -354,12 +345,10 @@ public class ConnectionsHandler {
   }
 
   private ConnectionRead buildConnectionRead(final StandardSync standardSync) {
-    ConnectionSchedule apiSchedule = null;
+    String apiSchedule = null;
 
     if (!standardSync.getManual()) {
-      apiSchedule = new ConnectionSchedule()
-          .timeUnit(toApiTimeUnit(standardSync.getSchedule().getTimeUnit()))
-          .units(standardSync.getSchedule().getUnits());
+      apiSchedule = standardSync.getSchedule();
     }
 
     final ConnectionRead connectionRead = new ConnectionRead()
@@ -397,14 +386,6 @@ public class ConnectionsHandler {
 
   private ConnectionStatus toApiStatus(final StandardSync.Status status) {
     return Enums.convertTo(status, ConnectionStatus.class);
-  }
-
-  private Schedule.TimeUnit toPersistenceTimeUnit(final ConnectionSchedule.TimeUnitEnum apiTimeUnit) {
-    return Enums.convertTo(apiTimeUnit, Schedule.TimeUnit.class);
-  }
-
-  private ConnectionSchedule.TimeUnitEnum toApiTimeUnit(final Schedule.TimeUnit apiTimeUnit) {
-    return Enums.convertTo(apiTimeUnit, ConnectionSchedule.TimeUnitEnum.class);
   }
 
 }

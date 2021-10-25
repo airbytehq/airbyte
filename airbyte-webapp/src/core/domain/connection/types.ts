@@ -16,11 +16,6 @@ export enum ConnectionNamespaceDefinition {
   CustomFormat = "customformat",
 }
 
-export type ScheduleProperties = {
-  units: number;
-  timeUnit: string;
-};
-
 export interface Connection {
   connectionId: string;
   name: string;
@@ -28,7 +23,7 @@ export interface Connection {
   sourceId: string;
   destinationId: string;
   status: string;
-  schedule: ScheduleProperties | null;
+  schedule: string | null;
   syncCatalog: SyncSchema;
   latestSyncJobCreatedAt?: number | null;
   namespaceDefinition: ConnectionNamespaceDefinition;

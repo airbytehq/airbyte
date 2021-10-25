@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardSync;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
@@ -27,9 +26,7 @@ class ScheduleJobPredicateTest {
 
   private static final StandardSync STANDARD_SYNC = new StandardSync()
       .withManual(false)
-      .withSchedule(new Schedule()
-          .withTimeUnit(Schedule.TimeUnit.DAYS)
-          .withUnits(1L));
+      .withSchedule("0 0 */1 * *");
 
   private ScheduleJobPredicate scheduleJobPredicate;
   private Instant now;

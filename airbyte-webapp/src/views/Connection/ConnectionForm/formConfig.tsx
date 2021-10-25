@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as yup from "yup";
+import cron from "cron-validate";
 
 import {
   AirbyteStreamConfiguration,
@@ -19,14 +20,14 @@ import {
 } from "core/domain/connection/operation";
 import { DropDownRow } from "components";
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { Connection, ScheduleProperties } from "core/resources/Connection";
+import { Connection } from "core/resources/Connection";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import useWorkspace from "hooks/services/useWorkspace";
 import { DestinationDefinitionSpecification } from "core/domain/connector";
 
 type FormikConnectionFormValues = {
-  schedule?: ScheduleProperties | null;
+  schedule?: string | null;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition: ConnectionNamespaceDefinition;
@@ -63,12 +64,15 @@ function useDefaultTransformation(): Transformation {
 const connectionValidationSchema = yup
   .object({
     schedule: yup
-      .object({
-        units: yup.number().required("form.empty.error"),
-        timeUnit: yup.string().required("form.empty.error"),
+      .string()
+      .test({
+        name: "connectionSchema.config.schedule.validator",
+        message: "cron-schedule is wrong",
+        test: function (value: string | undefined) {
+          return cron(value || "")?.isValid();
+        },
       })
-      .nullable()
-      .defined("form.empty.error"),
+      .required("form.empty.error"),
     namespaceDefinition: yup
       .string()
       .oneOf([

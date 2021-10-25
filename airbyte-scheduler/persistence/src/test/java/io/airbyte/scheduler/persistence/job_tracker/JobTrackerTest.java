@@ -22,8 +22,6 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
-import io.airbyte.config.Schedule;
-import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -228,7 +226,7 @@ class JobTrackerTest {
     // test when frequency is scheduled.
     when(configRepository.getStandardSync(CONNECTION_ID))
         .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(false)
-            .withSchedule(new Schedule().withUnits(1L).withTimeUnit(TimeUnit.MINUTES)));
+            .withSchedule("*/1 * * * *"));
     final Map<String, Object> scheduledMetadata = MoreMaps.merge(
         metadata,
         ImmutableMap.of("frequency", "1 min"),

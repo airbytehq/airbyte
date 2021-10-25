@@ -10,9 +10,7 @@ import {
   ConnectionService,
 } from "core/domain/connection";
 
-import ConnectionResource, {
-  ScheduleProperties,
-} from "core/resources/Connection";
+import ConnectionResource from "core/resources/Connection";
 import { SyncSchema } from "core/domain/catalog";
 import { SourceDefinition } from "core/resources/SourceDefinition";
 import { Source } from "core/resources/Source";
@@ -28,7 +26,7 @@ import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { equal } from "utils/objects";
 
 export type ValuesProps = {
-  schedule: ScheduleProperties | null;
+  schedule: string | null;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition: ConnectionNamespaceDefinition;
@@ -53,7 +51,7 @@ type UpdateConnection = {
   namespaceFormat?: string;
   status: string;
   prefix: string;
-  schedule?: ScheduleProperties | null;
+  schedule?: string | null;
   operations?: Operation[];
   withRefreshedCatalog?: boolean;
 };
@@ -63,7 +61,7 @@ type UpdateStateConnection = {
   sourceName: string;
   prefix: string;
   connectionConfiguration: ConnectionConfiguration;
-  schedule: ScheduleProperties | null;
+  schedule: string | null;
 };
 
 function useConnectionService(): ConnectionService {

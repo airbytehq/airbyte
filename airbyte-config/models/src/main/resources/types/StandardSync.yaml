@@ -50,22 +50,7 @@ properties:
   # codegen does not handle the union type properly.
   # When schedule is defined, manual should be false.
   schedule:
-    type: object
-    required:
-      - timeUnit
-      - units
-    additionalProperties: false
-    properties:
-      timeUnit:
-        type: string
-        enum:
-          - minutes
-          - hours
-          - days
-          - weeks
-          - months
-      units:
-        type: integer
+    type: string
   # When manual is true, schedule should be null, and will be ignored.
   manual:
     type: boolean

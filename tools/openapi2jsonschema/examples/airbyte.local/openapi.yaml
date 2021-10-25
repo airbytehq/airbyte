@@ -1701,22 +1701,7 @@ components:
       type: object
     ConnectionSchedule:
       description: if null, then no schedule is set.
-      properties:
-        timeUnit:
-          enum:
-            - minutes
-            - hours
-            - days
-            - weeks
-            - months
-          type: string
-        units:
-          format: int64
-          type: integer
-      required:
-        - units
-        - timeUnit
-      type: object
+      type: string
     ConnectionState:
       properties:
         connectionId:
