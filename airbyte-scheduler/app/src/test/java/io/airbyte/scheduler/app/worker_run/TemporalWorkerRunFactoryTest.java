@@ -43,7 +43,7 @@ class TemporalWorkerRunFactoryTest {
 
   @BeforeEach
   void setup() throws IOException {
-    Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_worker_run_test");
+    final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_worker_run_test");
     jobRoot = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID));
     temporalClient = mock(TemporalClient.class);
     workerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot, "unknown airbyte version");

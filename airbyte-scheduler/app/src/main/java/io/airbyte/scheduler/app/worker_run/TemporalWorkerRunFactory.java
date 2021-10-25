@@ -31,18 +31,18 @@ public class TemporalWorkerRunFactory {
   private final Path workspaceRoot;
   private final String airbyteVersionOrWarnings;
 
-  public TemporalWorkerRunFactory(TemporalClient temporalClient, Path workspaceRoot, String airbyteVersionOrWarnings) {
+  public TemporalWorkerRunFactory(final TemporalClient temporalClient, final Path workspaceRoot, final String airbyteVersionOrWarnings) {
     this.temporalClient = temporalClient;
     this.workspaceRoot = workspaceRoot;
     this.airbyteVersionOrWarnings = airbyteVersionOrWarnings;
   }
 
-  public WorkerRun create(Job job) {
+  public WorkerRun create(final Job job) {
     final int attemptId = job.getAttemptsCount();
     return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId), airbyteVersionOrWarnings);
   }
 
-  public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(Job job, int attemptId) {
+  public CheckedSupplier<OutputAndStatus<JobOutput>, Exception> createSupplier(final Job job, final int attemptId) {
     final TemporalJobType temporalJobType = toTemporalJobType(job.getConfigType());
     return switch (job.getConfigType()) {
       case SYNC -> () -> {
@@ -70,7 +70,7 @@ public class TemporalWorkerRunFactory {
     };
   }
 
-  private static TemporalJobType toTemporalJobType(ConfigType jobType) {
+  private static TemporalJobType toTemporalJobType(final ConfigType jobType) {
     return switch (jobType) {
       case GET_SPEC -> TemporalJobType.GET_SPEC;
       case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> TemporalJobType.CHECK_CONNECTION;
@@ -79,7 +79,7 @@ public class TemporalWorkerRunFactory {
     };
   }
 
-  private OutputAndStatus<JobOutput> toOutputAndStatus(TemporalResponse<StandardSyncOutput> response) {
+  private OutputAndStatus<JobOutput> toOutputAndStatus(final TemporalResponse<StandardSyncOutput> response) {
     final JobStatus status;
     if (!response.isSuccess()) {
       status = JobStatus.FAILED;

@@ -22,7 +22,7 @@ public class GcsLogsTest {
 
   @Test
   public void testMissingConfiguration() {
-    var configs = mock(LogConfigs.class);
+    final var configs = mock(LogConfigs.class);
     when(configs.getGoogleApplicationCredentials()).thenReturn("");
     when(configs.getGcpStorageBucket()).thenReturn("");
 
@@ -36,13 +36,13 @@ public class GcsLogsTest {
    */
   @Test
   public void testRetrieveAllLogs() throws IOException {
-    var configs = new LogConfigDelegator(new EnvConfigs());
-    var data = GcsLogs.getFile(configs, "paginate", 6);
+    final var configs = new LogConfigDelegator(new EnvConfigs());
+    final var data = GcsLogs.getFile(configs, "paginate", 6);
 
-    var retrieved = new ArrayList<String>();
+    final var retrieved = new ArrayList<String>();
     Files.lines(data.toPath()).forEach(retrieved::add);
 
-    var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
+    final var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
 
     assertEquals(expected, retrieved);
   }
@@ -56,10 +56,10 @@ public class GcsLogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    var configs = new LogConfigDelegator(new EnvConfigs());
-    var data = new GcsLogs().tailCloudLog(configs, "tail", 6);
+    final var configs = new LogConfigDelegator(new EnvConfigs());
+    final var data = new GcsLogs().tailCloudLog(configs, "tail", 6);
 
-    var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
+    final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
     assertEquals(data, expected);
   }
 

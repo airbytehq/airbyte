@@ -18,7 +18,7 @@ public class KubePodProcessInfo implements Info {
 
   private final String podName;
 
-  public KubePodProcessInfo(String podname) {
+  public KubePodProcessInfo(final String podname) {
     this.podName = podname;
   }
 

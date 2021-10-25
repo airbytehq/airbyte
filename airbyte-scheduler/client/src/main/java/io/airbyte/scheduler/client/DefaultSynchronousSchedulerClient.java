@@ -32,7 +32,9 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   private final JobTracker jobTracker;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  public DefaultSynchronousSchedulerClient(TemporalClient temporalClient, JobTracker jobTracker, OAuthConfigSupplier oAuthConfigSupplier) {
+  public DefaultSynchronousSchedulerClient(final TemporalClient temporalClient,
+                                           final JobTracker jobTracker,
+                                           final OAuthConfigSupplier oAuthConfigSupplier) {
     this.temporalClient = temporalClient;
     this.jobTracker = jobTracker;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
@@ -104,16 +106,16 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @VisibleForTesting
-  <T> SynchronousResponse<T> execute(ConfigType configType,
-                                     @Nullable UUID connectorDefinitionId,
-                                     Function<UUID, TemporalResponse<T>> executor,
-                                     UUID workspaceId) {
+  <T> SynchronousResponse<T> execute(final ConfigType configType,
+                                     @Nullable final UUID connectorDefinitionId,
+                                     final Function<UUID, TemporalResponse<T>> executor,
+                                     final UUID workspaceId) {
     final long createdAt = Instant.now().toEpochMilli();
     final UUID jobId = UUID.randomUUID();
     try {
       track(jobId, configType, connectorDefinitionId, workspaceId, JobState.STARTED, null);
       final TemporalResponse<T> operationOutput = executor.apply(jobId);
-      JobState outputState = operationOutput.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
+      final JobState outputState = operationOutput.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
       track(jobId, configType, connectorDefinitionId, workspaceId, outputState, operationOutput.getOutput().orElse(null));
       final long endedAt = Instant.now().toEpochMilli();
 
@@ -124,7 +126,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
           connectorDefinitionId,
           createdAt,
           endedAt);
-    } catch (RuntimeException e) {
+    } catch (final RuntimeException e) {
       track(jobId, configType, connectorDefinitionId, workspaceId, JobState.FAILED, null);
       throw e;
     }
@@ -133,7 +135,12 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   /**
    * @param connectorDefinitionId either source or destination definition id
    */
-  private <T> void track(UUID jobId, ConfigType configType, UUID connectorDefinitionId, UUID workspaceId, JobState jobState, T value) {
+  private <T> void track(final UUID jobId,
+                         final ConfigType configType,
+                         final UUID connectorDefinitionId,
+                         final UUID workspaceId,
+                         final JobState jobState,
+                         final T value) {
     switch (configType) {
       case CHECK_CONNECTION_SOURCE -> jobTracker.trackCheckConnectionSource(
           jobId,

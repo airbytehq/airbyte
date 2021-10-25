@@ -84,7 +84,7 @@ class DestinationHandlerTest {
     imageName =
         DockerUtils.getTaggedImageName(standardDestinationDefinition.getDockerRepository(), standardDestinationDefinition.getDockerImageTag());
 
-    DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody().destinationDefinitionId(
+    final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody().destinationDefinitionId(
         standardDestinationDefinition.getDestinationDefinitionId());
 
     connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
@@ -214,7 +214,7 @@ class DestinationHandlerTest {
 
   @Test
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
-    DestinationRead expectedDestinationRead = new DestinationRead()
+    final DestinationRead expectedDestinationRead = new DestinationRead()
         .name(destinationConnection.getName())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .workspaceId(destinationConnection.getWorkspaceId())
@@ -252,7 +252,7 @@ class DestinationHandlerTest {
 
   @Test
   void testListDestinationForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    DestinationRead expectedDestinationRead = new DestinationRead()
+    final DestinationRead expectedDestinationRead = new DestinationRead()
         .name(destinationConnection.getName())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .workspaceId(destinationConnection.getWorkspaceId())
@@ -278,7 +278,7 @@ class DestinationHandlerTest {
 
   @Test
   void testSearchDestinations() throws JsonValidationException, ConfigNotFoundException, IOException {
-    DestinationRead expectedDestinationRead = new DestinationRead()
+    final DestinationRead expectedDestinationRead = new DestinationRead()
         .name(destinationConnection.getName())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .workspaceId(destinationConnection.getWorkspaceId())

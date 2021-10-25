@@ -26,14 +26,14 @@ public class AzureBlobStorageJsonlDestinationAcceptanceTest extends
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws IOException {
 
-    String allSyncedObjects = getAllSyncedObjects(streamName);
-    List<JsonNode> jsonRecords = new LinkedList<>();
+    final String allSyncedObjects = getAllSyncedObjects(streamName);
+    final List<JsonNode> jsonRecords = new LinkedList<>();
 
     allSyncedObjects.lines().forEach(line -> {
       jsonRecords.add(Jsons.deserialize(line).get(JavaBaseConstants.COLUMN_NAME_DATA));

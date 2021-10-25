@@ -13,7 +13,7 @@ public class MoreBooleans {
    * @param bool boxed
    * @return unboxed
    */
-  public static boolean isTruthy(Boolean bool) {
+  public static boolean isTruthy(final Boolean bool) {
     return bool != null && bool;
   }
 

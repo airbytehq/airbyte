@@ -49,7 +49,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     return database;
   }
 
-  private static Database getDatabase(JsonNode config) {
+  private static Database getDatabase(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -76,7 +76,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     container.stop();
     container.close();
   }
