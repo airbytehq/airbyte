@@ -65,8 +65,8 @@ public class MigrationDevHelper {
 
     final String template = MoreResources.readResource("migration_template.txt");
     final String newMigration = template.replace("<db-name>", dbIdentifier)
-        .replace("<version-id>", versionId)
-        .replace("<description>", description)
+        .replaceAll("<version-id>", versionId)
+        .replaceAll("<description>", description)
         .strip();
 
     final String fileName = String.format("V%s__%s.java", versionId, description);
