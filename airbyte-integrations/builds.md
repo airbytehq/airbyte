@@ -4,6 +4,7 @@
 
 |name |status |
 | :--- | :--- |
+| 3PL Central  | [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-tplcentral%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-tplcentral) |
 | Amazon Seller Partner  | [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-amazon-seller-partner%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-amazon-seller-partner) |
 | Amplitude   | [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-amplitude%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-amplitude) |
 | Apify Dataset   | [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-apify-dataset%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-apify-dataset) |
