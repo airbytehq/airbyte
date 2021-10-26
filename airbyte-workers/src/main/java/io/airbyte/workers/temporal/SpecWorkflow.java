@@ -73,12 +73,13 @@ public interface SpecWorkflow {
     public ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig) {
       final Supplier<JobGetSpecConfig> inputSupplier = () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
 
-      final TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification> temporalAttemptExecution = new TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification>(
-          workspaceRoot, workerEnvironment, logConfigs,
-          jobRunConfig,
-          getWorkerFactory(launcherConfig),
-          inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler());
+      final TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification> temporalAttemptExecution =
+          new TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification>(
+              workspaceRoot, workerEnvironment, logConfigs,
+              jobRunConfig,
+              getWorkerFactory(launcherConfig),
+              inputSupplier,
+              new CancellationHandler.TemporalCancellationHandler());
 
       return temporalAttemptExecution.get();
     }

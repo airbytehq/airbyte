@@ -72,8 +72,11 @@ public interface CheckConnectionWorkflow {
     private final WorkerEnvironment workerEnvironment;
     private final LogConfigs logConfigs;
 
-    public CheckConnectionActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot,
-        WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
+    public CheckConnectionActivityImpl(ProcessFactory processFactory,
+                                       SecretsHydrator secretsHydrator,
+                                       Path workspaceRoot,
+                                       WorkerEnvironment workerEnvironment,
+                                       LogConfigs logConfigs) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;

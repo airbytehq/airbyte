@@ -8,7 +8,6 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.EnvConfigs;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -20,10 +19,12 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /**
- * Airbyte's logging layer entrypoint. Handles logs written to local disk as well as logs written to cloud storages.
+ * Airbyte's logging layer entrypoint. Handles logs written to local disk as well as logs written to
+ * cloud storages.
  * <p>
- * Although the configuration is passed in as {@link Configs}, it is transformed to {@link LogConfigs} within this class. Beyond this class, all
- * configuration consumption is via the {@link LogConfigs} interface via the {@link CloudLogs} interface.
+ * Although the configuration is passed in as {@link Configs}, it is transformed to
+ * {@link LogConfigs} within this class. Beyond this class, all configuration consumption is via the
+ * {@link LogConfigs} interface via the {@link CloudLogs} interface.
  */
 public class LogClientSingleton {
 

@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.StandardDiscoverCatalogInput;
@@ -29,15 +28,14 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.function.Supplier;
 
 @WorkflowInterface
 public interface DiscoverCatalogWorkflow {
 
   @WorkflowMethod
   AirbyteCatalog run(JobRunConfig jobRunConfig,
-      IntegrationLauncherConfig launcherConfig,
-      StandardDiscoverCatalogInput config);
+                     IntegrationLauncherConfig launcherConfig,
+                     StandardDiscoverCatalogInput config);
 
   class WorkflowImpl implements DiscoverCatalogWorkflow {
 
@@ -49,8 +47,8 @@ public interface DiscoverCatalogWorkflow {
 
     @Override
     public AirbyteCatalog run(JobRunConfig jobRunConfig,
-        IntegrationLauncherConfig launcherConfig,
-        StandardDiscoverCatalogInput config) {
+                              IntegrationLauncherConfig launcherConfig,
+                              StandardDiscoverCatalogInput config) {
       return activity.run(jobRunConfig, launcherConfig, config);
     }
 
@@ -61,8 +59,8 @@ public interface DiscoverCatalogWorkflow {
 
     @ActivityMethod
     AirbyteCatalog run(JobRunConfig jobRunConfig,
-        IntegrationLauncherConfig launcherConfig,
-        StandardDiscoverCatalogInput config);
+                       IntegrationLauncherConfig launcherConfig,
+                       StandardDiscoverCatalogInput config);
 
   }
 
@@ -74,7 +72,11 @@ public interface DiscoverCatalogWorkflow {
     private final WorkerEnvironment workerEnvironment;
     private final LogConfigs logConfigs;
 
-    public DiscoverCatalogActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot, WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
+    public DiscoverCatalogActivityImpl(ProcessFactory processFactory,
+                                       SecretsHydrator secretsHydrator,
+                                       Path workspaceRoot,
+                                       WorkerEnvironment workerEnvironment,
+                                       LogConfigs logConfigs) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -83,8 +85,8 @@ public interface DiscoverCatalogWorkflow {
     }
 
     public AirbyteCatalog run(JobRunConfig jobRunConfig,
-        IntegrationLauncherConfig launcherConfig,
-        StandardDiscoverCatalogInput config) {
+                              IntegrationLauncherConfig launcherConfig,
+                              StandardDiscoverCatalogInput config) {
 
       final TemporalAttemptExecution<StandardDiscoverCatalogInput, AirbyteCatalog> temporalAttemptExecution =
           new TemporalAttemptExecution<>(
@@ -98,7 +100,7 @@ public interface DiscoverCatalogWorkflow {
     }
 
     private CheckedSupplier<Worker<StandardDiscoverCatalogInput, AirbyteCatalog>, Exception> getWorkerFactory(
-        IntegrationLauncherConfig launcherConfig) {
+                                                                                                              IntegrationLauncherConfig launcherConfig) {
       return () -> {
         final IntegrationLauncher integrationLauncher =
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),

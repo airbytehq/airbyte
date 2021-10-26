@@ -57,20 +57,13 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private final String databasePassword;
   private final String databaseUrl;
 
-<<<<<<< HEAD
-
-  public TemporalAttemptExecution(Path workspaceRoot, WorkerEnvironment workerEnvironment, LogConfigs logConfigs,
-                                  JobRunConfig jobRunConfig,
-                                  CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
-                                  Supplier<INPUT> inputSupplier,
-                                  CancellationHandler cancellationHandler) {
-=======
   public TemporalAttemptExecution(final Path workspaceRoot,
+                                  final WorkerEnvironment workerEnvironment,
+                                  final LogConfigs logConfigs,
                                   final JobRunConfig jobRunConfig,
                                   final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                                   final Supplier<INPUT> inputSupplier,
                                   final CancellationHandler cancellationHandler) {
->>>>>>> master
     this(
         workspaceRoot, workerEnvironment, logConfigs,
         jobRunConfig,
@@ -82,24 +75,15 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   }
 
   @VisibleForTesting
-<<<<<<< HEAD
-  TemporalAttemptExecution(Path workspaceRoot, WorkerEnvironment workerEnvironment, LogConfigs logConfigs,
-                           JobRunConfig jobRunConfig,
-                           CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
-                           Supplier<INPUT> inputSupplier,
-                           Consumer<Path> mdcSetter,
-                           CancellationHandler cancellationHandler,
-                           Supplier<String> workflowIdProvider) {
-=======
   TemporalAttemptExecution(final Path workspaceRoot,
+                           final WorkerEnvironment workerEnvironment,
+                           final LogConfigs logConfigs,
                            final JobRunConfig jobRunConfig,
                            final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                            final Supplier<INPUT> inputSupplier,
                            final Consumer<Path> mdcSetter,
                            final CancellationHandler cancellationHandler,
-                           final Supplier<String> workflowIdProvider,
-                           final Configs configs) {
->>>>>>> master
+                           final Supplier<String> workflowIdProvider) {
     this.jobRunConfig = jobRunConfig;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
@@ -111,7 +95,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     this.cancellationHandler = cancellationHandler;
     this.workflowIdProvider = workflowIdProvider;
 
-    Configs configs = new EnvConfigs(); // TODO Jenny come back to this
+    final Configs configs = new EnvConfigs(); // TODO Jenny come back to this
     this.databaseUser = configs.getDatabaseUser();
     this.databasePassword = configs.getDatabasePassword();
     this.databaseUrl = configs.getDatabaseUrl();
@@ -151,7 +135,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     }
   }
 
-  private void saveWorkflowIdForCancellation(String databaseUser, String databasePassword, String databaseUrl) throws IOException {
+  private void saveWorkflowIdForCancellation(final String databaseUser, final String databasePassword, final String databaseUrl) throws IOException {
     // If the jobId is not a number, it means the job is a synchronous job. No attempt is created for
     // it, and it cannot be cancelled, so do not save the workflowId. See
     // SynchronousSchedulerClient.java

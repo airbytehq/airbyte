@@ -35,19 +35,22 @@ class LogClientSingletonTest {
   @Test
   void testGetJobLogFileK8s() throws IOException {
     when(configs.getWorkerEnvironment()).thenReturn(WorkerEnvironment.KUBERNETES);
-    assertEquals(Collections.emptyList(), LogClientSingleton.getInstance().getJobLogFile(configs.getWorkerEnvironment(), configs.getLogConfigs(), Path.of("/job/1")));
+    assertEquals(Collections.emptyList(),
+        LogClientSingleton.getInstance().getJobLogFile(configs.getWorkerEnvironment(), configs.getLogConfigs(), Path.of("/job/1")));
     verify(mockLogClient).tailCloudLog(any(), eq("job-logging/job/1"), eq(LogClientSingleton.LOG_TAIL_SIZE));
   }
 
   @Test
   void testGetJobLogFileNullPath() throws IOException {
-    assertEquals(Collections.emptyList(), LogClientSingleton.getInstance().getJobLogFile(configs.getWorkerEnvironment(), configs.getLogConfigs(), null));
+    assertEquals(Collections.emptyList(),
+        LogClientSingleton.getInstance().getJobLogFile(configs.getWorkerEnvironment(), configs.getLogConfigs(), null));
     verifyNoInteractions(mockLogClient);
   }
 
   @Test
   void testGetJobLogFileEmptyPath() throws IOException {
-    assertEquals(Collections.emptyList(), LogClientSingleton.getInstance().getJobLogFile(configs.getWorkerEnvironment(), configs.getLogConfigs(), Path.of("")));
+    assertEquals(Collections.emptyList(),
+        LogClientSingleton.getInstance().getJobLogFile(configs.getWorkerEnvironment(), configs.getLogConfigs(), Path.of("")));
     verifyNoInteractions(mockLogClient);
   }
 

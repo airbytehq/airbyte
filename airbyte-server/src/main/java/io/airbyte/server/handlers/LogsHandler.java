@@ -5,7 +5,6 @@
 package io.airbyte.server.handlers;
 
 import io.airbyte.api.model.LogsRequestBody;
-import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
@@ -18,11 +17,10 @@ import java.nio.file.Path;
  */
 public class LogsHandler {
 
-<<<<<<< HEAD
-  public File getLogs(Path workspaceRoot, WorkerEnvironment workerEnvironment, LogConfigs logConfigs, LogsRequestBody logsRequestBody) {
-=======
-  public File getLogs(final Configs configs, final LogsRequestBody logsRequestBody) {
->>>>>>> master
+  public File getLogs(final Path workspaceRoot,
+                      final WorkerEnvironment workerEnvironment,
+                      final LogConfigs logConfigs,
+                      final LogsRequestBody logsRequestBody) {
     switch (logsRequestBody.getLogType()) {
       case SERVER -> {
         return LogClientSingleton.getInstance().getServerLogFile(workspaceRoot, workerEnvironment, logConfigs);

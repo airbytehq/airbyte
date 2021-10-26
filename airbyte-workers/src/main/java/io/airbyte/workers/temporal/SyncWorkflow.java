@@ -20,12 +20,9 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
-<<<<<<< HEAD
-import io.airbyte.config.helpers.LogConfigs;
-=======
 import io.airbyte.config.State;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigRepository;
->>>>>>> master
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -156,28 +153,22 @@ public interface SyncWorkflow {
     private final WorkerEnvironment workerEnvironment;
     private final LogConfigs logConfigs;
 
-<<<<<<< HEAD
-    public ReplicationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot, WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
+    public ReplicationActivityImpl(
+                                   final ProcessFactory processFactory,
+                                   final SecretsHydrator secretsHydrator,
+                                   final Path workspaceRoot,
+                                   final WorkerEnvironment workerEnvironment,
+                                   final LogConfigs logConfigs) {
       this(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, new AirbyteConfigValidator());
-    }
-
-    @VisibleForTesting
-    ReplicationActivityImpl(ProcessFactory processFactory,
-                            SecretsHydrator secretsHydrator,
-                            Path workspaceRoot,
-                            WorkerEnvironment workerEnvironment, LogConfigs logConfigs,
-                            AirbyteConfigValidator validator) {
-=======
-    public ReplicationActivityImpl(final ProcessFactory processFactory, final SecretsHydrator secretsHydrator, final Path workspaceRoot) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
     ReplicationActivityImpl(final ProcessFactory processFactory,
                             final SecretsHydrator secretsHydrator,
                             final Path workspaceRoot,
+                            final WorkerEnvironment workerEnvironment,
+                            final LogConfigs logConfigs,
                             final AirbyteConfigValidator validator) {
->>>>>>> master
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -296,26 +287,12 @@ public interface SyncWorkflow {
     private final WorkerEnvironment workerEnvironment;
     private final LogConfigs logConfigs;
 
-<<<<<<< HEAD
-    public NormalizationActivityImpl(ProcessFactory processFactory,
-                                     SecretsHydrator secretsHydrator,
-                                     Path workspaceRoot,
-                                     WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs);
-    }
-
-    @VisibleForTesting
-    NormalizationActivityImpl(ProcessFactory processFactory,
-                              SecretsHydrator secretsHydrator,
-                              Path workspaceRoot,
-                              AirbyteConfigValidator validator,
-                              WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
-=======
     public NormalizationActivityImpl(final ProcessFactory processFactory,
                                      final SecretsHydrator secretsHydrator,
                                      final Path workspaceRoot,
-                                     final WorkerEnvironment workerEnvironment) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment);
+                                     final WorkerEnvironment workerEnvironment,
+                                     final LogConfigs logConfigs) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs);
     }
 
     @VisibleForTesting
@@ -323,8 +300,8 @@ public interface SyncWorkflow {
                               final SecretsHydrator secretsHydrator,
                               final Path workspaceRoot,
                               final AirbyteConfigValidator validator,
-                              final WorkerEnvironment workerEnvironment) {
->>>>>>> master
+                              final WorkerEnvironment workerEnvironment,
+                              final LogConfigs logConfigs) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -391,31 +368,21 @@ public interface SyncWorkflow {
     private final WorkerEnvironment workerEnvironment;
     private final LogConfigs logConfigs;
 
-<<<<<<< HEAD
-    public DbtTransformationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot,
-        WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs);
-    }
-
-    @VisibleForTesting
-    DbtTransformationActivityImpl(ProcessFactory processFactory,
-                                  SecretsHydrator secretsHydrator,
-                                  Path workspaceRoot,
-                                  AirbyteConfigValidator validator, WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
-=======
-    public DbtTransformationActivityImpl(
-                                         final ProcessFactory processFactory,
+    public DbtTransformationActivityImpl(final ProcessFactory processFactory,
                                          final SecretsHydrator secretsHydrator,
-                                         final Path workspaceRoot) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
+                                         final Path workspaceRoot,
+                                         final WorkerEnvironment workerEnvironment,
+                                         final LogConfigs logConfigs) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs);
     }
 
     @VisibleForTesting
     DbtTransformationActivityImpl(final ProcessFactory processFactory,
                                   final SecretsHydrator secretsHydrator,
                                   final Path workspaceRoot,
-                                  final AirbyteConfigValidator validator) {
->>>>>>> master
+                                  final AirbyteConfigValidator validator,
+                                  final WorkerEnvironment workerEnvironment,
+                                  final LogConfigs logConfigs) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;

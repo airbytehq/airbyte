@@ -11,9 +11,7 @@ import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogConfigs;
@@ -31,12 +29,8 @@ public class JobHistoryHandler {
   private final JobPersistence jobPersistence;
   private final JobConverter jobConverter;
 
-<<<<<<< HEAD
-  public JobHistoryHandler(JobPersistence jobPersistence, WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
+  public JobHistoryHandler(final JobPersistence jobPersistence, final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs) {
     jobConverter = new JobConverter(workerEnvironment, logConfigs);
-=======
-  public JobHistoryHandler(final JobPersistence jobPersistence) {
->>>>>>> master
     this.jobPersistence = jobPersistence;
   }
 

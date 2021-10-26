@@ -124,7 +124,7 @@ public class SchedulerHandler {
     this.jobNotifier = jobNotifier;
     this.temporalService = temporalService;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
-    Configs configs = new EnvConfigs();
+    final Configs configs = new EnvConfigs();
     this.jobConverter = new JobConverter(configs.getWorkerEnvironment(), configs.getLogConfigs());
   }
 
@@ -231,11 +231,7 @@ public class SchedulerHandler {
     return discoverJobToOutput(response);
   }
 
-<<<<<<< HEAD
-  private SourceDiscoverSchemaRead discoverJobToOutput(SynchronousResponse<AirbyteCatalog> response) {
-=======
-  private static SourceDiscoverSchemaRead discoverJobToOutput(final SynchronousResponse<AirbyteCatalog> response) {
->>>>>>> master
+  private SourceDiscoverSchemaRead discoverJobToOutput(final SynchronousResponse<AirbyteCatalog> response) {
     final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead()
         .jobInfo(jobConverter.getSynchronousJobRead(response));
 
@@ -252,13 +248,8 @@ public class SchedulerHandler {
     final StandardSourceDefinition source = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     final SynchronousResponse<ConnectorSpecification> response = specFetcher.getSpecJobResponse(source);
     final ConnectorSpecification spec = response.getOutput();
-<<<<<<< HEAD
-    SourceDefinitionSpecificationRead specRead = new SourceDefinitionSpecificationRead()
-        .jobInfo(jobConverter.getSynchronousJobRead(response))
-=======
     final SourceDefinitionSpecificationRead specRead = new SourceDefinitionSpecificationRead()
-        .jobInfo(JobConverter.getSynchronousJobRead(response))
->>>>>>> master
+        .jobInfo(jobConverter.getSynchronousJobRead(response))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
         .sourceDefinitionId(sourceDefinitionId);
@@ -278,13 +269,8 @@ public class SchedulerHandler {
     final SynchronousResponse<ConnectorSpecification> response = specFetcher.getSpecJobResponse(destination);
     final ConnectorSpecification spec = response.getOutput();
 
-<<<<<<< HEAD
-    DestinationDefinitionSpecificationRead specRead = new DestinationDefinitionSpecificationRead()
-        .jobInfo(jobConverter.getSynchronousJobRead(response))
-=======
     final DestinationDefinitionSpecificationRead specRead = new DestinationDefinitionSpecificationRead()
-        .jobInfo(JobConverter.getSynchronousJobRead(response))
->>>>>>> master
+        .jobInfo(jobConverter.getSynchronousJobRead(response))
         .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
