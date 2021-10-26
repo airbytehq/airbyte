@@ -58,7 +58,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
     return true;
   }
 
-  private JsonNode getConfig(MSSQLServerContainer<?> db) {
+  private JsonNode getConfig(final MSSQLServerContainer<?> db) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
@@ -86,10 +86,10 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -103,14 +103,14 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
+    final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
   @Override
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     final String resolved = namingResolver.getIdentifier(identifier);
     result.add(identifier);
@@ -122,7 +122,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     return Databases.createSqlServerDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
             ctx -> {
@@ -136,7 +136,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
             });
   }
 
-  private static Database getDatabase(JsonNode config) {
+  private static Database getDatabase(final JsonNode config) {
     return Databases.createSqlServerDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -146,8 +146,8 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws SQLException {
-    JsonNode configWithoutDbName = getConfig(db);
+  protected void setup(final TestDestinationEnv testEnv) throws SQLException {
+    final JsonNode configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
     final Database database = getDatabase(configWithoutDbName);
@@ -165,7 +165,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {}
 
   @AfterAll
   static void cleanUp() {

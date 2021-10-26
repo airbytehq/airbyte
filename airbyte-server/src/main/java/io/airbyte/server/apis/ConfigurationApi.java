@@ -81,6 +81,7 @@ import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -192,7 +193,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendDestinationsHandler = new WebBackendDestinationsHandler(destinationHandler, configRepository, trackingClient);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(
-        configs.getAirbyteVersion(),
+        new AirbyteVersion(configs.getAirbyteVersion()),
         configRepository,
         jobPersistence,
         seed,
@@ -336,7 +337,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public SourceReadList searchSources(SourceSearch sourceSearch) {
+  public SourceReadList searchSources(final SourceSearch sourceSearch) {
     return execute(() -> sourceHandler.searchSources(sourceSearch));
   }
 
@@ -440,7 +441,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public DestinationReadList searchDestinations(DestinationSearch destinationSearch) {
+  public DestinationReadList searchDestinations(final DestinationSearch destinationSearch) {
     return execute(() -> destinationHandler.searchDestinations(destinationSearch));
   }
 
@@ -477,7 +478,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public ConnectionReadList searchConnections(ConnectionSearch connectionSearch) {
+  public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch) {
     return execute(() -> connectionsHandler.searchConnections(connectionSearch));
   }
 

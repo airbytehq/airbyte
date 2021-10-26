@@ -1,0 +1,5 @@
+{
+  "user_auth_key": "some auth key",
+  "start_date": "2021-04-01T04:20:02Z",
+  "outcome_names": "os__click.count"
+}

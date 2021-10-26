@@ -29,7 +29,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 
@@ -334,10 +334,10 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   }
 
-  private String getLogString(int length) {
-    int maxLpadLength = 262144;
-    StringBuilder stringBuilder = new StringBuilder("concat(");
-    int fullChunks = length / maxLpadLength;
+  private String getLogString(final int length) {
+    final int maxLpadLength = 262144;
+    final StringBuilder stringBuilder = new StringBuilder("concat(");
+    final int fullChunks = length / maxLpadLength;
     for (int i = 1; i <= fullChunks; i++) {
       stringBuilder.append("lpad('0', 262144, '0'),");
     }

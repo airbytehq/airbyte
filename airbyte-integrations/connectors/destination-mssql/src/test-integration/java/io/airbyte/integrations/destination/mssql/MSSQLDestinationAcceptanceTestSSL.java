@@ -30,7 +30,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private static MSSQLServerContainer<?> db;
-  private ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
   private JsonNode configWithoutDbName;
   private JsonNode config;
 
@@ -49,7 +49,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
     return true;
   }
 
-  private JsonNode getConfig(MSSQLServerContainer<?> db) {
+  private JsonNode getConfig(final MSSQLServerContainer<?> db) {
 
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
@@ -79,10 +79,10 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -96,9 +96,9 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
+    final String tableName = namingResolver.getIdentifier(streamName);
     // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
     // use quoted names
     // if (!tableName.startsWith("\"")) {
@@ -109,7 +109,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   }
 
   @Override
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     final String resolved = namingResolver.getIdentifier(identifier);
     result.add(identifier);
@@ -121,7 +121,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     return Databases.createSqlServerDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
             ctx -> {
@@ -142,7 +142,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
     db.start();
   }
 
-  private static Database getDatabase(JsonNode config) {
+  private static Database getDatabase(final JsonNode config) {
     // todo (cgardens) - rework this abstraction so that we do not have to pass a null into the
     // constructor. at least explicitly handle it, even if the impl doesn't change.
     return Databases.createDatabase(
@@ -159,7 +159,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   // 1. exec into mssql container (not the test container container)
   // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws SQLException {
+  protected void setup(final TestDestinationEnv testEnv) throws SQLException {
     configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
@@ -178,7 +178,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {}
 
   @AfterAll
   static void cleanUp() {

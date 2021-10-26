@@ -39,8 +39,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   }
 
   @Override
-  public Void run(NormalizationInput input, Path jobRoot) throws WorkerException {
-    long startTime = System.currentTimeMillis();
+  public Void run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
+    final long startTime = System.currentTimeMillis();
 
     try (normalizationRunner) {
       LOGGER.info("Running normalization.");
@@ -56,7 +56,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
           input.getResourceRequirements())) {
         throw new WorkerException("Normalization Failed.");
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new WorkerException("Normalization Failed.", e);
     }
 
@@ -77,7 +77,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     try {
       cancelled.set(true);
       normalizationRunner.close();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       e.printStackTrace();
     }
   }

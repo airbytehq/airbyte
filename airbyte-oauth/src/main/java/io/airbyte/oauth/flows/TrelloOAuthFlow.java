@@ -38,29 +38,30 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
   private static final OAuthHmacSigner signer = new OAuthHmacSigner();
   private final HttpTransport transport;
 
-  public TrelloOAuthFlow(ConfigRepository configRepository) {
+  public TrelloOAuthFlow(final ConfigRepository configRepository) {
     super(configRepository);
     transport = new NetHttpTransport();
   }
 
   @VisibleForTesting
-  public TrelloOAuthFlow(ConfigRepository configRepository, HttpTransport transport) {
+  public TrelloOAuthFlow(final ConfigRepository configRepository, final HttpTransport transport) {
     super(configRepository);
     this.transport = transport;
   }
 
-  public String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException {
+  public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl)
+      throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return getConsentUrl(oAuthParamConfig, redirectUrl);
   }
 
-  public String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl)
+  public String getDestinationConsentUrl(final UUID workspaceId, final UUID destinationDefinitionId, final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return getConsentUrl(oAuthParamConfig, redirectUrl);
   }
 
-  private String getConsentUrl(JsonNode oAuthParamConfig, String redirectUrl) throws IOException, ConfigNotFoundException {
+  private String getConsentUrl(final JsonNode oAuthParamConfig, final String redirectUrl) throws IOException, ConfigNotFoundException {
     final String clientKey = getClientIdUnsafe(oAuthParamConfig);
     final String clientSecret = getClientSecretUnsafe(oAuthParamConfig);
     final OAuthGetTemporaryToken oAuthGetTemporaryToken = new OAuthGetTemporaryToken(REQUEST_TOKEN_URL);
@@ -70,7 +71,7 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
     oAuthGetTemporaryToken.callback = redirectUrl;
     oAuthGetTemporaryToken.transport = transport;
     oAuthGetTemporaryToken.consumerKey = clientKey;
-    OAuthCredentialsResponse temporaryTokenResponse = oAuthGetTemporaryToken.execute();
+    final OAuthCredentialsResponse temporaryTokenResponse = oAuthGetTemporaryToken.execute();
 
     final OAuthAuthorizeTemporaryTokenUrl oAuthAuthorizeTemporaryTokenUrl = new OAuthAuthorizeTemporaryTokenUrl(AUTHENTICATE_URL);
     oAuthAuthorizeTemporaryTokenUrl.temporaryToken = temporaryTokenResponse.token;
@@ -78,39 +79,43 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
     return oAuthAuthorizeTemporaryTokenUrl.build();
   }
 
-  public Map<String, Object> completeSourceOAuth(UUID workspaceId, UUID sourceDefinitionId, Map<String, Object> queryParams, String redirectUrl)
+  public Map<String, Object> completeSourceOAuth(
+                                                 final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl)
       throws IOException, ConfigNotFoundException {
 
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return completeOAuth(oAuthParamConfig, queryParams, redirectUrl);
   }
 
-  public Map<String, Object> completeDestinationOAuth(UUID workspaceId,
-                                                      UUID destinationDefinitionId,
-                                                      Map<String, Object> queryParams,
-                                                      String redirectUrl)
+  public Map<String, Object> completeDestinationOAuth(final UUID workspaceId,
+                                                      final UUID destinationDefinitionId,
+                                                      final Map<String, Object> queryParams,
+                                                      final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return completeOAuth(oAuthParamConfig, queryParams, redirectUrl);
   }
 
-  private Map<String, Object> completeOAuth(JsonNode oAuthParamConfig, Map<String, Object> queryParams, String redirectUrl)
+  private Map<String, Object> completeOAuth(final JsonNode oAuthParamConfig, final Map<String, Object> queryParams, final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final String clientKey = getClientIdUnsafe(oAuthParamConfig);
     if (!queryParams.containsKey("oauth_verifier") || !queryParams.containsKey("oauth_token")) {
       throw new IOException(
           "Undefined " + (!queryParams.containsKey("oauth_verifier") ? "oauth_verifier" : "oauth_token") + " from consent redirected url.");
     }
-    String temporaryToken = (String) queryParams.get("oauth_token");
-    String verificationCode = (String) queryParams.get("oauth_verifier");
+    final String temporaryToken = (String) queryParams.get("oauth_token");
+    final String verificationCode = (String) queryParams.get("oauth_verifier");
     final OAuthGetAccessToken oAuthGetAccessToken = new OAuthGetAccessToken(ACCESS_TOKEN_URL);
     oAuthGetAccessToken.signer = signer;
     oAuthGetAccessToken.transport = transport;
     oAuthGetAccessToken.temporaryToken = temporaryToken;
     oAuthGetAccessToken.verifier = verificationCode;
     oAuthGetAccessToken.consumerKey = clientKey;
-    OAuthCredentialsResponse accessTokenResponse = oAuthGetAccessToken.execute();
-    String accessToken = accessTokenResponse.token;
+    final OAuthCredentialsResponse accessTokenResponse = oAuthGetAccessToken.execute();
+    final String accessToken = accessTokenResponse.token;
     return Map.of("token", accessToken, "key", clientKey);
   }
 

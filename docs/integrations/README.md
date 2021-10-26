@@ -73,6 +73,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Mongo DB](sources/mongodb-v2.md) | Beta |
 | [MySQL](sources/mysql.md) | Certified |
 | [Okta](sources/okta.md) | Beta |
+| [OneSignal](sources/onesignal.md) | Alpha |
 | [Oracle DB](sources/oracle.md) | Certified |
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md) | Beta |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md) | Beta |
@@ -89,6 +90,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Redshift](sources/redshift.md) | Certified |
 | [S3](sources/s3.md) | Alpha |
 | [Salesforce](sources/salesforce.md) | Certified |
+| [Salesloft](./sources/salesloft.md)| Alpha |
 | [SAP Business One](sources/sap-business-one.md) | Beta |
 | [Sendgrid](sources/sendgrid.md) | Certified |
 | [Shopify](sources/shopify.md) | Certified |
@@ -102,6 +104,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Sugar CRM](sources/sugar-crm.md) | Beta |
 | [SurveyMonkey](sources/surveymonkey.md) | Beta |
 | [Tempo](sources/tempo.md) | Beta |
+| [TikTok Marketing](./sources/tiktok-marketing.md)| Alpha |
 | [Trello](sources/trello.md) | Beta |
 | [Twilio](sources/twilio.md) | Beta |
 | [US Census](sources/us-census.md) | Alpha |

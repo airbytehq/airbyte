@@ -18,7 +18,6 @@
       "type": ["null", "integer"]
     },
     "price": {
-      "multipleOf": 1e-8,
       "type": ["null", "number"]
     },
     "price_unit": {
