@@ -17,6 +17,9 @@
     "fields": {
       "type": "object"
     },
+    "issueId": {
+      "type": "number"
+    },
     "sprintId": {
       "type": "number"
     }
