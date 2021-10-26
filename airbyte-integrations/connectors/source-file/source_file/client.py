@@ -12,9 +12,9 @@ import google
 import numpy as np
 import pandas as pd
 import smart_open
-from airbyte_protocol import AirbyteStream
+from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import AirbyteStream
 from azure.storage.blob import BlobServiceClient
-from base_python.entrypoint import logger
 from botocore import UNSIGNED
 from botocore.config import Config
 from genson import SchemaBuilder
