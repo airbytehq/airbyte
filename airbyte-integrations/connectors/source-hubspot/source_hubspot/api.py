@@ -328,7 +328,7 @@ class Stream(ABC):
             if next_page_token:
                 params.update(next_page_token)
 
-            properties_list = list(self.properties.keys()) * 500
+            properties_list = list(self.properties.keys())
             if properties_list:
                 # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
                 #  We will need to fix this code when the Hubspot developers add the ability to use a special parameter to get all properties for an entity.
