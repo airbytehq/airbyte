@@ -75,6 +75,7 @@
     * [Kafka](integrations/sources/kafka.md)
     * [Klaviyo](integrations/sources/klaviyo.md)
     * [Kustomer](integrations/sources/kustomer.md)
+    * [Lemlist](integrations/sources/lemlist.md)
     * [LinkedIn Ads](integrations/sources/linkedin-ads.md)
     * [Lever Hiring](integrations/sources/lever-hiring.md)
     * [Looker](integrations/sources/looker.md)
