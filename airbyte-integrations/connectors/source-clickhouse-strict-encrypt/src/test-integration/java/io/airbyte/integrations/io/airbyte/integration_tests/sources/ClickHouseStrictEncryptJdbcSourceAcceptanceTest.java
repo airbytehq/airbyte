@@ -15,6 +15,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.clickhouse.ClickHouseStrictEncryptSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -138,8 +139,8 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
     final ConnectorSpecification expected =
-        Jsons.deserialize(MoreResources.readResource("expected_spec.json"),
-            ConnectorSpecification.class);
+        SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"),
+            ConnectorSpecification.class));
     assertEquals(expected, actual);
   }
 

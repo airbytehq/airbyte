@@ -11,6 +11,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
@@ -66,7 +67,7 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
   public static final String DRIVER_CLASS = "ru.yandex.clickhouse.ClickHouseDriver";
 
   public static Source getWrappedSource() {
-    return new ClickHouseSource();
+    return new SshWrappedSource(new ClickHouseSource(), List.of("host"), List.of("port"));
   }
 
   /**
