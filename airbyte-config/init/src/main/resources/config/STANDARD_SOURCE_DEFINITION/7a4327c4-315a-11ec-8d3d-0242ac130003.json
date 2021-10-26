@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "7a4327c4-315a-11ec-8d3d-0242ac130003",
+  "name": "Strava",
+  "dockerRepository": "airbyte/source-strava",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/strava"
+}

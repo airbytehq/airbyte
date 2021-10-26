@@ -1,0 +1,219 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "biggest_ride_distance": {
+      "type": "number"
+    },
+    "biggest_climb_elevation_gain": {
+      "type": "number"
+    },
+    "recent_ride_totals": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "distance": {
+          "type": "number"
+        },
+        "moving_time": {
+          "type": "integer"
+        },
+        "elapsed_time": {
+          "type": "integer"
+        },
+        "elevation_gain": {
+          "type": "number"
+        },
+        "achievement_count": {
+          "type": "integer"
+        }
+      }
+    },
+    "recent_run_totals": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "distance": {
+          "type": "number"
+        },
+        "moving_time": {
+          "type": "integer"
+        },
+        "elapsed_time": {
+          "type": "integer"
+        },
+        "elevation_gain": {
+          "type": "number"
+        },
+        "achievement_count": {
+          "type": "integer"
+        }
+      }
+    },
+    "recent_swim_totals": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "distance": {
+          "type": "number"
+        },
+        "moving_time": {
+          "type": "integer"
+        },
+        "elapsed_time": {
+          "type": "integer"
+        },
+        "elevation_gain": {
+          "type": "number"
+        },
+        "achievement_count": {
+          "type": "integer"
+        }
+      }
+    },
+    "ytd_ride_totals": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "distance": {
+          "type": "number"
+        },
+        "moving_time": {
+          "type": "integer"
+        },
+        "elapsed_time": {
+          "type": "integer"
+        },
+        "elevation_gain": {
+          "type": "number"
+        },
+        "achievement_count": {
+          "type": "integer"
+        }
+      }
+    },
+    "ytd_run_totals": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "distance": {
+          "type": "number"
+        },
+        "moving_time": {
+          "type": "integer"
+        },
+        "elapsed_time": {
+          "type": "integer"
+        },
+        "elevation_gain": {
+          "type": "number"
+        },
+        "achievement_count": {
+          "type": "integer"
+        }
+      }
+    },
+    "ytd_swim_totals": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "distance": {
+          "type": "number"
+        },
+        "moving_time": {
+          "type": "integer"
+        },
+        "elapsed_time": {
+          "type": "integer"
+        },
+        "elevation_gain": {
+          "type": "number"
+        },
+        "achievement_count": {
+          "type": "integer"
+        }
+      }
+    },
+    "all_ride_totals": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "distance": {
+          "type": "number"
+        },
+        "moving_time": {
+          "type": "integer"
+        },
+        "elapsed_time": {
+          "type": "integer"
+        },
+        "elevation_gain": {
+          "type": "number"
+        },
+        "achievement_count": {
+          "type": "integer"
+        }
+      }
+    },
+    "all_run_totals": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "distance": {
+          "type": "number"
+        },
+        "moving_time": {
+          "type": "integer"
+        },
+        "elapsed_time": {
+          "type": "integer"
+        },
+        "elevation_gain": {
+          "type": "number"
+        },
+        "achievement_count": {
+          "type": "integer"
+        }
+      }
+    },
+    "all_swim_totals": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "distance": {
+          "type": "number"
+        },
+        "moving_time": {
+          "type": "integer"
+        },
+        "elapsed_time": {
+          "type": "integer"
+        },
+        "elevation_gain": {
+          "type": "number"
+        },
+        "achievement_count": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

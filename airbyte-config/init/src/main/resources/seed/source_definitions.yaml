@@ -502,6 +502,11 @@
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/square
   sourceType: api
+- sourceDefinitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
+  name: Strava
+  dockerRepository: airbyte/source-strava
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/strava
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
