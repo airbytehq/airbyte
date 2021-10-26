@@ -52,6 +52,7 @@ from .streams import (
     Projects,
     ProjectTypes,
     ProjectVersions,
+    PullRequests,
     Screens,
     ScreenSchemes,
     ScreenTabFields,
@@ -101,6 +102,12 @@ class SourceJira(AbstractSource):
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
         incremental_args = {**args, "start_date": config.get("start_date", "")}
+        issues_stream = Issues(
+                **incremental_args,
+                additional_fields=config.get("additional_fields", []),
+                expand_changelog=config.get("expand_issue_changelog", False)
+            )
+        issue_fields_stream = IssueFields(**args)
         return [
             ApplicationRoles(**args),
             Avatars(**args),
@@ -111,13 +118,9 @@ class SourceJira(AbstractSource):
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),
-            Issues(
-                **incremental_args,
-                additional_fields=config.get("additional_fields", []),
-                expand_changelog=config.get("expand_issue_changelog", False)
-            ),
+            issues_stream,
             IssueComments(**incremental_args),
-            IssueFields(**args),
+            issue_fields_stream,
             IssueFieldConfigurations(**args),
             IssueCustomFieldContexts(**args),
             IssueLinkTypes(**args),
@@ -145,6 +148,7 @@ class SourceJira(AbstractSource):
             ProjectPermissionSchemes(**args),
             ProjectTypes(**args),
             ProjectVersions(**args),
+            PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args),
             Screens(**args),
             ScreenTabs(**args),
             ScreenTabFields(**args),
