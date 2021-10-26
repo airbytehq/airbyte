@@ -18,7 +18,7 @@ from airbyte_cdk.sources.streams.http.auth.oauth import Oauth2Authenticator
 # Basic full refresh stream
 class OutreachStream(HttpStream, ABC):
 
-    url_base = "https://api.outreach.io/api/v2"
+    url_base = "https://api.outreach.io/api/v2/"
     
     def __init__(
         self,
@@ -31,7 +31,8 @@ class OutreachStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
-            params = parse.parse_qs(parse.urlparse(response.authentication_url).query)
+            next_page_url = response.json().get('links').get('next')
+            params = parse.parse_qs(parse.urlparse(next_page_url).query)
             if not params or 'page[after]' not in params:
                 return {}
             return {"after": params['page[after]'][0]}
@@ -41,7 +42,7 @@ class OutreachStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"page[size]": 1, "count": False}
+        params = {"page[size]": 100, "count": "false"}
         if next_page_token and "after" in next_page_token:
             params["page[after]"] = next_page_token["after"]
         return params
@@ -136,7 +137,6 @@ class SourceOutreach(AbstractSource):
         try:
             access_token, _ = self._create_authenticator(config).refresh_access_token()
             response = requests.get("https://api.outreach.io/api/v2", headers={"Authorization": f"Bearer {access_token}"})
-            print(f'New access token: {access_token}')
             response.raise_for_status()
             return True, None
         except Exception as e:
