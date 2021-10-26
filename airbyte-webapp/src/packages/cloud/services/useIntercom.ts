@@ -3,7 +3,7 @@ import { useIntercom as useIntercomProvider } from "react-use-intercom";
 
 import { useCurrentUser } from "./auth/AuthService";
 
-export const useIntercom = () => {
+export const useIntercom = (): void => {
   const user = useCurrentUser();
   const { boot, shutdown } = useIntercomProvider();
 
