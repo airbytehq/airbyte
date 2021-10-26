@@ -11,7 +11,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -186,7 +185,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
 
   @Override
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
-    throw new UnsupportedEncodingException("This method is not supported in this implementation");
+    // this method is not supported in this implementation, but needed in tests; do nothing
   }
 
   private <T> T getConfigInternal(final AirbyteConfig configType, final String configId, final Class<T> clazz)

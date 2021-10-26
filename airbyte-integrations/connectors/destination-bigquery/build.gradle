@@ -13,6 +13,9 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-bigquery:1.122.2'
     implementation 'org.apache.commons:commons-lang3:3.11'
 
+    // csv
+    implementation 'org.apache.commons:commons-csv:1.4'
+
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')

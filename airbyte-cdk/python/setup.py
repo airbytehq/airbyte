@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.1.31",
+    version="0.1.32",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -56,7 +56,13 @@ setup(
         "Deprecated~=1.2",
     ],
     python_requires=">=3.7.0",
-    extras_require={"dev": ["MyPy~=0.812", "pytest", "pytest-cov", "pytest-mock", "requests-mock"]},
+    extras_require={
+        "dev": ["MyPy~=0.812", "pytest", "pytest-cov", "pytest-mock", "requests-mock"],
+        "sphinx-docs": [
+            "Sphinx~=4.2",
+            "sphinx-rtd-theme~=1.0",
+        ],
+    },
     entry_points={
         "console_scripts": ["base-python=base_python.entrypoint:main"],
     },
