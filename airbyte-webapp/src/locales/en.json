@@ -17,7 +17,7 @@
   "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
   "form.email.error": "This email address doesn’t seem correct.",
-  "form.empty.error": "Empty field",
+  "form.empty.error": "Field is required",
   "form.selectConnector": "Select a connector",
   "form.searchName": "search by name...",
   "form.noResult": "No result",
@@ -414,8 +414,5 @@
   "credits.totalUsage": "Total usage",
 
   "demo.message.title": "This Airbyte demo is read-only",
-  "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so.",
-
-  "email.duplicate": "Email already exists",
-  "password.invalid": "Password too weak"
+  "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."
 }
