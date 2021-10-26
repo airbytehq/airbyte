@@ -133,6 +133,7 @@
     * [Zendesk Sunshine](integrations/sources/zendesk-sunshine.md)
     * [Zendesk Support](integrations/sources/zendesk-support.md)
     * [Zendesk Talk](integrations/sources/zendesk-talk.md)
+    * [Zenloop](integrations/sources/zenloop.md)
     * [Zoom](integrations/sources/zoom.md)
     * [Zuora](integrations/sources/zuora.md)
   * [Destinations](integrations/destinations/README.md)
@@ -229,4 +230,3 @@
   * [On Setting up a New Connection](troubleshooting/new-connection.md)
   * [On Running a Sync](troubleshooting/running-sync.md)
   * [On Upgrading](troubleshooting/on-upgrading.md)
-

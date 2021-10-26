@@ -115,6 +115,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Zendesk Sunshine](sources/zendesk-sunshine.md) | Beta |
 | [Zendesk Support](sources/zendesk-support.md) | Certified |
 | [Zendesk Talk](sources/zendesk-talk.md) | Certified |
+| [Zenloop](./sources/zenloop.md)| Alpha |
 | [Zoom](sources/zoom.md) | Beta |
 | [Zuora](sources/zuora.md) | Beta |
 
@@ -141,4 +142,3 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [S3](destinations/s3.md) | Certified |
 | [SQL Server \(MSSQL\)](destinations/mssql.md) | Alpha |
 | [Snowflake](destinations/snowflake.md) | Certified |
-
