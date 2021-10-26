@@ -140,14 +140,6 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
     database.close();
   }
 
-
-//  @Override
-//  protected void tearDown(final TestDestinationEnv testEnv) {
-//    db.close();
-//    db.stop();
-//
-//  }
-
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
