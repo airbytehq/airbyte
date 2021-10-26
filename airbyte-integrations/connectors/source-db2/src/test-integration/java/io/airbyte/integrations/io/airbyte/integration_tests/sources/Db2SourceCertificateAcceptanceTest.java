@@ -22,8 +22,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import org.testcontainers.containers.Db2Container;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -31,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.testcontainers.containers.Db2Container;
 
 public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
 
@@ -97,7 +96,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
     db = new Db2Container("ibmcom/db2:11.5.5.0").withCommand().acceptLicense()
-            .withExposedPorts(50000);
+        .withExposedPorts(50000);
     db.start();
 
     var certificate = getCertificate();
@@ -121,10 +120,10 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         .build());
 
     String jdbcUrl = String.format("jdbc:db2://%s:%s/%s",
-            config.get("host").asText(),
-            db.getMappedPort(50000),
-            config.get("db").asText()) + ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
-            ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
+        config.get("host").asText(),
+        db.getMappedPort(50000),
+        config.get("db").asText()) + ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
+        ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
 
     database = Databases.createJdbcDatabase(
         config.get("username").asText(),
@@ -164,18 +163,20 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
   /* Helpers */
 
   private String getCertificate() throws IOException, InterruptedException {
-    db.execInContainer("su", "-", "db2inst1",  "-c", "gsk8capicmd_64 -keydb -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS + "\" -stash");
-    db.execInContainer("su", "-", "db2inst1",  "-c", "gsk8capicmd_64 -cert -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS + "\" -label \"mylabel\" -dn \"CN=testcompany\" -size 2048 -sigalg SHA256_WITH_RSA");
-    db.execInContainer("su", "-", "db2inst1",  "-c", "gsk8capicmd_64 -cert -extract -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS + "\" -label \"mylabel\" -target \"server.arm\" -format ascii -fips");
+    db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -keydb -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS + "\" -stash");
+    db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -cert -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS
+        + "\" -label \"mylabel\" -dn \"CN=testcompany\" -size 2048 -sigalg SHA256_WITH_RSA");
+    db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -cert -extract -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS
+        + "\" -label \"mylabel\" -target \"server.arm\" -format ascii -fips");
 
-    db.execInContainer("su", "-", "db2inst1",  "-c", "db2 update dbm cfg using SSL_SVR_KEYDB /database/config/db2inst1/server.kdb");
-    db.execInContainer("su", "-", "db2inst1",  "-c", "db2 update dbm cfg using SSL_SVR_STASH /database/config/db2inst1/server.sth");
-    db.execInContainer("su", "-", "db2inst1",  "-c", "db2 update dbm cfg using SSL_SVR_LABEL mylabel");
-    db.execInContainer("su", "-", "db2inst1",  "-c", "db2 update dbm cfg using SSL_SVCENAME 50000");
-    db.execInContainer("su", "-", "db2inst1",  "-c", "db2set -i db2inst1 DB2COMM=SSL");
-    db.execInContainer("su", "-", "db2inst1",  "-c", "db2stop force");
-    db.execInContainer("su", "-", "db2inst1",  "-c", "db2start");
-    return db.execInContainer("su", "-", "db2inst1",  "-c", "cat server.arm").getStdout();
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_KEYDB /database/config/db2inst1/server.kdb");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_STASH /database/config/db2inst1/server.sth");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_LABEL mylabel");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVCENAME 50000");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2set -i db2inst1 DB2COMM=SSL");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2stop force");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2start");
+    return db.execInContainer("su", "-", "db2inst1", "-c", "cat server.arm").getStdout();
   }
 
   private static void convertAndImportCertificate(String certificate) throws IOException, InterruptedException {
@@ -185,8 +186,9 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
     runProcess(
-            "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + TEST_KEY_STORE_PASS + " -noprompt",
-            run);
+        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + TEST_KEY_STORE_PASS
+            + " -noprompt",
+        run);
   }
 
   private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {

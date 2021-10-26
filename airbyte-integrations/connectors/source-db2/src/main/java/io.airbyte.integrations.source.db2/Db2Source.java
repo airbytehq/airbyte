@@ -10,14 +10,12 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,15 +42,15 @@ public class Db2Source extends AbstractJdbcSource implements Source {
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:db2://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("db").asText()));
+        config.get("host").asText(),
+        config.get("port").asText(),
+        config.get("db").asText()));
 
     var result = Jsons.jsonNode(ImmutableMap.builder()
-            .put("jdbc_url", jdbcUrl.toString())
-            .put("username", config.get("username").asText())
-            .put("password", config.get("password").asText())
-            .build());
+        .put("jdbc_url", jdbcUrl.toString())
+        .put("username", config.get("username").asText())
+        .put("password", config.get("password").asText())
+        .build());
 
     // assume ssl if not explicitly mentioned.
     var additionalParams = obtainConnectionOptions(config.get("encryption"));
@@ -60,11 +58,11 @@ public class Db2Source extends AbstractJdbcSource implements Source {
       jdbcUrl.append(":").append(String.join(";", additionalParams));
       jdbcUrl.append(";");
       result = Jsons.jsonNode(ImmutableMap.builder()
-              .put("jdbc_url", jdbcUrl.toString())
-              .put("username", config.get("username").asText())
-              .put("password", config.get("password").asText())
-              .put("connection_properties", additionalParams)
-              .build());
+          .put("jdbc_url", jdbcUrl.toString())
+          .put("username", config.get("username").asText())
+          .put("password", config.get("password").asText())
+          .put("connection_properties", additionalParams)
+          .build());
     }
 
     return result;
@@ -81,8 +79,6 @@ public class Db2Source extends AbstractJdbcSource implements Source {
 
   private List<String> obtainConnectionOptions(JsonNode encryption) {
     List<String> additionalParameters = new ArrayList<>();
-
-
 
     String encryptionMethod = encryption.get("encryption_method").asText();
     if ("encrypted_verify_certificate".equals(encryptionMethod)) {
@@ -108,15 +104,15 @@ public class Db2Source extends AbstractJdbcSource implements Source {
   }
 
   private static void convertAndImportCertificate(String certificate, String keyStorePassword)
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     Runtime run = Runtime.getRuntime();
     try (PrintWriter out = new PrintWriter("certificate.pem")) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
     runProcess(
-            "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + keyStorePassword + " -noprompt",
-            run);
+        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + keyStorePassword + " -noprompt",
+        run);
   }
 
   private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
