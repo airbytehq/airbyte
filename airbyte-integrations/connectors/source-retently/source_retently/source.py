@@ -16,8 +16,7 @@ class SourceRetently(AbstractSource):
         try:
             api_key = config["api_key"]
             auth_method = f"api_key={api_key}"
-            token = ""
-            auth = TokenAuthenticator(token, auth_method=auth_method)
+            auth = TokenAuthenticator(token="", auth_method=auth_method)
             stream = Companies(auth)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
@@ -28,8 +27,7 @@ class SourceRetently(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         api_key = config["api_key"]
         auth_method = f"api_key={api_key}"
-        token = ""
-        auth = TokenAuthenticator(token, auth_method=auth_method)
+        auth = TokenAuthenticator(token="", auth_method=auth_method)
         return [ Customers(auth), Companies(auth), Reports(auth) ]
 
 class RetentlyStream(HttpStream):
