@@ -63,7 +63,7 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
 
   private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(),
-        x -> x == null ? DebeziumConverterUtils.getDefaultValue(field) : DebeziumConverterUtils.convertDate(x));
+        x -> x == null ? DebeziumConverterUtils.convertDefaultValue(field) : DebeziumConverterUtils.convertDate(x));
   }
 
 }
