@@ -136,7 +136,6 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("1", "32767", "0", "-32767")
             .build());
 
-    // TODO check BUG https://github.com/airbytehq/airbyte/issues/3932
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit")
@@ -305,8 +304,8 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .build());
 
     // Max values for Money type should be: "-92233720368547758.08", "92233720368547758.07",
-    // debezium return rounded value for values more than 999999999999999 and less than
-    // -999999999999999, we maps value as null;
+    // debezium return rounded value for values more than 999999999999999 and less than -999999999999999,
+    // we map these value as null;
     // opened issue https://github.com/airbytehq/airbyte/issues/7338
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -316,7 +315,6 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
                 "'-92233720368547758.08'", "'92233720368547758.07'")
             .addExpectedValues(null, "999.99", "1000.01", "-999999999999.99", "-999999999999999", "999999999999.99", "999999999999999",
                 null, null)
-            /* , "-92233720368547758.08", "92233720368547758.07") */
             .build());
 
     addDataTypeTestData(
