@@ -61,7 +61,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    * If this is a migration deployment from an old version that relies on file system config
    * persistence, copy the existing configs from local files.
    */
-  public void migrateFileConfigs(final Configs serverConfigs) throws IOException {
+  public DatabaseConfigPersistence migrateFileConfigs(final Configs serverConfigs) throws IOException {
     database.transaction(ctx -> {
       final boolean isInitialized = ctx.fetchExists(AIRBYTE_CONFIGS);
       if (isInitialized) {
@@ -77,6 +77,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       return null;
     });
+
+    return this;
   }
 
   @Override

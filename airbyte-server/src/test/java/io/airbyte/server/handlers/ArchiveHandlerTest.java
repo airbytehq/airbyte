@@ -32,8 +32,7 @@ import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -69,7 +68,8 @@ public class ArchiveHandlerTest {
   private static final String VERSION = "0.6.8";
   private static PostgreSQLContainer<?> container;
 
-  private Database database;
+  private Database jobDatabase;
+  private Database configDatabase;
   private JobPersistence jobPersistence;
   private DatabaseConfigPersistence configPersistence;
   private ConfigPersistence seedPersistence;
@@ -103,11 +103,12 @@ public class ArchiveHandlerTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    jobPersistence = new DefaultJobPersistence(database);
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    jobDatabase = databaseProviders.createNewJobsDatabase();
+    configDatabase = databaseProviders.createNewConfigsDatabase();
+    jobPersistence = new DefaultJobPersistence(jobDatabase);
     seedPersistence = YamlSeedConfigPersistence.getDefault();
-    configPersistence = new DatabaseConfigPersistence(database);
+    configPersistence = new DatabaseConfigPersistence(jobDatabase);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
     configRepository = new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
@@ -133,7 +134,8 @@ public class ArchiveHandlerTest {
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    jobDatabase.close();
+    configDatabase.close();
   }
 
   /**

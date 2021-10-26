@@ -204,7 +204,6 @@ public class SchedulerApp {
         configs.getDatabaseUrl())
             .getInitialized();
 
-    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
@@ -215,11 +214,13 @@ public class SchedulerApp {
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),
         workspaceRoot,
         jobPersistence);
-    AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), jobPersistence.getVersion().get());
+    AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), jobPersistence.getVersion().orElseThrow());
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
@@ -238,8 +239,16 @@ public class SchedulerApp {
     MetricSingleton.initializeMonitoringServiceDaemon("8082", mdc, configs.getPublishMetrics());
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(workspaceRoot, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient,
-        Integer.parseInt(configs.getSubmitterNumThreads()), configs.getMaxSyncJobAttempts(), configs.getAirbyteVersionOrWarning())
+    new SchedulerApp(
+        workspaceRoot,
+        jobPersistence,
+        configRepository,
+        jobCleaner,
+        jobNotifier,
+        temporalClient,
+        Integer.parseInt(configs.getSubmitterNumThreads()),
+        configs.getMaxSyncJobAttempts(),
+        configs.getAirbyteVersionOrWarning())
             .start();
   }
 

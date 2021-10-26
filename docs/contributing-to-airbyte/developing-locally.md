@@ -89,7 +89,7 @@ In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
 
 ```bash
-SUB_BUILD=PLATFORM ./gradlew build
+SUB_BUILD=PLATFORM ./gradlew clean build
 VERSION=dev docker-compose up
 SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
 ```
@@ -164,7 +164,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 * Rebuild the project
 
   ```bash
-   SUB_BUILD=PLATFORM ./gradlew build
+   SUB_BUILD=PLATFORM ./gradlew clean build
    VERSION=dev docker-compose up -V
   ```
 
