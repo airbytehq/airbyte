@@ -47,9 +47,9 @@
                 "airbyte_secret": true
               },
               "access_token": {
-                "title": "Refresh Token",
+                "title": "Access Token",
                 "type": "string",
-                "description": "A refresh token generated using the above client ID and secret",
+                "description": "Access token generated using the above client ID and secret",
                 "airbyte_secret": true
               }
             }
