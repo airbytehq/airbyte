@@ -96,7 +96,7 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.19 | 2021-10-?? | [6954](https://github.com/airbytehq/airbyte/pull/6954) | Fix issue with getting `414` HTTP error for streams |
+| 0.1.19 | 2021-10-26 | [6954](https://github.com/airbytehq/airbyte/pull/6954) | Fix issue with getting `414` HTTP error for streams |
 | 0.1.18 | 2021-10-18 | [5840](https://github.com/airbytehq/airbyte/pull/5840) | Add new marketing emails (with statistics) stream |
 | 0.1.17 | 2021-10-14 | [6995](https://github.com/airbytehq/airbyte/pull/6995) | Update `discover` method: disable `quotes` stream when using OAuth config  |
 | 0.1.16 | 2021-09-27 | [6465](https://github.com/airbytehq/airbyte/pull/6465) | Implement OAuth support. Use CDK authenticator instead of connector specific authenticator |
