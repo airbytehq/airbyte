@@ -120,6 +120,7 @@
     * [Snowflake](integrations/sources/snowflake.md)
     * [Spree Commerce](integrations/sources/spree-commerce.md)
     * [Square](integrations/sources/square.md)
+    * [Strava](integrations/sources/strava.md)
     * [Stripe](integrations/sources/stripe.md)
     * [Sugar CRM](integrations/sources/sugar-crm.md)
     * [SurveyMonkey](integrations/sources/surveymonkey.md)
