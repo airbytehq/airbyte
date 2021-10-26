@@ -51,15 +51,23 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
   static final Field<OffsetDateTime> COLUMN_CREATED_AT = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE);
   static final Field<OffsetDateTime> COLUMN_UPDATED_AT = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE);
 
-  private final Configs configs;
+  private final String databaseUser;
+  private final String databasePassword;
+  private final String databaseUrl;
 
   public V0_30_22_001__Store_last_sync_state() {
-    this.configs = new EnvConfigs();
+    // EnvConfigs left in place for migration purposes as FlyWay prevents injection, but isolated to local scope.
+    final EnvConfigs configs = new EnvConfigs();
+    this.databaseUser = configs.getDatabaseUser();
+    this.databasePassword = configs.getDatabasePassword();
+    this.databaseUrl = configs.getDatabaseUrl();
   }
 
   @VisibleForTesting
-  V0_30_22_001__Store_last_sync_state(final Configs configs) {
-    this.configs = configs;
+  V0_30_22_001__Store_last_sync_state(final String databaseUser, final String databasePassword, final String databaseUrl) {
+    this.databaseUser = databaseUser;
+    this.databasePassword = databasePassword;
+    this.databaseUrl = databaseUrl;
   }
 
   @Override
@@ -67,7 +75,7 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
     final DSLContext ctx = DSL.using(context.getConnection());
 
-    final Optional<Database> jobsDatabase = getJobsDatabase(configs);
+    final Optional<Database> jobsDatabase = getJobsDatabase(databaseUser, databasePassword, databaseUrl);
     if (jobsDatabase.isPresent()) {
       copyData(ctx, getStandardSyncStates(jobsDatabase.get()), OffsetDateTime.now());
     }
@@ -100,16 +108,12 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
    * data from the job database).
    */
   @VisibleForTesting
-  static Optional<Database> getJobsDatabase(final Configs configs) {
+  static Optional<Database> getJobsDatabase(final String databaseUser, final String databasePassword, final String databaseUrl) {
     try {
       // If the environment variables exist, it means the migration is run in production.
       // Connect to the official job database.
-      final Database jobsDatabase = new JobsDatabaseInstance(
-          configs.getDatabaseUser(),
-          configs.getDatabasePassword(),
-          configs.getDatabaseUrl())
-              .getInitialized();
-      LOGGER.info("[{}] Connected to jobs database: {}", MIGRATION_NAME, configs.getDatabaseUrl());
+      final Database jobsDatabase = new JobsDatabaseInstance(databaseUser, databasePassword, databaseUrl).getInitialized();
+      LOGGER.info("[{}] Connected to jobs database: {}", MIGRATION_NAME, databaseUrl);
       return Optional.of(jobsDatabase);
     } catch (final IllegalArgumentException e) {
       // If the environment variables do not exist, it means the migration is run in development.

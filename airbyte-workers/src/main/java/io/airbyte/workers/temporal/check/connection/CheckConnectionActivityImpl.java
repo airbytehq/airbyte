@@ -34,6 +34,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   private final String databaseUser;
   private final String databasePassword;
   private final String databaseUrl;
+  private final String airbyteVersion;
 
   public CheckConnectionActivityImpl(final ProcessFactory processFactory,
                                      final SecretsHydrator secretsHydrator,
@@ -42,7 +43,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
                                      final LogConfigs logConfigs,
                                      final String databaseUser,
                                      final String databasePassword,
-                                     final String databaseUrl) {
+                                     final String databaseUrl,
+                                     final String airbyteVersion) {
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
@@ -51,6 +53,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.databaseUser = databaseUser;
     this.databasePassword = databasePassword;
     this.databaseUrl = databaseUrl;
+    this.airbyteVersion = airbyteVersion;
   }
 
   public StandardCheckConnectionOutput run(final JobRunConfig jobRunConfig,
@@ -70,7 +73,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
             jobRunConfig,
             getWorkerFactory(launcherConfig),
             inputSupplier,
-            new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl);
+            new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
     return temporalAttemptExecution.get();
   }

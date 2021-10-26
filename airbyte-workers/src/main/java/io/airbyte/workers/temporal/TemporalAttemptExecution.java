@@ -55,6 +55,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private final String databaseUser;
   private final String databasePassword;
   private final String databaseUrl;
+  private final String airbyteVersion;
 
   public TemporalAttemptExecution(final Path workspaceRoot,
                                   final WorkerEnvironment workerEnvironment,
@@ -65,7 +66,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                                   final CancellationHandler cancellationHandler,
                                   final String databaseUser,
                                   final String databasePassword,
-                                  final String databaseUrl) {
+                                  final String databaseUrl,
+                                  final String airbyteVersion) {
     this(
         workspaceRoot, workerEnvironment, logConfigs,
         jobRunConfig,
@@ -73,7 +75,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
         inputSupplier,
         (path -> LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, path)),
         cancellationHandler, databaseUser, databasePassword, databaseUrl,
-        () -> Activity.getExecutionContext().getInfo().getWorkflowId());
+        () -> Activity.getExecutionContext().getInfo().getWorkflowId(), airbyteVersion);
   }
 
   @VisibleForTesting
@@ -88,7 +90,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                            final String databaseUser,
                            final String databasePassword,
                            final String databaseUrl,
-                           final Supplier<String> workflowIdProvider) {
+                           final Supplier<String> workflowIdProvider,
+                           final String airbyteVersion) {
     this.jobRunConfig = jobRunConfig;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
@@ -103,6 +106,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     this.databaseUser = databaseUser;
     this.databasePassword = databasePassword;
     this.databaseUrl = databaseUrl;
+    this.airbyteVersion = airbyteVersion;
   }
 
   @Override
@@ -110,7 +114,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     try {
       mdcSetter.accept(jobRoot);
 
-      LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
+      LOGGER.info("Executing worker wrapper. Airbyte version: {}", airbyteVersion);
       // TODO(Davin): This will eventually run into scaling problems, since it opens a DB connection per
       // workflow. See https://github.com/airbytehq/airbyte/issues/5936.
       saveWorkflowIdForCancellation(databaseUser, databasePassword, databaseUrl);

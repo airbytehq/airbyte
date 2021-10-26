@@ -65,6 +65,7 @@ public class WorkerApp {
   private final String databaseUser;
   private final String databasePassword;
   private final String databaseUrl;
+  private final String airbyteVersion;
 
   public WorkerApp(final Path workspaceRoot,
                    final ProcessFactory processFactory,
@@ -76,7 +77,8 @@ public class WorkerApp {
                    final LogConfigs logConfigs,
                    final String databaseUser,
                    final String databasePassword,
-                   final String databaseUrl) {
+                   final String databaseUrl,
+                   final String airbyteVersion) {
 
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
@@ -89,7 +91,7 @@ public class WorkerApp {
     this.databaseUser = databaseUser;
     this.databasePassword = databasePassword;
     this.databaseUrl = databaseUrl;
-
+    this.airbyteVersion = airbyteVersion;
   }
 
   public void start() {
@@ -109,7 +111,7 @@ public class WorkerApp {
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
     specWorker.registerWorkflowImplementationTypes(SpecWorkflowImpl.class);
     specWorker.registerActivitiesImplementations(
-        new SpecActivityImpl(processFactory, workspaceRoot, workerEnvironment, logConfigs, databaseUser, databasePassword, databaseUrl));
+        new SpecActivityImpl(processFactory, workspaceRoot, workerEnvironment, logConfigs, databaseUser, databasePassword, databaseUrl, airbyteVersion));
 
     final Worker checkConnectionWorker =
         factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkers.getMaxCheckWorkers()));
@@ -117,24 +119,24 @@ public class WorkerApp {
     checkConnectionWorker
         .registerActivitiesImplementations(
             new CheckConnectionActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-                databasePassword, databaseUrl));
+                databasePassword, databaseUrl, airbyteVersion));
 
     final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflowImpl.class);
     discoverWorker
         .registerActivitiesImplementations(
             new DiscoverCatalogActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-                databasePassword, databaseUrl));
+                databasePassword, databaseUrl, airbyteVersion));
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
         new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-            databasePassword, databaseUrl),
+            databasePassword, databaseUrl, airbyteVersion),
         new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-            databasePassword, databaseUrl),
+            databasePassword, databaseUrl, airbyteVersion),
         new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-            databasePassword, databaseUrl),
+            databasePassword, databaseUrl, airbyteVersion),
         new SyncWorkflow.PersistStateActivityImpl(workspaceRoot, configRepository));
     factory.start();
   }
@@ -201,7 +203,8 @@ public class WorkerApp {
         configs.getLogConfigs(),
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
-        configs.getDatabaseUrl()).start();
+        configs.getDatabaseUrl(),
+        configs.getAirbyteVersionOrWarning()).start();
   }
 
 }

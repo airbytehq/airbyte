@@ -65,6 +65,7 @@ public interface SpecWorkflow {
     private final String databaseUser;
     private final String databasePassword;
     private final String databaseUrl;
+    private final String airbyteVersion;
 
     public SpecActivityImpl(final ProcessFactory processFactory,
                             final Path workspaceRoot,
@@ -72,7 +73,7 @@ public interface SpecWorkflow {
                             final LogConfigs logConfigs,
                             final String databaseUser,
                             final String databasePassword,
-                            final String databaseUrl) {
+                            final String databaseUrl, final String airbyteVersion) {
       this.processFactory = processFactory;
       this.workspaceRoot = workspaceRoot;
       this.workerEnvironment = workerEnvironment;
@@ -80,6 +81,7 @@ public interface SpecWorkflow {
       this.databaseUser = databaseUser;
       this.databasePassword = databasePassword;
       this.databaseUrl = databaseUrl;
+      this.airbyteVersion = airbyteVersion;
     }
 
     public ConnectorSpecification run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
@@ -91,7 +93,7 @@ public interface SpecWorkflow {
               jobRunConfig,
               getWorkerFactory(launcherConfig),
               inputSupplier,
-              new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl);
+              new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
       return temporalAttemptExecution.get();
     }

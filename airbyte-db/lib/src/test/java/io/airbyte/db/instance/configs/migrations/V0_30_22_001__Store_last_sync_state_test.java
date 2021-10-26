@@ -98,7 +98,8 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   @Order(10)
   public void testGetJobsDatabase() {
     // when there is no database environment variable, the return value is empty
-    assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase(new EnvConfigs()).isEmpty());
+    final EnvConfigs envConfigs = new EnvConfigs();
+    assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase(envConfigs.getDatabaseUser(), envConfigs.getDatabasePassword(), envConfigs.getDatabaseUrl()).isEmpty());
 
     // when there is database environment variable, return the database
     final Configs configs = mock(Configs.class);
@@ -106,7 +107,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
     when(configs.getDatabasePassword()).thenReturn(container.getPassword());
     when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
 
-    assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase(configs).isPresent());
+    assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase(envConfigs.getDatabaseUser(), envConfigs.getDatabasePassword(), envConfigs.getDatabaseUrl()).isPresent());
   }
 
   @Test
@@ -180,12 +181,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
         .where(COLUMN_CONFIG_TYPE.eq(ConfigSchema.STANDARD_SYNC_STATE.name()))
         .execute());
 
-    final Configs configs = mock(Configs.class);
-    when(configs.getDatabaseUser()).thenReturn(container.getUsername());
-    when(configs.getDatabasePassword()).thenReturn(container.getPassword());
-    when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
-
-    final var migration = new V0_30_22_001__Store_last_sync_state(configs);
+    final var migration = new V0_30_22_001__Store_last_sync_state(container.getUsername(), container.getPassword(), container.getJdbcUrl());
     // this context is a flyway class; only the getConnection method is needed to run the migration
     final Context context = new Context() {
 

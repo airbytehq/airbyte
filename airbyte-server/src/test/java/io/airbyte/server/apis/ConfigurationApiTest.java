@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
@@ -18,15 +20,13 @@ import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 public class ConfigurationApiTest {
 
   @Test
   void testImportDefinitions() {
-    final Configs configs = mock(Configs.class);
-    when(configs.getAirbyteVersion()).thenReturn("0.1.0-alpha");
-    when(configs.getWebappUrl()).thenReturn("http://localhost");
 
     final ConfigurationApi configurationApi = new ConfigurationApi(
         mock(ConfigRepository.class),
@@ -34,12 +34,17 @@ public class ConfigurationApiTest {
         mock(ConfigPersistence.class),
         mock(SchedulerJobClient.class),
         mock(CachingSynchronousSchedulerClient.class),
-        configs,
         mock(FileTtlManager.class),
         mock(WorkflowServiceStubs.class),
         mock(Database.class),
         mock(Database.class),
-        mock(TrackingClient.class));
+        mock(TrackingClient.class),
+        WorkerEnvironment.DOCKER,
+        new LogConfiguration("", "", "", "", "", "", ""),
+        "http://localhost",
+        "0.1.0-alpha",
+        Path.of("")
+        );
     assertTrue(configurationApi.canImportDefinitons());
   }
 

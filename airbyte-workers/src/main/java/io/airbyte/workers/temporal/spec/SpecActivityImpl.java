@@ -31,6 +31,7 @@ public class SpecActivityImpl implements SpecActivity {
   private final String databaseUser;
   private final String databasePassword;
   private final String databaseUrl;
+  private final String airbyteVersion;
 
   public SpecActivityImpl(final ProcessFactory processFactory,
                           final Path workspaceRoot,
@@ -38,7 +39,7 @@ public class SpecActivityImpl implements SpecActivity {
                           final LogConfigs logConfigs,
                           final String databaseUser,
                           final String databasePassword,
-                          final String databaseUrl) {
+                          final String databaseUrl, final String airbyteVersion) {
     this.processFactory = processFactory;
     this.workspaceRoot = workspaceRoot;
     this.workerEnvironment = workerEnvironment;
@@ -46,6 +47,7 @@ public class SpecActivityImpl implements SpecActivity {
     this.databaseUser = databaseUser;
     this.databasePassword = databasePassword;
     this.databaseUrl = databaseUrl;
+    this.airbyteVersion = airbyteVersion;
   }
 
   public ConnectorSpecification run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
@@ -56,7 +58,7 @@ public class SpecActivityImpl implements SpecActivity {
         jobRunConfig,
         getWorkerFactory(launcherConfig),
         inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl);
+        new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
     return temporalAttemptExecution.get();
   }

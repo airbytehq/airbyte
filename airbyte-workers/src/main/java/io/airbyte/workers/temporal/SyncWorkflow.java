@@ -156,6 +156,7 @@ public interface SyncWorkflow {
     private final String databaseUser;
     private final String databasePassword;
     private final String databaseUrl;
+    private final String airbyteVersion;
 
     public ReplicationActivityImpl(
                                    final ProcessFactory processFactory,
@@ -165,9 +166,9 @@ public interface SyncWorkflow {
                                    final LogConfigs logConfigs,
                                    final String databaseUser,
                                    final String databasePassword,
-                                   final String databaseUrl) {
+                                   final String databaseUrl, final String airbyteVersion) {
       this(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, new AirbyteConfigValidator(), databaseUser,
-          databasePassword, databaseUrl);
+          databasePassword, databaseUrl, airbyteVersion);
     }
 
     @VisibleForTesting
@@ -179,7 +180,7 @@ public interface SyncWorkflow {
                             final AirbyteConfigValidator validator,
                             final String databaseUser,
                             final String databasePassword,
-                            final String databaseUrl) {
+                            final String databaseUrl, final String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -189,6 +190,7 @@ public interface SyncWorkflow {
       this.databaseUser = databaseUser;
       this.databasePassword = databasePassword;
       this.databaseUrl = databaseUrl;
+      this.airbyteVersion = airbyteVersion;
     }
 
     @Override
@@ -214,7 +216,7 @@ public interface SyncWorkflow {
           jobRunConfig,
           getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
           inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl);
+          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
       final ReplicationOutput attemptOutput = temporalAttempt.get();
       final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
@@ -303,6 +305,7 @@ public interface SyncWorkflow {
     private final String databaseUser;
     private final String databasePassword;
     private final String databaseUrl;
+    private final String airbyteVersion;
 
     public NormalizationActivityImpl(final ProcessFactory processFactory,
                                      final SecretsHydrator secretsHydrator,
@@ -311,9 +314,9 @@ public interface SyncWorkflow {
                                      final LogConfigs logConfig,
                                      final String databaseUser,
                                      final String databasePassword,
-                                     final String databaseUrl) {
+                                     final String databaseUrl, final String airbyteVersion) {
       this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfig, databaseUser, databasePassword,
-          databaseUrl);
+          databaseUrl, airbyteVersion);
     }
 
     @VisibleForTesting
@@ -325,7 +328,7 @@ public interface SyncWorkflow {
                               final LogConfigs logConfigs,
                               final String databaseUser,
                               final String databasePassword,
-                              final String databaseUrl) {
+                              final String databaseUrl, final String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -335,6 +338,7 @@ public interface SyncWorkflow {
       this.databaseUser = databaseUser;
       this.databasePassword = databasePassword;
       this.databaseUrl = databaseUrl;
+      this.airbyteVersion = airbyteVersion;
     }
 
     @Override
@@ -355,7 +359,7 @@ public interface SyncWorkflow {
           jobRunConfig,
           getWorkerFactory(destinationLauncherConfig, jobRunConfig),
           inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl);
+          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
       return temporalAttemptExecution.get();
     }
@@ -397,6 +401,7 @@ public interface SyncWorkflow {
     private final String databaseUser;
     private final String databasePassword;
     private final String databaseUrl;
+    private final String airbyteVersion;
 
     public DbtTransformationActivityImpl(final ProcessFactory processFactory,
                                          final SecretsHydrator secretsHydrator,
@@ -405,9 +410,9 @@ public interface SyncWorkflow {
                                          final LogConfigs logConfigs,
                                          final String databaseUser,
                                          final String databasePassword,
-                                         final String databaseUrl) {
+                                         final String databaseUrl, final String airbyteVersion) {
       this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs, databaseUser,
-          databasePassword, databaseUrl);
+          databasePassword, databaseUrl, airbyteVersion);
     }
 
     @VisibleForTesting
@@ -419,7 +424,7 @@ public interface SyncWorkflow {
                                   final LogConfigs logConfigs,
                                   final String databaseUser,
                                   final String databasePassword,
-                                  final String databaseUrl) {
+                                  final String databaseUrl, final String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -429,6 +434,7 @@ public interface SyncWorkflow {
       this.databaseUser = databaseUser;
       this.databasePassword = databasePassword;
       this.databaseUrl = databaseUrl;
+      this.airbyteVersion = airbyteVersion;
     }
 
     @Override
@@ -450,7 +456,7 @@ public interface SyncWorkflow {
           jobRunConfig,
           getWorkerFactory(destinationLauncherConfig, jobRunConfig, resourceRequirements),
           inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl);
+          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
       return temporalAttemptExecution.get();
     }
