@@ -55,9 +55,9 @@ You can basically build ANY product on top of Airbyte as long as you don’t:
 * Sell a product that directly exposes Airbyte’s UI or API.
 
 Here is a non-exhaustive list of what you can do (without providing your customers direct access to Airbyte functionality):
-* I am creating an analytics/attribution platform and I want to use Airbyte to bring data in on behalf of my customers.
+* I am creating an analytics platform and I want to use Airbyte to bring data in on behalf of my customers.
 * I am building my internal data stack and I want my team to be able to interact with Airbyte to configure the pipelines through the UI or the API.
-...
+* ...
 
 ### My company has a policy against using code that restricts commercial use – can I still use Airbyte under ELv2?
 You can use software under ELv2 for your commercial business, you simply cannot offer it as a managed service. 
