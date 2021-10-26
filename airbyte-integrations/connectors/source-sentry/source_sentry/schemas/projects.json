@@ -93,6 +93,15 @@
               "type": "string"
             }
           }
+        },
+        "requireEmailVerification": {
+          "type": "boolean"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },

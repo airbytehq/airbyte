@@ -45,7 +45,15 @@
       "type": ["null", "string"]
     },
     "metadata": {
-      "oneOf": [
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            }
+          }
+        },
         {
           "type": "object",
           "properties": {
@@ -56,14 +64,6 @@
               "type": "string"
             },
             "value": {
-              "type": "string"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "properties": {
-            "title": {
               "type": "string"
             }
           }
