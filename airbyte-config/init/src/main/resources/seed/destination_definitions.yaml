@@ -1,97 +1,97 @@
-- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816
-  name: Local JSON
-  dockerRepository: airbyte/destination-local-json
-  dockerImageTag: 0.2.8
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json
-- destinationDefinitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6
-  name: Local CSV
+- name: Azure Blob Storage
+  destinationDefinitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
+  dockerRepository: airbyte/destination-azure-blob-storage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/azureblobstorage
+- name: BigQuery
+  destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
+  dockerRepository: airbyte/destination-bigquery
+  dockerImageTag: 0.5.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
+- name: BigQuery (denormalized typed struct)
+  destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
+  dockerRepository: airbyte/destination-bigquery-denormalized
+  dockerImageTag: 0.1.7
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
+- name: Chargify (Keen)
+  destinationDefinitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
+  dockerRepository: airbyte/destination-keen
+  dockerImageTag: 0.2.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/keen
+- name: DynamoDB
+  destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
+  dockerRepository: airbyte/destination-dynamodb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/dynamodb
+- name: Google Cloud Storage (GCS)
+  destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
+  dockerRepository: airbyte/destination-gcs
+  dockerImageTag: 0.1.2
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
+- name: Google PubSub
+  destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
+  dockerRepository: airbyte/destination-pubsub
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/pubsub
+- name: Kafka
+  destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
+  dockerRepository: airbyte/destination-kafka
+  dockerImageTag: 0.1.2
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
+- name: Local CSV
+  destinationDefinitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6
   dockerRepository: airbyte/destination-csv
   dockerImageTag: 0.2.8
   documentationUrl: https://docs.airbyte.io/integrations/destinations/local-csv
-- destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  name: Postgres
+- name: Local JSON
+  destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816
+  dockerRepository: airbyte/destination-local-json
+  dockerImageTag: 0.2.8
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json
+- name: MS SQL Server
+  destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
+  dockerRepository: airbyte/destination-mssql
+  dockerImageTag: 0.1.10
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/mssql
+- name: MeiliSearch
+  destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
+  dockerRepository: airbyte/destination-meilisearch
+  dockerImageTag: 0.2.10
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/meilisearch
+- name: MongoDB
+  destinationDefinitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
+  dockerRepository: airbyte/destination-mongodb
+  dockerImageTag: 0.1.2
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/mongodb
+- name: MySQL
+  destinationDefinitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
+  dockerRepository: airbyte/destination-mysql
+  dockerImageTag: 0.1.13
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/mysql
+- name: Oracle
+  destinationDefinitionId: 3986776d-2319-4de9-8af8-db14c0996e72
+  dockerRepository: airbyte/destination-oracle
+  dockerImageTag: 0.1.10
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/oracle
+- name: Postgres
+  destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   dockerRepository: airbyte/destination-postgres
   dockerImageTag: 0.3.11
   documentationUrl: https://docs.airbyte.io/integrations/destinations/postgres
   icon: postgresql.svg
-- destinationDefinitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
-  name: Azure Blob Storage
-  dockerRepository: airbyte/destination-azure-blob-storage
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/azureblobstorage
-- destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
-  name: BigQuery
-  dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 0.5.0
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
-- destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
-  name: BigQuery (denormalized typed struct)
-  dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 0.1.7
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
-- destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
-  name: Google Cloud Storage (GCS)
-  dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.1.2
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
-- destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
-  name: Google PubSub
-  dockerRepository: airbyte/destination-pubsub
-  dockerImageTag: 0.1.1
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/pubsub
-- destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  name: Snowflake
-  dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.3.16
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
-- destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
-  name: S3
-  dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.1.12
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
-- destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
-  name: Redshift
+- name: Redshift
+  destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
   dockerImageTag: 0.3.19
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
-- destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
-  name: MeiliSearch
-  dockerRepository: airbyte/destination-meilisearch
-  dockerImageTag: 0.2.10
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/meilisearch
-- destinationDefinitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
-  name: MySQL
-  dockerRepository: airbyte/destination-mysql
-  dockerImageTag: 0.1.13
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/mysql
-- destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
-  name: MS SQL Server
-  dockerRepository: airbyte/destination-mssql
-  dockerImageTag: 0.1.10
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/mssql
-- destinationDefinitionId: 3986776d-2319-4de9-8af8-db14c0996e72
-  name: Oracle (Alpha)
-  dockerRepository: airbyte/destination-oracle
-  dockerImageTag: 0.1.10
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/oracle
-- destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
-  name: Kafka
-  dockerRepository: airbyte/destination-kafka
-  dockerImageTag: 0.1.2
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
-- destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
-  name: DynamoDB
-  dockerRepository: airbyte/destination-dynamodb
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/dynamodb
-- destinationDefinitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
-  name: Chargify (Keen)
-  dockerRepository: airbyte/destination-keen
-  dockerImageTag: 0.2.0
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/keen
-- destinationDefinitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
-  name: MongoDB
-  dockerRepository: airbyte/destination-mongodb
-  dockerImageTag: 0.1.2
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/mongodb
+- name: S3
+  destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
+  dockerRepository: airbyte/destination-s3
+  dockerImageTag: 0.1.12
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
+- name: Snowflake
+  destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
+  dockerRepository: airbyte/destination-snowflake
+  dockerImageTag: 0.3.16
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
