@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
@@ -33,19 +34,16 @@ class IncrementalStravaStream(StravaStream, ABC):
     def cursor_field(self) -> str:
         return "start_date"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-            Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""),
-                                       current_stream_state.get(self.cursor_field, ""))}
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if len(response.json()) != 0:
             self.curr_page += 1
-            return {'page': self.curr_page}
+            return {"page": self.curr_page}
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {"per_page": self.per_page, "page": self.curr_page, "after": self.after}
 
@@ -64,6 +62,7 @@ class AthleteStats(StravaStream):
     API Docs: https://developers.strava.com/docs/reference/#api-Athletes-getStats
     Endpoint: https://www.strava.com/api/v3/<id>/stats
     """
+
     primary_key = ""
 
     def __init__(self, athlete_id: int, **kwargs):
@@ -71,8 +70,7 @@ class AthleteStats(StravaStream):
         self.athlete_id = athlete_id
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         athlete_id = self.athlete_id
         return f"athletes/{athlete_id}/stats"
@@ -84,10 +82,10 @@ class Activities(IncrementalStravaStream):
     API Docs: https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities
     Endpoint: https://www.strava.com/api/v3/athlete/activities
     """
+
     primary_key = "id"
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "athlete/activities"

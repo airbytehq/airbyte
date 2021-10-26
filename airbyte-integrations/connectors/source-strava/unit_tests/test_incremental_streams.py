@@ -27,7 +27,7 @@ def test_get_updated_state(patch_incremental_base_class, start_date):
     expected_cursor_field = "start_date"
     inputs = {
         "current_stream_state": {expected_cursor_field: "2015-01-01T00:00:00Z"},
-        "latest_record": {expected_cursor_field: "2016-01-01T00:00:00Z"}
+        "latest_record": {expected_cursor_field: "2016-01-01T00:00:00Z"},
     }
     expected_state = {"start_date": "2016-01-01T00:00:00Z"}
     assert stream.get_updated_state(**inputs) == expected_state
@@ -38,8 +38,7 @@ def test_stream_slices(patch_incremental_base_class, start_date):
     cursor_field = "start_date"
     epoch_string = "1970-01-01T00:00:00Z"
     epoch_timestamp = 0
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [cursor_field],
-              "stream_state": {cursor_field: epoch_string}}
+    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [cursor_field], "stream_state": {cursor_field: epoch_string}}
     expected_stream_slice = [{"after": epoch_timestamp}]
     assert stream.stream_slices(**inputs) == expected_stream_slice
 
