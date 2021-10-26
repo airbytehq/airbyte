@@ -54,6 +54,7 @@ class MondayStream(HttpStream, ABC):
         is_complex_query = response.json().get("errors")
         return response.status_code == 429 or 500 <= response.status_code < 600 or is_complex_query
 
+    @property
     def retry_factor(self) -> int:
         return 15
 
