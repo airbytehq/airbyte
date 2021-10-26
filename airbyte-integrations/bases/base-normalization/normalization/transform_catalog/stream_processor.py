@@ -575,6 +575,15 @@ where 1 = 1
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
 
         scd_sql_template = """
+{{ '{% if is_incremental() %}' }}
+with previous_active_scd_data as (
+    select
+        {{ col_ab_id }} as airbyte_previous_active_ab_id,
+        {{ active_row }} as airbyte_is_previous_active_row
+    from {{ '{{ this }}' }}
+    where {{ active_row }} = 1
+)
+{{ '{% endif %}' }}
 -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
 select
   {%- if parent_hash_id %}
@@ -591,24 +600,31 @@ select
   {{ cursor_field }} as {{ airbyte_start_at }},
   lag({{ cursor_field }}) over (
     partition by {{ primary_key_partition | join(", ") }}
-    order by {{ cursor_field }} {{ order_null }}, {{ cursor_field }} desc, {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+    order by
+        {{ cursor_field }} {{ order_null }},
+        {{ cursor_field }} desc,
+        {{ col_emitted_at }} desc{{ cdc_updated_at_order }},
+        {{ col_ab_id }}
   ) as {{ airbyte_end_at }},
   case when lag({{ cursor_field }}) over (
     partition by {{ primary_key_partition | join(", ") }}
     order by
         {{ cursor_field }} {{ order_null }},
         {{ cursor_field }} desc,
-        {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+        {{ col_emitted_at }} desc{{ cdc_updated_at_order }},
+        {{ col_ab_id }}
   ) is null {{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
   {{ col_ab_id }},
   {{ col_emitted_at }},
   {{ hash_id }}
-from {{ from_table }}
+from {{ from_table }} as new_data
 {{ sql_table_comment }}
-where 1 = 1
 {{ '{% if is_incremental() %}' }}
--- always update records that were marked as active rows
-and {{ col_ab_id }} in (select {{ col_ab_id }} from {{ '{{ this }}' }} where {{ active_row }} = 1)
+left join previous_active_scd_data as old_data 
+on new_data.{{ col_ab_id }} = old_data.airbyte_previous_active_ab_id
+where coalesce(old_data.airbyte_is_previous_active_row, 1) = 1
+{{ '{% else %}' }}
+where 1 = 1
 {{ '{% endif %}' }}
         """
 
@@ -757,7 +773,13 @@ where 1 = 1
         return [column_names[field][0] for field in column_names]
 
     def add_to_outputs(
-        self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "", unique_key: str = "", subdir: str = ""
+        self,
+        sql: str,
+        is_intermediate: bool,
+        column_count: int = 0,
+        suffix: str = "",
+        unique_key: str = "",
+        subdir: str = "",
     ) -> str:
         config = {}
         schema = self.get_schema(is_intermediate)
