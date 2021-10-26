@@ -110,6 +110,9 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
   @VisibleForTesting
   static Optional<Database> getJobsDatabase(final String databaseUser, final String databasePassword, final String databaseUrl) {
     try {
+      if (databaseUrl == null || "".equals(databaseUrl.trim())) {
+        throw new IllegalArgumentException("The databaseUrl cannot be empty.");
+      }
       // If the environment variables exist, it means the migration is run in production.
       // Connect to the official job database.
       final Database jobsDatabase = new JobsDatabaseInstance(databaseUser, databasePassword, databaseUrl).getInitialized();
