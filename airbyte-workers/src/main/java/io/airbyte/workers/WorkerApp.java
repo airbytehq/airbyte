@@ -111,7 +111,8 @@ public class WorkerApp {
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
     specWorker.registerWorkflowImplementationTypes(SpecWorkflowImpl.class);
     specWorker.registerActivitiesImplementations(
-        new SpecActivityImpl(processFactory, workspaceRoot, workerEnvironment, logConfigs, databaseUser, databasePassword, databaseUrl, airbyteVersion));
+        new SpecActivityImpl(processFactory, workspaceRoot, workerEnvironment, logConfigs, databaseUser, databasePassword, databaseUrl,
+            airbyteVersion));
 
     final Worker checkConnectionWorker =
         factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkers.getMaxCheckWorkers()));

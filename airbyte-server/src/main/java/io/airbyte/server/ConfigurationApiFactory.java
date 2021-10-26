@@ -6,7 +6,6 @@ package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
-import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -42,21 +41,22 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static String airbyteVersion;
 
   public static void setValues(
-      final WorkflowServiceStubs temporalService,
-      final ConfigRepository configRepository,
-      final JobPersistence jobPersistence,
-      final ConfigPersistence seed,
-      final SchedulerJobClient schedulerJobClient,
-      final CachingSynchronousSchedulerClient synchronousSchedulerClient,
-      final FileTtlManager archiveTtlManager,
-      final Map<String, String> mdc,
-      final Database configsDatabase,
-      final Database jobsDatabase,
-      final TrackingClient trackingClient,
-      final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs,
-      final String webappUrl,
-      final String airbyteVersion,
-      final Path workspaceRoot) {
+                               final WorkflowServiceStubs temporalService,
+                               final ConfigRepository configRepository,
+                               final JobPersistence jobPersistence,
+                               final ConfigPersistence seed,
+                               final SchedulerJobClient schedulerJobClient,
+                               final CachingSynchronousSchedulerClient synchronousSchedulerClient,
+                               final FileTtlManager archiveTtlManager,
+                               final Map<String, String> mdc,
+                               final Database configsDatabase,
+                               final Database jobsDatabase,
+                               final TrackingClient trackingClient,
+                               final WorkerEnvironment workerEnvironment,
+                               final LogConfigs logConfigs,
+                               final String webappUrl,
+                               final String airbyteVersion,
+                               final Path workspaceRoot) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;

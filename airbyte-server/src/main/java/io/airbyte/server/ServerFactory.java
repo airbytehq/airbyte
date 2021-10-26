@@ -6,7 +6,6 @@ package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
-import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -25,33 +24,37 @@ import org.slf4j.MDC;
 public interface ServerFactory {
 
   ServerRunnable create(SchedulerJobClient schedulerJobClient,
-      SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
-      WorkflowServiceStubs temporalService,
-      ConfigRepository configRepository,
-      JobPersistence jobPersistence,
-      ConfigPersistence seed,
-      Database configsDatabase,
-      Database jobsDatabase,
-      TrackingClient trackingClient, WorkerEnvironment workerEnvironment, LogConfigs logConfigs,
-      String webappUrl, String airbyteVersion, Path workspaceRoot);
+                        SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
+                        WorkflowServiceStubs temporalService,
+                        ConfigRepository configRepository,
+                        JobPersistence jobPersistence,
+                        ConfigPersistence seed,
+                        Database configsDatabase,
+                        Database jobsDatabase,
+                        TrackingClient trackingClient,
+                        WorkerEnvironment workerEnvironment,
+                        LogConfigs logConfigs,
+                        String webappUrl,
+                        String airbyteVersion,
+                        Path workspaceRoot);
 
   class Api implements ServerFactory {
 
     @Override
     public ServerRunnable create(final SchedulerJobClient schedulerJobClient,
-        final SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
-        final WorkflowServiceStubs temporalService,
-        final ConfigRepository configRepository,
-        final JobPersistence jobPersistence,
-        final ConfigPersistence seed,
-        final Database configsDatabase,
-        final Database jobsDatabase,
-        final TrackingClient trackingClient,
-        final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs,
-        final String webappUrl,
-        final String airbyteVersion,
-        final Path workspaceRoot
-    ) {
+                                 final SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
+                                 final WorkflowServiceStubs temporalService,
+                                 final ConfigRepository configRepository,
+                                 final JobPersistence jobPersistence,
+                                 final ConfigPersistence seed,
+                                 final Database configsDatabase,
+                                 final Database jobsDatabase,
+                                 final TrackingClient trackingClient,
+                                 final WorkerEnvironment workerEnvironment,
+                                 final LogConfigs logConfigs,
+                                 final String webappUrl,
+                                 final String airbyteVersion,
+                                 final Path workspaceRoot) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           temporalService,
@@ -69,8 +72,7 @@ public interface ServerFactory {
           logConfigs,
           webappUrl,
           airbyteVersion,
-          workspaceRoot
-      );
+          workspaceRoot);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

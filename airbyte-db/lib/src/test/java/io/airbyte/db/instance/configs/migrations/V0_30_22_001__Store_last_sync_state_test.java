@@ -99,7 +99,8 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   public void testGetJobsDatabase() {
     // when there is no database environment variable, the return value is empty
     final EnvConfigs envConfigs = new EnvConfigs();
-    assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase(envConfigs.getDatabaseUser(), envConfigs.getDatabasePassword(), envConfigs.getDatabaseUrl()).isEmpty());
+    assertTrue(V0_30_22_001__Store_last_sync_state
+        .getJobsDatabase(envConfigs.getDatabaseUser(), envConfigs.getDatabasePassword(), envConfigs.getDatabaseUrl()).isEmpty());
 
     // when there is database environment variable, return the database
     final Configs configs = mock(Configs.class);
@@ -107,7 +108,8 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
     when(configs.getDatabasePassword()).thenReturn(container.getPassword());
     when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
 
-    assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase(envConfigs.getDatabaseUser(), envConfigs.getDatabasePassword(), envConfigs.getDatabaseUrl()).isPresent());
+    assertTrue(V0_30_22_001__Store_last_sync_state
+        .getJobsDatabase(envConfigs.getDatabaseUser(), envConfigs.getDatabasePassword(), envConfigs.getDatabaseUrl()).isPresent());
   }
 
   @Test

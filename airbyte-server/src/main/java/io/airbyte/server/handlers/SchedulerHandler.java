@@ -28,10 +28,8 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -88,13 +86,14 @@ public class SchedulerHandler {
   private final LogConfigs logConfigs;
 
   public SchedulerHandler(final ConfigRepository configRepository,
-      final SchedulerJobClient schedulerJobClient,
-      final SynchronousSchedulerClient synchronousSchedulerClient,
-      final JobPersistence jobPersistence,
-      final JobNotifier jobNotifier,
-      final WorkflowServiceStubs temporalService,
-      final OAuthConfigSupplier oAuthConfigSupplier,
-      final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs) {
+                          final SchedulerJobClient schedulerJobClient,
+                          final SynchronousSchedulerClient synchronousSchedulerClient,
+                          final JobPersistence jobPersistence,
+                          final JobNotifier jobNotifier,
+                          final WorkflowServiceStubs temporalService,
+                          final OAuthConfigSupplier oAuthConfigSupplier,
+                          final WorkerEnvironment workerEnvironment,
+                          final LogConfigs logConfigs) {
     this(
         configRepository,
         schedulerJobClient,
@@ -110,16 +109,17 @@ public class SchedulerHandler {
 
   @VisibleForTesting
   SchedulerHandler(final ConfigRepository configRepository,
-      final SchedulerJobClient schedulerJobClient,
-      final SynchronousSchedulerClient synchronousSchedulerClient,
-      final ConfigurationUpdate configurationUpdate,
-      final JsonSchemaValidator jsonSchemaValidator,
-      final SpecFetcher specFetcher,
-      final JobPersistence jobPersistence,
-      final JobNotifier jobNotifier,
-      final WorkflowServiceStubs temporalService,
-      final OAuthConfigSupplier oAuthConfigSupplier,
-      final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs) {
+                   final SchedulerJobClient schedulerJobClient,
+                   final SynchronousSchedulerClient synchronousSchedulerClient,
+                   final ConfigurationUpdate configurationUpdate,
+                   final JsonSchemaValidator jsonSchemaValidator,
+                   final SpecFetcher specFetcher,
+                   final JobPersistence jobPersistence,
+                   final JobNotifier jobNotifier,
+                   final WorkflowServiceStubs temporalService,
+                   final OAuthConfigSupplier oAuthConfigSupplier,
+                   final WorkerEnvironment workerEnvironment,
+                   final LogConfigs logConfigs) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -270,7 +270,7 @@ public class SchedulerHandler {
   }
 
   public DestinationDefinitionSpecificationRead getDestinationSpecification(
-      final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+                                                                            final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID destinationDefinitionId = destinationDefinitionIdRequestBody.getDestinationDefinitionId();
     final StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationDefinitionId);

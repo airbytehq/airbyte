@@ -83,7 +83,8 @@ public interface DiscoverCatalogWorkflow {
                                        final LogConfigs logConfigs,
                                        final String databaseUser,
                                        final String databasePassword,
-                                       final String databaseUrl, final String airbyteVersion) {
+                                       final String databaseUrl,
+                                       final String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;

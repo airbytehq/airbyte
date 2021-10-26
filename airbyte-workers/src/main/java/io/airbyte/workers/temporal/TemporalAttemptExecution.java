@@ -7,7 +7,6 @@ package io.airbyte.workers.temporal;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.db.Database;

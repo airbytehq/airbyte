@@ -82,7 +82,6 @@ import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -160,8 +159,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final Database configsDatabase,
                           final Database jobsDatabase,
                           final TrackingClient trackingClient,
-      final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs, final String webappUrl,
-      final String airbyteVersion, final Path workspaceRoot) {
+                          final WorkerEnvironment workerEnvironment,
+                          final LogConfigs logConfigs,
+                          final String webappUrl,
+                          final String airbyteVersion,
+                          final Path workspaceRoot) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;

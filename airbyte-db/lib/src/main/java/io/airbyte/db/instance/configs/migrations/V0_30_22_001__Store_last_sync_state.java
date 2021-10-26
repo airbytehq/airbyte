@@ -9,7 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.State;
@@ -56,7 +55,8 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
   private final String databaseUrl;
 
   public V0_30_22_001__Store_last_sync_state() {
-    // EnvConfigs left in place for migration purposes as FlyWay prevents injection, but isolated to local scope.
+    // EnvConfigs left in place for migration purposes as FlyWay prevents injection, but isolated to
+    // local scope.
     final EnvConfigs configs = new EnvConfigs();
     this.databaseUser = configs.getDatabaseUser();
     this.databasePassword = configs.getDatabasePassword();

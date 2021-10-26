@@ -6,11 +6,9 @@ package io.airbyte.server.apis;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
-import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -43,8 +41,7 @@ public class ConfigurationApiTest {
         new LogConfiguration("", "", "", "", "", "", ""),
         "http://localhost",
         "0.1.0-alpha",
-        Path.of("")
-        );
+        Path.of(""));
     assertTrue(configurationApi.canImportDefinitons());
   }
 
