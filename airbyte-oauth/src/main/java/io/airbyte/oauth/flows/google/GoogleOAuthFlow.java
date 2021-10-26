@@ -4,7 +4,6 @@
 
 package io.airbyte.oauth.flows.google;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -63,7 +62,7 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
   protected abstract String getScope();
 
   @Override
-  protected String getAccessTokenUrl(JsonNode oAuthParamConfig) {
+  protected String getAccessTokenUrl() {
     return ACCESS_TOKEN_URL;
   }
 

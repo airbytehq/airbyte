@@ -54,7 +54,7 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected String getAccessTokenUrl(JsonNode oAuthParamConfig) {
+  protected String getAccessTokenUrl() {
     return ACCESS_TOKEN_URL;
   }
 

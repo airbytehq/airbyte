@@ -30,7 +30,8 @@ public abstract class OAuthFlowIntegrationTest {
    * due to the consent flow in the browser
    */
   protected static final Logger LOGGER = LoggerFactory.getLogger(OAuthFlowIntegrationTest.class);
-  protected static final String REDIRECT_URL = "http://localhost/code";
+  protected static final String REDIRECT_URL = "http://localhost/auth_flow";
+  protected static final int SERVER_LISTENING_PORT = 80;
 
   protected ConfigRepository configRepository;
   protected OAuthFlowImplementation flow;
@@ -51,12 +52,18 @@ public abstract class OAuthFlowIntegrationTest {
 
     flow = this.getFlowObject(configRepository);
 
-    server = HttpServer.create(new InetSocketAddress(80), 0);
+    System.out.println(getServerListeningPort());
+    server = HttpServer.create(new InetSocketAddress(getServerListeningPort()), 0);
     server.setExecutor(null); // creates a default executor
     server.start();
     serverHandler = new ServerHandler("code");
-    server.createContext("/code", serverHandler);
+    // Same endpoint as we use for airbyte instance
+    server.createContext("/auth_flow", serverHandler);
 
+  }
+
+  protected int getServerListeningPort() {
+    return SERVER_LISTENING_PORT;
   }
 
   @AfterEach
