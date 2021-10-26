@@ -21,39 +21,31 @@ def patch_base_class(mocker):
 
 def test_request_params(patch_base_class, config):
     stream = ZenloopStream(config["api_token"], config["date_from"], config["public_hash_id"])
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {'page': "1"}}
-    # TODO: replace this with your expected request parameters
     expected_params = {'page': "1"}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class, config):
     stream = ZenloopStream(config["api_token"], config["date_from"], config["public_hash_id"])
-    # TODO: replace this with your input parameters
     inputs = {"response": MagicMock()}
     inputs["response"].json.return_value = {"meta": {"page": 1, "per_page": 12, "total": 8}}
-    # TODO: replace this with your expected next page token
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
 
 
 def test_parse_response(patch_base_class, config):
     stream = ZenloopStream(config["api_token"], config["date_from"], config["public_hash_id"])
-    # TODO: replace this with your input parameters
     response = MagicMock()
     response.json.return_value = {"answers": [{"id": 123, "name": "John Doe"}]}
     inputs = {"response": response}
-    # TODO: replace this with your expected parced object
     expected_parsed_object = {"answers": [{"id": 123, "name": "John Doe"}]}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
 def test_request_headers(patch_base_class, config):
     stream = ZenloopStream(config["api_token"], config["date_from"], config["public_hash_id"])
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
     expected_headers = {}
     assert stream.request_headers(**inputs) == expected_headers
 
