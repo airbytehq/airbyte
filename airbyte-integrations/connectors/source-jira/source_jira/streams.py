@@ -91,6 +91,17 @@ class StartDateJiraStream(JiraStream, ABC):
         super().__init__(**kwargs)
         self._start_date = start_date
 
+    def jql_compare_date(self, stream_state: Mapping[str, any] = {}) -> Optional[str]:
+        issues_state = None
+        if stream_state.get(self.cursor_field):
+            issues_state = pendulum.parse(stream_state.get(self.cursor_field, self._start_date))
+        elif self._start_date:
+            issues_state = pendulum.parse(self._start_date)
+        if issues_state:
+            issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
+            return f"{self.cursor_field} > '{issues_state_row}'"
+        return None
+
 
 class IncrementalJiraStream(StartDateJiraStream, ABC):
     @property
@@ -177,13 +188,12 @@ class BoardIssues(V1ApiJiraStream, IncrementalJiraStream):
         board_id = stream_slice["board_id"]
         return f"board/{board_id}/issue"
 
-    def request_params(self, stream_state=None, **kwargs):
-        stream_state = stream_state or {}
+    def request_params(self, stream_state: Mapping[str, Any] = {}, **kwargs):
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["fields"] = ["key", "updated"]
-        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
-        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
-        params["jql"] = f"{self.cursor_field} > '{issues_state_row}'"
+        jql = self.jql_compare_date(stream_state)
+        if jql:
+            params["jql"] = jql
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -218,14 +228,12 @@ class Epics(IncrementalJiraStream):
     def path(self, **kwargs) -> str:
         return "search"
 
-    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
-        stream_state = stream_state or {}
+    def request_params(self, stream_state: Mapping[str, Any] = {}, stream_slice: Mapping[str, Any] = None, **kwargs):
         project_id = stream_slice["project_id"]
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         params["fields"] = ["summary", "description", "status", "updated"]
-        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
-        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
-        params["jql"] = f"issuetype = 'Epic' and project = '{project_id}' and {self.cursor_field} > '{issues_state_row}'"
+        jql_parts = ["issuetype = 'Epic'", f"project = '{project_id}'", self.jql_compare_date(stream_state)]
+        params["jql"] = " and ".join([p for p in jql_parts if p])
         params["expand"] = "renderedFields"
         return params
 
@@ -295,14 +303,12 @@ class Issues(IncrementalJiraStream):
     def path(self, **kwargs) -> str:
         return "search"
 
-    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
-        stream_state = stream_state or {}
+    def request_params(self, stream_state: Mapping[str, Any] = {}, stream_slice: Mapping[str, Any] = None, **kwargs):
         project_id = stream_slice["project_id"]
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         params["fields"] = stream_slice["fields"]
-        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
-        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
-        params["jql"] = f"project = '{project_id}' and {self.cursor_field} > '{issues_state_row}'"
+        jql_parts = [f"project = '{project_id}'", self.jql_compare_date(stream_state)]
+        params["jql"] = " and ".join([p for p in jql_parts if p])
         if self._expand_changelog:
             params["expand"] = "changelog"
         return params
@@ -657,7 +663,7 @@ class Projects(JiraStream):
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         for project in super().read_records(**kwargs):
-            if project["key"] in self._projects:
+            if not self._projects or project["key"] in self._projects:
                 yield project
         yield from []
 
@@ -860,13 +866,12 @@ class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
         sprint_id = stream_slice["sprint_id"]
         return f"sprint/{sprint_id}/issue"
 
-    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
-        stream_state = stream_state or {}
+    def request_params(self, stream_state: Mapping[str, Any] = {}, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["fields"] = stream_slice["fields"]
-        issues_state = pendulum.parse(max(self._start_date, stream_state.get(self.cursor_field, self._start_date)))
-        issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
-        params["jql"] = f"{self.cursor_field} > '{issues_state_row}'"
+        jql = self.jql_compare_date(stream_state)
+        if jql:
+            params["jql"] = jql
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:

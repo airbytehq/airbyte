@@ -256,11 +256,11 @@ class TestCsvParser(AbstractTestParser):
                 "AbstractFileParser": CsvParser(
                     format={
                         "filetype": "csv",
-                        "advanced_options": json.dumps({
-                            "column_names": ["id", "name", "valid", "code", "degrees", "birthday", "last_seen"]
-                        })
+                        "advanced_options": json.dumps(
+                            {"column_names": ["id", "name", "valid", "code", "degrees", "birthday", "last_seen"]}
+                        ),
                     },
-                    master_schema={}
+                    master_schema={},
                 ),
                 "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_8_no_header.csv"),
                 "num_records": 8,

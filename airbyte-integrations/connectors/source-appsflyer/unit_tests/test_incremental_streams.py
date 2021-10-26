@@ -2,13 +2,10 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import timezone
-from unittest.mock import MagicMock
-
 import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
-from pendulum.parsing.exceptions import ParserError
+
 from pytest import fixture, raises
 from source_appsflyer import fields
 from source_appsflyer.source import (

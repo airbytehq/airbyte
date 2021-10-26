@@ -19,8 +19,6 @@ services:
     image: airbyte/scheduler:${VERSION}
     build:
       dockerfile: Dockerfile
-      args:
-        JDK_VERSION: ${JDK_VERSION}
       context: airbyte-scheduler/app
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
@@ -28,9 +26,6 @@ services:
     image: airbyte/worker:${VERSION}
     build:
       dockerfile: Dockerfile
-      args:
-        ARCH: ${DOCKER_BUILD_ARCH}
-        JDK_VERSION: ${JDK_VERSION}
       context: airbyte-workers
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
@@ -38,8 +33,6 @@ services:
     image: airbyte/server:${VERSION}
     build:
       dockerfile: Dockerfile
-      args:
-        JDK_VERSION: ${JDK_VERSION}
       context: airbyte-server
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
@@ -54,8 +47,6 @@ services:
     image: airbyte/migration:${VERSION}
     build:
       dockerfile: Dockerfile
-      args:
-        JDK_VERSION: ${JDK_VERSION}
       context: airbyte-migration
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}

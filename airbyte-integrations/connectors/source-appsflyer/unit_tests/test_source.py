@@ -6,7 +6,6 @@ from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
 import pytest
-from requests import request
 from source_appsflyer.source import SourceAppsflyer
 
 

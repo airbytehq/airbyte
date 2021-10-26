@@ -14,7 +14,6 @@ import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
@@ -206,9 +205,7 @@ public class SourceHandler {
     // read configuration from db
     final StandardSourceDefinition sourceDef = configRepository
         .getSourceDefinitionFromSource(sourceId);
-    final String imageName = DockerUtils
-        .getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    final ConnectorSpecification spec = specFetcher.execute(imageName);
+    final ConnectorSpecification spec = specFetcher.getSpec(sourceDef);
     return buildSourceRead(sourceId, spec);
   }
 
@@ -243,9 +240,7 @@ public class SourceHandler {
 
   public static ConnectorSpecification getSpecFromSourceDefinitionId(final SpecFetcher specFetcher, final StandardSourceDefinition sourceDefinition)
       throws IOException, ConfigNotFoundException {
-    final String imageName = DockerUtils
-        .getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
-    return specFetcher.execute(imageName);
+    return specFetcher.getSpec(sourceDefinition);
   }
 
   private void persistSourceConnection(final String name,
