@@ -51,7 +51,7 @@
       },
       "delete_messages": {
         "title": "Delete Messages After Read",
-        "description": "If Enabled, messages will be deleted from the SQS Queue after being read. If Disabled, messages are left in the queue and can be read more than once.",
+        "description": "If Enabled, messages will be deleted from the SQS Queue after being read. If Disabled, messages are left in the queue and can be read more than once. WARNING: Enabling this option can result in data loss in cases of failure, use with caution, see documentation for more detail. ",
         "type": "boolean",
         "default": false,
         "order": 2
