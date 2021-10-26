@@ -141,8 +141,8 @@ public class DestinationDefinitionsHandler {
 
     final boolean imageTagHasChanged = !currentDestination.getDockerImageTag().equals(destinationDefinitionUpdate.getDockerImageTag());
     final ConnectorSpecification spec = (imageTagHasChanged || currentDestination.getSpec() == null)
-                                        ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag())
-                                        : currentDestination.getSpec();
+        ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag())
+        : currentDestination.getSpec();
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
         .withDestinationDefinitionId(currentDestination.getDestinationDefinitionId())

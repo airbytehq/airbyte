@@ -40,18 +40,18 @@ public class SourceDefinitionsHandler {
   private final CachingSynchronousSchedulerClient schedulerSynchronousClient;
 
   public SourceDefinitionsHandler(
-      final ConfigRepository configRepository,
-      final DockerImageValidator imageValidator,
-      final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
+                                  final ConfigRepository configRepository,
+                                  final DockerImageValidator imageValidator,
+                                  final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
     this(configRepository, imageValidator, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
   }
 
   public SourceDefinitionsHandler(
-      final ConfigRepository configRepository,
-      final DockerImageValidator imageValidator,
-      final Supplier<UUID> uuidSupplier,
-      final CachingSynchronousSchedulerClient schedulerSynchronousClient,
-      final AirbyteGithubStore githubStore) {
+                                  final ConfigRepository configRepository,
+                                  final DockerImageValidator imageValidator,
+                                  final Supplier<UUID> uuidSupplier,
+                                  final CachingSynchronousSchedulerClient schedulerSynchronousClient,
+                                  final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.imageValidator = imageValidator;
@@ -125,13 +125,14 @@ public class SourceDefinitionsHandler {
 
   public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final StandardSourceDefinition currentSourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
+    final StandardSourceDefinition currentSourceDefinition =
+        configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
     imageValidator.assertValidIntegrationImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag());
 
     final boolean imageTagHasChanged = !currentSourceDefinition.getDockerImageTag().equals(sourceDefinitionUpdate.getDockerImageTag());
     final ConnectorSpecification spec = (imageTagHasChanged || currentSourceDefinition.getSpec() == null)
-                                        ? getSpecForImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag())
-                                        : currentSourceDefinition.getSpec();
+        ? getSpecForImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag())
+        : currentSourceDefinition.getSpec();
 
     final StandardSourceDefinition newSource = new StandardSourceDefinition()
         .withSourceDefinitionId(currentSourceDefinition.getSourceDefinitionId())
