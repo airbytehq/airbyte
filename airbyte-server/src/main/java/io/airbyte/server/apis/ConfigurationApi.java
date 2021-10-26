@@ -198,7 +198,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         seed,
         workspaceHelper,
         archiveTtlManager,
-        specFetcher);
+        specFetcher,
+        true);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
@@ -335,7 +336,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public SourceReadList searchSources(SourceSearch sourceSearch) {
+  public SourceReadList searchSources(final SourceSearch sourceSearch) {
     return execute(() -> sourceHandler.searchSources(sourceSearch));
   }
 
@@ -439,7 +440,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public DestinationReadList searchDestinations(DestinationSearch destinationSearch) {
+  public DestinationReadList searchDestinations(final DestinationSearch destinationSearch) {
     return execute(() -> destinationHandler.searchDestinations(destinationSearch));
   }
 
@@ -476,7 +477,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public ConnectionReadList searchConnections(ConnectionSearch connectionSearch) {
+  public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch) {
     return execute(() -> connectionsHandler.searchConnections(connectionSearch));
   }
 
@@ -655,6 +656,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public ImportRead importIntoWorkspace(final ImportRequestBody importRequestBody) {
     return execute(() -> archiveHandler.importIntoWorkspace(importRequestBody));
+  }
+
+  public boolean canImportDefinitons() {
+    return archiveHandler.canImportDefinitions();
   }
 
   private <T> T execute(final HandlerCall<T> call) {

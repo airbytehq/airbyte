@@ -46,7 +46,7 @@ public class GoogleSecretManagerPersistenceIntegrationTest {
         client.deleteSecret(SecretName.of(
             configs.getSecretStoreGcpProjectId(),
             baseCoordinate));
-      } catch (NotFoundException nfe) {
+      } catch (final NotFoundException nfe) {
         // do nothing
       }
     }

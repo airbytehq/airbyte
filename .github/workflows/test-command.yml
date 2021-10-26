@@ -22,22 +22,18 @@ jobs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.repo }}
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Start EC2 Runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
-        with:
-          mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
           ec2-image-id: ami-0d648081937c75a73
-          ec2-instance-type: c5.2xlarge
-          subnet-id: subnet-0469a9e68a379c1d3
-          security-group-id: sg-0793f3c9413f21970
   integration-test:
     timeout-minutes: 240
     needs: start-test-runner
@@ -96,6 +92,7 @@ jobs:
           EXCHANGE_RATES_TEST_CREDS: ${{ secrets.EXCHANGE_RATES_TEST_CREDS }}
           FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS }}
           FACEBOOK_PAGES_INTEGRATION_TEST_CREDS: ${{ secrets.FACEBOOK_PAGES_INTEGRATION_TEST_CREDS }}
+          FILE_SECURE_HTTPS_TEST_CREDS: ${{ secrets.FILE_SECURE_HTTPS_TEST_CREDS }}
           FRESHDESK_TEST_CREDS: ${{ secrets.FRESHDESK_TEST_CREDS }}
           GITLAB_INTEGRATION_TEST_CREDS: ${{ secrets.GITLAB_INTEGRATION_TEST_CREDS }}
           GH_NATIVE_INTEGRATION_TEST_CREDS: ${{ secrets.GH_NATIVE_INTEGRATION_TEST_CREDS }}
@@ -108,6 +105,8 @@ jobs:
           GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS }}
           GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC }}
           GOOGLE_SHEETS_TESTS_CREDS: ${{ secrets.GOOGLE_SHEETS_TESTS_CREDS }}
+          GOOGLE_SHEETS_TESTS_CREDS_SRV_ACC: ${{ secrets.GOOGLE_SHEETS_TESTS_CREDS_SRV_ACC }}
+          GOOGLE_SHEETS_TESTS_CREDS_OLD: ${{ secrets.GOOGLE_SHEETS_TESTS_CREDS_OLD }}
           GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS: ${{ secrets.GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS }}
           GREENHOUSE_TEST_CREDS: ${{ secrets.GREENHOUSE_TEST_CREDS }}
           GREENHOUSE_TEST_CREDS_LIMITED: ${{ secrets.GREENHOUSE_TEST_CREDS_LIMITED }}
@@ -133,12 +132,15 @@ jobs:
           MYSQL_SSH_PWD_TEST_CREDS: ${{ secrets.MYSQL_SSH_PWD_TEST_CREDS }}
           POSTHOG_TEST_CREDS: ${{ secrets.POSTHOG_TEST_CREDS }}
           PIPEDRIVE_INTEGRATION_TESTS_CREDS: ${{ secrets.PIPEDRIVE_INTEGRATION_TESTS_CREDS }}
+          PIPEDRIVE_INTEGRATION_TESTS_CREDS_OAUTH: ${{ secrets.PIPEDRIVE_INTEGRATION_TESTS_CREDS_OAUTH }}
+          PIPEDRIVE_INTEGRATION_TESTS_CREDS_OLD: ${{ secrets.PIPEDRIVE_INTEGRATION_TESTS_CREDS_OLD }}
           RECHARGE_INTEGRATION_TEST_CREDS: ${{ secrets.RECHARGE_INTEGRATION_TEST_CREDS }}
           QUICKBOOKS_TEST_CREDS: ${{ secrets.QUICKBOOKS_TEST_CREDS }}
           SALESFORCE_BULK_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_BULK_INTEGRATION_TESTS_CREDS }}
           SALESFORCE_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_INTEGRATION_TESTS_CREDS }}
           SENDGRID_INTEGRATION_TEST_CREDS: ${{ secrets.SENDGRID_INTEGRATION_TEST_CREDS }}
           SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
+          SHOPIFY_INTEGRATION_TEST_OAUTH_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_OAUTH_CREDS }}
           SOURCE_OKTA_TEST_CREDS: ${{ secrets.SOURCE_OKTA_TEST_CREDS }}
           SOURCE_SLACK_TEST_CREDS: ${{ secrets.SOURCE_SLACK_TEST_CREDS }}
           SOURCE_SLACK_OAUTH_TEST_CREDS: ${{ secrets.SOURCE_SLACK_OAUTH_TEST_CREDS }}
@@ -165,6 +167,7 @@ jobs:
           ZENDESK_SUNSHINE_TEST_CREDS: ${{ secrets.ZENDESK_SUNSHINE_TEST_CREDS }}
           ZENDESK_TALK_TEST_CREDS: ${{ secrets.ZENDESK_TALK_TEST_CREDS }}
           ZENDESK_SUPPORT_TEST_CREDS: ${{ secrets.ZENDESK_SUPPORT_TEST_CREDS }}
+          ZENDESK_SUPPORT_OAUTH_TEST_CREDS: ${{ secrets.ZENDESK_SUPPORT_OAUTH_TEST_CREDS }}
           ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
           PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
           DESTINATION_S3_INTEGRATION_TEST_CREDS: ${{ secrets.DESTINATION_S3_INTEGRATION_TEST_CREDS }}
@@ -177,8 +180,12 @@ jobs:
           SOURCE_BAMBOO_HR_CREDS: ${{ secrets.SOURCE_BAMBOO_HR_CREDS }}
           SOURCE_LINKEDIN_ADS_TEST_CREDS: ${{ secrets.SOURCE_LINKEDIN_ADS_TEST_CREDS }}
           SOURCE_BIGCOMMERCE_CREDS: ${{ secrets.SOURCE_BIGCOMMERCE_CREDS }}
+          SOURCE_TIKTOK_MARKETING_TEST_CREDS: ${{ secrets.SOURCE_TIKTOK_MARKETING_TEST_CREDS }}
+          SOURCE_TIKTOK_MARKETING_PROD_TEST_CREDS: ${{ secrets.SOURCE_TIKTOK_MARKETING_PROD_TEST_CREDS }}
           DESTINATION_DATABRICKS_CREDS: ${{ secrets.DESTINATION_DATABRICKS_CREDS }}
           MONGODB_TEST_CREDS: ${{ secrets.MONGODB_TEST_CREDS }}
+          SOURCE_ONESIGNAL_TEST_CREDS: ${{ secrets.SOURCE_ONESIGNAL_TEST_CREDS }}
+          SOURCE_SALESLOFT_TEST_CREDS: ${{ secrets.SOURCE_SALESLOFT_TEST_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}

@@ -49,8 +49,8 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      Optional<AirbyteCatalog> catalog;
-      try (InputStream stdout = process.getInputStream()) {
+      final Optional<AirbyteCatalog> catalog;
+      try (final InputStream stdout = process.getInputStream()) {
         catalog = streamFactory.create(IOs.newBufferedReader(stdout))
             .filter(message -> message.getType() == Type.CATALOG)
             .map(AirbyteMessage::getCatalog)
@@ -59,7 +59,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
         WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
       }
 
-      int exitCode = process.exitValue();
+      final int exitCode = process.exitValue();
       if (exitCode == 0) {
         if (catalog.isEmpty()) {
           throw new WorkerException("Integration failed to output a catalog struct.");

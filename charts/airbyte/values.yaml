@@ -44,7 +44,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.30.18-alpha
+    tag: 0.30.22-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -121,13 +121,13 @@ webapp:
   fullstory:
     enabled: false
 
-  ## @param webapp.openreplay.enabled Whether or not to enable openreplay
-  openreplay:
-    enabled: false
-
-  ## @param webapp.storytime.enabled Whether or not to enable Papercups storytime
-  storytime:
-    enabled: false
+  ## @param webapp.extraEnv [array] Additional env vars for webapp pod(s).
+  ## Example:
+  ##
+  ## extraEnv:
+  ## - name: SAMPLE_ENV_VAR
+  ##   value: "key=sample-value"
+  extraEnv: []
 
 ## @section Scheduler Parameters
 
@@ -141,7 +141,7 @@ scheduler:
   image:
     repository: airbyte/scheduler
     pullPolicy: IfNotPresent
-    tag: 0.30.18-alpha
+    tag: 0.30.22-alpha
 
   ## @param scheduler.podAnnotations [object] Add extra annotations to the scheduler pod
   ##
@@ -180,6 +180,14 @@ scheduler:
   ## @param scheduler.log.level The log level to log at.
   log:
     level: "INFO"
+
+  ## @param scheduler.extraEnv [array] Additional env vars for scheduler pod(s).
+  ## Example:
+  ##
+  ## extraEnv:
+  ## - name: SAMPLE_ENV_VAR
+  ##   value: "key=sample-value"
+  extraEnv: []
 
 
 ## @section Pod Sweeper parameters
@@ -240,7 +248,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.30.18-alpha
+    tag: 0.30.22-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -332,6 +340,14 @@ server:
   log:
     level: "INFO"
 
+  ## @param server.extraEnv [array] Additional env vars for server pod(s).
+  ## Example:
+  ##
+  ## extraEnv:
+  ## - name: SAMPLE_ENV_VAR
+  ##   value: "key=sample-value"
+  extraEnv: []
+
 ## @section Worker Parameters
 
 worker:
@@ -344,7 +360,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.30.18-alpha
+    tag: 0.30.22-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -454,6 +470,14 @@ temporal:
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   ##
   tolerations: []
+
+  ## @param temporal.extraEnv [array] Additional env vars for temporal pod(s).
+  ## Example:
+  ##
+  ## extraEnv:
+  ## - name: SAMPLE_ENV_VAR
+  ##   value: "key=sample-value"
+  extraEnv: []
 
 
 ## @section Airbyte Database parameters

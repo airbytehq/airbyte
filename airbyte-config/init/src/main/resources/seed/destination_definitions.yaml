@@ -42,7 +42,7 @@
 - destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   name: Snowflake
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.3.14
+  dockerImageTag: 0.3.16
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
 - destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   name: S3
@@ -52,7 +52,7 @@
 - destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   name: Redshift
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.14
+  dockerImageTag: 0.3.19
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
 - destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
@@ -68,12 +68,12 @@
 - destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   name: MS SQL Server
   dockerRepository: airbyte/destination-mssql
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mssql
 - destinationDefinitionId: 3986776d-2319-4de9-8af8-db14c0996e72
   name: Oracle (Alpha)
   dockerRepository: airbyte/destination-oracle
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/oracle
 - destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   name: Kafka
@@ -93,5 +93,5 @@
 - destinationDefinitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
   name: MongoDB
   dockerRepository: airbyte/destination-mongodb
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mongodb

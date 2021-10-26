@@ -33,18 +33,18 @@ public class KafkaSourceConfig {
   private KafkaConsumer<String, JsonNode> consumer;
   private Set<String> topicsToSubscribe;
 
-  private KafkaSourceConfig(JsonNode config) {
+  private KafkaSourceConfig(final JsonNode config) {
     this.config = config;
   }
 
-  public static KafkaSourceConfig getKafkaSourceConfig(JsonNode config) {
+  public static KafkaSourceConfig getKafkaSourceConfig(final JsonNode config) {
     if (instance == null) {
       instance = new KafkaSourceConfig(config);
     }
     return instance;
   }
 
-  private KafkaConsumer<String, JsonNode> buildKafkaConsumer(JsonNode config) {
+  private KafkaConsumer<String, JsonNode> buildKafkaConsumer(final JsonNode config) {
     final Map<String, Object> props = new HashMap<>();
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, config.get("bootstrap_servers").asText());
     props.put(ConsumerConfig.GROUP_ID_CONFIG,
@@ -76,8 +76,8 @@ public class KafkaSourceConfig {
     return new KafkaConsumer<>(filteredProps);
   }
 
-  private Map<String, Object> propertiesByProtocol(JsonNode config) {
-    JsonNode protocolConfig = config.get("protocol");
+  private Map<String, Object> propertiesByProtocol(final JsonNode config) {
+    final JsonNode protocolConfig = config.get("protocol");
     LOGGER.info("Kafka protocol config: {}", protocolConfig.toString());
     final KafkaProtocol protocol = KafkaProtocol.valueOf(protocolConfig.get("security_protocol").asText().toUpperCase());
     final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
@@ -101,11 +101,11 @@ public class KafkaSourceConfig {
     }
     consumer = buildKafkaConsumer(config);
 
-    JsonNode subscription = config.get("subscription");
+    final JsonNode subscription = config.get("subscription");
     LOGGER.info("Kafka subscribe method: {}", subscription.toString());
     switch (subscription.get("subscription_type").asText()) {
       case "subscribe" -> {
-        String topicPattern = subscription.get("topic_pattern").asText();
+        final String topicPattern = subscription.get("topic_pattern").asText();
         consumer.subscribe(Pattern.compile(topicPattern));
         topicsToSubscribe = consumer.listTopics().keySet().stream()
             .filter(topic -> topic.matches(topicPattern))
@@ -113,10 +113,10 @@ public class KafkaSourceConfig {
       }
       case "assign" -> {
         topicsToSubscribe = new HashSet<>();
-        String topicPartitions = subscription.get("topic_partitions").asText();
-        String[] topicPartitionsStr = topicPartitions.replaceAll("\\s+", "").split(",");
-        List<TopicPartition> topicPartitionList = Arrays.stream(topicPartitionsStr).map(topicPartition -> {
-          String[] pair = topicPartition.split(":");
+        final String topicPartitions = subscription.get("topic_partitions").asText();
+        final String[] topicPartitionsStr = topicPartitions.replaceAll("\\s+", "").split(",");
+        final List<TopicPartition> topicPartitionList = Arrays.stream(topicPartitionsStr).map(topicPartition -> {
+          final String[] pair = topicPartition.split(":");
           topicsToSubscribe.add(pair[0]);
           return new TopicPartition(pair[0], Integer.parseInt(pair[1]));
         }).collect(Collectors.toList());

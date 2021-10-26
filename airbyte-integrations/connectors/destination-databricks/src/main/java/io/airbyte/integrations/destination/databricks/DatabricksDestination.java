@@ -24,13 +24,15 @@ public class DatabricksDestination extends CopyDestination {
     super("database_schema");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new DatabricksDestination()).run(args);
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
-    DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
     return CopyConsumerFactory.create(
         outputRecordCollector,
         getDatabase(config),
@@ -43,8 +45,8 @@ public class DatabricksDestination extends CopyDestination {
   }
 
   @Override
-  public void checkPersistence(JsonNode config) {
-    DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
+  public void checkPersistence(final JsonNode config) {
+    final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
     S3StreamCopier.attemptS3WriteAndDelete(databricksConfig.getS3DestinationConfig().getS3Config());
   }
 
@@ -54,7 +56,7 @@ public class DatabricksDestination extends CopyDestination {
   }
 
   @Override
-  public JdbcDatabase getDatabase(JsonNode jsonConfig) {
+  public JdbcDatabase getDatabase(final JsonNode jsonConfig) {
     return getDatabase(DatabricksDestinationConfig.get(jsonConfig));
   }
 
@@ -63,14 +65,14 @@ public class DatabricksDestination extends CopyDestination {
     return new DatabricksSqlOperations();
   }
 
-  static String getDatabricksConnectionString(DatabricksDestinationConfig databricksConfig) {
+  static String getDatabricksConnectionString(final DatabricksDestinationConfig databricksConfig) {
     return String.format("jdbc:spark://%s:%s/default;transportMode=http;ssl=1;httpPath=%s;UserAgentEntry=Airbyte",
         databricksConfig.getDatabricksServerHostname(),
         databricksConfig.getDatabricksPort(),
         databricksConfig.getDatabricksHttpPath());
   }
 
-  static JdbcDatabase getDatabase(DatabricksDestinationConfig databricksConfig) {
+  static JdbcDatabase getDatabase(final DatabricksDestinationConfig databricksConfig) {
     return Databases.createJdbcDatabase(
         DatabricksConstants.DATABRICKS_USERNAME,
         databricksConfig.getDatabricksPersonalAccessToken(),

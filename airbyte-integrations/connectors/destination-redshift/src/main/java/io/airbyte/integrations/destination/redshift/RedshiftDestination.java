@@ -35,7 +35,7 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     super(DestinationType.class, RedshiftDestination::getTypeFromConfig, getTypeToDestination());
   }
 
-  public static DestinationType getTypeFromConfig(JsonNode config) {
+  public static DestinationType getTypeFromConfig(final JsonNode config) {
     if (isCopy(config)) {
       return DestinationType.COPY_S3;
     } else {
@@ -52,15 +52,15 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
         DestinationType.COPY_S3, copyS3Destination);
   }
 
-  public static boolean isCopy(JsonNode config) {
-    var bucketNode = config.get("s3_bucket_name");
-    var regionNode = config.get("s3_bucket_region");
-    var accessKeyIdNode = config.get("access_key_id");
-    var secretAccessKeyNode = config.get("secret_access_key");
+  public static boolean isCopy(final JsonNode config) {
+    final var bucketNode = config.get("s3_bucket_name");
+    final var regionNode = config.get("s3_bucket_region");
+    final var accessKeyIdNode = config.get("access_key_id");
+    final var secretAccessKeyNode = config.get("secret_access_key");
 
     // Since region is a Json schema enum with an empty string default, we consider the empty string an
     // unset field.
-    var emptyRegion = regionNode == null || regionNode.asText().equals("");
+    final var emptyRegion = regionNode == null || regionNode.asText().equals("");
 
     if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null) {
       return false;
@@ -72,7 +72,7 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     return true;
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new RedshiftDestination();
     LOGGER.info("starting destination: {}", RedshiftDestination.class);
     new IntegrationRunner(destination).run(args);

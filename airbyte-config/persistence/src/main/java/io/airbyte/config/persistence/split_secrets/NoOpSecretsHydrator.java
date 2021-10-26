@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class NoOpSecretsHydrator implements SecretsHydrator {
 
   @Override
-  public JsonNode hydrate(JsonNode partialConfig) {
+  public JsonNode hydrate(final JsonNode partialConfig) {
     return partialConfig;
   }
 

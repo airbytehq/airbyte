@@ -21,7 +21,7 @@ For more information on the schema of the messages that are passed, refer to [Ai
 
 ## Worker Lifecycle
 
-This section will depict the lifecycle of a worker. It will only show the 2 connector version. The since connector version is the same with one side removed.
+This section will depict the lifecycle of a worker. It will only show the 2 connector version. The single connector version is the same with one side removed.
 
 Note: When a source has passed all of its messages, the docker process should automatically exit. After a destination has received all records, it should automatically shutdown. The worker gives each a grace period to shutdown on their own. If that grace period expires, then the worker will force shutdown.
 

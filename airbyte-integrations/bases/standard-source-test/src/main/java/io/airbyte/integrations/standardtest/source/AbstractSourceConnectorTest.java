@@ -133,12 +133,12 @@ public abstract class AbstractSourceConnectorTest {
     assertFalse(entrypoint.isBlank());
   }
 
-  protected List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+  protected List<AirbyteMessage> runRead(final ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
     return runRead(configuredCatalog, null);
   }
 
   // todo (cgardens) - assume no state since we are all full refresh right now.
-  protected List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+  protected List<AirbyteMessage> runRead(final ConfiguredAirbyteCatalog catalog, final JsonNode state) throws Exception {
     final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(getConfig())
         .withState(state == null ? null : new State().withState(state))

@@ -47,7 +47,7 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
 
   }
 
@@ -324,10 +324,10 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
-  protected String getValueFromJsonNode(JsonNode jsonNode) {
+  protected String getValueFromJsonNode(final JsonNode jsonNode) {
     if (jsonNode != null) {
-      String nodeText = jsonNode.asText();
-      String nodeString = jsonNode.toString();
+      final String nodeText = jsonNode.asText();
+      final String nodeString = jsonNode.toString();
       String value = (nodeText != null && !nodeText.equals("") ? nodeText : nodeString);
       value = (value != null && value.equals("null") ? null : value);
       return value;

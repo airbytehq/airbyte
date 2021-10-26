@@ -19,13 +19,13 @@ public class AzureBlobStorageCsvFormatConfig implements AzureBlobStorageFormatCo
 
     private final String value;
 
-    Flattening(String value) {
+    Flattening(final String value) {
       this.value = value;
     }
 
     @JsonCreator
-    public static Flattening fromValue(String value) {
-      for (Flattening f : Flattening.values()) {
+    public static Flattening fromValue(final String value) {
+      for (final Flattening f : Flattening.values()) {
         if (f.value.equalsIgnoreCase(value)) {
           return f;
         }
@@ -41,7 +41,7 @@ public class AzureBlobStorageCsvFormatConfig implements AzureBlobStorageFormatCo
 
   private final Flattening flattening;
 
-  public AzureBlobStorageCsvFormatConfig(JsonNode formatConfig) {
+  public AzureBlobStorageCsvFormatConfig(final JsonNode formatConfig) {
     this.flattening = Flattening.fromValue(formatConfig.get("flattening").asText());
   }
 
