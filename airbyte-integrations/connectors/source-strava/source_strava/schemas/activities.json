@@ -12,45 +12,45 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "resource_state": {
-          "type": "integer"
+          "type": ["null", "integer"]
         }
       }
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "distance": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "moving_time": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "elapsed_time": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "total_elevation_gain": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "elev_high": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "elev_low": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "start_date": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "start_date_local": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "timezone": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "utc_offset": {
       "type": ["null", "number"]
@@ -58,97 +58,99 @@
     "start_latlng": {
       "type": ["null", "array"],
       "items": {
-        "type": "number"
+        "type": ["null", "number"]
+
       }
     },
     "end_latlng": {
       "type": ["null", "array"],
       "items": {
-        "type": "number"
+        "type": ["null", "number"]
+
       }
     },
     "achievement_count": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "kudos_count": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "comment_count": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "athlete_count": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "photo_count": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "total_photo_count": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "map": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "summary_polyline": {
           "type": ["null", "string"]
         },
         "resource_state": {
-          "type": "integer"
+          "type": ["null", "integer"]
         }
       }
     },
     "trainer": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "commute": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "manual": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "private": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "flagged": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "workout_type": {
       "type": ["null", "integer"]
     },
     "upload_id_str": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "average_speed": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "max_speed": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "has_kudoed": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "gear_id": {
       "type": ["null", "string"]
     },
     "kilojoules": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "average_watts": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "device_watts": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "max_watts": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "weighted_average_watts": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "upload_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "location_city": {
       "type": ["null", "string"]
@@ -166,28 +168,28 @@
       "type": ["null", "number"]
     },
     "visibility": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "from_accepted_tag": {
       "type": ["null", "boolean"]
     },
     "average_temp": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "has_heartrate": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "heartrate_opt_out": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "display_hide_heartrate_option": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "pr_count": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "resource_state": {
-      "type": "integer"
+      "type": ["null", "integer"]
     }
   }
 }
