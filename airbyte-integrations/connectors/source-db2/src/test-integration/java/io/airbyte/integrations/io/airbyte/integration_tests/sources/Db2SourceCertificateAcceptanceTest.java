@@ -122,7 +122,8 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
     String jdbcUrl = String.format("jdbc:db2://%s:%s/%s",
             config.get("host").asText(),
             db.getMappedPort(50000),
-            config.get("db").asText()) + ":" + "sslConnection=true;sslTrustStoreLocation=certificate.jks;sslTrustStorePassword=" + KEY_STORE_PASS + ";";
+            config.get("db").asText()) + ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
+            ";sslTrustStorePassword=" + KEY_STORE_PASS + ";";
 
     database = Databases.createJdbcDatabase(
         config.get("username").asText(),
@@ -155,7 +156,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
   protected void tearDown(TestDestinationEnv testEnv) {
     new File("certificate.pem").delete();
     new File("certificate.der").delete();
-    new File("certificate.jks").delete();
+    new File(KEY_STORE_FILE_PATH).delete();
     db.close();
   }
 

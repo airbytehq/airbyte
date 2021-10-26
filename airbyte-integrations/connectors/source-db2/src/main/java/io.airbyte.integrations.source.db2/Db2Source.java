@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +27,7 @@ public class Db2Source extends AbstractJdbcSource implements Source {
   public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
 
   public static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
-  public static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
+  public static final String KEY_STORE_PASS = "Passw0rd";
 
   public Db2Source() {
     super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration());
