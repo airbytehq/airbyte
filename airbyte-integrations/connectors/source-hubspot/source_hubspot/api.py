@@ -57,13 +57,13 @@ def split_properties(properties_list: List[str]) -> Iterator[Tuple[str]]:
     summary_length = 0
     local_properties = []
     for property_ in properties_list:
-        if len(property_) + summary_length >= PROPERTIES_PARAM_MAX_LENGTH:
+        if len(property_) + summary_length + len("2%C") >= PROPERTIES_PARAM_MAX_LENGTH:
             yield local_properties
             local_properties = []
             summary_length = 0
 
         local_properties.append(property_)
-        summary_length += len(property_)
+        summary_length += len(property_) + len("2%C")
 
     if local_properties:
         yield local_properties
@@ -328,7 +328,7 @@ class Stream(ABC):
             if next_page_token:
                 params.update(next_page_token)
 
-            properties_list = list(self.properties.keys())
+            properties_list = list(self.properties.keys()) * 500
             if properties_list:
                 # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
                 #  We will need to fix this code when the Hubspot developers add the ability to use a special parameter to get all properties for an entity.
