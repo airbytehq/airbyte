@@ -62,7 +62,9 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("db", db.getDatabaseName())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
-        .put("ssl", false)
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "unencrypted")
+            .build()))
         .build());
 
     super.setup();
