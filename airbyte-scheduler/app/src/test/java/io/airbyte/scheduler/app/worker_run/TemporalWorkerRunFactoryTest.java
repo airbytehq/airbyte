@@ -27,12 +27,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class TemporalWorkerRunFactoryTest {
 
+  private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final long JOB_ID = 10L;
   private static final int ATTEMPT_ID = 20;
 
@@ -50,6 +52,7 @@ class TemporalWorkerRunFactoryTest {
     job = mock(Job.class, RETURNS_DEEP_STUBS);
     when(job.getId()).thenReturn(JOB_ID);
     when(job.getAttemptsCount()).thenReturn(ATTEMPT_ID);
+    when(job.getScope()).thenReturn(CONNECTION_ID.toString());
   }
 
   @SuppressWarnings("unchecked")
@@ -57,11 +60,11 @@ class TemporalWorkerRunFactoryTest {
   void testSync() throws Exception {
     when(job.getConfigType()).thenReturn(ConfigType.SYNC);
     final TemporalResponse<StandardSyncOutput> mockResponse = mock(TemporalResponse.class);
-    when(temporalClient.submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync())).thenReturn(mockResponse);
+    when(temporalClient.submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync(), CONNECTION_ID)).thenReturn(mockResponse);
 
     final WorkerRun workerRun = workerRunFactory.create(job);
     workerRun.call();
-    verify(temporalClient).submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync());
+    verify(temporalClient).submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync(), CONNECTION_ID);
     assertEquals(jobRoot, workerRun.getJobRoot());
   }
 
@@ -83,13 +86,13 @@ class TemporalWorkerRunFactoryTest {
     when(job.getConfigType()).thenReturn(ConfigType.RESET_CONNECTION);
     when(job.getConfig().getResetConnection()).thenReturn(resetConfig);
     final TemporalResponse<StandardSyncOutput> mockResponse = mock(TemporalResponse.class);
-    when(temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig)).thenReturn(mockResponse);
+    when(temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID)).thenReturn(mockResponse);
 
     final WorkerRun workerRun = workerRunFactory.create(job);
     workerRun.call();
 
     final ArgumentCaptor<JobSyncConfig> argument = ArgumentCaptor.forClass(JobSyncConfig.class);
-    verify(temporalClient).submitSync(eq(JOB_ID), eq(ATTEMPT_ID), argument.capture());
+    verify(temporalClient).submitSync(eq(JOB_ID), eq(ATTEMPT_ID), argument.capture(), eq(CONNECTION_ID));
     assertEquals(syncConfig, argument.getValue());
     assertEquals(jobRoot, workerRun.getJobRoot());
   }

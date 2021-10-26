@@ -551,7 +551,7 @@ class SchedulerHandlerTest {
   void testGetCurrentState() throws IOException {
     final UUID connectionId = UUID.randomUUID();
     final State state = new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 1)));
-    when(jobPersistence.getCurrentState(connectionId)).thenReturn(Optional.of(state));
+    when(configRepository.getConnectionState(connectionId)).thenReturn(Optional.of(state));
 
     final ConnectionState connectionState = schedulerHandler.getState(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(new ConnectionState().connectionId(connectionId).state(state.getState()), connectionState);
@@ -560,7 +560,7 @@ class SchedulerHandlerTest {
   @Test
   void testGetCurrentStateEmpty() throws IOException {
     final UUID connectionId = UUID.randomUUID();
-    when(jobPersistence.getCurrentState(connectionId)).thenReturn(Optional.empty());
+    when(configRepository.getConnectionState(connectionId)).thenReturn(Optional.empty());
 
     final ConnectionState connectionState = schedulerHandler.getState(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(new ConnectionState().connectionId(connectionId), connectionState);
