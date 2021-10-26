@@ -7,13 +7,11 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 
-LEMLIST_API_URL_BASE = "https://api.lemlist.com/api/"
-
 
 class LemlistStream(HttpStream):
     """Default and max value page_size can have is 100"""
 
-    url_base = LEMLIST_API_URL_BASE
+    url_base = "https://api.lemlist.com/api/"
     primary_key = "_id"
     page_size = 100
     initial_offset = 0
