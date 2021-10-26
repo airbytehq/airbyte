@@ -84,7 +84,7 @@ class DestinationHandlerTest {
     imageName =
         DockerUtils.getTaggedImageName(standardDestinationDefinition.getDockerRepository(), standardDestinationDefinition.getDockerImageTag());
 
-    DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody().destinationDefinitionId(
+    final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody().destinationDefinitionId(
         standardDestinationDefinition.getDestinationDefinitionId());
 
     connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
@@ -110,7 +110,7 @@ class DestinationHandlerTest {
         .thenReturn(destinationConnection);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
-    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(specFetcher.getSpec(standardDestinationDefinition)).thenReturn(connectorSpecification);
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(destinationConnection.getConfiguration());
 
@@ -159,7 +159,7 @@ class DestinationHandlerTest {
         .thenReturn(expectedDestinationConnection);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
-    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(specFetcher.getSpec(standardDestinationDefinition)).thenReturn(connectorSpecification);
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
 
     destinationHandler.deleteDestination(destinationId);
@@ -196,7 +196,7 @@ class DestinationHandlerTest {
         .thenReturn(standardDestinationDefinition);
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId()))
         .thenReturn(expectedDestinationConnection);
-    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(specFetcher.getSpec(standardDestinationDefinition)).thenReturn(connectorSpecification);
     when(configurationUpdate.destination(destinationConnection.getDestinationId(), updatedDestName, newConfiguration))
         .thenReturn(expectedDestinationConnection);
 
@@ -214,7 +214,7 @@ class DestinationHandlerTest {
 
   @Test
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
-    DestinationRead expectedDestinationRead = new DestinationRead()
+    final DestinationRead expectedDestinationRead = new DestinationRead()
         .name(destinationConnection.getName())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .workspaceId(destinationConnection.getWorkspaceId())
@@ -229,7 +229,7 @@ class DestinationHandlerTest {
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
-    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(specFetcher.getSpec(standardDestinationDefinition)).thenReturn(connectorSpecification);
 
     final DestinationRead actualDestinationRead = destinationHandler.getDestination(destinationIdRequestBody);
 
@@ -252,7 +252,7 @@ class DestinationHandlerTest {
 
   @Test
   void testListDestinationForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    DestinationRead expectedDestinationRead = new DestinationRead()
+    final DestinationRead expectedDestinationRead = new DestinationRead()
         .name(destinationConnection.getName())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .workspaceId(destinationConnection.getWorkspaceId())
@@ -263,7 +263,7 @@ class DestinationHandlerTest {
 
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
     when(configRepository.listDestinationConnection()).thenReturn(Lists.newArrayList(destinationConnection));
-    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(specFetcher.getSpec(standardDestinationDefinition)).thenReturn(connectorSpecification);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
@@ -278,7 +278,7 @@ class DestinationHandlerTest {
 
   @Test
   void testSearchDestinations() throws JsonValidationException, ConfigNotFoundException, IOException {
-    DestinationRead expectedDestinationRead = new DestinationRead()
+    final DestinationRead expectedDestinationRead = new DestinationRead()
         .name(destinationConnection.getName())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .workspaceId(destinationConnection.getWorkspaceId())
@@ -288,7 +288,7 @@ class DestinationHandlerTest {
 
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
     when(configRepository.listDestinationConnection()).thenReturn(Lists.newArrayList(destinationConnection));
-    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(specFetcher.getSpec(standardDestinationDefinition)).thenReturn(connectorSpecification);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))

@@ -38,7 +38,7 @@ public interface CancellationHandler {
      * @throws WorkerException
      */
     @Override
-    public void checkAndHandleCancellation(Runnable onCancellationCallback) {
+    public void checkAndHandleCancellation(final Runnable onCancellationCallback) {
       try {
         // Heartbeat is somewhat misleading here. What it does is check the current Temporal activity's
         // context and
@@ -46,7 +46,7 @@ public interface CancellationHandler {
         // function
         // is available as a field in thrown ActivityCompletionExceptions, which we aren't using for now.
         context.heartbeat(null);
-      } catch (ActivityCompletionException e) {
+      } catch (final ActivityCompletionException e) {
         onCancellationCallback.run();
         LOGGER.warn("Job either timeout-ed or was cancelled.");
       }

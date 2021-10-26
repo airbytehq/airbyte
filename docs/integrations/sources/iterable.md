@@ -57,7 +57,8 @@ Please read [How to find your API key](https://support.iterable.com/hc/en-us/art
 ## CHANGELOG
 
 | Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| `0.1.8` | 2021-09-20 | [5915](https://github.com/airbytehq/airbyte/pull/5915) | Add new streams: campaign\_metrics, events |
+| :------ | :--------  | :-----       | :------ |
+| `0.1.9` | 2021-10-06 | [5915](https://github.com/airbytehq/airbyte/pull/5915) | Enable campaign_metrics stream |
+| `0.1.8` | 2021-09-20 | [5915](https://github.com/airbytehq/airbyte/pull/5915) | Add new streams: campaign_metrics, events |
 | `0.1.7` | 2021-09-20 | [6242](https://github.com/airbytehq/airbyte/pull/6242) | Updated schema for: campaigns, lists, templates, metadata |
 

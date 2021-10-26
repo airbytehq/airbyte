@@ -30,7 +30,7 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
   private final String namespaceFormat;
   private final String streamPrefix;
 
-  public NamespacingMapper(NamespaceDefinitionType namespaceDefinition, String namespaceFormat, String streamPrefix) {
+  public NamespacingMapper(final NamespaceDefinitionType namespaceDefinition, final String namespaceFormat, final String streamPrefix) {
     this.namespaceDefinition = namespaceDefinition;
     this.namespaceFormat = namespaceFormat;
     this.streamPrefix = streamPrefix;

@@ -33,7 +33,7 @@ public class MigrationV0_14_3 extends BaseMigration implements Migration {
 
   private static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
-  public MigrationV0_14_3(Migration previousMigration) {
+  public MigrationV0_14_3(final Migration previousMigration) {
     super(previousMigration);
   }
 
@@ -52,7 +52,7 @@ public class MigrationV0_14_3 extends BaseMigration implements Migration {
   }
 
   @Override
-  public void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
@@ -68,7 +68,7 @@ public class MigrationV0_14_3 extends BaseMigration implements Migration {
     }
   }
 
-  private static JsonNode toConfiguredCatalog(JsonNode schema) {
+  private static JsonNode toConfiguredCatalog(final JsonNode schema) {
     final List<Map<String, JsonNode>> configuredStreams = MoreIterators.toList(schema.get("streams").elements())
         .stream()
         .map(stream -> {
@@ -96,7 +96,7 @@ public class MigrationV0_14_3 extends BaseMigration implements Migration {
     return Jsons.jsonNode(ImmutableMap.of("streams", configuredStreams));
   }
 
-  private static JsonNode fieldsToJsonSchema(JsonNode fields) {
+  private static JsonNode fieldsToJsonSchema(final JsonNode fields) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("type", "object")
         .put("properties", MoreIterators.toList(fields.elements())

@@ -59,5 +59,12 @@ Your database user should now be ready for use with Airbyte.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.2 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
+| 0.1.3 | 20.10.2021 | [\#7127](https://github.com/airbytehq/airbyte/pull/7127) | Added SSL connections support. |
+| 0.1.2 | 13.08.2021 | [\#4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator. |
 
+
+## CHANGELOG source-clickhouse-strict-encrypt
+
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.1.0 | 20.10.2021 | [\#7127](https://github.com/airbytehq/airbyte/pull/7127) | Added source-clickhouse-strict-encrypt that supports SSL connections only. |

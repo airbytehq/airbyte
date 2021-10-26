@@ -29,7 +29,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   private static final String AIRBYTE_DATA = "_airbyte_data";
 
   private MongoDBContainer container;
-  private MongodbNameTransformer namingResolver = new MongodbNameTransformer();
+  private final MongodbNameTransformer namingResolver = new MongodbNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -52,20 +52,24 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
         .put(HOST, container.getHost())
         .put(PORT, container.getFirstMappedPort())
         .put(DATABASE, DATABASE_FAIL_NAME)
-        .put(AUTH_TYPE, getAuthTypeConfig())
+        .put(AUTH_TYPE, Jsons.jsonNode(ImmutableMap.builder()
+            .put("authorization", "login/password")
+            .put("username", "user")
+            .put("password", "pass")
+            .build()))
         .build());
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema) {
-    var database = getMongoDatabase(container.getHost(),
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema) {
+    final var database = getMongoDatabase(container.getHost(),
         container.getFirstMappedPort(), DATABASE_NAME);
-    var collection = database.getOrCreateNewCollection(namingResolver.getRawTableName(streamName));
-    List<JsonNode> result = new ArrayList<>();
-    try (MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
+    final var collection = database.getOrCreateNewCollection(namingResolver.getRawTableName(streamName));
+    final List<JsonNode> result = new ArrayList<>();
+    try (final MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
       while (cursor.hasNext()) {
         result.add(Jsons.jsonNode(cursor.next().get(AIRBYTE_DATA)));
       }
@@ -74,13 +78,13 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv) {
     container = new MongoDBContainer(DOCKER_IMAGE_NAME);
     container.start();
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.stop();
     container.close();
   }
@@ -93,11 +97,11 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
         + "}");
   }
 
-  private MongoDatabase getMongoDatabase(String host, int port, String databaseName) {
+  private MongoDatabase getMongoDatabase(final String host, final int port, final String databaseName) {
     try {
-      var connectionString = String.format("mongodb://%s:%s/", host, port);
+      final var connectionString = String.format("mongodb://%s:%s/", host, port);
       return new MongoDatabase(connectionString, databaseName);
-    } catch (RuntimeException e) {
+    } catch (final RuntimeException e) {
       throw new RuntimeException(e);
     }
   }

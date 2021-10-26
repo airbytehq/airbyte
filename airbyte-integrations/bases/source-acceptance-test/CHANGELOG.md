@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.24
+Improve message about errors in the stream's schema: https://github.com/airbytehq/airbyte/pull/6934
+
 ## 0.1.23
 Fix incorrect auth init flow check defect.
 
