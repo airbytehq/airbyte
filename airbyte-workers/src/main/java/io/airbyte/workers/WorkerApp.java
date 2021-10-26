@@ -62,6 +62,9 @@ public class WorkerApp {
   private final MaxWorkersConfig maxWorkers;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
+  private final String databaseUser;
+  private final String databasePassword;
+  private final String databaseUrl;
 
   public WorkerApp(final Path workspaceRoot,
                    final ProcessFactory processFactory,
@@ -70,7 +73,8 @@ public class WorkerApp {
                    final MaxWorkersConfig maxWorkers,
                    final ConfigRepository configRepository,
                    final WorkerEnvironment workerEnvironment,
-                   final LogConfigs logConfigs) {
+                   final LogConfigs logConfigs,
+      final String databaseUser, final String databasePassword, final String databaseUrl) {
 
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
@@ -80,6 +84,10 @@ public class WorkerApp {
     this.configRepository = configRepository;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
+    this.databaseUser = databaseUser;
+    this.databasePassword = databasePassword;
+    this.databaseUrl = databaseUrl;
+
   }
 
   public void start() {
@@ -98,27 +106,27 @@ public class WorkerApp {
 
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
     specWorker.registerWorkflowImplementationTypes(SpecWorkflowImpl.class);
-    specWorker.registerActivitiesImplementations(new SpecActivityImpl(processFactory, workspaceRoot, workerEnvironment, logConfigs));
+    specWorker.registerActivitiesImplementations(new SpecActivityImpl(processFactory, workspaceRoot, workerEnvironment, logConfigs, databaseUser, databasePassword, databaseUrl));
 
     final Worker checkConnectionWorker =
         factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkers.getMaxCheckWorkers()));
     checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflowImpl.class);
     checkConnectionWorker
         .registerActivitiesImplementations(
-            new CheckConnectionActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs));
+            new CheckConnectionActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser, databasePassword, databaseUrl));
 
     final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflowImpl.class);
     discoverWorker
         .registerActivitiesImplementations(
-            new DiscoverCatalogActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs));
+            new DiscoverCatalogActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser, databasePassword, databaseUrl));
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
-        new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs),
-        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs),
-        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs),
+        new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser, databasePassword, databaseUrl),
+        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser, databasePassword, databaseUrl),
+        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser, databasePassword, databaseUrl),
         new SyncWorkflow.PersistStateActivityImpl(workspaceRoot, configRepository));
     factory.start();
   }
@@ -182,7 +190,10 @@ public class WorkerApp {
         configs.getMaxWorkers(),
         configRepository,
         configs.getWorkerEnvironment(),
-        configs.getLogConfigs()).start();
+        configs.getLogConfigs(),
+        configs.getDatabaseUser(),
+        configs.getDatabasePassword(),
+        configs.getDatabaseUrl()).start();
   }
 
 }

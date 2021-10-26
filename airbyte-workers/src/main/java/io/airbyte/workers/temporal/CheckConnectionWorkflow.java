@@ -46,9 +46,9 @@ public interface CheckConnectionWorkflow {
     private final CheckConnectionActivity activity = Workflow.newActivityStub(CheckConnectionActivity.class, options);
 
     @Override
-    public StandardCheckConnectionOutput run(JobRunConfig jobRunConfig,
-                                             IntegrationLauncherConfig launcherConfig,
-                                             StandardCheckConnectionInput connectionConfiguration) {
+    public StandardCheckConnectionOutput run(final JobRunConfig jobRunConfig,
+                                             final IntegrationLauncherConfig launcherConfig,
+                                             final StandardCheckConnectionInput connectionConfiguration) {
       return activity.run(jobRunConfig, launcherConfig, connectionConfiguration);
     }
 
@@ -71,22 +71,28 @@ public interface CheckConnectionWorkflow {
     private final Path workspaceRoot;
     private final WorkerEnvironment workerEnvironment;
     private final LogConfigs logConfigs;
+    private final String databaseUser;
+    private final String databasePassword;
+    private final String databaseUrl;
 
-    public CheckConnectionActivityImpl(ProcessFactory processFactory,
-                                       SecretsHydrator secretsHydrator,
-                                       Path workspaceRoot,
-                                       WorkerEnvironment workerEnvironment,
-                                       LogConfigs logConfigs) {
+    public CheckConnectionActivityImpl(final ProcessFactory processFactory,
+                                       final SecretsHydrator secretsHydrator,
+                                       final Path workspaceRoot,
+                                       final WorkerEnvironment workerEnvironment,
+                                       final LogConfigs logConfigs, final String databaseUser, final String databasePassword, final String databaseUrl) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.workerEnvironment = workerEnvironment;
       this.logConfigs = logConfigs;
+      this.databaseUser = databaseUser;
+      this.databasePassword = databasePassword;
+      this.databaseUrl = databaseUrl;
     }
 
-    public StandardCheckConnectionOutput run(JobRunConfig jobRunConfig,
-                                             IntegrationLauncherConfig launcherConfig,
-                                             StandardCheckConnectionInput connectionConfiguration) {
+    public StandardCheckConnectionOutput run(final JobRunConfig jobRunConfig,
+                                             final IntegrationLauncherConfig launcherConfig,
+                                             final StandardCheckConnectionInput connectionConfiguration) {
 
       final JsonNode fullConfig = secretsHydrator.hydrate(connectionConfiguration.getConnectionConfiguration());
 
@@ -101,12 +107,13 @@ public interface CheckConnectionWorkflow {
               jobRunConfig,
               getWorkerFactory(launcherConfig),
               inputSupplier,
-              new CancellationHandler.TemporalCancellationHandler());
+              new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl);
 
       return temporalAttemptExecution.get();
     }
 
-    private CheckedSupplier<Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput>, Exception> getWorkerFactory(IntegrationLauncherConfig launcherConfig) {
+    private CheckedSupplier<Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput>, Exception> getWorkerFactory(
+        final IntegrationLauncherConfig launcherConfig) {
       return () -> {
         final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
             launcherConfig.getJobId(),

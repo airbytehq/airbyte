@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal.spec;
 
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -28,15 +29,22 @@ public class SpecActivityImpl implements SpecActivity {
   private final Path workspaceRoot;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
+  private final String databaseUser;
+  private final String databasePassword;
+  private final String databaseUrl;
 
   public SpecActivityImpl(final ProcessFactory processFactory,
                           final Path workspaceRoot,
                           final WorkerEnvironment workerEnvironment,
-                          final LogConfigs logConfigs) {
+                          final LogConfigs logConfigs,
+      final String databaseUser, final String databasePassword, final String databaseUrl) {
     this.processFactory = processFactory;
     this.workspaceRoot = workspaceRoot;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
+    this.databaseUser = databaseUser;
+    this.databasePassword = databasePassword;
+    this.databaseUrl = databaseUrl;
   }
 
   public ConnectorSpecification run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
@@ -47,7 +55,7 @@ public class SpecActivityImpl implements SpecActivity {
         jobRunConfig,
         getWorkerFactory(launcherConfig),
         inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler());
+        new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl);
 
     return temporalAttemptExecution.get();
   }
