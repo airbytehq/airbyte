@@ -1,4 +1,5 @@
 import collections
+import time
 from abc import ABC, abstractmethod
 from typing import Iterator, Union, Mapping
 
@@ -35,6 +36,7 @@ class AsyncJob(ABC):
             finished_and_ok = self.check_status()
             if finished_and_ok:
                 return
+            time.sleep(self.job_sleep_interval.in_seconds())
 
         raise JobWaitTimeout("Waiting for job more than allowed")
 
