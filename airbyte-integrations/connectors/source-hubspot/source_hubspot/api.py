@@ -5,6 +5,7 @@
 
 import sys
 import time
+import urllib
 from abc import ABC, abstractmethod
 from functools import lru_cache, partial
 from http import HTTPStatus
@@ -17,7 +18,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 from base_python.entrypoint import logger
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
-# The value is obtained experimentally, Hubspot allows the URL length up to ~ 16300 symbols,
+# The value is obtained experimentally, Hubspot allows the URL length up to ~16300 symbols,
 # so it was decided to limit the length of the `properties` parameter to 15000 characters.
 PROPERTIES_PARAM_MAX_LENGTH = 15000
 
@@ -57,13 +58,13 @@ def split_properties(properties_list: List[str]) -> Iterator[Tuple[str]]:
     summary_length = 0
     local_properties = []
     for property_ in properties_list:
-        if len(property_) + summary_length >= PROPERTIES_PARAM_MAX_LENGTH:
+        if len(property_) + summary_length + len(urllib.parse.quote(",")) >= PROPERTIES_PARAM_MAX_LENGTH:
             yield local_properties
             local_properties = []
             summary_length = 0
 
         local_properties.append(property_)
-        summary_length += len(property_)
+        summary_length += len(property_) + len(urllib.parse.quote(","))
 
     if local_properties:
         yield local_properties
