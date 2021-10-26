@@ -4,6 +4,23 @@
     - incremental_clause controls the predicate to filter on new data to process incrementally
 #}
 
+{% macro incremental_clause(col_emitted_at)  -%}
+  {{ adapter.dispatch('incremental_clause')(col_emitted_at) }}
+{%- endmacro %}
+
+{%- macro default__incremental_clause(col_emitted_at) -%}
+{% if is_incremental() %}
+and {{ col_emitted_at }} >= (select max({{ col_emitted_at }}) from {{ this }})
+{% endif %}
+{%- endmacro -%}
+
+{# -- see https://on-systems.tech/113-beware-dbt-incremental-updates-against-snowflake-external-tables/ #}
+{%- macro snowflake__incremental_clause(col_emitted_at) -%}
+{% if is_incremental() %}
+and {{ col_emitted_at }} >= cast('{{ get_max_normalized_cursor(col_emitted_at) }}' as {{ type_timestamp_with_timezone() }})
+{% endif %}
+{%- endmacro -%}
+
 {% macro get_max_normalized_cursor(col_emitted_at) %}
 {% if execute and is_incremental() %}
  {% if env_var('INCREMENTAL_CURSOR', 'UNSET') == 'UNSET' %}
@@ -17,9 +34,3 @@
  {% endif %}
 {% endif %}
 {% endmacro %}
-
-{%- macro incremental_clause(col_emitted_at) -%}
-{% if is_incremental() %}
-and {{ col_emitted_at }} >= cast('{{ get_max_normalized_cursor(col_emitted_at) }}' as {{ type_timestamp_with_timezone() }})
-{% endif %}
-{%- endmacro -%}
