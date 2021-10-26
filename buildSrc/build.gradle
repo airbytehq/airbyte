@@ -9,3 +9,7 @@ repositories {
 dependencies {
     implementation 'ru.vyarus:gradle-use-python-plugin:2.3.0'
 }
+
+tasks.withType(Jar) {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}

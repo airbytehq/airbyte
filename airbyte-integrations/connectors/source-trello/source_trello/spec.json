@@ -5,7 +5,7 @@
     "title": "Trello Spec",
     "type": "object",
     "required": ["token", "key", "start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "token": {
         "type": "string",
@@ -21,10 +21,19 @@
       },
       "start_date": {
         "type": "string",
+        "title": "Start date",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2021-03-01T00:00:00.000Z"]
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [],
+      "oauthFlowInitParameters": [],
+      "oauthFlowOutputParameters": [["token"], ["key"]]
     }
   }
 }

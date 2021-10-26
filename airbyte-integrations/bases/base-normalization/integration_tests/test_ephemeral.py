@@ -8,6 +8,7 @@ import pathlib
 import re
 import shutil
 import tempfile
+from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
@@ -21,8 +22,12 @@ dbt_test_utils = DbtIntegrationTest()
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
+    destinations_to_test = dbt_test_utils.get_test_targets()
+    if DestinationType.POSTGRES.value not in destinations_to_test:
+        destinations_to_test.append(DestinationType.POSTGRES.value)
+    dbt_test_utils.set_target_schema("test_ephemeral")
     dbt_test_utils.change_current_test_dir(request)
-    dbt_test_utils.setup_db()
+    dbt_test_utils.setup_db(destinations_to_test)
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
     dbt_test_utils.tear_down_db()
@@ -40,20 +45,16 @@ def setup_test_path(request):
     os.chdir(request.config.invocation_dir)
 
 
-@pytest.mark.parametrize("column_count", [1500])
-@pytest.mark.parametrize("integration_type", list(DestinationType))
-def test_destination_supported_limits(integration_type: DestinationType, column_count: int):
-    if integration_type == DestinationType.MYSQL:
+@pytest.mark.parametrize("column_count", [1000])
+@pytest.mark.parametrize("destination_type", list(DestinationType))
+def test_destination_supported_limits(destination_type: DestinationType, column_count: int):
+    if destination_type.value not in dbt_test_utils.get_test_targets() or destination_type.value == DestinationType.MYSQL.value:
         # In MySQL, the max number of columns is limited by row size (8KB),
-        # not by absolute column count. It is way fewer than 1500.
-        return
-    if integration_type == DestinationType.ORACLE:
+        # not by absolute column count. It is way fewer than 1000.
+        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable (MYSQL is also skipped)")
+    if destination_type.value == DestinationType.ORACLE.value:
         column_count = 998
-    if integration_type == DestinationType.MSSQL:
-        # In MS SQL Server, the max number of columns / table = 1024,
-        # We should leave the space for the '_airbyte_emitted_at' column. So 1022 is the max what could be inserted.
-        column_count = 1022
-    run_test(integration_type, column_count)
+    run_test(destination_type, column_count)
 
 
 @pytest.mark.parametrize(
@@ -69,7 +70,10 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
     ],
 )
 def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):
-    run_test(DestinationType.from_string(integration_type), column_count, expected_exception_message)
+    destination_type = DestinationType.from_string(integration_type)
+    if destination_type.value not in dbt_test_utils.get_test_targets():
+        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
+    run_test(destination_type, column_count, expected_exception_message)
 
 
 def test_empty_streams(setup_test_path):
@@ -81,22 +85,26 @@ def test_stream_with_1_airbyte_column(setup_test_path):
 
 
 def run_test(destination_type: DestinationType, column_count: int, expected_exception_message: str = ""):
+    if destination_type.value == DestinationType.ORACLE.value:
+        # Oracle does not allow changing to random schema
+        dbt_test_utils.set_target_schema("test_normalization")
+    else:
+        dbt_test_utils.set_target_schema("test_ephemeral")
     print("Testing ephemeral")
     integration_type = destination_type.value
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
-    dbt_test_utils.generate_project_yaml_file(destination_type, test_root_dir)
     # generate a catalog and associated dbt models files
     generate_dbt_models(destination_type, test_root_dir, column_count)
     # Use destination connector to create empty _airbyte_raw_* tables to use as input for the test
     assert setup_input_raw_data(integration_type, test_root_dir, destination_config)
     if expected_exception_message:
         with pytest.raises(AssertionError):
-            dbt_test_utils.dbt_run(test_root_dir)
+            dbt_test_utils.dbt_run(destination_type, test_root_dir)
         assert search_logs_for_pattern(test_root_dir + "/dbt_output.log", expected_exception_message)
     else:
-        dbt_test_utils.dbt_run(test_root_dir)
+        dbt_test_utils.dbt_run(destination_type, test_root_dir)
 
 
 def search_logs_for_pattern(log_file: str, pattern: str):
@@ -117,8 +125,13 @@ def setup_test_dir(integration_type: str) -> str:
     temporary_folders.add(test_root_dir)
     shutil.rmtree(test_root_dir, ignore_errors=True)
     print(f"Setting up test folder {test_root_dir}")
-    shutil.copytree("../dbt-project-template", test_root_dir)
-    dbt_test_utils.copy_replace("../dbt-project-template/dbt_project.yml", os.path.join(test_root_dir, "dbt_project.yml"))
+    copy_tree("../dbt-project-template", test_root_dir)
+    if integration_type == DestinationType.MSSQL.value:
+        copy_tree("../dbt-project-template-mysql", test_root_dir)
+    elif integration_type == DestinationType.MYSQL.value:
+        copy_tree("../dbt-project-template-mysql", test_root_dir)
+    elif integration_type == DestinationType.ORACLE.value:
+        copy_tree("../dbt-project-template-oracle", test_root_dir)
     return test_root_dir
 
 
@@ -161,7 +174,7 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
         "streams": [
             {
                 "stream": {
-                    "name": f"stream_with_{column_count}_columns",
+                    "name": dbt_test_utils.generate_random_string(f"stream_with_{column_count}_columns"),
                     "json_schema": {
                         "type": ["null", "object"],
                         "properties": {},

@@ -26,12 +26,12 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
 
   private final StateManager stateManager;
 
-  public MySqlCdcStateHandler(StateManager stateManager) {
+  public MySqlCdcStateHandler(final StateManager stateManager) {
     this.stateManager = stateManager;
   }
 
   @Override
-  public AirbyteMessage saveState(Map<String, String> offset, String dbHistory) {
+  public AirbyteMessage saveState(final Map<String, String> offset, final String dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MYSQL_CDC_OFFSET, offset);
     state.put(MYSQL_DB_HISTORY, dbHistory);

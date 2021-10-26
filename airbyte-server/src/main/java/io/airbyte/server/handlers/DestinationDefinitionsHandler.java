@@ -59,7 +59,7 @@ public class DestinationDefinitionsHandler {
   }
 
   @VisibleForTesting
-  static DestinationDefinitionRead buildDestinationDefinitionRead(StandardDestinationDefinition standardDestinationDefinition) {
+  static DestinationDefinitionRead buildDestinationDefinitionRead(final StandardDestinationDefinition standardDestinationDefinition) {
     try {
       return new DestinationDefinitionRead()
           .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
@@ -68,7 +68,7 @@ public class DestinationDefinitionsHandler {
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardDestinationDefinition.getIcon()));
-    } catch (URISyntaxException | NullPointerException e) {
+    } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
     }
   }
@@ -77,7 +77,7 @@ public class DestinationDefinitionsHandler {
     return toDestinationDefinitionReadList(configRepository.listStandardDestinationDefinitions());
   }
 
-  private static DestinationDefinitionReadList toDestinationDefinitionReadList(List<StandardDestinationDefinition> defs) {
+  private static DestinationDefinitionReadList toDestinationDefinitionReadList(final List<StandardDestinationDefinition> defs) {
     final List<DestinationDefinitionRead> reads = defs.stream()
         .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead)
         .collect(Collectors.toList());
@@ -91,18 +91,18 @@ public class DestinationDefinitionsHandler {
   private List<StandardDestinationDefinition> getLatestDestinations() {
     try {
       return githubStore.getLatestDestinations();
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }
   }
 
-  public DestinationDefinitionRead getDestinationDefinition(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+  public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     return buildDestinationDefinitionRead(
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
-  public DestinationDefinitionRead createDestinationDefinition(DestinationDefinitionCreate destinationDefinitionCreate)
+  public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate)
       throws JsonValidationException, IOException {
     imageValidator.assertValidIntegrationImage(destinationDefinitionCreate.getDockerRepository(),
         destinationDefinitionCreate.getDockerImageTag());
@@ -121,7 +121,7 @@ public class DestinationDefinitionsHandler {
     return buildDestinationDefinitionRead(destinationDefinition);
   }
 
-  public DestinationDefinitionRead updateDestinationDefinition(DestinationDefinitionUpdate destinationDefinitionUpdate)
+  public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition currentDestination = configRepository
         .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
@@ -142,10 +142,10 @@ public class DestinationDefinitionsHandler {
     return buildDestinationDefinitionRead(newDestination);
   }
 
-  public static String loadIcon(String name) {
+  public static String loadIcon(final String name) {
     try {
       return name == null ? null : MoreResources.readResource("icons/" + name);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return null;
     }
   }

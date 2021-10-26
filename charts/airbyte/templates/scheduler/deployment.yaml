@@ -30,7 +30,10 @@ spec:
         imagePullPolicy: "{{ .Values.scheduler.image.pullPolicy }}"
         env:
         - name: AIRBYTE_VERSION
-          value: {{ .Chart.AppVersion }}
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: AIRBYTE_VERSION
         - name: CONFIG_ROOT
           valueFrom:
             configMapKeyRef:
@@ -168,6 +171,9 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: INTERNAL_API_HOST
+        {{- if .Values.scheduler.extraEnv }}
+        {{ .Values.scheduler.extraEnv | toYaml | nindent 8 }}
+        {{- end }}
         {{- if .Values.scheduler.resources }}
         resources: {{- toYaml .Values.scheduler.resources | nindent 10 }}
         {{- end }}

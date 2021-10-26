@@ -41,7 +41,7 @@ class SwitchingDestinationTest {
 
   @Test
   public void testInsert() throws Exception {
-    var switchingDestination = new SwitchingDestination<>(SwitchingEnum.class, c -> SwitchingEnum.INSERT, destinationMap);
+    final var switchingDestination = new SwitchingDestination<>(SwitchingEnum.class, c -> SwitchingEnum.INSERT, destinationMap);
 
     switchingDestination.getConsumer(mock(JsonNode.class), mock(ConfiguredAirbyteCatalog.class), mock(Consumer.class));
 
@@ -56,7 +56,7 @@ class SwitchingDestinationTest {
 
   @Test
   public void testCopy() throws Exception {
-    var switchingDestination = new SwitchingDestination<>(SwitchingEnum.class, c -> SwitchingEnum.COPY, destinationMap);
+    final var switchingDestination = new SwitchingDestination<>(SwitchingEnum.class, c -> SwitchingEnum.COPY, destinationMap);
 
     switchingDestination.getConsumer(mock(JsonNode.class), mock(ConfiguredAirbyteCatalog.class), mock(Consumer.class));
 

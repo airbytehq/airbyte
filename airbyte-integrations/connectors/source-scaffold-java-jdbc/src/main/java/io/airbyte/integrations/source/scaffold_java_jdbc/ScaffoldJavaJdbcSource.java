@@ -21,14 +21,14 @@ public class ScaffoldJavaJdbcSource extends AbstractJdbcSource implements Source
   static final String DRIVER_CLASS = "driver_name_here";
 
   public ScaffoldJavaJdbcSource() {
-    // By default NoOpJdbcStreamingQueryConfiguration class is used, but may be updated. See see example
+    // By default, NoOpJdbcStreamingQueryConfiguration class is used, but may be updated. See example
     // MssqlJdbcStreamingQueryConfiguration
     super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration());
   }
 
   // TODO The config is based on spec.json, update according to your DB
   @Override
-  public JsonNode toDatabaseConfig(JsonNode aqqConfig) {
+  public JsonNode toDatabaseConfig(final JsonNode config) {
     // TODO create DB config. Ex: "Jsons.jsonNode(ImmutableMap.builder().put("username",
     // userName).put("password", pas)...build());
     return null;
@@ -36,11 +36,11 @@ public class ScaffoldJavaJdbcSource extends AbstractJdbcSource implements Source
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
-    // TODO Add tables to exaclude, Ex "INFORMATION_SCHEMA", "sys", "spt_fallback_db", etc
+    // TODO Add tables to exclude, Ex "INFORMATION_SCHEMA", "sys", "spt_fallback_db", etc
     return Set.of("");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = new ScaffoldJavaJdbcSource();
     LOGGER.info("starting source: {}", ScaffoldJavaJdbcSource.class);
     new IntegrationRunner(source).run(args);
