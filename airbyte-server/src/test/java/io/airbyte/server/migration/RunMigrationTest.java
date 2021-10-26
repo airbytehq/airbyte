@@ -16,8 +16,8 @@ import static org.mockito.Mockito.when;
 import com.google.common.io.Resources;
 import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.Configs;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
@@ -353,14 +353,8 @@ public class RunMigrationTest {
     configRepository.setSpecFetcher(s -> MOCK_CONNECTOR_SPEC);
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
-<<<<<<< HEAD
         configRepository,
-        TARGET_VERSION,
-=======
-        new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot), new NoOpSecretsHydrator(), Optional.of(secretPersistence),
-            Optional.of(secretPersistence)),
         new AirbyteVersion(TARGET_VERSION),
->>>>>>> 4475ecd0b (prefer AirbyteVersion over string)
         YamlSeedConfigPersistence.getDefault(),
         mock(SpecFetcher.class))) {
       runMigration.run();
