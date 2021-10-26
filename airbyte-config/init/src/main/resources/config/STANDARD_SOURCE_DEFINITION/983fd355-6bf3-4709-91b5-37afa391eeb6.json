@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "983fd355-6bf3-4709-91b5-37afa391eeb6",
+  "name": "Amazon SQS",
+  "dockerRepository": "airbyte/source-amazon-sqs",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/amazon-sqs"
+}
