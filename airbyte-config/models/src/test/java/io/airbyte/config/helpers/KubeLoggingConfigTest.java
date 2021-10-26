@@ -33,13 +33,8 @@ public class KubeLoggingConfigTest {
   public void cleanUpLogs() {
     if (logPath != null) {
       try {
-<<<<<<< HEAD
         LogClientSingleton.getInstance().deleteLogs(WorkerEnvironment.DOCKER, new LogConfiguration("", "", "", "", "", "", ""), logPath);
-      } catch (Exception e) {
-=======
-        LogClientSingleton.deleteLogs(new EnvConfigs(), logPath);
       } catch (final Exception e) {
->>>>>>> master
         // Ignore Minio delete error.
       }
     }
