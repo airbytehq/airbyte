@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
+import static io.airbyte.commons.logging.LoggingHelper.RESET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,9 +17,12 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -36,6 +40,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -125,6 +130,36 @@ class DefaultAirbyteSourceTest {
     });
 
     verify(process).exitValue();
+  }
+
+  @Test
+  public void testTaggedLogs() throws Exception {
+
+    final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+    LogClientSingleton.setJobMdc(jobRoot);
+
+    when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
+
+    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    source.start(SOURCE_CONFIG, jobRoot);
+
+    final List<AirbyteMessage> messages = Lists.newArrayList();
+
+    messages.add(source.attemptRead().get());
+    messages.add(source.attemptRead().get());
+
+    when(process.isAlive()).thenReturn(false);
+    verify(heartbeatMonitor, times(2)).beat();
+
+    source.close();
+
+    final Path logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
+    final Stream<String> logs = IOs.readFile(logPath).lines();
+
+    logs.forEach(line -> {
+      org.assertj.core.api.Assertions.assertThat(line)
+          .startsWith(Color.BLUE.getCode() + "container-log" + RESET);
+    });
   }
 
   @Test
