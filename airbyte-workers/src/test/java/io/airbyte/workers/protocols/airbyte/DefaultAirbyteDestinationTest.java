@@ -78,7 +78,7 @@ class DefaultAirbyteDestinationTest {
         Jsons.serialize(DESTINATION_CONFIG.getDestinationConnectionConfiguration()),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
         Jsons.serialize(DESTINATION_CONFIG.getCatalog())))
-            .thenReturn(process);
+        .thenReturn(process);
 
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);
@@ -127,7 +127,7 @@ class DefaultAirbyteDestinationTest {
 
   @Test
   public void testTaggedLogs() throws Exception {
-    final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+    final Path logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
     LogClientSingleton.setJobMdc(jobRoot);
 
     final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory);
@@ -147,7 +147,7 @@ class DefaultAirbyteDestinationTest {
 
     destination.close();
 
-    final Path logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
+    final Path logPath = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     final Stream<String> logs = IOs.readFile(logPath).lines();
 
     logs.forEach(line -> {
