@@ -57,12 +57,20 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private final String databasePassword;
   private final String databaseUrl;
 
+<<<<<<< HEAD
 
   public TemporalAttemptExecution(Path workspaceRoot, WorkerEnvironment workerEnvironment, LogConfigs logConfigs,
                                   JobRunConfig jobRunConfig,
                                   CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                                   Supplier<INPUT> inputSupplier,
                                   CancellationHandler cancellationHandler) {
+=======
+  public TemporalAttemptExecution(final Path workspaceRoot,
+                                  final JobRunConfig jobRunConfig,
+                                  final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
+                                  final Supplier<INPUT> inputSupplier,
+                                  final CancellationHandler cancellationHandler) {
+>>>>>>> master
     this(
         workspaceRoot, workerEnvironment, logConfigs,
         jobRunConfig,
@@ -74,6 +82,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   }
 
   @VisibleForTesting
+<<<<<<< HEAD
   TemporalAttemptExecution(Path workspaceRoot, WorkerEnvironment workerEnvironment, LogConfigs logConfigs,
                            JobRunConfig jobRunConfig,
                            CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
@@ -81,6 +90,16 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                            Consumer<Path> mdcSetter,
                            CancellationHandler cancellationHandler,
                            Supplier<String> workflowIdProvider) {
+=======
+  TemporalAttemptExecution(final Path workspaceRoot,
+                           final JobRunConfig jobRunConfig,
+                           final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
+                           final Supplier<INPUT> inputSupplier,
+                           final Consumer<Path> mdcSetter,
+                           final CancellationHandler cancellationHandler,
+                           final Supplier<String> workflowIdProvider,
+                           final Configs configs) {
+>>>>>>> master
     this.jobRunConfig = jobRunConfig;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
@@ -127,7 +146,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
         LOGGER.info("Stopping cancellation check scheduling...");
         scheduledExecutor.shutdown();
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw Activity.wrap(e);
     }
   }
@@ -149,14 +168,14 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     }
   }
 
-  private Thread getWorkerThread(Worker<INPUT, OUTPUT> worker, CompletableFuture<OUTPUT> outputFuture) {
+  private Thread getWorkerThread(final Worker<INPUT, OUTPUT> worker, final CompletableFuture<OUTPUT> outputFuture) {
     return new Thread(() -> {
       mdcSetter.accept(jobRoot);
 
       try {
         final OUTPUT output = worker.run(inputSupplier.get(), jobRoot);
         outputFuture.complete(output);
-      } catch (Throwable e) {
+      } catch (final Throwable e) {
         LOGGER.info("Completing future exceptionally...", e);
         outputFuture.completeExceptionally(e);
       }
@@ -174,8 +193,10 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
    *
    * See {@link CancellationHandler} for more info.
    */
-  private Runnable getCancellationChecker(Worker<INPUT, OUTPUT> worker, Thread workerThread, CompletableFuture<OUTPUT> outputFuture) {
-    var cancelled = new AtomicBoolean(false);
+  private Runnable getCancellationChecker(final Worker<INPUT, OUTPUT> worker,
+                                          final Thread workerThread,
+                                          final CompletableFuture<OUTPUT> outputFuture) {
+    final var cancelled = new AtomicBoolean(false);
     return () -> {
       try {
         mdcSetter.accept(jobRoot);
@@ -202,7 +223,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
         };
 
         cancellationHandler.checkAndHandleCancellation(onCancellationCallback);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         LOGGER.error("Cancellation checker exception", e);
       }
     };

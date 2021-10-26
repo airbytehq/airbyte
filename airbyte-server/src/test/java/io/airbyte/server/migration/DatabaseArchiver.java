@@ -9,7 +9,6 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.stream.MoreStreams;
-import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -23,7 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,18 +81,13 @@ public class DatabaseArchiver {
         .resolve(String.format("%s.yaml", tableName.toUpperCase()));
   }
 
-  public void checkVersion(final String airbyteVersion) throws IOException {
-    final Optional<String> airbyteDatabaseVersion = persistence.getVersion();
-    airbyteDatabaseVersion.ifPresent(dbversion -> AirbyteVersion.assertIsCompatible(airbyteVersion, dbversion));
-  }
-
   /**
    * Reads a YAML configuration archive file and deserialize table into the Airbyte Database. The
    * objects will be validated against the current version of Airbyte server's JSON Schema.
    */
   public void importDatabaseFromArchive(final Path storageRoot, final String airbyteVersion) throws IOException {
     final Map<JobsDatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
-    for (JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
+    for (final JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
       final Path tablePath = buildTablePath(storageRoot, tableType.name());
       data.put(tableType, readTableFromArchive(tableType, tablePath));
     }
@@ -109,7 +102,7 @@ public class DatabaseArchiver {
           .peek(r -> {
             try {
               jsonSchemaValidator.ensure(schema, r);
-            } catch (JsonValidationException e) {
+            } catch (final JsonValidationException e) {
               throw new IllegalArgumentException("Archived Data Schema does not match current Airbyte Data Schemas", e);
             }
           });

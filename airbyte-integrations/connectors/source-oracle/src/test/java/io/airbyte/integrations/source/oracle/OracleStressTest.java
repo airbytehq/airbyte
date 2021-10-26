@@ -95,7 +95,7 @@ class OracleStressTest extends JdbcStressTest {
     }
 
     @Override
-    public JsonNode toDatabaseConfig(JsonNode config) {
+    public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put("username", config.get("username").asText())
           .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/xe",
@@ -116,7 +116,7 @@ class OracleStressTest extends JdbcStressTest {
       return Set.of("APEX_040000", "CTXSYS", "FLOWS_FILES", "HR", "MDSYS", "OUTLN", "SYS", "XDB");
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(final String[] args) throws Exception {
       final Source source = new OracleTestSource();
       LOGGER.info("starting source: {}", OracleTestSource.class);
       new IntegrationRunner(source).run(args);

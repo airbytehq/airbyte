@@ -31,13 +31,17 @@ public class JobHistoryHandler {
   private final JobPersistence jobPersistence;
   private final JobConverter jobConverter;
 
+<<<<<<< HEAD
   public JobHistoryHandler(JobPersistence jobPersistence, WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
     jobConverter = new JobConverter(workerEnvironment, logConfigs);
+=======
+  public JobHistoryHandler(final JobPersistence jobPersistence) {
+>>>>>>> master
     this.jobPersistence = jobPersistence;
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  public JobReadList listJobsFor(JobListRequestBody request) throws IOException {
+  public JobReadList listJobsFor(final JobListRequestBody request) throws IOException {
     Preconditions.checkNotNull(request.getConfigTypes(), "configType cannot be null.");
     Preconditions.checkState(!request.getConfigTypes().isEmpty(), "Must include at least one configType.");
 
@@ -58,7 +62,7 @@ public class JobHistoryHandler {
     return new JobReadList().jobs(jobReads);
   }
 
-  public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {
+  public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     return jobConverter.getJobInfoRead(job);
   }

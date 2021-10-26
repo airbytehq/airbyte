@@ -56,7 +56,7 @@ public class SourceDefinitionsHandler {
   }
 
   @VisibleForTesting
-  static SourceDefinitionRead buildSourceDefinitionRead(StandardSourceDefinition standardSourceDefinition) {
+  static SourceDefinitionRead buildSourceDefinitionRead(final StandardSourceDefinition standardSourceDefinition) {
     try {
       return new SourceDefinitionRead()
           .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
@@ -65,16 +65,16 @@ public class SourceDefinitionsHandler {
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardSourceDefinition.getIcon()));
-    } catch (URISyntaxException | NullPointerException e) {
+    } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
     }
   }
 
   public SourceDefinitionReadList listSourceDefinitions() throws IOException, JsonValidationException {
-    return toSourceDefinitionReadList(configRepository.listStandardSources());
+    return toSourceDefinitionReadList(configRepository.listStandardSourceDefinitions());
   }
 
-  private static SourceDefinitionReadList toSourceDefinitionReadList(List<StandardSourceDefinition> defs) {
+  private static SourceDefinitionReadList toSourceDefinitionReadList(final List<StandardSourceDefinition> defs) {
     final List<SourceDefinitionRead> reads = defs.stream()
         .map(SourceDefinitionsHandler::buildSourceDefinitionRead)
         .collect(Collectors.toList());
@@ -88,17 +88,18 @@ public class SourceDefinitionsHandler {
   private List<StandardSourceDefinition> getLatestSources() {
     try {
       return githubStore.getLatestSources();
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }
   }
 
-  public SourceDefinitionRead getSourceDefinition(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
+  public SourceDefinitionRead getSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
   }
 
-  public SourceDefinitionRead createSourceDefinition(SourceDefinitionCreate sourceDefinitionCreate) throws JsonValidationException, IOException {
+  public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate)
+      throws JsonValidationException, IOException {
     imageValidator.assertValidIntegrationImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
 
     final UUID id = uuidSupplier.get();
@@ -110,12 +111,12 @@ public class SourceDefinitionsHandler {
         .withName(sourceDefinitionCreate.getName())
         .withIcon(sourceDefinitionCreate.getIcon());
 
-    configRepository.writeStandardSource(sourceDefinition);
+    configRepository.writeStandardSourceDefinition(sourceDefinition);
 
     return buildSourceDefinitionRead(sourceDefinition);
   }
 
-  public SourceDefinitionRead updateSourceDefinition(SourceDefinitionUpdate sourceDefinitionUpdate)
+  public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition currentSourceDefinition =
         configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
@@ -129,16 +130,16 @@ public class SourceDefinitionsHandler {
         .withName(currentSourceDefinition.getName())
         .withIcon(currentSourceDefinition.getIcon());
 
-    configRepository.writeStandardSource(newSource);
+    configRepository.writeStandardSourceDefinition(newSource);
     // we want to re-fetch the spec for updated definitions.
     schedulerSynchronousClient.resetCache();
     return buildSourceDefinitionRead(newSource);
   }
 
-  public static String loadIcon(String name) {
+  public static String loadIcon(final String name) {
     try {
       return name == null ? null : MoreResources.readResource("icons/" + name);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return null;
     }
   }

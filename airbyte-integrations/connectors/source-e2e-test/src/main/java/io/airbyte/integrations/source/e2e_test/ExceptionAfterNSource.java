@@ -55,12 +55,12 @@ public class ExceptionAfterNSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AirbyteCatalog discover(JsonNode config) {
+  public AirbyteCatalog discover(final JsonNode config) {
     return Jsons.clone(CATALOG);
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) {
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
     final long throwAfterNRecords = config.get("throw_after_n_records").asLong();
 
     final AtomicLong recordsEmitted = new AtomicLong();

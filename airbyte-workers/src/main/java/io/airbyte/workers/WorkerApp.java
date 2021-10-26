@@ -9,19 +9,30 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
+<<<<<<< HEAD
 import io.airbyte.config.helpers.LogConfigs;
+=======
+import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.DatabaseConfigPersistence;
+>>>>>>> master
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.db.Database;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
-import io.airbyte.workers.temporal.CheckConnectionWorkflow;
-import io.airbyte.workers.temporal.DiscoverCatalogWorkflow;
-import io.airbyte.workers.temporal.SpecWorkflow;
 import io.airbyte.workers.temporal.SyncWorkflow;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionActivityImpl;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
+import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
+import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
+import io.airbyte.workers.temporal.spec.SpecActivityImpl;
+import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -35,6 +46,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +63,7 @@ public class WorkerApp {
   private final WorkflowServiceStubs temporalService;
   private final MaxWorkersConfig maxWorkers;
   private final WorkerEnvironment workerEnvironment;
+<<<<<<< HEAD
   private final LogConfigs logConfigs;
 
   public WorkerApp(Path workspaceRoot,
@@ -59,23 +72,38 @@ public class WorkerApp {
                    WorkflowServiceStubs temporalService,
                    MaxWorkersConfig maxWorkers,
                    WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
+=======
+  private final ConfigRepository configRepository;
+
+  public WorkerApp(final Path workspaceRoot,
+                   final ProcessFactory processFactory,
+                   final SecretsHydrator secretsHydrator,
+                   final WorkflowServiceStubs temporalService,
+                   final MaxWorkersConfig maxWorkers,
+                   final WorkerEnvironment workerEnvironment,
+                   final ConfigRepository configRepository) {
+>>>>>>> master
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.temporalService = temporalService;
     this.maxWorkers = maxWorkers;
     this.workerEnvironment = workerEnvironment;
+<<<<<<< HEAD
     this.logConfigs = logConfigs;
+=======
+    this.configRepository = configRepository;
+>>>>>>> master
   }
 
   public void start() {
-    Map<String, String> mdc = MDC.getCopyOfContextMap();
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
     Executors.newSingleThreadExecutor().submit(
         () -> {
           MDC.setContextMap(mdc);
           try {
             new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT).start();
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new RuntimeException(e);
           }
         });
@@ -83,31 +111,51 @@ public class WorkerApp {
     final WorkerFactory factory = WorkerFactory.newInstance(WorkflowClient.newInstance(temporalService));
 
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
+<<<<<<< HEAD
     specWorker.registerWorkflowImplementationTypes(SpecWorkflow.WorkflowImpl.class);
     specWorker.registerActivitiesImplementations(new SpecWorkflow.SpecActivityImpl(processFactory, workspaceRoot, workerEnvironment, logConfigs));
+=======
+    specWorker.registerWorkflowImplementationTypes(SpecWorkflowImpl.class);
+    specWorker.registerActivitiesImplementations(new SpecActivityImpl(processFactory, workspaceRoot));
+>>>>>>> master
 
     final Worker checkConnectionWorker =
         factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkers.getMaxCheckWorkers()));
-    checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflow.WorkflowImpl.class);
+    checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflowImpl.class);
     checkConnectionWorker
+<<<<<<< HEAD
         .registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs));
+=======
+        .registerActivitiesImplementations(new CheckConnectionActivityImpl(processFactory, secretsHydrator, workspaceRoot));
+>>>>>>> master
 
     final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
-    discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflow.WorkflowImpl.class);
+    discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflowImpl.class);
     discoverWorker
+<<<<<<< HEAD
         .registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs));
+=======
+        .registerActivitiesImplementations(new DiscoverCatalogActivityImpl(processFactory, secretsHydrator, workspaceRoot));
+>>>>>>> master
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
+<<<<<<< HEAD
         new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs),
         new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs),
         new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs));
 
+=======
+        new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
+        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment),
+        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
+        new SyncWorkflow.PersistStateActivityImpl(workspaceRoot, configRepository));
+>>>>>>> master
     factory.start();
   }
 
-  private static ProcessFactory getProcessBuilderFactory(Configs configs) throws IOException {
+  private static ProcessFactory getProcessBuilderFactory(final Configs configs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final ApiClient officialClient = Config.defaultClient();
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
@@ -124,13 +172,13 @@ public class WorkerApp {
     }
   }
 
-  private static WorkerOptions getWorkerOptions(int max) {
+  private static WorkerOptions getWorkerOptions(final int max) {
     return WorkerOptions.newBuilder()
         .setMaxConcurrentActivityExecutionSize(max)
         .build();
   }
 
-  public static void main(String[] args) throws IOException, InterruptedException {
+  public static void main(final String[] args) throws IOException, InterruptedException {
     final Configs configs = new EnvConfigs();
 
     LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(), LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot()));
@@ -147,7 +195,28 @@ public class WorkerApp {
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
 
+<<<<<<< HEAD
     new WorkerApp(workspaceRoot, processFactory, secretsHydrator, temporalService, configs.getMaxWorkers(), configs.getWorkerEnvironment(), configs.getLogConfigs()).start();
+=======
+    final Database configDatabase = new ConfigsDatabaseInstance(
+        configs.getConfigDatabaseUser(),
+        configs.getConfigDatabasePassword(),
+        configs.getConfigDatabaseUrl())
+            .getInitialized();
+    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
+    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+
+    new WorkerApp(
+        workspaceRoot,
+        processFactory,
+        secretsHydrator,
+        temporalService,
+        configs.getMaxWorkers(),
+        configs.getWorkerEnvironment(),
+        configRepository).start();
+>>>>>>> master
   }
 
 }

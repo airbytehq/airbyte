@@ -15,9 +15,9 @@ public class GcsS3Helper {
 
   private static final String GCS_ENDPOINT = "https://storage.googleapis.com";
 
-  public static AmazonS3 getGcsS3Client(GcsDestinationConfig gcsDestinationConfig) {
-    GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) gcsDestinationConfig.getCredentialConfig();
-    BasicAWSCredentials awsCreds = new BasicAWSCredentials(hmacKeyCredential.getHmacKeyAccessId(), hmacKeyCredential.getHmacKeySecret());
+  public static AmazonS3 getGcsS3Client(final GcsDestinationConfig gcsDestinationConfig) {
+    final GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) gcsDestinationConfig.getCredentialConfig();
+    final BasicAWSCredentials awsCreds = new BasicAWSCredentials(hmacKeyCredential.getHmacKeyAccessId(), hmacKeyCredential.getHmacKeySecret());
 
     return AmazonS3ClientBuilder.standard()
         .withEndpointConfiguration(

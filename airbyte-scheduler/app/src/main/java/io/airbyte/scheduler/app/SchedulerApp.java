@@ -82,15 +82,15 @@ public class SchedulerApp {
   private final int maxSyncJobAttempts;
   private final String airbyteVersionOrWarnings;
 
-  public SchedulerApp(Path workspaceRoot,
-                      JobPersistence jobPersistence,
-                      ConfigRepository configRepository,
-                      JobCleaner jobCleaner,
-                      JobNotifier jobNotifier,
-                      TemporalClient temporalClient,
-                      Integer submitterNumThreads,
-                      Integer maxSyncJobAttempts,
-                      String airbyteVersionOrWarnings) {
+  public SchedulerApp(final Path workspaceRoot,
+                      final JobPersistence jobPersistence,
+                      final ConfigRepository configRepository,
+                      final JobCleaner jobCleaner,
+                      final JobNotifier jobNotifier,
+                      final TemporalClient temporalClient,
+                      final Integer submitterNumThreads,
+                      final Integer maxSyncJobAttempts,
+                      final String airbyteVersionOrWarnings) {
     this.workspaceRoot = workspaceRoot;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
@@ -118,7 +118,7 @@ public class SchedulerApp {
         new JobTracker(configRepository, jobPersistence, trackingClient),
         jobNotifier);
 
-    Map<String, String> mdc = MDC.getCopyOfContextMap();
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
     // We cancel jobs that where running before the restart. They are not being monitored by the worker
     // anymore.
@@ -129,7 +129,6 @@ public class SchedulerApp {
           MDC.setContextMap(mdc);
           jobRetrier.run();
           jobScheduler.run();
-          jobSubmitter.run();
         },
         0L,
         SCHEDULING_DELAY.toSeconds(),
@@ -158,14 +157,14 @@ public class SchedulerApp {
         scheduleJobsPool, executeJobsPool, cleanupJobsPool));
   }
 
-  private void cleanupZombies(JobPersistence jobPersistence, JobNotifier jobNotifier) throws IOException {
-    for (Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
+  private void cleanupZombies(final JobPersistence jobPersistence, final JobNotifier jobNotifier) throws IOException {
+    for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
       jobNotifier.failJob("zombie job was cancelled", zombieJob);
       jobPersistence.cancelJob(zombieJob.getId());
     }
   }
 
-  public static void waitForServer(Configs configs) throws InterruptedException {
+  public static void waitForServer(final Configs configs) throws InterruptedException {
     final AirbyteApiClient apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost(configs.getAirbyteApiHost())
@@ -175,16 +174,16 @@ public class SchedulerApp {
     boolean isHealthy = false;
     while (!isHealthy) {
       try {
-        HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
+        final HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
         isHealthy = healthCheck.getDb();
-      } catch (ApiException e) {
+      } catch (final ApiException e) {
         LOGGER.info("Waiting for server to become available...");
         Thread.sleep(2000);
       }
     }
   }
 
-  public static void main(String[] args) throws IOException, InterruptedException {
+  public static void main(final String[] args) throws IOException, InterruptedException {
 
     final Configs configs = new EnvConfigs();
 
@@ -206,7 +205,6 @@ public class SchedulerApp {
         configs.getDatabaseUrl())
             .getInitialized();
 
-    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
@@ -217,11 +215,15 @@ public class SchedulerApp {
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),
         workspaceRoot,
         jobPersistence);
-    AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), jobPersistence.getVersion().get());
+    AirbyteVersion.assertIsCompatible(
+        new AirbyteVersion(configs.getAirbyteVersion()),
+        jobPersistence.getVersion().map(AirbyteVersion::new).orElseThrow());
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
@@ -240,8 +242,16 @@ public class SchedulerApp {
     MetricSingleton.initializeMonitoringServiceDaemon("8082", mdc, configs.getPublishMetrics());
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(workspaceRoot, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient,
-        Integer.parseInt(configs.getSubmitterNumThreads()), configs.getMaxSyncJobAttempts(), configs.getAirbyteVersionOrWarning())
+    new SchedulerApp(
+        workspaceRoot,
+        jobPersistence,
+        configRepository,
+        jobCleaner,
+        jobNotifier,
+        temporalClient,
+        Integer.parseInt(configs.getSubmitterNumThreads()),
+        configs.getMaxSyncJobAttempts(),
+        configs.getAirbyteVersionOrWarning())
             .start();
   }
 

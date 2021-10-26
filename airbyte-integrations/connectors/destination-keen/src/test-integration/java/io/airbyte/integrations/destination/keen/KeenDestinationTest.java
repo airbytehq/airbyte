@@ -58,11 +58,15 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace, JsonNode streamSchema) throws Exception {
-    String accentStrippedStreamName = KeenCharactersStripper.stripSpecialCharactersFromStreamName(streamName);
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
+      throws Exception {
+    final String accentStrippedStreamName = KeenCharactersStripper.stripSpecialCharactersFromStreamName(streamName);
     collectionsToDelete.add(accentStrippedStreamName);
 
-    ArrayNode array = keenHttpClient.extract(accentStrippedStreamName, projectId, apiKey);
+    final ArrayNode array = keenHttpClient.extract(accentStrippedStreamName, projectId, apiKey);
     return Lists.newArrayList(array.elements()).stream()
         .sorted(Comparator.comparing(o -> o.get("keen").get("timestamp").textValue()))
         .map(node -> (JsonNode) ((ObjectNode) node).without("keen"))
@@ -70,7 +74,7 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(Path.of(SECRET_FILE_PATH))) {
       throw new IllegalStateException(
           "Must provide path to a file containing Keen account credentials: Project ID and Master API Key. " +
@@ -83,18 +87,18 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
-    for (String keenCollection : collectionsToDelete) {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+    for (final String keenCollection : collectionsToDelete) {
       keenHttpClient.eraseStream(keenCollection, projectId, apiKey);
     }
     collectionsToDelete.clear();
   }
 
   @Override
-  protected void runSyncAndVerifyStateOutput(JsonNode config,
-                                             List<AirbyteMessage> messages,
-                                             ConfiguredAirbyteCatalog catalog,
-                                             boolean runNormalization)
+  protected void runSyncAndVerifyStateOutput(final JsonNode config,
+                                             final List<AirbyteMessage> messages,
+                                             final ConfiguredAirbyteCatalog catalog,
+                                             final boolean runNormalization)
       throws Exception {
     super.runSyncAndVerifyStateOutput(config, messages, catalog, runNormalization);
     Thread.sleep(10000);

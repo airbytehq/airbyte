@@ -18,7 +18,11 @@ import java.nio.file.Path;
  */
 public class LogsHandler {
 
+<<<<<<< HEAD
   public File getLogs(Path workspaceRoot, WorkerEnvironment workerEnvironment, LogConfigs logConfigs, LogsRequestBody logsRequestBody) {
+=======
+  public File getLogs(final Configs configs, final LogsRequestBody logsRequestBody) {
+>>>>>>> master
     switch (logsRequestBody.getLogType()) {
       case SERVER -> {
         return LogClientSingleton.getInstance().getServerLogFile(workspaceRoot, workerEnvironment, logConfigs);

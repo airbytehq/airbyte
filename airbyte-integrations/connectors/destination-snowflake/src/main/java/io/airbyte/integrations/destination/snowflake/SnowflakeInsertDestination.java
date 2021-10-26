@@ -22,13 +22,13 @@ public class SnowflakeInsertDestination extends AbstractJdbcDestination implemen
   }
 
   @Override
-  protected JdbcDatabase getDatabase(JsonNode config) {
+  protected JdbcDatabase getDatabase(final JsonNode config) {
     return SnowflakeDatabase.getDatabase(config);
   }
 
   // this is a no op since we override getDatabase.
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toJdbcConfig(final JsonNode config) {
     return Jsons.emptyObject();
   }
 

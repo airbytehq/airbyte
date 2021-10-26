@@ -6,6 +6,9 @@
     "call_sid": {
       "type": ["null", "string"]
     },
+    "label": {
+      "type": ["null", "string"]
+    },
     "conference_sid": {
       "type": ["null", "string"]
     },

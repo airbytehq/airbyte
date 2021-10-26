@@ -85,7 +85,7 @@ public class LogClientSingleton {
     }
   }
 
-  public File getSchedulerLogFile(Path workspaceRoot, WorkerEnvironment workerEnvironment, LogConfigs logConfigs) {
+  public File getSchedulerLogFile(final Path workspaceRoot, final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs) {
     if (shouldUseLocalLogs(workerEnvironment)) {
       return getSchedulerLogsRoot(workspaceRoot).resolve(LOG_FILENAME).toFile();
     }
@@ -98,7 +98,7 @@ public class LogClientSingleton {
     }
   }
 
-  public List<String> getJobLogFile(WorkerEnvironment workerEnvironment, LogConfigs logConfigs, final Path logPath) throws IOException {
+  public List<String> getJobLogFile(final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs, final Path logPath) throws IOException {
     if (logPath == null || logPath.equals(Path.of(""))) {
       return Collections.emptyList();
     }
@@ -115,7 +115,7 @@ public class LogClientSingleton {
    * Primarily to clean up logs after testing. Only valid for Kube logs.
    */
   @VisibleForTesting
-  public void deleteLogs(WorkerEnvironment workerEnvironment, LogConfigs logConfigs, final String logPath) {
+  public void deleteLogs(final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs, final String logPath) {
     if (logPath == null || logPath.equals(Path.of(""))) {
       return;
     }
@@ -127,7 +127,7 @@ public class LogClientSingleton {
     logClient.deleteLogs(logConfigs, cloudLogPath);
   }
 
-  public void setJobMdc(WorkerEnvironment workerEnvironment, LogConfigs logConfigs, final Path path) {
+  public void setJobMdc(final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs, final Path path) {
     if (shouldUseLocalLogs(workerEnvironment)) {
       LOGGER.debug("Setting docker job mdc");
       MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
@@ -138,7 +138,7 @@ public class LogClientSingleton {
     }
   }
 
-  public void setWorkspaceMdc(WorkerEnvironment workerEnvironment, LogConfigs logConfigs, final Path path) {
+  public void setWorkspaceMdc(final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs, final Path path) {
     if (shouldUseLocalLogs(workerEnvironment)) {
       LOGGER.debug("Setting docker workspace mdc");
       MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, path.toString());
@@ -149,7 +149,7 @@ public class LogClientSingleton {
     }
   }
 
-  private boolean shouldUseLocalLogs(WorkerEnvironment workerEnvironment) {
+  private boolean shouldUseLocalLogs(final WorkerEnvironment workerEnvironment) {
     return workerEnvironment.equals(WorkerEnvironment.DOCKER);
   }
 

@@ -20,12 +20,12 @@ public class Exceptions {
    * @param <T> - return type of the function.
    * @return object that the function returns.
    */
-  public static <T> T toRuntime(Callable<T> callable) {
+  public static <T> T toRuntime(final Callable<T> callable) {
     try {
       return callable.call();
-    } catch (RuntimeException e) {
+    } catch (final RuntimeException e) {
       throw e;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -35,32 +35,32 @@ public class Exceptions {
    *
    * @param voidCallable - function that throws a checked exception.
    */
-  public static void toRuntime(Procedure voidCallable) {
+  public static void toRuntime(final Procedure voidCallable) {
     castCheckedToRuntime(voidCallable, RuntimeException::new);
   }
 
-  public static void toIllegalState(Procedure voidCallable) {
+  public static void toIllegalState(final Procedure voidCallable) {
     castCheckedToRuntime(voidCallable, IllegalStateException::new);
   }
 
-  public static void toIllegalArgument(Procedure voidCallable) {
+  public static void toIllegalArgument(final Procedure voidCallable) {
     castCheckedToRuntime(voidCallable, IllegalArgumentException::new);
   }
 
-  private static void castCheckedToRuntime(Procedure voidCallable, Function<Exception, RuntimeException> exceptionFactory) {
+  private static void castCheckedToRuntime(final Procedure voidCallable, final Function<Exception, RuntimeException> exceptionFactory) {
     try {
       voidCallable.call();
-    } catch (RuntimeException e) {
+    } catch (final RuntimeException e) {
       throw e;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw exceptionFactory.apply(e);
     }
   }
 
-  public static void swallow(Procedure procedure) {
+  public static void swallow(final Procedure procedure) {
     try {
       procedure.call();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Swallowed error.", e);
     }
   }

@@ -35,6 +35,7 @@ public class JobConverter {
 
   private static final int LOG_TAIL_SIZE = 1000000;
 
+<<<<<<< HEAD
   private WorkerEnvironment workerEnvironment;
   private LogConfigs logConfigs;
 
@@ -44,12 +45,19 @@ public class JobConverter {
   }
 
   public JobInfoRead getJobInfoRead(Job job) {
+=======
+  public static JobInfoRead getJobInfoRead(final Job job) {
+>>>>>>> master
     return new JobInfoRead()
         .job(getJobWithAttemptsRead(job).getJob())
         .attempts(job.getAttempts().stream().map(attempt -> getAttemptInfoRead(attempt)).collect(Collectors.toList()));
   }
 
+<<<<<<< HEAD
   public JobWithAttemptsRead getJobWithAttemptsRead(Job job) {
+=======
+  public static JobWithAttemptsRead getJobWithAttemptsRead(final Job job) {
+>>>>>>> master
     final String configId = job.getScope();
     final JobConfigType configType = Enums.convertTo(job.getConfigType(), JobConfigType.class);
 
@@ -64,13 +72,21 @@ public class JobConverter {
         .attempts(job.getAttempts().stream().map(attempt -> getAttemptRead(attempt)).collect(Collectors.toList()));
   }
 
+<<<<<<< HEAD
   public AttemptInfoRead getAttemptInfoRead(Attempt attempt) {
+=======
+  public static AttemptInfoRead getAttemptInfoRead(final Attempt attempt) {
+>>>>>>> master
     return new AttemptInfoRead()
         .attempt(getAttemptRead(attempt))
         .logs(getLogRead(attempt.getLogPath()));
   }
 
+<<<<<<< HEAD
   public AttemptRead getAttemptRead(Attempt attempt) {
+=======
+  public static AttemptRead getAttemptRead(final Attempt attempt) {
+>>>>>>> master
     return new AttemptRead()
         .id(attempt.getId())
         .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
@@ -89,20 +105,36 @@ public class JobConverter {
         .endedAt(attempt.getEndedAtInSecond().orElse(null));
   }
 
+<<<<<<< HEAD
   public LogRead getLogRead(Path logPath) {
     try {
       return new LogRead().logLines(LogClientSingleton.getInstance().getJobLogFile(workerEnvironment, logConfigs, logPath));
     } catch (IOException e) {
+=======
+  public static LogRead getLogRead(final Path logPath) {
+    try {
+      final var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), logPath);
+      return new LogRead().logLines(logs);
+    } catch (final IOException e) {
+>>>>>>> master
       throw new RuntimeException(e);
     }
   }
 
+<<<<<<< HEAD
   public SynchronousJobRead getSynchronousJobRead(SynchronousResponse<?> response) {
     Configs configs = new EnvConfigs();
     return getSynchronousJobRead(response.getMetadata());
   }
 
   public SynchronousJobRead getSynchronousJobRead(SynchronousJobMetadata metadata) {
+=======
+  public static SynchronousJobRead getSynchronousJobRead(final SynchronousResponse<?> response) {
+    return getSynchronousJobRead(response.getMetadata());
+  }
+
+  public static SynchronousJobRead getSynchronousJobRead(final SynchronousJobMetadata metadata) {
+>>>>>>> master
     final JobConfigType configType = Enums.convertTo(metadata.getConfigType(), JobConfigType.class);
 
     return new SynchronousJobRead()

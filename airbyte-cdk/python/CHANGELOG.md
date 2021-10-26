@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.1.32
+- Added Sphinx docs `airbyte-cdk/python/reference_docs` module. 
+- Added module documents at `airbyte-cdk/python/sphinx-docs.md`.
+- Added Read the Docs publishing configuration at `.readthedocs.yaml`.
+
+## 0.1.31
+Transforming Python log levels to Airbyte protocol log levels
+
+## 0.1.30
+Updated OAuth2Specification.rootObject type in airbyte_protocol to allow string or int
+
+## 0.1.29
+Fix import logger error
+
+## 0.1.28
+Added `check_config_against_spec` parameter to `Connector` abstract class 
+to allow skipping validating the input config against the spec for non-`check` calls
+
 ## 0.1.27
 Improving unit test for logger
 
