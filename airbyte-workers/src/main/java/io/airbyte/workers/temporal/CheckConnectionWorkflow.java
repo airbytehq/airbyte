@@ -79,7 +79,10 @@ public interface CheckConnectionWorkflow {
                                        final SecretsHydrator secretsHydrator,
                                        final Path workspaceRoot,
                                        final WorkerEnvironment workerEnvironment,
-                                       final LogConfigs logConfigs, final String databaseUser, final String databasePassword, final String databaseUrl) {
+                                       final LogConfigs logConfigs,
+                                       final String databaseUser,
+                                       final String databasePassword,
+                                       final String databaseUrl) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -113,7 +116,7 @@ public interface CheckConnectionWorkflow {
     }
 
     private CheckedSupplier<Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput>, Exception> getWorkerFactory(
-        final IntegrationLauncherConfig launcherConfig) {
+                                                                                                                             final IntegrationLauncherConfig launcherConfig) {
       return () -> {
         final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
             launcherConfig.getJobId(),

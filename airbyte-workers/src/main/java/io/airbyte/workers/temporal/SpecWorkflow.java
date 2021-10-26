@@ -66,7 +66,13 @@ public interface SpecWorkflow {
     private final String databasePassword;
     private final String databaseUrl;
 
-    public SpecActivityImpl(final ProcessFactory processFactory, final Path workspaceRoot, final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs, final String databaseUser, final String databasePassword, final String databaseUrl) {
+    public SpecActivityImpl(final ProcessFactory processFactory,
+                            final Path workspaceRoot,
+                            final WorkerEnvironment workerEnvironment,
+                            final LogConfigs logConfigs,
+                            final String databaseUser,
+                            final String databasePassword,
+                            final String databaseUrl) {
       this.processFactory = processFactory;
       this.workspaceRoot = workspaceRoot;
       this.workerEnvironment = workerEnvironment;

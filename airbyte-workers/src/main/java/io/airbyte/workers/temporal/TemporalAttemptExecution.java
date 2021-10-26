@@ -6,7 +6,6 @@ package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedSupplier;
-import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -58,15 +57,15 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private final String databaseUrl;
 
   public TemporalAttemptExecution(final Path workspaceRoot,
-      final WorkerEnvironment workerEnvironment,
-      final LogConfigs logConfigs,
-      final JobRunConfig jobRunConfig,
-      final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
-      final Supplier<INPUT> inputSupplier,
-      final CancellationHandler cancellationHandler,
-      final String databaseUser,
-      final String databasePassword,
-      final String databaseUrl) {
+                                  final WorkerEnvironment workerEnvironment,
+                                  final LogConfigs logConfigs,
+                                  final JobRunConfig jobRunConfig,
+                                  final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
+                                  final Supplier<INPUT> inputSupplier,
+                                  final CancellationHandler cancellationHandler,
+                                  final String databaseUser,
+                                  final String databasePassword,
+                                  final String databaseUrl) {
     this(
         workspaceRoot, workerEnvironment, logConfigs,
         jobRunConfig,
@@ -79,17 +78,17 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
 
   @VisibleForTesting
   TemporalAttemptExecution(final Path workspaceRoot,
-      final WorkerEnvironment workerEnvironment,
-      final LogConfigs logConfigs,
-      final JobRunConfig jobRunConfig,
-      final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
-      final Supplier<INPUT> inputSupplier,
-      final Consumer<Path> mdcSetter,
-      final CancellationHandler cancellationHandler,
-      final String databaseUser,
-      final String databasePassword,
-      final String databaseUrl,
-      final Supplier<String> workflowIdProvider) {
+                           final WorkerEnvironment workerEnvironment,
+                           final LogConfigs logConfigs,
+                           final JobRunConfig jobRunConfig,
+                           final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
+                           final Supplier<INPUT> inputSupplier,
+                           final Consumer<Path> mdcSetter,
+                           final CancellationHandler cancellationHandler,
+                           final String databaseUser,
+                           final String databasePassword,
+                           final String databaseUrl,
+                           final Supplier<String> workflowIdProvider) {
     this.jobRunConfig = jobRunConfig;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
@@ -150,7 +149,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
           databaseUser,
           databasePassword,
           databaseUrl)
-          .getInitialized();
+              .getInitialized();
       final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
       final String workflowId = workflowIdProvider.get();
       jobPersistence.setAttemptTemporalWorkflowId(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), workflowId);
@@ -172,18 +171,19 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   }
 
   /**
-   * Cancel is implementation in a slightly convoluted manner due to Temporal's semantics. Cancel requests are routed to the Temporal Scheduler via
-   * the cancelJob function in SchedulerHandler.java. This manifests as a {@link io.temporal.client.ActivityCompletionException} when the {@link
-   * CancellationHandler} heartbeats to the Temporal Scheduler.
+   * Cancel is implementation in a slightly convoluted manner due to Temporal's semantics. Cancel
+   * requests are routed to the Temporal Scheduler via the cancelJob function in
+   * SchedulerHandler.java. This manifests as a {@link io.temporal.client.ActivityCompletionException}
+   * when the {@link CancellationHandler} heartbeats to the Temporal Scheduler.
    * <p>
-   * The callback defined in this function is executed after the above exception is caught, and defines the clean up operations executed as part of
-   * cancel.
+   * The callback defined in this function is executed after the above exception is caught, and
+   * defines the clean up operations executed as part of cancel.
    * <p>
    * See {@link CancellationHandler} for more info.
    */
   private Runnable getCancellationChecker(final Worker<INPUT, OUTPUT> worker,
-      final Thread workerThread,
-      final CompletableFuture<OUTPUT> outputFuture) {
+                                          final Thread workerThread,
+                                          final CompletableFuture<OUTPUT> outputFuture) {
     final var cancelled = new AtomicBoolean(false);
     return () -> {
       try {

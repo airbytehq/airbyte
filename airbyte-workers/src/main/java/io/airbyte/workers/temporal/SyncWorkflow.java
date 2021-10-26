@@ -157,14 +157,17 @@ public interface SyncWorkflow {
     private final String databasePassword;
     private final String databaseUrl;
 
-
     public ReplicationActivityImpl(
                                    final ProcessFactory processFactory,
                                    final SecretsHydrator secretsHydrator,
                                    final Path workspaceRoot,
                                    final WorkerEnvironment workerEnvironment,
-                                   final LogConfigs logConfigs, final String databaseUser, final String databasePassword, final String databaseUrl) {
-      this(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, new AirbyteConfigValidator(), databaseUser, databasePassword, databaseUrl);
+                                   final LogConfigs logConfigs,
+                                   final String databaseUser,
+                                   final String databasePassword,
+                                   final String databaseUrl) {
+      this(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, new AirbyteConfigValidator(), databaseUser,
+          databasePassword, databaseUrl);
     }
 
     @VisibleForTesting
@@ -173,7 +176,10 @@ public interface SyncWorkflow {
                             final Path workspaceRoot,
                             final WorkerEnvironment workerEnvironment,
                             final LogConfigs logConfigs,
-                            final AirbyteConfigValidator validator, final String databaseUser, final String databasePassword, final String databaseUrl) {
+                            final AirbyteConfigValidator validator,
+                            final String databaseUser,
+                            final String databasePassword,
+                            final String databaseUrl) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -302,8 +308,12 @@ public interface SyncWorkflow {
                                      final SecretsHydrator secretsHydrator,
                                      final Path workspaceRoot,
                                      final WorkerEnvironment workerEnvironment,
-                                     final LogConfigs logConfig, final String databaseUser, final String databasePassword, final String databaseUrl) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfig, databaseUser, databasePassword, databaseUrl);
+                                     final LogConfigs logConfig,
+                                     final String databaseUser,
+                                     final String databasePassword,
+                                     final String databaseUrl) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfig, databaseUser, databasePassword,
+          databaseUrl);
     }
 
     @VisibleForTesting
@@ -312,7 +322,10 @@ public interface SyncWorkflow {
                               final Path workspaceRoot,
                               final AirbyteConfigValidator validator,
                               final WorkerEnvironment workerEnvironment,
-                              final LogConfigs logConfigs, final String databaseUser, final String databasePassword, final String databaseUrl) {
+                              final LogConfigs logConfigs,
+                              final String databaseUser,
+                              final String databasePassword,
+                              final String databaseUrl) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -389,8 +402,12 @@ public interface SyncWorkflow {
                                          final SecretsHydrator secretsHydrator,
                                          final Path workspaceRoot,
                                          final WorkerEnvironment workerEnvironment,
-                                         final LogConfigs logConfigs, final String databaseUser, final String databasePassword, final String databaseUrl) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs, databaseUser, databasePassword, databaseUrl);
+                                         final LogConfigs logConfigs,
+                                         final String databaseUser,
+                                         final String databasePassword,
+                                         final String databaseUrl) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs, databaseUser,
+          databasePassword, databaseUrl);
     }
 
     @VisibleForTesting
@@ -399,7 +416,10 @@ public interface SyncWorkflow {
                                   final Path workspaceRoot,
                                   final AirbyteConfigValidator validator,
                                   final WorkerEnvironment workerEnvironment,
-                                  final LogConfigs logConfigs, final String databaseUser, final String databasePassword, final String databaseUrl) {
+                                  final LogConfigs logConfigs,
+                                  final String databaseUser,
+                                  final String databasePassword,
+                                  final String databaseUrl) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;

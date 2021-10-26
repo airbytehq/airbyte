@@ -79,7 +79,10 @@ public interface DiscoverCatalogWorkflow {
                                        final SecretsHydrator secretsHydrator,
                                        final Path workspaceRoot,
                                        final WorkerEnvironment workerEnvironment,
-                                       final LogConfigs logConfigs, final String databaseUser, final String databasePassword, final String databaseUrl) {
+                                       final LogConfigs logConfigs,
+                                       final String databaseUser,
+                                       final String databasePassword,
+                                       final String databaseUrl) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;

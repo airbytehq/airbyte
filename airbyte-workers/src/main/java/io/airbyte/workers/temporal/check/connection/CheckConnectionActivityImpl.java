@@ -7,7 +7,6 @@ package io.airbyte.workers.temporal.check.connection;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.helpers.LogConfigs;
@@ -41,7 +40,9 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
                                      final Path workspaceRoot,
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
-      final String databaseUser, final String databasePassword, final String databaseUrl) {
+                                     final String databaseUser,
+                                     final String databasePassword,
+                                     final String databaseUrl) {
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;

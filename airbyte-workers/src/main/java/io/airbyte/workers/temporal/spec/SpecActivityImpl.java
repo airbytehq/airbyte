@@ -6,7 +6,6 @@ package io.airbyte.workers.temporal.spec;
 
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -37,7 +36,9 @@ public class SpecActivityImpl implements SpecActivity {
                           final Path workspaceRoot,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
-      final String databaseUser, final String databasePassword, final String databaseUrl) {
+                          final String databaseUser,
+                          final String databasePassword,
+                          final String databaseUrl) {
     this.processFactory = processFactory;
     this.workspaceRoot = workspaceRoot;
     this.workerEnvironment = workerEnvironment;
