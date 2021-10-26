@@ -4,23 +4,19 @@
 
 package io.airbyte.server.validators;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 
 public class DockerImageValidator {
 
-  private final SpecFetcher specFetcher;
+  private final SynchronousSchedulerClient schedulerClient;
 
   public DockerImageValidator(final SynchronousSchedulerClient schedulerJobClient) {
-    this(new SpecFetcher(schedulerJobClient));
-  }
-
-  @VisibleForTesting
-  DockerImageValidator(final SpecFetcher specFetcher) {
-    this.specFetcher = specFetcher;
+    this.schedulerClient = schedulerJobClient;
   }
 
   /**
@@ -32,7 +28,8 @@ public class DockerImageValidator {
     // job on the provided image.
     final String imageName = DockerUtils.getTaggedImageName(dockerRepository, imageTag);
     try {
-      specFetcher.execute(imageName);
+      final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerClient.createGetSpecJob(imageName);
+      SpecFetcher.getSpecFromJob(getSpecResponse);
     } catch (final Exception e) {
       throw new BadObjectSchemaKnownException(
           String.format("Encountered an issue while validating input docker image (%s): %s", imageName, e.getMessage()));
