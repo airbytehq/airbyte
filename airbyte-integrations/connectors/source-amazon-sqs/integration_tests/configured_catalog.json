@@ -4,7 +4,7 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append",
       "stream": {
-        "name": "ab-airbyte-testing",
+        "name": "Airbyte",
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "json_schema": {
