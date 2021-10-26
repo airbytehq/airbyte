@@ -5,7 +5,6 @@
 import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
-
 from pytest import fixture, raises
 from source_appsflyer import fields
 from source_appsflyer.source import (
