@@ -14,6 +14,7 @@ import {
   useUserHook,
 } from "packages/cloud/services/users/UseUserHook";
 import { User } from "packages/cloud/lib/domain/users";
+import RoleToolTip from "./components/RoleToolTip";
 
 const Header = styled.div`
   display: flex;
@@ -62,7 +63,12 @@ export const UsersSettingsView: React.FC = () => {
         Cell: ({ cell }: CellProps<User>) => cell.value,
       },
       {
-        Header: <FormattedMessage id="userSettings.table.column.role" />,
+        Header: (
+          <>
+            <FormattedMessage id="userSettings.table.column.role" />
+            <RoleToolTip />
+          </>
+        ),
         headerHighlighted: true,
         accessor: "userId",
         Cell: (_: CellProps<User>) => "admin",
