@@ -578,3 +578,9 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
   sourceType: api
+- sourceDefinitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
+  name: Zenloop
+  dockerRepository: airbyte/source-zenloop
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/url
+  sourceType: api
