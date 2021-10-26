@@ -43,7 +43,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private void registerText(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), x -> {
       if (x == null) {
-        return DebeziumConverterUtils.getDefaultValue(field);
+        return DebeziumConverterUtils.convertDefaultValue(field);
       }
 
       if (x instanceof byte[]) {
@@ -57,7 +57,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private void registerDate(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), x -> {
       if (x == null) {
-        return DebeziumConverterUtils.getDefaultValue(field);
+        return DebeziumConverterUtils.convertDefaultValue(field);
       } else if (x instanceof PGInterval) {
         return convertInterval((PGInterval) x);
       } else {
@@ -79,7 +79,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private void registerMoney(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), x -> {
       if (x == null) {
-        return DebeziumConverterUtils.getDefaultValue(field);
+        return DebeziumConverterUtils.convertDefaultValue(field);
       } else if (x instanceof Double) {
         BigDecimal result = BigDecimal.valueOf((Double) x);
         if (result.compareTo(new BigDecimal("999999999999999")) == 1
@@ -105,7 +105,6 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     if (isNegativeTime(pgInterval)) {
       resultInterval.append("-");
     }
-    // TODO check if value more or less than Integer.MIN_VALUE Integer.MAX_VALUE,
     int hours = Math.abs(pgInterval.getHours());
     int minutes = Math.abs(pgInterval.getMinutes());
     int seconds = Math.abs(pgInterval.getWholeSeconds());

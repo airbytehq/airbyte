@@ -6,6 +6,7 @@ package io.airbyte.integrations.debezium.internals;
 
 import io.airbyte.db.DataTypeUtils;
 import io.debezium.spi.converter.RelationalColumn;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -14,11 +15,15 @@ import java.time.format.DateTimeParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DebeziumConverterUtils {
+public final class DebeziumConverterUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumConverterUtils.class);
 
-  public static String convertDate(Object x) {
+  private DebeziumConverterUtils() {
+    throw new UnsupportedOperationException();
+  }
+
+  public static Object convertDate(final Object input) {
     /**
      * While building this custom converter we were not sure what type debezium could return cause there
      * is no mention of it in the documentation. Secondly if you take a look at
@@ -27,35 +32,48 @@ public class DebeziumConverterUtils {
      * data type would be returned. I just went ahead and handled the data types that made sense.
      * Secondly, we use LocalDateTime to handle this cause it represents DATETIME datatype in JAVA
      */
-    if (x instanceof LocalDateTime) {
-      return DataTypeUtils.toISO8601String((LocalDateTime) x);
-    } else if (x instanceof LocalDate) {
-      return DataTypeUtils.toISO8601String((LocalDate) x);
-    } else if (x instanceof Duration) {
-      return DataTypeUtils.toISO8601String((Duration) x);
-    } else if (x instanceof Timestamp) {
-      return DataTypeUtils.toISO8601String(((Timestamp) x).toLocalDateTime());
-    } else if (x instanceof Number) {
-      return DataTypeUtils.toISO8601String(new Timestamp(((Number) x).longValue()).toLocalDateTime());
-    } else if (x instanceof String) {
+    if (input instanceof LocalDateTime) {
+      return DataTypeUtils.toISO8601String((LocalDateTime) input);
+    } else if (input instanceof LocalDate) {
+      return DataTypeUtils.toISO8601String((LocalDate) input);
+    } else if (input instanceof Duration) {
+      return DataTypeUtils.toISO8601String((Duration) input);
+    } else if (input instanceof Timestamp) {
+      return DataTypeUtils.toISO8601String(((Timestamp) input).toLocalDateTime());
+    } else if (input instanceof Number) {
+      return DataTypeUtils.toISO8601String(
+          new Timestamp(((Number) input).longValue()).toLocalDateTime());
+    } else if (input instanceof String) {
       try {
-        return LocalDateTime.parse((String) x).toString();
+        return LocalDateTime.parse((String) input).toString();
       } catch (final DateTimeParseException e) {
-        LOGGER.warn("Cannot convert value '{}' to LocalDateTime type", x);
-        return x.toString();
+        LOGGER.warn("Cannot convert value '{}' to LocalDateTime type", input);
+        return input.toString();
       }
     }
-    LOGGER.warn("Uncovered date class type '{}'. Use default converter", x.getClass().getName());
-    return x.toString();
+    LOGGER.warn("Uncovered date class type '{}'. Use default converter",
+        input.getClass().getName());
+    return input.toString();
+
   }
 
-  public static Object getDefaultValue(RelationalColumn field) {
+  public static Object convertDefaultValue(final RelationalColumn field) {
     if (field.isOptional()) {
       return null;
     } else if (field.hasDefaultValue()) {
       return field.defaultValue();
     }
     return null;
+  }
+
+  public static Object convertMoney(final Object input) {
+    if (input instanceof BigDecimal) {
+      return ((BigDecimal) input).doubleValue();
+    }
+
+    LOGGER.warn("Uncovered date class type '{}'. Use default converter",
+        input.getClass().getName());
+    return input.toString();
   }
 
 }
