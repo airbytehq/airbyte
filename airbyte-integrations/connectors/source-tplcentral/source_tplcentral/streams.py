@@ -136,6 +136,7 @@ class Items(IncrementalTplcentralStream):
     upstream_primary_key = "ItemId"
     upstream_cursor_field = "ReadOnly.LastModifiedDate"
     collection_field = "ResourceList"
+    page_size = 100
 
     def path(self, **kwargs) -> str:
         return f"customers/{self.customer_id}/items"
@@ -161,6 +162,7 @@ class StockDetails(IncrementalTplcentralStream):
     upstream_primary_key = "ReceiveItemId"
     upstream_cursor_field = "ReceivedDate"
     collection_field = "ResourceList"
+    page_size = 500
 
     def path(self, **kwargs) -> str:
         return "inventory/stockdetails"
@@ -190,6 +192,7 @@ class Inventory(IncrementalTplcentralStream):
     upstream_primary_key = "ReceiveItemId"
     upstream_cursor_field = "ReceivedDate"
     collection_field = "ResourceList"
+    page_size = 1000
 
     def path(self, **kwargs) -> str:
         return "inventory"
@@ -226,6 +229,7 @@ class Orders(IncrementalTplcentralStream):
     upstream_primary_key = "ReadOnly.OrderId"
     upstream_cursor_field = "ReadOnly.LastModifiedDate"
     collection_field = "ResourceList"
+    page_size = 1000
 
     def path(self, **kwargs) -> str:
         return "orders"
