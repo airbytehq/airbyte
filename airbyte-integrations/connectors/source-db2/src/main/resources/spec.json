@@ -78,7 +78,8 @@
                 "multiline": true
               },
               "key_store_password": {
-                "description": "Key Store Password.",
+                "title": "Key Store Password. This field is optional. If you do not fill in this field, the password will be randomly generated.",
+                "description": "Key Store Password",
                 "type": "string",
                 "airbyte_secret": true
               }
