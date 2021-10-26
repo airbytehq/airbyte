@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import java.util.Map;
@@ -25,7 +26,7 @@ import org.mockito.ArgumentCaptor;
 
 class SegmentTrackingClientTest {
 
-  private static final String AIRBYTE_VERSION = "dev";
+  private static final AirbyteVersion AIRBYTE_VERSION = new AirbyteVersion("dev");
   private static final Deployment DEPLOYMENT = new Deployment(Configs.DeploymentMode.OSS, UUID.randomUUID(), WorkerEnvironment.DOCKER);
   private static final String EMAIL = "a@airbyte.io";
   private static final TrackingIdentity IDENTITY = new TrackingIdentity(AIRBYTE_VERSION, UUID.randomUUID(), EMAIL, false, false, true);
@@ -59,7 +60,7 @@ class SegmentTrackingClientTest {
         .put("deployment_env", DEPLOYMENT.getDeploymentEnv())
         .put("deployment_mode", DEPLOYMENT.getDeploymentMode())
         .put("deployment_id", DEPLOYMENT.getDeploymentId())
-        .put("airbyte_version", AIRBYTE_VERSION)
+        .put("airbyte_version", AIRBYTE_VERSION.serialize())
         .put("email", IDENTITY.getEmail().get())
         .put("anonymized", IDENTITY.isAnonymousDataCollection())
         .put("subscribed_newsletter", IDENTITY.isNews())
@@ -85,7 +86,7 @@ class SegmentTrackingClientTest {
         .put("deployment_env", DEPLOYMENT.getDeploymentEnv())
         .put("deployment_mode", DEPLOYMENT.getDeploymentMode())
         .put("deployment_id", DEPLOYMENT.getDeploymentId())
-        .put("airbyte_version", AIRBYTE_VERSION)
+        .put("airbyte_version", AIRBYTE_VERSION.serialize())
         .put("email", IDENTITY.getEmail().get())
         .put("anonymized", IDENTITY.isAnonymousDataCollection())
         .put("subscribed_newsletter", IDENTITY.isNews())
@@ -99,7 +100,7 @@ class SegmentTrackingClientTest {
   @Test
   void testTrack() {
     final ArgumentCaptor<TrackMessage.Builder> mockBuilder = ArgumentCaptor.forClass(TrackMessage.Builder.class);
-    final ImmutableMap<String, Object> metadata = ImmutableMap.of("airbyte_version", AIRBYTE_VERSION);
+    final ImmutableMap<String, Object> metadata = ImmutableMap.of("airbyte_version", AIRBYTE_VERSION.serialize());
 
     segmentTrackingClient.track(WORKSPACE_ID, "jump");
 
@@ -116,7 +117,7 @@ class SegmentTrackingClientTest {
     final ImmutableMap<String, Object> metadata = ImmutableMap.of(
         "height", "80 meters",
         "email", EMAIL,
-        "airbyte_version", AIRBYTE_VERSION);
+        "airbyte_version", AIRBYTE_VERSION.serialize());
 
     segmentTrackingClient.track(WORKSPACE_ID, "jump", metadata);
 
