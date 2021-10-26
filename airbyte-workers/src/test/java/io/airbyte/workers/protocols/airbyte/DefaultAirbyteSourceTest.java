@@ -102,6 +102,9 @@ class DefaultAirbyteSourceTest {
   @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
   @Test
   public void testSuccessfulLifecycle() throws Exception {
+    final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+    LogClientSingleton.setJobMdc(jobRoot);
+
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
     final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
@@ -130,28 +133,6 @@ class DefaultAirbyteSourceTest {
     });
 
     verify(process).exitValue();
-  }
-
-  @Test
-  public void testTaggedLogs() throws Exception {
-
-    final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-    LogClientSingleton.setJobMdc(jobRoot);
-
-    when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
-
-    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
-    source.start(SOURCE_CONFIG, jobRoot);
-
-    final List<AirbyteMessage> messages = Lists.newArrayList();
-
-    messages.add(source.attemptRead().get());
-    messages.add(source.attemptRead().get());
-
-    when(process.isAlive()).thenReturn(false);
-    verify(heartbeatMonitor, times(2)).beat();
-
-    source.close();
 
     final Path logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     final Stream<String> logs = IOs.readFile(logPath).lines();
@@ -161,6 +142,32 @@ class DefaultAirbyteSourceTest {
           .startsWith(Color.BLUE.getCode() + "container-log" + RESET);
     });
   }
+
+  /*
+   * @Test public void testTaggedLogs() throws Exception {
+   *
+   * final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+   * LogClientSingleton.setJobMdc(jobRoot);
+   *
+   * when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
+   *
+   * final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory,
+   * heartbeatMonitor); source.start(SOURCE_CONFIG, jobRoot);
+   *
+   * final List<AirbyteMessage> messages = Lists.newArrayList();
+   *
+   * messages.add(source.attemptRead().get()); messages.add(source.attemptRead().get());
+   *
+   * when(process.isAlive()).thenReturn(false); verify(heartbeatMonitor, times(2)).beat();
+   *
+   * source.close();
+   *
+   * final Path logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME); final Stream<String> logs
+   * = IOs.readFile(logPath).lines();
+   *
+   * logs.forEach(line -> { org.assertj.core.api.Assertions.assertThat(line)
+   * .startsWith(Color.BLUE.getCode() + "container-log" + RESET); }); }
+   */
 
   @Test
   public void testNonzeroExitCodeThrows() throws Exception {
