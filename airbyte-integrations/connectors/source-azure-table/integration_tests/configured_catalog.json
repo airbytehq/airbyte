@@ -4,14 +4,14 @@
       "stream": {
         "name": "books",
         "json_schema": {
-            "properties": {
-                "data": {
-                    "type": "object"
-                },
-                "additionalProperties": {
-                    "type": "boolean"
-                }
+          "properties": {
+            "data": {
+              "type": "object"
+            },
+            "additionalProperties": {
+              "type": "boolean"
             }
+          }
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
