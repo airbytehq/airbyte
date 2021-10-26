@@ -12,7 +12,7 @@ import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 
 @ActivityInterface
-interface CheckConnectionActivity {
+public interface CheckConnectionActivity {
 
   @ActivityMethod
   StandardCheckConnectionOutput run(JobRunConfig jobRunConfig,
