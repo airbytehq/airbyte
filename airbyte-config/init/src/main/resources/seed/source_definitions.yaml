@@ -85,7 +85,7 @@
 - sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   name: S3
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/s3
   sourceType: file
 - sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
@@ -105,7 +105,7 @@
 - sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   name: Google Sheets
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -147,28 +147,28 @@
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   name: Facebook Marketing
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.20
+  dockerImageTag: 0.2.21
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
 - sourceDefinitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
   name: Facebook Pages
   dockerRepository: airbyte/source-facebook-pages
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-pages
   icon: facebook.svg
   sourceType: api
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   name: Hubspot
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.18
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
 - sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   name: Klaviyo
   dockerRepository: airbyte/source-klaviyo
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/klaviyo
   sourceType: api
 - sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
@@ -180,14 +180,14 @@
 - sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
   name: Redshift
   dockerRepository: airbyte/source-redshift
-  dockerImageTag: 0.3.3
+  dockerImageTag: 0.3.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/redshift
   icon: redshift.svg
   sourceType: database
 - sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   name: Twilio
   dockerRepository: airbyte/source-twilio
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/twilio
   sourceType: api
 - sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
@@ -214,7 +214,7 @@
 - sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   name: Zendesk Support
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-support
   icon: zendesk.svg
   sourceType: api
@@ -228,7 +228,7 @@
 - sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   name: Jira
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.11
+  dockerImageTag: 0.2.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/jira
   icon: jira.svg
   sourceType: api
@@ -284,7 +284,7 @@
 - sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
   name: Google Directory
   dockerRepository: airbyte/source-google-directory
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-directory
   sourceType: api
 - sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
@@ -296,7 +296,7 @@
 - sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   name: Gitlab
   dockerRepository: airbyte/source-gitlab
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/gitlab
   sourceType: api
 - sourceDefinitionId: ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734
@@ -332,7 +332,7 @@
 - sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   name: Oracle DB
   dockerRepository: airbyte/source-oracle
-  dockerImageTag: 0.3.7
+  dockerImageTag: 0.3.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/oracle
   sourceType: database
 - sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
@@ -368,13 +368,13 @@
 - sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
   name: ClickHouse
   dockerRepository: airbyte/source-clickhouse
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/clickhouse
   sourceType: database
 - sourceDefinitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
   name: Recharge
   dockerRepository: airbyte/source-recharge
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/recharge
   sourceType: api
 - sourceDefinitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
@@ -392,7 +392,7 @@
 - sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   name: Snowflake
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/snowflake
   sourceType: database
 - sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
@@ -501,7 +501,7 @@
 - sourceDefinitionId: 3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5
   name: Zuora
   dockerRepository: airbyte/source-zuora
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/zuora
   sourceType: api
 - sourceDefinitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
@@ -550,7 +550,7 @@
 - sourceDefinitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   name: MongoDb
   dockerRepository: airbyte/source-mongodb-v2
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb-v2
   icon: mongodb.svg
   sourceType: database
@@ -572,3 +572,15 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/azure-table
   sourceType: database
+- sourceDefinitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
+  name: OneSignal
+  dockerRepository: airbyte/source-onesignal
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
+  sourceType: api
+- sourceDefinitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
+  name: SalesLoft
+  dockerRepository: airbyte/source-salesloft
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
+  sourceType: api

@@ -52,7 +52,11 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
         .put(HOST, container.getHost())
         .put(PORT, container.getFirstMappedPort())
         .put(DATABASE, DATABASE_FAIL_NAME)
-        .put(AUTH_TYPE, getAuthTypeConfig())
+        .put(AUTH_TYPE, Jsons.jsonNode(ImmutableMap.builder()
+            .put("authorization", "login/password")
+            .put("username", "user")
+            .put("password", "pass")
+            .build()))
         .build());
   }
 
