@@ -1,4 +1,3 @@
 {
-  "username": "foo",
-  "password": "bar"
+  "api_key": "invalid-key"
 }
