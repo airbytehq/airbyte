@@ -47,3 +47,9 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 ### Setup guide
 
 Please register on Zenloop and retrieve your API token [here](https://app.zenloop.com/settings/api).
+
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2021-10-26 | [7380](https://github.com/airbytehq/airbyte/pull/7380) | Initial Release |
