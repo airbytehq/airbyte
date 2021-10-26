@@ -9,10 +9,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshHelpers;
+import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -27,15 +30,19 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import org.jooq.SQLDialect;
 import org.testcontainers.containers.ClickHouseContainer;
 
-public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
+public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private ClickHouseContainer db;
-  private JsonNode config;
+  private final SshBastionContainer bastion = new SshBastionContainer();
+  private static JsonNode config;
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
   private static final String SCHEMA_NAME = "default";
+
+  public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   @Override
   protected String getImageName() {
@@ -87,18 +94,22 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    db = new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine");
+    startTestContainers();
+    config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, "default"));
+    populateDatabaseTestData();
+
+  }
+  private void startTestContainers() {
+    bastion.initAndStartBastion();
+    initAndStartJdbcContainer();
+  }
+
+  private void initAndStartJdbcContainer() {
+    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine").withNetwork(bastion.getNetWork());
     db.start();
+  }
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("database", SCHEMA_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("ssl", false)
-        .build());
-
+  private static void populateDatabaseTestData() throws Exception {
     final JdbcDatabase database = Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -131,9 +142,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    db.close();
-    db.stop();
-
+    bastion.stopAndCloseContainers(db);
   }
 
 }
