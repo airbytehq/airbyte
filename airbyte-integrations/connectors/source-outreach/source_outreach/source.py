@@ -19,6 +19,15 @@ from airbyte_cdk.sources.streams.http.auth.oauth import Oauth2Authenticator
 class OutreachStream(HttpStream, ABC):
 
     url_base = "https://api.outreach.io/api/v2"
+    
+    def __init__(
+        self,
+        authenticator: HttpAuthenticator,
+        start_date: str = None,
+        **kwargs,
+    ):
+        self.start_date = start_date
+        super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
@@ -93,8 +102,17 @@ class SequenceStates(IncrementalOutreachStream):
 
 
 class OutreachAuthenticator(Oauth2Authenticator):
-    def __init__(self, redirect_uri: str, *args, **kwargs):
-        super(Oauth2Authenticator, self).__init__(*args, **kwargs)
+    def __init__(self, redirect_uri: str,
+        token_refresh_endpoint: str,
+        client_id: str,
+        client_secret: str,
+        refresh_token: str):
+        super().__init__(
+            token_refresh_endpoint=token_refresh_endpoint,
+            client_id=client_id,
+            client_secret=client_secret,
+            refresh_token=refresh_token
+        )
         self.redirect_uri = redirect_uri
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
@@ -118,9 +136,11 @@ class SourceOutreach(AbstractSource):
         try:
             access_token, _ = self._create_authenticator(config).refresh_access_token()
             response = requests.get("https://api.outreach.io/api/v2", headers={"Authorization": f"Bearer {access_token}"})
+            print(f'New access token: {access_token}')
             response.raise_for_status()
             return True, None
         except Exception as e:
+            logger.error(f'Failed to check connection. Error: {e}')
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
