@@ -29,8 +29,9 @@ public class MigrationRunner {
 
   public static void run(MigrateConfig migrateConfig) throws IOException {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_migrate");
-    migrateConfig = new MigrateConfig(migrateConfig.getInputPath(), migrateConfig.getOutputPath(),
-        AirbyteVersion.versionWithoutPatch(migrateConfig.getTargetVersion()).getVersion());
+    migrateConfig = new MigrateConfig(migrateConfig.getInputPath(),
+        migrateConfig.getOutputPath(),
+        AirbyteVersion.versionWithoutPatch(migrateConfig.getTargetVersion()).serialize());
 
     if (migrateConfig.getInputPath().toString().endsWith(".gz")) {
       LOGGER.info("Unpacking tarball");

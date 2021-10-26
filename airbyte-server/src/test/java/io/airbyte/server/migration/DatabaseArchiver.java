@@ -9,7 +9,6 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.stream.MoreStreams;
-import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -23,7 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,11 +79,6 @@ public class DatabaseArchiver {
     return storageRoot
         .resolve(DB_FOLDER_NAME)
         .resolve(String.format("%s.yaml", tableName.toUpperCase()));
-  }
-
-  public void checkVersion(final String airbyteVersion) throws IOException {
-    final Optional<String> airbyteDatabaseVersion = persistence.getVersion();
-    airbyteDatabaseVersion.ifPresent(dbversion -> AirbyteVersion.assertIsCompatible(airbyteVersion, dbversion));
   }
 
   /**

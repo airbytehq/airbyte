@@ -20,6 +20,7 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -65,7 +66,7 @@ public class ArchiveHandlerTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHandlerTest.class);
 
-  private static final String VERSION = "0.6.8";
+  private static final AirbyteVersion VERSION = new AirbyteVersion("0.6.8");
   private static PostgreSQLContainer<?> container;
 
   private Database jobDatabase;
@@ -113,7 +114,7 @@ public class ArchiveHandlerTest {
     configPersistence.loadData(seedPersistence);
     configRepository = new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
 
-    jobPersistence.setVersion(VERSION);
+    jobPersistence.setVersion(VERSION.serialize());
 
     final SpecFetcher specFetcher = mock(SpecFetcher.class);
     final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);

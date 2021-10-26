@@ -216,7 +216,7 @@ public class MigrationDevHelper {
     System.out.println("lastMigrationId: " + lastMigrationId);
     final String nextMigrationId = String.format("%03d", Integer.parseInt(lastMigrationId) + 1);
     System.out.println("nextMigrationId: " + nextMigrationId);
-    return MigrationVersion.fromVersion(String.format("%s_%s", migrationAirbyteVersion.getVersion(), nextMigrationId));
+    return MigrationVersion.fromVersion(String.format("%s_%s", migrationAirbyteVersion.serialize(), nextMigrationId));
   }
 
 }

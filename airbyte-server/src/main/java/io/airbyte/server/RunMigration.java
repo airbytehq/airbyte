@@ -4,6 +4,7 @@
 
 package io.airbyte.server;
 
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.migrate.MigrateConfig;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public class RunMigration implements Runnable, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RunMigration.class);
-  private final String targetVersion;
+  private final AirbyteVersion targetVersion;
   private final ConfigPersistence seedPersistence;
   private final ConfigDumpExporter configDumpExporter;
   private final ConfigDumpImporter configDumpImporter;
@@ -32,7 +33,7 @@ public class RunMigration implements Runnable, AutoCloseable {
 
   public RunMigration(final JobPersistence jobPersistence,
                       final ConfigRepository configRepository,
-                      final String targetVersion,
+                      final AirbyteVersion targetVersion,
                       final ConfigPersistence seedPersistence,
                       final SpecFetcher specFetcher) {
     this.targetVersion = targetVersion;
@@ -55,7 +56,7 @@ public class RunMigration implements Runnable, AutoCloseable {
       filesToBeCleanedUp.add(tempFolder.toFile());
 
       // Run Migration
-      final MigrateConfig migrateConfig = new MigrateConfig(exportData.toPath(), output.toPath(), targetVersion);
+      final MigrateConfig migrateConfig = new MigrateConfig(exportData.toPath(), output.toPath(), targetVersion.serialize());
       MigrationRunner.run(migrateConfig);
 
       // Import data

@@ -23,7 +23,7 @@ class MigrationDevHelperTest {
   public void testGetAirbyteVersion() {
     final MigrationVersion migrationVersion = MigrationVersion.fromVersion("0.11.3.010");
     final AirbyteVersion airbyteVersion = MigrationDevHelper.getAirbyteVersion(migrationVersion);
-    assertEquals("0.11.3", airbyteVersion.getVersion());
+    assertEquals("0.11.3", airbyteVersion.serialize());
   }
 
   @Test

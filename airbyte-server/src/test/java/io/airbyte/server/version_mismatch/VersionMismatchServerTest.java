@@ -7,6 +7,7 @@ package io.airbyte.server.version_mismatch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.net.HttpHeaders;
+import io.airbyte.commons.version.AirbyteVersion;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URI;
@@ -20,8 +21,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class VersionMismatchServerTest {
 
-  private static final String VERSION1 = "v1";
-  private static final String VERSION2 = "v2";
+  private static final AirbyteVersion VERSION1 = new AirbyteVersion("0.1.0-alpha");
+  private static final AirbyteVersion VERSION2 = new AirbyteVersion("0.2.0-alpha");
 
   private static URI rootUri;
   private static Server server;
