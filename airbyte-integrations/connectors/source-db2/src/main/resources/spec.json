@@ -76,6 +76,11 @@
                 "type": "string",
                 "airbyte_secret": true,
                 "multiline": true
+              },
+              "key_store_password": {
+                "description": "Key Store Password.",
+                "type": "string",
+                "airbyte_secret": true
               }
             }
           }

@@ -32,14 +32,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static io.airbyte.integrations.source.db2.Db2Source.KEY_STORE_FILE_PATH;
-import static io.airbyte.integrations.source.db2.Db2Source.KEY_STORE_PASS;
-
 public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "SOURCE_INTEGRATION_TEST";
   private static final String STREAM_NAME1 = "ID_AND_NAME1";
   private static final String STREAM_NAME2 = "ID_AND_NAME2";
+
+  private static final String TEST_KEY_STORE_PASS = "Passw0rd";
+  private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
 
   private Db2Container db;
   private JsonNode config;
@@ -116,6 +116,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "encrypted_verify_certificate")
             .put("ssl_certificate", certificate)
+            .put("key_store_password", TEST_KEY_STORE_PASS)
             .build()))
         .build());
 
@@ -123,7 +124,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
             config.get("host").asText(),
             db.getMappedPort(50000),
             config.get("db").asText()) + ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
-            ";sslTrustStorePassword=" + KEY_STORE_PASS + ";";
+            ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
 
     database = Databases.createJdbcDatabase(
         config.get("username").asText(),
@@ -163,9 +164,9 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
   /* Helpers */
 
   private String getCertificate() throws IOException, InterruptedException {
-    db.execInContainer("su", "-", "db2inst1",  "-c", "gsk8capicmd_64 -keydb -create -db \"server.kdb\" -pw \"" + KEY_STORE_PASS + "\" -stash");
-    db.execInContainer("su", "-", "db2inst1",  "-c", "gsk8capicmd_64 -cert -create -db \"server.kdb\" -pw \"" + KEY_STORE_PASS + "\" -label \"mylabel\" -dn \"CN=testcompany\" -size 2048 -sigalg SHA256_WITH_RSA");
-    db.execInContainer("su", "-", "db2inst1",  "-c", "gsk8capicmd_64 -cert -extract -db \"server.kdb\" -pw \"" + KEY_STORE_PASS + "\" -label \"mylabel\" -target \"server.arm\" -format ascii -fips");
+    db.execInContainer("su", "-", "db2inst1",  "-c", "gsk8capicmd_64 -keydb -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS + "\" -stash");
+    db.execInContainer("su", "-", "db2inst1",  "-c", "gsk8capicmd_64 -cert -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS + "\" -label \"mylabel\" -dn \"CN=testcompany\" -size 2048 -sigalg SHA256_WITH_RSA");
+    db.execInContainer("su", "-", "db2inst1",  "-c", "gsk8capicmd_64 -cert -extract -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS + "\" -label \"mylabel\" -target \"server.arm\" -format ascii -fips");
 
     db.execInContainer("su", "-", "db2inst1",  "-c", "db2 update dbm cfg using SSL_SVR_KEYDB /database/config/db2inst1/server.kdb");
     db.execInContainer("su", "-", "db2inst1",  "-c", "db2 update dbm cfg using SSL_SVR_STASH /database/config/db2inst1/server.sth");
@@ -184,7 +185,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
     runProcess(
-            "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + KEY_STORE_PASS + " -noprompt",
+            "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + TEST_KEY_STORE_PASS + " -noprompt",
             run);
   }
 
