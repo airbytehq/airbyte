@@ -23,14 +23,12 @@
 #
 
 import json
-import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from gzip import decompress
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 from urllib.parse import urljoin
 
 import backoff
@@ -40,6 +38,8 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.async_source import AsyncJob
+
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.spec import AmazonAdsConfig
@@ -72,17 +72,134 @@ class ReportStatus(BaseModel):
     location: Optional[str]
 
 
-@dataclass
-class ReportInfo:
-    report_id: str
-    profile_id: int
-    record_type: str
-
-
 class TooManyRequests(Exception):
     """
-    Custom exception occured when response with 429 status code received
+    Custom exception occurred when response with 429 status code received
     """
+
+
+class ReportAsyncJob(AsyncJob):
+    # Async report generation time is 15 minutes according to docs:
+    # https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes
+    # (Service limits section)
+    job_wait_timeout = pendulum.duration(minutes=20)
+    job_sleep_interval = pendulum.duration(seconds=30)
+
+    def __init__(self, profile: BasicAmazonAdsStream, record_type: RecordType, report_date: str):
+        self._profile = profile
+        self._record_type = record_type
+        self._report_date = report_date
+        self._report_id = None
+        self._status = None
+        self._result = None
+
+    @abstractmethod
+    def start_job(self) -> None:
+        """Send report generation requests for all profiles and for all record types for specific day."""
+        metric_date = self._calc_report_generation_date(self._report_date, self._profile)
+        # Some of the record types has subtypes. For example asins type
+        # for  product report have keyword and targets subtypes and it
+        # represented as asins_keywords and asins_targets types. Those
+        # subtypes have mutually excluded parameters so we requesting
+        # different metric list for each record.
+        record_type = self._record_type.split("_")[0]
+        logger.info(
+            f"Initiating report generation for {self._profile.profileId} profile with {record_type} type for {metric_date} date")
+        response = self._send_http_request(
+            urljoin(self._url, self.report_init_endpoint(record_type)),
+            self._profile.profileId,
+            self._get_init_report_body(),
+        )
+        if response.status_code != HTTPStatus.ACCEPTED:
+            raise Exception(
+                f"Unexpected error when registering {record_type}, {self.__class__.__name__} for {self._profile.profileId} profile: {response.text}"
+            )
+
+        response = ReportInitResponse.parse_raw(response.text)
+        self._report_id = response.reportId
+        logger.info("Initiated successfully")
+
+    @abstractmethod
+    def check_status(self) -> bool:
+        """Something that will tell if job was successful"""
+        check_endpoint = f"/v2/reports/{self._report_id}"
+        resp = self._send_http_request(urljoin(self._url, check_endpoint), self._profile.profileId)
+        self._status = ReportStatus.parse_raw(resp.text)
+
+        if self._status.status == Status.FAILURE:
+            raise Exception(f"Report for {self._profile.profileId} with {self._record_type} type generation failed")
+        elif self._status.status == Status.SUCCESS:
+            return True
+
+        return False
+
+    def get_result(self):
+        if not self._result:
+            super().get_result()
+            self._result = self._download_report()
+        return self._result
+
+    @abstractmethod
+    def _get_init_report_body(self) -> Dict[str, Any]:
+        """
+        Override to return dict representing body of POST request for initiating report creation.
+        """
+
+    @staticmethod
+    def _calc_report_generation_date(report_date: str, profile) -> str:
+        """
+        According to reference time zone is specified by the profile used to
+        request the report. If specified date is today, then the performance
+        report may contain partial information. Based on this we generating
+        reports from day before specified report date and we should take into
+        account timezone for each profile.
+        :param report_date requested date that stored in stream state.
+        :return date parameter for Amazon Ads generate report. It equial to day
+        before current day for the profile's timezone.
+        """
+        report_date = datetime.strptime(report_date, ReportStream.REPORT_DATE_FORMAT)
+        profile_tz = pytz.timezone(profile.timezone)
+        profile_time = report_date.astimezone(profile_tz)
+        profile_yesterday = profile_time - timedelta(days=1)
+        return profile_yesterday.strftime(ReportStream.REPORT_DATE_FORMAT)
+
+    def _download_report(self) -> List[dict]:
+        """
+        Download and parse report result
+        """
+        response = self._send_http_request(self._status.location, self._report_info.profile_id)
+        raw_string = decompress(response.content).decode("utf")
+        return json.loads(raw_string)
+
+    @backoff.on_exception(
+        backoff.expo,
+        (
+            requests.exceptions.Timeout,
+            requests.exceptions.ConnectionError,
+            TooManyRequests,
+        ),
+        max_tries=5,
+    )
+    def _send_http_request(self, url: str, profile_id: int, json: dict = None):
+        headers = self._get_auth_headers(profile_id)
+        if json:
+            response = self._session.post(url, headers=headers, json=json)
+        else:
+            response = self._session.get(url, headers=headers)
+        if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+            raise TooManyRequests()
+        return response
+
+    def _generate_model(self):
+        """
+        Generate pydantic model based on combined list of all the metrics
+        attributes for particular stream. This model later will be used for
+        discover schema generation.
+        """
+        metrics = set()
+        for metric_list in self.metrics_map.values():
+            metrics.update(set(metric_list))
+        return MetricsReport.generate_metric_model(metrics)
 
 
 class ReportStream(BasicAmazonAdsStream, ABC):
@@ -91,11 +208,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     """
 
     primary_key = None
-    CHECK_INTERVAL_SECONDS = 30
-    # Async report generation time is 15 minutes according to docs:
-    # https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes
-    # (Service limits section)
-    REPORT_WAIT_TIMEOUT = timedelta(minutes=20)
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "%Y%m%d"
     cursor_field = "reportDate"
@@ -116,7 +228,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self,
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
+        stream_slice: ReportAsyncJob = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
@@ -131,55 +243,18 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         if not stream_slice:
             # In case of stream_slices method returned [None] object and
             # stream_slice is None.
-            # This may occure if we have abnormal stream state with start_date
+            # This may occurs if we have abnormal stream state with start_date
             # parameter pointing to the future. In this case we dont need to
             # take any action and just return.
             return
-        report_date = stream_slice[self.cursor_field]
-        report_infos = self._init_reports(report_date)
-        logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
-        # According to Amazon Ads API docs metric generation takes maximum 15
-        # minutes. But in case reports wont be generated we dont want this stream to
-        # hung forever. Store timepoint when report generation has started to
-        # check if it takes to long to break a loop.
-        start_time_point = datetime.now()
-        while report_infos and datetime.now() <= start_time_point + self.REPORT_WAIT_TIMEOUT:
-            completed_reports = []
-            logger.info(f"Checking report status, {len(report_infos)} report(s) remained")
-            for report_info in report_infos:
-                report_status, download_url = self._check_status(report_info)
-                if report_status == Status.FAILURE:
-                    raise Exception(f"Report for {report_info.profile_id} with {report_info.record_type} type generation failed")
-                elif report_status == Status.SUCCESS:
-                    metric_objects = self._download_report(report_info, download_url)
-                    for metric_object in metric_objects:
-                        yield self._model(
-                            profileId=report_info.profile_id,
-                            recordType=report_info.record_type,
-                            reportDate=report_date,
-                            metric=metric_object,
-                        ).dict()
-                    completed_reports.append(report_info)
-            for completed_report in completed_reports:
-                report_infos.remove(completed_report)
-            if report_infos:
-                logger.info(f"{len(report_infos)} report(s) remained, taking {self.CHECK_INTERVAL_SECONDS} seconds timeout")
-                time.sleep(self.CHECK_INTERVAL_SECONDS)
-        if not report_infos:
-            logger.info("All reports have been processed")
-        else:
-            raise Exception("Not all reports has been processed due to timeout")
 
-    def _generate_model(self):
-        """
-        Generate pydantic model based on combined list of all the metrics
-        attributes for particular stream. This model later will be used for
-        discover schema generation.
-        """
-        metrics = set()
-        for metric_list in self.metrics_map.values():
-            metrics.update(set(metric_list))
-        return MetricsReport.generate_metric_model(metrics)
+        for metric_object in stream_slice.get_result():
+            yield self._model(
+                profileId=stream_slice._profile_id,
+                recordType=stream_slice._record_type,
+                reportDate=stream_slice._report_date,
+                metric=metric_object,
+            ).dict()
 
     def _get_auth_headers(self, profile_id: int):
         return {
@@ -188,48 +263,12 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             **self._authenticator.get_auth_header(),
         }
 
-    @abstractmethod
-    def report_init_endpoint(self, record_type: str) -> str:
-        """
-        :param record_type - type of report to generate. Depending on stream
-        type it colud be campaigns, targets, asins and so on (see RecordType enum).
-        :return: endpoint to initial report generating process.
-        """
-
     @property
     @abstractmethod
     def metrics_map(self) -> Dict[str, List]:
         """
         :return: Map record type to list of available metrics
         """
-
-    def _check_status(self, report_info: ReportInfo) -> Tuple[Status, str]:
-        """
-        Check report status and return download link if report generated successfuly
-        """
-        check_endpoint = f"/v2/reports/{report_info.report_id}"
-        resp = self._send_http_request(urljoin(self._url, check_endpoint), report_info.profile_id)
-        resp = ReportStatus.parse_raw(resp.text)
-        return resp.status, resp.location
-
-    @backoff.on_exception(
-        backoff.expo,
-        (
-            requests.exceptions.Timeout,
-            requests.exceptions.ConnectionError,
-            TooManyRequests,
-        ),
-        max_tries=5,
-    )
-    def _send_http_request(self, url: str, profile_id: int, json: dict = None):
-        headers = self._get_auth_headers(profile_id)
-        if json:
-            response = self._session.post(url, headers=headers, json=json)
-        else:
-            response = self._session.get(url, headers=headers)
-        if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-            raise TooManyRequests()
-        return response
 
     @staticmethod
     def get_report_date_ranges(start_report_date: Optional[datetime]) -> Iterable[str]:
@@ -261,88 +300,15 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             stream_state = stream_state or {}
             start_date = stream_state.get(self.cursor_field)
             if start_date:
-                start_date = pendulum.from_format(start_date, ReportStream.REPORT_DATE_FORMAT, tz="UTC")
+                start_date = pendulum.from_format(start_date, self.REPORT_DATE_FORMAT, tz="UTC")
                 # We already processed records for date specified in stream state, move to the day after
                 start_date += timedelta(days=1)
             else:
                 start_date = self._start_date
 
-        return [{self.cursor_field: date} for date in ReportStream.get_report_date_ranges(start_date)] or [None]
+        for profile in self._profiles:
+            for date in self.get_report_date_ranges(start_date):
+                yield ReportAsyncJob(profile=profile, record_type=None, report_date=date)
 
     def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"reportDate": latest_data["reportDate"]}
-
-    @abstractmethod
-    def _get_init_report_body(self, report_date: str, record_type: str, profile) -> Dict[str, Any]:
-        """
-        Override to return dict representing body of POST request for initiating report creation.
-        """
-
-    def _init_reports(self, report_date: str) -> List[ReportInfo]:
-        """
-        Send report generation requests for all profiles and for all record types for specific day.
-        :report_date - date for generating metric report.
-        :return List of ReportInfo objects each of them has reportId field to check report status.
-        """
-        report_infos = []
-        for profile in self._profiles:
-            for record_type, metrics in self.metrics_map.items():
-                metric_date = self._calc_report_generation_date(report_date, profile)
-
-                report_init_body = self._get_init_report_body(metric_date, record_type, profile)
-                if not report_init_body:
-                    continue
-                # Some of the record types has subtypes. For example asins type
-                # for  product report have keyword and targets subtypes and it
-                # repseneted as asins_keywords and asins_targets types. Those
-                # subtypes have mutualy excluded parameters so we requesting
-                # different metric list for each record.
-                record_type = record_type.split("_")[0]
-                logger.info(f"Initiating report generation for {profile.profileId} profile with {record_type} type for {metric_date} date")
-                response = self._send_http_request(
-                    urljoin(self._url, self.report_init_endpoint(record_type)),
-                    profile.profileId,
-                    report_init_body,
-                )
-                if response.status_code != HTTPStatus.ACCEPTED:
-                    raise Exception(
-                        f"Unexpected error when registering {record_type}, {self.__class__.__name__} for {profile.profileId} profile: {response.text}"
-                    )
-
-                response = ReportInitResponse.parse_raw(response.text)
-                report_infos.append(
-                    ReportInfo(
-                        report_id=response.reportId,
-                        record_type=record_type,
-                        profile_id=profile.profileId,
-                    )
-                )
-                logger.info("Initiated successfully")
-
-        return report_infos
-
-    @staticmethod
-    def _calc_report_generation_date(report_date: str, profile) -> str:
-        """
-        According to reference time zone is specified by the profile used to
-        request the report. If specified date is today, then the performance
-        report may contain partial information. Based on this we generating
-        reports from day before specified report date and we should take into
-        account timezone for each profile.
-        :param report_date requested date that stored in stream state.
-        :return date parameter for Amazon Ads generate report. It equial to day
-        before current day for the profile's timezone.
-        """
-        report_date = datetime.strptime(report_date, ReportStream.REPORT_DATE_FORMAT)
-        profile_tz = pytz.timezone(profile.timezone)
-        profile_time = report_date.astimezone(profile_tz)
-        profile_yesterday = profile_time - timedelta(days=1)
-        return profile_yesterday.strftime(ReportStream.REPORT_DATE_FORMAT)
-
-    def _download_report(self, report_info: ReportInfo, url: str) -> List[dict]:
-        """
-        Download and parse report result
-        """
-        response = self._send_http_request(url, report_info.profile_id)
-        raw_string = decompress(response.content).decode("utf")
-        return json.loads(raw_string)

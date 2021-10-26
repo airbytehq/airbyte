@@ -21,12 +21,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+import logging
 
 import pendulum
 from typing import Any, Iterable, Mapping, Optional, MutableMapping, List
 
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.async_source import AsyncJob
 from cached_property import cached_property
 
 import backoff
@@ -35,6 +37,11 @@ from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.common import retry_pattern, deep_merge
 from source_facebook_marketing.streams import FBMarketingIncrementalStream
 from source_facebook_marketing.async_streams import AsyncStream
+
+from abc import ABC, abstractmethod
+
+
+logger = logging.getLogger(__name__)
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
@@ -45,6 +52,56 @@ class JobWaitTimeout(Exception):
 
 class JobFailed(Exception):
     """Job finished with failed status"""
+
+
+class InsightAsyncJob(AsyncJob):
+    job_wait_timeout = None
+
+    def __init__(self, api, params, breakdowns):
+        self._api = api
+        self._breakdowns = breakdowns
+        self._params = params
+        self._job = None
+        self._result = None
+
+    @abstractmethod
+    def start_job(self) -> None:
+        """Create async job and return"""
+        job = self._api.account.get_insights(params=self._params, is_async=True)
+        job_id = job["report_run_id"]
+        time_range = self._params["time_range"]
+        logger.info(f"Created AdReportRun: {job_id} to sync insights {time_range} with breakdown {self._breakdowns}")
+        self._job = job
+
+    @abstractmethod
+    def check_status(self) -> bool:
+        """Something that will tell if job was successful"""
+        job_status = self._job.api_get()
+        logger.info(f"ReportRunId {job_status['report_run_id']} is {job_status['async_percent_completion']}% complete")
+
+        if job_status["async_status"] == "Job Completed":
+            return True
+
+        if job_status["async_status"] == "Job Failed":
+            raise JobFailed(f"AdReportRun {job_status} failed.")
+
+        if job_status["async_status"] == "Job Skipped":
+            raise JobFailed(f"AdReportRun {job_status} skipped.")
+
+        return False
+
+    def get_result(self) -> Any:
+        """Reading job result, separate function because we want this to happen after we retrieved jobs in particular order"""
+        if not self._result:
+            super().get_result()
+            self._result = self._job.get_result()
+
+        return self._result
+
+    @backoff_policy
+    def fetch_job_result(self, job):
+        for obj in job.get_result():
+            yield obj.export_all_data()
 
 
 class AdsInsights(AsyncStream, FBMarketingIncrementalStream):
@@ -132,42 +189,7 @@ class AdsInsights(AsyncStream, FBMarketingIncrementalStream):
 
         return params
 
-    @backoff_policy
-    async def create_job(
-            self,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
-    ) -> Any:
-        params = self.request_params(stream_state=stream_state, stream_slice=stream_slice)
-        job = self._api.account.get_insights(params=params, is_async=True)
-        job_id = job["report_run_id"]
-        time_range = params["time_range"]
-        self.logger.info(f"Created AdReportRun: {job_id} to sync insights {time_range} with breakdown {self.breakdowns}")
-        return job
-
-    @backoff_policy
-    async def check_job_status(self, job) -> bool:
-        """Tell us if job is ready"""
-        job_status = job.api_get()
-        self.logger.info(f"ReportRunId {job_status['report_run_id']} is {job_status['async_percent_completion']}% complete")
-
-        if job_status["async_status"] == "Job Completed":
-            return True
-
-        if job_status["async_status"] == "Job Failed":
-            raise JobFailed(f"AdReportRun {job_status} failed.")
-
-        if job_status["async_status"] == "Job Skipped":
-            raise JobFailed(f"AdReportRun {job_status} skipped.")
-
-        return False
-
-    @backoff_policy
-    async def fetch_job_result(self, job):
-        for obj in job.get_result():
-            yield obj.export_all_data()
-
-    async def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods"""
         state_value = stream_state.get(self.cursor_field)
         if state_value:
@@ -179,9 +201,10 @@ class AdsInsights(AsyncStream, FBMarketingIncrementalStream):
 
         for since in pendulum.period(start_date, end_date).range("days", self._days_per_job):
             until = min(since.add(days=self._days_per_job - 1), end_date)  # -1 because time_range is inclusive
-            yield {
+            params = self.request_params(stream_state=stream_state, stream_slice={
                 "time_range": {"since": since.to_date_string(), "until": until.to_date_string()},
-            }
+            })
+            yield InsightAsyncJob(api=self._api, params=params, breakdowns=self.breakdowns)
 
 
 class AdsInsightsAgeAndGender(AdsInsights):

@@ -1,6 +1,6 @@
 import collections
 from abc import ABC, abstractmethod
-from typing import Iterable, Iterator, Union, Mapping
+from typing import Iterator, Union, Mapping
 
 import pendulum
 from airbyte_cdk.sources import AbstractSource
@@ -15,9 +15,9 @@ class AsyncJob(ABC):
     job_wait_timeout = None
 
     @property
-    def job_sleep_intervals(self) -> Iterable[pendulum.duration]:
-        """Sleep interval, also represents max number of retries"""
-        return [pendulum.duration(seconds=secs) for secs in list(range(5)) * 2]
+    @abstractmethod
+    def job_sleep_interval(self):
+        return pendulum.duration(seconds=5)
 
     @abstractmethod
     def start_job(self) -> None:
@@ -30,20 +30,18 @@ class AsyncJob(ABC):
     def _wait_for_job(self):
         """Actual waiting for job to finish"""
         start_time = pendulum.now()
-        for sleep_interval in self.job_sleep_intervals:
+
+        while self.job_wait_timeout and pendulum.now() - start_time > self.job_wait_timeout:
             finished_and_ok = self.check_status()
             if finished_and_ok:
-                break
-            # do we really need this?
-            if self.job_wait_timeout and pendulum.now() - start_time > self.job_wait_timeout:
-                raise JobWaitTimeout("Waiting for job more than allowed")
-        else:
-            # or this will be enough
-            raise JobWaitTimeout("Waiting for job more than allowed")
+                return
 
-    @abstractmethod
-    def fetch_result(self) -> Any:
+        raise JobWaitTimeout("Waiting for job more than allowed")
+
+    def get_result(self) -> Any:
         """Reading job result, separate function because we want this to happen after we retrieved jobs in particular order"""
+        self._wait_for_job()
+        return self
 
 
 StreamSliceType = Union[Mapping[str, Any], AsyncJob, None]
@@ -67,15 +65,6 @@ class AsyncSource(AbstractSource, ABC):
         """ Produce slices in expected order
 
         :param jobs:
-        [{
-            "aaa": 1
-            "something": instanceof(AsyncJob)
-            "bb": 2
-        },
-
-        zip(sq1, sq2)
-
-        (sq1[0], sq2[0]), (sq1[0], sq2[0])
 
         {non async} {async} {}
         {non async} {response}
@@ -102,14 +91,6 @@ class AsyncSource(AbstractSource, ABC):
 
         [s, s, s, s] ... [s, s, s]
 
-        мы запускаем  новую джобу только когда:
-        - есть место, нужно это контролировать снаружи т.к. мы можем делать что-то полезное пока ждем место
-        - джоба упала и ее можно перезапустить
-
-        запустив джобу мы добавляем ее в очередь и если очередь полная то ждем самый старый элемент
-        мы можем проверять статусы остальных джоб чтобы их перезапускать, но это не обязательно
-
-
         for slice in slices:
             q.appendleft(slice['job'])
             if q.full:
@@ -118,37 +99,6 @@ class AsyncSource(AbstractSource, ABC):
 
         while q.full:
             slice['job'] = q.pop().get_result() # wait and retry
-
-        async
-        threading
-        subprocess
-        cellery
-
-        date
-        account
-        batch_id
-
-
-        {
-            "date": "",
-            "
-
-        }
-
-        DateSlicesMixin -> slices = [now-30, now-29,.... now]
-
-        AccountSubStream -> slices = [account_1, account_2]
-
-        ReportStream(AccountSubStream, DateSlicesMixin):
-        ReportStream -> slices = [(batch_1, account_1, now-30), (batch_1, account_1, now-30)]
-
-        1. motivation - jobs+
-        2. posibility -
-
-        {
-            slices()
-        }
-
 
         {
             "job1": AsyncJob(....),
@@ -167,12 +117,6 @@ class AsyncSource(AbstractSource, ABC):
             "job2": AsyncJob(...),
             "job2_result": <anything_that_fetch_result_returns>,
         }
-
-
-        slices = [AsyncJob(...), AsyncJob(...), AsyncJob(...)]
-
-        start_async_job [                                 ] finished [fetch result]
-
 
         """
         running_jobs = collections.deque(maxlen=self.concurrent_limit)
