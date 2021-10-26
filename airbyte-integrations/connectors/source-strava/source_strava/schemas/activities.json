@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "external_id": {
+      "type": ["null", "string"]
+    },
+    "athlete": {
+      "type": "object",
+      "properties": {
+        "MetaAthlete": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "resource_state": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "distance": {
+      "type": "number"
+    },
+    "moving_time": {
+      "type": "integer"
+    },
+    "elapsed_time": {
+      "type": "integer"
+    },
+    "total_elevation_gain": {
+      "type": "number"
+    },
+    "elev_high": {
+      "type": "number"
+    },
+    "elev_low": {
+      "type": "number"
+    },
+    "type": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string"
+    },
+    "start_date_local": {
+      "type": "string"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "utc_offset": {
+      "type": ["null", "number"]
+    },
+    "start_latlng": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "number"
+      },
+      "end_latlng": {
+        "type": ["null", "array"],
+        "items": {
+          "type": "number"
+        }
+      },
+      "achievement_count": {
+        "type": "integer"
+      },
+      "kudos_count": {
+        "type": "integer"
+      },
+      "comment_count": {
+        "type": "integer"
+      },
+      "athlete_count": {
+        "type": "integer"
+      },
+      "photo_count": {
+        "type": "integer"
+      },
+      "total_photo_count": {
+        "type": "integer"
+      },
+      "map": {
+        "type": "object",
+        "properties": {
+          "PolylineMap": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "polyline": {
+                "type": "string"
+              },
+              "summary_polyline": {
+                "type": ["null", "string"]
+              },
+              "resource_state": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "trainer": {
+        "type": "boolean"
+      },
+      "commute": {
+        "type": "boolean"
+      },
+      "manual": {
+        "type": "boolean"
+      },
+      "private": {
+        "type": "boolean"
+      },
+      "flagged": {
+        "type": "boolean"
+      },
+      "workout_type": {
+        "type": "integer"
+      },
+      "upload_id_str": {
+        "type": "string"
+      },
+      "average_speed": {
+        "type": "number"
+      },
+      "max_speed": {
+        "type": "number"
+      },
+      "has_kudoed": {
+        "type": "boolean"
+      },
+      "gear_id": {
+        "type": "string"
+      },
+      "kilojoules": {
+        "type": "number"
+      },
+      "average_watts": {
+        "type": "number"
+      },
+      "device_watts": {
+        "type": "boolean"
+      },
+      "max_watts": {
+        "type": "integer"
+      },
+      "weighted_average_watts": {
+        "type": "integer"
+      },
+      "upload_id": {
+        "type": "integer"
+      },
+      "location_city": {
+        "type": ["null", "string"]
+      },
+      "location_state": {
+        "type": ["null", "string"]
+      },
+      "location_country": {
+        "type": ["null", "string"]
+      },
+      "start_latitude": {
+        "type": ["null", "number"]
+      },
+      "start_longitude": {
+        "type": ["null", "number"]
+      },
+      "visibility": {
+        "type": "string"
+      },
+      "from_accepted_tag": {
+        "type": ["null", "boolean"]
+      },
+      "average_temp": {
+        "type": "number"
+      },
+      "has_heartrate": {
+        "type": "boolean"
+      },
+      "heartrate_opt_out": {
+        "type": "boolean"
+      },
+      "display_hide_heartrate_option": {
+        "type": "boolean"
+      },
+      "pr_count": {
+        "type": "integer"
+      },
+      "resource_state": {
+        "type": "integer"
+      }
+    }
+  }
+}
