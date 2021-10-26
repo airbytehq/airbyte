@@ -17,7 +17,50 @@
           "amount": {"type": ["null", "integer"]},
           "discount": {
             "type": ["null", "object"],
-            "properties": {}
+            "properties": {
+              "id": {"type": ["null", "object"]},
+              "coupon": {
+                "type": ["null", "object"],
+                "properties": {
+                  "id": {"type": ["null", "object"]},
+                  "amount_off": {"type": ["null", "integer"]},
+                  "currency": {"type": ["null", "string"]},
+                  "duration": {"type": ["null", "string"]},
+                  "duration_in_months": {"type": ["null", "integer"]},
+                  "metadata": {
+                    "type": ["null", "integer"],
+                    "properties": {}
+                  },
+                  "name": {"type": ["null", "string"]},
+                  "percent_off": {"type": ["null", "number"]},
+                  "objet": {"type": ["null", "string"]},
+                  "applies_to": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "products": {
+                        "type": ["null", "array"],
+                        "items": {"type": ["null", "string"]}
+                      }
+                    }
+                  },
+                  "created": {"type": ["null", "integer"]},
+                  "livemode": {"type": ["null", "boolean"]},
+                  "max_redemptions": {"type": ["null", "integer"]},
+                  "redeem_by": {"type": ["null", "integer"]},
+                  "times_redeemed": {"type": ["null", "integer"]},
+                  "valid": {"type": ["null", "boolean"]}
+                }
+              },
+              "customer": {"type": ["null", "string"]},
+              "end": {"type": ["null", "integer"]},
+              "start": {"type": ["null", "integer"]},
+              "subscription": {"type": ["null", "string"]},
+              "object": {"type": ["null", "string"]},
+              "checkout_session": {"type": ["null", "string"]},
+              "invoice": {"type": ["null", "string"]},
+              "invoice_item": {"type": ["null", "string"]},
+              "promotion_code": {"type": ["null", "string"]}
+            }
           }
         }
       }

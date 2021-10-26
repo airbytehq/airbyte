@@ -2,8 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import re
 import math
+import re
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
@@ -376,12 +376,17 @@ class CheckoutSessionsLineItems(StripeStream):
         for checkout_session in checkout_session_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"checkout_session_id": checkout_session["id"]}, **kwargs)
 
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
+        params["expand[]"] = "data.discounts"
+        return params
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
         response_json = response.json()
         data = response_json.get("data", [])
         if data:
             for e in data:
-                checkout_session_id = re.search(r'/sessions/(cs_[^/].+)/line_items', response.url)
-                e['checkout_session_id'] = checkout_session_id.group(1) if checkout_session_id else None
+                checkout_session_id = re.search(r"/sessions/(cs_[^/].+)/line_items", response.url)
+                e["checkout_session_id"] = checkout_session_id.group(1) if checkout_session_id else None
         yield from data
