@@ -200,7 +200,7 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
             **/.venv
-          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}
 
       - uses: actions/setup-java@v1
         with:
