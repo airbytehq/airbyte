@@ -33,7 +33,7 @@ class SourceStrava(AbstractSource):
         return [AthleteStats(authenticator=auth, athlete_id=config["athlete_id"]),
                 Activities(authenticator=auth, after=config["start_date"])]
 
-    def getOauth(self, config):
+    def get_oauth(self, config):
         return Oauth2Authenticator(
             token_refresh_endpoint="https://www.strava.com/oauth/token",
             client_id=config["client_id"],
