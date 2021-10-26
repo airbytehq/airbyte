@@ -26,6 +26,10 @@ public class MssqlCdcProperties {
     // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-provide-transaction-metadata
     props.setProperty("provide.transaction.metadata", "false");
 
+    props.setProperty("converters", "smalldatetime, smallmoney");
+    props.setProperty("smalldatetime.type", "io.airbyte.integrations.debezium.internals.MSSQLConverter");
+    props.setProperty("smallmoney.type", "io.airbyte.integrations.debezium.internals.MSSQLConverter");
+
     return props;
   }
 
