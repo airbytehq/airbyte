@@ -60,6 +60,12 @@ class {{pascalCase name}}JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     return {{pascalCase name}}Source.DRIVER_CLASS;
   }
 
+  @Override
+  public AbstractJdbcSource getJdbcSource() {
+    // TODO
+    return null;
+  }
+
   @AfterAll
   static void cleanUp() {
     // TODO close the container. Ex: "container.close();"

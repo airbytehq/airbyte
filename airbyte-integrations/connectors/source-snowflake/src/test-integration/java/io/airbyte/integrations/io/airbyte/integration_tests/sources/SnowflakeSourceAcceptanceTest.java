@@ -58,7 +58,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
@@ -82,12 +82,12 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected JsonNode getState() throws Exception {
+  protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
 
   @Override
-  protected List<String> getRegexTests() throws Exception {
+  protected List<String> getRegexTests() {
     return Collections.emptyList();
   }
 

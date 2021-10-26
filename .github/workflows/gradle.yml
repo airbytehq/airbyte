@@ -16,22 +16,15 @@ jobs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Start EC2 Runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.3.0
-        with:
-          mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-04bd6e81239f4f3fb
-          ec2-instance-type: c5.2xlarge
-          subnet-id: subnet-0469a9e68a379c1d3
-          security-group-id: sg-0793f3c9413f21970
 
   ensure-images-exist:
     name: "Ensure all required Docker images exist on Dockerhub"
@@ -171,22 +164,15 @@ jobs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Start EC2 Runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.3.0
-        with:
-          mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-04bd6e81239f4f3fb
-          ec2-instance-type: c5.2xlarge
-          subnet-id: subnet-0469a9e68a379c1d3
-          security-group-id: sg-0793f3c9413f21970
   platform-build:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-platform-build-runner # required to start the main job when the runner is ready
@@ -196,15 +182,6 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
-
-      - name: Pip Caching
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/pip
-          key: ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-
 
       - name: Npm Caching
         uses: actions/cache@v2
@@ -216,14 +193,14 @@ jobs:
             ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
 
       # this intentionally does not use restore-keys so we don't mess with gradle caching
-      - name: Gradle and Python Caching
+      - name: Gradle Caching
         uses: actions/cache@v2
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
             **/.venv
-          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}
 
       - uses: actions/setup-java@v1
         with:
@@ -232,13 +209,6 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Set up CI Gradle Properties
         run: |
@@ -330,22 +300,15 @@ jobs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Start EC2 Runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.3.0
-        with:
-          mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-04bd6e81239f4f3fb
-          ec2-instance-type: c5.2xlarge
-          subnet-id: subnet-0469a9e68a379c1d3
-          security-group-id: sg-0793f3c9413f21970
   frontend-test:
     needs: start-frontend-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-frontend-test-runner.outputs.label }} # run the job on the newly created runner
@@ -362,13 +325,6 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Install Cypress Test Dependencies
         run: sudo apt-get update && sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
@@ -422,22 +378,16 @@ jobs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
         with:
+          ec2-image-id: ami-0d4083c04fde515c4
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Start EC2 runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.3.0
-        with:
-          mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-0d4083c04fde515c4
-          ec2-instance-type: c5.2xlarge
-          subnet-id: subnet-0469a9e68a379c1d3
-          security-group-id: sg-0793f3c9413f21970
   kube-acceptance-test:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
@@ -456,13 +406,6 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Fix EC-2 Runner
         run: |
