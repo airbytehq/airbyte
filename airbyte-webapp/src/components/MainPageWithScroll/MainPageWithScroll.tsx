@@ -3,14 +3,15 @@ import styled from "styled-components";
 
 const Content = styled.div`
   overflow-y: auto;
-  height: calc(100% - 67px);
-  margin-top: -17px;
   padding-top: 17px;
+  height: 100%;
 `;
 
 const Page = styled.div`
   overflow-y: hidden;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 
 /**

@@ -43,7 +43,7 @@ public class AirbyteVersion {
     this.patch = patch;
   }
 
-  public String getVersion() {
+  public String serialize() {
     return version;
   }
 
@@ -75,6 +75,27 @@ public class AirbyteVersion {
   }
 
   /**
+   * @return true if this is greater than other. otherwise false.
+   */
+  public boolean greaterThan(final AirbyteVersion other) {
+    return patchVersionCompareTo(other) > 0;
+  }
+
+  /**
+   * @return true if this is greater than or equal toother. otherwise false.
+   */
+  public boolean greaterThanOrEqualTo(final AirbyteVersion other) {
+    return patchVersionCompareTo(other) >= 0;
+  }
+
+  /**
+   * @return true if this is less than other. otherwise false.
+   */
+  public boolean lessThan(final AirbyteVersion other) {
+    return patchVersionCompareTo(other) < 0;
+  }
+
+  /**
    * Compares two Airbyte Version to check if they are equivalent (including patch version).
    */
   public int patchVersionCompareTo(final AirbyteVersion another) {
@@ -92,6 +113,10 @@ public class AirbyteVersion {
     return compareVersion(patch, another.patch);
   }
 
+  public boolean isDev() {
+    return version.equals(DEV_VERSION);
+  }
+
   /**
    * Version string needs to be converted to integer for comparison, because string comparison does
    * not handle version string with different digits correctly. For example:
@@ -101,25 +126,21 @@ public class AirbyteVersion {
     return Integer.compare(Integer.parseInt(v1), Integer.parseInt(v2));
   }
 
-  public static void assertIsCompatible(final String version1, final String version2) throws IllegalStateException {
+  public static void assertIsCompatible(final AirbyteVersion version1, final AirbyteVersion version2) throws IllegalStateException {
     if (!isCompatible(version1, version2)) {
       throw new IllegalStateException(getErrorMessage(version1, version2));
     }
   }
 
-  public static String getErrorMessage(final String version1, final String version2) {
-    final String cleanVersion1 = version1.replace("\n", "").strip();
-    final String cleanVersion2 = version2.replace("\n", "").strip();
+  public static String getErrorMessage(final AirbyteVersion version1, final AirbyteVersion version2) {
     return String.format(
         "Version mismatch between %s and %s.\n" +
             "Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/operator-guides/upgrading-airbyte",
-        cleanVersion1, cleanVersion2);
+        version1.serialize(), version2.serialize());
   }
 
-  public static boolean isCompatible(final String v1, final String v2) {
-    final AirbyteVersion version1 = new AirbyteVersion(v1);
-    final AirbyteVersion version2 = new AirbyteVersion(v2);
-    return version1.compatibleVersionCompareTo(version2) == 0;
+  public static boolean isCompatible(final AirbyteVersion v1, final AirbyteVersion v2) {
+    return v1.compatibleVersionCompareTo(v2) == 0;
   }
 
   @Override
@@ -137,7 +158,7 @@ public class AirbyteVersion {
         + "."
         + airbyteVersion.getMinorVersion()
         + ".0-"
-        + airbyteVersion.getVersion().replace("\n", "").strip().split("-")[1];
+        + airbyteVersion.serialize().replace("\n", "").strip().split("-")[1];
     return new AirbyteVersion(versionWithoutPatch);
   }
 

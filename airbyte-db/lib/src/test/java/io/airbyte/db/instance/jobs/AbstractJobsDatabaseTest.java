@@ -6,13 +6,14 @@ package io.airbyte.db.instance.jobs;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.AbstractDatabaseTest;
+import io.airbyte.db.instance.test.TestDatabaseProviders;
 import java.io.IOException;
 
 public abstract class AbstractJobsDatabaseTest extends AbstractDatabaseTest {
 
   @Override
-  public Database getAndInitializeDatabase(final String username, final String password, final String connectionString) throws IOException {
-    return new JobsDatabaseInstance(username, password, connectionString).getAndInitialize();
+  public Database getDatabase() throws IOException {
+    return new TestDatabaseProviders(container).turnOffMigration().createNewJobsDatabase();
   }
 
 }
