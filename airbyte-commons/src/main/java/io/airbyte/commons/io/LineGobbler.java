@@ -24,10 +24,10 @@ public class LineGobbler implements VoidCallable {
     gobble(is, consumer, "generic");
   }
 
-  public static void gobble(final InputStream is, final Consumer<String> consumer, String caller) {
+  public static void gobble(final InputStream is, final Consumer<String> consumer, final String caller) {
     final ExecutorService executor = Executors.newSingleThreadExecutor();
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
-    var gobbler = new LineGobbler(is, consumer, executor, mdc, caller);
+    final var gobbler = new LineGobbler(is, consumer, executor, mdc, caller);
     executor.submit(gobbler);
   }
 
@@ -64,9 +64,9 @@ public class LineGobbler implements VoidCallable {
       while ((line = is.readLine()) != null) {
         consumer.accept(line);
       }
-    } catch (IOException i) {
+    } catch (final IOException i) {
       LOGGER.warn("{} gobbler IOException: {}. Typically happens when cancelling a job.", caller, i.getMessage());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("{} gobbler error when reading stream", caller, e);
     } finally {
       executor.shutdown();

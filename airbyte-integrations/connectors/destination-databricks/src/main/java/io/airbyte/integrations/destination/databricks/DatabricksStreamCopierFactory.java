@@ -19,23 +19,23 @@ import java.sql.Timestamp;
 public class DatabricksStreamCopierFactory implements StreamCopierFactory<DatabricksDestinationConfig> {
 
   @Override
-  public StreamCopier create(String configuredSchema,
-                             DatabricksDestinationConfig databricksConfig,
-                             String stagingFolder,
-                             ConfiguredAirbyteStream configuredStream,
-                             ExtendedNameTransformer nameTransformer,
-                             JdbcDatabase database,
-                             SqlOperations sqlOperations) {
+  public StreamCopier create(final String configuredSchema,
+                             final DatabricksDestinationConfig databricksConfig,
+                             final String stagingFolder,
+                             final ConfiguredAirbyteStream configuredStream,
+                             final ExtendedNameTransformer nameTransformer,
+                             final JdbcDatabase database,
+                             final SqlOperations sqlOperations) {
     try {
-      AirbyteStream stream = configuredStream.getStream();
-      String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
-      AmazonS3 s3Client = databricksConfig.getS3DestinationConfig().getS3Client();
-      S3WriterFactory writerFactory = new ProductionWriterFactory();
-      Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
+      final AirbyteStream stream = configuredStream.getStream();
+      final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      final AmazonS3 s3Client = databricksConfig.getS3DestinationConfig().getS3Client();
+      final S3WriterFactory writerFactory = new ProductionWriterFactory();
+      final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
       return new DatabricksStreamCopier(stagingFolder, schema, configuredStream, s3Client, database,
           databricksConfig, nameTransformer, sqlOperations, writerFactory, uploadTimestamp);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
 

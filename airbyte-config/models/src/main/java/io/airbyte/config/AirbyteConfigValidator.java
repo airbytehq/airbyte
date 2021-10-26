@@ -10,7 +10,7 @@ import java.nio.file.Path;
 public class AirbyteConfigValidator extends AbstractSchemaValidator<ConfigSchema> {
 
   @Override
-  public Path getSchemaPath(ConfigSchema configType) {
+  public Path getSchemaPath(final ConfigSchema configType) {
     return configType.getConfigSchemaFile().toPath();
   }
 

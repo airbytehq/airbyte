@@ -16,7 +16,7 @@ class OpenApiConfigHandlerTest {
 
   @Test
   public void testGetFile() throws IOException {
-    List<String> lines = Files.readLines(new OpenApiConfigHandler().getFile(), Charset.defaultCharset());
+    final List<String> lines = Files.readLines(new OpenApiConfigHandler().getFile(), Charset.defaultCharset());
     assertTrue(lines.get(0).contains("openapi"));
   }
 

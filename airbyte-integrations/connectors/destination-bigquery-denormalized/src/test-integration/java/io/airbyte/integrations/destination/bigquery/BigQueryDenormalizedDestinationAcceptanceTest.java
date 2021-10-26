@@ -94,35 +94,36 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected String getDefaultSchema(JsonNode config) {
+  protected String getDefaultSchema(final JsonNode config) {
     return config.get(CONFIG_DATASET_ID).asText();
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
-    String schema = namingResolver.getIdentifier(namespace);
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+      throws Exception {
+    final String tableName = namingResolver.getIdentifier(streamName);
+    final String schema = namingResolver.getIdentifier(namespace);
     return retrieveRecordsFromTable(tableName, schema);
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return new ArrayList<>(retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), namingResolver.getIdentifier(namespace)));
   }
 
   @Override
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     result.add(identifier);
     result.add(namingResolver.getIdentifier(identifier));
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schema) throws InterruptedException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
@@ -130,15 +131,15 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .setUseLegacySql(false).build();
 
-    TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
-    FieldList fields = queryResults.getSchema().getFields();
+    final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
+    final FieldList fields = queryResults.getSchema().getFields();
 
     return StreamSupport
         .stream(queryResults.iterateAll().spliterator(), false)
         .map(row -> {
-          Map<String, Object> jsonMap = Maps.newHashMap();
-          for (Field field : fields) {
-            Object value = getTypedFieldValue(row, field);
+          final Map<String, Object> jsonMap = Maps.newHashMap();
+          for (final Field field : fields) {
+            final Object value = getTypedFieldValue(row, field);
             if (!isAirbyteColumn(field.getName()) && value != null) {
               jsonMap.put(field.getName(), value);
             }
@@ -149,15 +150,15 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
         .collect(Collectors.toList());
   }
 
-  private boolean isAirbyteColumn(String name) {
+  private boolean isAirbyteColumn(final String name) {
     if (AIRBYTE_COLUMNS.contains(name)) {
       return true;
     }
     return name.startsWith("_airbyte") && name.endsWith("_hashid");
   }
 
-  private Object getTypedFieldValue(FieldValueList row, Field field) {
-    FieldValue fieldValue = row.get(field.getName());
+  private Object getTypedFieldValue(final FieldValueList row, final Field field) {
+    final FieldValue fieldValue = row.get(field.getName());
     if (fieldValue.getValue() != null) {
       return switch (field.getType().getStandardType()) {
         case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
@@ -173,7 +174,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
           "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
@@ -219,7 +220,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     tearDownBigQuery();
   }
 
@@ -239,13 +240,13 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   // todo (cgardens) - figure out how to share these helpers. they are currently copied from
   // BigQueryDestination.
-  private static ImmutablePair<Job, String> executeQuery(BigQuery bigquery, QueryJobConfiguration queryConfig) {
+  private static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
     final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
   }
 
-  private static ImmutablePair<Job, String> executeQuery(Job queryJob) {
+  private static ImmutablePair<Job, String> executeQuery(final Job queryJob) {
     final Job completedJob = waitForQuery(queryJob);
     if (completedJob == null) {
       throw new RuntimeException("Job no longer exists");
@@ -258,10 +259,10 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
     return ImmutablePair.of(completedJob, null);
   }
 
-  private static Job waitForQuery(Job queryJob) {
+  private static Job waitForQuery(final Job queryJob) {
     try {
       return queryJob.waitFor();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -273,7 +274,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncNormalizedWithoutNormalization(String messagesFilename, String catalogFilename) throws Exception {
+  public void testSyncNormalizedWithoutNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
@@ -283,7 +284,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
     // don't run normalization though
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
 
-    String defaultSchema = getDefaultSchema(config);
+    final String defaultSchema = getDefaultSchema(config);
     final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
     assertSameMessages(messages, actualMessages, true);
   }

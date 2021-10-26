@@ -36,9 +36,10 @@ class CatalogHelpersTest {
 
   @Test
   void testGetFieldNames() throws IOException {
-    JsonNode node = Jsons.deserialize(MoreResources.readResource("valid_schema.json"));
-    Set<String> actualFieldNames = CatalogHelpers.getAllFieldNames(node);
-    Set<String> expectedFieldNames = ImmutableSet.of("date", "CAD", "HKD", "ISK", "PHP", "DKK", "HUF", "文", "somekey", "something", "nestedkey");
+    final JsonNode node = Jsons.deserialize(MoreResources.readResource("valid_schema.json"));
+    final Set<String> actualFieldNames = CatalogHelpers.getAllFieldNames(node);
+    final Set<String> expectedFieldNames =
+        ImmutableSet.of("date", "CAD", "HKD", "ISK", "PHP", "DKK", "HUF", "文", "somekey", "something", "nestedkey");
 
     assertEquals(expectedFieldNames, actualFieldNames);
   }

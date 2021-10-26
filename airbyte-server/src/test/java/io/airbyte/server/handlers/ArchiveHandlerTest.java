@@ -290,7 +290,7 @@ public class ArchiveHandlerTest {
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, sourceid.toString(), new SourceConnection()
         .withSourceId(sourceid)
         .withWorkspaceId(workspaceId)
-        .withSourceDefinitionId(configRepository.listStandardSources().get(0).getSourceDefinitionId())
+        .withSourceDefinitionId(configRepository.listStandardSourceDefinitions().get(0).getSourceDefinitionId())
         .withName("test-source")
         .withConfiguration(Jsons.emptyObject())
         .withTombstone(false));

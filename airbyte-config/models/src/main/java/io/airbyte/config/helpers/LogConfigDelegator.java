@@ -15,7 +15,7 @@ public class LogConfigDelegator implements LogConfigs {
 
   private final Configs delegate;
 
-  public LogConfigDelegator(Configs configs) {
+  public LogConfigDelegator(final Configs configs) {
     delegate = configs;
   }
 

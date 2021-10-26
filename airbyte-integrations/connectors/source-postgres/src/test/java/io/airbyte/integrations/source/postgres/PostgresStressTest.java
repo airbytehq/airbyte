@@ -100,8 +100,8 @@ class PostgresStressTest extends JdbcStressTest {
     }
 
     @Override
-    public JsonNode toDatabaseConfig(JsonNode config) {
-      ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    public JsonNode toDatabaseConfig(final JsonNode config) {
+      final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put("username", config.get("username").asText())
           .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
               config.get("host").asText(),
@@ -120,7 +120,7 @@ class PostgresStressTest extends JdbcStressTest {
       return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(final String[] args) throws Exception {
       final Source source = new PostgresTestSource();
       LOGGER.info("starting source: {}", PostgresTestSource.class);
       new IntegrationRunner(source).run(args);

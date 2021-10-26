@@ -14,10 +14,10 @@ public class CursorInfo {
   private final String cursorField;
   private String cursor;
 
-  public CursorInfo(String originalCursorField,
-                    String originalCursor,
-                    String cursorField,
-                    String cursor) {
+  public CursorInfo(final String originalCursorField,
+                    final String originalCursor,
+                    final String cursorField,
+                    final String cursor) {
     this.originalCursorField = originalCursorField;
     this.originalCursor = originalCursor;
     this.cursorField = cursorField;
@@ -41,20 +41,20 @@ public class CursorInfo {
   }
 
   @SuppressWarnings("UnusedReturnValue")
-  public CursorInfo setCursor(String cursor) {
+  public CursorInfo setCursor(final String cursor) {
     this.cursor = cursor;
     return this;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CursorInfo that = (CursorInfo) o;
+    final CursorInfo that = (CursorInfo) o;
     return Objects.equals(originalCursorField, that.originalCursorField) && Objects
         .equals(originalCursor, that.originalCursor)
         && Objects.equals(cursorField, that.cursorField) && Objects.equals(cursor, that.cursor);

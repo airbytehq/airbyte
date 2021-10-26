@@ -10,7 +10,7 @@ public class Manifest {
 
   public final List<Entry> entries;
 
-  public Manifest(List<Entry> entries) {
+  public Manifest(final List<Entry> entries) {
     this.entries = entries;
   }
 

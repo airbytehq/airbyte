@@ -11,13 +11,13 @@ import java.util.Optional;
 
 public class OauthModelConverter {
 
-  public static Optional<AuthSpecification> getAuthSpec(ConnectorSpecification spec) {
+  public static Optional<AuthSpecification> getAuthSpec(final ConnectorSpecification spec) {
     if (spec.getAuthSpecification() == null) {
       return Optional.empty();
     }
-    io.airbyte.protocol.models.AuthSpecification incomingAuthSpec = spec.getAuthSpecification();
+    final io.airbyte.protocol.models.AuthSpecification incomingAuthSpec = spec.getAuthSpecification();
 
-    AuthSpecification authSpecification = new AuthSpecification();
+    final AuthSpecification authSpecification = new AuthSpecification();
     if (incomingAuthSpec.getAuthType() == io.airbyte.protocol.models.AuthSpecification.AuthType.OAUTH_2_0) {
       authSpecification.authType(AuthSpecification.AuthTypeEnum.OAUTH2_0)
           .oauth2Specification(new OAuth2Specification()

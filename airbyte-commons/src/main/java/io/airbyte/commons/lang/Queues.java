@@ -20,11 +20,11 @@ public class Queues {
    * @param <T> type provided by the queue
    * @return stream interface on top of the queue.
    */
-  public static <T> Stream<T> toStream(CloseableQueue<T> queue) {
+  public static <T> Stream<T> toStream(final CloseableQueue<T> queue) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override
-      public boolean tryAdvance(Consumer<? super T> action) {
+      public boolean tryAdvance(final Consumer<? super T> action) {
         final T record = queue.poll();
         if (record == null) {
           return false;
