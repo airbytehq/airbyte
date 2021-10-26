@@ -130,7 +130,7 @@ public class SourceDefinitionsHandler {
     imageValidator.assertValidIntegrationImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag());
 
     final boolean imageTagHasChanged = !currentSourceDefinition.getDockerImageTag().equals(sourceDefinitionUpdate.getDockerImageTag());
-    // TODO: remove null spec condition when the spec field becomes required on the definition struct
+    // TODO (lmossman): remove null spec condition when the spec field becomes required on the definition struct
     final ConnectorSpecification spec = (imageTagHasChanged || currentSourceDefinition.getSpec() == null)
         ? getSpecForImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag())
         : currentSourceDefinition.getSpec();
