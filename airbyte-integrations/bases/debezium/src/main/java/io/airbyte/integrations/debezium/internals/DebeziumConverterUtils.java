@@ -6,7 +6,6 @@ package io.airbyte.integrations.debezium.internals;
 
 import io.airbyte.db.DataTypeUtils;
 import io.debezium.spi.converter.RelationalColumn;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -23,7 +22,7 @@ public final class DebeziumConverterUtils {
     throw new UnsupportedOperationException();
   }
 
-  public static Object convertDate(final Object input) {
+  public static String convertDate(final Object input) {
     /**
      * While building this custom converter we were not sure what type debezium could return cause there
      * is no mention of it in the documentation. Secondly if you take a look at
@@ -51,29 +50,17 @@ public final class DebeziumConverterUtils {
         return input.toString();
       }
     }
-    LOGGER.warn("Uncovered date class type '{}'. Use default converter",
-        input.getClass().getName());
+    LOGGER.warn("Uncovered date class type '{}'. Use default converter", input.getClass().getName());
     return input.toString();
-
   }
 
-  public static Object convertDefaultValue(final RelationalColumn field) {
+  public static Object convertDefaultValue(RelationalColumn field) {
     if (field.isOptional()) {
       return null;
     } else if (field.hasDefaultValue()) {
       return field.defaultValue();
     }
     return null;
-  }
-
-  public static Object convertMoney(final Object input) {
-    if (input instanceof BigDecimal) {
-      return ((BigDecimal) input).doubleValue();
-    }
-
-    LOGGER.warn("Uncovered date class type '{}'. Use default converter",
-        input.getClass().getName());
-    return input.toString();
   }
 
 }

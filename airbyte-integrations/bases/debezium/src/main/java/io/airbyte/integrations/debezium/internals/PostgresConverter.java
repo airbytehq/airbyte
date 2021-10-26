@@ -105,6 +105,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     if (isNegativeTime(pgInterval)) {
       resultInterval.append("-");
     }
+    // TODO check if value more or less than Integer.MIN_VALUE Integer.MAX_VALUE,
     int hours = Math.abs(pgInterval.getHours());
     int minutes = Math.abs(pgInterval.getMinutes());
     int seconds = Math.abs(pgInterval.getWholeSeconds());
