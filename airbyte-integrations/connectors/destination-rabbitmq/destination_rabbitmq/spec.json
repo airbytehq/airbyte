@@ -10,7 +10,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Rabbitmq",
     "type": "object",
-    "required": ["host", "port", "username", "password", "queue"],
+    "required": ["host", "port", "username", "password", "routing_key"],
     "additionalProperties": false,
     "properties": {
       "host": {
@@ -27,15 +27,19 @@
       },
       "username": {
         "type": "string",
-        "description": "The username to connect"
+        "description": "The username to connect."
       },
       "password": {
         "type": "string",
-        "description": "The password to connect"
+        "description": "The password to connect."
       },
-      "queue": {
+      "exchange": {
         "type": "string",
-        "description": "The queue name"
+        "description": "The exchange name."
+      },
+      "routing_key": {
+        "type": "string",
+        "description": "The routing key."
       }
     }
   }

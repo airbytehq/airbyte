@@ -10,10 +10,20 @@ from unittest import mock
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStateMessage
 from destination_rabbitmq.destination import DestinationRabbitmq
 from unittest.mock import Mock
-import pytest
 
-from pika.spec import BasicProperties, Queue
-from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, Status, Type
+from pika.spec import Queue
+from airbyte_cdk.models import AirbyteMessage, Status, Type
+
+
+config = {
+    "host": "test.rabbitmq",
+    "port": 5672,
+    "virtual_host": "test_vh",
+    "username": "john.doe",
+    "password": "secret",
+    "exchange": "test_exchange",
+    "routing_key": "test_routing_key"
+}
 
 
 def _init_mocks(connection_init):
@@ -29,47 +39,16 @@ def test_check_succeeds(connection_init):
     result.method = Queue.DeclareOk()
     channel = _init_mocks(connection_init=connection_init)
     channel.queue_declare.return_value = result
-    config = {
-        "host": "test.rabbitmq",
-        "port": 5672,
-        "virtual_host": "test_vh",
-        "username": "john.doe",
-        "password": "secret",
-        "queue": "test_queue"
-    }
     destination = DestinationRabbitmq()
     status = destination.check(logger=Mock(), config=config)
     assert status.status == Status.SUCCEEDED
 
 
 @mock.patch('destination_rabbitmq.destination.BlockingConnection')
-def test_check_fails_on_declare_not_ok(connection_init):
-    connection_init.side_effect = Exception('Failed to create connection')
-    config = {
-        "host": "test.rabbitmq",
-        "port": 5672,
-        "virtual_host": "test_vh",
-        "username": "john.doe",
-        "password": "secret",
-        "queue": "test_queue"
-    }
-    destination = DestinationRabbitmq()
-    status = destination.check(logger=Mock(), config=config)
-    assert status.status == Status.FAILED
-
-
-@mock.patch('destination_rabbitmq.destination.BlockingConnection')
-def test_check_fails_on_declare_with_exception(connection_init):
-    channel = _init_mocks(connection_init=connection_init)
-    channel.queue_declare.side_effect = Exception('Could not create queue')
-    config = {
-        "host": "test.rabbitmq",
-        "port": 5672,
-        "virtual_host": "test_vh",
-        "username": "john.doe",
-        "password": "secret",
-        "queue": "test_queue"
-    }
+def test_check_fails_on_getting_channel(connection_init):
+    connection = Mock()
+    connection_init.return_value = connection
+    connection.channel.side_effect = Exception('Failed to get channel')
     destination = DestinationRabbitmq()
     status = destination.check(logger=Mock(), config=config)
     assert status.status == Status.FAILED
@@ -77,16 +56,7 @@ def test_check_fails_on_declare_with_exception(connection_init):
 
 @mock.patch('destination_rabbitmq.destination.BlockingConnection')
 def test_check_fails_on_creating_connection(connection_init):
-    channel = _init_mocks(connection_init=connection_init)
-    channel.queue_declare.side_effect = Exception('Could not create queue')
-    config = {
-        "host": "test.rabbitmq",
-        "port": 5672,
-        "virtual_host": "test_vh",
-        "username": "john.doe",
-        "password": "secret",
-        "queue": "test_queue"
-    }
+    connection_init.side_effect = Exception('Could not open connection')
     destination = DestinationRabbitmq()
     status = destination.check(logger=Mock(), config=config)
     assert status.status == Status.FAILED
@@ -107,14 +77,6 @@ def test_write_succeeds(connection_init):
     stream = 'messages'
     data = {'name': 'John Doe', 'email': 'john.doe@example.com'}
     channel = _init_mocks(connection_init=connection_init)
-    config = {
-        "host": "test.rabbitmq",
-        "port": 5672,
-        "virtual_host": "test_vh",
-        "username": "john.doe",
-        "password": "secret",
-        "queue": "test_queue"
-    }
     input_messages = [
         _record(stream=stream, data=data),
         _state()
@@ -122,12 +84,30 @@ def test_write_succeeds(connection_init):
     destination = DestinationRabbitmq()
     for m in destination.write(config=config, configured_catalog=Mock(), input_messages=input_messages):
         assert m.type == Type.STATE
-    channel.queue_declare.assert_called()
     _, _, args = channel.basic_publish.mock_calls[0]
-    assert args['exchange'] == ''
-    assert args['routing_key'] == 'test_queue'
+    assert args['exchange'] == 'test_exchange'
+    assert args['routing_key'] == 'test_routing_key'
     assert args['properties'].content_type == 'application/json'
     assert args['properties'].headers['stream'] == stream
+    assert json.loads(args['body']) == data
+
+
+@mock.patch('destination_rabbitmq.destination.BlockingConnection')
+def test_write_succeeds_with_direct_exchange(connection_init):
+    stream = 'messages'
+    data = {'name': 'John Doe', 'email': 'john.doe@example.com'}
+    channel = _init_mocks(connection_init=connection_init)
+    input_messages = [
+        _record(stream=stream, data=data),
+        _state()
+    ]
+    custom_config = dict(config)
+    del custom_config['exchange']
+    destination = DestinationRabbitmq()
+    for m in destination.write(config=custom_config, configured_catalog=Mock(), input_messages=input_messages):
+        assert m.type == Type.STATE
+    _, _, args = channel.basic_publish.mock_calls[0]
+    assert args['exchange'] == ''
     assert json.loads(args['body']) == data
     
     
