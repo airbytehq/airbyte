@@ -10,6 +10,7 @@ dependencies {
 
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-json-validation')
+    implementation project(':airbyte-config:models')
     implementation "org.flywaydb:flyway-core:7.14.0"
     implementation "org.testcontainers:postgresql:1.15.3"
     // These are required because gradle might be using lower version of Jna from other
