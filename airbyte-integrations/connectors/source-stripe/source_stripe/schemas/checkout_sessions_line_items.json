@@ -18,7 +18,7 @@
           "discount": {
             "type": ["null", "object"],
             "properties": {
-              "id": {"type": ["null", "object"]},
+              "id": {"type": ["null", "string"]},
               "coupon": {
                 "type": ["null", "object"],
                 "properties": {
@@ -33,7 +33,7 @@
                   },
                   "name": {"type": ["null", "string"]},
                   "percent_off": {"type": ["null", "number"]},
-                  "objet": {"type": ["null", "string"]},
+                  "object": {"type": ["null", "string"]},
                   "applies_to": {
                     "type": ["null", "object"],
                     "properties": {
