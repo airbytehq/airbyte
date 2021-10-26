@@ -43,8 +43,8 @@ class Reader:
     def get_streams(self) -> List[AirbyteStream]:
         try:
             streams = []
-            teable_client = self.get_table_service()
-            tables_iterator = teable_client.list_tables(results_per_page=constants.results_per_page)
+            table_client = self.get_table_service()
+            tables_iterator = table_client.list_tables(results_per_page=constants.results_per_page)
             for table in tables_iterator:
                 stream_name = table.name
                 stream = AirbyteStream(name=stream_name, json_schema=self.get_typed_schema)
