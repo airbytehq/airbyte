@@ -29,6 +29,14 @@ class TplcentralStream(HttpStream, ABC):
         None
 
     @property
+    def upstream_primary_key(self):
+        None
+
+    @property
+    def upstream_cursor_field(self):
+        None
+
+    @property
     @abstractmethod
     def collection_field(self) -> str:
         pass
@@ -45,7 +53,7 @@ class TplcentralStream(HttpStream, ABC):
         pgsiz = int(qs.get("pgsiz", pgsiz))
         pgnum = int(qs.get("pgnum", 1))
 
-        if pgsiz * pgnum < total:
+        if pgsiz > 0 and pgsiz * pgnum < total:
             return {
                 "pgsiz": pgsiz,
                 "pgnum": pgnum + 1,
@@ -60,12 +68,11 @@ class TplcentralStream(HttpStream, ABC):
         records = normalize(response.json()[self.collection_field])
 
         for record in records:
-            if hasattr(self, "upstream_primary_key"):
+            if self.upstream_primary_key:
                 record[self.primary_key] = deep_get(record, self.upstream_primary_key)
-            if hasattr(self, "upstream_cursor_field"):
+            if self.upstream_cursor_field:
                 record[self.cursor_field] = deep_get(record, self.upstream_cursor_field)
-
-        return records
+            yield record
 
 
 class StockSummaries(TplcentralStream):
@@ -83,8 +90,7 @@ class StockSummaries(TplcentralStream):
 
         for record in records:
             record["_item_identifier_id"] = deep_get(record, "ItemIdentifier.Id")
-
-        return records
+            yield record
 
 
 class Customers(TplcentralStream):
