@@ -18,8 +18,10 @@ def deep_map(function, d):
             d[key] = val
     return d
 
+
 def normalize(d):
     return deep_map(_normalizer, d)
+
 
 def _normalizer(d):
     out = {}
@@ -27,6 +29,7 @@ def _normalizer(d):
         if not k == "_links":
             out[camel_to_snake(k)] = v
     return out
+
 
 def deep_get(mapping: Mapping[str, Any], key: str) -> Any:
     key = key.split(".")
