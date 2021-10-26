@@ -115,7 +115,7 @@
       "type": "boolean"
     },
     "workout_type": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "upload_id_str": {
       "type": "string"
@@ -130,7 +130,7 @@
       "type": "boolean"
     },
     "gear_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "kilojoules": {
       "type": "number"
