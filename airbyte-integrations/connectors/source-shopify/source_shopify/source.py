@@ -341,9 +341,10 @@ class Locations(ShopifyStream):
 
 
 class InventoryLevels(ChildSubstream):
-
+    primary_key = "inventory_item_id"
     parent_stream_class: object = Locations
     slice_key = "location_id"
+    cursor_field = "updated_at"
 
     data_field = "inventory_levels"
 
