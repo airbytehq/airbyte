@@ -99,7 +99,7 @@ class Customers(TplcentralStream):
 
 
 class IncrementalTplcentralStream(TplcentralStream, ABC):
-    state_checkpoint_interval = 10
+    state_checkpoint_interval = 100
 
     cursor_field = "_cursor"
 
