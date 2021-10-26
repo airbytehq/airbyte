@@ -16,12 +16,11 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
   private final String SMALLMONEY_TYPE = "SMALLMONEY";
 
   @Override
-  public void configure(Properties props) {
-  }
+  public void configure(Properties props) {}
 
   @Override
   public void converterFor(final RelationalColumn field,
-      final ConverterRegistration<SchemaBuilder> registration) {
+                           final ConverterRegistration<SchemaBuilder> registration) {
     if (SMALLDATETIME_TYPE.equalsIgnoreCase(field.typeName())) {
       registerDate(field, registration);
     } else if (SMALLMONEY_TYPE.equalsIgnoreCase(field.typeName())) {
@@ -31,7 +30,7 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
   }
 
   private void registerDate(final RelationalColumn field,
-      final ConverterRegistration<SchemaBuilder> registration) {
+                            final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
@@ -42,7 +41,7 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
   }
 
   private void registerMoney(final RelationalColumn field,
-      final ConverterRegistration<SchemaBuilder> registration) {
+                             final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.float64(), input -> {
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
@@ -52,4 +51,5 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
     });
 
   }
+
 }
