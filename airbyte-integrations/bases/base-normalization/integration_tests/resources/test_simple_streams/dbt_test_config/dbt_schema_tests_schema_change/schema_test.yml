@@ -36,10 +36,10 @@ models:
             - NZD
 
   - name: renamed_dedup_cdc_excluded
-    # Disabling because incremental dbt is not handling quotes well atm (dbt 0.21.0)
-    #    tests:
-    #      - dbt_utils.expression_is_true:
-    #          expression: "\"column`_'with\"\"_quotes\" is not null"
+# Disabling because incremental dbt is not handling quotes well atm (dbt 0.21.0)
+#    tests:
+#      - dbt_utils.expression_is_true:
+#          expression: "\"column`_'with\"\"_quotes\" is not null"
     columns:
       - name: name
         tests:
