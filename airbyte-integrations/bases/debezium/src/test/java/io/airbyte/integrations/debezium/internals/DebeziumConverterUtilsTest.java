@@ -48,7 +48,7 @@ class DebeziumConverterUtilsTest {
   public void convertTLocalTime() {
     LocalTime localTime = LocalTime.of(8, 1, 1);
     String actual = DebeziumConverterUtils.convertDate(localTime);
-    Assertions.assertEquals("08:01:01", actual, "");
+    Assertions.assertEquals("08:01:01", actual);
   }
 
   @Test
