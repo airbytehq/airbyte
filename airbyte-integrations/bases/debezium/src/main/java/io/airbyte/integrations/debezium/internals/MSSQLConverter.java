@@ -6,11 +6,16 @@ package io.airbyte.integrations.debezium.internals;
 
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Properties;
 import org.apache.kafka.connect.data.SchemaBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MSSQLConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
+
+  private final Logger LOGGER = LoggerFactory.getLogger(MSSQLConverter.class);;
 
   private final String SMALLDATETIME_TYPE = "SMALLDATETIME";
   private final String SMALLMONEY_TYPE = "SMALLMONEY";
@@ -47,9 +52,14 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
 
-      return DebeziumConverterUtils.convertMoney(input);
-    });
+      if (input instanceof BigDecimal) {
+        return ((BigDecimal) input).doubleValue();
+      }
 
+      LOGGER.warn("Uncovered money class type '{}'. Use default converter",
+          input.getClass().getName());
+      return input.toString();
+    });
   }
 
 }
