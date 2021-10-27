@@ -70,7 +70,6 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
       return null;
     });
 
-    database.query(ctx -> ctx.fetch("set time zone utc;"));
     database.query(ctx -> ctx.fetch("CREATE SCHEMA TEST;"));
     database.query(ctx -> ctx.fetch("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');"));
     database.query(ctx -> ctx.fetch("CREATE TYPE inventory_item AS (\n"
@@ -371,7 +370,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("timetz")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'04:05:06+03'", "'2021-04-12 05:06:07'", "'060708-03'")
+            .addInsertValues("null", "'04:05:06+03'", "'2021-04-12 05:06:07+00'", "'060708-03'")
             .addExpectedValues(null, "04:05:06+03", "05:06:07+00", "06:07:08-03")
             .build());
 
