@@ -90,7 +90,7 @@ class DefaultAirbyteDestinationTest {
         Jsons.serialize(DESTINATION_CONFIG.getDestinationConnectionConfiguration()),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
         Jsons.serialize(DESTINATION_CONFIG.getCatalog())))
-            .thenReturn(process);
+        .thenReturn(process);
 
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);
@@ -172,7 +172,7 @@ class DefaultAirbyteDestinationTest {
 
     logs.forEach(line -> {
       org.assertj.core.api.Assertions.assertThat(line)
-          .startsWith(Color.MAGENTA.getCode() + "destination-container-log" + RESET);
+          .startsWith(Color.MAGENTA.getCode() + "destination" + RESET);
     });
   }
 

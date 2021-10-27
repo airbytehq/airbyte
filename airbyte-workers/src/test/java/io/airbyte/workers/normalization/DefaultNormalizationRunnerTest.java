@@ -77,7 +77,7 @@ class DefaultNormalizationRunnerTest {
         "--integration-type", "bigquery",
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))
-            .thenReturn(process);
+        .thenReturn(process);
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
   }
@@ -119,7 +119,7 @@ class DefaultNormalizationRunnerTest {
         .filter(line -> !line.contains("EnvConfigs(getEnvOrDefault)"))
         .forEach(line -> {
           org.assertj.core.api.Assertions.assertThat(line)
-              .startsWith(Color.BLUE.getCode() + "normalization-container-log" + RESET);
+              .startsWith(Color.GREEN.getCode() + "normalization" + RESET);
         });
   }
 
