@@ -251,7 +251,7 @@ class StreamProcessor(object):
                 is_intermediate=False,
                 column_count=column_count,
                 unique_key=self.get_unique_key(),
-                partition_by=PartitionType.NOTHING,
+                partition_by=PartitionType.DEFAULT,
             )
         else:
             from_table = self.add_to_outputs(
