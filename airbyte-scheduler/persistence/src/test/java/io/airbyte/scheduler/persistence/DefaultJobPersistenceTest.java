@@ -4,6 +4,9 @@
 
 package io.airbyte.scheduler.persistence;
 
+import static io.airbyte.db.instance.jobs.jooq.Tables.AIRBYTE_METADATA;
+import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
+import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -14,7 +17,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
@@ -23,15 +25,10 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobOutput;
-import io.airbyte.config.JobOutput.OutputType;
 import io.airbyte.config.JobSyncConfig;
-import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.State;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.DatabaseMigrator;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -90,7 +87,8 @@ class DefaultJobPersistenceTest {
       .withSync(new JobSyncConfig());
   private static PostgreSQLContainer<?> container;
 
-  private Database database;
+  private Database jobDatabase;
+  private Database configDatabase;
   private Supplier<Instant> timeSupplier;
   private JobPersistence jobPersistence;
 
@@ -158,33 +156,30 @@ class DefaultJobPersistenceTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   public void setup() throws Exception {
-    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    jobDatabase = databaseProviders.createNewJobsDatabase();
     resetDb();
-
-    final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(database, "test");
-    jobDbMigrator.createBaseline();
-    jobDbMigrator.migrate();
 
     timeSupplier = mock(Supplier.class);
     when(timeSupplier.get()).thenReturn(NOW);
 
-    jobPersistence = new DefaultJobPersistence(database, timeSupplier, 30, 500, 10);
+    jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, 30, 500, 10);
   }
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    jobDatabase.close();
   }
 
   private void resetDb() throws SQLException {
     // todo (cgardens) - truncate whole db.
-    database.query(ctx -> ctx.execute("TRUNCATE TABLE jobs"));
-    database.query(ctx -> ctx.execute("TRUNCATE TABLE attempts"));
-    database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_metadata"));
+    jobDatabase.query(ctx -> ctx.truncateTable(JOBS).execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(ATTEMPTS).execute());
+    jobDatabase.query(ctx -> ctx.truncateTable(AIRBYTE_METADATA).execute());
   }
 
   private Result<Record> getJobRecord(final long jobId) throws SQLException {
-    return database.query(ctx -> ctx.fetch(DefaultJobPersistence.BASE_JOB_SELECT_AND_JOIN + "WHERE jobs.id = ?", jobId));
+    return jobDatabase.query(ctx -> ctx.fetch(DefaultJobPersistence.BASE_JOB_SELECT_AND_JOIN + "WHERE jobs.id = ?", jobId));
   }
 
   @Test
@@ -336,7 +331,7 @@ class DefaultJobPersistenceTest {
         now.plusSeconds(14),
         now.plusSeconds(15),
         now.plusSeconds(16));
-    jobPersistence = new DefaultJobPersistence(database, timeSupplier, 30, 500, 10);
+    jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, 30, 500, 10);
     final long syncJobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
     final int syncJobAttemptNumber0 = jobPersistence.createAttempt(syncJobId, LOG_PATH);
     jobPersistence.failAttempt(syncJobId, syncJobAttemptNumber0);
@@ -439,7 +434,7 @@ class DefaultJobPersistenceTest {
       final var defaultWorkflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
       assertTrue(defaultWorkflowId.isEmpty());
 
-      database.query(ctx -> ctx.execute(
+      jobDatabase.query(ctx -> ctx.execute(
           "UPDATE attempts SET temporal_workflow_id = '56a81f3a-006c-42d7-bce2-29d675d08ea4' WHERE job_id = ? AND attempt_number =?", jobId,
           attemptNumber));
       final var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber).get();
@@ -720,107 +715,6 @@ class DefaultJobPersistenceTest {
       final Job expected = createJob(jobId2, SYNC_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), afterNow.getEpochSecond());
 
       assertEquals(Optional.of(expected), actual);
-    }
-
-  }
-
-  @Nested
-  @DisplayName("When getting current state")
-  class GetCurrentState {
-
-    @Test
-    @DisplayName("Should take latest state (regardless of attempt status)")
-    void testGetCurrentStateWithMultipleAttempts() throws IOException {
-      // just have the time monotonically increase.
-      when(timeSupplier.get()).thenAnswer(a -> Instant.now());
-
-      // create a job
-      final long jobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
-
-      // fail the first attempt
-      jobPersistence.failAttempt(jobId, jobPersistence.createAttempt(jobId, LOG_PATH));
-      assertTrue(jobPersistence.getCurrentState(UUID.fromString(SCOPE)).isEmpty());
-
-      // succeed the second attempt
-      final State state = new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 4)));
-      final JobOutput jobOutput = new JobOutput().withOutputType(OutputType.SYNC).withSync(new StandardSyncOutput().withState(state));
-      final int attemptId = jobPersistence.createAttempt(jobId, LOG_PATH);
-      jobPersistence.writeOutput(jobId, attemptId, jobOutput);
-      jobPersistence.succeedAttempt(jobId, attemptId);
-
-      // verify we get that state back.
-      assertEquals(Optional.of(state), jobPersistence.getCurrentState(UUID.fromString(SCOPE)));
-
-      // create a second job
-      final long jobId2 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
-
-      // check that when we have a failed attempt with no state, we still use old state.
-      jobPersistence.failAttempt(jobId2, jobPersistence.createAttempt(jobId2, LOG_PATH));
-      assertEquals(Optional.of(state), jobPersistence.getCurrentState(UUID.fromString(SCOPE)));
-
-      // check that when we have a failed attempt, if we have a state we use it.
-      final State state2 = new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 5)));
-      final JobOutput jobOutput2 = new JobOutput().withSync(new StandardSyncOutput().withState(state2));
-      final int attemptId2 = jobPersistence.createAttempt(jobId2, LOG_PATH);
-      jobPersistence.writeOutput(jobId2, attemptId2, jobOutput2);
-      jobPersistence.failAttempt(jobId2, attemptId2);
-      assertEquals(Optional.of(state2), jobPersistence.getCurrentState(UUID.fromString(SCOPE)));
-    }
-
-    @Test
-    @DisplayName("Should not have state if the latest attempt did not succeeded and have state otherwise")
-    public void testGetCurrentStateForConnectionIdNoState() throws IOException {
-      // no state when the connection has never had a job.
-      assertEquals(Optional.empty(), jobPersistence.getCurrentState(CONNECTION_ID));
-
-      final long jobId = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
-      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
-
-      // no state when connection has a job but it has not completed that has not completed
-      assertEquals(Optional.empty(), jobPersistence.getCurrentState(CONNECTION_ID));
-
-      jobPersistence.failJob(jobId);
-
-      // no state when connection has a job but it is failed.
-      assertEquals(Optional.empty(), jobPersistence.getCurrentState(CONNECTION_ID));
-
-      jobPersistence.cancelJob(jobId);
-
-      // no state when connection has a job but it is cancelled.
-      assertEquals(Optional.empty(), jobPersistence.getCurrentState(CONNECTION_ID));
-
-      final JobOutput jobOutput1 = new JobOutput()
-          .withSync(new StandardSyncOutput().withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "1")))));
-      jobPersistence.writeOutput(jobId, attemptNumber, jobOutput1);
-      jobPersistence.succeedAttempt(jobId, attemptNumber);
-
-      // job 1 state, after first success.
-      assertEquals(Optional.of(jobOutput1.getSync().getState()), jobPersistence.getCurrentState(CONNECTION_ID));
-
-      when(timeSupplier.get()).thenReturn(NOW.plusSeconds(1000));
-      final long jobId2 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
-      final int attemptNumber2 = jobPersistence.createAttempt(jobId2, LOG_PATH);
-
-      // job 1 state, second job created.
-      assertEquals(Optional.of(jobOutput1.getSync().getState()), jobPersistence.getCurrentState(CONNECTION_ID));
-
-      jobPersistence.failJob(jobId2);
-
-      // job 1 state, second job failed.
-      assertEquals(Optional.of(jobOutput1.getSync().getState()), jobPersistence.getCurrentState(CONNECTION_ID));
-
-      jobPersistence.cancelJob(jobId2);
-
-      // job 1 state, second job cancelled
-      assertEquals(Optional.of(jobOutput1.getSync().getState()), jobPersistence.getCurrentState(CONNECTION_ID));
-
-      final JobOutput jobOutput2 = new JobOutput()
-          .withSync(new StandardSyncOutput().withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "2")))));
-      jobPersistence.writeOutput(jobId2, attemptNumber2, jobOutput2);
-      jobPersistence.succeedAttempt(jobId2, attemptNumber2);
-
-      // job 2 state, after second job success.
-      assertEquals(Optional.of(jobOutput2.getSync().getState()), jobPersistence.getCurrentState(CONNECTION_ID));
     }
 
   }
@@ -1181,7 +1075,7 @@ class DefaultJobPersistenceTest {
     private Job persistJobForJobHistoryTesting(final String scope, final JobConfig jobConfig, final JobStatus status, final LocalDateTime runDate)
         throws IOException, SQLException {
       final String when = runDate.toString();
-      final Optional<Long> id = database.query(
+      final Optional<Long> id = jobDatabase.query(
           ctx -> ctx.fetch(
               "INSERT INTO jobs(config_type, scope, created_at, updated_at, status, config) " +
                   "SELECT CAST(? AS JOB_CONFIG_TYPE), ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB) " +
@@ -1210,7 +1104,7 @@ class DefaultJobPersistenceTest {
           + "  \"sync\": {\n"
           + "    \"output_catalog\": {"
           + "}}}";
-      final Integer attemptNumber = database.query(ctx -> ctx.fetch(
+      final Integer attemptNumber = jobDatabase.query(ctx -> ctx.fetch(
           "INSERT INTO attempts(job_id, attempt_number, log_path, status, created_at, updated_at, output) "
               + "VALUES(?, ?, ?, CAST(? AS ATTEMPT_STATUS), ?, ?, CAST(? as JSONB)) RETURNING attempt_number",
           job.getId(),
@@ -1295,7 +1189,8 @@ class DefaultJobPersistenceTest {
       final String DECOY_SCOPE = UUID.randomUUID().toString();
 
       // Reconfigure constants to test various combinations of tuning knobs and make sure all work.
-      final DefaultJobPersistence jobPersistence = new DefaultJobPersistence(database, timeSupplier, ageCutoff, tooManyJobs, recencyCutoff);
+      final DefaultJobPersistence jobPersistence =
+          new DefaultJobPersistence(jobDatabase, timeSupplier, ageCutoff, tooManyJobs, recencyCutoff);
 
       final LocalDateTime fakeNow = LocalDateTime.of(2021, 6, 20, 0, 0);
 
