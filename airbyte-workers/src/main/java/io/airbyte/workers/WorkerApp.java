@@ -20,7 +20,6 @@ import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
-import io.airbyte.workers.temporal.SyncWorkflow;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivityImpl;
@@ -29,6 +28,11 @@ import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
+import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
+import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
+import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
+import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
+import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -107,12 +111,12 @@ public class WorkerApp {
         .registerActivitiesImplementations(new DiscoverCatalogActivityImpl(processFactory, secretsHydrator, workspaceRoot));
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
+    syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
-        new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
-        new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment),
-        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
-        new SyncWorkflow.PersistStateActivityImpl(workspaceRoot, configRepository));
+        new ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
+        new NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment),
+        new DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
+        new PersistStateActivityImpl(workspaceRoot, configRepository));
     factory.start();
   }
 
@@ -160,7 +164,7 @@ public class WorkerApp {
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
-            .getInitialized();
+        .getInitialized();
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
