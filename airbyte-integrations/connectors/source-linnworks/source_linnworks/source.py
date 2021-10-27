@@ -6,6 +6,7 @@
 from abc import ABC
 from typing import (Any, Iterable, List, Mapping, MutableMapping, Optional,
                     Tuple, Union)
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 
 import pendulum
 import requests
@@ -41,13 +42,33 @@ class LinnworksStream(HttpStream, ABC):
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for record in response.json():
+        json = response.json()
+        if not isinstance(json, list):
+            json = [json]
+        for record in json:
             yield normalize(record)
+
+
+class Location(LinnworksStream):
+    # https://apps.linnworks.net/Api/Method/Locations-GetLocation
+    # Response: StockLocation https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Locations-ClassBase-StockLocation
+    # Allows 150 calls per minute
+    primary_key = "stock_location_int_id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "/api/Locations/GetLocation"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return stream_state
 
 
 class StockLocations(LinnworksStream):
     # https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations
-    # Response: List<StockLocation>
+    # Response: List<StockLocation> https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Inventory-ClassBase-StockLocation
     # Allows 150 calls per minute
     primary_key = "stock_location_int_id"
 
@@ -55,6 +76,23 @@ class StockLocations(LinnworksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "/api/Inventory/GetStockLocations"
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+
+        for record in records:
+            location = Location(authenticator=self.authenticator)
+            srecords = location.read_records(
+                sync_mode, cursor_field, stream_slice, {"pkStockLocationId": record["stock_location_id"]}
+            )
+            record.update(next(srecords))
+            yield record
 
 
 # Basic incremental stream
