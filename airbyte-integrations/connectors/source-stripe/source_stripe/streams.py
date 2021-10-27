@@ -390,3 +390,13 @@ class CheckoutSessionsLineItems(StripeStream):
                 checkout_session_id = re.search(r"/sessions/(cs_[^/].+)/line_items", response.url)
                 e["checkout_session_id"] = checkout_session_id.group(1) if checkout_session_id else None
         yield from data
+
+
+class PromotionCodes(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/promotion_codes/list
+    """
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "promotion_codes"
