@@ -31,7 +31,6 @@ class OneCall(HttpStream):
         return None
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-
         params = {"appid": self.appid, "lat": self.lat, "lon": self.lon, "lang": self.lang, "units": self.units}
         params = {k: v for k, v in params.items() if v is not None}
         return params
@@ -49,5 +48,5 @@ class OneCall(HttpStream):
         return current_stream_state
 
     def should_retry(self, response: requests.Response) -> bool:
-        # Do not retry in case of 429 because the account is blocked for an unkown duration.
+        # Do not retry in case of 429 because the account is blocked for an unknown duration.
         return 500 <= response.status_code < 600

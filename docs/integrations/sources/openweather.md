@@ -2,7 +2,7 @@
 
 ## Overview
 
-This source connector syncs data from the [OpenWeather One Call API](https://openweathermap.org/api/one-call-api) which allows to retrieve current and weather data from a geolocation expressed in latitude and longitude.
+This source connector syncs data from the [OpenWeather One Call API](https://openweathermap.org/api/one-call-api). This API allows to obtain current and weather data from a geolocation expressed in latitude and longitude.
 
 ### Output schema
 
