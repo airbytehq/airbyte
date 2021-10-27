@@ -13,7 +13,7 @@
         "duration": {"type": ["null", "string"]},
         "duration_in_months": {"type": ["null", "integer"]},
         "metadata": {
-          "type": ["null", "integer"],
+          "type": ["null", "object"],
           "properties": {}
         },
         "name": {"type": ["null", "string"]},
@@ -37,7 +37,7 @@
       }
     },
     "metadata": {
-      "type": ["null", "integer"],
+      "type": ["null", "object"],
       "properties": {}
     },
     "object": {"type": ["null", "string"]},

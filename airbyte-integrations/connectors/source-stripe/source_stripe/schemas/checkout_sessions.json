@@ -22,8 +22,11 @@
     "amount_subtotal": {"type": ["null", "integer"]},
     "amount_total": {"type": ["null", "integer"]},
     "automatic_tax": {
-      "enabled": {"type": ["null", "boolean"]},
-      "status": {"type": ["null", "string"]}
+      "type": ["null", "object"],
+      "properties": { 
+        "enabled": {"type": ["null", "boolean"]},
+        "status": {"type": ["null", "string"]}
+      }
     },
     "billing_address_collection": {"type": ["null", "string"]},
     "cancel_url": {"type": ["null", "string"]},
@@ -117,7 +120,10 @@
     },
     "payment_status": {"type": ["null", "string"]},
     "phone_number_collection": {
-      "enabled": {"type": ["null", "boolean"]}
+      "type": ["null", "object"],
+      "properties": {
+        "enabled": {"type": ["null", "boolean"]}
+      }
     },
     "recovered_from": {"type": ["null", "string"]},
     "setup_intent": {"type": ["null", "string"]},
@@ -185,7 +191,7 @@
               "items": {
                 "type": ["null", "object"],
                 "properties": {
-                  "integer": {"type": ["null", "string"]},
+                  "amount": {"type": ["null", "integer"]},
                   "rate": {
                     "type": ["null", "object"],
                     "properties": {
