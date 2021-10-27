@@ -11,8 +11,8 @@ from .api import API, GroupMembersAPI, GroupsAPI, UsersAPI
 
 
 class Client(BaseClient):
-    def __init__(self, credentials_json: str, email: str):
-        self._api = API(credentials_json, email)
+    def __init__(self, credentials: Mapping[str, Any]):
+        self._api = API(credentials)
         self._apis = {"users": UsersAPI(self._api), "groups": GroupsAPI(self._api), "group_members": GroupMembersAPI(self._api)}
         super().__init__()
 
