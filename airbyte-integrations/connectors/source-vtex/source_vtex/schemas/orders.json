@@ -2,210 +2,192 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "uniqueId": {
+    "orderId": {
       "type": "string"
     },
-    "id": {
+    "creationDate": {
       "type": "string"
     },
-    "productId": {
-      "type": "string"
+    "clientName": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
-    "ean": {
-      "type": "string"
+    "items": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
-    "lockId": {
-      "type": "string"
-    },
-    "itemAttachment": {
-      "properties": {
-        "content": {
-          "type": "object"
-        },
-        "name": {
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "attachments": {
-      "items": {
-        "type": "string"
-      },
-      "description": "",
-      "type": "array"
-    },
-    "quantity": {
-      "format": "int32",
+    "totalValue": {
       "type": "integer"
     },
-    "seller": {
+    "paymentNames": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
       "type": "string"
     },
-    "name": {
+    "statusDescription": {
       "type": "string"
     },
-    "refId": {
+    "marketPlaceOrderId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sequence": {
       "type": "string"
     },
-    "price": {
-      "format": "int32",
-      "type": "integer"
-    },
-    "listPrice": {
-      "format": "int32",
-      "type": "integer"
-    },
-    "manualPrice": {
+    "salesChannel": {
       "type": "string"
     },
-    "priceTags": {
-      "items": {
-        "type": "string"
-      },
-      "description": "",
-      "type": "array"
-    },
-    "imageUrl": {
+    "affiliateId": {
       "type": "string"
     },
-    "detailUrl": {
+    "origin": {
       "type": "string"
     },
-    "components": {
-      "items": {
-        "type": "string"
-      },
-      "description": "",
-      "type": "array"
-    },
-    "bundleItems": {
-      "items": {
-        "type": "string"
-      },
-      "description": "",
-      "type": "array"
-    },
-    "params": {
-      "items": {
-        "type": "string"
-      },
-      "description": "",
-      "type": "array"
-    },
-    "offerings": {
-      "items": {
-        "type": "string"
-      },
-      "description": "",
-      "type": "array"
-    },
-    "sellerSku": {
-      "type": "string"
-    },
-    "priceValidUntil": {
-      "type": "string"
-    },
-    "commission": {
-      "format": "int32",
-      "type": "integer"
-    },
-    "tax": {
-      "format": "int32",
-      "type": "integer"
-    },
-    "preSaleDate": {
-      "type": "string"
-    },
-    "additionalInfo": {
-      "properties": {
-        "brandName": {
-          "type": "string"
-        },
-        "brandId": {
-          "type": "string"
-        },
-        "categoriesIds": {
-          "type": "string"
-        },
-        "productClusterId": {
-          "type": "string"
-        },
-        "commercialConditionId": {
-          "type": "string"
-        },
-        "dimension": {
-          "properties": {
-            "cubicweight": {
-              "type": "number"
-            },
-            "height": {
-              "format": "int32",
-              "type": "integer"
-            },
-            "length": {
-              "format": "int32",
-              "type": "integer"
-            },
-            "weight": {
-              "format": "int32",
-              "type": "integer"
-            },
-            "width": {
-              "format": "int32",
-              "type": "integer"
-            }
-          },
-          "type": "object"
-        },
-        "offeringInfo": {
-          "type": "string"
-        },
-        "offeringType": {
-          "type": "string"
-        },
-        "offeringTypeId": {
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "measurementUnit": {
-      "type": "string"
-    },
-    "unitMultiplier": {
-      "format": "int32",
-      "type": "integer"
-    },
-    "sellingPrice": {
-      "format": "int32",
-      "type": "integer"
-    },
-    "isGift": {
+    "workflowInErrorState": {
       "type": "boolean"
     },
-    "shippingPrice": {
-      "type": "string"
+    "workflowInRetry": {
+      "type": "boolean"
     },
-    "rewardValue": {
-      "format": "int32",
+    "lastMessageUnread": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ShippingEstimatedDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ShippingEstimatedDateMax": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ShippingEstimatedDateMin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "orderIsComplete": {
+      "type": "boolean"
+    },
+    "listId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "listType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "authorizedDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "callCenterOperatorName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "totalItems": {
       "type": "integer"
     },
-    "freightCommission": {
-      "format": "int32",
-      "type": "integer"
-    },
-    "priceDefinitions": {
+    "currencyCode": {
       "type": "string"
     },
-    "taxCode": {
+    "hostname": {
       "type": "string"
     },
-    "parentItemIndex": {
+    "invoiceOutput": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "invoiceInput": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "lastChange": {
       "type": "string"
     },
-    "parentAssemblyBinding": {
-      "type": "string"
+    "isAllDelivered": {
+      "type": "boolean"
+    },
+    "isAnyDelivered": {
+      "type": "boolean"
+    },
+    "giftCardProviders": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "orderFormId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "paymentApprovedDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "readyForHandlingDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deliveryDates": {
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "description": "",
+      "type": [
+        "array",
+        "null"
+      ]
     }
   }
 }

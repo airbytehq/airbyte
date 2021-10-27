@@ -1,0 +1,2750 @@
+{
+    "type": "object",
+    "properties": {
+        "emailTracked": {
+            "type": "string"
+        },
+        "approvedBy": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "cancelledBy": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "cancelReason": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "orderId": {
+            "type": "string"
+        },
+        "sequence": {
+            "type": "string"
+        },
+        "marketplaceOrderId": {
+            "type": "string"
+        },
+        "marketplaceServicesEndpoint": {
+            "type": "string"
+        },
+        "sellerOrderId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "origin": {
+            "type": "string"
+        },
+        "affiliateId": {
+            "type": "string"
+        },
+        "salesChannel": {
+            "type": "string"
+        },
+        "merchantName": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "status": {
+            "type": "string"
+        },
+        "statusDescription": {
+            "type": "string"
+        },
+        "value": {
+            "type": "number"
+        },
+        "creationDate": {
+            "type": "string"
+        },
+        "lastChange": {
+            "type": "string"
+        },
+        "orderGroup": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "totals": {
+            "type": "array",
+            "items": {
+                "title": "Total",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    }
+                },
+                "example": {
+                    "id": "Items",
+                    "name": "Total dos Itens",
+                    "value": 3290
+                },
+                "$schema": "http://json-schema.org/schema#"
+            },
+            "description": ""
+        },
+        "items": {
+            "type": "array",
+            "items": {
+                "title": "Item",
+                "type": "object",
+                "properties": {
+                    "uniqueId": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "productId": {
+                        "type": "string"
+                    },
+                    "ean": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "lockId": {
+                        "type": "string"
+                    },
+                    "itemAttachment": {
+                        "title": "ItemAttachment",
+                        "type": "object",
+                        "properties": {
+                            "content": {
+                                "type": "object"
+                            },
+                            "name": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            }
+                        },
+                        "example": {
+                            "content": {},
+                            "name": null
+                        },
+                        "$schema": "http://json-schema.org/schema#"
+                    },
+                    "attachments": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": ""
+                    },
+                    "quantity": {
+                        "type": "number"
+                    },
+                    "seller": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "refId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "price": {
+                        "type": "number"
+                    },
+                    "listPrice": {
+                        "type": "number"
+                    },
+                    "manualPrice": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "priceTags": {
+                        "type": "array",
+                        "description": "Array of price tags, each of which, modifies the price in some way, like discounts or rates that apply to the item in the context of the order.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "identifier": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "description": "Price tag identifier."
+                                },
+                                "isPercentual": {
+                                    "type": "boolean",
+                                    "description": "Indicates whether price tag value is applied through a percentage."
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Name."
+                                },
+                                "rawValue": {
+                                    "type": "number",
+                                    "description": "Raw value."
+                                },
+                                "value": {
+                                    "type": "number",
+                                    "description": "Value."
+                                },
+                                "jurisCode": {
+                                    "type": [
+                                        "null",
+                                        "string"
+                                    ]
+                                },
+                                "jurisName": {
+                                    "type": [
+                                        "null",
+                                        "string"
+                                    ]
+                                },
+                                "jurisType": {
+                                    "type": [
+                                        "null",
+                                        "string"
+                                    ]
+                                },
+                                "rate": {
+                                    "type": [
+                                        "null",
+                                        "string"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "imageUrl": {
+                        "type": "string"
+                    },
+                    "detailUrl": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "components": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": ""
+                    },
+                    "bundleItems": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": ""
+                    },
+                    "params": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": ""
+                    },
+                    "offerings": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": ""
+                    },
+                    "sellerSku": {
+                        "type": "string"
+                    },
+                    "priceValidUntil": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "commission": {
+                        "type": "number"
+                    },
+                    "tax": {
+                        "type": "number"
+                    },
+                    "preSaleDate": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "additionalInfo": {
+                        "title": "AdditionalInfo",
+                        "type": "object",
+                        "properties": {
+                            "brandName": {
+                                "type": "string"
+                            },
+                            "brandId": {
+                                "type": "string"
+                            },
+                            "categoriesIds": {
+                                "type": "string"
+                            },
+                            "productClusterId": {
+                                "type": "string"
+                            },
+                            "commercialConditionId": {
+                                "type": "string"
+                            },
+                            "dimension": {
+                                "title": "Dimension",
+                                "type": "object",
+                                "properties": {
+                                    "cubicweight": {
+                                        "type": "number"
+                                    },
+                                    "height": {
+                                        "type": "number"
+                                    },
+                                    "length": {
+                                        "type": "number"
+                                    },
+                                    "weight": {
+                                        "type": "number"
+                                    },
+                                    "width": {
+                                        "type": "number"
+                                    }
+                                },
+                                "example": {
+                                    "cubicweight": 0.7031,
+                                    "height": 15,
+                                    "length": 15,
+                                    "weight": 15,
+                                    "width": 15
+                                },
+                                "$schema": "http://json-schema.org/schema#"
+                            },
+                            "offeringInfo": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "offeringType": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "offeringTypeId": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            }
+                        },
+                        "example": {
+                            "brandName": "VTEX",
+                            "brandId": "2000023",
+                            "categoriesIds": "/1/",
+                            "productClusterId": "135,142",
+                            "commercialConditionId": "5",
+                            "dimension": {
+                                "cubicweight": 0.7031,
+                                "height": 15,
+                                "length": 15,
+                                "weight": 15,
+                                "width": 15
+                            },
+                            "offeringInfo": null,
+                            "offeringType": null,
+                            "offeringTypeId": null
+                        },
+                        "$schema": "http://json-schema.org/schema#"
+                    },
+                    "measurementUnit": {
+                        "type": "string"
+                    },
+                    "unitMultiplier": {
+                        "type": "number"
+                    },
+                    "sellingPrice": {
+                        "type": "number"
+                    },
+                    "isGift": {
+                        "type": "boolean"
+                    },
+                    "shippingPrice": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "rewardValue": {
+                        "type": "number"
+                    },
+                    "freightCommission": {
+                        "type": "number"
+                    },
+                    "priceDefinitions": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "taxCode": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "parentItemIndex": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "parentAssemblyBinding": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    }
+                },
+                "example": {
+                    "uniqueId": "87F0945396994B349158C7D9C9941442",
+                    "id": "1234568358",
+                    "productId": "9429485",
+                    "ean": null,
+                    "lockId": "00-v5195004lux-01",
+                    "itemAttachment": {
+                        "content": {},
+                        "name": null
+                    },
+                    "attachments": [],
+                    "quantity": 1,
+                    "seller": "1",
+                    "name": "Bay Max L",
+                    "refId": "BIGHEROBML",
+                    "price": 3290,
+                    "listPrice": 3290,
+                    "manualPrice": null,
+                    "priceTags": [],
+                    "imageUrl": "http://luxstore.vteximg.com.br/arquivos/ids/159263-55-55/image-cc1aed75cbfa424a85a94900be3eacec.jpg?v=636795432619830000",
+                    "detailUrl": "/bay-max-9429485/p",
+                    "components": [],
+                    "bundleItems": [],
+                    "params": [],
+                    "offerings": [],
+                    "sellerSku": "1234568358",
+                    "priceValidUntil": null,
+                    "commission": 0,
+                    "tax": 0,
+                    "preSaleDate": null,
+                    "additionalInfo": {
+                        "brandName": "VTEX",
+                        "brandId": "2000023",
+                        "categoriesIds": "/1/",
+                        "productClusterId": "135,142",
+                        "commercialConditionId": "5",
+                        "dimension": {
+                            "cubicweight": 0.7031,
+                            "height": 15,
+                            "length": 15,
+                            "weight": 15,
+                            "width": 15
+                        },
+                        "offeringInfo": null,
+                        "offeringType": null,
+                        "offeringTypeId": null
+                    },
+                    "measurementUnit": "un",
+                    "unitMultiplier": 1,
+                    "sellingPrice": 3290,
+                    "isGift": false,
+                    "shippingPrice": null,
+                    "rewardValue": 0,
+                    "freightCommission": 0,
+                    "priceDefinitions": null,
+                    "taxCode": null,
+                    "parentItemIndex": null,
+                    "parentAssemblyBinding": null
+                },
+                "$schema": "http://json-schema.org/schema#"
+            },
+            "description": ""
+        },
+        "marketplaceItems": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": ""
+        },
+        "clientProfileData": {
+            "title": "ClientProfileData",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "documentType": {
+                    "type": "string"
+                },
+                "document": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "corporateName": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "tradeName": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "corporateDocument": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "stateInscription": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "corporatePhone": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "isCorporate": {
+                    "type": "boolean"
+                },
+                "userProfileId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "customerClass": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            },
+            "example": {
+                "id": "clientProfileData",
+                "email": "rodrigo.cunha@vtex.com.br",
+                "firstName": "Rodrigo",
+                "lastName": "VTEX",
+                "documentType": "cpf",
+                "document": "11047867702",
+                "phone": "+5521972321094",
+                "corporateName": null,
+                "tradeName": null,
+                "corporateDocument": null,
+                "stateInscription": null,
+                "corporatePhone": null,
+                "isCorporate": false,
+                "userProfileId": "5a3692de-358a-4bea-8885-044bce33bb93",
+                "customerClass": null
+            },
+            "$schema": "http://json-schema.org/schema#"
+        },
+        "giftRegistryData": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "marketingData": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "properties": {
+                "coupon": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "id": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "marketingTags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "utmCampaign": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "utmMedium": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "utmPartner": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "utmSource": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "utmiCampaign": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "utmiPart": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                "utmipage": {
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                }
+            }
+        },
+        "ratesAndBenefitsData": {
+            "title": "RatesAndBenefitsData",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "rateAndBenefitsIdentifiers": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "additionalInfo": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "description": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "featured": {
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
+                            },
+                            "id": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "matchedParameters": {
+                                "type": "object",
+                                "properties": {
+                                    "Seller@CatalogSystem": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    },
+                                    "paymentMethodId": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    }
+                                }
+                            },
+                            "name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            },
+            "example": {
+                "id": "ratesAndBenefitsData",
+                "rateAndBenefitsIdentifiers": []
+            },
+            "$schema": "http://json-schema.org/schema#"
+        },
+        "shippingData": {
+            "title": "ShippingData",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "address": {
+                    "title": "Address",
+                    "type": "object",
+                    "properties": {
+                        "addressType": {
+                            "type": "string"
+                        },
+                        "receiverName": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "addressId": {
+                            "type": "string"
+                        },
+                        "postalCode": {
+                            "type": "string"
+                        },
+                        "city": {
+                            "type": "string"
+                        },
+                        "state": {
+                            "type": "string"
+                        },
+                        "country": {
+                            "type": "string"
+                        },
+                        "street": {
+                            "type": "string"
+                        },
+                        "number": {
+                            "type": "string"
+                        },
+                        "neighborhood": {
+                            "type": "string"
+                        },
+                        "complement": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "reference": {
+                            "type": [
+                                "null",
+                                "string"
+                            ]
+                        },
+                        "geoCoordinates": {
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            },
+                            "description": ""
+                        }
+                    },
+                    "example": {
+                        "addressType": "residential",
+                        "receiverName": "Rodrigo Cunha",
+                        "addressId": "-1425945657910",
+                        "postalCode": "22250-040",
+                        "city": "Rio de Janeiro",
+                        "state": "RJ",
+                        "country": "BRA",
+                        "street": "Praia de Botafogo",
+                        "number": "300",
+                        "neighborhood": "Botafogo",
+                        "complement": "3",
+                        "reference": null,
+                        "geoCoordinates": []
+                    },
+                    "$schema": "http://json-schema.org/schema#"
+                },
+                "logisticsInfo": {
+                    "type": "array",
+                    "items": {
+                        "title": "LogisticsInfo",
+                        "type": "object",
+                        "properties": {
+                            "itemIndex": {
+                                "type": "number"
+                            },
+                            "selectedSla": {
+                                "type": "string"
+                            },
+                            "lockTTL": {
+                                "type": "string"
+                            },
+                            "price": {
+                                "type": "number"
+                            },
+                            "listPrice": {
+                                "type": "number"
+                            },
+                            "sellingPrice": {
+                                "type": "number"
+                            },
+                            "deliveryWindow": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "deliveryCompany": {
+                                "type": "string"
+                            },
+                            "shippingEstimate": {
+                                "type": "string"
+                            },
+                            "shippingEstimateDate": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "slas": {
+                                "type": [
+                                    "array",
+                                    "null"
+                                ],
+                                "items": {
+                                    "title": "Sla",
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "shippingEstimate": {
+                                            "type": "string"
+                                        },
+                                        "deliveryWindow": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "price": {
+                                            "type": "number"
+                                        },
+                                        "deliveryChannel": {
+                                            "type": "string"
+                                        },
+                                        "pickupStoreInfo": {
+                                            "title": "PickupStoreInfo",
+                                            "type": "object",
+                                            "properties": {
+                                                "additionalInfo": {
+                                                    "type": [
+                                                        "null",
+                                                        "string"
+                                                    ]
+                                                },
+                                                "address": {
+                                                    "title": "Address",
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "addressType": {
+                                                            "type": "string"
+                                                        },
+                                                        "receiverName": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "addressId": {
+                                                            "type": "string"
+                                                        },
+                                                        "postalCode": {
+                                                            "type": "string"
+                                                        },
+                                                        "city": {
+                                                            "type": "string"
+                                                        },
+                                                        "state": {
+                                                            "type": "string"
+                                                        },
+                                                        "country": {
+                                                            "type": "string"
+                                                        },
+                                                        "street": {
+                                                            "type": "string"
+                                                        },
+                                                        "number": {
+                                                            "type": "string"
+                                                        },
+                                                        "neighborhood": {
+                                                            "type": "string"
+                                                        },
+                                                        "complement": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "reference": {
+                                                            "type": [
+                                                                "null",
+                                                                "string"
+                                                            ]
+                                                        },
+                                                        "geoCoordinates": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "number"
+                                                            },
+                                                            "description": ""
+                                                        }
+                                                    },
+                                                    "$schema": "http://json-schema.org/schema#"
+                                                },
+                                                "dockId": {
+                                                    "type": [
+                                                        "null",
+                                                        "string"
+                                                    ]
+                                                },
+                                                "friendlyName": {
+                                                    "type": [
+                                                        "null",
+                                                        "string"
+                                                    ]
+                                                },
+                                                "isPickupStore": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "example": {
+                                                "additionalInfo": null,
+                                                "address": null,
+                                                "dockId": null,
+                                                "friendlyName": null,
+                                                "isPickupStore": false
+                                            },
+                                            "$schema": "http://json-schema.org/schema#"
+                                        },
+                                        "polygonName": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        }
+                                    },
+                                    "example": {
+                                        "id": "Normal",
+                                        "name": "Normal",
+                                        "shippingEstimate": "5bd",
+                                        "deliveryWindow": null,
+                                        "price": 1160,
+                                        "deliveryChannel": "delivery",
+                                        "pickupStoreInfo": {
+                                            "additionalInfo": null,
+                                            "address": null,
+                                            "dockId": null,
+                                            "friendlyName": null,
+                                            "isPickupStore": false
+                                        },
+                                        "polygonName": null
+                                    },
+                                    "$schema": "http://json-schema.org/schema#"
+                                },
+                                "description": ""
+                            },
+                            "shipsTo": {
+                                "type": [
+                                    "array",
+                                    "null"
+                                ],
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": ""
+                            },
+                            "deliveryIds": {
+                                "type": "array",
+                                "items": {
+                                    "title": "DeliveryId",
+                                    "type": "object",
+                                    "properties": {
+                                        "courierId": {
+                                            "type": "string"
+                                        },
+                                        "courierName": {
+                                            "type": "string"
+                                        },
+                                        "dockId": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "warehouseId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "courierId": "197a56f",
+                                        "courierName": "Todos os CEPS",
+                                        "dockId": "1",
+                                        "quantity": 1,
+                                        "warehouseId": "1_1"
+                                    },
+                                    "$schema": "http://json-schema.org/schema#"
+                                },
+                                "description": ""
+                            },
+                            "deliveryChannel": {
+                                "type": "string"
+                            },
+                            "pickupStoreInfo": {
+                                "title": "PickupStoreInfo",
+                                "type": "object",
+                                "properties": {
+                                    "additionalInfo": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    },
+                                    "address": {
+                                        "title": "Address",
+                                        "type": [
+                                            "object",
+                                            "null"
+                                        ],
+                                        "properties": {
+                                            "addressType": {
+                                                "type": "string"
+                                            },
+                                            "receiverName": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "addressId": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "street": {
+                                                "type": "string"
+                                            },
+                                            "number": {
+                                                "type": "string"
+                                            },
+                                            "neighborhood": {
+                                                "type": "string"
+                                            },
+                                            "complement": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "reference": {
+                                                "type": [
+                                                    "null",
+                                                    "string"
+                                                ]
+                                            },
+                                            "geoCoordinates": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "number"
+                                                },
+                                                "description": ""
+                                            }
+                                        },
+                                        "example": {
+                                            "addressType": "residential",
+                                            "receiverName": "Rodrigo Cunha",
+                                            "addressId": "-1425945657910",
+                                            "postalCode": "22250-040",
+                                            "city": "Rio de Janeiro",
+                                            "state": "RJ",
+                                            "country": "BRA",
+                                            "street": "Praia de Botafogo",
+                                            "number": "300",
+                                            "neighborhood": "Botafogo",
+                                            "complement": "3",
+                                            "reference": null,
+                                            "geoCoordinates": []
+                                        },
+                                        "$schema": "http://json-schema.org/schema#"
+                                    },
+                                    "dockId": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    },
+                                    "friendlyName": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    },
+                                    "isPickupStore": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "example": {
+                                    "additionalInfo": null,
+                                    "address": null,
+                                    "dockId": null,
+                                    "friendlyName": null,
+                                    "isPickupStore": false
+                                },
+                                "$schema": "http://json-schema.org/schema#"
+                            },
+                            "addressId": {
+                                "type": "string"
+                            },
+                            "polygonName": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            }
+                        },
+                        "example": {
+                            "itemIndex": 0,
+                            "selectedSla": "Normal",
+                            "lockTTL": "10d",
+                            "price": 1160,
+                            "listPrice": 1160,
+                            "sellingPrice": 1160,
+                            "deliveryWindow": null,
+                            "deliveryCompany": "Todos os CEPS",
+                            "shippingEstimate": "5bd",
+                            "shippingEstimateDate": "2019-02-04T20:33:46.4595004+00:00",
+                            "slas": [
+                                {
+                                    "id": "Normal",
+                                    "name": "Normal",
+                                    "shippingEstimate": "5bd",
+                                    "deliveryWindow": null,
+                                    "price": 1160,
+                                    "deliveryChannel": "delivery",
+                                    "pickupStoreInfo": {
+                                        "additionalInfo": null,
+                                        "address": null,
+                                        "dockId": null,
+                                        "friendlyName": null,
+                                        "isPickupStore": false
+                                    },
+                                    "polygonName": null
+                                },
+                                {
+                                    "id": "Expressa",
+                                    "name": "Expressa",
+                                    "shippingEstimate": "5bd",
+                                    "deliveryWindow": null,
+                                    "price": 1160,
+                                    "deliveryChannel": "delivery",
+                                    "pickupStoreInfo": {
+                                        "additionalInfo": null,
+                                        "address": null,
+                                        "dockId": null,
+                                        "friendlyName": null,
+                                        "isPickupStore": false
+                                    },
+                                    "polygonName": null
+                                },
+                                {
+                                    "id": "Quebra Kit",
+                                    "name": "Quebra Kit",
+                                    "shippingEstimate": "2bd",
+                                    "deliveryWindow": null,
+                                    "price": 1392,
+                                    "deliveryChannel": "delivery",
+                                    "pickupStoreInfo": {
+                                        "additionalInfo": null,
+                                        "address": null,
+                                        "dockId": null,
+                                        "friendlyName": null,
+                                        "isPickupStore": false
+                                    },
+                                    "polygonName": null
+                                },
+                                {
+                                    "id": "Sob Encomenda",
+                                    "name": "Sob Encomenda",
+                                    "shippingEstimate": "32bd",
+                                    "deliveryWindow": null,
+                                    "price": 1392,
+                                    "deliveryChannel": "delivery",
+                                    "pickupStoreInfo": {
+                                        "additionalInfo": null,
+                                        "address": null,
+                                        "dockId": null,
+                                        "friendlyName": null,
+                                        "isPickupStore": false
+                                    },
+                                    "polygonName": null
+                                }
+                            ],
+                            "shipsTo": [
+                                "BRA"
+                            ],
+                            "deliveryIds": [
+                                {
+                                    "courierId": "197a56f",
+                                    "courierName": "Todos os CEPS",
+                                    "dockId": "1",
+                                    "quantity": 1,
+                                    "warehouseId": "1_1"
+                                }
+                            ],
+                            "deliveryChannel": "delivery",
+                            "pickupStoreInfo": {
+                                "additionalInfo": null,
+                                "address": null,
+                                "dockId": null,
+                                "friendlyName": null,
+                                "isPickupStore": false
+                            },
+                            "addressId": "-1425945657910",
+                            "polygonName": null
+                        },
+                        "$schema": "http://json-schema.org/schema#"
+                    },
+                    "description": ""
+                },
+                "trackingHints": {
+                    "type": [
+                        "null",
+                        "array"
+                    ],
+                    "items": {
+                        "type": [
+                            "null",
+                            "object"
+                        ],
+                        "properties": {
+                            "courierName": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "trackingId": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "trackingLabel": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "trackingUrl": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "selectedAddresses": {
+                    "type": "array",
+                    "items": {
+                        "title": "SelectedAddress",
+                        "type": "object",
+                        "properties": {
+                            "addressId": {
+                                "type": "string"
+                            },
+                            "addressType": {
+                                "type": "string"
+                            },
+                            "receiverName": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "street": {
+                                "type": "string"
+                            },
+                            "number": {
+                                "type": "string"
+                            },
+                            "complement": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "neighborhood": {
+                                "type": "string"
+                            },
+                            "postalCode": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "reference": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "geoCoordinates": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                },
+                                "description": ""
+                            }
+                        },
+                        "example": {
+                            "addressId": "-1425945657910",
+                            "addressType": "residential",
+                            "receiverName": "Rodrigo Cunha",
+                            "street": "Praia de Botafogo",
+                            "number": "518",
+                            "complement": "10",
+                            "neighborhood": "Botafogo",
+                            "postalCode": "22250-040",
+                            "city": "Rio de Janeiro",
+                            "state": "RJ",
+                            "country": "BRA",
+                            "reference": null,
+                            "geoCoordinates": []
+                        },
+                        "$schema": "http://json-schema.org/schema#"
+                    },
+                    "description": ""
+                }
+            },
+            "example": {
+                "id": "shippingData",
+                "address": {
+                    "addressType": "residential",
+                    "receiverName": "Rodrigo Cunha",
+                    "addressId": "-1425945657910",
+                    "postalCode": "22250-040",
+                    "city": "Rio de Janeiro",
+                    "state": "RJ",
+                    "country": "BRA",
+                    "street": "Praia de Botafogo",
+                    "number": "300",
+                    "neighborhood": "Botafogo",
+                    "complement": "3",
+                    "reference": null,
+                    "geoCoordinates": []
+                },
+                "logisticsInfo": [
+                    {
+                        "itemIndex": 0,
+                        "selectedSla": "Normal",
+                        "lockTTL": "10d",
+                        "price": 1160,
+                        "listPrice": 1160,
+                        "sellingPrice": 1160,
+                        "deliveryWindow": null,
+                        "deliveryCompany": "Todos os CEPS",
+                        "shippingEstimate": "5bd",
+                        "shippingEstimateDate": "2019-02-04T20:33:46.4595004+00:00",
+                        "slas": [
+                            {
+                                "id": "Normal",
+                                "name": "Normal",
+                                "shippingEstimate": "5bd",
+                                "deliveryWindow": null,
+                                "price": 1160,
+                                "deliveryChannel": "delivery",
+                                "pickupStoreInfo": {
+                                    "additionalInfo": null,
+                                    "address": null,
+                                    "dockId": null,
+                                    "friendlyName": null,
+                                    "isPickupStore": false
+                                },
+                                "polygonName": null
+                            },
+                            {
+                                "id": "Expressa",
+                                "name": "Expressa",
+                                "shippingEstimate": "5bd",
+                                "deliveryWindow": null,
+                                "price": 1160,
+                                "deliveryChannel": "delivery",
+                                "pickupStoreInfo": {
+                                    "additionalInfo": null,
+                                    "address": null,
+                                    "dockId": null,
+                                    "friendlyName": null,
+                                    "isPickupStore": false
+                                },
+                                "polygonName": null
+                            },
+                            {
+                                "id": "Quebra Kit",
+                                "name": "Quebra Kit",
+                                "shippingEstimate": "2bd",
+                                "deliveryWindow": null,
+                                "price": 1392,
+                                "deliveryChannel": "delivery",
+                                "pickupStoreInfo": {
+                                    "additionalInfo": null,
+                                    "address": null,
+                                    "dockId": null,
+                                    "friendlyName": null,
+                                    "isPickupStore": false
+                                },
+                                "polygonName": null
+                            },
+                            {
+                                "id": "Sob Encomenda",
+                                "name": "Sob Encomenda",
+                                "shippingEstimate": "32bd",
+                                "deliveryWindow": null,
+                                "price": 1392,
+                                "deliveryChannel": "delivery",
+                                "pickupStoreInfo": {
+                                    "additionalInfo": null,
+                                    "address": null,
+                                    "dockId": null,
+                                    "friendlyName": null,
+                                    "isPickupStore": false
+                                },
+                                "polygonName": null
+                            }
+                        ],
+                        "shipsTo": [
+                            "BRA"
+                        ],
+                        "deliveryIds": [
+                            {
+                                "courierId": "197a56f",
+                                "courierName": "Todos os CEPS",
+                                "dockId": "1",
+                                "quantity": 1,
+                                "warehouseId": "1_1"
+                            }
+                        ],
+                        "deliveryChannel": "delivery",
+                        "pickupStoreInfo": {
+                            "additionalInfo": null,
+                            "address": null,
+                            "dockId": null,
+                            "friendlyName": null,
+                            "isPickupStore": false
+                        },
+                        "addressId": "-1425945657910",
+                        "polygonName": null
+                    }
+                ],
+                "trackingHints": null,
+                "selectedAddresses": [
+                    {
+                        "addressId": "-1425945657910",
+                        "addressType": "residential",
+                        "receiverName": "Rodrigo Cunha",
+                        "street": "Praia de Botafogo",
+                        "number": "518",
+                        "complement": "10",
+                        "neighborhood": "Botafogo",
+                        "postalCode": "22250-040",
+                        "city": "Rio de Janeiro",
+                        "state": "RJ",
+                        "country": "BRA",
+                        "reference": null,
+                        "geoCoordinates": []
+                    }
+                ]
+            },
+            "$schema": "http://json-schema.org/schema#"
+        },
+        "paymentData": {
+            "title": "PaymentData",
+            "type": "object",
+            "properties": {
+                "transactions": {
+                    "type": "array",
+                    "items": {
+                        "title": "Transaction",
+                        "type": "object",
+                        "properties": {
+                            "isActive": {
+                                "type": "boolean"
+                            },
+                            "transactionId": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "merchantName": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "payments": {
+                                "type": "array",
+                                "items": {
+                                    "title": "Payment",
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "paymentSystem": {
+                                            "type": "string"
+                                        },
+                                        "paymentSystemName": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "number"
+                                        },
+                                        "installments": {
+                                            "type": "number"
+                                        },
+                                        "referenceValue": {
+                                            "type": "number"
+                                        },
+                                        "cardHolder": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "cardNumber": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "firstDigits": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "lastDigits": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "cvv2": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "expireMonth": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "expireYear": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "url": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "giftCardId": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "giftCardName": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "giftCardCaption": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "redemptionCode": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "group": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "tid": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "dueDate": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "connectorResponses": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "example": {
+                                        "id": "D3DEECAB3C6C4B9EAF8EF4C1FE062FF3",
+                                        "paymentSystem": "6",
+                                        "paymentSystemName": "Boleto Banc\u00e1rio",
+                                        "value": 4450,
+                                        "installments": 1,
+                                        "referenceValue": 4450,
+                                        "cardHolder": null,
+                                        "cardNumber": null,
+                                        "firstDigits": null,
+                                        "lastDigits": null,
+                                        "cvv2": null,
+                                        "expireMonth": null,
+                                        "expireYear": null,
+                                        "url": "https://luxstore.vtexpayments.com.br:443/BankIssuedInvoice/Transaction/418213DE29634837A63DD693A937A696/Payment/D3DEECAB3C6C4B9EAF8EF4C1FE062FF3/Installment/{Installment}",
+                                        "giftCardId": null,
+                                        "giftCardName": null,
+                                        "giftCardCaption": null,
+                                        "redemptionCode": null,
+                                        "group": "bankInvoice",
+                                        "tid": null,
+                                        "dueDate": "2019-02-02",
+                                        "connectorResponses": {}
+                                    },
+                                    "$schema": "http://json-schema.org/schema#"
+                                },
+                                "description": ""
+                            }
+                        },
+                        "example": {
+                            "isActive": true,
+                            "transactionId": "418213DE29634837A63DD693A937A696",
+                            "merchantName": "luxstore",
+                            "payments": [
+                                {
+                                    "id": "D3DEECAB3C6C4B9EAF8EF4C1FE062FF3",
+                                    "paymentSystem": "6",
+                                    "paymentSystemName": "Boleto Banc\u00e1rio",
+                                    "value": 4450,
+                                    "installments": 1,
+                                    "referenceValue": 4450,
+                                    "cardHolder": null,
+                                    "cardNumber": null,
+                                    "firstDigits": null,
+                                    "lastDigits": null,
+                                    "cvv2": null,
+                                    "expireMonth": null,
+                                    "expireYear": null,
+                                    "url": "https://luxstore.vtexpayments.com.br:443/BankIssuedInvoice/Transaction/418213DE29634837A63DD693A937A696/Payment/D3DEECAB3C6C4B9EAF8EF4C1FE062FF3/Installment/{Installment}",
+                                    "giftCardId": null,
+                                    "giftCardName": null,
+                                    "giftCardCaption": null,
+                                    "redemptionCode": null,
+                                    "group": "bankInvoice",
+                                    "tid": null,
+                                    "dueDate": "2019-02-02",
+                                    "connectorResponses": {}
+                                }
+                            ]
+                        },
+                        "$schema": "http://json-schema.org/schema#"
+                    },
+                    "description": ""
+                }
+            },
+            "example": {
+                "transactions": [
+                    {
+                        "isActive": true,
+                        "transactionId": "418213DE29634837A63DD693A937A696",
+                        "merchantName": "luxstore",
+                        "payments": [
+                            {
+                                "id": "D3DEECAB3C6C4B9EAF8EF4C1FE062FF3",
+                                "paymentSystem": "6",
+                                "paymentSystemName": "Boleto Banc\u00e1rio",
+                                "value": 4450,
+                                "installments": 1,
+                                "referenceValue": 4450,
+                                "cardHolder": null,
+                                "cardNumber": null,
+                                "firstDigits": null,
+                                "lastDigits": null,
+                                "cvv2": null,
+                                "expireMonth": null,
+                                "expireYear": null,
+                                "url": "https://luxstore.vtexpayments.com.br:443/BankIssuedInvoice/Transaction/418213DE29634837A63DD693A937A696/Payment/D3DEECAB3C6C4B9EAF8EF4C1FE062FF3/Installment/{Installment}",
+                                "giftCardId": null,
+                                "giftCardName": null,
+                                "giftCardCaption": null,
+                                "redemptionCode": null,
+                                "group": "bankInvoice",
+                                "tid": null,
+                                "dueDate": "2019-02-02",
+                                "connectorResponses": {}
+                            }
+                        ]
+                    }
+                ]
+            },
+            "$schema": "http://json-schema.org/schema#"
+        },
+        "packageAttachment": {
+            "title": "PackageAttachment",
+            "type": "object",
+            "properties": {
+                "packages": {
+                    "type": "array",
+                    "items": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "EnableInferItems": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "cfop": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "courier": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "courierStatus": {
+                                "type": [
+                                    "object",
+                                    "null"
+                                ],
+                                "properties": {
+                                    "data": {
+                                        "type": [
+                                            "array",
+                                            "null"
+                                        ],
+                                        "items": {
+                                            "type": [
+                                                "object",
+                                                "null"
+                                            ],
+                                            "properties": {
+                                                "city": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "createDate": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "description": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "lastChange": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "state": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "deliveredDate": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "finished": {
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
+                                    },
+                                    "status": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                }
+                            },
+                            "embeddedInvoice": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "invoiceKey": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "invoiceNumber": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "invoiceUrl": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "invoiceValue": {
+                                "type": [
+                                    "null",
+                                    "number"
+                                ]
+                            },
+                            "issuanceDate": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "description": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "itemIndex": {
+                                            "type": [
+                                                "null",
+                                                "number"
+                                            ]
+                                        },
+                                        "price": {
+                                            "type": [
+                                                "null",
+                                                "number"
+                                            ]
+                                        },
+                                        "quantity": {
+                                            "type": [
+                                                "null",
+                                                "number"
+                                            ]
+                                        },
+                                        "unitMultiplier": {
+                                            "type": [
+                                                "null",
+                                                "number"
+                                            ]
+                                        }
+                                    }
+                                }
+                            },
+                            "trackingNumber": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "trackingUrl": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "type": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "volumes": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            }
+                        }
+                    },
+                    "description": ""
+                }
+            },
+            "example": {
+                "packages": []
+            },
+            "$schema": "http://json-schema.org/schema#"
+        },
+        "sellers": {
+            "type": "array",
+            "items": {
+                "title": "Seller",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "logo": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "example": {
+                    "id": "1",
+                    "name": "Loja do Suporte",
+                    "logo": ""
+                },
+                "$schema": "http://json-schema.org/schema#"
+            },
+            "description": ""
+        },
+        "callCenterOperatorData": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "followUpEmail": {
+            "type": "string"
+        },
+        "lastMessage": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "hostname": {
+            "type": "string"
+        },
+        "invoiceData": {
+            "type": [
+                "null",
+                "object"
+            ]
+        },
+        "changesAttachment": {
+            "title": "ChangesAttachment",
+            "type": [
+                "object",
+                "null"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "changesData": {
+                    "type": "array",
+                    "items": {
+                        "title": "ChangesDatum",
+                        "type": "object",
+                        "properties": {
+                            "reason": {
+                                "type": "string"
+                            },
+                            "discountValue": {
+                                "type": "number"
+                            },
+                            "incrementValue": {
+                                "type": "number"
+                            },
+                            "itemsAdded": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": ""
+                            },
+                            "itemsRemoved": {
+                                "type": "array",
+                                "items": {
+                                    "title": "ItemsRemoved",
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "price": {
+                                            "type": "number"
+                                        },
+                                        "unitMultiplier": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        }
+                                    },
+                                    "example": {
+                                        "id": "1234568358",
+                                        "name": "Bay Max L",
+                                        "quantity": 1,
+                                        "price": 3290,
+                                        "unitMultiplier": null
+                                    },
+                                    "$schema": "http://json-schema.org/schema#"
+                                },
+                                "description": ""
+                            },
+                            "receipt": {
+                                "title": "Receipt",
+                                "type": "object",
+                                "properties": {
+                                    "date": {
+                                        "type": "string"
+                                    },
+                                    "orderId": {
+                                        "type": "string"
+                                    },
+                                    "receipt": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "date": "2019-02-06T20:46:04.4003606+00:00",
+                                    "orderId": "v5195004lux-01",
+                                    "receipt": "029f9ab8-751a-4b1e-bf81-7dd25d14b49b"
+                                },
+                                "$schema": "http://json-schema.org/schema#"
+                            }
+                        },
+                        "example": {
+                            "reason": "Blah",
+                            "discountValue": 3290,
+                            "incrementValue": 0,
+                            "itemsAdded": [],
+                            "itemsRemoved": [
+                                {
+                                    "id": "1234568358",
+                                    "name": "Bay Max L",
+                                    "quantity": 1,
+                                    "price": 3290,
+                                    "unitMultiplier": null
+                                }
+                            ],
+                            "receipt": {
+                                "date": "2019-02-06T20:46:04.4003606+00:00",
+                                "orderId": "v5195004lux-01",
+                                "receipt": "029f9ab8-751a-4b1e-bf81-7dd25d14b49b"
+                            }
+                        },
+                        "$schema": "http://json-schema.org/schema#"
+                    },
+                    "description": ""
+                }
+            },
+            "example": {
+                "id": "changeAttachment",
+                "changesData": [
+                    {
+                        "reason": "Blah",
+                        "discountValue": 3290,
+                        "incrementValue": 0,
+                        "itemsAdded": [],
+                        "itemsRemoved": [
+                            {
+                                "id": "1234568358",
+                                "name": "Bay Max L",
+                                "quantity": 1,
+                                "price": 3290,
+                                "unitMultiplier": null
+                            }
+                        ],
+                        "receipt": {
+                            "date": "2019-02-06T20:46:04.4003606+00:00",
+                            "orderId": "v5195004lux-01",
+                            "receipt": "029f9ab8-751a-4b1e-bf81-7dd25d14b49b"
+                        }
+                    }
+                ]
+            },
+            "$schema": "http://json-schema.org/schema#"
+        },
+        "openTextField": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "value": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "roundingError": {
+            "type": "number"
+        },
+        "orderFormId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "commercialConditionData": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "isCompleted": {
+            "type": "boolean"
+        },
+        "customData": {
+            "type": [
+                "null",
+                "object"
+            ],
+            "properties": {
+                "customApps": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "fields": {
+                                "type": "object",
+                                "properties": {
+                                    "marketplacePaymentMethod": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                }
+                            },
+                            "id": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "major": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "storePreferencesData": {
+            "title": "StorePreferencesData",
+            "type": "object",
+            "properties": {
+                "countryCode": {
+                    "type": "string"
+                },
+                "currencyCode": {
+                    "type": "string"
+                },
+                "currencyFormatInfo": {
+                    "title": "CurrencyFormatInfo",
+                    "type": "object",
+                    "properties": {
+                        "CurrencyDecimalDigits": {
+                            "type": "number"
+                        },
+                        "CurrencyDecimalSeparator": {
+                            "type": "string"
+                        },
+                        "CurrencyGroupSeparator": {
+                            "type": "string"
+                        },
+                        "CurrencyGroupSize": {
+                            "type": "number"
+                        },
+                        "StartsWithCurrencySymbol": {
+                            "type": "boolean"
+                        }
+                    },
+                    "example": {
+                        "CurrencyDecimalDigits": 2,
+                        "CurrencyDecimalSeparator": ",",
+                        "CurrencyGroupSeparator": ".",
+                        "CurrencyGroupSize": 3,
+                        "StartsWithCurrencySymbol": true
+                    },
+                    "$schema": "http://json-schema.org/schema#"
+                },
+                "currencyLocale": {
+                    "type": "number"
+                },
+                "currencySymbol": {
+                    "type": "string"
+                },
+                "timeZone": {
+                    "type": "string"
+                }
+            },
+            "example": {
+                "countryCode": "BRA",
+                "currencyCode": "BRL",
+                "currencyFormatInfo": {
+                    "CurrencyDecimalDigits": 2,
+                    "CurrencyDecimalSeparator": ",",
+                    "CurrencyGroupSeparator": ".",
+                    "CurrencyGroupSize": 3,
+                    "StartsWithCurrencySymbol": true
+                },
+                "currencyLocale": 1046,
+                "currencySymbol": "R$",
+                "timeZone": "E. South America Standard Time"
+            },
+            "$schema": "http://json-schema.org/schema#"
+        },
+        "allowCancellation": {
+            "type": "boolean"
+        },
+        "allowEdition": {
+            "type": "boolean"
+        },
+        "isCheckedIn": {
+            "type": "boolean"
+        },
+        "marketplace": {
+            "title": "Marketplace",
+            "type": "object",
+            "properties": {
+                "baseURL": {
+                    "type": "string"
+                },
+                "isCertified": {
+                    "type": [
+                        "null",
+                        "boolean"
+                    ]
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "example": {
+                "baseURL": "http://oms.vtexinternal.com.br/api/oms?an=luxstore",
+                "isCertified": null,
+                "name": "luxstore"
+            },
+            "$schema": "http://json-schema.org/schema#"
+        },
+        "authorizedDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "invoicedDate": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    },
+    "example": {
+        "emailTracked": "a27499cad31f42b7a771ae34f57c8358@ct.vtex.com.br",
+        "approvedBy": null,
+        "cancelledBy": null,
+        "cancelReason": null,
+        "orderId": "v5195004lux-01",
+        "sequence": "502556",
+        "marketplaceOrderId": "",
+        "marketplaceServicesEndpoint": "http://oms.vtexinternal.com.br/api/oms?an=luxstore",
+        "sellerOrderId": "00-v5195004lux-01",
+        "origin": "Marketplace",
+        "affiliateId": "",
+        "salesChannel": "1",
+        "merchantName": null,
+        "status": "handling",
+        "statusDescription": "Preparando Entrega",
+        "value": 1160,
+        "creationDate": "2019-01-28T20:09:43.899958+00:00",
+        "lastChange": "2019-02-06T20:46:11.7010747+00:00",
+        "orderGroup": null,
+        "totals": [
+            {
+                "id": "Items",
+                "name": "Total dos Itens",
+                "value": 3290
+            },
+            {
+                "id": "Discounts",
+                "name": "Total dos Descontos",
+                "value": 0
+            },
+            {
+                "id": "Shipping",
+                "name": "Total do Frete",
+                "value": 1160
+            },
+            {
+                "id": "Tax",
+                "name": "Total da Taxa",
+                "value": 0
+            },
+            {
+                "id": "Change",
+                "name": "Total das mudan\u00e7as",
+                "value": -3290
+            }
+        ],
+        "items": [
+            {
+                "uniqueId": "87F0945396994B349158C7D9C9941442",
+                "id": "1234568358",
+                "productId": "9429485",
+                "ean": null,
+                "lockId": "00-v5195004lux-01",
+                "itemAttachment": {
+                    "content": {},
+                    "name": null
+                },
+                "attachments": [],
+                "quantity": 1,
+                "seller": "1",
+                "name": "Bay Max L",
+                "refId": "BIGHEROBML",
+                "price": 3290,
+                "listPrice": 3290,
+                "manualPrice": null,
+                "priceTags": [],
+                "imageUrl": "http://luxstore.vteximg.com.br/arquivos/ids/159263-55-55/image-cc1aed75cbfa424a85a94900be3eacec.jpg?v=636795432619830000",
+                "detailUrl": "/bay-max-9429485/p",
+                "components": [],
+                "bundleItems": [],
+                "params": [],
+                "offerings": [],
+                "sellerSku": "1234568358",
+                "priceValidUntil": null,
+                "commission": 0,
+                "tax": 0,
+                "preSaleDate": null,
+                "additionalInfo": {
+                    "brandName": "VTEX",
+                    "brandId": "2000023",
+                    "categoriesIds": "/1/",
+                    "productClusterId": "135,142",
+                    "commercialConditionId": "5",
+                    "dimension": {
+                        "cubicweight": 0.7031,
+                        "height": 15,
+                        "length": 15,
+                        "weight": 15,
+                        "width": 15
+                    },
+                    "offeringInfo": null,
+                    "offeringType": null,
+                    "offeringTypeId": null
+                },
+                "measurementUnit": "un",
+                "unitMultiplier": 1,
+                "sellingPrice": 3290,
+                "isGift": false,
+                "shippingPrice": null,
+                "rewardValue": 0,
+                "freightCommission": 0,
+                "priceDefinitions": null,
+                "taxCode": null,
+                "parentItemIndex": null,
+                "parentAssemblyBinding": null
+            }
+        ],
+        "marketplaceItems": [],
+        "clientProfileData": {
+            "id": "clientProfileData",
+            "email": "rodrigo.cunha@vtex.com.br",
+            "firstName": "Rodrigo",
+            "lastName": "VTEX",
+            "documentType": "cpf",
+            "document": "11047867702",
+            "phone": "+5521972321094",
+            "corporateName": null,
+            "tradeName": null,
+            "corporateDocument": null,
+            "stateInscription": null,
+            "corporatePhone": null,
+            "isCorporate": false,
+            "userProfileId": "5a3692de-358a-4bea-8885-044bce33bb93",
+            "customerClass": null
+        },
+        "giftRegistryData": null,
+        "marketingData": null,
+        "ratesAndBenefitsData": {
+            "id": "ratesAndBenefitsData",
+            "rateAndBenefitsIdentifiers": []
+        },
+        "shippingData": {
+            "id": "shippingData",
+            "address": {
+                "addressType": "residential",
+                "receiverName": "Rodrigo Cunha",
+                "addressId": "-1425945657910",
+                "postalCode": "22250-040",
+                "city": "Rio de Janeiro",
+                "state": "RJ",
+                "country": "BRA",
+                "street": "Praia de Botafogo",
+                "number": "300",
+                "neighborhood": "Botafogo",
+                "complement": "3",
+                "reference": null,
+                "geoCoordinates": []
+            },
+            "logisticsInfo": [
+                {
+                    "itemIndex": 0,
+                    "selectedSla": "Normal",
+                    "lockTTL": "10d",
+                    "price": 1160,
+                    "listPrice": 1160,
+                    "sellingPrice": 1160,
+                    "deliveryWindow": null,
+                    "deliveryCompany": "Todos os CEPS",
+                    "shippingEstimate": "5bd",
+                    "shippingEstimateDate": "2019-02-04T20:33:46.4595004+00:00",
+                    "slas": [
+                        {
+                            "id": "Normal",
+                            "name": "Normal",
+                            "shippingEstimate": "5bd",
+                            "deliveryWindow": null,
+                            "price": 1160,
+                            "deliveryChannel": "delivery",
+                            "pickupStoreInfo": {
+                                "additionalInfo": null,
+                                "address": null,
+                                "dockId": null,
+                                "friendlyName": null,
+                                "isPickupStore": false
+                            },
+                            "polygonName": null
+                        },
+                        {
+                            "id": "Expressa",
+                            "name": "Expressa",
+                            "shippingEstimate": "5bd",
+                            "deliveryWindow": null,
+                            "price": 1160,
+                            "deliveryChannel": "delivery",
+                            "pickupStoreInfo": {
+                                "additionalInfo": null,
+                                "address": null,
+                                "dockId": null,
+                                "friendlyName": null,
+                                "isPickupStore": false
+                            },
+                            "polygonName": null
+                        },
+                        {
+                            "id": "Quebra Kit",
+                            "name": "Quebra Kit",
+                            "shippingEstimate": "2bd",
+                            "deliveryWindow": null,
+                            "price": 1392,
+                            "deliveryChannel": "delivery",
+                            "pickupStoreInfo": {
+                                "additionalInfo": null,
+                                "address": null,
+                                "dockId": null,
+                                "friendlyName": null,
+                                "isPickupStore": false
+                            },
+                            "polygonName": null
+                        },
+                        {
+                            "id": "Sob Encomenda",
+                            "name": "Sob Encomenda",
+                            "shippingEstimate": "32bd",
+                            "deliveryWindow": null,
+                            "price": 1392,
+                            "deliveryChannel": "delivery",
+                            "pickupStoreInfo": {
+                                "additionalInfo": null,
+                                "address": null,
+                                "dockId": null,
+                                "friendlyName": null,
+                                "isPickupStore": false
+                            },
+                            "polygonName": null
+                        }
+                    ],
+                    "shipsTo": [
+                        "BRA"
+                    ],
+                    "deliveryIds": [
+                        {
+                            "courierId": "197a56f",
+                            "courierName": "Todos os CEPS",
+                            "dockId": "1",
+                            "quantity": 1,
+                            "warehouseId": "1_1"
+                        }
+                    ],
+                    "deliveryChannel": "delivery",
+                    "pickupStoreInfo": {
+                        "additionalInfo": null,
+                        "address": null,
+                        "dockId": null,
+                        "friendlyName": null,
+                        "isPickupStore": false
+                    },
+                    "addressId": "-1425945657910",
+                    "polygonName": null
+                }
+            ],
+            "trackingHints": null,
+            "selectedAddresses": [
+                {
+                    "addressId": "-1425945657910",
+                    "addressType": "residential",
+                    "receiverName": "Rodrigo Cunha",
+                    "street": "Praia de Botafogo",
+                    "number": "518",
+                    "complement": "10",
+                    "neighborhood": "Botafogo",
+                    "postalCode": "22250-040",
+                    "city": "Rio de Janeiro",
+                    "state": "RJ",
+                    "country": "BRA",
+                    "reference": null,
+                    "geoCoordinates": []
+                }
+            ]
+        },
+        "paymentData": {
+            "transactions": [
+                {
+                    "isActive": true,
+                    "transactionId": "418213DE29634837A63DD693A937A696",
+                    "merchantName": "luxstore",
+                    "payments": [
+                        {
+                            "id": "D3DEECAB3C6C4B9EAF8EF4C1FE062FF3",
+                            "paymentSystem": "6",
+                            "paymentSystemName": "Boleto Banc\u00e1rio",
+                            "value": 4450,
+                            "installments": 1,
+                            "referenceValue": 4450,
+                            "cardHolder": null,
+                            "cardNumber": null,
+                            "firstDigits": null,
+                            "lastDigits": null,
+                            "cvv2": null,
+                            "expireMonth": null,
+                            "expireYear": null,
+                            "url": "https://luxstore.vtexpayments.com.br:443/BankIssuedInvoice/Transaction/418213DE29634837A63DD693A937A696/Payment/D3DEECAB3C6C4B9EAF8EF4C1FE062FF3/Installment/{Installment}",
+                            "giftCardId": null,
+                            "giftCardName": null,
+                            "giftCardCaption": null,
+                            "redemptionCode": null,
+                            "group": "bankInvoice",
+                            "tid": null,
+                            "dueDate": "2019-02-02",
+                            "connectorResponses": {}
+                        }
+                    ]
+                }
+            ]
+        },
+        "packageAttachment": {
+            "packages": []
+        },
+        "sellers": [
+            {
+                "id": "1",
+                "name": "Loja do Suporte",
+                "logo": ""
+            }
+        ],
+        "callCenterOperatorData": null,
+        "followUpEmail": "7bf3a59bbc56402c810bda9521ba449e@ct.vtex.com.br",
+        "lastMessage": null,
+        "hostname": "luxstore",
+        "invoiceData": null,
+        "changesAttachment": {
+            "id": "changeAttachment",
+            "changesData": [
+                {
+                    "reason": "Blah",
+                    "discountValue": 3290,
+                    "incrementValue": 0,
+                    "itemsAdded": [],
+                    "itemsRemoved": [
+                        {
+                            "id": "1234568358",
+                            "name": "Bay Max L",
+                            "quantity": 1,
+                            "price": 3290,
+                            "unitMultiplier": null
+                        }
+                    ],
+                    "receipt": {
+                        "date": "2019-02-06T20:46:04.4003606+00:00",
+                        "orderId": "v5195004lux-01",
+                        "receipt": "029f9ab8-751a-4b1e-bf81-7dd25d14b49b"
+                    }
+                }
+            ]
+        },
+        "openTextField": null,
+        "roundingError": 0,
+        "orderFormId": "caae7471333e403f959fa5fd66951340",
+        "commercialConditionData": null,
+        "isCompleted": true,
+        "customData": null,
+        "storePreferencesData": {
+            "countryCode": "BRA",
+            "currencyCode": "BRL",
+            "currencyFormatInfo": {
+                "CurrencyDecimalDigits": 2,
+                "CurrencyDecimalSeparator": ",",
+                "CurrencyGroupSeparator": ".",
+                "CurrencyGroupSize": 3,
+                "StartsWithCurrencySymbol": true
+            },
+            "currencyLocale": 1046,
+            "currencySymbol": "R$",
+            "timeZone": "E. South America Standard Time"
+        },
+        "allowCancellation": false,
+        "allowEdition": false,
+        "isCheckedIn": false,
+        "marketplace": {
+            "baseURL": "http://oms.vtexinternal.com.br/api/oms?an=luxstore",
+            "isCertified": null,
+            "name": "luxstore"
+        },
+        "authorizedDate": "2019-01-28T20:33:04+00:00",
+        "invoicedDate": null
+    },
+    "$schema": "http://json-schema.org/schema#"
+}
