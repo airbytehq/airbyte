@@ -7,6 +7,7 @@ package io.airbyte.oauth.flows;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
@@ -22,36 +23,35 @@ import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 /**
- * Following docs from
- * https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow
+ * Following docs from https://developers.facebook.com/docs/instagram-basic-display-api/overview
  */
-public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
+public class InstagramOAuthFlow extends BaseOAuthFlow {
 
-  private static final String ACCESS_TOKEN_URL = "https://graph.facebook.com/v12.0/oauth/access_token";
-  private static final String AUTH_CODE_TOKEN_URL = "https://www.facebook.com/v12.0/dialog/oauth";
-  private static final String SCOPES = "ads_management,ads_read,read_insights";
+  private static final String AUTHORIZE_URL = "https://api.instagram.com/oauth/authorize";
+  private static final String ACCESS_TOKEN_URL = "https://api.instagram.com/oauth/access_token";
+  private static final String LONG_LIVED_ACCESS_TOKEN_URL = "https://graph.instagram.com/access_token";
+  private static final String SCOPES = "user_profile,user_media";
 
-  public FacebookMarketingOAuthFlow(final ConfigRepository configRepository) {
+  public InstagramOAuthFlow(final ConfigRepository configRepository) {
     super(configRepository);
   }
 
   @VisibleForTesting
-  FacebookMarketingOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+  InstagramOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
   protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
     try {
-      return new URIBuilder(AUTH_CODE_TOKEN_URL)
-          // required
+      return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
-          .addParameter("state", getState())
-          // optional
+          .addParameter("response_type", "code")
           .addParameter("scope", SCOPES)
+          .addParameter("state", getState())
           .build().toString();
-    } catch (final URISyntaxException e) {
+    } catch (URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
@@ -62,11 +62,9 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
-    // Facebook does not have refresh token but calls it "long lived access token" instead:
-    // see https://developers.facebook.com/docs/facebook-login/access-tokens/refreshing
-    Preconditions.checkArgument(data.has("access_token"), "Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL);
-    return Map.of("access_token", data.get("access_token").asText());
+  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+    return ImmutableMap.<String, String>builder().putAll(super.getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))
+        .put("grant_type", "authorization_code").build();
   }
 
   @Override
@@ -76,30 +74,27 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
                                                   final String redirectUrl,
                                                   JsonNode oAuthParamConfig)
       throws IOException {
-    // Access tokens generated via web login are short-lived tokens
-    // they arre valid for 1 hour and need to be exchanged for long-lived access token
-    // https://developers.facebook.com/docs/facebook-login/access-tokens (Short-Term Tokens and
-    // Long-Term Tokens section)
+    // On this step we obtained Short-lived Access token
+    // https://developers.facebook.com/docs/instagram-basic-display-api/overview#short-lived-access-tokens
+    // It's valid for 1 hour and have to be exchanged for long-lived access token
     final Map<String, Object> data = super.completeOAuthFlow(clientId, clientSecret, authCode, redirectUrl, oAuthParamConfig);
-    Preconditions.checkArgument(data.containsKey("access_token"));
-    final String shortLivedAccessToken = (String) data.get("access_token");
-    final String longLivedAccessToken = getLongLivedAccessToken(clientId, clientSecret, shortLivedAccessToken);
+    Preconditions.checkArgument(data.containsKey("credentials"));
+    final String shortLivedAccessToken = (String) ((Map) data.get("credentials")).get("access_token");
+    final String longLivedAccessToken = getLongLivedAccessToken(clientSecret, shortLivedAccessToken);
     return Map.of("access_token", longLivedAccessToken);
   }
 
-  private String getLongLivedAccessToken(final String clientId, final String clientSecret, final String shortLivedAccessToken) throws IOException {
+  private String getLongLivedAccessToken(final String clientSecret, final String shortLivedAccessToken) throws IOException {
     // Exchange Short-lived Access token for Long-lived one
-    // https://developers.facebook.com/docs/facebook-login/access-tokens/refreshing
-    // It's valid for 60 days and resreshed once per day if using in requests.
-    // If no requests are made, the token will expire after about 60 days and
-    // the person will have to go through the login flow again to get a new
-    // token.
+    // https://developers.facebook.com/docs/instagram-basic-display-api/guides/long-lived-access-tokens#get-a-long-lived-token
+    // It's valid for 60 days and need to be refreshed by connector by calling /refresh_access_token
+    // endpoint:
+    // https://developers.facebook.com/docs/instagram-basic-display-api/guides/long-lived-access-tokens#refresh-a-long-lived-token
     try {
-      final URI uri = new URIBuilder(ACCESS_TOKEN_URL)
+      final URI uri = new URIBuilder(LONG_LIVED_ACCESS_TOKEN_URL)
           .addParameter("client_secret", clientSecret)
-          .addParameter("client_id", clientId)
-          .addParameter("grant_type", "fb_exchange_token")
-          .addParameter("fb_exchange_token", shortLivedAccessToken)
+          .addParameter("grant_type", "ig_exchange_token")
+          .addParameter("access_token", shortLivedAccessToken)
           .build();
       final HttpRequest request = HttpRequest.newBuilder()
           .GET()

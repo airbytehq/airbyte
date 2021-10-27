@@ -31,6 +31,8 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository))
         .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository))
         .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository))
+        // Instagram connector use Facebook Marketing API
+        .put("airbyte/source-instagram", new FacebookMarketingOAuthFlow(configRepository))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
         .build();

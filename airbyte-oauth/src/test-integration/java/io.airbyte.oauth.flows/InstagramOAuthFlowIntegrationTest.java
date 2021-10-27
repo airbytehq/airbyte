@@ -24,10 +24,10 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
+public class InstagramOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
-  protected static final Path CREDENTIALS_PATH = Path.of("secrets/facebook_marketing.json");
-  protected static final String REDIRECT_URL = "http://localhost:9000/auth_flow";
+  protected static final Path CREDENTIALS_PATH = Path.of("secrets/instagram.json");
+  protected static final String REDIRECT_URL = "https://localhost:9000/auth_flow";
 
   @Override
   protected Path get_credentials_path() {
@@ -36,7 +36,7 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
 
   @Override
   protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new FacebookMarketingOAuthFlow(configRepository);
+    return new InstagramOAuthFlow(configRepository);
   }
 
   @BeforeEach
@@ -46,11 +46,16 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
 
   @Override
   protected int getServerListeningPort() {
-    return 9000;
+    // Since facebook/instagram doesnt allow to use plain HTTP insted of HTTPS
+    // for redirect URL, to test this I've setup nginx proxy for integration
+    // test server with redirection all https traffic from port 9000 to port
+    // 3000
+    // TODO: Add option for setting up HTTPS integration test server.
+    return 3000;
   }
 
   @Test
-  public void testFullFacebookMarketingOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
+  public void testFullInstagramOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
     final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
