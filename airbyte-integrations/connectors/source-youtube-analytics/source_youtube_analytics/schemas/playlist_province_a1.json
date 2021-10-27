@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "integer"
+    },
+    "channel_id": {
+      "type": "string"
+    },
+    "playlist_id": {
+      "type": "string"
+    },
+    "video_id": {
+      "type": "string"
+    },
+    "live_or_on_demand": {
+      "type": "string"
+    },
+    "subscribed_status": {
+      "type": "string"
+    },
+    "country_code": {
+      "type": "string"
+    },
+    "province_code": {
+      "type": "string"
+    },
+    "views": {
+      "type": "string"
+    },
+    "watch_time_minutes": {
+      "type": "number"
+    },
+    "average_view_duration_seconds": {
+      "type": "number"
+    },
+    "playlist_starts": {
+      "type": "string"
+    },
+    "playlist_saves_added": {
+      "type": "string"
+    },
+    "playlist_saves_removed": {
+      "type": "string"
+    }
+  }
+}

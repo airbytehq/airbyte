@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "integer"
+    },
+    "channel_id": {
+      "type": "string"
+    },
+    "video_id": {
+      "type": "string"
+    },
+    "live_or_on_demand": {
+      "type": "string"
+    },
+    "subscribed_status": {
+      "type": "string"
+    },
+    "country_code": {
+      "type": "string"
+    },
+    "annotation_type": {
+      "type": "string"
+    },
+    "annotation_id": {
+      "type": "string"
+    },
+    "annotation_impressions": {
+      "type": "string"
+    },
+    "annotation_clickable_impressions": {
+      "type": "string"
+    },
+    "annotation_clicks": {
+      "type": "string"
+    },
+    "annotation_click_through_rate": {
+      "type": "string"
+    },
+    "annotation_closable_impressions": {
+      "type": "string"
+    },
+    "annotation_closes": {
+      "type": "string"
+    },
+    "annotation_close_rate": {
+      "type": "string"
+    }
+  }
+}
