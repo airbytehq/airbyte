@@ -10,7 +10,6 @@ from typing import Dict, List, Optional, Tuple
 
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
-
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_json_naming
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
@@ -63,20 +62,20 @@ class StreamProcessor(object):
     """
 
     def __init__(
-            self,
-            stream_name: str,
-            destination_type: DestinationType,
-            raw_schema: str,
-            default_schema: str,
-            schema: str,
-            source_sync_mode: SyncMode,
-            destination_sync_mode: DestinationSyncMode,
-            cursor_field: List[str],
-            primary_key: List[List[str]],
-            json_column_name: str,
-            properties: Dict,
-            tables_registry: TableNameRegistry,
-            from_table: str,
+        self,
+        stream_name: str,
+        destination_type: DestinationType,
+        raw_schema: str,
+        default_schema: str,
+        schema: str,
+        source_sync_mode: SyncMode,
+        destination_sync_mode: DestinationSyncMode,
+        cursor_field: List[str],
+        primary_key: List[List[str]],
+        json_column_name: str,
+        properties: Dict,
+        tables_registry: TableNameRegistry,
+        from_table: str,
     ):
         """
         See StreamProcessor.create()
@@ -108,7 +107,7 @@ class StreamProcessor(object):
 
     @staticmethod
     def create_from_parent(
-            parent, child_name: str, json_column_name: str, properties: Dict, is_nested_array: bool, from_table: str
+        parent, child_name: str, json_column_name: str, properties: Dict, is_nested_array: bool, from_table: str
     ) -> "StreamProcessor":
         """
         @param parent is the Stream Processor that originally created this instance to handle a nested column from that parent table.
@@ -145,19 +144,19 @@ class StreamProcessor(object):
 
     @staticmethod
     def create(
-            stream_name: str,
-            destination_type: DestinationType,
-            raw_schema: str,
-            default_schema: str,
-            schema: str,
-            source_sync_mode: SyncMode,
-            destination_sync_mode: DestinationSyncMode,
-            cursor_field: List[str],
-            primary_key: List[List[str]],
-            json_column_name: str,
-            properties: Dict,
-            tables_registry: TableNameRegistry,
-            from_table: str,
+        stream_name: str,
+        destination_type: DestinationType,
+        raw_schema: str,
+        default_schema: str,
+        schema: str,
+        source_sync_mode: SyncMode,
+        destination_sync_mode: DestinationSyncMode,
+        cursor_field: List[str],
+        primary_key: List[List[str]],
+        json_column_name: str,
+        properties: Dict,
+        tables_registry: TableNameRegistry,
+        from_table: str,
     ) -> "StreamProcessor":
         """
         @param stream_name of the stream being processed
@@ -239,7 +238,7 @@ class StreamProcessor(object):
                 column_count=column_count,
                 suffix="scd",
                 subdir="scd",
-                unique_key=self.get_unique_key() + "_scd",
+                unique_key=self.name_transformer.normalize_column_name("_airbyte_unique_key_scd"),
                 partition_by=PartitionType.ACTIVE_ROW,
             )
             if self.destination_type == DestinationType.ORACLE:
@@ -625,21 +624,30 @@ from {{ from_table }} tmp
 with
 {{ '{% if is_incremental() %}' }}
 new_data as (
+    -- retrieve incremental "new" data
     select *
     from {{'{{'}} {{ from_table }}  {{'}}'}}
     {{ sql_table_comment }}
     where {{ airbyte_row_num }} = 1
     {{'{{'}} incremental_clause({{ quoted_col_emitted_at }}) {{'}}'}}
 ),
+new_data_ids as (
+    select distinct {{ col_ab_id }}
+    from new_data
+),
 previous_active_scd_data as (
+    -- retrieve "incomplete old" data that needs to be updated with an end date because of new changes
     select
         {{ '{{' }} star_intersect({{ from_table }}, this,
                                   from_alias='inc_data', intersect_alias='this_data',
                                   except=[{{ quoted_airbyte_row_num }}]) {{ '}}' }},
         1 as {{ airbyte_row_num }}
     from {{ '{{ this }}' }} as this_data
-    -- TODO join new_data on primary key to retrieve active data from primary keys that changed only
-    left join {{'{{'}} {{ from_table }}  {{'}}'}} as inc_data on 1 = 0 -- force left join to NULLs (to transfer column types only)
+    -- make a join with new_data using primary key to filter active data that need to be updated only
+    join new_data_ids on this_data.{{ col_ab_id }} = new_data_ids.{{ col_ab_id }}
+    left join {{'{{'}} {{ from_table }}  {{'}}'}} as inc_data
+    -- force left join to NULL values (we need to transfer column types only in star_intersect macro)
+    on 1 = 0
     where {{ active_row }} = 1
 ),
 input_data as (
@@ -692,6 +700,8 @@ scd_data as (
 ),
 stage_data as (
     select
+        -- we need to ensure de-duplicated rows for merge/update queries
+        -- additionally, we generate a unique key for the scd table
         row_number() over (
             partition by {{ unique_key }}, {{ airbyte_start_at }}, {{ col_emitted_at }}{{ cdc_cols }}
             order by {{ col_ab_id }}
@@ -744,10 +754,10 @@ from stage_data where {{ airbyte_row_num }} = 1
             cdc_active_row_pattern = f"and {col_cdc_deleted_at} is null "
             cdc_updated_order_pattern = f", {col_cdc_updated_at} desc"
             cdc_cols = (
-                    f", cast({col_cdc_deleted_at} as "
-                    + "{{ dbt_utils.type_string() }})"
-                    + f", cast({col_cdc_updated_at} as "
-                    + "{{ dbt_utils.type_string() }})"
+                f", cast({col_cdc_deleted_at} as "
+                + "{{ dbt_utils.type_string() }})"
+                + f", cast({col_cdc_updated_at} as "
+                + "{{ dbt_utils.type_string() }})"
             )
             quoted_cdc_cols = f", {quoted_col_cdc_deleted_at}, {quoted_col_cdc_updated_at}"
 
@@ -892,14 +902,14 @@ where 1 = 1
         return [column_names[field][0] for field in column_names]
 
     def add_to_outputs(
-            self,
-            sql: str,
-            is_intermediate: bool,
-            column_count: int = 0,
-            suffix: str = "",
-            unique_key: str = "",
-            subdir: str = "",
-            partition_by: PartitionType = PartitionType.DEFAULT,
+        self,
+        sql: str,
+        is_intermediate: bool,
+        column_count: int = 0,
+        suffix: str = "",
+        unique_key: str = "",
+        subdir: str = "",
+        partition_by: PartitionType = PartitionType.DEFAULT,
     ) -> str:
         config = {}
         schema = self.get_schema(is_intermediate)
@@ -914,11 +924,13 @@ where 1 = 1
             else:
                 # dbt throws "maximum recursion depth exceeded" exception at runtime
                 # if ephemeral is used with large number of columns, use views instead
+                # we also need views for the `star` & `star_intersect` macros to work on `_ab4` tables
                 output = os.path.join("airbyte_views", subdir, self.schema, file)
         else:
             if self.source_sync_mode == SyncMode.incremental:
                 output = os.path.join("airbyte_incremental", subdir, self.schema, file)
                 if suffix != "scd":
+                    # incremental is handled in the SCD SQL already
                     sql = self.add_incremental_clause(sql)
             else:
                 output = os.path.join("airbyte_tables", subdir, self.schema, file)
