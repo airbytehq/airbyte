@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.CopyJobConfiguration;
@@ -23,6 +24,7 @@ import com.google.cloud.bigquery.LoadJobConfiguration;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.common.base.Charsets;
@@ -46,6 +48,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +57,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +108,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
                 Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
       final BigQueryWriteConfig writer = writeConfigs.get(pair);
-
       // select the way of uploading - normal or through the GCS
       if (writer.getGcsCsvWriter() == null) {
         // Normal uploading way
@@ -120,6 +123,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
           throw new RuntimeException(e);
         }
       } else {
+        long emittedAtSeconds = TimeUnit.SECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+        recordMessage.setEmittedAt(emittedAtSeconds);
         // GCS uploading way, this data will be moved to bigquery in close method
         final GcsCsvWriter gcsCsvWriter = writer.getGcsCsvWriter();
         writeRecordToCsv(gcsCsvWriter, recordMessage);
@@ -134,7 +139,11 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     // use BQ helpers to string-format correctly.
     final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
     final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
-    final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
+    final ObjectNode formattedData = (ObjectNode) StandardNameTransformer.formatJsonPath(recordMessage.getData());
+    List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(schema);
+    if (!dateTimeFields.isEmpty()) {
+      BigQueryUtils.transformJsonDateTimeToBigDataFormat(recordMessage, dateTimeFields, formattedData);
+    }
     return Jsons.jsonNode(ImmutableMap.of(
         JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
         JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(formattedData),
@@ -157,6 +166,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       LOGGER.warn("An error occurred writing CSV file.");
     }
   }
+
 
   @Override
   public void close(final boolean hasFailed) {

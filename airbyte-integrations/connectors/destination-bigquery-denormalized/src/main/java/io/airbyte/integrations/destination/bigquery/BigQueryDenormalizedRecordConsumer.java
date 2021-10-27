@@ -40,10 +40,10 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
   private final Set<String> invalidKeys;
 
   public BigQueryDenormalizedRecordConsumer(final BigQuery bigquery,
-                                            final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector,
-                                            final StandardNameTransformer namingResolver) {
+      final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final StandardNameTransformer namingResolver) {
     super(bigquery, writeConfigs, catalog, outputRecordCollector, false, false);
     this.namingResolver = namingResolver;
     invalidKeys = new HashSet<>();
@@ -59,6 +59,10 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     final ObjectNode data = (ObjectNode) formatData(schema.getFields(), recordMessage.getData());
     data.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt);
+    List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(schema);
+    if (!dateTimeFields.isEmpty()) {
+      BigQueryUtils.transformJsonDateTimeToBigDataFormat(recordMessage, dateTimeFields, data);
+    }
     return data;
   }
 
