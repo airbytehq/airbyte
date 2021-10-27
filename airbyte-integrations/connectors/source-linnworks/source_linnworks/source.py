@@ -6,6 +6,7 @@
 from abc import ABC
 from typing import (Any, Iterable, List, Mapping, MutableMapping, Optional,
                     Tuple)
+import pendulum
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -184,15 +185,55 @@ class Employees(IncrementalLinnworksStream):
 
 
 class LinnworksAuthenticator(Oauth2Authenticator):
+    def __init__(
+        self,
+        token_refresh_endpoint: str,
+        application_id: str,
+        application_secret: str,
+        token: str,
+        token_expiry_date: pendulum.datetime = None,
+        access_token_name: str = "Token",
+        server_name: str = "Server",
+    ):
+        super().__init__(
+            token_refresh_endpoint,
+            application_id,
+            application_secret,
+            token,
+            scopes=None,
+            token_expiry_date=token_expiry_date,
+            access_token_name=access_token_name,
+        )
+
+        self.expires_in = 1800
+
+        self.application_id = application_id
+        self.application_secret = application_secret
+        self.token = token
+        self.server_name = server_name
+
+    def get_access_token(self):
+        if self.token_has_expired():
+            t0 = pendulum.now()
+            token, server = self.refresh_access_token()
+            self._access_token = token
+            self._server = server
+            self._token_expiry_date = t0.add(seconds=self.expires_in)
+
+        return self._access_token
+
+    def get_server(self):
+        if self.token_has_expired():
+            self.get_access_token()
+
+        return self._server
+
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         payload: MutableMapping[str, Any] = {
-            "applicationId": self.client_id,
-            "applicationSecret": self.client_secret,
-            "token": self.refresh_token,
+            "applicationId": self.application_id,
+            "applicationSecret": self.application_secret,
+            "token": self.token,
         }
-
-        if self.scopes:
-            payload["scopes"] = self.scopes
 
         return payload
 
@@ -202,7 +243,7 @@ class LinnworksAuthenticator(Oauth2Authenticator):
                 method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
             response.raise_for_status()
             response_json = response.json()
-            return response_json[self.access_token_name], 1800
+            return response_json[self.access_token_name], response_json[self.server_name]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
 
@@ -211,15 +252,14 @@ class SourceLinnworks(AbstractSource):
     def _auth(self, config):
         return LinnworksAuthenticator(
             token_refresh_endpoint="https://api.linnworks.net/api/Auth/AuthorizeByApplication",
-            client_id=config["application_id"],
-            client_secret=config["application_secret"],
-            refresh_token=config["token"],
-            access_token_name="Token",
+            application_id=config["application_id"],
+            application_secret=config["application_secret"],
+            token=config["token"],
         )
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-             self._auth(config).get_auth_header()
+            self._auth(config).get_auth_header()
         except Exception as e:
             return None, e
 
