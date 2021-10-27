@@ -35,13 +35,10 @@ This Source is capable of syncing the following core Streams:
 * [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
 * [Pages](https://help.shopify.com/en/api/reference/online-store/page)
 * [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
-<<<<<<< HEAD
 * [Locations](https://shopify.dev/api/admin-rest/2021-10/resources/location)
 * [InventoryLevels](https://shopify.dev/api/admin-rest/2021-10/resources/inventorylevel)
-=======
 * [Fulfillment Orders](https://shopify.dev/api/admin-rest/2021-07/resources/fulfillmentorder)
 * [Fulfillments](https://shopify.dev/api/admin-rest/2021-07/resources/fulfillment)
->>>>>>> Bump docker version and update doc
 
 #### NOTE:
 
