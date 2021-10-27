@@ -81,7 +81,6 @@ import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.commons.io.FileTtlManager;
-import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -193,7 +192,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendDestinationsHandler = new WebBackendDestinationsHandler(destinationHandler, configRepository, trackingClient);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(
-        new AirbyteVersion(configs.getAirbyteVersion()),
+        configs.getAirbyteVersion(),
         configRepository,
         jobPersistence,
         seed,
