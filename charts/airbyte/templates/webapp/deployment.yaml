@@ -13,7 +13,6 @@ spec:
   template:
     metadata:
       labels:
-        app: airbyte
         airbyte: webapp
       {{- if .Values.webapp.podAnnotations }}
       annotations:
