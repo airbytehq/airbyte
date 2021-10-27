@@ -1,5 +1,5 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "value"
-  }
+  "prospects": { "updatedAt": "2020-11-16T00:00:00Z" },
+  "sequences": { "updatedAt": "2021-02-16T00:00:00Z" },
+  "sequenceStates": { "updatedAt": "2021-04-16T00:00:00Z" }
 }

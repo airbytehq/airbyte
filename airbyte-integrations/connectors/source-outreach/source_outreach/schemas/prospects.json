@@ -1078,7 +1078,7 @@
           "engagedScore": {
             "type": [
               "null",
-              "string"
+              "number"
             ]
           },
           "eventName": {

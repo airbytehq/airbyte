@@ -59,28 +59,28 @@ class OutreachStream(HttpStream, ABC):
 class IncrementalOutreachStream(OutreachStream, ABC):
     @property
     def cursor_field(self) -> str:
-        return "updatedAt"
+        return "attributes/properties/updatedAt"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
 
-        current_stream_state_date = current_stream_state.get(self.cursor_field, self.start_date)
-        latest_record_date = latest_record.get('attributes', {}).get(self.cursor_field, self.start_date)
+        current_stream_state_date = current_stream_state.get('updatedAt', self.start_date)
+        latest_record_date = latest_record.get('attributes', {}).get('updatedAt', self.start_date)
 
-        return {self.cursor_field: max(current_stream_state_date, latest_record_date)}
+        return {'updatedAt': max(current_stream_state_date, latest_record_date)}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if self.cursor_field in stream_state:
-            params["filter[updatedAt]"] = stream_state[self.cursor_field] + '..inf'
+        if 'updatedAt' in stream_state:
+            params["filter[updatedAt]"] = stream_state['updatedAt'] + '..inf'
         return params
 
 
 class Prospects(IncrementalOutreachStream):
     primary_key = "id"
-    cursor_field = "updatedAt"
+    cursor_field = "attributes/properties/updatedAt"
 
     def path(self, **kwargs) -> str:
         return "prospects"
@@ -88,7 +88,7 @@ class Prospects(IncrementalOutreachStream):
 
 class Sequences(IncrementalOutreachStream):
     primary_key = "id"
-    cursor_field = "updatedAt"
+    cursor_field = "attributes/properties/updatedAt"
 
     def path(self, **kwargs) -> str:
         return "sequences"
@@ -96,7 +96,7 @@ class Sequences(IncrementalOutreachStream):
 
 class SequenceStates(IncrementalOutreachStream):
     primary_key = "id"
-    cursor_field = "updatedAt"
+    cursor_field = "attributes/properties/updatedAt"
 
     def path(self, **kwargs) -> str:
         return "sequenceStates"
