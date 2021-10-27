@@ -76,6 +76,7 @@ class DefaultAirbyteSourceTest {
   static {
     try {
       logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+      LogClientSingleton.setJobMdc(logJobRoot);
     } catch (final IOException e) {
       e.printStackTrace();
     }
@@ -180,10 +181,12 @@ class DefaultAirbyteSourceTest {
     final Path logPath = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     final Stream<String> logs = IOs.readFile(logPath).lines();
 
-    logs.forEach(line -> {
-      org.assertj.core.api.Assertions.assertThat(line)
-          .startsWith(Color.BLUE.getCode() + "container-log" + RESET);
-    });
+    logs
+        .filter(line -> !line.contains("EnvConfigs(getEnvOrDefault)"))
+        .forEach(line -> {
+          org.assertj.core.api.Assertions.assertThat(line)
+              .startsWith(Color.BLUE.getCode() + "source-container-log" + RESET);
+        });
   }
 
   @Test

@@ -60,6 +60,7 @@ class DefaultAirbyteDestinationTest {
   static {
     try {
       logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+      LogClientSingleton.setJobMdc(logJobRoot);
     } catch (final IOException e) {
       e.printStackTrace();
     }
@@ -148,6 +149,7 @@ class DefaultAirbyteDestinationTest {
 
   @Test
   public void testTaggedLogs() throws Exception {
+
     final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
@@ -170,7 +172,7 @@ class DefaultAirbyteDestinationTest {
 
     logs.forEach(line -> {
       org.assertj.core.api.Assertions.assertThat(line)
-          .startsWith(Color.MAGENTA.getCode() + "container-log" + RESET);
+          .startsWith(Color.MAGENTA.getCode() + "destination-container-log" + RESET);
     });
   }
 
