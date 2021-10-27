@@ -161,10 +161,11 @@ public interface SyncWorkflow {
       this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
     }
 
-    @VisibleForTesting ReplicationActivityImpl(final ProcessFactory processFactory,
-                                               final SecretsHydrator secretsHydrator,
-                                               final Path workspaceRoot,
-                                               final AirbyteConfigValidator validator) {
+    @VisibleForTesting
+    ReplicationActivityImpl(final ProcessFactory processFactory,
+                            final SecretsHydrator secretsHydrator,
+                            final Path workspaceRoot,
+                            final AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -224,10 +225,10 @@ public interface SyncWorkflow {
     }
 
     private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getWorkerFactory(
-        final IntegrationLauncherConfig sourceLauncherConfig,
-        final IntegrationLauncherConfig destinationLauncherConfig,
-        final JobRunConfig jobRunConfig,
-        final StandardSyncInput syncInput) {
+                                                                                                      final IntegrationLauncherConfig sourceLauncherConfig,
+                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                      final JobRunConfig jobRunConfig,
+                                                                                                      final StandardSyncInput syncInput) {
       return () -> {
         final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
             sourceLauncherConfig.getJobId(),
@@ -287,11 +288,12 @@ public interface SyncWorkflow {
       this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment);
     }
 
-    @VisibleForTesting NormalizationActivityImpl(final ProcessFactory processFactory,
-                                                 final SecretsHydrator secretsHydrator,
-                                                 final Path workspaceRoot,
-                                                 final AirbyteConfigValidator validator,
-                                                 final WorkerEnvironment workerEnvironment) {
+    @VisibleForTesting
+    NormalizationActivityImpl(final ProcessFactory processFactory,
+                              final SecretsHydrator secretsHydrator,
+                              final Path workspaceRoot,
+                              final AirbyteConfigValidator validator,
+                              final WorkerEnvironment workerEnvironment) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -356,16 +358,17 @@ public interface SyncWorkflow {
     private final AirbyteConfigValidator validator;
 
     public DbtTransformationActivityImpl(
-        final ProcessFactory processFactory,
-        final SecretsHydrator secretsHydrator,
-        final Path workspaceRoot) {
+                                         final ProcessFactory processFactory,
+                                         final SecretsHydrator secretsHydrator,
+                                         final Path workspaceRoot) {
       this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
     }
 
-    @VisibleForTesting DbtTransformationActivityImpl(final ProcessFactory processFactory,
-                                                     final SecretsHydrator secretsHydrator,
-                                                     final Path workspaceRoot,
-                                                     final AirbyteConfigValidator validator) {
+    @VisibleForTesting
+    DbtTransformationActivityImpl(final ProcessFactory processFactory,
+                                  final SecretsHydrator secretsHydrator,
+                                  final Path workspaceRoot,
+                                  final AirbyteConfigValidator validator) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
@@ -405,8 +408,8 @@ public interface SyncWorkflow {
           resourceRequirements,
           new DbtTransformationRunner(
               processFactory, NormalizationRunnerFactory.create(
-              destinationLauncherConfig.getDockerImage(),
-              processFactory)));
+                  destinationLauncherConfig.getDockerImage(),
+                  processFactory)));
     }
 
   }
