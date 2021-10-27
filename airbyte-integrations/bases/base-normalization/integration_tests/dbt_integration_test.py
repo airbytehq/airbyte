@@ -430,6 +430,6 @@ class DbtIntegrationTest(object):
         """
         if os.getenv(NORMALIZATION_TEST_TARGET):
             target_str = os.getenv(NORMALIZATION_TEST_TARGET)
-            return [d.value for d in {DestinationType.from_string(s) for s in target_str.split(",")}]
+            return [d.value for d in {DestinationType.from_string(s.strip()) for s in target_str.split(",")}]
         else:
             return [d.value for d in DestinationType]
