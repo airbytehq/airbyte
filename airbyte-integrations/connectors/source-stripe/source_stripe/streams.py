@@ -385,9 +385,9 @@ class CheckoutSessionsLineItems(StripeStream):
         response_json = response.json()
         data = response_json.get("data", [])
         if data:
-            cs_id = kwargs.get('stream_slice').get('checkout_session_id', None)
+            cs_id = kwargs.get("stream_slice").get("checkout_session_id", None)
             for e in data:
-                e['checkout_session_id'] = cs_id
+                e["checkout_session_id"] = cs_id
         yield from data
 
 
@@ -395,6 +395,7 @@ class PromotionCodes(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/promotion_codes/list
     """
+
     cursor_field = "created"
 
     def path(self, **kwargs):
