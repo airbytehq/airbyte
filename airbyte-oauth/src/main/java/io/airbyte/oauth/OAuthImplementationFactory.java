@@ -6,7 +6,12 @@ package io.airbyte.oauth;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.flows.*;
+import io.airbyte.oauth.flows.AsanaOAuthFlow;
+import io.airbyte.oauth.flows.FacebookMarketingOAuthFlow;
+import io.airbyte.oauth.flows.GithubOAuthFlow;
+import io.airbyte.oauth.flows.IntercomOAuthFlow;
+import io.airbyte.oauth.flows.SalesforceOAuthFlow;
+import io.airbyte.oauth.flows.TrelloOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
