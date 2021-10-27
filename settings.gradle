@@ -32,9 +32,9 @@ include ':airbyte-config:models' // reused by acceptance tests in connector base
 include ':airbyte-db:lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
 include ':airbyte-protocol:models'
+include ':airbyte-metrics'
 include ':airbyte-queue'
 include ':airbyte-test-utils'
-include ':airbyte-secrets-migration'
 
 // airbyte-workers has a lot of dependencies.
 include ':airbyte-workers' // reused by acceptance tests in connector base.
@@ -46,7 +46,7 @@ include ':airbyte-notification' // transitively used by airbyte-workers.
 include ':airbyte-scheduler:models' // transitively used by airbyte-workers.
 include ':airbyte-scheduler:persistence' // used by airbyte-workers.
 
-// platformm
+// platform
 if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-cli'
     include ':airbyte-e2e-testing'
@@ -55,8 +55,9 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-scheduler:app'
     include ':airbyte-scheduler:client'
     include ':airbyte-server'
-    include ':airbyte-webapp'
     include ':airbyte-tests'
+    include ':airbyte-webapp'
+    include ':airbyte-secrets-migration'
 }
 
 // connectors base
@@ -75,7 +76,6 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:bases:standard-source-test'
     include ':airbyte-integrations:connector-templates:generator'
     include ':airbyte-integrations:bases:debezium'
-    include ':tools:code-generator'
 
     include ':airbyte-oauth'
 
@@ -87,10 +87,13 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:connectors:destination-redshift'
     include ':airbyte-integrations:connectors:destination-snowflake'
     include ':airbyte-integrations:connectors:destination-oracle'
+    include ':airbyte-integrations:connectors:destination-mssql'
 
-    //Needed by destination-bugquery
+    //Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'
     include ':airbyte-integrations:connectors:destination-gcs'
+
+    include ':tools:code-generator'
 }
 
 // connectors

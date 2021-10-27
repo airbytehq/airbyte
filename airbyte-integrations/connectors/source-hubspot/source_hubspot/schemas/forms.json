@@ -2,43 +2,27 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
   "properties": {
-    "deletedAt": {
-      "type": ["null", "integer"]
-    },
-    "portalId": {
-      "type": ["null", "integer"]
-    },
-    "guid": {
+    "id": {
       "type": ["null", "string"]
     },
     "name": {
       "type": ["null", "string"]
     },
-    "action": {
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "deletedAt": {
       "type": ["null", "string"]
     },
-    "method": {
-      "type": ["null", "string"]
-    },
-    "cssClass": {
-      "type": ["null", "string"]
-    },
-    "redirect": {
-      "type": ["null", "string"]
-    },
-    "submitText": {
-      "type": ["null", "string"]
-    },
-    "followUpId": {
-      "type": ["null", "string"]
-    },
-    "notifyRecipients": {
-      "type": ["null", "string"]
-    },
-    "leadNurturingCampaignId": {
-      "type": ["null", "string"]
-    },
-    "formFieldGroups": {
+    "fieldGroups": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
@@ -48,181 +32,139 @@
             "items": {
               "type": ["null", "object"],
               "properties": {
+                "objectTypeId": {
+                  "type": ["null", "string"]
+                },
                 "name": {
                   "type": ["null", "string"]
                 },
                 "label": {
                   "type": ["null", "string"]
                 },
-                "type": {
-                  "type": ["null", "string"]
-                },
-                "fieldType": {
-                  "type": ["null", "string"]
-                },
-                "description": {
-                  "type": ["null", "string"]
-                },
-                "groupName": {
-                  "type": ["null", "string"]
-                },
-                "displayOrder": {
-                  "type": ["null", "integer"]
-                },
                 "required": {
-                  "type": ["null", "boolean"]
-                },
-                "validation": {
-                  "type": ["null", "object"],
-                  "properties": {
-                    "name": {
-                      "type": ["null", "string"]
-                    },
-                    "message": {
-                      "type": ["null", "string"]
-                    },
-                    "data": {
-                      "type": ["null", "string"]
-                    },
-                    "useDefaultBlockList": {
-                      "type": ["null", "boolean"]
-                    },
-                    "blockedEmailAddresses": {
-                      "type": ["null", "array"],
-                      "items": {
-                        "type": ["null", "string"]
-                      }
-                    }
-                  }
-                },
-                "enabled": {
                   "type": ["null", "boolean"]
                 },
                 "hidden": {
                   "type": ["null", "boolean"]
                 },
-                "defaultValue": {
+                "fieldType": {
                   "type": ["null", "string"]
-                },
-                "isSmartField": {
-                  "type": ["null", "boolean"]
-                },
-                "unselectedLabel": {
-                  "type": ["null", "string"]
-                },
-                "placeholder": {
-                  "type": ["null", "string"]
-                },
-                "labelHidden": {
-                  "type": ["null", "boolean"]
-                },
-                "options": {
-                  "type": ["null", "array"],
-                  "items": {
-                    "type": ["null", "object"],
-                    "properties": {
-                      "description": {
-                        "type": ["null", "string"]
-                      },
-                      "displayOrder": {
-                        "type": ["null", "integer"]
-                      },
-                      "doubleData": {
-                        "type": ["null", "number"]
-                      },
-                      "hidden": {
-                        "type": ["null", "boolean"]
-                      },
-                      "label": {
-                        "type": ["null", "string"]
-                      },
-                      "readOnly": {
-                        "type": ["null", "boolean"]
-                      },
-                      "value": {
-                        "type": ["null", "string"]
-                      }
-                    }
-                  }
-                },
-                "selectedOptions": {
-                  "type": ["null", "array"],
-                  "items": {
-                    "type": ["null", "string"]
-                  }
                 }
               }
             }
           },
-          "default": {
-            "type": ["null", "boolean"]
+          "groupType": {
+            "type": ["null", "string"]
           },
-          "isSmartGroup": {
-            "type": ["null", "boolean"]
-          },
-          "richText": {
-            "type": ["null", "object"],
-            "properties": {
-              "content": {
-                "type": ["null", "string"]
-              }
+          "richTextType": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "configuration": {
+      "type": ["null", "object"],
+      "properties": {
+        "language": {
+          "type": ["null", "string"]
+        },
+        "cloneable": {
+          "type": ["null", "boolean"]
+        },
+        "postSubmitAction": {
+          "type": ["null", "object"],
+          "properties": {
+            "type": {
+              "type": ["null", "string"]
+            },
+            "value": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "editable": {
+          "type": ["null", "boolean"]
+        },
+        "archivable": {
+          "type": ["null", "boolean"]
+        },
+        "recaptchaEnabled": {
+          "type": ["null", "boolean"]
+        },
+        "notifyContactOwner": {
+          "type": ["null", "boolean"]
+        },
+        "notifyRecipients": {
+          "type": ["null", "array"]
+        },
+        "createNewContactForNewEmail": {
+          "type": ["null", "boolean"]
+        },
+        "prePopulateKnownValues": {
+          "type": ["null", "boolean"]
+        },
+        "allowLinkToResetKnownValues": {
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "displayOptions": {
+      "type": ["null", "object"],
+      "properties": {
+        "renderRawHtml": {
+          "type": ["null", "boolean"]
+        },
+        "theme": {
+          "type": ["null", "string"]
+        },
+        "submitButtonText": {
+          "type": ["null", "string"]
+        },
+        "style": {
+          "type": ["null", "object"],
+          "properties": {
+            "fontFamily": {
+              "type": ["null", "string"]
+            },
+            "backgroundWidth": {
+              "type": ["null", "string"]
+            },
+            "labelTextColor": {
+              "type": ["null", "string"]
+            },
+            "labelTextSize": {
+              "type": ["null", "string"]
+            },
+            "helpTextColor": {
+              "type": ["null", "string"]
+            },
+            "helpTextSize": {
+              "type": ["null", "string"]
+            },
+            "legalConsentTextColor": {
+              "type": ["null", "string"]
+            },
+            "legalConsentTextSize": {
+              "type": ["null", "string"]
+            },
+            "submitColor": {
+              "type": ["null", "string"]
+            },
+            "submitAlignment": {
+              "type": ["null", "string"]
+            },
+            "submitFontColor": {
+              "type": ["null", "string"]
+            },
+            "submitSize": {
+              "type": ["null", "string"]
             }
           }
         }
       }
     },
-    "createdAt": {
-      "type": ["null", "integer"]
-    },
-    "updatedAt": {
-      "type": ["null", "integer"]
-    },
-    "performableHtml": {
-      "type": ["null", "string"]
-    },
-    "migratedFrom": {
-      "type": ["null", "string"]
-    },
-    "ignoreCurrentValues": {
-      "type": ["null", "boolean"]
-    },
-    "deletable": {
-      "type": ["null", "boolean"]
-    },
-    "inlineMessage": {
-      "type": ["null", "string"]
-    },
-    "tmsId": {
-      "type": ["null", "string"]
-    },
-    "captchaEnabled": {
-      "type": ["null", "boolean"]
-    },
-    "campaignGuid": {
-      "type": ["null", "string"]
-    },
-    "cloneable": {
-      "type": ["null", "boolean"]
-    },
-    "editable": {
-      "type": ["null", "boolean"]
-    },
-    "formType": {
-      "type": ["null", "string"]
-    },
-    "metaData": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+    "legalConsentOptions": {
+      "type": ["null", "object"]
     }
   }
 }

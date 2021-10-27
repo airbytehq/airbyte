@@ -5,7 +5,11 @@ tests:
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
+    - config_path: "secrets/config_oauth.json"
+      status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+    - config_path: "integration_tests/invalid_oauth_config.json"
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
@@ -17,9 +21,6 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       timeout_seconds: 7200
-      cursor_paths:
-        channel_messages: ["float_ts"]
-        threads: ["float_ts"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/full_refresh_catalog.json"

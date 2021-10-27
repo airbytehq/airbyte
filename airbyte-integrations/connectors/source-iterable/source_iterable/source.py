@@ -11,6 +11,7 @@ from airbyte_cdk.sources.streams import Stream
 
 from .api import (
     Campaigns,
+    CampaignsMetrics,
     Channels,
     EmailBounce,
     EmailClick,
@@ -20,6 +21,7 @@ from .api import (
     EmailSendSkip,
     EmailSubscribe,
     EmailUnsubscribe,
+    Events,
     Lists,
     ListUsers,
     MessageTypes,
@@ -41,6 +43,7 @@ class SourceIterable(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [
             Campaigns(api_key=config["api_key"]),
+            CampaignsMetrics(api_key=config["api_key"], start_date=config["start_date"]),
             Channels(api_key=config["api_key"]),
             EmailBounce(api_key=config["api_key"], start_date=config["start_date"]),
             EmailClick(api_key=config["api_key"], start_date=config["start_date"]),
@@ -50,6 +53,7 @@ class SourceIterable(AbstractSource):
             EmailSendSkip(api_key=config["api_key"], start_date=config["start_date"]),
             EmailSubscribe(api_key=config["api_key"], start_date=config["start_date"]),
             EmailUnsubscribe(api_key=config["api_key"], start_date=config["start_date"]),
+            Events(api_key=config["api_key"]),
             Lists(api_key=config["api_key"]),
             ListUsers(api_key=config["api_key"]),
             MessageTypes(api_key=config["api_key"]),

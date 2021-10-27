@@ -12,11 +12,20 @@ import {
   Form,
   RowFieldItem,
 } from "../components/FormComponents";
-import { Button, H5, LabeledInput, Link } from "components";
-import { FormTitle } from "../components/FormTitle";
+import { H1, LabeledInput, Link, LoadingButton } from "components";
 import CheckBoxControl from "../components/CheckBoxControl";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import SpecialBlock from "./components/SpecialBlock";
+
+type FormValues = {
+  name: string;
+  company: string;
+  email: string;
+  password: string;
+  subscribe: boolean;
+  security: boolean;
+};
 
 const MarginBlock = styled.div`
   margin-bottom: 15px;
@@ -27,7 +36,7 @@ const SignupPageValidationSchema = yup.object().shape({
   password: yup.string().required("form.empty.error"),
   name: yup.string().required("form.empty.error"),
   company: yup.string().required("form.empty.error"),
-  security: yup.boolean().required("form.empty.error"),
+  security: yup.boolean().oneOf([true], "form.empty.error"),
 });
 
 const SignupPage: React.FC = () => {
@@ -38,14 +47,12 @@ const SignupPage: React.FC = () => {
 
   return (
     <div>
-      <FormTitle bold>
+      <H1 bold>
         <FormattedMessage id="login.activateAccess" />
-      </FormTitle>
-      <H5>
-        <FormattedMessage id="login.activateAccess.subtitle" />
-      </H5>
+      </H1>
+      <SpecialBlock />
 
-      <Formik
+      <Formik<FormValues>
         initialValues={{
           name: "",
           company: "",
@@ -65,9 +72,9 @@ const SignupPage: React.FC = () => {
           })
         }
         validateOnBlur={true}
-        validateOnChange={false}
+        validateOnChange={true}
       >
-        {() => (
+        {({ isValid, isSubmitting }) => (
           <Form>
             <RowFieldItem>
               <Field name="name">
@@ -169,6 +176,7 @@ const SignupPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <CheckBoxControl
                     {...field}
+                    onChange={(e) => field.onChange(e)}
                     checked={!!field.value}
                     checkbox
                     label={
@@ -210,9 +218,13 @@ const SignupPage: React.FC = () => {
             <BottomBlock>
               <>
                 <div />
-                <Button type="submit">
+                <LoadingButton
+                  type="submit"
+                  isLoading={isSubmitting}
+                  disabled={!isValid}
+                >
                   <FormattedMessage id="login.signup" />
-                </Button>
+                </LoadingButton>
               </>
             </BottomBlock>
           </Form>

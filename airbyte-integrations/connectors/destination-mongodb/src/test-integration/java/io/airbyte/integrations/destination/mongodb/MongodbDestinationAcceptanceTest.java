@@ -8,27 +8,18 @@ import static com.mongodb.client.model.Projections.excludeId;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.mongodb.MongoClient;
-import com.mongodb.ServerAddress;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.bson.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MongoDBContainer;
 
 public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MongodbDestinationAcceptanceTest.class);
-
-  private static final String DOCER_IMAGE_NAME = "mongo:4.0.10";
+  private static final String DOCKER_IMAGE_NAME = "mongo:4.0.10";
   private static final String HOST = "host";
   private static final String PORT = "port";
   private static final String DATABASE = "database";
@@ -38,7 +29,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   private static final String AIRBYTE_DATA = "_airbyte_data";
 
   private MongoDBContainer container;
-  private MongodbNameTransformer namingResolver = new MongodbNameTransformer();
+  private final MongodbNameTransformer namingResolver = new MongodbNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -61,21 +52,24 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
         .put(HOST, container.getHost())
         .put(PORT, container.getFirstMappedPort())
         .put(DATABASE, DATABASE_FAIL_NAME)
-        .put(AUTH_TYPE, getAuthTypeConfig())
+        .put(AUTH_TYPE, Jsons.jsonNode(ImmutableMap.builder()
+            .put("authorization", "login/password")
+            .put("username", "user")
+            .put("password", "pass")
+            .build()))
         .build());
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema) {
-    var database = getMongoDatabase(container.getHost(),
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema) {
+    final var database = getMongoDatabase(container.getHost(),
         container.getFirstMappedPort(), DATABASE_NAME);
-    var collection = getOrCreateNewMongodbCollection(database,
-        namingResolver.getRawTableName(streamName));
-    List<JsonNode> result = new ArrayList<>();
-    try (MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
+    final var collection = database.getOrCreateNewCollection(namingResolver.getRawTableName(streamName));
+    final List<JsonNode> result = new ArrayList<>();
+    try (final MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
       while (cursor.hasNext()) {
         result.add(Jsons.jsonNode(cursor.next().get(AIRBYTE_DATA)));
       }
@@ -84,13 +78,13 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    container = new MongoDBContainer(DOCER_IMAGE_NAME);
+  protected void setup(final TestDestinationEnv testEnv) {
+    container = new MongoDBContainer(DOCKER_IMAGE_NAME);
     container.start();
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.stop();
     container.close();
   }
@@ -103,24 +97,13 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
         + "}");
   }
 
-  private MongoDatabase getMongoDatabase(String host, int port, String dataBaseName) {
+  private MongoDatabase getMongoDatabase(final String host, final int port, final String databaseName) {
     try {
-      var serverAddress = new ServerAddress(host, port);
-      var mongoClient = new MongoClient(serverAddress);
-      return mongoClient.getDatabase(dataBaseName);
-    } catch (RuntimeException e) {
+      final var connectionString = String.format("mongodb://%s:%s/", host, port);
+      return new MongoDatabase(connectionString, databaseName);
+    } catch (final RuntimeException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private MongoCollection<Document> getOrCreateNewMongodbCollection(MongoDatabase database, String collectionName) {
-    var collectionNames = StreamSupport
-        .stream(database.listCollectionNames().spliterator(), false)
-        .collect(Collectors.toSet());
-    if (!collectionNames.contains(collectionName)) {
-      database.createCollection(collectionName);
-    }
-    return database.getCollection(collectionName);
   }
 
 }

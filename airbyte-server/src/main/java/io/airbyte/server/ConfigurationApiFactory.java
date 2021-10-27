@@ -4,6 +4,7 @@
 
 package io.airbyte.server;
 
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -31,6 +32,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static Map<String, String> mdc;
   private static Database configsDatabase;
   private static Database jobsDatabase;
+  private static TrackingClient trackingClient;
 
   public static void setValues(
                                final WorkflowServiceStubs temporalService,
@@ -43,7 +45,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final FileTtlManager archiveTtlManager,
                                final Map<String, String> mdc,
                                final Database configsDatabase,
-                               final Database jobsDatabase) {
+                               final Database jobsDatabase,
+                               final TrackingClient trackingClient) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
@@ -55,6 +58,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.temporalService = temporalService;
     ConfigurationApiFactory.configsDatabase = configsDatabase;
     ConfigurationApiFactory.jobsDatabase = jobsDatabase;
+    ConfigurationApiFactory.trackingClient = trackingClient;
   }
 
   @Override
@@ -71,7 +75,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.archiveTtlManager,
         ConfigurationApiFactory.temporalService,
         ConfigurationApiFactory.configsDatabase,
-        ConfigurationApiFactory.jobsDatabase);
+        ConfigurationApiFactory.jobsDatabase,
+        ConfigurationApiFactory.trackingClient);
   }
 
   @Override

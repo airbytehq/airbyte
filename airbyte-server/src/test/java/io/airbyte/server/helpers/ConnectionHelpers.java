@@ -27,6 +27,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.workers.WorkerUtils;
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +40,7 @@ public class ConnectionHelpers {
   private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
   private static final long BASIC_SCHEDULE_UNITS = 1L;
 
-  public static StandardSync generateSyncWithSourceId(UUID sourceId) {
+  public static StandardSync generateSyncWithSourceId(final UUID sourceId) {
     final UUID connectionId = UUID.randomUUID();
 
     return new StandardSync()
@@ -58,7 +59,7 @@ public class ConnectionHelpers {
         .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
   }
 
-  public static StandardSync generateSyncWithDestinationId(UUID destinationId) {
+  public static StandardSync generateSyncWithDestinationId(final UUID destinationId) {
     final UUID connectionId = UUID.randomUUID();
 
     return new StandardSync()
@@ -87,10 +88,10 @@ public class ConnectionHelpers {
         .withUnits(BASIC_SCHEDULE_UNITS);
   }
 
-  public static ConnectionRead generateExpectedConnectionRead(UUID connectionId,
-                                                              UUID sourceId,
-                                                              UUID destinationId,
-                                                              List<UUID> operationIds) {
+  public static ConnectionRead generateExpectedConnectionRead(final UUID connectionId,
+                                                              final UUID sourceId,
+                                                              final UUID destinationId,
+                                                              final List<UUID> operationIds) {
 
     return new ConnectionRead()
         .connectionId(connectionId)
@@ -111,7 +112,7 @@ public class ConnectionHelpers {
             .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
   }
 
-  public static ConnectionRead generateExpectedConnectionRead(StandardSync standardSync) {
+  public static ConnectionRead generateExpectedConnectionRead(final StandardSync standardSync) {
     final ConnectionRead connectionRead = generateExpectedConnectionRead(
         standardSync.getConnectionId(),
         standardSync.getSourceId(),
@@ -126,6 +127,42 @@ public class ConnectionHelpers {
           .units(standardSync.getSchedule().getUnits()));
     }
 
+    return connectionRead;
+  }
+
+  public static ConnectionRead connectionReadFromStandardSync(final StandardSync standardSync) {
+    final ConnectionRead connectionRead = new ConnectionRead();
+    connectionRead
+        .connectionId(standardSync.getConnectionId())
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
+        .operationIds(standardSync.getOperationIds())
+        .name(standardSync.getName())
+        .namespaceFormat(standardSync.getNamespaceFormat())
+        .prefix(standardSync.getPrefix());
+
+    if (standardSync.getNamespaceDefinition() != null) {
+      connectionRead
+          .namespaceDefinition(io.airbyte.api.model.NamespaceDefinitionType.fromValue(standardSync.getNamespaceDefinition().value()));
+    }
+    if (standardSync.getStatus() != null) {
+      connectionRead.status(io.airbyte.api.model.ConnectionStatus.fromValue(standardSync.getStatus().value()));
+    }
+    if (standardSync.getSchedule() != null) {
+      connectionRead.schedule(new io.airbyte.api.model.ConnectionSchedule()
+          .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
+          .units(standardSync.getSchedule().getUnits()));
+    }
+    if (standardSync.getCatalog() != null) {
+      connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
+    }
+    if (standardSync.getResourceRequirements() != null) {
+      connectionRead.resourceRequirements(new io.airbyte.api.model.ResourceRequirements()
+          .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
+          .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
+          .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit())
+          .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest()));
+    }
     return connectionRead;
   }
 

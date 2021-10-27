@@ -20,9 +20,9 @@ import java.util.function.Consumer;
 public class SnowflakeCopyS3Destination extends CopyDestination {
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     return CopyConsumerFactory.create(
         outputRecordCollector,
         getDatabase(config),
@@ -35,7 +35,7 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
   }
 
   @Override
-  public void checkPersistence(JsonNode config) {
+  public void checkPersistence(final JsonNode config) {
     S3StreamCopier.attemptS3WriteAndDelete(getS3Config(config));
   }
 
@@ -45,7 +45,7 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
   }
 
   @Override
-  public JdbcDatabase getDatabase(JsonNode config) {
+  public JdbcDatabase getDatabase(final JsonNode config) {
     return SnowflakeDatabase.getDatabase(config);
   }
 
@@ -54,11 +54,11 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
     return new SnowflakeSqlOperations();
   }
 
-  private String getConfiguredSchema(JsonNode config) {
+  private String getConfiguredSchema(final JsonNode config) {
     return config.get("schema").asText();
   }
 
-  private S3Config getS3Config(JsonNode config) {
+  private S3Config getS3Config(final JsonNode config) {
     final JsonNode loadingMethod = config.get("loading_method");
     return S3Config.getS3Config(loadingMethod);
   }

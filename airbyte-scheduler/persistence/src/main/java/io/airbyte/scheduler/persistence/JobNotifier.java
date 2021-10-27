@@ -4,25 +4,20 @@
 
 package io.airbyte.scheduler.persistence;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.job_tracker.TrackingMetadata;
-import io.airbyte.validation.json.JsonValidationException;
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -44,12 +39,10 @@ public class JobNotifier {
   private final TrackingClient trackingClient;
   private final WorkspaceHelper workspaceHelper;
 
-  public JobNotifier(String webappUrl, ConfigRepository configRepository, WorkspaceHelper workspaceHelper) {
-    this(webappUrl, configRepository, workspaceHelper, TrackingClientSingleton.get());
-  }
-
-  @VisibleForTesting
-  JobNotifier(String webappUrl, ConfigRepository configRepository, WorkspaceHelper workspaceHelper, TrackingClient trackingClient) {
+  public JobNotifier(final String webappUrl,
+                     final ConfigRepository configRepository,
+                     final WorkspaceHelper workspaceHelper,
+                     final TrackingClient trackingClient) {
     this.workspaceHelper = workspaceHelper;
     if (webappUrl.endsWith("/")) {
       this.connectionPageUrl = String.format("%sconnections/", webappUrl);
@@ -62,11 +55,9 @@ public class JobNotifier {
 
   private void notifyJob(final String reason, final String action, final Job job) {
     final UUID connectionId = UUID.fromString(job.getScope());
-    final UUID sourceDefinitionId = configRepository.getSourceDefinitionFromConnection(connectionId).getSourceDefinitionId();
-    final UUID destinationDefinitionId = configRepository.getDestinationDefinitionFromConnection(connectionId).getDestinationDefinitionId();
     try {
-      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
-      final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
+      final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
+      final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
       final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
       final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
       final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
@@ -87,7 +78,7 @@ public class JobNotifier {
       final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
       final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
       final ImmutableMap<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
-      for (Notification notification : workspace.getNotifications()) {
+      for (final Notification notification : workspace.getNotifications()) {
         final NotificationClient notificationClient = getNotificationClient(notification);
         try {
           final Builder<String, Object> notificationMetadata = ImmutableMap.builder();
@@ -113,11 +104,11 @@ public class JobNotifier {
               LOGGER.warn("Failed to successfully notify success: {}", notification);
             }
           }
-        } catch (InterruptedException | IOException e) {
+        } catch (final Exception e) {
           LOGGER.error("Failed to notify: {} due to an exception", notification, e);
         }
       }
-    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
+    } catch (final Exception e) {
       LOGGER.error("Unable to read configuration:", e);
     }
   }
@@ -134,7 +125,7 @@ public class JobNotifier {
     return NotificationClient.createNotificationClient(notification);
   }
 
-  private static String formatDurationPart(long durationPart, String timeUnit) {
+  private static String formatDurationPart(final long durationPart, final String timeUnit) {
     if (durationPart == 1) {
       return String.format(" %s %s", durationPart, timeUnit);
     } else if (durationPart > 1) {

@@ -9,6 +9,7 @@ from collections import deque
 from datetime import datetime
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence
 
+import airbyte_cdk.sources.utils.casing as casing
 import backoff
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -143,9 +144,10 @@ class FBMarketingStream(Stream, ABC):
 class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     cursor_field = "updated_time"
 
-    def __init__(self, start_date: datetime, **kwargs):
+    def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.instance(start_date)
+        self._end_date = pendulum.instance(end_date)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
@@ -290,10 +292,32 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     breakdowns = []
 
-    def __init__(self, buffer_days, days_per_job, **kwargs):
+    def __init__(
+        self,
+        buffer_days,
+        days_per_job,
+        name: str = None,
+        fields: List[str] = None,
+        breakdowns: List[str] = None,
+        action_breakdowns: List[str] = None,
+        **kwargs,
+    ):
+
         super().__init__(**kwargs)
         self.lookback_window = pendulum.duration(days=buffer_days)
         self._days_per_job = days_per_job
+        self._fields = fields
+        self.action_breakdowns = action_breakdowns or self.action_breakdowns
+        self.breakdowns = breakdowns or self.breakdowns
+        self._new_class_name = name
+
+    @property
+    def name(self) -> str:
+        """
+        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+        """
+        name = self._new_class_name or self.__class__.__name__
+        return casing.camel_to_snake(name)
 
     def read_records(
         self,
@@ -388,12 +412,16 @@ class AdsInsights(FBMarketingIncrementalStream):
         :return: A dict of the JSON schema representing this stream.
         """
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        if self._fields:
+            schema["properties"] = {k: v for k, v in schema["properties"].items() if k in self._fields}
         schema["properties"].update(self._schema_for_breakdowns())
         return schema
 
     @cached_property
     def fields(self) -> List[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""
+        if self._fields:
+            return self._fields
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         return list(schema.get("properties", {}).keys())
 
@@ -427,7 +455,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             start_date = pendulum.parse(state_value) - self.lookback_window
         else:
             start_date = self._start_date
-        end_date = pendulum.now()
+        end_date = self._end_date
         start_date = max(end_date - self.INSIGHTS_RETENTION_PERIOD, start_date)
 
         for since in pendulum.period(start_date, end_date).range("days", self._days_per_job):

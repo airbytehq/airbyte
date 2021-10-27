@@ -56,7 +56,7 @@ public class AirbyteFileOffsetBackingStore {
   }
 
   @SuppressWarnings("unchecked")
-  public void persist(JsonNode cdcState) {
+  public void persist(final JsonNode cdcState) {
     final Map<String, String> mapAsString =
         cdcState != null ? Jsons.object(cdcState, Map.class) : Collections.emptyMap();
     final Map<ByteBuffer, ByteBuffer> mappedAsStrings = mapAsString.entrySet().stream().collect(Collectors.toMap(
@@ -67,12 +67,12 @@ public class AirbyteFileOffsetBackingStore {
     save(mappedAsStrings);
   }
 
-  private static String byteBufferToString(ByteBuffer byteBuffer) {
+  private static String byteBufferToString(final ByteBuffer byteBuffer) {
     Preconditions.checkNotNull(byteBuffer);
     return new String(byteBuffer.array(), StandardCharsets.UTF_8);
   }
 
-  private static ByteBuffer stringToByteBuffer(String s) {
+  private static ByteBuffer stringToByteBuffer(final String s) {
     Preconditions.checkNotNull(s);
     return ByteBuffer.wrap(s.getBytes(StandardCharsets.UTF_8));
   }
@@ -89,18 +89,18 @@ public class AirbyteFileOffsetBackingStore {
         throw new ConnectException("Expected HashMap but found " + obj.getClass());
       final Map<byte[], byte[]> raw = (Map<byte[], byte[]>) obj;
       final Map<ByteBuffer, ByteBuffer> data = new HashMap<>();
-      for (Map.Entry<byte[], byte[]> mapEntry : raw.entrySet()) {
+      for (final Map.Entry<byte[], byte[]> mapEntry : raw.entrySet()) {
         final ByteBuffer key = (mapEntry.getKey() != null) ? ByteBuffer.wrap(mapEntry.getKey()) : null;
         final ByteBuffer value = (mapEntry.getValue() != null) ? ByteBuffer.wrap(mapEntry.getValue()) : null;
         data.put(key, value);
       }
 
       return data;
-    } catch (NoSuchFileException | EOFException e) {
+    } catch (final NoSuchFileException | EOFException e) {
       // NoSuchFileException: Ignore, may be new.
       // EOFException: Ignore, this means the file was missing or corrupt
       return Collections.emptyMap();
-    } catch (IOException | ClassNotFoundException e) {
+    } catch (final IOException | ClassNotFoundException e) {
       throw new ConnectException(e);
     }
   }
@@ -109,25 +109,25 @@ public class AirbyteFileOffsetBackingStore {
    * See FileOffsetBackingStore#save - logic is mostly borrowed from here. duplicated because this
    * method is not public.
    */
-  private void save(Map<ByteBuffer, ByteBuffer> data) {
-    try (ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(offsetFilePath))) {
-      Map<byte[], byte[]> raw = new HashMap<>();
-      for (Map.Entry<ByteBuffer, ByteBuffer> mapEntry : data.entrySet()) {
-        byte[] key = (mapEntry.getKey() != null) ? mapEntry.getKey().array() : null;
-        byte[] value = (mapEntry.getValue() != null) ? mapEntry.getValue().array() : null;
+  private void save(final Map<ByteBuffer, ByteBuffer> data) {
+    try (final ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(offsetFilePath))) {
+      final Map<byte[], byte[]> raw = new HashMap<>();
+      for (final Map.Entry<ByteBuffer, ByteBuffer> mapEntry : data.entrySet()) {
+        final byte[] key = (mapEntry.getKey() != null) ? mapEntry.getKey().array() : null;
+        final byte[] value = (mapEntry.getValue() != null) ? mapEntry.getValue().array() : null;
         raw.put(key, value);
       }
       os.writeObject(raw);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new ConnectException(e);
     }
   }
 
-  public static AirbyteFileOffsetBackingStore initializeState(JsonNode cdcState) {
+  public static AirbyteFileOffsetBackingStore initializeState(final JsonNode cdcState) {
     final Path cdcWorkingDir;
     try {
       cdcWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-state-offset");
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
     final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");

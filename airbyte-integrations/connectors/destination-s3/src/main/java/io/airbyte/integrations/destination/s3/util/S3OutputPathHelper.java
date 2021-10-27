@@ -12,15 +12,15 @@ import java.util.List;
 
 public class S3OutputPathHelper {
 
-  public static String getOutputPrefix(String bucketPath, AirbyteStream stream) {
+  public static String getOutputPrefix(final String bucketPath, final AirbyteStream stream) {
     return getOutputPrefix(bucketPath, stream.getNamespace(), stream.getName());
   }
 
   /**
    * Prefix: <bucket-path>/<source-namespace-if-present>/<stream-name>
    */
-  public static String getOutputPrefix(String bucketPath, String namespace, String streamName) {
-    List<String> paths = new LinkedList<>();
+  public static String getOutputPrefix(final String bucketPath, final String namespace, final String streamName) {
+    final List<String> paths = new LinkedList<>();
 
     if (bucketPath != null) {
       paths.add(bucketPath);

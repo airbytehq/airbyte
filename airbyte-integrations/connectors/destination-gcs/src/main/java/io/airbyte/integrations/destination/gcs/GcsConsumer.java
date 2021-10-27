@@ -32,10 +32,10 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private AirbyteMessage lastStateMessage = null;
 
-  public GcsConsumer(GcsDestinationConfig gcsDestinationConfig,
-                     ConfiguredAirbyteCatalog configuredCatalog,
-                     GcsWriterFactory writerFactory,
-                     Consumer<AirbyteMessage> outputRecordCollector) {
+  public GcsConsumer(final GcsDestinationConfig gcsDestinationConfig,
+                     final ConfiguredAirbyteCatalog configuredCatalog,
+                     final GcsWriterFactory writerFactory,
+                     final Consumer<AirbyteMessage> outputRecordCollector) {
     this.gcsDestinationConfig = gcsDestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.writerFactory = writerFactory;
@@ -45,24 +45,24 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void startTracked() throws Exception {
-    AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+    final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
 
-    Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
+    final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
-    for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      S3Writer writer = writerFactory
+    for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
+      final S3Writer writer = writerFactory
           .create(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp);
       writer.initialize();
 
-      AirbyteStream stream = configuredStream.getStream();
-      AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
+      final AirbyteStream stream = configuredStream.getStream();
+      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
           .fromAirbyteSteam(stream);
       streamNameAndNamespaceToWriters.put(streamNamePair, writer);
     }
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage airbyteMessage) throws Exception {
+  protected void acceptTracked(final AirbyteMessage airbyteMessage) throws Exception {
     if (airbyteMessage.getType() == Type.STATE) {
       this.lastStateMessage = airbyteMessage;
       return;
@@ -70,8 +70,8 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
       return;
     }
 
-    AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
-    AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
+    final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
+    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
         .fromRecordMessage(recordMessage);
 
     if (!streamNameAndNamespaceToWriters.containsKey(pair)) {
@@ -81,13 +81,13 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
               Jsons.serialize(configuredCatalog), Jsons.serialize(recordMessage)));
     }
 
-    UUID id = UUID.randomUUID();
+    final UUID id = UUID.randomUUID();
     streamNameAndNamespaceToWriters.get(pair).write(id, recordMessage);
   }
 
   @Override
-  protected void close(boolean hasFailed) throws Exception {
-    for (S3Writer handler : streamNameAndNamespaceToWriters.values()) {
+  protected void close(final boolean hasFailed) throws Exception {
+    for (final S3Writer handler : streamNameAndNamespaceToWriters.values()) {
       handler.close(hasFailed);
     }
     // Gcs stream uploader is all or nothing if a failure happens in the destination.

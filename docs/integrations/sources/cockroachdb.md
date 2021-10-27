@@ -42,10 +42,9 @@ CockroachDb data types are mapped to the following data types when synchronizing
 | Feature | Supported | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync| Yes |  |
+| Incremental Sync | Yes |  |
 | Change Data Capture | No |  |
 | SSL Support | Yes |  |
-
 
 ## Getting started
 
@@ -94,6 +93,7 @@ Your database user should now be ready for use with Airbyte.
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.2 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
+

@@ -26,21 +26,23 @@ public class TestingDestinations extends BaseConnector implements Destination {
 
   public enum TestDestinationType {
     LOGGING,
-    THROTTLED
+    THROTTLED,
+    SILENT
   }
 
   public TestingDestinations() {
     this(ImmutableMap.<TestDestinationType, Destination>builder()
         .put(TestDestinationType.LOGGING, new LoggingDestination())
         .put(TestDestinationType.THROTTLED, new ThrottledDestination())
+        .put(TestDestinationType.SILENT, new SilentDestination())
         .build());
   }
 
-  public TestingDestinations(Map<TestDestinationType, Destination> destinationMap) {
+  public TestingDestinations(final Map<TestDestinationType, Destination> destinationMap) {
     this.destinationMap = destinationMap;
   }
 
-  private Destination selectDestination(JsonNode config) {
+  private Destination selectDestination(final JsonNode config) {
     return destinationMap.get(TestDestinationType.valueOf(config.get("type").asText()));
   }
 
@@ -57,7 +59,7 @@ public class TestingDestinations extends BaseConnector implements Destination {
     return selectDestination(config).check(config);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new TestingDestinations();
     LOGGER.info("starting destination: {}", TestingDestinations.class);
     new IntegrationRunner(destination).run(args);

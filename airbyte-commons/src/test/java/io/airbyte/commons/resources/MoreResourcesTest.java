@@ -25,6 +25,17 @@ class MoreResourcesTest {
   }
 
   @Test
+  void testResourceReadWithClass() throws IOException {
+    assertEquals("content1\n", MoreResources.readResource(MoreResourcesTest.class, "resource_test"));
+    assertEquals("content2\n", MoreResources.readResource(MoreResourcesTest.class, "subdir/resource_test_sub"));
+
+    assertEquals("content1\n", MoreResources.readResource(MoreResourcesTest.class, "/resource_test"));
+    assertEquals("content2\n", MoreResources.readResource(MoreResourcesTest.class, "/subdir/resource_test_sub"));
+
+    assertThrows(IllegalArgumentException.class, () -> MoreResources.readResource(MoreResourcesTest.class, "invalid"));
+  }
+
+  @Test
   void testReadBytes() throws IOException {
     assertEquals("content1\n", new String(MoreResources.readBytes("resource_test"), StandardCharsets.UTF_8));
     assertEquals("content2\n", new String(MoreResources.readBytes("subdir/resource_test_sub"), StandardCharsets.UTF_8));

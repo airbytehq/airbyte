@@ -45,7 +45,7 @@ If you log in using at [https://login.salesforce.com](https://login.salesforce.c
 
 ## Streams
 
-**Note**: The connector supports reading not only standard streams (listed below), but also reading `Custom Objects`.
+**Note**: The connector supports reading not only standard streams \(listed below\), but also reading `Custom Objects`.
 
 List of available streams:
 
@@ -730,11 +730,11 @@ List of available streams:
 * TaskWhoRelation
 * UndecidedEventRelation
 
-
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.2   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification |
-| 0.1.1   | 2021-09-21 | [6209](https://github.com/airbytehq/airbyte/pull/6209) | Fix bug with pagination for BULK API |
-| 0.1.0   | 2021-09-08 | [5619](https://github.com/airbytehq/airbyte/pull/5619) | Salesforce Aitbyte-Native Connector |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.2 | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification |
+| 0.1.1 | 2021-09-21 | [6209](https://github.com/airbytehq/airbyte/pull/6209) | Fix bug with pagination for BULK API |
+| 0.1.0 | 2021-09-08 | [5619](https://github.com/airbytehq/airbyte/pull/5619) | Salesforce Aitbyte-Native Connector |
+

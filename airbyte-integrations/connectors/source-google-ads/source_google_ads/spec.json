@@ -101,7 +101,7 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": ["credentials", 0],
+      "rootObject": ["credentials"],
       "oauthFlowInitParameters": [
         ["client_id"],
         ["client_secret"],

@@ -71,7 +71,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
   public static final String AB_EMITTED_AT_COLUMN = "_ab_emitted_at";
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       LOGGER.info("config in check {}", config);
       // create a fake index and add a record to it to make sure we can connect and have write access.
@@ -81,16 +81,16 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
       index.search("_airbyte");
       client.deleteIndex(index.getUid());
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Check connection failed.", e);
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Check connection failed: " + e.getMessage());
     }
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final Client client = getClient(config);
     final Map<String, Index> indexNameToIndex = createIndices(catalog, client);
@@ -105,7 +105,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
         MAX_BATCH_SIZE);
   }
 
-  private static Map<String, Index> createIndices(ConfiguredAirbyteCatalog catalog, Client client) throws Exception {
+  private static Map<String, Index> createIndices(final ConfiguredAirbyteCatalog catalog, final Client client) throws Exception {
     final Map<String, Index> map = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String indexName = getIndexName(stream);
@@ -123,7 +123,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
     return map;
   }
 
-  private static boolean indexExists(Client client, String indexName) throws Exception {
+  private static boolean indexExists(final Client client, final String indexName) throws Exception {
     return Arrays.stream(client.getIndexList())
         .map(Index::getUid)
         .anyMatch(actualIndexName -> actualIndexName.equals(indexName));
@@ -155,7 +155,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
       LOGGER.info("waiting for update to be applied started {}", Instant.now());
       try {
         index.waitForPendingUpdate(Jsons.deserialize(s).get("updateId").asInt());
-      } catch (Exception e) {
+      } catch (final Exception e) {
         LOGGER.error("waiting for update to be applied failed.", e);
         LOGGER.error("printing MeiliSearch update statuses: {}", Arrays.asList(index.getUpdates()));
         throw e;
@@ -164,19 +164,19 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
     };
   }
 
-  private static String getIndexName(String streamName) {
+  private static String getIndexName(final String streamName) {
     return Names.toAlphanumericAndUnderscore(streamName);
   }
 
-  private static String getIndexName(ConfiguredAirbyteStream stream) {
+  private static String getIndexName(final ConfiguredAirbyteStream stream) {
     return getIndexName(stream.getStream().getName());
   }
 
-  static Client getClient(JsonNode config) {
+  static Client getClient(final JsonNode config) {
     return new Client(new Config(config.get("host").asText(), config.has("api_key") ? config.get("api_key").asText() : null));
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new MeiliSearchDestination();
     LOGGER.info("starting destination: {}", MeiliSearchDestination.class);
     new IntegrationRunner(destination).run(args);

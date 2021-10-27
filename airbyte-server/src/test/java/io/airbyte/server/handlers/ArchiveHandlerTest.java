@@ -20,9 +20,11 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -31,8 +33,7 @@ import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -65,10 +66,11 @@ public class ArchiveHandlerTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHandlerTest.class);
 
-  private static final String VERSION = "0.6.8";
+  private static final AirbyteVersion VERSION = new AirbyteVersion("0.6.8");
   private static PostgreSQLContainer<?> container;
 
-  private Database database;
+  private Database jobDatabase;
+  private Database configDatabase;
   private JobPersistence jobPersistence;
   private DatabaseConfigPersistence configPersistence;
   private ConfigPersistence seedPersistence;
@@ -102,21 +104,23 @@ public class ArchiveHandlerTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    jobPersistence = new DefaultJobPersistence(database);
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    jobDatabase = databaseProviders.createNewJobsDatabase();
+    configDatabase = databaseProviders.createNewConfigsDatabase();
+    jobPersistence = new DefaultJobPersistence(jobDatabase);
     seedPersistence = YamlSeedConfigPersistence.getDefault();
-    configPersistence = new DatabaseConfigPersistence(database);
+    configPersistence = new DatabaseConfigPersistence(jobDatabase);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
     configRepository = new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.empty(), Optional.empty());
 
-    jobPersistence.setVersion(VERSION);
+    jobPersistence.setVersion(VERSION.serialize());
 
     final SpecFetcher specFetcher = mock(SpecFetcher.class);
     final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
     when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
-    when(specFetcher.execute(any())).thenReturn(emptyConnectorSpec);
+    when(specFetcher.getSpec(any(StandardSourceDefinition.class))).thenReturn(emptyConnectorSpec);
+    when(specFetcher.getSpec(any(StandardDestinationDefinition.class))).thenReturn(emptyConnectorSpec);
 
     archiveHandler = new ArchiveHandler(
         VERSION,
@@ -125,12 +129,14 @@ public class ArchiveHandlerTest {
         YamlSeedConfigPersistence.getDefault(),
         new WorkspaceHelper(configRepository, jobPersistence),
         new NoOpFileTtlManager(),
-        specFetcher);
+        specFetcher,
+        true);
   }
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    jobDatabase.close();
+    configDatabase.close();
   }
 
   /**
@@ -289,7 +295,7 @@ public class ArchiveHandlerTest {
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, sourceid.toString(), new SourceConnection()
         .withSourceId(sourceid)
         .withWorkspaceId(workspaceId)
-        .withSourceDefinitionId(configRepository.listStandardSources().get(0).getSourceDefinitionId())
+        .withSourceDefinitionId(configRepository.listStandardSourceDefinitions().get(0).getSourceDefinitionId())
         .withName("test-source")
         .withConfiguration(Jsons.emptyObject())
         .withTombstone(false));

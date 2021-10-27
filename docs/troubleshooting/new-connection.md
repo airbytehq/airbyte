@@ -30,16 +30,17 @@ If you are running into connection refused errors when running Airbyte via Docke
 
 ## I don’t see a form when selecting a connector
 
-We’ve had that issue once. (no spinner & 500 http error). We don’t know why. Resolution: try to stop airbyte (`docker-compose down`) & restart (`docker-compose up`)
+We’ve had that issue once. \(no spinner & 500 http error\). We don’t know why. Resolution: try to stop airbyte \(`docker-compose down`\) & restart \(`docker-compose up`\)
 
 ## Connection hangs when trying to run the discovery step
 
-You receive the error below when you tried to sync a database with a lot of tables (6000 or more).
+You receive the error below when you tried to sync a database with a lot of tables \(6000 or more\).
 
 ```bash
 airbyte-scheduler   | io.grpc.StatusRuntimeException: RESOURCE_EXHAUSTED: grpc: received message larger than max (<NUMBER> vs. 4194304)
 ```
-There are two Github issues tracking this problem: [Issue #3942](https://github.com/airbytehq/airbyte/issues/3942) and [Issue #3943](https://github.com/airbytehq/airbyte/issues/3943) 
 
-The workaround for this is trying to transfer the tables you really want to use to another namespace.
-If you need all tables you should split them into separate namespaces and try to use two connections.
+There are two Github issues tracking this problem: [Issue \#3942](https://github.com/airbytehq/airbyte/issues/3942) and [Issue \#3943](https://github.com/airbytehq/airbyte/issues/3943)
+
+The workaround for this is trying to transfer the tables you really want to use to another namespace. If you need all tables you should split them into separate namespaces and try to use two connections.
+

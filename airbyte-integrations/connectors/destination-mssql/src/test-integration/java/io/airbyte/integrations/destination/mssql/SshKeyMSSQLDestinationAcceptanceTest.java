@@ -12,4 +12,5 @@ public class SshKeyMSSQLDestinationAcceptanceTest extends SshMSSQLDestinationAcc
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_KEY_AUTH;
   }
+
 }

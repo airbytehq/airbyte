@@ -1,8 +1,11 @@
 import React from "react";
 import styled from "styled-components";
-import { FormattedHTMLMessage, FormattedMessage } from "react-intl";
+import { FormattedHTMLMessage, FormattedMessage, useIntl } from "react-intl";
+
+import { AuthErrorCodes } from "firebase/auth";
 
 import { H5, Link } from "components";
+
 import { FormTitle } from "../components/FormTitle";
 import FormContent from "../components/FormContent";
 import News from "../components/News";
@@ -10,6 +13,7 @@ import {
   useAuthService,
   useCurrentUser,
 } from "packages/cloud/services/auth/AuthService";
+import { useNotificationService } from "hooks/services/Notification/NotificationService";
 
 const Text = styled(H5)`
   padding: 27px 0 30px;
@@ -18,6 +22,7 @@ const Text = styled(H5)`
 
 const Resend = styled(Link)`
   cursor: pointer;
+  margin-bottom: 20px;
 `;
 
 const TitleBlock = styled.div`
@@ -53,9 +58,59 @@ const NewsPart = styled(Part)`
   justify-content: space-between;
 `;
 
+enum FirebaseAuthMessageId {
+  Success = "firebase.auth.success",
+  NetworkFailure = "firebase.auth.error.networkRequestFailed",
+  TooManyRequests = "firebase.auth.error.tooManyRequests",
+  DefaultError = "firebase.auth.error.default",
+}
+
 const ConfirmEmailPage: React.FC = () => {
-  const { sendEmailVerification } = useAuthService();
+  const { sendEmailVerification, logout } = useAuthService();
   const { email } = useCurrentUser();
+  const { registerNotification } = useNotificationService();
+  const { formatMessage } = useIntl();
+
+  const onClickSendEmailVerification = () => {
+    sendEmailVerification()
+      .then(() => {
+        registerNotification({
+          id: "auth/success",
+          title: formatMessage({ id: FirebaseAuthMessageId.Success }),
+          isError: false,
+        });
+      })
+      .catch((error) => {
+        switch (error.code) {
+          case AuthErrorCodes.NETWORK_REQUEST_FAILED:
+            registerNotification({
+              id: error.code,
+              title: formatMessage({
+                id: FirebaseAuthMessageId.NetworkFailure,
+              }),
+              isError: true,
+            });
+            break;
+          case AuthErrorCodes.TOO_MANY_ATTEMPTS_TRY_LATER:
+            registerNotification({
+              id: error.code,
+              title: formatMessage({
+                id: FirebaseAuthMessageId.TooManyRequests,
+              }),
+              isError: true,
+            });
+            break;
+          default:
+            registerNotification({
+              id: error.code,
+              title: formatMessage({
+                id: FirebaseAuthMessageId.DefaultError,
+              }),
+              isError: true,
+            });
+        }
+      });
+  };
 
   return (
     <Content>
@@ -79,8 +134,12 @@ const ConfirmEmailPage: React.FC = () => {
                 values={{ email }}
               />
             </Text>
-            <Resend $light as="div" onClick={sendEmailVerification}>
+            <Resend $light as="div" onClick={onClickSendEmailVerification}>
               <FormattedMessage id="login.resendEmail" />
+            </Resend>
+
+            <Resend $light as="div" onClick={logout}>
+              <FormattedMessage id="confirmEmail.signOut" />
             </Resend>
           </div>
         </FormContent>

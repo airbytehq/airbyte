@@ -4,6 +4,7 @@
     - Snowflake: flatten() -> https://docs.snowflake.com/en/sql-reference/functions/flatten.html
     - Redshift: -> https://blog.getdbt.com/how-to-unnest-arrays-in-redshift/
     - postgres: unnest() -> https://www.postgresqltutorial.com/postgresql-array/
+    - MSSQL: openjson() –> https://docs.microsoft.com/en-us/sql/relational-databases/json/validate-query-and-change-json-data-with-built-in-functions-sql-server?view=sql-server-ver15
 #}
 
 {# cross_join_unnest -------------------------------------------------     #}
@@ -44,6 +45,17 @@
     cross join table(flatten({{ array_col }})) as {{ array_col }}
 {%- endmacro %}
 
+{% macro sqlserver__cross_join_unnest(stream_name, array_col) -%}
+{# https://docs.microsoft.com/en-us/sql/relational-databases/json/convert-json-data-to-rows-and-columns-with-openjson-sql-server?view=sql-server-ver15#option-1---openjson-with-the-default-output #}
+    CROSS APPLY (
+	    SELECT [value] = CASE 
+			WHEN [type] = 4 THEN (SELECT [value] FROM OPENJSON([value])) 
+			WHEN [type] = 5 THEN [value]
+			END
+	    FROM OPENJSON({{ array_col }})
+    ) AS {{ array_col }}
+{%- endmacro %}
+
 {# unnested_column_value -- this macro is related to unnest_cte #}
 
 {% macro unnested_column_value(column_col) -%}
@@ -72,6 +84,11 @@
 
 {% macro oracle__unnested_column_value(column_col) -%}
     {{ column_col }}
+{%- endmacro %}
+
+{% macro sqlserver__unnested_column_value(column_col) -%}
+    {# unnested array/sub_array will be located in `value` column afterwards, we need to address to it #}
+    {{ column_col }}.value
 {%- endmacro %}
 
 {# unnest_cte -------------------------------------------------     #}

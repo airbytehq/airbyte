@@ -10,6 +10,7 @@ import random
 import shutil
 import sys
 import tempfile
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, List, Mapping
 
@@ -60,7 +61,7 @@ class TestParquetParser(AbstractTestParser):
         """Generates random values with request types"""
         row = []
         for needed_type in types:
-            for json_type in PARQUET_TYPES.values():
+            for json_type in PARQUET_TYPES:
                 if json_type == needed_type:
                     row.append(cls._generate_value(needed_type))
                     break
@@ -86,7 +87,14 @@ class TestParquetParser(AbstractTestParser):
         elif typ == "string":
             random_length = random.randint(0, 10 * 1024)  # max size of bytes is 10k
             return os.urandom(random_length)
-
+        elif typ == "timestamp":
+            return datetime.now() + timedelta(seconds=random.randint(0, 7200))
+        elif typ == "date":
+            dt = cls._generate_value("timestamp")
+            return dt.date() if dt else None
+        elif typ == "time":
+            dt = cls._generate_value("timestamp")
+            return dt.time() if dt else None
         raise Exception(f"not supported type: {typ}")
 
     @property
@@ -123,7 +131,13 @@ class TestParquetParser(AbstractTestParser):
             "degrees": "number",
             "birthday": "string",
             "last_seen": "string",
+            "created_at": "timestamp",
+            "created_date_at": "date",
+            "created_time_at": "time",
         }
+        # datetime => string type
+
+        master_schema = {k: ParquetParser.parse_field_type(needed_logical_type=v)[0] for k, v in schema.items()}
         suite = []
         # basic 'normal' test
         num_records = 10
@@ -131,10 +145,10 @@ class TestParquetParser(AbstractTestParser):
         suite.append(
             {
                 "test_alias": "basic 'normal' test",
-                "AbstractFileParser": ParquetParser(format=params, master_schema=schema),
+                "AbstractFileParser": ParquetParser(format=params, master_schema=master_schema),
                 "filepath": self.generate_parquet_file("normal_test", schema, num_records),
                 "num_records": num_records,
-                "inferred_schema": schema,
+                "inferred_schema": master_schema,
                 "line_checks": {},
                 "fails": [],
             }
@@ -154,9 +168,9 @@ class TestParquetParser(AbstractTestParser):
                 "num_records": num_records,
                 "AbstractFileParser": ParquetParser(
                     format=params,
-                    master_schema=schema,
+                    master_schema=master_schema,
                 ),
-                "inferred_schema": schema,
+                "inferred_schema": master_schema,
                 "line_checks": {},
                 "fails": [],
             }
@@ -175,9 +189,9 @@ class TestParquetParser(AbstractTestParser):
                 "num_records": num_records,
                 "AbstractFileParser": ParquetParser(
                     format=params,
-                    master_schema=schema,
+                    master_schema=master_schema,
                 ),
-                "inferred_schema": schema,
+                "inferred_schema": master_schema,
                 "line_checks": {},
                 "fails": [],
             }
@@ -193,7 +207,15 @@ class TestParquetParser(AbstractTestParser):
             "degrees": -9.2,
             "birthday": self._generate_value("string"),
             "last_seen": self._generate_value("string"),
+            "created_at": self._generate_value("timestamp"),
+            "created_date_at": self._generate_value("date"),
+            "created_time_at": self._generate_value("time"),
         }
+
+        expected_record = copy.deepcopy(test_record)
+        expected_record["created_date_at"] = ParquetParser.convert_field_data("date", expected_record["created_date_at"])
+        expected_record["created_time_at"] = ParquetParser.convert_field_data("time", expected_record["created_time_at"])
+        expected_record["created_at"] = ParquetParser.convert_field_data("timestamp", expected_record["created_at"])
 
         suite.append(
             {
@@ -204,10 +226,10 @@ class TestParquetParser(AbstractTestParser):
                 "num_records": num_records,
                 "AbstractFileParser": ParquetParser(
                     format=params,
-                    master_schema=schema,
+                    master_schema=master_schema,
                 ),
-                "inferred_schema": schema,
-                "line_checks": {8: test_record},
+                "inferred_schema": master_schema,
+                "line_checks": {8: expected_record},
                 "fails": [],
             }
         )
@@ -215,7 +237,7 @@ class TestParquetParser(AbstractTestParser):
         # extra columns in master schema
         params = {"filetype": self.filetype}
         num_records = 10
-        extra_schema = copy.deepcopy(schema)
+        extra_schema = copy.deepcopy(master_schema)
         extra_schema.update(
             {
                 "extra_id": "integer",
@@ -231,7 +253,7 @@ class TestParquetParser(AbstractTestParser):
                     format=params,
                     master_schema=extra_schema,
                 ),
-                "inferred_schema": schema,
+                "inferred_schema": master_schema,
                 "line_checks": {},
                 "fails": [],
             }
@@ -239,7 +261,7 @@ class TestParquetParser(AbstractTestParser):
         # tests missing columns in master schema
         params = {"filetype": self.filetype}
         num_records = 10
-        simplified_schema = copy.deepcopy(schema)
+        simplified_schema = copy.deepcopy(master_schema)
         simplified_schema.pop("id")
         simplified_schema.pop("name")
 
@@ -252,7 +274,7 @@ class TestParquetParser(AbstractTestParser):
                     format=params,
                     master_schema=simplified_schema,
                 ),
-                "inferred_schema": schema,
+                "inferred_schema": master_schema,
                 "line_checks": {},
                 "fails": [],
             }
@@ -268,7 +290,7 @@ class TestParquetParser(AbstractTestParser):
                     format=params,
                     master_schema={},
                 ),
-                "inferred_schema": schema,
+                "inferred_schema": master_schema,
                 "line_checks": {},
                 "fails": ["test_get_inferred_schema", "test_stream_records"],
             }
@@ -287,10 +309,10 @@ class TestParquetParser(AbstractTestParser):
                     "num_records": num_records,
                     "AbstractFileParser": ParquetParser(
                         format=params,
-                        master_schema=schema,
+                        master_schema=master_schema,
                     ),
-                    "inferred_schema": schema,
-                    "line_checks": {8: test_record},
+                    "inferred_schema": master_schema,
+                    "line_checks": {8: expected_record},
                     "fails": [],
                 }
             )

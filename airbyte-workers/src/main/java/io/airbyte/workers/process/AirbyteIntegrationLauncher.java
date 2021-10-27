@@ -28,15 +28,15 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final ProcessFactory processFactory;
   private final ResourceRequirements resourceRequirement;
 
-  public AirbyteIntegrationLauncher(String jobId,
-                                    int attempt,
+  public AirbyteIntegrationLauncher(final String jobId,
+                                    final int attempt,
                                     final String imageName,
                                     final ProcessFactory processFactory) {
     this(String.valueOf(jobId), attempt, imageName, processFactory, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
   }
 
-  public AirbyteIntegrationLauncher(String jobId,
-                                    int attempt,
+  public AirbyteIntegrationLauncher(final String jobId,
+                                    final int attempt,
                                     final String imageName,
                                     final ProcessFactory processFactory,
                                     final ResourceRequirements resourceRequirement) {

@@ -4,11 +4,11 @@
 
 
 import inspect
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -26,7 +26,9 @@ class Stream(ABC):
     """
 
     # Use self.logger in subclasses to log any messages
-    logger = AirbyteLogger()  # TODO use native "logging" loggers with custom handlers
+    @property
+    def logger(self):
+        return logging.getLogger(f"streams.{self.name}")
 
     # TypeTransformer object to perform output data transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
@@ -104,7 +106,7 @@ class Stream(ABC):
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """
         :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
-        If the stream has no primary keys, return None.
+          If the stream has no primary keys, return None.
         """
 
     def stream_slices(

@@ -23,9 +23,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,16 +81,7 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
 
     if (cachedSpecOptional.isPresent()) {
       LOGGER.debug("Spec bucket cache: Cache hit.");
-      final long now = Instant.now().toEpochMilli();
-      final SynchronousJobMetadata mockMetadata = new SynchronousJobMetadata(
-          UUID.randomUUID(),
-          ConfigType.GET_SPEC,
-          null,
-          now,
-          now,
-          true,
-          Path.of(""));
-      return new SynchronousResponse<>(cachedSpecOptional.get(), mockMetadata);
+      return new SynchronousResponse<>(cachedSpecOptional.get(), SynchronousJobMetadata.mock(ConfigType.GET_SPEC));
     } else {
       LOGGER.debug("Spec bucket cache: Cache miss.");
       return client.createGetSpecJob(dockerImage);
@@ -105,9 +94,9 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
     jsonSchemaValidator.ensure(specJsonSchema, json);
   }
 
-  private static Optional<ConnectorSpecification> attemptToFetchSpecFromBucket(final Storage storage,
-                                                                               final String bucketName,
-                                                                               final String dockerImage) {
+  public static Optional<ConnectorSpecification> attemptToFetchSpecFromBucket(final Storage storage,
+                                                                              final String bucketName,
+                                                                              final String dockerImage) {
     final String[] dockerImageComponents = dockerImage.split(":");
     Preconditions.checkArgument(dockerImageComponents.length == 2, "Invalidate docker image: " + dockerImage);
     final String dockerImageName = dockerImageComponents[0];
@@ -127,7 +116,7 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
     try {
       validateConfig(Jsons.deserialize(specAsString));
     } catch (final JsonValidationException e) {
-      LOGGER.error("Received invalid spec from bucket store. Received: {}", specAsString);
+      LOGGER.error("Received invalid spec from bucket store. {}", e.toString());
       return Optional.empty();
     }
     return Optional.of(Jsons.deserialize(specAsString, ConnectorSpecification.class));

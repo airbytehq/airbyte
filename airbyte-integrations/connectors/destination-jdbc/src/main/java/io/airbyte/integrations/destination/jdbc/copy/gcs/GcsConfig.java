@@ -12,7 +12,7 @@ public class GcsConfig {
   private final String bucketName;
   private final String credentialsJson;
 
-  public GcsConfig(String projectId, String bucketName, String credentialsJson) {
+  public GcsConfig(final String projectId, final String bucketName, final String credentialsJson) {
     this.projectId = projectId;
     this.bucketName = bucketName;
     this.credentialsJson = credentialsJson;
@@ -30,7 +30,7 @@ public class GcsConfig {
     return credentialsJson;
   }
 
-  public static GcsConfig getGcsConfig(JsonNode config) {
+  public static GcsConfig getGcsConfig(final JsonNode config) {
     return new GcsConfig(
         config.get("loading_method").get("project_id").asText(),
         config.get("loading_method").get("bucket_name").asText(),

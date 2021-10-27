@@ -33,7 +33,7 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
         return Optional.of(new LocalTestingSecretPersistence(configDatabase));
       }
       case GOOGLE_SECRET_MANAGER -> {
-        return Optional.of(GoogleSecretManagerPersistence.getLongLived(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpProjectId()));
+        return Optional.of(GoogleSecretManagerPersistence.getLongLived(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials()));
       }
       default -> {
         return Optional.empty();
@@ -63,7 +63,7 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
         return Optional.of(new LocalTestingSecretPersistence(configDatabase));
       }
       case GOOGLE_SECRET_MANAGER -> {
-        return Optional.of(GoogleSecretManagerPersistence.getEphemeral(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpProjectId()));
+        return Optional.of(GoogleSecretManagerPersistence.getEphemeral(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials()));
       }
       default -> {
         return Optional.empty();
