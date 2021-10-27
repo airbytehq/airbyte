@@ -38,16 +38,16 @@ public class SourceDefinitionsHandler {
   private final CachingSynchronousSchedulerClient schedulerSynchronousClient;
 
   public SourceDefinitionsHandler(
-      final ConfigRepository configRepository,
-      final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
+                                  final ConfigRepository configRepository,
+                                  final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
     this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
   }
 
   public SourceDefinitionsHandler(
-      final ConfigRepository configRepository,
-      final Supplier<UUID> uuidSupplier,
-      final CachingSynchronousSchedulerClient schedulerSynchronousClient,
-      final AirbyteGithubStore githubStore) {
+                                  final ConfigRepository configRepository,
+                                  final Supplier<UUID> uuidSupplier,
+                                  final CachingSynchronousSchedulerClient schedulerSynchronousClient,
+                                  final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
