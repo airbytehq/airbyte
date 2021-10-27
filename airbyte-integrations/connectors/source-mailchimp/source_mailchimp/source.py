@@ -21,13 +21,16 @@ class MailChimpAuthenticator:
     def get_auth(config: Mapping[str, Any]) -> AuthBase:
         authorization = config.get("authorization", {})
         auth_type = authorization.get("auth_type")
-        if auth_type == "Apikey":
+        if auth_type == "Apikey" or not authorization:
             # API keys have the format <key>-<data_center>.
             # See https://mailchimp.com/developer/marketing/docs/fundamentals/#api-structure
-            auth_string = f"anystring:{authorization['apikey']}".encode("utf8")
+            apikey = authorization.get("apikey") or config.get("apikey")
+            if not apikey:
+                raise Exception("No apikey in creds")
+            auth_string = f"anystring:{apikey}".encode("utf8")
             b64_encoded = base64.b64encode(auth_string).decode("utf8")
             auth = TokenAuthenticator(token=b64_encoded, auth_method="Basic")
-            auth.data_center = authorization["apikey"].split("-").pop()
+            auth.data_center = apikey.split("-").pop()
 
         elif auth_type == "Oauth":
             auth = TokenAuthenticator(token=authorization["access_token"], auth_method="Bearer")
@@ -44,9 +47,10 @@ class SourceMailchimp(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authorization = config.get("authorization", {})
-            client = MailChimp(
-                mc_api=authorization.get("apikey"), mc_user=authorization.get("username"), access_token=authorization.get("access_token")
-            )
+            apikey = authorization.get("apikey") or config.get("apikey")
+            username = authorization.get("username") or config.get("username")
+            access_token = authorization.get("access_token")
+            client = MailChimp(mc_api=apikey, mc_user=username, access_token=access_token)
             client.ping.get()
             return True, None
         except Exception as e:

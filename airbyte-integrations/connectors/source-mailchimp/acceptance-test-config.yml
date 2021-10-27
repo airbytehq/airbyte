@@ -3,8 +3,13 @@ tests:
   spec:
     - spec_path: "source_mailchimp/spec.json"
   connection:
+    # for old spec config (without oneOf)
     - config_path: "secrets/config.json"
       status: "succeed"
+    # for auth with API token
+    - config_path: "secrets/config_apikey.json"
+      status: "succeed"
+    # for auth with oauth2 token
     - config_path: "secrets/config_oauth.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
@@ -12,7 +17,11 @@ tests:
     - config_path: "integration_tests/invalid_config_oauth.json"
       status: "failed"
   discovery:
+    # for old spec config (without oneOf)
     - config_path: "secrets/config.json"
+    # for auth with API token
+    - config_path: "secrets/config_apikey.json"
+    # for auth with oauth2 token
     - config_path: "secrets/config_oauth.json"
   basic_read:
     - config_path: "secrets/config.json"
