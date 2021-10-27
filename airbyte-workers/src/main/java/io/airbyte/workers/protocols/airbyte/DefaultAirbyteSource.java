@@ -54,9 +54,10 @@ public class DefaultAirbyteSource implements AirbyteSource {
     this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC), new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
-  @VisibleForTesting DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                                          final AirbyteStreamFactory streamFactory,
-                                          final HeartbeatMonitor heartbeatMonitor) {
+  @VisibleForTesting
+  DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
+                       final AirbyteStreamFactory streamFactory,
+                       final HeartbeatMonitor heartbeatMonitor) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.heartbeatMonitor = heartbeatMonitor;

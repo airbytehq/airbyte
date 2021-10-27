@@ -50,13 +50,14 @@ public class DbtTransformationRunner implements AutoCloseable {
   }
 
   /**
-   * The docker image used by the DbtTransformationRunner is provided by the User, so we can't ensure to have the right python, dbt, dependencies etc
-   * software installed to successfully run our transform-config scripts (to translate Airbyte Catalogs into Dbt profiles file). Thus, we depend on
-   * the NormalizationRunner to configure the dbt project with the appropriate destination settings and pull the custom git repository into the
-   * workspace.
+   * The docker image used by the DbtTransformationRunner is provided by the User, so we can't ensure
+   * to have the right python, dbt, dependencies etc software installed to successfully run our
+   * transform-config scripts (to translate Airbyte Catalogs into Dbt profiles file). Thus, we depend
+   * on the NormalizationRunner to configure the dbt project with the appropriate destination settings
+   * and pull the custom git repository into the workspace.
    * <p>
-   * Once the workspace folder/files is setup to run, we invoke the custom transformation command as provided by the user to execute whatever extra
-   * transformation has been implemented.
+   * Once the workspace folder/files is setup to run, we invoke the custom transformation command as
+   * provided by the user to execute whatever extra transformation has been implemented.
    */
   public boolean run(final String jobId,
                      final int attempt,

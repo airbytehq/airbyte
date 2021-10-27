@@ -77,7 +77,7 @@ class DefaultNormalizationRunnerTest {
         "--integration-type", "bigquery",
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))
-        .thenReturn(process);
+            .thenReturn(process);
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
   }
