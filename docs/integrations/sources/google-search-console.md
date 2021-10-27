@@ -96,7 +96,7 @@ You should now be ready to use the Google Workspace Admin Reports API connector 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| `0.1.7` | 2021-10-27 | []() | Add default `end_date` param value |
+| `0.1.7` | 2021-10-27 | [7431](https://github.com/airbytehq/airbyte/pull/7431) | Add default `end_date` param value |
 | `0.1.6` | 2021-09-27 | [6460](https://github.com/airbytehq/airbyte/pull/6460) | Update OAuth Spec File |
 | `0.1.4` | 2021-09-23 | [6394](https://github.com/airbytehq/airbyte/pull/6394) | Update Doc link Spec File |
 | `0.1.3` | 2021-09-23 | [6405](https://github.com/airbytehq/airbyte/pull/6405) | Correct Spec File |
