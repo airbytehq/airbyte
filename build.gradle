@@ -152,6 +152,7 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
+    apply plugin: 'airbyte-docker'
 
     sourceCompatibility = JavaVersion.VERSION_14
     targetCompatibility = JavaVersion.VERSION_14
@@ -235,6 +236,9 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
         testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
         testImplementation 'org.assertj:assertj-core:3.21.0'
+
+        implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+        integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     }
 
     tasks.withType(Tar) {
@@ -245,7 +249,7 @@ subprojects {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
 }
-
+/*
 task composeBuild {
     def buildTag = System.getenv('VERSION') ?: 'dev'
     def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
@@ -267,7 +271,7 @@ task composeBuild {
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     build.dependsOn(composeBuild)
 }
-
+*/
 task('generate') {
     dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
