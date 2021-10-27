@@ -3,7 +3,6 @@
 #
 
 import math
-import re
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
@@ -386,9 +385,9 @@ class CheckoutSessionsLineItems(StripeStream):
         response_json = response.json()
         data = response_json.get("data", [])
         if data:
+            cs_id = kwargs.get('stream_slice').get('checkout_session_id', None)
             for e in data:
-                checkout_session_id = re.search(r"/sessions/(cs_[^/].+)/line_items", response.url)
-                e["checkout_session_id"] = checkout_session_id.group(1) if checkout_session_id else None
+                e['checkout_session_id'] = cs_id
         yield from data
 
 
