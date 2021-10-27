@@ -24,7 +24,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @Tag("logger-client")
 public class S3LogsTest {
 
-  private static final LogConfigs logConfigs = new LogConfiguration("","","","","","","");
+  private static final LogConfigs logConfigs = new LogConfiguration("", "", "", "", "", "", "");
 
   @Test
   public void testMissingCredentials() {

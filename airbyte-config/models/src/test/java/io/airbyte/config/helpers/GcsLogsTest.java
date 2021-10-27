@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.config.EnvConfigs;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -37,7 +36,7 @@ public class GcsLogsTest {
    */
   @Test
   public void testRetrieveAllLogs() throws IOException {
-    final File data = GcsLogs.getFile(new LogConfiguration("","","","","","",""),
+    final File data = GcsLogs.getFile(new LogConfiguration("", "", "", "", "", "", ""),
         "paginate", 6);
 
     final var retrieved = new ArrayList<String>();
@@ -57,7 +56,7 @@ public class GcsLogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    final var data = new GcsLogs().tailCloudLog(new LogConfiguration("","","","","","",""),
+    final var data = new GcsLogs().tailCloudLog(new LogConfiguration("", "", "", "", "", "", ""),
         "tail", 6);
 
     final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
