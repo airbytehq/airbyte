@@ -239,7 +239,7 @@ Postgres data types are mapped to the following data types when synchronizing da
 | `lseg` | string |  |
 | `macaddr` | string |  |
 | `macaddr8` | string |  |
-| `money` | string | debezium return rounded value for values more than 999999999999999 and less than -999999999999999, we maps the values as null; |
+| `money` | string | When running logical replication (CDC), `money` values larger than 999999999999999 (15 nines) or smaller than -999999999999999 (15 nines)  are transmitted as null; |
 | `mood` | string |  |
 | `numeric` | number |  |
 | `path` | string |  |
