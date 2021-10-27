@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.logging.LoggingHelper.Color;
+import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
@@ -28,6 +31,10 @@ public class DbtTransformationRunner implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationRunner.class);
   private static final String DBT_ENTRYPOINT_SH = "entrypoint.sh";
+  private static final MdcScope CONTAINER_LOG_MDC = new Builder()
+      .setLogPrefix("dbt-container-log")
+      .setPrefixColor(Color.CYAN)
+      .build();
 
   private final ProcessFactory processFactory;
   private final NormalizationRunner normalizationRunner;
@@ -48,7 +55,7 @@ public class DbtTransformationRunner implements AutoCloseable {
    * transform-config scripts (to translate Airbyte Catalogs into Dbt profiles file). Thus, we depend
    * on the NormalizationRunner to configure the dbt project with the appropriate destination settings
    * and pull the custom git repository into the workspace.
-   *
+   * <p>
    * Once the workspace folder/files is setup to run, we invoke the custom transformation command as
    * provided by the user to execute whatever extra transformation has been implemented.
    */
@@ -59,10 +66,12 @@ public class DbtTransformationRunner implements AutoCloseable {
                      final ResourceRequirements resourceRequirements,
                      final OperatorDbt dbtConfig)
       throws Exception {
-    if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
-      return false;
+    try (CONTAINER_LOG_MDC) {
+      if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
+        return false;
+      }
+      return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);
     }
-    return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);
   }
 
   public boolean transform(final String jobId,
@@ -72,7 +81,7 @@ public class DbtTransformationRunner implements AutoCloseable {
                            final ResourceRequirements resourceRequirements,
                            final OperatorDbt dbtConfig)
       throws Exception {
-    try {
+    try (CONTAINER_LOG_MDC) {
       final Map<String, String> files = ImmutableMap.of(
           DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"),
           "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"));
@@ -104,16 +113,18 @@ public class DbtTransformationRunner implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    normalizationRunner.close();
+    try (CONTAINER_LOG_MDC) {
+      normalizationRunner.close();
 
-    if (process == null) {
-      return;
-    }
+      if (process == null) {
+        return;
+      }
 
-    LOGGER.debug("Closing dbt transformation process");
-    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
-    if (process.isAlive() || process.exitValue() != 0) {
-      throw new WorkerException("Dbt transformation process wasn't successful");
+      LOGGER.debug("Closing dbt transformation process");
+      WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+      if (process.isAlive() || process.exitValue() != 0) {
+        throw new WorkerException("Dbt transformation process wasn't successful");
+      }
     }
   }
 

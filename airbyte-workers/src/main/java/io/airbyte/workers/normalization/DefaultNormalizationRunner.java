@@ -10,6 +10,9 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper.Color;
+import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -27,6 +30,10 @@ import org.slf4j.LoggerFactory;
 public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
+  private static final MdcScope CONTAINER_LOG_MDC = new Builder()
+      .setLogPrefix("normalization-container-log")
+      .setPrefixColor(Color.GREEN)
+      .build();
 
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
@@ -58,24 +65,26 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
                               final ResourceRequirements resourceRequirements,
                               final OperatorDbt dbtConfig)
       throws Exception {
-    final Map<String, String> files = ImmutableMap.of(
-        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
-    final String gitRepoUrl = dbtConfig.getGitRepoUrl();
-    if (Strings.isNullOrEmpty(gitRepoUrl)) {
-      throw new WorkerException("Git Repo Url is required");
-    }
-    final String gitRepoBranch = dbtConfig.getGitRepoBranch();
-    if (Strings.isNullOrEmpty(gitRepoBranch)) {
-      return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
-          "--integration-type", destinationType.toString().toLowerCase(),
-          "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-          "--git-repo", gitRepoUrl);
-    } else {
-      return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
-          "--integration-type", destinationType.toString().toLowerCase(),
-          "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-          "--git-repo", gitRepoUrl,
-          "--git-branch", gitRepoBranch);
+    try (CONTAINER_LOG_MDC) {
+      final Map<String, String> files = ImmutableMap.of(
+          WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
+      final String gitRepoUrl = dbtConfig.getGitRepoUrl();
+      if (Strings.isNullOrEmpty(gitRepoUrl)) {
+        throw new WorkerException("Git Repo Url is required");
+      }
+      final String gitRepoBranch = dbtConfig.getGitRepoBranch();
+      if (Strings.isNullOrEmpty(gitRepoBranch)) {
+        return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
+            "--integration-type", destinationType.toString().toLowerCase(),
+            "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+            "--git-repo", gitRepoUrl);
+      } else {
+        return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
+            "--integration-type", destinationType.toString().toLowerCase(),
+            "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+            "--git-repo", gitRepoUrl,
+            "--git-branch", gitRepoBranch);
+      }
     }
   }
 
@@ -87,14 +96,16 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
                            final ConfiguredAirbyteCatalog catalog,
                            final ResourceRequirements resourceRequirements)
       throws Exception {
-    final Map<String, String> files = ImmutableMap.of(
-        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
-        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
+    try (CONTAINER_LOG_MDC) {
+      final Map<String, String> files = ImmutableMap.of(
+          WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
+          WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
-    return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "run",
-        "--integration-type", destinationType.toString().toLowerCase(),
-        "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
+      return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "run",
+          "--integration-type", destinationType.toString().toLowerCase(),
+          "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+          "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
+    }
   }
 
   private boolean runProcess(final String jobId,
@@ -104,7 +115,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
                              final ResourceRequirements resourceRequirements,
                              final String... args)
       throws Exception {
-    try {
+    try (CONTAINER_LOG_MDC) {
       LOGGER.info("Running with normalization version: {}", normalizationImageName);
       process = processFactory.create(jobId, attempt, jobRoot, normalizationImageName, false, files, null, resourceRequirements,
           Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP), args);
@@ -126,14 +137,16 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   @Override
   public void close() throws Exception {
-    if (process == null) {
-      return;
-    }
+    try (CONTAINER_LOG_MDC) {
+      if (process == null) {
+        return;
+      }
 
-    LOGGER.debug("Closing normalization process");
-    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
-    if (process.isAlive() || process.exitValue() != 0) {
-      throw new WorkerException("Normalization process wasn't successful");
+      LOGGER.debug("Closing normalization process");
+      WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+      if (process.isAlive() || process.exitValue() != 0) {
+        throw new WorkerException("Normalization process wasn't successful");
+      }
     }
   }
 

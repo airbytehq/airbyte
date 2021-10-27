@@ -39,7 +39,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private static final Duration FORCED_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
 
   private static final MdcScope CONTAINER_LOG_MDC = new Builder()
-      .setLogPrefix("container-log")
+      .setLogPrefix("source-container-log")
       .setPrefixColor(Color.BLUE)
       .build();
 
