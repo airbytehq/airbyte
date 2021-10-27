@@ -8,4 +8,10 @@ dependencies {
     implementation project(':airbyte-config:persistence')
     implementation project(':airbyte-json-validation')
     testImplementation project(':airbyte-oauth')
+
+    // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
+    implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.141.59'
+//    implementation group: 'org.seleniumhq.selenium', name: 'selenium-chrome-driver', version: '3.141.59'
+//    implementation group: 'org.seleniumhq.selenium', name: 'selenium-chrome-driver', version: '2.27.0'
+
 }
