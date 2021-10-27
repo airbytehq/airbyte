@@ -341,7 +341,6 @@ class Locations(ShopifyStream):
 
 
 class InventoryLevels(ChildSubstream):
-    primary_key = "inventory_item_id"
     parent_stream_class: object = Locations
     slice_key = "location_id"
     cursor_field = "updated_at"
@@ -351,6 +350,19 @@ class InventoryLevels(ChildSubstream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         location_id = stream_slice["location_id"]
         return f"locations/{location_id}/{self.data_field}.json"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records_stream = super().parse_response(response, **kwargs)
+
+        def generate_key(record):
+            record.update({"id": "|".join((str(record.get("location_id", "")), str(record.get("inventory_item_id", ""))))})
+            return record
+
+        # associate the surrogate key
+        yield from map(
+            generate_key,
+            records_stream,
+        )
 
 
 class SourceShopify(AbstractSource):
