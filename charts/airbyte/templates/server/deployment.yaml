@@ -53,8 +53,8 @@ spec:
         - name: DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.externalDatabase.existingSecret }}
-              key: {{ .Values.externalDatabase.existingSecretPasswordKey }}
+              name: {{ include "airbyte.postgresql.secretName" . }}
+              key: {{ include "airbyte.database.existingsecret.key" . }}
         {{- end }}
         - name: DATABASE_URL
           valueFrom:
