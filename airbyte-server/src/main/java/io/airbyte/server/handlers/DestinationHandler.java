@@ -15,7 +15,6 @@ import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -213,7 +212,7 @@ public class DestinationHandler {
 
   public static ConnectorSpecification getSpec(final SpecFetcher specFetcher, final StandardDestinationDefinition destinationDef)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return specFetcher.execute(DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag()));
+    return specFetcher.getSpec(destinationDef);
   }
 
   private void persistDestinationConnection(final String name,
