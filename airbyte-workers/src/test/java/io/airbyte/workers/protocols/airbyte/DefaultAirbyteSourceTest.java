@@ -41,6 +41,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,6 +71,16 @@ class DefaultAirbyteSourceTest {
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
 
+  private static Path logJobRoot;
+
+  static {
+    try {
+      logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+    } catch (final IOException e) {
+      e.printStackTrace();
+    }
+  }
+
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
   private Process process;
@@ -97,11 +108,25 @@ class DefaultAirbyteSourceTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
 
     streamFactory = noop -> MESSAGES.stream();
+
+    LogClientSingleton.setJobMdc(logJobRoot);
+  }
+
+  @AfterEach
+  public void tearDown() throws IOException {
+    // The log file needs to be present and empty
+    final Path logFile = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
+    if (Files.exists(logFile)) {
+      Files.delete(logFile);
+    }
+    Files.createFile(logFile);
   }
 
   @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
   @Test
   public void testSuccessfulLifecycle() throws Exception {
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
+
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
     final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
@@ -132,10 +157,10 @@ class DefaultAirbyteSourceTest {
     verify(process).exitValue();
   }
 
-  @Test public void testTaggedLogs() throws Exception {
+  @Test
+  public void testTaggedLogs() throws Exception {
 
-    final Path logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-    LogClientSingleton.setJobMdc(logJobRoot);
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(("rewq").getBytes(StandardCharsets.UTF_8)));
 
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
@@ -149,13 +174,11 @@ class DefaultAirbyteSourceTest {
     messages.add(source.attemptRead().get());
 
     when(process.isAlive()).thenReturn(false);
-    verify(heartbeatMonitor, times(2)).beat();
 
     source.close();
 
     final Path logPath = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
-    final Stream<String> logs
-        = IOs.readFile(logPath).lines();
+    final Stream<String> logs = IOs.readFile(logPath).lines();
 
     logs.forEach(line -> {
       org.assertj.core.api.Assertions.assertThat(line)

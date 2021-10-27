@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,16 @@ class DefaultAirbyteDestinationTest {
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       AirbyteMessageUtils.createStateMessage("checkpoint", "1"),
       AirbyteMessageUtils.createStateMessage("checkpoint", "2"));
+
+  private static Path logJobRoot;
+
+  static {
+    try {
+      logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+    } catch (final IOException e) {
+      e.printStackTrace();
+    }
+  }
 
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
@@ -78,12 +89,22 @@ class DefaultAirbyteDestinationTest {
         Jsons.serialize(DESTINATION_CONFIG.getDestinationConnectionConfiguration()),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
         Jsons.serialize(DESTINATION_CONFIG.getCatalog())))
-        .thenReturn(process);
+            .thenReturn(process);
 
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);
 
     streamFactory = noop -> MESSAGES.stream();
+  }
+
+  @AfterEach
+  public void tearDown() throws IOException {
+    // The log file needs to be present and empty
+    final Path logFile = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
+    if (Files.exists(logFile)) {
+      Files.delete(logFile);
+    }
+    Files.createFile(logFile);
   }
 
   @SuppressWarnings("BusyWait")
@@ -127,9 +148,6 @@ class DefaultAirbyteDestinationTest {
 
   @Test
   public void testTaggedLogs() throws Exception {
-    final Path logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-    LogClientSingleton.setJobMdc(jobRoot);
-
     final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
