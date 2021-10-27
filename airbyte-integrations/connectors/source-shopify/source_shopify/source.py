@@ -364,6 +364,7 @@ class InventoryLevels(ChildSubstream):
             records_stream,
         )
 
+
 class FulfillmentOrders(ChildSubstream):
 
     parent_stream_class: object = Orders
