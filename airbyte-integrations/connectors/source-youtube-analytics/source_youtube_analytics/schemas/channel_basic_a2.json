@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "integer"
+    },
+    "channel_id": {
+      "type": "string"
+    },
+    "video_id": {
+      "type": "string"
+    },
+    "live_or_on_demand": {
+      "type": "string"
+    },
+    "subscribed_status": {
+      "type": "string"
+    },
+    "country_code": {
+      "type": "string"
+    },
+    "views": {
+      "type": "integer"
+    },
+    "comments": {
+      "type": "integer"
+    },
+    "likes": {
+      "type": "integer"
+    },
+    "dislikes": {
+      "type": "integer"
+    },
+    "shares": {
+      "type": "integer"
+    },
+    "watch_time_minutes": {
+      "type": "number"
+    },
+    "average_view_duration_seconds": {
+      "type": "number"
+    },
+    "average_view_duration_percentage": {
+      "type": "number"
+    },
+    "annotation_impressions": {
+      "type": "integer"
+    },
+    "annotation_clickable_impressions": {
+      "type": "integer"
+    },
+    "annotation_clicks": {
+      "type": "integer"
+    },
+    "annotation_click_through_rate": {
+      "type": "integer"
+    },
+    "annotation_closable_impressions": {
+      "type": "integer"
+    },
+    "annotation_closes": {
+      "type": "integer"
+    },
+    "annotation_close_rate": {
+      "type": "integer"
+    },
+    "card_teaser_impressions": {
+      "type": "integer"
+    },
+    "card_teaser_clicks": {
+      "type": "integer"
+    },
+    "card_teaser_click_rate": {
+      "type": "integer"
+    },
+    "card_impressions": {
+      "type": "integer"
+    },
+    "card_clicks": {
+      "type": "integer"
+    },
+    "card_click_rate": {
+      "type": "integer"
+    },
+    "subscribers_gained": {
+      "type": "integer"
+    },
+    "subscribers_lost": {
+      "type": "integer"
+    },
+    "videos_added_to_playlists": {
+      "type": "integer"
+    },
+    "videos_removed_from_playlists": {
+      "type": "integer"
+    },
+    "red_views": {
+      "type": "integer"
+    },
+    "red_watch_time_minutes": {
+      "type": "number"
+    }
+  }
+}
