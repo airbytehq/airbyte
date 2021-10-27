@@ -79,18 +79,19 @@ public class Db2Source extends AbstractJdbcSource implements Source {
 
   private List<String> obtainConnectionOptions(JsonNode encryption) {
     List<String> additionalParameters = new ArrayList<>();
-
-    String encryptionMethod = encryption.get("encryption_method").asText();
-    if ("encrypted_verify_certificate".equals(encryptionMethod)) {
-      var keyStorePassword = getKeyStorePassword(encryption.get("key_store_password"));
-      try {
-        convertAndImportCertificate(encryption.get("ssl_certificate").asText(), keyStorePassword);
-      } catch (IOException | InterruptedException e) {
-        throw new RuntimeException("Failed to import certificate into Java Keystore");
+    if (!encryption.isNull()) {
+      String encryptionMethod = encryption.get("encryption_method").asText();
+      if ("encrypted_verify_certificate".equals(encryptionMethod)) {
+        var keyStorePassword = getKeyStorePassword(encryption.get("key_store_password"));
+        try {
+          convertAndImportCertificate(encryption.get("ssl_certificate").asText(), keyStorePassword);
+        } catch (IOException | InterruptedException e) {
+          throw new RuntimeException("Failed to import certificate into Java Keystore");
+        }
+        additionalParameters.add("sslConnection=true");
+        additionalParameters.add("sslTrustStoreLocation=" + KEY_STORE_FILE_PATH);
+        additionalParameters.add("sslTrustStorePassword=" + keyStorePassword);
       }
-      additionalParameters.add("sslConnection=true");
-      additionalParameters.add("sslTrustStoreLocation=" + KEY_STORE_FILE_PATH);
-      additionalParameters.add("sslTrustStorePassword=" + keyStorePassword);
     }
     return additionalParameters;
   }

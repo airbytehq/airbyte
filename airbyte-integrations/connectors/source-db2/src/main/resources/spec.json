@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "IBM Db2 Source Spec",
     "type": "object",
-    "required": ["host", "port", "db", "username", "password"],
+    "required": ["host", "port", "db", "username", "password", "encryption"],
     "additionalProperties": false,
     "properties": {
       "host": {
