@@ -827,6 +827,7 @@ class PullRequests(IncrementalJiraStream):
                     break
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["id"] = stream_slice["id"]
         record["fields"] = record.get("fields", {})
         record["fields"][self.cursor_field] = stream_slice[self.cursor_field]
         return record
