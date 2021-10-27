@@ -1,6 +1,6 @@
 *
 !Dockerfile
 !main.py
-!source_looker
+!source_drift
 !setup.py
 !secrets

@@ -6,34 +6,34 @@
       "type": ["null", "string"]
     },
     "dashboard_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "folder_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "inheriting_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "inherits": {
       "type": ["null", "boolean"]
     },
     "look_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "name": {
       "type": ["null", "string"]
     },
     "parent_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "slug": {
       "type": ["null", "string"]
     },
     "space_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     }
   }
 }
