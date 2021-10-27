@@ -18,13 +18,13 @@
       "type": ["null", "string"]
     },
     "user_attribute_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "user_can_edit": {
       "type": ["null", "boolean"]
     },
     "user_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "value": {
       "type": ["null", "string"]

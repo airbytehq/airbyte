@@ -31,7 +31,7 @@
         "type": "array",
         "items": {
           "type": "string",
-          "pattern": ["^[0-9]*$"]
+          "pattern": "^[0-9]*$"
         },
         "description": "The IDs of any Looks to run (optional)"
       }
