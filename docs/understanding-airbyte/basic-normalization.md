@@ -326,7 +326,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- | :--- |
-| 0.30.21-alpha | 0.1.57 | 2021-10-26 | [\#7162](https://github.com/airbytehq/airbyte/pull/7162) | Implement incremental dbt updates |
+| 0.30.24-alpha | 0.1.57 | 2021-10-26 | [\#7162](https://github.com/airbytehq/airbyte/pull/7162) | Implement incremental dbt updates |
 | 0.30.16-alpha | 0.1.52 | 2021-10-07 | [\#6379](https://github.com/airbytehq/airbyte/pull/6379) | Handle empty string for date and date-time format |
 | 0.30.16-alpha | 0.1.51 | 2021-10-08 | [\#6799](https://github.com/airbytehq/airbyte/pull/6799) | Added support for ad\_cdc\_log\_pos while normalization |
 | 0.30.16-alpha | 0.1.50 | 2021-10-07 | [\#6079](https://github.com/airbytehq/airbyte/pull/6079) | Added support for MS SQL Server normalization |
