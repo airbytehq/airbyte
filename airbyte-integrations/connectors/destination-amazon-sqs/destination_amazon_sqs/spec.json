@@ -55,33 +55,19 @@
         ],
         "order": 1
       },
-      "send_as_batch": {
-        "title": "Send As Batch",
-        "description": "Should messages be sent as a batch? This can reduce the amount of outbound connections and increase performance",
-        "type": "boolean",
-	      "default": false,
-        "order": 2
-      },
-      "max_batch_size": {
-        "title": "Max Batch Size",
-        "description": "Max amount of messages to send in one batch (10 max). Note that each individual message must be less than 256kb and the sum all messages must also be less than 256kb.",
-        "type": "integer",
-        "examples": ["5"],
-        "order": 3
-      },
       "message_delay": {
         "title": "Message Delay",
         "description": "Modify the Message Delay of the individual message from the Queue's default (seconds).",
         "type": "integer",
         "examples": ["15"],
-        "order": 4
+        "order": 2
       },
       "access_key": {
         "title": "AWS IAM Access Key ID",
         "description": "The Access Key ID of the AWS IAM Role to use for sending  messages",
         "type": "string",
         "examples": ["xxxxxHRNxxx3TBxxxxxx"],
-        "order": 5,
+        "order": 3,
         "airbyte_secret": true
       },
       "secret_key": {
@@ -89,7 +75,7 @@
         "description": "The Secret Key of the AWS IAM Role to use for sending messages",
         "type": "string",
         "examples": ["hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz"],
-        "order": 6,
+        "order": 4,
         "airbyte_secret": true
       },
       "message_body_key": {
@@ -97,14 +83,14 @@
         "description": "Use this property to extract the contents of the named key in the input record to use as the SQS message body. If not set, the entire content of the input record data is used as the message body.",
         "type": "string",
         "examples": ["myDataPath"],
-        "order": 7
+        "order": 5
       },
       "message_group_id": {
         "title": "Message Group Id",
         "description": "The tag that specifies that a message belongs to a specific message group. This parameter applies only to, and is REQUIRED by, FIFO queues.",
         "type": "string",
         "examples": ["my-fifo-group"],
-        "order": 8
+        "order": 6
       }
     }
   }

@@ -19,7 +19,7 @@ from uuid import uuid4
 class DestinationAmazonSqs(Destination):
 
     def queue_is_fifo(self, url: str) -> bool:
-        return url.endswith('fifo')
+        return url.endswith('.fifo')
 
     def parse_queue_name(self, url: str) -> str:
         return url.rsplit("/", 1)[-1]
@@ -63,6 +63,7 @@ class DestinationAmazonSqs(Destination):
             message['MessageGroupId'] = message_group_id
         if not use_content_dedupe:
             message['MessageDeduplicationId'] = str(uuid4())
+        # TODO: Support getting MessageDeduplicationId from a key in the record
         # if message_dedupe_id:
         #     message['MessageDeduplicationId'] = message_dedupe_id
         return message
@@ -111,11 +112,9 @@ class DestinationAmazonSqs(Destination):
         queue = sqs.Queue(url=queue_url)
         
         # TODO: Make access/secret key optional, support public access & profiles
-
         # TODO: Support adding/setting attributes in the UI
-
         # TODO: Support extract a specific path as message attributes
-
+        
         for message in input_messages:
             if message.type == Type.RECORD:
                     sqs_message = self.build_sqs_message(message.record, message_body_key)
@@ -128,8 +127,8 @@ class DestinationAmazonSqs(Destination):
                     if self.queue_is_fifo(queue_url):
                         use_content_dedupe = False if queue.attributes.get('ContentBasedDeduplication') == 'false' else 'true'
                         self.set_message_fifo_properties(sqs_message, message_group_id, use_content_dedupe)
-
-                    self.send_single_message(queue, sqs_message)
+                    
+                    yield self.send_single_message(queue, sqs_message)
             if message.type == Type.STATE:
                 yield message
 

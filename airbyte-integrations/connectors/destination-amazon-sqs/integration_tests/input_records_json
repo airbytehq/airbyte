@@ -1,2 +1,1 @@
 {"type": "RECORD", "record": {"stream": "ab-airbyte-testing", "data": {"id": "ba0f237b-abf5-41ae-9d94-1dbd346f38dd", "body": "test 1", "attributes": null}, "emitted_at": 1633881878000}}
-{"type": "RECORD", "record": {"stream": "ab-airbyte-testing", "data": {"some_string_field": "some field value", "some_int_field": 1, "some_bool_field": true}, "emitted_at": 1633881878005}}
