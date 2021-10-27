@@ -11,7 +11,7 @@ airbytePython {
 airbyteStandardSourceTestFile {
     specPath = "source_jira/spec.json"
     configPath = "secrets/config.json"
-    configuredCatalogPath = "sample_files/configured_catalog.json"
+    configuredCatalogPath = "integration_test/configured_catalog.json"
 }
 
 
