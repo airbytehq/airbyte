@@ -6,14 +6,14 @@
 import json
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import Callable, Dict, Iterator, Sequence, Mapping, Any
+from typing import Any, Callable, Dict, Iterator, Mapping, Sequence
 
 import backoff
+from google.auth.transport.requests import Request
 from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
-from google.auth.transport.requests import Request
 
 from .utils import rate_limit_handling
 
@@ -31,6 +31,7 @@ class API:
         return account_info
 
     def _obtain_service_account_creds(self) -> service_account.Credentials:
+        """Obtaining creds based on Service account scenario"""
         credentials_json = self._raw_credentials.get("credentials_json")
         admin_email = self._raw_credentials.get("email")
         account_info = self._load_account_info(credentials_json)
@@ -38,6 +39,7 @@ class API:
         self._creds = creds.with_subject(admin_email)
 
     def _obtain_web_app_creds(self) -> Credentials:
+        """Obtaining creds based on Web server application scenario"""
         info = {
             "client_id": self._raw_credentials.get("client_id"),
             "client_secret": self._raw_credentials.get("client_secret"),

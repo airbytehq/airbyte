@@ -16,7 +16,12 @@
             "title": "Web server application",
             "description": "For these scenario user only needs to give permission to read Google Directory data",
             "type": "object",
-            "required": ["client_id", "client_secret", "refresh_token", "scopes"],
+            "required": [
+              "client_id",
+              "client_secret",
+              "refresh_token",
+              "scopes"
+            ],
             "properties": {
               "credentials_title": {
                 "type": "string",
@@ -88,10 +93,7 @@
     "auth_type": "oauth2.0",
     "oauth2Specification": {
       "rootObject": ["credentials", 0],
-      "oauthFlowInitParameters": [
-        ["client_id"],
-        ["client_secret"]
-      ],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
       "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
     }
   }

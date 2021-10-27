@@ -37,7 +37,9 @@ This connector attempts to back off gracefully when it hits Directory API's rate
 
 ## Getting started
 
-### Requirements
+Google APIs use the OAuth 2.0 protocol for authentication and authorization. The Source supports [Web server application](https://developers.google.com/identity/protocols/oauth2#webserver) and [Service accounts](https://developers.google.com/identity/protocols/oauth2#serviceaccount) scenarios.
+
+### Requirements Service accounts scenario
 
 * Credentials to a Google Service Account with delegated Domain Wide Authority
 * Email address of the workspace admin which created the Service Account
