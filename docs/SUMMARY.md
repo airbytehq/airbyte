@@ -90,11 +90,7 @@
     * [Mongo DB](integrations/sources/mongodb-v2.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Okta](integrations/sources/okta.md)
-<<<<<<< HEAD
     * [Opentable Sync API](integrations/source/opentable-sync-api.md)
-=======
-    * [OneSignal](integrations/sources/onesignal.md)
->>>>>>> c2f31de6b4758baa68da24d7effe81a1ca76e924
     * [Oracle DB](integrations/sources/oracle.md)
     * [Oracle Peoplesoft](integrations/sources/oracle-peoplesoft.md)
     * [Oracle Siebel CRM](integrations/sources/oracle-siebel-crm.md)
