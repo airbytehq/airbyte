@@ -112,7 +112,8 @@ public class WorkerApp {
         new SyncWorkflow.ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
         new SyncWorkflow.NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment),
         new SyncWorkflow.DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot),
-        new SyncWorkflow.PersistStateActivityImpl(workspaceRoot, configRepository));
+        new SyncWorkflow.PersistStateActivityImpl(workspaceRoot, configRepository),
+        new SyncWorkflow.MockActivityImpl());
     factory.start();
   }
 

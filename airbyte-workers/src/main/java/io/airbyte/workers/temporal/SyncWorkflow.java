@@ -89,6 +89,7 @@ public interface SyncWorkflow {
     private final NormalizationActivity normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, options);
     private final DbtTransformationActivity dbtTransformationActivity = Workflow.newActivityStub(DbtTransformationActivity.class, options);
     private final PersistStateActivity persistActivity = Workflow.newActivityStub(PersistStateActivity.class, persistOptions);
+    private final MockActivity mockActivity = Workflow.newActivityStub(MockActivity.class, persistOptions);
 
     @Override
     public StandardSyncOutput run(final JobRunConfig jobRunConfig,
@@ -96,6 +97,8 @@ public interface SyncWorkflow {
                                   final IntegrationLauncherConfig destinationLauncherConfig,
                                   final StandardSyncInput syncInput,
                                   final UUID connectionId) {
+      mockActivity.print("hello");
+
       final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
       // the state is persisted immediately after the replication succeeded, because the
       // state is a checkpoint of the raw data that has been copied to the destination;
@@ -129,6 +132,26 @@ public interface SyncWorkflow {
       }
 
       return run;
+    }
+
+  }
+
+  @ActivityInterface
+  interface MockActivity {
+
+    @ActivityMethod
+    String print(String input);
+
+  }
+
+  class MockActivityImpl implements MockActivity {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
+
+    @Override
+    public String print(final String input) {
+      LOGGER.info(input);
+      return input;
     }
 
   }
