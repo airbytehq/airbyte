@@ -52,7 +52,7 @@ class JiraStream(HttpStream, ABC):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_slice: Mapping[str, Any],
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params: Dict[str, str] = {}
@@ -145,8 +145,7 @@ class Avatars(JiraStream):
 
     parse_response_root = "system"
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         avatar_type = stream_slice["avatar_type"]
         return f"avatar/{avatar_type}/system"
 
@@ -170,10 +169,9 @@ class Boards(V1ApiJiraStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_slice: Mapping[str, Any],
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        stream_slice = stream_slice or {}
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["projectKeyOrId"] = stream_slice["project_id"]
         return params
@@ -197,15 +195,14 @@ class BoardIssues(V1ApiJiraStream, IncrementalJiraStream):
     cursor_field = ["fields", "updated"]
     parse_response_root = "issues"
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         board_id = stream_slice["board_id"]
         return f"board/{board_id}/issue"
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_slice: Mapping[str, Any],
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
@@ -251,10 +248,9 @@ class Epics(IncrementalJiraStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_slice: Mapping[str, Any],
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        stream_slice = stream_slice or {}
         project_id = stream_slice["project_id"]
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = ["summary", "description", "status", "updated"]
@@ -291,8 +287,7 @@ class FilterSharing(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get
     """
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         filter_id = stream_slice["filter_id"]
         return f"filter/{filter_id}/permission"
 
@@ -334,10 +329,9 @@ class Issues(IncrementalJiraStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_slice: Mapping[str, Any],
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        stream_slice = stream_slice or {}
         project_id = stream_slice["project_id"]
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = stream_slice["fields"]
@@ -391,8 +385,7 @@ class IssueComments(StartDateJiraStream):
 
     parse_response_root = "comments"
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/comment"
 
@@ -440,8 +433,7 @@ class IssueCustomFieldContexts(JiraStream):
 
     parse_response_root = "values"
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         field_id = stream_slice["field_id"]
         return f"field/{field_id}/context"
 
@@ -502,13 +494,11 @@ class IssuePropertyKeys(JiraStream):
     parse_response_root = "key"
     use_cache = True
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/properties"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        stream_slice = stream_slice or {}
+    def read_records(self, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping[str, Any]]:
         issue_key = stream_slice["key"]
         yield from super().read_records(stream_slice={"key": issue_key}, **kwargs)
 
@@ -518,8 +508,7 @@ class IssueProperties(StartDateJiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-propertykey-get
     """
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         issue_key = stream_slice["issue_key"]
         return f"issue/{issue_key}/properties/{key}"
@@ -543,8 +532,7 @@ class IssueRemoteLinks(StartDateJiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get
     """
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/remotelink"
 
@@ -615,8 +603,7 @@ class IssueVotes(StartDateJiraStream):
     # parse_response_root = "voters"
     primary_key = None
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/votes"
 
@@ -642,8 +629,7 @@ class IssueWatchers(StartDateJiraStream):
     # parse_response_root = "watchers"
     primary_key = None
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/watchers"
 
@@ -667,8 +653,7 @@ class IssueWorklogs(StartDateJiraStream):
     parse_response_root = "worklogs"
     primary_key = None
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/worklog"
 
@@ -758,8 +743,7 @@ class ProjectAvatars(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
     """
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"project/{key}/avatars"
 
@@ -790,8 +774,7 @@ class ProjectComponents(JiraStream):
 
     parse_response_root = "values"
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"project/{key}/component"
 
@@ -808,8 +791,7 @@ class ProjectEmail(JiraStream):
 
     primary_key = None
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         project_id = stream_slice["project_id"]
         return f"project/{project_id}/email"
 
@@ -826,8 +808,7 @@ class ProjectPermissionSchemes(JiraStream):
 
     parse_response_root = "levels"
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"project/{key}/securitylevel"
 
@@ -855,8 +836,7 @@ class ProjectVersions(JiraStream):
 
     parse_response_root = "values"
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"project/{key}/version"
 
@@ -886,8 +866,7 @@ class ScreenTabs(JiraStream):
     raise_on_http_errors = False
     use_cache = True
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         screen_id = stream_slice["screen_id"]
         return f"screens/{screen_id}/tabs"
 
@@ -896,8 +875,7 @@ class ScreenTabs(JiraStream):
         for screen in screens_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from self.read_tab_records(stream_slice={"screen_id": screen["id"]}, **kwargs)
 
-    def read_tab_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        stream_slice = stream_slice or {}
+    def read_tab_records(self, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping[str, Any]]:
         screen_id = stream_slice["screen_id"]
         yield from super().read_records(stream_slice={"screen_id": screen_id}, **kwargs)
 
@@ -907,8 +885,7 @@ class ScreenTabFields(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tab-fields/#api-rest-api-3-screens-screenid-tabs-tabid-fields-get
     """
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         screen_id = stream_slice["screen_id"]
         tab_id = stream_slice["tab_id"]
         return f"screens/{screen_id}/tabs/{tab_id}/fields"
@@ -941,8 +918,7 @@ class Sprints(V1ApiJiraStream):
     parse_response_root = "values"
     use_cache = True
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         board_id = stream_slice["board_id"]
         return f"board/{board_id}/sprint"
 
@@ -962,18 +938,16 @@ class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
     cursor_field = ["fields", "updated"]
     parse_response_root = "issues"
 
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        stream_slice = stream_slice or {}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         sprint_id = stream_slice["sprint_id"]
         return f"sprint/{sprint_id}/issue"
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_slice: Mapping[str, Any],
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        stream_slice = stream_slice or {}
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = stream_slice["fields"]
         jql = self.jql_compare_date(stream_state)
