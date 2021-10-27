@@ -125,6 +125,7 @@
     * [Sugar CRM](integrations/sources/sugar-crm.md)
     * [SurveyMonkey](integrations/sources/surveymonkey.md)
     * [Tempo](integrations/sources/tempo.md)
+    * [TikTok Marketing](integrations/sources/tiktok-marketing.md)  
     * [Trello](integrations/sources/trello.md)
     * [Twilio](integrations/sources/twilio.md)
     * [Typeform](integrations/sources/typeform.md)
