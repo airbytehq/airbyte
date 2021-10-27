@@ -4,13 +4,15 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import (Any, Iterable, List, Mapping, MutableMapping, Optional,
+                    Tuple)
 
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import \
+    Oauth2Authenticator
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -177,30 +179,55 @@ class Employees(IncrementalLinnworksStream):
         till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
         the date query param.
         """
-        raise NotImplementedError("Implement stream slices or delete this method!")
+        raise NotImplementedError(
+            "Implement stream slices or delete this method!")
 
 
-# Source
+class LinnworksAuthenticator(Oauth2Authenticator):
+    def get_refresh_request_body(self) -> Mapping[str, Any]:
+        payload: MutableMapping[str, Any] = {
+            "applicationId": self.client_id,
+            "applicationSecret": self.client_secret,
+            "token": self.refresh_token,
+        }
+
+        if self.scopes:
+            payload["scopes"] = self.scopes
+
+        return payload
+
+    def refresh_access_token(self) -> Tuple[str, int]:
+        try:
+            response = requests.request(
+                method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
+            response.raise_for_status()
+            response_json = response.json()
+            return response_json[self.access_token_name], 1800
+        except Exception as e:
+            raise Exception(f"Error while refreshing access token: {e}") from e
+
+
 class SourceLinnworks(AbstractSource):
+    def _auth(self, config):
+        return LinnworksAuthenticator(
+            token_refresh_endpoint="https://api.linnworks.net/api/Auth/AuthorizeByApplication",
+            client_id=config["application_id"],
+            client_secret=config["application_secret"],
+            refresh_token=config["token"],
+            access_token_name="Token",
+        )
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
+        try:
+             self._auth(config).get_auth_header()
+        except Exception as e:
+            return None, e
 
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
-
-        :param config:  the user-input config object conforming to the connector's spec.json
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        TODO: Replace the streams below with your own streams.
-
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-        # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+        auth = self._auth(config)
+        return [
+            Customers(authenticator=auth),
+            Employees(authenticator=auth)
+        ]
