@@ -5,46 +5,30 @@
 
 from abc import ABC
 from typing import (Any, Iterable, List, Mapping, MutableMapping, Optional,
-                    Tuple)
-import pendulum
+                    Tuple, Union)
 
+import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth import \
     Oauth2Authenticator
+from requests.auth import AuthBase
 
 
 class LinnworksStream(HttpStream, ABC):
-    """
-    TODO remove this comment
+    http_method = "POST"
 
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
+    @property
+    def url_base(self) -> str:
+        return self.authenticator.get_server()
 
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
+    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
+        super().__init__(authenticator=authenticator)
 
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class LinnworksStream(HttpStream, ABC)` which is the current class
-    `class Customers(LinnworksStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(LinnworksStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalLinnworksStream((LinnworksStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
-    """
-
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+        self._authenticator = authenticator
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
