@@ -23,9 +23,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
 
 public class IntercomOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
@@ -70,27 +67,13 @@ public class IntercomOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
                     .put("client_id", credentialsJson.get("client_id").asText())
                     .put("client_secret", credentialsJson.get("client_secret").asText())
                     .build())))));
-    // .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-    // .put("client_id", credentialsJson.get("client_id").asText())
-    // .put("client_secret", credentialsJson.get("client_secret").asText())
-    // .build()))));
-    final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    String replace = url.replace("https://", "https://integration-test@airbyte.io:A1rByte123!@");
-    System.setProperty("webdriver.chrome.driver",
-        "src/test-integration/selenium/chromedriver");
-    // https://app.intercom.com/a/oauth/connect?client_id=7ff976d8-8b25-46c0-a900-ac74b79e4d07&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fcode&response_type=code&state=EV12oct
-    LOGGER.info("Waiting for user consent at: {}", url);
-    WebDriver driver = new ChromeDriver();
-    driver.get(replace);
-    // driver.get("http://admin:admin@localhost:8080/project/");
 
-    // integration-test@airbyte.io:A1rByte123!@
-    // driver.findElement(By.cssSelector("input[type='button'][value='Open device access']")).click();
+    final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    LOGGER.info("Waiting for user consent at: {}", url);
 
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
     while (!serverHandler.isSucceeded() && limit > 0) {
-      driver.findElement(By.cssSelector("input[type='button'][value='Open device access']")).click();
       Thread.sleep(1000);
       limit -= 1;
     }
