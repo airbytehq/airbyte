@@ -23,7 +23,7 @@ MAIN_REQUIREMENTS = [
     "pyxlsb==1.0.8",
 ]
 
-TEST_REQUIREMENTS = ["boto3==1.16.57", "pytest==6.1.2", "pytest-mock~=3.6.1", "pytest-docker==0.10.1", "source-acceptance-test"]
+TEST_REQUIREMENTS = ["boto3==1.16.57", "pytest==6.1.2", "pytest-mock~=3.6.1", "pytest-docker==0.10.1"]
 
 setup(
     name="source_file",
