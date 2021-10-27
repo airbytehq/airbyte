@@ -117,7 +117,7 @@
 - name: Drift
   sourceDefinitionId: 445831eb-78db-4b1f-8f1f-0d96ad8739e2
   dockerRepository: airbyte/source-drift
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/drift
   icon: drift.svg
   sourceType: api
@@ -175,7 +175,7 @@
   dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   sourceType: api
-- name: Google Analytics v4
+- name: Google Analytics
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
   dockerImageTag: 0.1.8
@@ -223,7 +223,7 @@
 - name: Hubspot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.21
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -292,7 +292,7 @@
 - name: Looker
   sourceDefinitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
   dockerRepository: airbyte/source-looker
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/looker
   icon: looker.svg
   sourceType: api
@@ -462,7 +462,7 @@
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.1.21
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
   sourceType: api
 - name: Short.io
