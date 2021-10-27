@@ -69,6 +69,8 @@ public class KubeLoggingConfigTest {
     // The same env vars that log4j2 uses to determine where to publish to determine how to retrieve the
     // log file.
     final Configs envConfigs = new EnvConfigs();
+    LOGGER.info("Worker environment: " + envConfigs.getWorkerEnvironment().name());
+    LOGGER.info("LogConfigs: " + envConfigs.getLogConfigs().toString());
     final var logs = LogClientSingleton.getInstance().getJobLogFile(envConfigs.getWorkerEnvironment(), envConfigs.getLogConfigs(), Path.of(logPath));
     // Each log line is of the form <time-stamp> <log-level> <log-message>. Further, there might be
     // other log lines from the system running. Join all the lines to simplify assertions.

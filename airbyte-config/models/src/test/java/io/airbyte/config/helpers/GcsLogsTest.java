@@ -37,7 +37,8 @@ public class GcsLogsTest {
    */
   @Test
   public void testRetrieveAllLogs() throws IOException {
-    final File data = GcsLogs.getFile((new EnvConfigs()).getLogConfigs(), "paginate", 6);
+    final File data = GcsLogs.getFile(new LogConfiguration("","","","","","",""),
+        "paginate", 6);
 
     final var retrieved = new ArrayList<String>();
     Files.lines(data.toPath()).forEach(retrieved::add);
@@ -56,7 +57,8 @@ public class GcsLogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    final var data = new GcsLogs().tailCloudLog((new EnvConfigs()).getLogConfigs(), "tail", 6);
+    final var data = new GcsLogs().tailCloudLog(new LogConfiguration("","","","","","",""),
+        "tail", 6);
 
     final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
     assertEquals(data, expected);
