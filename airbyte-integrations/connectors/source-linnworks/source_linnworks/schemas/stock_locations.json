@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "$comment": "https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Inventory-ClassBase-StockLocation",
+    "properties": {
+      "stock_location_id": {
+        "type": "string",
+        "description": "Location ID"
+      },
+      "stock_location_int_id": {
+        "type": "integer",
+        "description": "Stock location integet id"
+      },
+      "location_name": {
+        "type": "string",
+        "description": "Location name"
+      },
+      "is_fulfillment_center": {
+        "type": "boolean",
+        "description": "If location is a fulfilment center"
+      },
+      "location_tag": {
+        "type": "string",
+        "description": "Location tag"
+      },
+      "bin_rack": {
+        "type": "string",
+        "description": "Bin rack"
+      },
+      "is_warehouse_managed": {
+        "type": [
+          "null",
+          "boolean"
+        ],
+        "description": "If the location is warehosue managed"
+      }
+    }
+  }
+}

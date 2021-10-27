@@ -63,22 +63,16 @@ class LinnworksStream(HttpStream, ABC):
             yield normalize(record)
 
 
-class Customers(LinnworksStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+class StockLocations(LinnworksStream):
+    # https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations
+    # Response: List<StockLocation>
+    # Allows 150 calls per minute
+    primary_key = "stock_location_int_id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "customers"
+        return "/api/Inventory/GetStockLocations"
 
 
 # Basic incremental stream
@@ -239,6 +233,6 @@ class SourceLinnworks(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._auth(config)
         return [
-            Customers(authenticator=auth),
+            StockLocations(authenticator=auth),
             Employees(authenticator=auth)
         ]
