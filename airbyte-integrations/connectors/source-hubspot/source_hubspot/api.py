@@ -5,7 +5,7 @@
 
 import sys
 import time
-import urllib
+import urllib.parse
 from abc import ABC, abstractmethod
 from functools import lru_cache, partial
 from http import HTTPStatus
