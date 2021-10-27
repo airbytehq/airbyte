@@ -5,7 +5,7 @@
 
 from typing import Iterator, Tuple
 
-from base_python import BaseClient
+from airbyte_cdk.sources.deprecated.client import BaseClient
 
 from .api import APIClient
 from .common import AuthError, ValidationError
