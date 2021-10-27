@@ -30,7 +30,6 @@ import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.server.services.AirbyteGithubStore;
-import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
@@ -46,7 +45,6 @@ import org.junit.jupiter.api.Test;
 class SourceDefinitionsHandlerTest {
 
   private ConfigRepository configRepository;
-  private DockerImageValidator dockerImageValidator;
   private StandardSourceDefinition source;
   private SourceDefinitionsHandler sourceHandler;
   private Supplier<UUID> uuidSupplier;
@@ -58,13 +56,12 @@ class SourceDefinitionsHandlerTest {
   void setUp() {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
-    dockerImageValidator = mock(DockerImageValidator.class);
     schedulerSynchronousClient = spy(CachingSynchronousSchedulerClient.class);
     githubStore = mock(AirbyteGithubStore.class);
 
     source = generateSource();
 
-    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerSynchronousClient, githubStore);
+    sourceHandler = new SourceDefinitionsHandler(configRepository, uuidSupplier, schedulerSynchronousClient, githubStore);
   }
 
   private StandardSourceDefinition generateSource() {
@@ -163,7 +160,6 @@ class SourceDefinitionsHandlerTest {
     final SourceDefinitionRead actualRead = sourceHandler.createSourceDefinition(create);
 
     assertEquals(expectedRead, actualRead);
-    verify(dockerImageValidator).assertValidIntegrationImage(source.getDockerRepository(), source.getDockerImageTag());
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository).writeStandardSourceDefinition(source);
   }
@@ -192,7 +188,6 @@ class SourceDefinitionsHandlerTest {
         .updateSourceDefinition(new SourceDefinitionUpdate().sourceDefinitionId(source.getSourceDefinitionId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
-    verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
     verify(configRepository).writeStandardSourceDefinition(updatedSource);
     verify(schedulerSynchronousClient).resetCache();

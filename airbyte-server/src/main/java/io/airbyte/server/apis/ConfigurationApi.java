@@ -113,7 +113,6 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendDestinationsHandler;
 import io.airbyte.server.handlers.WebBackendSourcesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
-import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -170,12 +169,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobNotifier,
         temporalService,
         new OAuthConfigSupplier(configRepository, false, trackingClient));
-    final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
-    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
+    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository, workspaceHelper, trackingClient);
     operationsHandler = new OperationsHandler(configRepository);
-    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
+    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
@@ -667,7 +665,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
       return call.call();
     } catch (final ConfigNotFoundException e) {
       throw new IdNotFoundKnownException(String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()),
-          e.getConfigId(), e);
+                                         e.getConfigId(), e);
     } catch (final JsonValidationException e) {
       throw new BadObjectSchemaKnownException(
           String.format("The provided configuration does not fulfill the specification. Errors: %s", e.getMessage()), e);

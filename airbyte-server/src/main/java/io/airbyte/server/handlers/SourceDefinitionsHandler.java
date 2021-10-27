@@ -21,7 +21,6 @@ import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
-import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
@@ -33,28 +32,24 @@ import java.util.stream.Collectors;
 
 public class SourceDefinitionsHandler {
 
-  private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
   private final AirbyteGithubStore githubStore;
   private final CachingSynchronousSchedulerClient schedulerSynchronousClient;
 
   public SourceDefinitionsHandler(
-                                  final ConfigRepository configRepository,
-                                  final DockerImageValidator imageValidator,
-                                  final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
-    this(configRepository, imageValidator, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
+      final ConfigRepository configRepository,
+      final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
+    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
   }
 
   public SourceDefinitionsHandler(
-                                  final ConfigRepository configRepository,
-                                  final DockerImageValidator imageValidator,
-                                  final Supplier<UUID> uuidSupplier,
-                                  final CachingSynchronousSchedulerClient schedulerSynchronousClient,
-                                  final AirbyteGithubStore githubStore) {
+      final ConfigRepository configRepository,
+      final Supplier<UUID> uuidSupplier,
+      final CachingSynchronousSchedulerClient schedulerSynchronousClient,
+      final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
-    this.imageValidator = imageValidator;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
   }
@@ -104,8 +99,6 @@ public class SourceDefinitionsHandler {
 
   public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate)
       throws JsonValidationException, IOException {
-    imageValidator.assertValidIntegrationImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
-
     final ConnectorSpecification spec = getSpecForImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
 
     final UUID id = uuidSupplier.get();
@@ -127,7 +120,6 @@ public class SourceDefinitionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition currentSourceDefinition =
         configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
-    imageValidator.assertValidIntegrationImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag());
 
     final boolean imageTagHasChanged = !currentSourceDefinition.getDockerImageTag().equals(sourceDefinitionUpdate.getDockerImageTag());
     // TODO (lmossman): remove null spec condition when the spec field becomes required on the

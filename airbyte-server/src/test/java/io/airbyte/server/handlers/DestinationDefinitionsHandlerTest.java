@@ -29,7 +29,6 @@ import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.server.services.AirbyteGithubStore;
-import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
@@ -44,7 +43,6 @@ import org.junit.jupiter.api.Test;
 
 class DestinationDefinitionsHandlerTest {
 
-  private DockerImageValidator dockerImageValidator;
   private ConfigRepository configRepository;
   private StandardDestinationDefinition destination;
   private DestinationDefinitionsHandler destinationHandler;
@@ -57,13 +55,12 @@ class DestinationDefinitionsHandlerTest {
   void setUp() {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
-    dockerImageValidator = mock(DockerImageValidator.class);
     destination = generateDestination();
     schedulerSynchronousClient = spy(CachingSynchronousSchedulerClient.class);
     githubStore = mock(AirbyteGithubStore.class);
 
     destinationHandler =
-        new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerSynchronousClient, githubStore);
+        new DestinationDefinitionsHandler(configRepository, uuidSupplier, schedulerSynchronousClient, githubStore);
   }
 
   private StandardDestinationDefinition generateDestination() {
@@ -161,7 +158,6 @@ class DestinationDefinitionsHandlerTest {
     final DestinationDefinitionRead actualRead = destinationHandler.createDestinationDefinition(create);
 
     assertEquals(expectedRead, actualRead);
-    verify(dockerImageValidator).assertValidIntegrationImage(destination.getDockerRepository(), destination.getDockerImageTag());
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository).writeStandardDestinationDefinition(destination);
   }
@@ -190,7 +186,6 @@ class DestinationDefinitionsHandlerTest {
         new DestinationDefinitionUpdate().destinationDefinitionId(this.destination.getDestinationDefinitionId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, destinationRead.getDockerImageTag());
-    verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
     verify(configRepository).writeStandardDestinationDefinition(updatedDestination);
     verify(schedulerSynchronousClient).resetCache();

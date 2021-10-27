@@ -21,7 +21,6 @@ import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
-import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
@@ -37,26 +36,22 @@ public class DestinationDefinitionsHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationDefinitionsHandler.class);
 
-  private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
   private final CachingSynchronousSchedulerClient schedulerSynchronousClient;
   private final AirbyteGithubStore githubStore;
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
-                                       final DockerImageValidator imageValidator,
                                        final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
-    this(configRepository, imageValidator, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
+    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
   }
 
   @VisibleForTesting
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
-                                       final DockerImageValidator imageValidator,
                                        final Supplier<UUID> uuidSupplier,
                                        final CachingSynchronousSchedulerClient schedulerSynchronousClient,
                                        final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
-    this.imageValidator = imageValidator;
     this.uuidSupplier = uuidSupplier;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
@@ -108,10 +103,6 @@ public class DestinationDefinitionsHandler {
 
   public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate)
       throws JsonValidationException, IOException {
-    imageValidator.assertValidIntegrationImage(
-        destinationDefinitionCreate.getDockerRepository(),
-        destinationDefinitionCreate.getDockerImageTag());
-
     final ConnectorSpecification spec = getSpecForImage(
         destinationDefinitionCreate.getDockerRepository(),
         destinationDefinitionCreate.getDockerImageTag());
@@ -135,9 +126,6 @@ public class DestinationDefinitionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition currentDestination = configRepository
         .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
-    imageValidator.assertValidIntegrationImage(
-        currentDestination.getDockerRepository(),
-        destinationDefinitionUpdate.getDockerImageTag());
 
     final boolean imageTagHasChanged = !currentDestination.getDockerImageTag().equals(destinationDefinitionUpdate.getDockerImageTag());
     // TODO (lmossman): remove null spec condition when the spec field becomes required on the
