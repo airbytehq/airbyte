@@ -34,7 +34,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteDestination.class);
   private static final MdcScope CONTAINER_LOG_MDC = new Builder()
-      .setLogPrefix("destination-container-log")
+      .setLogPrefix("destination")
       .setPrefixColor(Color.MAGENTA)
       .build();
 

@@ -39,7 +39,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private static final Duration FORCED_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
 
   private static final MdcScope CONTAINER_LOG_MDC = new Builder()
-      .setLogPrefix("source-container-log")
+      .setLogPrefix("source")
       .setPrefixColor(Color.BLUE)
       .build();
 
@@ -54,10 +54,9 @@ public class DefaultAirbyteSource implements AirbyteSource {
     this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC), new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
-  @VisibleForTesting
-  DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                       final AirbyteStreamFactory streamFactory,
-                       final HeartbeatMonitor heartbeatMonitor) {
+  @VisibleForTesting DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
+                                          final AirbyteStreamFactory streamFactory,
+                                          final HeartbeatMonitor heartbeatMonitor) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.heartbeatMonitor = heartbeatMonitor;

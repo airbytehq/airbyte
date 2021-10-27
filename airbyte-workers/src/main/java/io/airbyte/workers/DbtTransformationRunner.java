@@ -32,7 +32,7 @@ public class DbtTransformationRunner implements AutoCloseable {
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationRunner.class);
   private static final String DBT_ENTRYPOINT_SH = "entrypoint.sh";
   private static final MdcScope CONTAINER_LOG_MDC = new Builder()
-      .setLogPrefix("dbt-container-log")
+      .setLogPrefix("dbt")
       .setPrefixColor(Color.CYAN)
       .build();
 
@@ -50,14 +50,13 @@ public class DbtTransformationRunner implements AutoCloseable {
   }
 
   /**
-   * The docker image used by the DbtTransformationRunner is provided by the User, so we can't ensure
-   * to have the right python, dbt, dependencies etc software installed to successfully run our
-   * transform-config scripts (to translate Airbyte Catalogs into Dbt profiles file). Thus, we depend
-   * on the NormalizationRunner to configure the dbt project with the appropriate destination settings
-   * and pull the custom git repository into the workspace.
+   * The docker image used by the DbtTransformationRunner is provided by the User, so we can't ensure to have the right python, dbt, dependencies etc
+   * software installed to successfully run our transform-config scripts (to translate Airbyte Catalogs into Dbt profiles file). Thus, we depend on
+   * the NormalizationRunner to configure the dbt project with the appropriate destination settings and pull the custom git repository into the
+   * workspace.
    * <p>
-   * Once the workspace folder/files is setup to run, we invoke the custom transformation command as
-   * provided by the user to execute whatever extra transformation has been implemented.
+   * Once the workspace folder/files is setup to run, we invoke the custom transformation command as provided by the user to execute whatever extra
+   * transformation has been implemented.
    */
   public boolean run(final String jobId,
                      final int attempt,
@@ -66,12 +65,10 @@ public class DbtTransformationRunner implements AutoCloseable {
                      final ResourceRequirements resourceRequirements,
                      final OperatorDbt dbtConfig)
       throws Exception {
-    try (CONTAINER_LOG_MDC) {
-      if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
-        return false;
-      }
-      return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);
+    if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
+      return false;
     }
+    return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);
   }
 
   public boolean transform(final String jobId,
@@ -81,7 +78,7 @@ public class DbtTransformationRunner implements AutoCloseable {
                            final ResourceRequirements resourceRequirements,
                            final OperatorDbt dbtConfig)
       throws Exception {
-    try (CONTAINER_LOG_MDC) {
+    try {
       final Map<String, String> files = ImmutableMap.of(
           DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"),
           "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"));
@@ -96,8 +93,8 @@ public class DbtTransformationRunner implements AutoCloseable {
               Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.CUSTOM_STEP),
               dbtArguments);
 
-      LineGobbler.gobble(process.getInputStream(), LOGGER::info);
-      LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
+      LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC);
+      LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC);
 
       WorkerUtils.wait(process);
 
@@ -113,18 +110,16 @@ public class DbtTransformationRunner implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    try (CONTAINER_LOG_MDC) {
-      normalizationRunner.close();
+    normalizationRunner.close();
 
-      if (process == null) {
-        return;
-      }
+    if (process == null) {
+      return;
+    }
 
-      LOGGER.debug("Closing dbt transformation process");
-      WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
-      if (process.isAlive() || process.exitValue() != 0) {
-        throw new WorkerException("Dbt transformation process wasn't successful");
-      }
+    LOGGER.debug("Closing dbt transformation process");
+    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+    if (process.isAlive() || process.exitValue() != 0) {
+      throw new WorkerException("Dbt transformation process wasn't successful");
     }
   }
 
