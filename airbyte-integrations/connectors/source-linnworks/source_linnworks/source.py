@@ -17,6 +17,8 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import \
     Oauth2Authenticator
 from requests.auth import AuthBase
 
+from .util import normalize
+
 
 class LinnworksStream(HttpStream, ABC):
     http_method = "POST"
@@ -57,11 +59,8 @@ class LinnworksStream(HttpStream, ABC):
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        yield {}
+        for record in response.json():
+            yield normalize(record)
 
 
 class Customers(LinnworksStream):
