@@ -126,6 +126,7 @@ class SourceNmbgmrGwl(Source):
                                             'SiteNotes': {'type': 'string'},
                                             'DataSource': {'type': 'string'},
                                             'MeasuringAgency': {'type': 'string'},
+                                            'MeasurementMethod': {'type': 'string'},
                                             'LevelStatus': {'type': 'string'},
                                             'DataQuality': {'type': 'string'},
                                             'MPHeight': {'type': 'number'},
