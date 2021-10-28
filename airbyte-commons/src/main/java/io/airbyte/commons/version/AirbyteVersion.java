@@ -5,6 +5,7 @@
 package io.airbyte.commons.version;
 
 import com.google.common.base.Preconditions;
+import java.util.Objects;
 
 /**
  * The AirbyteVersion identifies the version of the database used internally by Airbyte services.
@@ -164,6 +165,24 @@ public class AirbyteVersion {
 
   public static AirbyteVersion versionWithoutPatch(final String airbyteVersion) {
     return versionWithoutPatch(new AirbyteVersion(airbyteVersion));
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final AirbyteVersion that = (AirbyteVersion) o;
+    return Objects.equals(version, that.version) && Objects.equals(major, that.major) && Objects.equals(minor, that.minor)
+        && Objects.equals(patch, that.patch);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(version, major, minor, patch);
   }
 
 }
