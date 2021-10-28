@@ -173,10 +173,6 @@ az postgres server restart --resource-group group --name server
 
 Finally, [follow the rest of steps above](postgres.md#setting-up-cdc-for-postgres).
 
-### CDC on Google CloudSQL
-
-Unfortunately, logical replication is not configurable for Google CloudSQL. You can indicate your support for this feature on the [Google Issue Tracker](https://issuetracker.google.com/issues/120274585).
-
 ## Connection via SSH Tunnel
 
 Airbyte has the ability to connect to a Postgres instance via an SSH Tunnel. The reason you might want to do this because it is not possible \(or against security policy\) to connect to the database directly \(e.g. it does not have a public IP address\).
