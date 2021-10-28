@@ -57,7 +57,7 @@ Above command will generate download link and give you pop-up on right bottom si
 
 ### Connect to virtual machine
 
-* Connect to virtual machine 
+If you get this error: `Could not resolve hostname "XX.XXX.X.XXX": Name or service not known`, just manually enter the publicIp host name when running the ssh command.
 
 ```bash
 # Inside Azure cloud shell
@@ -127,7 +127,7 @@ This part assumes that you have access to a terminal on your workstation
   # Inside your workstation terminal
   # 1. Replace $SSH_KEY with private key path downloaded from earlier steps
   # 2. Replace $INSTANCE_IP with publicIpAddress noted from earlier steps
-  ssh -i $SSH_KEY -L 8000:localhost:8000 -N -f byteuser@$INSTANCE_IP
+  ssh -N -L 8000:localhost:8000 -i $SSH_KEY byteuser@$INSTANCE_IP
   ```
 
 * Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!
