@@ -1,15 +1,18 @@
-from datetime import datetime, timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from abc import abstractmethod
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 
-import base64, math
+import math
+from abc import abstractmethod
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+
 
 class SourceRetently(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -28,7 +31,8 @@ class SourceRetently(AbstractSource):
         api_key = config["api_key"]
         auth_method = f"api_key={api_key}"
         auth = TokenAuthenticator(token="", auth_method=auth_method)
-        return [ Customers(auth), Companies(auth), Reports(auth) ]
+        return [Customers(auth), Companies(auth), Reports(auth)]
+
 
 class RetentlyStream(HttpStream):
     primary_key = None
@@ -43,11 +47,11 @@ class RetentlyStream(HttpStream):
         pass
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         data = response.json().get("data")
         if data:
@@ -64,47 +68,44 @@ class RetentlyStream(HttpStream):
         if total and limit and page:
             pages = math.ceil(total / limit)
             if page < pages:
-                return { "page": page+1 }
+                return {"page": page + 1}
         return None
-    
+
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return next_page_token
 
+
 class Customers(RetentlyStream):
     json_path = "subscribers"
+
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "nps/customers"
 
+
 class Companies(RetentlyStream):
     json_path = "companies"
+
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "companies"
 
+
 class Reports(RetentlyStream):
     json_path = None
+
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "reports"
 
-    ### does not support pagination
+    # does not support pagination
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
