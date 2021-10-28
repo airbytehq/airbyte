@@ -69,8 +69,12 @@ class DictWithHash(dict):
         return hash(self) == hash(other)
 
 
-def serialize(value, exclude_fields: List = None) -> str:
-    """Simplify comparison of nested dicts/lists"""
+def serialize(value, exclude_fields: List[str] = None) -> str:
+    """
+    Simplify comparison of nested dicts/lists
+    :param value value for comparison
+    :param exclude_fields if value is Mapping, some fields can be excluded
+    """
     if isinstance(value, Mapping):
         # If value is Mapping, some fields can be excluded
         exclude_fields = exclude_fields or []
