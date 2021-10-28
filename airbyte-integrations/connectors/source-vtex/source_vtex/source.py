@@ -7,7 +7,12 @@ import requests
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_vtex.streams import OrderDetails, Orders
+from source_vtex.streams import (
+    OrderDetails,
+    Orders,
+    Products,
+    ProductsIdAndSku,
+)
 
 
 class VtexAuthenticator(requests.auth.AuthBase):
@@ -71,4 +76,19 @@ class SourceVtex(AbstractSource):
             parent=orders_stream,
         )
 
-        return [orders_stream, order_details_stream]
+        products_id_sku_stream = ProductsIdAndSku(
+            authenticator=authenticator, start_date=start_date
+        )
+
+        products_stream = Products(
+            authenticator=authenticator,
+            start_date=start_date,
+            parent=products_id_sku_stream,
+        )
+
+        return [
+            orders_stream,
+            order_details_stream,
+            products_id_sku_stream,
+            products_stream,
+        ]
