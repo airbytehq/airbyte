@@ -1,5 +1,5 @@
 {
-  "azure_storage_account_name": "tweets",
-  "azure_storage_access_key": "<<replace with correct key>>",
-  "azure_storage_endpoint_suffix": "core.windows.net"
+  "storage_account_name": "tweets",
+  "storage_access_key": "<<replace with correct key>>",
+  "storage_endpoint_suffix": "core.windows.net"
 }
