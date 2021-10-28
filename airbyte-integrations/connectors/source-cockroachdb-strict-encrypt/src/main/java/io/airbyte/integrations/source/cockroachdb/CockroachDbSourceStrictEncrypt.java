@@ -34,4 +34,5 @@ public class CockroachDbSourceStrictEncrypt extends SpecModifyingSource implemen
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", CockroachDbSourceStrictEncrypt.class);
   }
+
 }

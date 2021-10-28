@@ -153,8 +153,6 @@ public class IntegrationRunner {
   }
 
   private static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws Exception {
-    LOGGER.warn("Config 1 : " + schemaJson);
-    LOGGER.warn("Config 2 : " + objectJson);
     final Set<String> validationResult = validator.validate(schemaJson, objectJson);
     if (!validationResult.isEmpty()) {
       throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ",
