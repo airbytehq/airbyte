@@ -57,7 +57,7 @@ Above command will generate download link and give you pop-up on right bottom si
 
 ### Connect to virtual machine
 
-* Connect to virtual machine 
+If you get this error: `Could not resolve hostname "XX.XXX.X.XXX": Name or service not known`, just manually enter the publicIp host name when running the ssh command.
 
 ```bash
 # Inside Azure cloud shell
