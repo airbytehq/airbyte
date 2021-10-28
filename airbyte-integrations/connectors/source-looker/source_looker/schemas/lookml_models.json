@@ -27,8 +27,7 @@
             "type": ["null", "string"]
           }
         },
-        "type": ["null", "object"],
-        "additionalProperties": false
+        "type": ["null", "object"]
       },
       "type": ["null", "array"]
     },
