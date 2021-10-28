@@ -95,7 +95,7 @@ public class RequestLoggerTest {
     // threads.
     final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
     LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER,
-        new LogConfiguration("", "", "", "", "", "", ""),
+        LogConfiguration.EMPTY,
         jobRoot);
 
     // We have to instanciate the logger here, because the MDC config has been changed to log in a

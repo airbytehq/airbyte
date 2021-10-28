@@ -103,7 +103,7 @@ public class JobHistoryHandlerTest {
         CREATED_AT);
 
     jobPersistence = mock(JobPersistence.class);
-    jobHistoryHandler = new JobHistoryHandler(jobPersistence, WorkerEnvironment.DOCKER, new LogConfiguration("", "", "", "", "", "", ""));
+    jobHistoryHandler = new JobHistoryHandler(jobPersistence, WorkerEnvironment.DOCKER, LogConfiguration.EMPTY);
   }
 
   @Nested

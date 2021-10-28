@@ -11,6 +11,8 @@ package io.airbyte.config.helpers;
  */
 public class LogConfiguration implements LogConfigs {
 
+  public final static LogConfiguration EMPTY = new LogConfiguration("", "", "", "", "", "", "");
+
   private final String s3LogBucket;
   private final String s3LogBucketRegion;
   private final String awsAccessKey;
@@ -19,13 +21,13 @@ public class LogConfiguration implements LogConfigs {
   private final String gcpStorageBucket;
   private final String googleApplicationCredentials;
 
-  public LogConfiguration(String s3LogBucket,
-                          String s3LogBucketRegion,
-                          String awsAccessKey,
-                          String awsSecretAccessKey,
-                          String s3MinioEndpoint,
-                          String gcpStorageBucket,
-                          String googleApplicationCredentials) {
+  public LogConfiguration(final String s3LogBucket,
+                          final String s3LogBucketRegion,
+                          final String awsAccessKey,
+                          final String awsSecretAccessKey,
+                          final String s3MinioEndpoint,
+                          final String gcpStorageBucket,
+                          final String googleApplicationCredentials) {
     this.s3LogBucket = s3LogBucket;
     this.s3LogBucketRegion = s3LogBucketRegion;
     this.awsAccessKey = awsAccessKey;

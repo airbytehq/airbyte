@@ -139,9 +139,7 @@ class DefaultReplicationWorkerTest {
     // set up the mdc so that actually log to a file, so that we can verify that file logging captures
     // threads.
     final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-    LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER,
-        new LogConfiguration("", "", "", "", "", "", ""),
-        jobRoot);
+    LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfiguration.EMPTY, jobRoot);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,

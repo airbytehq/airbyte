@@ -162,7 +162,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
                           final String webappUrl,
-                          final String airbyteVersion,
+                          final AirbyteVersion airbyteVersion,
                           final Path workspaceRoot) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
@@ -205,7 +205,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendDestinationsHandler = new WebBackendDestinationsHandler(destinationHandler, configRepository, trackingClient);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(
-        new AirbyteVersion(airbyteVersion),
+        airbyteVersion,
         configRepository,
         jobPersistence,
         seed,

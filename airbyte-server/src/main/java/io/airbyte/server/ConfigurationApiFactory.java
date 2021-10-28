@@ -6,6 +6,7 @@ package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -38,7 +39,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static LogConfigs logConfigs;
   private static Path workspaceRoot;
   private static String webappUrl;
-  private static String airbyteVersion;
+  private static AirbyteVersion airbyteVersion;
 
   public static void setValues(
                                final WorkflowServiceStubs temporalService,
@@ -55,7 +56,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final WorkerEnvironment workerEnvironment,
                                final LogConfigs logConfigs,
                                final String webappUrl,
-                               final String airbyteVersion,
+                               final AirbyteVersion airbyteVersion,
                                final Path workspaceRoot) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;

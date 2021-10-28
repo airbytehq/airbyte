@@ -6,6 +6,7 @@ package io.airbyte.server.apis;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
@@ -43,9 +44,9 @@ public class ConfigurationApiTest {
         mock(Database.class),
         mock(TrackingClient.class),
         WorkerEnvironment.DOCKER,
-        new LogConfiguration("", "", "", "", "", "", ""),
+        LogConfiguration.EMPTY,
         "http://localhost",
-        "0.1.0-alpha",
+        new AirbyteVersion("0.1.0-alpha"),
         Path.of(""));
     assertTrue(configurationApi.canImportDefinitons());
   }

@@ -155,7 +155,7 @@ class SchedulerHandlerTest {
         jobPersistence,
         jobNotifier,
         mock(WorkflowServiceStubs.class),
-        mock(OAuthConfigSupplier.class), WorkerEnvironment.DOCKER, new LogConfiguration("", "", "", "", "", "", ""));
+        mock(OAuthConfigSupplier.class), WorkerEnvironment.DOCKER, LogConfiguration.EMPTY);
   }
 
   @Test

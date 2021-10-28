@@ -74,7 +74,7 @@ class JobConverterTest {
 
   @BeforeEach
   public void setUp() {
-    jobConverter = new JobConverter(WorkerEnvironment.DOCKER, new LogConfiguration("", "", "", "", "", "", ""));
+    jobConverter = new JobConverter(WorkerEnvironment.DOCKER, LogConfiguration.EMPTY);
     job = mock(Job.class);
     final Attempt attempt = mock(Attempt.class);
     when(job.getId()).thenReturn(JOB_ID);
