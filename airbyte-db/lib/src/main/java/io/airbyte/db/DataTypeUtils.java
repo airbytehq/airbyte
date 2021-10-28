@@ -13,12 +13,17 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.TimeZone;
 import java.util.function.Function;
 
 public class DataTypeUtils {
 
   public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT_PATTERN); // Quoted "Z" to indicate UTC, no timezone offset
+
+  static {
+    DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+  }
 
   public static <T> T returnNullIfInvalid(final DataTypeSupplier<T> valueProducer) {
     return returnNullIfInvalid(valueProducer, ignored -> true);
