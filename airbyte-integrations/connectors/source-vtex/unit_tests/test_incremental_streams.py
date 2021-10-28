@@ -12,7 +12,9 @@ from source_vtex.source import IncrementalVtexStream
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalVtexStream, "path", "v0/example_endpoint")
-    mocker.patch.object(IncrementalVtexStream, "primary_key", "test_primary_key")
+    mocker.patch.object(
+        IncrementalVtexStream, "primary_key", "test_primary_key"
+    )
     mocker.patch.object(IncrementalVtexStream, "__abstractmethods__", set())
 
 
@@ -35,7 +37,11 @@ def test_get_updated_state(patch_incremental_base_class):
 def test_stream_slices(patch_incremental_base_class):
     stream = IncrementalVtexStream()
     # TODO: replace this with your input parameters
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
+    inputs = {
+        "sync_mode": SyncMode.incremental,
+        "cursor_field": [],
+        "stream_state": {},
+    }
     # TODO: replace this with your expected stream slices list
     expected_stream_slice = [None]
     assert stream.stream_slices(**inputs) == expected_stream_slice
