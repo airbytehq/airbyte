@@ -612,33 +612,6 @@ where 1 = 1
 
         return col
 
-    def generate_dedup_record_model(self, from_table: str) -> str:
-        template = Template(
-            """
--- SQL model to prepare for deduplicating records based on the hash record column
-select
-  row_number() over (
-    partition by {{ hash_id }}
-    order by {{ col_emitted_at }} asc
-  ) as {{ active_row }},
-  tmp.*
-from {{ from_table }} tmp
-{{ sql_table_comment }}
-        """
-        )
-        sql = template.render(
-            active_row=self.process_col("_airbyte_row_num"),
-            col_emitted_at=self.get_emitted_at(),
-            col_normalized_at=self.get_normalized_at(),
-            hash_id=self.hash_id(),
-            from_table=jinja_call(from_table),
-            sql_table_comment=self.sql_table_comment(include_from_table=True),
-        )
-        return sql
-
-    def process_col(self, col: str):
-        return self.name_transformer.normalize_column_name(col)
-
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         scd_sql_template = """
 with
