@@ -3,9 +3,12 @@ import * as FullStory from "@fullstory/browser";
 
 let inited = false;
 
-const useFullStory = (config: FullStory.SnippetOptions): boolean => {
+const useFullStory = (
+  config: FullStory.SnippetOptions,
+  enabled: boolean
+): boolean => {
   useEffect(() => {
-    if (!inited) {
+    if (!inited && enabled) {
       try {
         FullStory.init(config);
         inited = true;

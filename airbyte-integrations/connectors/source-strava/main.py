@@ -5,9 +5,9 @@
 
 import sys
 
-from base_python.entrypoint import launch
-from source_looker import SourceLooker
+from airbyte_cdk.entrypoint import launch
+from source_strava import SourceStrava
 
 if __name__ == "__main__":
-    source = SourceLooker()
+    source = SourceStrava()
     launch(source, sys.argv[1:])
