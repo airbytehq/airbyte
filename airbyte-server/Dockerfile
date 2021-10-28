@@ -13,5 +13,3 @@ RUN tar xf ${APPLICATION}.tar --strip-components=1
 
 # wait for upstream dependencies to become available before starting server
 ENTRYPOINT ["/bin/bash", "-c", "bin/${APPLICATION}"]
-
-LABEL io.airbyte.name=airbyte/server

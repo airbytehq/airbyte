@@ -7,5 +7,3 @@ COPY build/docs docs/
 COPY build /usr/share/nginx/html
 RUN rm -rf /usr/share/nginx/html/docs
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
-
-LABEL io.airbyte.name=airbyte/webapp
