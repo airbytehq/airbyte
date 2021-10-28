@@ -3,9 +3,6 @@ import { uiConfig } from "./uiConfig";
 
 const defaultConfig: Config = {
   ui: uiConfig,
-  fullstory: {
-    orgId: "",
-  },
   segment: { enabled: true, token: "" },
   healthCheckInterval: 10000,
   version: "",

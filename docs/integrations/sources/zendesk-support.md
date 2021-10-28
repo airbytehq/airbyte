@@ -97,6 +97,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.3` | 2021-10-17 | [7097](https://github.com/airbytehq/airbyte/pull/7097) | correction of spec file |
 | `0.1.2` | 2021-10-16 | [6513](https://github.com/airbytehq/airbyte/pull/6513) | fixed comments stream |
 | `0.1.1` | 2021-09-02 | [5787](https://github.com/airbytehq/airbyte/pull/5787) | fixed incremental logic for the ticket_comments stream |
 | `0.1.0` | 2021-07-21 | [4861](https://github.com/airbytehq/airbyte/pull/4861) | created CDK native zendesk connector |
