@@ -44,7 +44,6 @@ class API:
             "client_id": self._raw_credentials.get("client_id"),
             "client_secret": self._raw_credentials.get("client_secret"),
             "refresh_token": self._raw_credentials.get("refresh_token"),
-            "scopes": self._raw_credentials.get("scopes"),
         }
         creds = Credentials.from_authorized_user_info(info)
         if creds.expired:

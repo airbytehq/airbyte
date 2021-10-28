@@ -4,8 +4,8 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Directory Spec",
     "type": "object",
-    "required": ["credentials"],
-    "additionalProperties": false,
+    "required": [],
+    "additionalProperties": true,
     "properties": {
       "credentials": {
         "title": "Google Credentials",
@@ -16,12 +16,7 @@
             "title": "Web server application",
             "description": "For these scenario user only needs to give permission to read Google Directory data",
             "type": "object",
-            "required": [
-              "client_id",
-              "client_secret",
-              "refresh_token",
-              "scopes"
-            ],
+            "required": ["client_id", "client_secret", "refresh_token"],
             "properties": {
               "credentials_title": {
                 "type": "string",
@@ -49,11 +44,6 @@
                 "type": "string",
                 "description": "The token for obtaining new access token",
                 "airbyte_secret": true
-              },
-              "scopes": {
-                "title": "Scopes",
-                "type": "string",
-                "description": "The scopes used to obtain authorization separated by space."
               }
             }
           },
@@ -94,7 +84,7 @@
     "oauth2Specification": {
       "rootObject": ["credentials", 0],
       "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
+      "oauthFlowOutputParameters": [["refresh_token"]]
     }
   }
 }
