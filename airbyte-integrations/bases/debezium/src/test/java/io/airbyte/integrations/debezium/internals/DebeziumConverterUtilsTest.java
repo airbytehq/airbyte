@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.debezium.internals;
 
 import static org.mockito.Mockito.mock;
@@ -91,4 +95,5 @@ class DebeziumConverterUtilsTest {
     String actual = DebeziumConverterUtils.convertDate(stringValue);
     Assertions.assertEquals("2021-01-01T00:00:00Z", actual);
   }
+
 }

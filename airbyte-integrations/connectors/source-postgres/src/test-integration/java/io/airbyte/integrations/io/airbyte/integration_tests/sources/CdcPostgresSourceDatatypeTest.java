@@ -303,7 +303,8 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .build());
 
     // Max values for Money type should be: "-92233720368547758.08", "92233720368547758.07",
-    // debezium return rounded value for values more than 999999999999999 and less than -999999999999999,
+    // debezium return rounded value for values more than 999999999999999 and less than
+    // -999999999999999,
     // we map these value as null;
     // opened issue https://github.com/airbytehq/airbyte/issues/7338
     addDataTypeTestData(
