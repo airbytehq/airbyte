@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Delighted Spec",
     "type": "object",
-    "required": ["TODO"],
+    "required": ["since", "api_key"],
     "additionalProperties": false,
     "properties": {
       "since": {
@@ -14,10 +14,9 @@
       },
       "api_key": {
         "type": "string",
-        "description": "The API PASSWORD for a private application in Shopify shop.",
+        "description": "A Delighted API key.",
         "airbyte_secret": true
       }
-    }
     }
   }
 }

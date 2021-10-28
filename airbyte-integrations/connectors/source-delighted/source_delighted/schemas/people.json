@@ -15,13 +15,13 @@
       "type": "integer"
     },
     "last_sent_at": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "last_responded_at": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "next_survey_scheduled_at": {
-      "type": "integer"
+      "type": ["integer", "null"]
     }
   }
 }

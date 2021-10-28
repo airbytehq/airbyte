@@ -23,16 +23,17 @@
 
 import base64
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import (Any, Iterable, List, Mapping, MutableMapping, Optional,
+                    Tuple)
 from urllib.parse import parse_qsl, urlparse
 
-
 import requests
-from requests.auth import HTTPBasicAuth
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from requests.auth import HTTPBasicAuth
+
 
 # Basic full refresh stream
 class DelightedStream(HttpStream, ABC):
@@ -45,11 +46,9 @@ class DelightedStream(HttpStream, ABC):
     # Define primary key to all streams as primary key
     primary_key = "id"
 
-    def __init__(self, since: int, api_key: str, **kwargs):
+    def __init__(self, since: int, **kwargs):
         super().__init__(**kwargs)
         self.since = since
-        self.api_key = api_key
-        self.since_id = 0
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # Getting next page link
@@ -107,6 +106,7 @@ class People(IncrementalDelightedStream):
 
 class UnsubscribedPeople(IncrementalDelightedStream):
     cursor_field = "unsubscribed_at"
+    primary_key = "person_id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -116,6 +116,7 @@ class UnsubscribedPeople(IncrementalDelightedStream):
 
 class BouncedPeople(IncrementalDelightedStream):
     cursor_field = "bounced_at"
+    primary_key = "person_id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -163,8 +164,9 @@ class SourceDelighted(AbstractSource):
         token = base64.b64encode(f"{config['api_key']}:".encode("utf-8")).decode("utf-8")
         auth = TokenAuthenticator(token=token, auth_method="Basic")
 
-        args = {"authenticator": auth, "since": config["since"], "api_key": config["api_key"]}
+        args = {"authenticator": auth, "since": config["since"]}
 
         return [People(**args),
                 UnsubscribedPeople(**args),
-                BouncedPeople(**args)]
+                BouncedPeople(**args),
+                SurveyResponses(**args)]
