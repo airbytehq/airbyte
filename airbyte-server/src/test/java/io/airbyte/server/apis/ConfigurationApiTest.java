@@ -9,6 +9,8 @@ import static org.mockito.Mockito.mock;
 
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -25,6 +27,9 @@ public class ConfigurationApiTest {
 
   @Test
   void testImportDefinitions() {
+    final Configs configs = mock(Configs.class);
+    when(configs.getAirbyteVersion()).thenReturn(new AirbyteVersion("0.1.0-alpha"));
+    when(configs.getWebappUrl()).thenReturn("http://localhost");
 
     final ConfigurationApi configurationApi = new ConfigurationApi(
         mock(ConfigRepository.class),

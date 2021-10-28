@@ -4,6 +4,7 @@
 
 package io.airbyte.config;
 
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
 import java.nio.file.Path;
 import java.util.List;
@@ -14,7 +15,7 @@ public interface Configs {
 
   String getAirbyteRole();
 
-  String getAirbyteVersion();
+  AirbyteVersion getAirbyteVersion();
 
   String getAirbyteApiHost();
 

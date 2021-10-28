@@ -102,6 +102,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Smartsheets](sources/smartsheets.md) | Beta |
 | [Snowflake](sources/snowflake.md) | Beta |
 | [Square](sources/square.md) | Beta |
+| [Strava](sources/strava.md) | Beta |
 | [Stripe](sources/stripe.md) | Certified |
 | [Sugar CRM](sources/sugar-crm.md) | Beta |
 | [SurveyMonkey](sources/surveymonkey.md) | Beta |
