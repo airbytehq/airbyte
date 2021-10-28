@@ -14,8 +14,10 @@ from base_python import HttpStream
 class Stream(HttpStream):
     url_base = "https://www.zopim.com/api/v2/"
 
+    primary_key = None
     data_field = None
     limit = 100
+    
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         delay_time = response.headers.get("Retry-After")
