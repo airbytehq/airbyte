@@ -25,11 +25,10 @@ import org.apache.http.client.utils.URIBuilder;
  * Following docs from
  * https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow
  */
-public class FacebookOAuthFlow extends BaseOAuthFlow {
+public abstract class FacebookOAuthFlow extends BaseOAuthFlow {
 
   private static final String ACCESS_TOKEN_URL = "https://graph.facebook.com/v12.0/oauth/access_token";
   private static final String AUTH_CODE_TOKEN_URL = "https://www.facebook.com/v12.0/dialog/oauth";
-  private static final String SCOPES = "ads_management,ads_read,read_insights";
 
   public FacebookOAuthFlow(final ConfigRepository configRepository) {
     super(configRepository);
@@ -40,9 +39,7 @@ public class FacebookOAuthFlow extends BaseOAuthFlow {
     super(configRepository, httpClient, stateSupplier);
   }
 
-  protected String getScopes() {
-    return SCOPES;
-  }
+  protected abstract String getScopes();
 
   @Override
   protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {

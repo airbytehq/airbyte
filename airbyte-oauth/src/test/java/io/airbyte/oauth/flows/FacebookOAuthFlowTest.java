@@ -31,7 +31,7 @@ public class FacebookOAuthFlowTest {
 
   private HttpClient httpClient;
   private ConfigRepository configRepository;
-  private FacebookOAuthFlow facebookOAuthFlow;
+  private FacebookMarketingOAuthFlow facebookOAuthFlow;
 
   private UUID workspaceId;
   private UUID definitionId;
@@ -40,7 +40,7 @@ public class FacebookOAuthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    facebookOAuthFlow = new FacebookOAuthFlow(configRepository, httpClient, FacebookOAuthFlowTest::getConstantState);
+    facebookOAuthFlow = new FacebookMarketingOAuthFlow(configRepository, httpClient, FacebookOAuthFlowTest::getConstantState);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();

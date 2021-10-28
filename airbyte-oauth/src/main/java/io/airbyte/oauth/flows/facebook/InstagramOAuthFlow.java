@@ -24,7 +24,7 @@ public class InstagramOAuthFlow extends FacebookOAuthFlow {
   private static final String AUTHORIZE_URL = "https://api.instagram.com/oauth/authorize";
   private static final String ACCESS_TOKEN_URL = "https://api.instagram.com/oauth/access_token";
   private static final String LONG_LIVED_ACCESS_TOKEN_URL = "https://graph.instagram.com/access_token";
-  private static final String SCOPES = "user_profile,user_media";
+  private static final String SCOPES = "instagram_graph_user_profile,instagram_graph_user_media";
 
   public InstagramOAuthFlow(final ConfigRepository configRepository) {
     super(configRepository);
@@ -48,6 +48,11 @@ public class InstagramOAuthFlow extends FacebookOAuthFlow {
     } catch (URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
+  }
+
+  @Override
+  protected String getScopes() {
+    return SCOPES;
   }
 
   @Override
