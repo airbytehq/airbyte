@@ -127,9 +127,9 @@ allprojects {
                 ":airbyte-webapp",
         ].toSet().asImmutable()
 
-        if (project.getPath() in composeDeps) {
+        /*if (project.getPath() in composeDeps) {
             composeBuild.dependsOn(project.getPath() + ':assemble')
-        }
+        }*/
     }
 }
 
@@ -237,8 +237,6 @@ subprojects {
         testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
         testImplementation 'org.assertj:assertj-core:3.21.0'
 
-        implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-        integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     }
 
     tasks.withType(Tar) {
@@ -249,8 +247,8 @@ subprojects {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
 }
-/*
-task composeBuild {
+
+/*task composeBuild {
     def buildTag = System.getenv('VERSION') ?: 'dev'
     def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
     def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
@@ -266,8 +264,8 @@ task composeBuild {
             environment 'JDK_VERSION', jdkVersion
         }
     }
-}
-
+}*/
+/*
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     build.dependsOn(composeBuild)
 }
