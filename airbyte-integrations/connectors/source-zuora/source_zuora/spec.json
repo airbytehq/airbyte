@@ -4,7 +4,13 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Zuora Connector Configuration",
     "type": "object",
-    "required": ["start_date", "tenant_endpoint", "data_query", "client_id", "client_secret"],
+    "required": [
+      "start_date",
+      "tenant_endpoint",
+      "data_query",
+      "client_id",
+      "client_secret"
+    ],
     "properties": {
       "start_date": {
         "type": "string",
@@ -40,10 +46,7 @@
         "title": "Data Query Type",
         "type": "string",
         "description": "Choose between `Live`, or `Unlimited` - the optimized, replicated database at 12 hours freshness for high volume extraction <a href=\"https://knowledgecenter.zuora.com/Central_Platform/Query/Data_Query/A_Overview_of_Data_Query#Query_Processing_Limitations\">Link</a>",
-        "enum": [
-          "Live",
-          "Unlimited"
-        ],
+        "enum": ["Live", "Unlimited"],
         "default": "Live"
       },
       "client_id": {
