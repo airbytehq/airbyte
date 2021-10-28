@@ -4,19 +4,18 @@
 
 package io.airbyte.integrations.destination.oracle_strict_encrypt;
 
-import org.apache.commons.lang3.StringUtils;
-import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.utility.DockerImageName;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Collections.singleton;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.Collections.singleton;
+import org.apache.commons.lang3.StringUtils;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 public class OracleContainer extends JdbcDatabaseContainer<OracleContainer> {
 

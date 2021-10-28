@@ -16,7 +16,7 @@ class OracleStrictEncryptDestinationTest {
   @Test
   void testGetSpec() throws Exception {
     var expected = SshHelpers.injectSshIntoSpec(
-            Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
+        Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
     var actual = new OracleStrictEncryptDestination().spec();
     Assertions.assertEquals(expected, actual);
   }
