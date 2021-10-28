@@ -12,18 +12,24 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
+import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SynchronousJobMetadata;
+import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.server.services.AirbyteGithubStore;
-import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
@@ -39,7 +45,6 @@ import org.junit.jupiter.api.Test;
 class SourceDefinitionsHandlerTest {
 
   private ConfigRepository configRepository;
-  private DockerImageValidator dockerImageValidator;
   private StandardSourceDefinition source;
   private SourceDefinitionsHandler sourceHandler;
   private Supplier<UUID> uuidSupplier;
@@ -51,17 +56,18 @@ class SourceDefinitionsHandlerTest {
   void setUp() {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
-    dockerImageValidator = mock(DockerImageValidator.class);
     schedulerSynchronousClient = spy(CachingSynchronousSchedulerClient.class);
     githubStore = mock(AirbyteGithubStore.class);
 
     source = generateSource();
 
-    sourceHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerSynchronousClient, githubStore);
+    sourceHandler = new SourceDefinitionsHandler(configRepository, uuidSupplier, schedulerSynchronousClient, githubStore);
   }
 
   private StandardSourceDefinition generateSource() {
     final UUID sourceId = UUID.randomUUID();
+    final ConnectorSpecification spec = new ConnectorSpecification().withConnectionSpecification(
+        Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
 
     return new StandardSourceDefinition()
         .withSourceDefinitionId(sourceId)
@@ -69,7 +75,8 @@ class SourceDefinitionsHandlerTest {
         .withDocumentationUrl("https://netflix.com")
         .withDockerRepository("dockerstuff")
         .withDockerImageTag("12.3")
-        .withIcon("http.svg");
+        .withIcon("http.svg")
+        .withSpec(spec);
   }
 
   @Test
@@ -97,7 +104,8 @@ class SourceDefinitionsHandlerTest {
 
     final SourceDefinitionReadList actualSourceDefinitionReadList = sourceHandler.listSourceDefinitions();
 
-    assertEquals(Lists.newArrayList(expectedSourceDefinitionRead1, expectedSourceDefinitionRead2),
+    assertEquals(
+        Lists.newArrayList(expectedSourceDefinitionRead1, expectedSourceDefinitionRead2),
         actualSourceDefinitionReadList.getSourceDefinitions());
   }
 
@@ -127,7 +135,13 @@ class SourceDefinitionsHandlerTest {
   @DisplayName("createSourceDefinition should correctly create a sourceDefinition")
   void testCreateSourceDefinition() throws URISyntaxException, IOException, JsonValidationException {
     final StandardSourceDefinition source = generateSource();
+    final String imageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), source.getDockerImageTag());
+
     when(uuidSupplier.get()).thenReturn(source.getSourceDefinitionId());
+    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+        source.getSpec(),
+        SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
+
     final SourceDefinitionCreate create = new SourceDefinitionCreate()
         .name(source.getName())
         .dockerRepository(source.getDockerRepository())
@@ -146,12 +160,13 @@ class SourceDefinitionsHandlerTest {
     final SourceDefinitionRead actualRead = sourceHandler.createSourceDefinition(create);
 
     assertEquals(expectedRead, actualRead);
-    verify(dockerImageValidator).assertValidIntegrationImage(source.getDockerRepository(), source.getDockerImageTag());
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(configRepository).writeStandardSourceDefinition(source);
   }
 
   @Test
   @DisplayName("updateSourceDefinition should correctly update a sourceDefinition")
-  void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException, URISyntaxException {
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId())).thenReturn(source);
     final String newDockerImageTag = "averydifferenttag";
     final SourceDefinitionRead sourceDefinition = sourceHandler
@@ -160,11 +175,21 @@ class SourceDefinitionsHandlerTest {
     final String currentTag = sourceDefinition.getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
+    final String newImageName = DockerUtils.getTaggedImageName(source.getDockerRepository(), newDockerImageTag);
+    final ConnectorSpecification newSpec = new ConnectorSpecification().withConnectionSpecification(
+        Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")));
+    when(schedulerSynchronousClient.createGetSpecJob(newImageName)).thenReturn(new SynchronousResponse<>(
+        newSpec,
+        SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
+
+    final StandardSourceDefinition updatedSource = Jsons.clone(source).withDockerImageTag(newDockerImageTag).withSpec(newSpec);
+
     final SourceDefinitionRead sourceDefinitionRead = sourceHandler
         .updateSourceDefinition(new SourceDefinitionUpdate().sourceDefinitionId(source.getSourceDefinitionId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
-    verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
+    verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
+    verify(configRepository).writeStandardSourceDefinition(updatedSource);
     verify(schedulerSynchronousClient).resetCache();
   }
 
