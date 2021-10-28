@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.config.EnvConfigs;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,7 +25,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @Tag("logger-client")
 public class S3LogsTest {
 
-  private static final LogConfigs logConfigs = new LogConfiguration("", "", "", "", "", "", "");
+  private static final LogConfigs logConfigs = (new EnvConfigs()).getLogConfigs();
 
   @Test
   public void testMissingCredentials() {
