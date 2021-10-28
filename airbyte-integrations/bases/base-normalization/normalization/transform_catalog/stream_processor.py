@@ -957,7 +957,13 @@ where 1 = 1
 
     def get_model_partition_config(self, partition_by: PartitionScheme, unique_key: str) -> Dict:
         """
-        Defines partition, clustering and unique key parameters for each destination
+        Defines partition, clustering and unique key parameters for each destination.
+        The goal of these are to make read more performant.
+
+        In general, we need to do lookups on the last emitted_at column to know if a record is freshly produced and need to be
+        incrementally processed or not.
+        But in certain models, such as SCD tables for example, we also need to retrieve older data to update their type 2 SCD end_dates,
+        thus a different partitioning scheme is used to optimize that use case.
         """
         config = {}
         if self.destination_type == DestinationType.BIGQUERY:
