@@ -4,7 +4,10 @@
 
 package io.airbyte.commons.logging;
 
+import io.airbyte.commons.logging.LoggingHelper.Color;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.slf4j.MDC;
 
 /**
@@ -25,6 +28,8 @@ import org.slf4j.MDC;
  */
 public class MdcScope implements AutoCloseable {
 
+  public final static MdcScope DEFAULT = new Builder().build();
+
   private final Map<String, String> originalContextMap;
 
   public MdcScope(final Map<String, String> keyValuesToAdd) {
@@ -35,8 +40,41 @@ public class MdcScope implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     MDC.setContextMap(originalContextMap);
+  }
+
+  public static class Builder {
+
+    private Optional<String> maybeLogPrefix = Optional.empty();
+    private Optional<Color> maybePrefixColor = Optional.empty();
+
+    public Builder setLogPrefix(final String logPrefix) {
+      this.maybeLogPrefix = Optional.ofNullable(logPrefix);
+
+      return this;
+    }
+
+    public Builder setPrefixColor(final Color color) {
+      this.maybePrefixColor = Optional.ofNullable(color);
+
+      return this;
+    }
+
+    public MdcScope build() {
+      final Map<String, String> extraMdcEntries = new HashMap<>();
+
+      maybeLogPrefix.stream().forEach(logPrefix -> {
+        final String potentiallyColoredLog = maybePrefixColor
+            .map(color -> LoggingHelper.applyColor(color, logPrefix))
+            .orElse(logPrefix);
+
+        extraMdcEntries.put(LoggingHelper.LOG_SOURCE_MDC_KEY, potentiallyColoredLog);
+      });
+
+      return new MdcScope(extraMdcEntries);
+    }
+
   }
 
 }
