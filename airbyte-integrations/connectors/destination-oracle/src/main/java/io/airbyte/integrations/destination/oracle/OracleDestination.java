@@ -10,7 +10,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -47,6 +49,10 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   public OracleDestination() {
     super(DRIVER_CLASS, new OracleNameTransformer(), new OracleOperations("users"));
     System.setProperty("oracle.jdbc.timezoneAsRegion", "false");
+  }
+
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new OracleDestination(), List.of("host"), List.of("port"));
   }
 
   @Override
@@ -128,8 +134,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   public static void main(final String[] args) throws Exception {
-    final Destination destination = new SshWrappedDestination(new OracleDestination(), HOST_KEY,
-        PORT_KEY);
+    final Destination destination = sshWrappedDestination();
     LOGGER.info("starting destination: {}", OracleDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", OracleDestination.class);
