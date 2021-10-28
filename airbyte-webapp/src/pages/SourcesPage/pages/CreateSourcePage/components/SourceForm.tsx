@@ -3,8 +3,6 @@ import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
 import ContentCard from "components/ContentCard";
-import { SetupGuide } from "components/SetupGuide";
-import { SetupGuideRef } from "components/SetupGuide/SetupGuide";
 import ServiceForm from "views/Connector/ServiceForm";
 import useRouter from "hooks/useRouter";
 import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
@@ -15,6 +13,8 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceDefinition } from "core/resources/SourceDefinition";
 import { useAnalytics } from "hooks/useAnalytics";
 import useDocumentation from "hooks/services/useDocumentation";
+import SideView, { SideViewRef } from "components/SideView/SideView";
+import { Markdown } from "components/Markdown";
 
 type IProps = {
   onSubmit: (values: {
@@ -38,7 +38,7 @@ const SourceForm: React.FC<IProps> = ({
   jobInfo,
   afterSelectConnector,
 }) => {
-  const setupGuideRef = useRef<SetupGuideRef>({} as SetupGuideRef);
+  const sideViewRef = useRef<SideViewRef>({} as SideViewRef);
 
   const { location } = useRouter();
   const analyticsService = useAnalytics();
@@ -54,7 +54,7 @@ const SourceForm: React.FC<IProps> = ({
   } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
 
   const { data: sourceDefinitionDocs } = useDocumentation(
-    sourceDefinitionSpecification?.documentationUrl
+    sourceDefinitionSpecification?.documentationUrl || ""
   );
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
@@ -88,16 +88,14 @@ const SourceForm: React.FC<IProps> = ({
 
   return (
     <>
-      <SetupGuide
-        ref={setupGuideRef}
-        content={sourceDefinitionDocs}
-        shouldBeShown={!!sourceDefinitionDocs}
-      />
+      <SideView ref={sideViewRef}>
+        <Markdown content={sourceDefinitionDocs} />
+      </SideView>
       <ContentCard
         title={<FormattedMessage id="onboarding.sourceSetUp" />}
         actions={
           !!sourceDefinitionDocs && (
-            <Button secondary onClick={setupGuideRef?.current.open}>
+            <Button secondary onClick={sideViewRef?.current.open}>
               <FormattedMessage id="form.setupGuide" />
             </Button>
           )

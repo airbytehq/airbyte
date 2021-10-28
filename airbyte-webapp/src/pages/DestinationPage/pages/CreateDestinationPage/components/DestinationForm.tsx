@@ -3,8 +3,6 @@ import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
 import ContentCard from "components/ContentCard";
-import { SetupGuide } from "components/SetupGuide";
-import { SetupGuideRef } from "components/SetupGuide/SetupGuide";
 import ServiceForm from "views/Connector/ServiceForm";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionSpecificationLoad } from "hooks/services/useDestinationHook";
@@ -15,6 +13,8 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { useAnalytics } from "hooks/useAnalytics";
 import useDocumentation from "hooks/services/useDocumentation";
+import SideView, { SideViewRef } from "components/SideView/SideView";
+import { Markdown } from "components/Markdown";
 
 type IProps = {
   onSubmit: (values: {
@@ -38,7 +38,7 @@ const DestinationForm: React.FC<IProps> = ({
   jobInfo,
   afterSelectConnector,
 }) => {
-  const setupGuideRef = useRef<SetupGuideRef>({} as SetupGuideRef);
+  const sideViewRef = useRef<SideViewRef>({} as SideViewRef);
 
   const { location } = useRouter();
   const analyticsService = useAnalytics();
@@ -53,7 +53,7 @@ const DestinationForm: React.FC<IProps> = ({
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
 
   const { data: destinationDefinitionDocs } = useDocumentation(
-    destinationDefinitionSpecification?.documentationUrl
+    destinationDefinitionSpecification?.documentationUrl || ""
   );
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
@@ -88,15 +88,13 @@ const DestinationForm: React.FC<IProps> = ({
 
   return (
     <>
-      <SetupGuide
-        ref={setupGuideRef}
-        content={destinationDefinitionDocs}
-        shouldBeShown={!!destinationDefinitionDocs}
-      />
+      <SideView ref={sideViewRef}>
+        <Markdown content={destinationDefinitionDocs} />
+      </SideView>
       <ContentCard
         actions={
           !!destinationDefinitionDocs && (
-            <Button secondary onClick={setupGuideRef?.current.open}>
+            <Button secondary onClick={sideViewRef?.current.open}>
               <FormattedMessage id="form.setupGuide" />
             </Button>
           )
