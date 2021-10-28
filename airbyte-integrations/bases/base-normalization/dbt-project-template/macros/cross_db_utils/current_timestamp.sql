@@ -1,5 +1,5 @@
 {% macro mysql__current_timestamp() %}
-    NULL
+    CURRENT_TIMESTAMP
 {% endmacro %}
 
 {% macro oracle__current_timestamp() %}

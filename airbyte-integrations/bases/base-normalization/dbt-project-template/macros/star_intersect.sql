@@ -1,3 +1,11 @@
+{#
+    Similar to the star macro here: https://github.com/dbt-labs/dbt-utils/blob/main/macros/sql/star.sql
+
+    This star_intersect macro takes an additional 'intersect' relation as argument.
+    Its behavior is to select columns from both 'intersect' and 'from' relations with the following rules:
+    - if the columns are existing in both 'from' and the 'intersect' relations, then the column from 'intersect' is used
+    - if it's not in the both relation, then only the column in the 'from' relation is used
+#}
 {% macro star_intersect(from, intersect, from_alias=False, intersect_alias=False, except=[]) -%}
     {%- do dbt_utils._is_relation(from, 'star_intersect') -%}
     {%- do dbt_utils._is_ephemeral(from, 'star_intersect') -%}
