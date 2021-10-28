@@ -33,6 +33,11 @@ def mock_auth_call(requests_mock):
     yield requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "", "expires_in": 0})
 
 
+@pytest.fixture
+def mock_auth_check_connection(requests_mock):
+    yield requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", json={"data": {"test": "value"}})
+
+
 def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
     test_metrics, test_dimensions = GoogleAnalyticsV4TypesList().read_records(sync_mode=None)
 
@@ -66,7 +71,7 @@ def test_lookup_metrics_dimensions_data_type(metrics_dimensions_mapping, mock_me
 
 
 @patch("source_google_analytics_v4.source.jwt")
-def test_check_connection_jwt(jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call):
+def test_check_connection_jwt(jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_auth_check_connection):
     test_config = json.loads(read_file("../integration_tests/sample_config.json"))
     del test_config["custom_reports"]
     test_config["credentials"] = {
@@ -74,13 +79,15 @@ def test_check_connection_jwt(jwt_encode_mock, mocker, mock_metrics_dimensions_t
         "credentials_json": '{"client_email": "", "private_key": "", "private_key_id": ""}',
     }
     source = SourceGoogleAnalyticsV4()
-    assert source.check_connection(MagicMock(), test_config) == (True, None)
+    assert source.check_connection(MagicMock(), test_config) is None
     jwt_encode_mock.encode.assert_called()
     assert mock_auth_call.called
 
 
 @patch("source_google_analytics_v4.source.jwt")
-def test_check_connection_oauth(jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call):
+def test_check_connection_oauth(
+    jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_auth_check_connection
+):
     test_config = json.loads(read_file("../integration_tests/sample_config.json"))
     del test_config["custom_reports"]
     test_config["credentials"] = {
@@ -90,7 +97,7 @@ def test_check_connection_oauth(jwt_encode_mock, mocker, mock_metrics_dimensions
         "refresh_token": "refresh_token_val",
     }
     source = SourceGoogleAnalyticsV4()
-    assert source.check_connection(MagicMock(), test_config) == (True, None)
+    assert source.check_connection(MagicMock(), test_config) is None
     jwt_encode_mock.encode.assert_not_called()
     assert "https://www.googleapis.com/auth/analytics.readonly" in unquote(mock_auth_call.last_request.body)
     assert "client_id_val" in unquote(mock_auth_call.last_request.body)
