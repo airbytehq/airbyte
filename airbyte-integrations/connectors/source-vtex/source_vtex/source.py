@@ -7,12 +7,11 @@ import requests
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_vtex.streams import (
-    OrderDetails,
-    Orders,
-    Products,
-    ProductsIdAndSku,
-)
+
+from source_vtex.streams.orders import Orders
+from source_vtex.streams.order_details import OrderDetails
+from source_vtex.streams.products_id_and_sku import ProductsIdAndSku
+from source_vtex.streams.products import Products
 
 
 class VtexAuthenticator(requests.auth.AuthBase):
