@@ -8,7 +8,6 @@ import datetime
 import io
 import json
 import pkgutil
-from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urljoin
 
@@ -54,9 +53,9 @@ class ReportResources(HttpStream):
             report["endTime"] = datetime.datetime.strptime(report["endTime"], "%Y-%m-%dT%H:%M:%S%z")
             reports.append(report)
         reports.sort(key=lambda x: x["startTime"])
-        date = kwargs['stream_state'].get('date')
+        date = kwargs["stream_state"].get("date")
         if date:
-            reports = [r for r in reports if int(r['startTime'].date().strftime('%Y%m%d')) >= date]
+            reports = [r for r in reports if int(r["startTime"].date().strftime("%Y%m%d")) >= date]
         return reports
 
     def path(
