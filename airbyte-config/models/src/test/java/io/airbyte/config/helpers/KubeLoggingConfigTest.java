@@ -7,8 +7,6 @@ package io.airbyte.config.helpers;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.string.Strings;
-import io.airbyte.config.Configs;
-import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -33,7 +31,8 @@ public class KubeLoggingConfigTest {
   public void cleanUpLogs() {
     if (logPath != null) {
       try {
-        LogClientSingleton.getInstance().deleteLogs(WorkerEnvironment.DOCKER, new LogConfiguration("", "", "", "", "", "", ""), logPath);
+        final EnvConfigs envConfigs = new EnvConfigs();
+        LogClientSingleton.getInstance().deleteLogs(envConfigs.getWorkerEnvironment(), envConfigs.getLogConfigs(), logPath);
       } catch (final Exception e) {
         // Ignore Minio delete error.
       }
@@ -44,16 +43,15 @@ public class KubeLoggingConfigTest {
    * Because this test tests our env var set up is compatible with our Log4j2 configuration, we are
    * unable to perform injection, and instead rely on env vars set in
    * ./tools/bin/cloud_storage_logging_test.sh.
-   * <p>
+   *
    * This test will fail if certain env vars aren't set.
    */
   @Test
   public void testLoggingConfiguration() throws IOException, InterruptedException {
+    final EnvConfigs envConfigs = new EnvConfigs();
     final var randPath = Strings.addRandomSuffix("-", "", 5);
     // This mirrors our Log4j2 set up. See log4j2.xml.
-    LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER,
-        new LogConfiguration("", "", "", "", "", "", ""),
-        Path.of(randPath));
+    LogClientSingleton.getInstance().setJobMdc(envConfigs.getWorkerEnvironment(), envConfigs.getLogConfigs(), Path.of(randPath));
 
     final var toLog = List.of("line 1", "line 2", "line 3");
     for (final String l : toLog) {
@@ -68,9 +66,6 @@ public class KubeLoggingConfigTest {
     logPath = randPath + "/logs.log/";
     // The same env vars that log4j2 uses to determine where to publish to determine how to retrieve the
     // log file.
-    final Configs envConfigs = new EnvConfigs();
-    LOGGER.info("Worker environment: " + envConfigs.getWorkerEnvironment().name());
-    LOGGER.info("LogConfigs: " + envConfigs.getLogConfigs().toString());
     final var logs = LogClientSingleton.getInstance().getJobLogFile(envConfigs.getWorkerEnvironment(), envConfigs.getLogConfigs(), Path.of(logPath));
     // Each log line is of the form <time-stamp> <log-level> <log-message>. Further, there might be
     // other log lines from the system running. Join all the lines to simplify assertions.
