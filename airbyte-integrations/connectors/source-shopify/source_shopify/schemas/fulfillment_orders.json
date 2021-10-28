@@ -52,8 +52,7 @@
           "type": ["null", "integer"]
         },
         "method_type": {
-          "type": ["null", "string"],
-          "enum": ["local", "none", "pick_up", "retail", "shipping", null]
+          "type": ["null", "string"]
         }
       }
     },
@@ -114,34 +113,13 @@
       "type": ["null", "integer"]
     },
     "request_status": {
-      "type": ["null", "string"],
-      "enum": [
-        "unsubmitted",
-        "submitted",
-        "accepted",
-        "rejected",
-        "cancellation_requested",
-        "cancellation_accepted",
-        "cancellation_rejected",
-        "closed",
-        null
-      ]
+      "type": ["null", "string"]
     },
     "shop_id": {
       "type": ["null", "integer"]
     },
     "status": {
-      "type": ["null", "string"],
-      "enum": [
-        "open",
-        "in_progress",
-        "scheduled",
-        "cancelled",
-        "on_hold",
-        "incomplete",
-        "closed",
-        null
-      ]
+      "type": ["null", "string"]
     },
     "supported_actions": {
       "type": ["null", "array"],

@@ -58,31 +58,10 @@
       "type": ["null", "string"]
     },
     "shipment_status": {
-      "type": ["null", "string"],
-      "enum": [
-        "label_printed",
-        "label_purchased",
-        "attempted_delivery",
-        "ready_for_pickup",
-        "confirmed",
-        "in_transit",
-        "out_for_delivery",
-        "delivered",
-        "failure",
-        null
-      ]
+      "type": ["null", "string"]
     },
     "status": {
-      "type": ["null", "string"],
-      "enum": [
-        "pending",
-        "open",
-        "success",
-        "cancelled",
-        "error",
-        "failure",
-        null
-      ]
+      "type": ["null", "string"]
     },
     "tracking_company": {
       "type": ["null", "string"]
