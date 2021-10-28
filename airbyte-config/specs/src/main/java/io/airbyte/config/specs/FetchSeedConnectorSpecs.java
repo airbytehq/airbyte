@@ -52,8 +52,8 @@ public class FetchSeedConnectorSpecs {
   }
 
   @JsonPropertyOrder({
-      "dockerImage",
-      "spec"
+    "dockerImage",
+    "spec"
   })
   static class DockerImageSpec implements Serializable {
 
@@ -66,6 +66,7 @@ public class FetchSeedConnectorSpecs {
       this.dockerImage = dockerImage;
       this.spec = spec;
     }
+
   }
 
   public void run(final Path seedRoot, final ConnectorType connectorType) throws IOException {
@@ -113,4 +114,5 @@ public class FetchSeedConnectorSpecs {
       throw new IllegalArgumentException(e);
     }
   }
+
 }
