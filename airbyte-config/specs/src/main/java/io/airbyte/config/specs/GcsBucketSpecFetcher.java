@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.config.specs;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -52,4 +56,5 @@ public class GcsBucketSpecFetcher {
     }
     return Optional.of(Jsons.deserialize(specAsString, ConnectorSpecification.class));
   }
+
 }

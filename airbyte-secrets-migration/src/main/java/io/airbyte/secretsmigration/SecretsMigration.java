@@ -13,9 +13,9 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
+import io.airbyte.config.specs.GcsBucketSpecFetcher;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import io.airbyte.scheduler.client.BucketSpecCacheSchedulerClient;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
@@ -70,8 +70,10 @@ public class SecretsMigration {
             Optional.of(new LocalTestingSecretPersistence(database)),
             Optional.of(new LocalTestingSecretPersistence(database)));
 
-    configRepository.setSpecFetcher(dockerImage -> BucketSpecCacheSchedulerClient
-        .attemptToFetchSpecFromBucket(StorageOptions.getDefaultInstance().getService(), "io-airbyte-cloud-spec-cache", dockerImage).get());
+    configRepository.setSpecFetcher(dockerImage -> GcsBucketSpecFetcher.attemptFetch(
+        StorageOptions.getDefaultInstance().getService(),
+        "io-airbyte-cloud-spec-cache",
+        dockerImage).get());
 
     final SecretsMigration migration = new SecretsMigration(configRepository, configRepository, false);
     LOGGER.info("starting: {}", SecretsMigration.class);

@@ -78,4 +78,5 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
       return client.createGetSpecJob(dockerImage);
     }
   }
+
 }
