@@ -126,8 +126,8 @@
     "auth_type": "oauth2.0",
     "oauth2Specification": {
       "rootObject": [],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"], ["developer_token"], ["user_id"]],
-      "oauthFlowOutputParameters": [["client_id"], ["client_secret"], ["developer_token"], ["user_id"], ["refresh_token"]]
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"]]
     }
   }
 }
