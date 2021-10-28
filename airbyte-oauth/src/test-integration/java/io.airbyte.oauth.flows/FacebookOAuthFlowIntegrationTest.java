@@ -2,11 +2,12 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.oauth.flows;
+package io.airbyte.oauth.flows.facebook;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.oauth.flows.OAuthFlowIntegrationTest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -24,7 +25,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
+public class FacebookOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
   protected static final Path CREDENTIALS_PATH = Path.of("secrets/facebook_marketing.json");
   protected static final String REDIRECT_URL = "http://localhost:9000/auth_flow";
@@ -36,7 +37,7 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
 
   @Override
   protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new FacebookMarketingOAuthFlow(configRepository);
+    return new FacebookOAuthFlow(configRepository);
   }
 
   @BeforeEach
@@ -50,7 +51,7 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
   }
 
   @Test
-  public void testFullFacebookMarketingOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
+  public void testFullFacebookOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
     final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));

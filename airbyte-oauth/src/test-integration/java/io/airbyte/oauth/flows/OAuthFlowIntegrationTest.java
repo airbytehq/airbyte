@@ -80,7 +80,7 @@ public abstract class OAuthFlowIntegrationTest {
     }
   }
 
-  static class ServerHandler implements HttpHandler {
+  public static class ServerHandler implements HttpHandler {
 
     final private String expectedParam;
     private String paramValue;

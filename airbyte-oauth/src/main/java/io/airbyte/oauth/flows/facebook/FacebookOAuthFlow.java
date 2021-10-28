@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.oauth.flows;
+package io.airbyte.oauth.flows.facebook;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -25,31 +25,33 @@ import org.apache.http.client.utils.URIBuilder;
  * Following docs from
  * https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow
  */
-public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
+public class FacebookOAuthFlow extends BaseOAuthFlow {
 
   private static final String ACCESS_TOKEN_URL = "https://graph.facebook.com/v12.0/oauth/access_token";
   private static final String AUTH_CODE_TOKEN_URL = "https://www.facebook.com/v12.0/dialog/oauth";
   private static final String SCOPES = "ads_management,ads_read,read_insights";
 
-  public FacebookMarketingOAuthFlow(final ConfigRepository configRepository) {
+  public FacebookOAuthFlow(final ConfigRepository configRepository) {
     super(configRepository);
   }
 
   @VisibleForTesting
-  FacebookMarketingOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+  FacebookOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
+  }
+
+  protected String getScopes() {
+     return SCOPES;
   }
 
   @Override
   protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
     try {
       return new URIBuilder(AUTH_CODE_TOKEN_URL)
-          // required
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("state", getState())
-          // optional
-          .addParameter("scope", SCOPES)
+          .addParameter("scope", getScopes())
           .build().toString();
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
@@ -76,31 +78,40 @@ public class FacebookMarketingOAuthFlow extends BaseOAuthFlow {
                                                   final String redirectUrl,
                                                   JsonNode oAuthParamConfig)
       throws IOException {
-    // Access tokens generated via web login are short-lived tokens
-    // they arre valid for 1 hour and need to be exchanged for long-lived access token
-    // https://developers.facebook.com/docs/facebook-login/access-tokens (Short-Term Tokens and
-    // Long-Term Tokens section)
     final Map<String, Object> data = super.completeOAuthFlow(clientId, clientSecret, authCode, redirectUrl, oAuthParamConfig);
-    Preconditions.checkArgument(data.containsKey("access_token"));
-    final String shortLivedAccessToken = (String) data.get("access_token");
+    final String shortLivedAccessToken = getShortLivedAccessToken(data);
     final String longLivedAccessToken = getLongLivedAccessToken(clientId, clientSecret, shortLivedAccessToken);
     return Map.of("access_token", longLivedAccessToken);
   }
 
-  private String getLongLivedAccessToken(final String clientId, final String clientSecret, final String shortLivedAccessToken) throws IOException {
+  protected String getShortLivedAccessToken(Map<String, Object> accessTokenResponse) {
+    // Access tokens generated via web login are short-lived tokens
+    // they arre valid for 1 hour and need to be exchanged for long-lived access token
+    // https://developers.facebook.com/docs/facebook-login/access-tokens (Short-Term Tokens and
+    // Long-Term Tokens section)
+    Preconditions.checkArgument(accessTokenResponse.containsKey("access_token"));
+    return (String) accessTokenResponse.get("access_token");
+  }
+
+
+  protected URI createLongLivedTokenURI(final String clientId, final String clientSecret, final String shortLivedAccessToken) throws URISyntaxException {
     // Exchange Short-lived Access token for Long-lived one
     // https://developers.facebook.com/docs/facebook-login/access-tokens/refreshing
     // It's valid for 60 days and resreshed once per day if using in requests.
     // If no requests are made, the token will expire after about 60 days and
     // the person will have to go through the login flow again to get a new
     // token.
-    try {
-      final URI uri = new URIBuilder(ACCESS_TOKEN_URL)
+      return new URIBuilder(ACCESS_TOKEN_URL)
           .addParameter("client_secret", clientSecret)
           .addParameter("client_id", clientId)
           .addParameter("grant_type", "fb_exchange_token")
           .addParameter("fb_exchange_token", shortLivedAccessToken)
           .build();
+  }
+
+  protected String getLongLivedAccessToken(final String clientId, final String clientSecret, final String shortLivedAccessToken) throws IOException {
+    try {
+      final URI uri = createLongLivedTokenURI(clientId, clientSecret, shortLivedAccessToken);
       final HttpRequest request = HttpRequest.newBuilder()
           .GET()
           .uri(uri)

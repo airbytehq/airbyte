@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.oauth.flows;
+package io.airbyte.oauth.flows.facebook;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -25,7 +25,7 @@ import org.apache.http.client.utils.URIBuilder;
 /**
  * Following docs from https://developers.facebook.com/docs/instagram-basic-display-api/overview
  */
-public class InstagramOAuthFlow extends BaseOAuthFlow {
+public class InstagramOAuthFlow extends FacebookOAuthFlow {
 
   private static final String AUTHORIZE_URL = "https://api.instagram.com/oauth/authorize";
   private static final String ACCESS_TOKEN_URL = "https://api.instagram.com/oauth/access_token";
@@ -67,46 +67,27 @@ public class InstagramOAuthFlow extends BaseOAuthFlow {
         .put("grant_type", "authorization_code").build();
   }
 
+
   @Override
-  protected Map<String, Object> completeOAuthFlow(final String clientId,
-                                                  final String clientSecret,
-                                                  final String authCode,
-                                                  final String redirectUrl,
-                                                  JsonNode oAuthParamConfig)
-      throws IOException {
+  protected String getShortLivedAccessToken(Map<String, Object> accessTokenResponse) {
     // On this step we obtained Short-lived Access token
     // https://developers.facebook.com/docs/instagram-basic-display-api/overview#short-lived-access-tokens
     // It's valid for 1 hour and have to be exchanged for long-lived access token
-    final Map<String, Object> data = super.completeOAuthFlow(clientId, clientSecret, authCode, redirectUrl, oAuthParamConfig);
-    Preconditions.checkArgument(data.containsKey("credentials"));
-    final String shortLivedAccessToken = (String) ((Map) data.get("credentials")).get("access_token");
-    final String longLivedAccessToken = getLongLivedAccessToken(clientSecret, shortLivedAccessToken);
-    return Map.of("access_token", longLivedAccessToken);
+    Preconditions.checkArgument(accessTokenResponse.containsKey("credentials"));
+    return (String) ((Map) accessTokenResponse.get("credentials")).get("access_token");
   }
 
-  private String getLongLivedAccessToken(final String clientSecret, final String shortLivedAccessToken) throws IOException {
+  @Override
+  protected URI createLongLivedTokenURI(final String clientId, final String clientSecret, final String shortLivedAccessToken) throws URISyntaxException {
     // Exchange Short-lived Access token for Long-lived one
     // https://developers.facebook.com/docs/instagram-basic-display-api/guides/long-lived-access-tokens#get-a-long-lived-token
     // It's valid for 60 days and need to be refreshed by connector by calling /refresh_access_token
     // endpoint:
     // https://developers.facebook.com/docs/instagram-basic-display-api/guides/long-lived-access-tokens#refresh-a-long-lived-token
-    try {
-      final URI uri = new URIBuilder(LONG_LIVED_ACCESS_TOKEN_URL)
+      return new URIBuilder(LONG_LIVED_ACCESS_TOKEN_URL)
           .addParameter("client_secret", clientSecret)
           .addParameter("grant_type", "ig_exchange_token")
           .addParameter("access_token", shortLivedAccessToken)
           .build();
-      final HttpRequest request = HttpRequest.newBuilder()
-          .GET()
-          .uri(uri)
-          .build();
-      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      final JsonNode responseJson = Jsons.deserialize(response.body());
-      Preconditions.checkArgument(responseJson.hasNonNull("access_token"), "%s response should have access_token", responseJson);
-      return responseJson.get("access_token").asText();
-    } catch (final InterruptedException | URISyntaxException e) {
-      throw new IOException("Failed to complete OAuth flow", e);
-    }
   }
-
 }

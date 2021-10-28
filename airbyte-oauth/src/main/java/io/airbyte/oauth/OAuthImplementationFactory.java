@@ -7,7 +7,8 @@ package io.airbyte.oauth;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.flows.AsanaOAuthFlow;
-import io.airbyte.oauth.flows.FacebookMarketingOAuthFlow;
+import io.airbyte.oauth.flows.facebook.FacebookOAuthFlow;
+import io.airbyte.oauth.flows.facebook.FacebookPagesOAuthFlow;
 import io.airbyte.oauth.flows.GithubOAuthFlow;
 import io.airbyte.oauth.flows.SalesforceOAuthFlow;
 import io.airbyte.oauth.flows.TrelloOAuthFlow;
@@ -25,14 +26,15 @@ public class OAuthImplementationFactory {
   public OAuthImplementationFactory(final ConfigRepository configRepository) {
     OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
         .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository))
-        .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository))
+        .put("airbyte/source-facebook-marketing", new FacebookOAuthFlow(configRepository))
+        .put("airbyte/source-facebook-pages", new FacebookPagesOAuthFlow(configRepository))
         .put("airbyte/source-github", new GithubOAuthFlow(configRepository))
         .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository))
         .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository))
         .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository))
         .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository))
         // Instagram connector use Facebook Marketing API
-        .put("airbyte/source-instagram", new FacebookMarketingOAuthFlow(configRepository))
+        .put("airbyte/source-instagram", new FacebookOAuthFlow(configRepository))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
         .build();
