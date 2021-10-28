@@ -41,7 +41,7 @@ public class FacebookOAuthFlow extends BaseOAuthFlow {
   }
 
   protected String getScopes() {
-     return SCOPES;
+    return SCOPES;
   }
 
   @Override
@@ -78,35 +78,33 @@ public class FacebookOAuthFlow extends BaseOAuthFlow {
                                                   final String redirectUrl,
                                                   JsonNode oAuthParamConfig)
       throws IOException {
+    // Access tokens generated via web login are short-lived tokens
+    // they arre valid for 1 hour and need to be exchanged for long-lived access token
+    // https://developers.facebook.com/docs/facebook-login/access-tokens (Short-Term Tokens and
+    // https://developers.facebook.com/docs/instagram-basic-display-api/overview#short-lived-access-tokens
+    // Long-Term Tokens section)
+
     final Map<String, Object> data = super.completeOAuthFlow(clientId, clientSecret, authCode, redirectUrl, oAuthParamConfig);
-    final String shortLivedAccessToken = getShortLivedAccessToken(data);
+    Preconditions.checkArgument(data.containsKey("access_token"));
+    final String shortLivedAccessToken = (String) data.get("access_token");
     final String longLivedAccessToken = getLongLivedAccessToken(clientId, clientSecret, shortLivedAccessToken);
     return Map.of("access_token", longLivedAccessToken);
   }
 
-  protected String getShortLivedAccessToken(Map<String, Object> accessTokenResponse) {
-    // Access tokens generated via web login are short-lived tokens
-    // they arre valid for 1 hour and need to be exchanged for long-lived access token
-    // https://developers.facebook.com/docs/facebook-login/access-tokens (Short-Term Tokens and
-    // Long-Term Tokens section)
-    Preconditions.checkArgument(accessTokenResponse.containsKey("access_token"));
-    return (String) accessTokenResponse.get("access_token");
-  }
-
-
-  protected URI createLongLivedTokenURI(final String clientId, final String clientSecret, final String shortLivedAccessToken) throws URISyntaxException {
+  protected URI createLongLivedTokenURI(final String clientId, final String clientSecret, final String shortLivedAccessToken)
+      throws URISyntaxException {
     // Exchange Short-lived Access token for Long-lived one
     // https://developers.facebook.com/docs/facebook-login/access-tokens/refreshing
     // It's valid for 60 days and resreshed once per day if using in requests.
     // If no requests are made, the token will expire after about 60 days and
     // the person will have to go through the login flow again to get a new
     // token.
-      return new URIBuilder(ACCESS_TOKEN_URL)
-          .addParameter("client_secret", clientSecret)
-          .addParameter("client_id", clientId)
-          .addParameter("grant_type", "fb_exchange_token")
-          .addParameter("fb_exchange_token", shortLivedAccessToken)
-          .build();
+    return new URIBuilder(ACCESS_TOKEN_URL)
+        .addParameter("client_secret", clientSecret)
+        .addParameter("client_id", clientId)
+        .addParameter("grant_type", "fb_exchange_token")
+        .addParameter("fb_exchange_token", shortLivedAccessToken)
+        .build();
   }
 
   protected String getLongLivedAccessToken(final String clientId, final String clientSecret, final String shortLivedAccessToken) throws IOException {

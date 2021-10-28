@@ -4,19 +4,13 @@
 
 package io.airbyte.oauth.flows.facebook;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -67,27 +61,19 @@ public class InstagramOAuthFlow extends FacebookOAuthFlow {
         .put("grant_type", "authorization_code").build();
   }
 
-
   @Override
-  protected String getShortLivedAccessToken(Map<String, Object> accessTokenResponse) {
-    // On this step we obtained Short-lived Access token
-    // https://developers.facebook.com/docs/instagram-basic-display-api/overview#short-lived-access-tokens
-    // It's valid for 1 hour and have to be exchanged for long-lived access token
-    Preconditions.checkArgument(accessTokenResponse.containsKey("credentials"));
-    return (String) ((Map) accessTokenResponse.get("credentials")).get("access_token");
-  }
-
-  @Override
-  protected URI createLongLivedTokenURI(final String clientId, final String clientSecret, final String shortLivedAccessToken) throws URISyntaxException {
+  protected URI createLongLivedTokenURI(final String clientId, final String clientSecret, final String shortLivedAccessToken)
+      throws URISyntaxException {
     // Exchange Short-lived Access token for Long-lived one
     // https://developers.facebook.com/docs/instagram-basic-display-api/guides/long-lived-access-tokens#get-a-long-lived-token
     // It's valid for 60 days and need to be refreshed by connector by calling /refresh_access_token
     // endpoint:
     // https://developers.facebook.com/docs/instagram-basic-display-api/guides/long-lived-access-tokens#refresh-a-long-lived-token
-      return new URIBuilder(LONG_LIVED_ACCESS_TOKEN_URL)
-          .addParameter("client_secret", clientSecret)
-          .addParameter("grant_type", "ig_exchange_token")
-          .addParameter("access_token", shortLivedAccessToken)
-          .build();
+    return new URIBuilder(LONG_LIVED_ACCESS_TOKEN_URL)
+        .addParameter("client_secret", clientSecret)
+        .addParameter("grant_type", "ig_exchange_token")
+        .addParameter("access_token", shortLivedAccessToken)
+        .build();
   }
+
 }
