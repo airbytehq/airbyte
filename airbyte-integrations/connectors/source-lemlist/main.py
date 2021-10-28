@@ -5,9 +5,9 @@
 
 import sys
 
-from base_python.entrypoint import launch
-from source_drift import SourceDrift
+from airbyte_cdk.entrypoint import launch
+from source_lemlist import SourceLemlist
 
 if __name__ == "__main__":
-    source = SourceDrift()
+    source = SourceLemlist()
     launch(source, sys.argv[1:])

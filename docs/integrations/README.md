@@ -57,6 +57,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Jira](sources/jira.md) | Certified |
 | [Klaviyo](sources/klaviyo.md) | Beta |
 | [Klaviyo](sources/kustomer.md) | Alpha |
+| [Lemlist](sources/lemlist.md) | Alpha |
 | [LinkedIn Ads](sources/linkedin-ads.md) | Beta |
 | [Kustomer](sources/kustomer.md) | Alpha |
 | [Lever Hiring](sources/lever-hiring.md) | Beta |
@@ -101,6 +102,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Smartsheets](sources/smartsheets.md) | Beta |
 | [Snowflake](sources/snowflake.md) | Beta |
 | [Square](sources/square.md) | Beta |
+| [Strava](sources/strava.md) | Beta |
 | [Stripe](sources/stripe.md) | Certified |
 | [Sugar CRM](sources/sugar-crm.md) | Beta |
 | [SurveyMonkey](sources/surveymonkey.md) | Beta |
