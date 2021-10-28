@@ -42,8 +42,6 @@ class SourceAzureTable(Source):
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         reader = Reader(logger, config)
         streams = reader.get_streams()
-        # with open(f"./secrets/catalog.json", "w") as outfile:
-        #     outfile.write(streams)
         return AirbyteCatalog(streams=streams)
 
     def read(
