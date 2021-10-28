@@ -6,6 +6,7 @@ import json
 from typing import Any, Dict, Mapping
 
 import pendulum
+import pytest
 from airbyte_cdk import AirbyteLogger
 from source_zuora.source import (
     SourceZuora,
@@ -17,7 +18,6 @@ from source_zuora.source import (
     ZuoraSubmitJob,
 )
 from source_zuora.zuora_auth import ZuoraAuthenticator
-from source_zuora.zuora_endpoint import get_url_base
 from source_zuora.zuora_excluded_streams import ZUORA_EXCLUDED_STREAMS
 
 
@@ -33,15 +33,9 @@ def client(config: Dict):
     """
     Create client by extending config dict with authenticator and url_base
     """
-    url_base = get_url_base(config["tenant_endpoint"])
-    authenticator = ZuoraAuthenticator(
-        token_refresh_endpoint=f"{url_base}/oauth/token",
-        client_id=config["client_id"],
-        client_secret=config["client_secret"],
-        refresh_token=None,  # Zuora doesn't have Refresh Token parameter.
-    )
-    config["authenticator"] = authenticator
-    config["url_base"] = url_base
+    auth = ZuoraAuthenticator(config)
+    config["authenticator"] = auth.get_auth()
+    config["url_base"] = auth.url_base
     return config
 
 
@@ -73,6 +67,9 @@ class TestZuora:
 
     # create client
     config = client(config=get_config("secrets/config.json"))
+    # create client with Data Query Type == "Unlimited option
+    unlimited_config = client(config=get_config("secrets/config.json"))
+    unlimited_config["data_query"] = "Unlimited"
 
     # Define common test input
     test_stream = "account"
@@ -102,18 +99,20 @@ class TestZuora:
         connection = SourceZuora.check_connection(self, logger=AirbyteLogger, config=self.config)
         assert connection == (True, None)
 
-    def test_list_all_zuora_objects(self):
+    @pytest.mark.parametrize("config", [(config)], ids=["LIVE"])
+    def test_list_all_zuora_objects(self, config):
         """
         Test retrieves all the objects (streams) available from Zuora Account and checks if test_stream is in the list.
         """
-        zuora_objects_list = ZuoraListObjects(self.config).read_records(sync_mode=None)
+        zuora_objects_list = ZuoraListObjects(config).read_records(sync_mode=None)
         assert self.test_stream in zuora_objects_list
 
-    def test_excluded_streams_are_not_in_the_list(self):
+    @pytest.mark.parametrize("config", [(config)], ids=["LIVE"])
+    def test_excluded_streams_are_not_in_the_list(self, config):
         """
         Test retrieves all the objects (streams) available from Zuora Account and checks if excluded streams are not in the list.
         """
-        zuora_streams_list = SourceZuora.streams(self, config=self.config)
+        zuora_streams_list = SourceZuora.streams(self, config=config)
         # extract stream names from auto-generated stream class
         generated_stream_class_names = []
         for stream in zuora_streams_list:
@@ -122,11 +121,12 @@ class TestZuora:
         for excluded_stream in ZUORA_EXCLUDED_STREAMS:
             assert False if excluded_stream in generated_stream_class_names else True
 
-    def test_get_json_schema(self):
+    @pytest.mark.parametrize("config", [(config)], ids=["LIVE"])
+    def test_get_json_schema(self, config):
         """
-        Test of getting schema from Zuora endpoint, check converted JsonSchema Types are correct
+        Test of getting schema from Zuora endpoint, check converted JsonSchema Types are correct.
         """
-        schema = list(ZuoraDescribeObject(self.test_stream, config=self.config).read_records(sync_mode=None))
+        schema = list(ZuoraDescribeObject(self.test_stream, config=config).read_records(sync_mode=None))
         schema = {key: d[key] for d in schema for key in d}
 
         # Filter the schema up to the test_schema_fields
@@ -176,7 +176,8 @@ class TestZuora:
         # If the query is correctly build using connector class return True
         assert example_query == test_query
 
-    def test_submit_job(self):
+    @pytest.mark.parametrize("config", [(config)], ids=["LIVE"])
+    def test_submit_job(self, config):
         """
         Test submits the job to the server and returns the `job_id` as confirmation that the job was submitted successfully.
         """
@@ -187,13 +188,14 @@ class TestZuora:
         # Submitting the job to the server
         job_id = ZuoraSubmitJob(
             ZuoraObjectsBase.query(self, stream_name=self.test_stream, cursor_field=self.test_cursor_field, date_slice=test_date_slice),
-            self.config,
+            config,
         ).read_records(sync_mode=None)
 
         # Return True if we have submited job_id
         assert len(list(job_id)) > 0
 
-    def test_check_job_status(self):
+    @pytest.mark.parametrize("config", [(config)], ids=["LIVE"])
+    def test_check_job_status(self, config):
         """
         Test checks submited job for status, if status is "completed" job_data_url will contain URL for jsonl dataFile,
         Otherwise, if the status of the job is in ["failed", "canceled", "aborted"] it will raise the error message to the output,
@@ -206,7 +208,7 @@ class TestZuora:
         # Submiting a job first
         job_id = ZuoraSubmitJob(
             ZuoraObjectsBase.query(self, stream_name=self.test_stream, cursor_field=self.test_cursor_field, date_slice=test_date_slice),
-            self.config,
+            config,
         ).read_records(sync_mode=None)
 
         # checking iteratively if the job is completed, then return the URL with jsonl datafile
@@ -215,7 +217,8 @@ class TestZuora:
         # Return True if there is a URL leading to a file
         assert "https://" in list(job_data_url)[0]
 
-    def test_get_job_result(self):
+    @pytest.mark.parametrize("config", [(config)], ids=["LIVE"])
+    def test_get_job_result(self, config):
         """
         Test reads the dataFile from URL of submited, checked and successfully completed job.
         """
@@ -226,7 +229,7 @@ class TestZuora:
         # Submiting a job first
         job_id = ZuoraSubmitJob(
             ZuoraObjectsBase.query(self, stream_name=self.test_stream, cursor_field=self.test_cursor_field, date_slice=test_date_slice),
-            self.config,
+            config,
         ).read_records(sync_mode=None)
 
         # checking iteratively if the job is completed, then return the URL with jsonl datafile

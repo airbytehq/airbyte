@@ -5,6 +5,7 @@
 package io.airbyte.analytics;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -38,7 +39,7 @@ public class TrackingClientSingleton {
   public static void initialize(final Configs.TrackingStrategy trackingStrategy,
                                 final Deployment deployment,
                                 final String airbyteRole,
-                                final String airbyteVersion,
+                                final AirbyteVersion airbyteVersion,
                                 final ConfigRepository configRepository) {
     initialize(createTrackingClient(
         trackingStrategy,
@@ -53,7 +54,7 @@ public class TrackingClientSingleton {
   }
 
   @VisibleForTesting
-  static TrackingIdentity getTrackingIdentity(final ConfigRepository configRepository, final String airbyteVersion, final UUID workspaceId) {
+  static TrackingIdentity getTrackingIdentity(final ConfigRepository configRepository, final AirbyteVersion airbyteVersion, final UUID workspaceId) {
     try {
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
       String email = null;
