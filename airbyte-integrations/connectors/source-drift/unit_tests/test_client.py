@@ -8,6 +8,7 @@ from source_drift.client import AuthError, Client
 
 config = {"credentials": {"access_token": "wrong_key"}}
 
+
 def test__heal_check_with_wrong_token():
     client = Client(**config)
     alive, error = client.health_check()
