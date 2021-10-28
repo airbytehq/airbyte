@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "first_seen_date": {
+      "type": "date"
+    },
+    "first_response_date": {
+      "type": "date"
+    },
+    "page_url": {
+      "type": "string"
+    },
+    "visitor_id": {
+      "type": "string"
+    },
+    "visitor_uuid": {
+      "type": "string"
+    },
+    "response_uuid": {
+      "type": "string"
+    },
+    "How likely is it that you will recommend Kmart online to a friend or colleague?": {
+      "type": "string"
+    },
+    "Overall, how satisfied or dissatisfied are you with Kmart online?": {
+      "type": "string"
+    },
+    "Have you received your order yet?": {
+      "type": "string"
+    },
+    "What, if anything, could Kmart do to improve the service you received?": {
+      "type": "string"
+    },
+    "What was the main reason you placed this order online rather than going to a store?": {
+      "type": "string"
+    },
+    "Thank you message": {
+      "type": "string"
+    }
+  }
+}
