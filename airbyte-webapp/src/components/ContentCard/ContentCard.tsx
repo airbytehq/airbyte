@@ -4,7 +4,6 @@ import styled from "styled-components";
 import { H5, Card } from "components";
 
 type IProps = {
-  actions?: string | React.ReactNode;
   title?: string | React.ReactNode;
   className?: string;
   onClick?: () => void;
@@ -33,7 +32,6 @@ const ContentCard: React.FC<IProps> = (props) => (
   <Card className={props.className} onClick={props.onClick} full={props.full}>
     <Header $light={props.$light}>
       {props.title ? <Title>{props.title}</Title> : null}
-      {props.actions || null}
     </Header>
     {props.children}
   </Card>

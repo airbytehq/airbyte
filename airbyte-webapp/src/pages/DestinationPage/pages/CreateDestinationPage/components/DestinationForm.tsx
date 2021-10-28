@@ -1,7 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button } from "components";
 import ContentCard from "components/ContentCard";
 import ServiceForm from "views/Connector/ServiceForm";
 import useRouter from "hooks/useRouter";
@@ -12,9 +11,6 @@ import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { useAnalytics } from "hooks/useAnalytics";
-import useDocumentation from "hooks/services/useDocumentation";
-import SideView, { SideViewRef } from "components/SideView/SideView";
-import { Markdown } from "components/Markdown";
 
 type IProps = {
   onSubmit: (values: {
@@ -38,8 +34,6 @@ const DestinationForm: React.FC<IProps> = ({
   jobInfo,
   afterSelectConnector,
 }) => {
-  const sideViewRef = useRef<SideViewRef>({} as SideViewRef);
-
   const { location } = useRouter();
   const analyticsService = useAnalytics();
 
@@ -51,10 +45,6 @@ const DestinationForm: React.FC<IProps> = ({
     isLoading,
     sourceDefinitionError,
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
-
-  const { data: destinationDefinitionDocs } = useDocumentation(
-    destinationDefinitionSpecification?.documentationUrl || ""
-  );
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
@@ -88,17 +78,7 @@ const DestinationForm: React.FC<IProps> = ({
 
   return (
     <>
-      <SideView ref={sideViewRef}>
-        <Markdown content={destinationDefinitionDocs} />
-      </SideView>
       <ContentCard
-        actions={
-          !!destinationDefinitionDocs && (
-            <Button secondary onClick={sideViewRef?.current.open}>
-              <FormattedMessage id="form.setupGuide" />
-            </Button>
-          )
-        }
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
       >
         <ServiceForm

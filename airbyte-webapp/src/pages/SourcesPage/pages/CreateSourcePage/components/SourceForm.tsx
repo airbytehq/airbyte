@@ -1,7 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button } from "components";
 import ContentCard from "components/ContentCard";
 import ServiceForm from "views/Connector/ServiceForm";
 import useRouter from "hooks/useRouter";
@@ -12,9 +11,6 @@ import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceDefinition } from "core/resources/SourceDefinition";
 import { useAnalytics } from "hooks/useAnalytics";
-import useDocumentation from "hooks/services/useDocumentation";
-import SideView, { SideViewRef } from "components/SideView/SideView";
-import { Markdown } from "components/Markdown";
 
 type IProps = {
   onSubmit: (values: {
@@ -38,8 +34,6 @@ const SourceForm: React.FC<IProps> = ({
   jobInfo,
   afterSelectConnector,
 }) => {
-  const sideViewRef = useRef<SideViewRef>({} as SideViewRef);
-
   const { location } = useRouter();
   const analyticsService = useAnalytics();
 
@@ -52,10 +46,6 @@ const SourceForm: React.FC<IProps> = ({
     sourceDefinitionError,
     isLoading,
   } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
-
-  const { data: sourceDefinitionDocs } = useDocumentation(
-    sourceDefinitionSpecification?.documentationUrl || ""
-  );
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
@@ -88,19 +78,7 @@ const SourceForm: React.FC<IProps> = ({
 
   return (
     <>
-      <SideView ref={sideViewRef}>
-        <Markdown content={sourceDefinitionDocs} />
-      </SideView>
-      <ContentCard
-        title={<FormattedMessage id="onboarding.sourceSetUp" />}
-        actions={
-          !!sourceDefinitionDocs && (
-            <Button secondary onClick={sideViewRef?.current.open}>
-              <FormattedMessage id="form.setupGuide" />
-            </Button>
-          )
-        }
-      >
+      <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
         <ServiceForm
           onServiceSelect={onDropDownSelect}
           onSubmit={onSubmitForm}

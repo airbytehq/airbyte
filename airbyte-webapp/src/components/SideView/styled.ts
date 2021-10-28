@@ -13,6 +13,11 @@ const animate = keyframes`
   }
 `;
 
+export const Actions = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
 export const Body = styled.div`
   display: flex;
   flex-direction: column;
@@ -26,7 +31,7 @@ export const Close = styled(FontAwesomeIcon)`
 export const Header = styled.div`
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   height: 60px;
 `;
 
