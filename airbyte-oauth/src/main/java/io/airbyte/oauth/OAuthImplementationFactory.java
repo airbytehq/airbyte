@@ -6,11 +6,7 @@ package io.airbyte.oauth;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.flows.AsanaOAuthFlow;
-import io.airbyte.oauth.flows.FacebookMarketingOAuthFlow;
-import io.airbyte.oauth.flows.GithubOAuthFlow;
-import io.airbyte.oauth.flows.SalesforceOAuthFlow;
-import io.airbyte.oauth.flows.TrelloOAuthFlow;
+import io.airbyte.oauth.flows.*;
 import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
@@ -33,6 +29,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
+        .put("airbyte/source-slack", new SlackOAuthFlow(configRepository))
         .build();
   }
 
