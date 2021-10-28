@@ -257,7 +257,7 @@ class StreamProcessor(object):
         else:
             from_table = self.add_to_outputs(
                 self.generate_id_hashing_model(from_table, column_names),
-                # Force View materialization for scd models to use star* macros
+                # Force View materialization here because scd models rely on star* macros that requires it
                 TableMaterializationType.VIEW,
                 suffix="ab3",
             )
@@ -948,7 +948,6 @@ where 1 = 1
             else:
                 # dbt throws "maximum recursion depth exceeded" exception at runtime
                 # if ephemeral is used with large number of columns, use views instead
-                # we also need views for the `star` & `star_intersect` macros to work on `_ab4` tables
                 return TableMaterializationType.VIEW
         else:
             if self.source_sync_mode == SyncMode.incremental:
