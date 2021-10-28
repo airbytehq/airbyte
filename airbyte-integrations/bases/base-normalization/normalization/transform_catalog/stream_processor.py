@@ -50,6 +50,7 @@ class TableMaterializationType(Enum):
     """
     Defines the folders and dbt materialization mode of models (as configured in dbt_project.yml file)
     """
+
     CTE = "airbyte_ctes"
     VIEW = "airbyte_views"
     TABLE = "airbyte_tables"
@@ -236,7 +237,8 @@ class StreamProcessor(object):
         from_table = self.add_to_outputs(
             self.generate_json_parsing_model(from_table, column_names),
             self.get_model_materialization_mode(is_intermediate=True),
-            suffix="ab1")
+            suffix="ab1",
+        )
         from_table = self.add_to_outputs(
             self.generate_column_typing_model(from_table, column_names),
             self.get_model_materialization_mode(is_intermediate=True, column_count=column_count),
@@ -643,7 +645,7 @@ with
 {{ '{% if is_incremental() %}' }}
 new_data as (
     -- retrieve incremental "new" data
-    select    
+    select
         *
     from {{'{{'}} {{ from_table }}  {{'}}'}}
     {{ sql_table_comment }}
@@ -652,7 +654,7 @@ new_data as (
 ),
 new_data_ids as (
     -- build a subset of {{ unique_key }} from rows that are new
-    select distinct 
+    select distinct
         {{ '{{' }} dbt_utils.surrogate_key([
           {%- for primary_key in primary_keys %}
             {{ primary_key }},
