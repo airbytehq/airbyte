@@ -10,7 +10,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Rabbitmq",
     "type": "object",
-    "required": ["host", "port", "username", "password", "routing_key"],
+    "required": ["host", "routing_key"],
     "additionalProperties": false,
     "properties": {
       "host": {

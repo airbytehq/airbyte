@@ -15,21 +15,44 @@ from pika.adapters.blocking_connection import BlockingConnection
 from pika.spec import BasicProperties
 from pika.credentials import PlainCredentials
 
+_DEFAULT_PORT = 5672
+
 
 class DestinationRabbitmq(Destination):
     def _create_connection(self, config: Mapping[str, Any]) -> BlockingConnection:
         host = config['host']
-        port = config['port']
-        virtual_host = config['virtual_host']
-        username = config['username']
-        password = config['password']
-        credentials = PlainCredentials(username=username, password=password)
-        connection = BlockingConnection(pika.ConnectionParameters(
-            host=host,
-            port=port,
-            virtual_host=virtual_host,
-            credentials=credentials
-        ))
+        port = config.get('port') or _DEFAULT_PORT
+        virtual_host = config.get('virtual_host')
+        username = config.get('username')
+        password = config.get('password')
+        
+        if username and password:
+            credentials = PlainCredentials(username=username, password=password)
+            if virtual_host:
+                connection = BlockingConnection(pika.ConnectionParameters(
+                    host=host,
+                    port=port,
+                    virtual_host=virtual_host,
+                    credentials=credentials
+                ))
+            else:
+                connection = BlockingConnection(pika.ConnectionParameters(
+                    host=host,
+                    port=port,
+                    credentials=credentials
+                ))
+        else:
+            if virtual_host:
+                connection = BlockingConnection(pika.ConnectionParameters(
+                    host=host,
+                    port=port,
+                    virtual_host=virtual_host,
+                ))
+            else:
+                connection = BlockingConnection(pika.ConnectionParameters(
+                    host=host,
+                    port=port
+                ))
         return connection
 
     def write(
@@ -53,7 +76,7 @@ class DestinationRabbitmq(Destination):
                     record = message.record
                     headers = {'stream': record.stream, 'emitted_at': record.emitted_at, 'namespace': record.namespace}
                     properties = BasicProperties(content_type='application/json', headers=headers)
-                    channel.basic_publish(exchange=exchange if exchange else '',
+                    channel.basic_publish(exchange=exchange or '',
                                           routing_key=routing_key,
                                           properties=properties,
                                           body=json.dumps(record.data))
