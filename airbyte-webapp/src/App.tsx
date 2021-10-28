@@ -45,9 +45,6 @@ const Features: Feature[] = [
   {
     id: FeatureItem.AllowUpdateConnectors,
   },
-  {
-    id: FeatureItem.AllowOAuthConnector,
-  },
 ];
 
 const StyleProvider: React.FC = ({ children }) => (
