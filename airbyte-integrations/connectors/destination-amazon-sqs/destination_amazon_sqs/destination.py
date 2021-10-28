@@ -128,7 +128,7 @@ class DestinationAmazonSqs(Destination):
                         use_content_dedupe = False if queue.attributes.get('ContentBasedDeduplication') == 'false' else 'true'
                         self.set_message_fifo_properties(sqs_message, message_group_id, use_content_dedupe)
                     
-                    yield self.send_single_message(queue, sqs_message)
+                    self.send_single_message(queue, sqs_message)
             if message.type == Type.STATE:
                 yield message
 
