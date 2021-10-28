@@ -91,7 +91,7 @@ class MixpanelStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
         # parse the whole response
-        yield from self.process_response(response, kwargs)
+        yield from self.process_response(response, **kwargs)
 
         # wait for X seconds to match API limitations
         time.sleep(3600 / self.reqs_per_hour_limit)
