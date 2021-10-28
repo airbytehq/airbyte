@@ -5,9 +5,9 @@
 
 import sys
 
-from base_python.entrypoint import launch
-from source_drift import SourceDrift
+from airbyte_cdk.entrypoint import launch
+from source_looker import SourceLooker
 
 if __name__ == "__main__":
-    source = SourceDrift()
+    source = SourceLooker()
     launch(source, sys.argv[1:])
