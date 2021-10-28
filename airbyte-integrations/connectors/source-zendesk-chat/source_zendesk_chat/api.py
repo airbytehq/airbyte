@@ -17,7 +17,6 @@ class Stream(HttpStream):
     primary_key = None
     data_field = None
     limit = 100
-    
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         delay_time = response.headers.get("Retry-After")

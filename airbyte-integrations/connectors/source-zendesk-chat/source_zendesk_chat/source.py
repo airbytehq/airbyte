@@ -16,7 +16,7 @@ class ZendeskAuthentication(TokenAuthenticator):
 
     def __init__(self, config: Dict):
         self.config = config
-    
+
     def get_auth(self) -> TokenAuthenticator:
         """ Return the TokenAuthenticator object with access_token. """
 
