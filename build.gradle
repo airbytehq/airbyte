@@ -1,8 +1,22 @@
+import com.bmuschko.gradle.docker.tasks.image.*
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.bmuschko:gradle-docker-plugin:7.1.0"
+    }
+}
+
 plugins {
     id 'base'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.7.0'
     id 'com.github.hierynomus.license' version '0.16.1'
+    id "com.bmuschko.docker-remote-api" version "7.1.0"
 }
 
 repositories {
@@ -244,6 +258,12 @@ subprojects {
 
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+
+// Use task types
+    task buildMyAppImage(type: DockerBuildImage) {
+        inputDir = file(projectDir)
+        images.add( "airbyte/${project.name}:$version")
     }
 }
 
