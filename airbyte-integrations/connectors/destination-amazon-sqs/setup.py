@@ -5,15 +5,9 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-    "boto3"
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "boto3"]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "moto"
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "moto"]
 
 setup(
     name="destination_amazon_sqs",

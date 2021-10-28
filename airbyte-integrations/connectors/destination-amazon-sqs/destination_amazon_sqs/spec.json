@@ -1,8 +1,6 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/amazon-sqs",
-  "supported_destination_sync_modes": [
-    "append"
-  ],
+  "supported_destination_sync_modes": ["append"],
   "supportsIncremental": true,
   "supportsDBT": false,
   "supportsNormalization": false,

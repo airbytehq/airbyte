@@ -4,16 +4,16 @@
 
 import json
 import time
-from typing import Any, Dict, Mapping
+from typing import Any, Mapping
 
 import boto3
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, Status, AirbyteMessage
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from destination_amazon_sqs import DestinationAmazonSqs
 
 # from airbyte_cdk.sources.source import Source
 from moto import mock_iam, mock_sqs
 from moto.core import set_initial_no_auth_action_count
-from destination_amazon_sqs import DestinationAmazonSqs
 
 
 @mock_iam
@@ -34,14 +34,16 @@ def create_user_with_all_permissions():
 
     return client.create_access_key(UserName="test_user1")["AccessKey"]
 
+
 def create_config(queue_url, queue_region, access_key, secret_key, message_delay):
     return {
         "queue_url": queue_url,
         "region": queue_region,
         "access_key": access_key,
         "secret_key": secret_key,
-        "message_delay": message_delay
+        "message_delay": message_delay,
     }
+
 
 def create_fifo_config(queue_url, queue_region, access_key, secret_key, message_group_id, message_delay):
     return {
@@ -50,8 +52,9 @@ def create_fifo_config(queue_url, queue_region, access_key, secret_key, message_
         "access_key": access_key,
         "secret_key": secret_key,
         "message_group_id": message_group_id,
-        "message_delay": message_delay
+        "message_delay": message_delay,
     }
+
 
 def create_config_with_body_key(queue_url, queue_region, access_key, secret_key, message_body_key, message_delay):
     return {
@@ -60,7 +63,7 @@ def create_config_with_body_key(queue_url, queue_region, access_key, secret_key,
         "access_key": access_key,
         "secret_key": secret_key,
         "message_body_key": message_body_key,
-        "message_delay": message_delay
+        "message_delay": message_delay,
     }
 
 
@@ -92,17 +95,14 @@ def test_check():
     status = destination.check(logger, config)
     assert status.status == Status.SUCCEEDED
 
-    ## FIFO TESTS ##
-
     # Create FIFO queue
     fifo_queue_name = "amazon-sqs-mock-queue.fifo"
-    fif_queue_url = client.create_queue(QueueName=fifo_queue_name, Attributes={'FifoQueue':'true'})["QueueUrl"]
+    fif_queue_url = client.create_queue(QueueName=fifo_queue_name, Attributes={"FifoQueue": "true"})["QueueUrl"]
     # Create config for FIFO
     fifo_config = create_fifo_config(fif_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], "fifo-group", 10)
     # Run check
     status = destination.check(logger, fifo_config)
     assert status.status == Status.SUCCEEDED
-
 
 
 @set_initial_no_auth_action_count(4)
@@ -112,7 +112,6 @@ def test_write():
     # Create User
     user = create_user_with_all_permissions()
 
-    ## STANDARD QUEUE TEST ##
     print("## Starting standard queue test ##")
 
     # Create Queue
@@ -134,19 +133,16 @@ def test_write():
         "type": "RECORD",
         "record": {
             "stream": "ab-airbyte-testing",
-            "data": {
-                "id": "ba0f237b-abf5-41ae-9d94-1dbd346f38dd",
-                "body": "test 1",
-                "attributes": None
-            },
-        "emitted_at": 1633881878000}
+            "data": {"id": "ba0f237b-abf5-41ae-9d94-1dbd346f38dd", "body": "test 1", "attributes": None},
+            "emitted_at": 1633881878000,
+        },
     }
     ab_message = AirbyteMessage(**test_message)
-    
+
     # Send messages using write()
     for message in destination.write(config, catalog, [ab_message]):
         print(f"Message Sent with delay of {message_delay} seconds")
-    
+
     # Listen for messages for max 20 seconds
     timeout = time.time() + 20
     print("Listening for messages.")
@@ -154,9 +150,9 @@ def test_write():
         message_received = client.receive_message(QueueUrl=queue_url)
         if message_received.get("Messages"):
             print("Message received.")
-            message_body = json.loads(message_received['Messages'][0]['Body'])
+            message_body = json.loads(message_received["Messages"][0]["Body"])
             # Compare the body of the received message, with the body of the message we sent
-            if message_body == test_message['record']['data']:
+            if message_body == test_message["record"]["data"]:
                 print("Received message matches for standard queue write.")
                 assert True
                 break
@@ -166,7 +162,6 @@ def test_write():
             print("Timed out waiting for message after 20 seconds.")
             assert False
 
-    ## BODY KEY TEST ##
     print("## Starting body key queue test ##")
 
     # Create Queue
@@ -174,7 +169,9 @@ def test_write():
     key_queue_url = client.create_queue(QueueName=key_queue_name)["QueueUrl"]
     # Create config
     message_body_key = "body"
-    key_config = create_config_with_body_key(key_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], message_body_key, message_delay)
+    key_config = create_config_with_body_key(
+        key_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], message_body_key, message_delay
+    )
 
     # Send messages using write()
     for message in destination.write(key_config, catalog, [ab_message]):
@@ -187,9 +184,9 @@ def test_write():
         message_received = client.receive_message(QueueUrl=key_queue_url)
         if message_received.get("Messages"):
             print("Message received.")
-            message_body = message_received['Messages'][0]['Body']
+            message_body = message_received["Messages"][0]["Body"]
             # Compare the body of the received message, with the body of the message we sent
-            if message_body == test_message['record']['data'][message_body_key]:
+            if message_body == test_message["record"]["data"][message_body_key]:
                 print("Received message matches for body key queue write.")
                 assert True
                 break
@@ -199,15 +196,15 @@ def test_write():
             print("Timed out waiting for message after 20 seconds.")
             assert False
 
-
-    ## FIFO TEST ##
     print("## Starting FIFO queue test ##")
 
     # Create Queue
     fifo_queue_name = "amazon-sqs-mock-queue.fifo"
-    fifo_queue_url = client.create_queue(QueueName=fifo_queue_name, Attributes={'FifoQueue':'true'})["QueueUrl"]
+    fifo_queue_url = client.create_queue(QueueName=fifo_queue_name, Attributes={"FifoQueue": "true"})["QueueUrl"]
     # Create config
-    fifo_config = create_fifo_config(fifo_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], "fifo-group", message_delay)
+    fifo_config = create_fifo_config(
+        fifo_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], "fifo-group", message_delay
+    )
 
     # Send messages using write()
     for message in destination.write(fifo_config, catalog, [ab_message]):
@@ -220,9 +217,9 @@ def test_write():
         message_received = client.receive_message(QueueUrl=fifo_queue_url)
         if message_received.get("Messages"):
             print("Message received.")
-            message_body = json.loads(message_received['Messages'][0]['Body'])
+            message_body = json.loads(message_received["Messages"][0]["Body"])
             # Compare the body of the received message, with the body of the message we sent
-            if message_body == test_message['record']['data']:
+            if message_body == test_message["record"]["data"]:
                 print("Received message matches for FIFO queue write.")
                 assert True
                 break
@@ -231,4 +228,3 @@ def test_write():
         if time.time() > timeout:
             print("Timed out waiting for message after 20 seconds.")
             assert False
-
