@@ -34,6 +34,7 @@
         "title": "Address",
         "description": "Address to connect to.",
         "type": "string",
+        "examples": ["localhost,127.0.0.1"],
         "order": 3
       },
       "port": {
