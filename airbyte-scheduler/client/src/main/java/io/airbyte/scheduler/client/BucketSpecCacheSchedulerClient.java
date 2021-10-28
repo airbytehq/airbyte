@@ -4,25 +4,16 @@
 
 package io.airbyte.scheduler.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.api.client.util.Preconditions;
-import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.specs.GcsBucketSpecFetcher;
 import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteProtocolSchema;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.validation.json.JsonSchemaValidator;
-import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Function;
 import org.slf4j.Logger;
@@ -38,7 +29,7 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
   public BucketSpecCacheSchedulerClient(final SynchronousSchedulerClient client, final String bucketName) {
     this(
         client,
-        dockerImage -> attemptToFetchSpecFromBucket(StorageOptions.getDefaultInstance().getService(), bucketName, dockerImage));
+        dockerImage -> GcsBucketSpecFetcher.attemptFetch(StorageOptions.getDefaultInstance().getService(), bucketName, dockerImage));
   }
 
   @VisibleForTesting
@@ -87,39 +78,4 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
       return client.createGetSpecJob(dockerImage);
     }
   }
-
-  private static void validateConfig(final JsonNode json) throws JsonValidationException {
-    final JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator();
-    final JsonNode specJsonSchema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.PROTOCOL.getFile(), "ConnectorSpecification");
-    jsonSchemaValidator.ensure(specJsonSchema, json);
-  }
-
-  public static Optional<ConnectorSpecification> attemptToFetchSpecFromBucket(final Storage storage,
-                                                                              final String bucketName,
-                                                                              final String dockerImage) {
-    final String[] dockerImageComponents = dockerImage.split(":");
-    Preconditions.checkArgument(dockerImageComponents.length == 2, "Invalidate docker image: " + dockerImage);
-    final String dockerImageName = dockerImageComponents[0];
-    final String dockerImageTag = dockerImageComponents[1];
-
-    final Path specPath = Path.of("specs").resolve(dockerImageName).resolve(dockerImageTag).resolve("spec.json");
-    LOGGER.debug("Checking path for cached spec: {} {}", bucketName, specPath);
-    final Blob specAsBlob = storage.get(bucketName, specPath.toString());
-
-    // if null it means the object was not found.
-    if (specAsBlob == null) {
-      LOGGER.debug("Spec not found in bucket storage");
-      return Optional.empty();
-    }
-
-    final String specAsString = new String(specAsBlob.getContent(), StandardCharsets.UTF_8);
-    try {
-      validateConfig(Jsons.deserialize(specAsString));
-    } catch (final JsonValidationException e) {
-      LOGGER.error("Received invalid spec from bucket store. {}", e.toString());
-      return Optional.empty();
-    }
-    return Optional.of(Jsons.deserialize(specAsString, ConnectorSpecification.class));
-  }
-
 }
