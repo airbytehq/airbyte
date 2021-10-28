@@ -6,6 +6,7 @@ package io.airbyte.config;
 
 import static org.mockito.Mockito.when;
 
+import io.airbyte.commons.version.AirbyteVersion;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,7 @@ class EnvConfigsTest {
     Assertions.assertThrows(IllegalArgumentException.class, () -> config.getAirbyteVersion());
 
     when(function.apply(EnvConfigs.AIRBYTE_VERSION)).thenReturn("dev");
-    Assertions.assertEquals("dev", config.getAirbyteVersion());
+    Assertions.assertEquals(new AirbyteVersion("dev"), config.getAirbyteVersion());
   }
 
   @Test

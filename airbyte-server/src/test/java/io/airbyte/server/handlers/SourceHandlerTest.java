@@ -105,7 +105,7 @@ class SourceHandlerTest {
 
     when(uuidGenerator.get()).thenReturn(sourceConnection.getSourceId());
     when(configRepository.getSourceConnection(sourceConnection.getSourceId())).thenReturn(sourceConnection);
-    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(specFetcher.getSpec(standardSourceDefinition)).thenReturn(connectorSpecification);
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(secretsProcessor.maskSecrets(sourceCreate.getConnectionConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
@@ -150,7 +150,7 @@ class SourceHandlerTest {
     when(configRepository.getSourceConnection(sourceConnection.getSourceId()))
         .thenReturn(sourceConnection)
         .thenReturn(expectedSourceConnection);
-    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(specFetcher.getSpec(standardSourceDefinition)).thenReturn(connectorSpecification);
     when(configurationUpdate.source(sourceConnection.getSourceId(), updatedSourceName, newConfiguration))
         .thenReturn(expectedSourceConnection);
 
@@ -174,7 +174,7 @@ class SourceHandlerTest {
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
-    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(specFetcher.getSpec(standardSourceDefinition)).thenReturn(connectorSpecification);
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());
 
@@ -206,7 +206,7 @@ class SourceHandlerTest {
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
-    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(specFetcher.getSpec(standardSourceDefinition)).thenReturn(connectorSpecification);
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());
 
@@ -225,7 +225,7 @@ class SourceHandlerTest {
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
-    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(specFetcher.getSpec(standardSourceDefinition)).thenReturn(connectorSpecification);
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());
 
@@ -261,7 +261,7 @@ class SourceHandlerTest {
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
-    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(specFetcher.getSpec(standardSourceDefinition)).thenReturn(connectorSpecification);
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());

@@ -109,7 +109,7 @@ public class MigrationAcceptanceTest {
   }
 
   private String targetVersionWithoutPatch(final String targetVersion) {
-    return AirbyteVersion.versionWithoutPatch(targetVersion).getVersion();
+    return AirbyteVersion.versionWithoutPatch(targetVersion).serialize();
   }
 
   @SuppressWarnings("UnstableApiUsage")
