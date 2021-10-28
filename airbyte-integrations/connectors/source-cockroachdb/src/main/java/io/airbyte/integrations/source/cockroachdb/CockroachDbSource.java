@@ -11,6 +11,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -26,9 +27,15 @@ public class CockroachDbSource extends AbstractJdbcSource {
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
+  public static final List<String> HOST_KEY = List.of("host");
+  public static final List<String> PORT_KEY = List.of("port");
 
   public CockroachDbSource() {
     super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
+  }
+
+  public static Source sshWrappedSource() {
+    return new SshWrappedSource(new CockroachDbSource(), HOST_KEY, PORT_KEY);
   }
 
   @Override
@@ -41,7 +48,7 @@ public class CockroachDbSource extends AbstractJdbcSource {
         config.get("port").asText(),
         config.get("database").asText()));
 
-    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+    if (config.has("ssl") && config.get("ssl").asBoolean() || !config.has("ssl")) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
     }
