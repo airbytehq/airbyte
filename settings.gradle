@@ -14,12 +14,12 @@ gradleEnterprise {
 rootProject.name = 'airbyte'
 
 // SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE. Blank is equivalent to all.
-if (!System.getenv().containsKey("SUB_BUILD")) {
+if(!System.getenv().containsKey("SUB_BUILD")) {
     println("Building all of Airbyte.")
 } else {
     def subBuild = System.getenv().get("SUB_BUILD")
     println("Building Airbyte Sub Build: " + subBuild)
-    if (subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE") {
+    if(subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE") {
         throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTORS_BASE", subBuild))
     }
 }
@@ -48,7 +48,7 @@ include ':airbyte-scheduler:models' // transitively used by airbyte-workers.
 include ':airbyte-scheduler:persistence' // used by airbyte-workers.
 
 // platform
-if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-cli'
     include ':airbyte-e2e-testing'
     include ':airbyte-migration'
@@ -62,7 +62,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 }
 
 // connectors base
-if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE") {
+if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE") {
     include ':airbyte-cdk:python'
     include ':airbyte-integrations:bases:airbyte-protocol'
     include ':airbyte-integrations:bases:base'
@@ -98,7 +98,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 }
 
 // connectors
-if (!System.getenv().containsKey("SUB_BUILD")) {
+if(!System.getenv().containsKey("SUB_BUILD")) {
     // include all connector projects
     def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
     println integrationsPath

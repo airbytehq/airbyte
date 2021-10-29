@@ -66,4 +66,5 @@ public class GcsBucketSpecFetcher {
     final JsonNode specJsonSchema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.PROTOCOL.getFile(), "ConnectorSpecification");
     jsonSchemaValidator.ensure(specJsonSchema, json);
   }
+
 }

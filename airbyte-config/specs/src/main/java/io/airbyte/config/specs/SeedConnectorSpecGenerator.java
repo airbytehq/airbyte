@@ -30,8 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This script is responsible for ensuring that up-to-date {@link ConnectorSpecification}s for every connector definition in the seed are stored in a
- * corresponding resource file, for the purpose of seeding the specs into the config database on server startup.
+ * This script is responsible for ensuring that up-to-date {@link ConnectorSpecification}s for every
+ * connector definition in the seed are stored in a corresponding resource file, for the purpose of
+ * seeding the specs into the config database on server startup.
  */
 public class SeedConnectorSpecGenerator {
 

@@ -59,7 +59,7 @@ public class SecretsMigration {
         "docker", // configs.getConfigDatabaseUser(),
         "docker", // configs.getConfigDatabasePassword(),
         "jdbc:postgresql://localhost:8011/airbyte") // configs.getConfigDatabaseUrl())
-        .getInitialized();
+            .getInitialized();
 
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(database).withValidation();
 
