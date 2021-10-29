@@ -30,7 +30,6 @@ const Instruction: React.FC<IProps> = ({
   selectedService,
   documentationUrl,
 }) => {
-  // TODO: show SideView docs here
   const [isSideViewOpen, setIsSideViewOpen] = useToggle(false);
   const { data: docs } = useDocumentation(documentationUrl);
 
