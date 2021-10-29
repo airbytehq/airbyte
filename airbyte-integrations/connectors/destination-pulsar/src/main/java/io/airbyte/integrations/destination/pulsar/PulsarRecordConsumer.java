@@ -18,7 +18,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
@@ -41,9 +40,9 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
   private AirbyteMessage lastStateMessage = null;
 
   public PulsarRecordConsumer(final PulsarDestinationConfig pulsarDestinationConfig,
-                             final ConfiguredAirbyteCatalog catalog,
-                             final Consumer<AirbyteMessage> outputRecordCollector,
-                             final NamingConventionTransformer nameTransformer) {
+                              final ConfiguredAirbyteCatalog catalog,
+                              final Consumer<AirbyteMessage> outputRecordCollector,
+                              final NamingConventionTransformer nameTransformer) {
     this.config = pulsarDestinationConfig;
     this.producerMap = new HashMap<>();
     this.catalog = catalog;
@@ -66,12 +65,12 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
       final Producer<GenericRecord> producer = producerMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
       final String key = UUID.randomUUID().toString();
       final GenericRecord value = Schema.generic(PulsarDestinationConfig.getSchemaInfo())
-        .newRecordBuilder()
-        .set(PulsarDestination.COLUMN_NAME_AB_ID, key)
-        .set(PulsarDestination.COLUMN_NAME_STREAM, recordMessage.getStream())
-        .set(PulsarDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt())
-        .set(PulsarDestination.COLUMN_NAME_DATA, recordMessage.getData().toString().getBytes())
-        .build();
+          .newRecordBuilder()
+          .set(PulsarDestination.COLUMN_NAME_AB_ID, key)
+          .set(PulsarDestination.COLUMN_NAME_STREAM, recordMessage.getStream())
+          .set(PulsarDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt())
+          .set(PulsarDestination.COLUMN_NAME_DATA, recordMessage.getData().toString().getBytes())
+          .build();
 
       sendRecord(producer, value);
     } else {
@@ -84,9 +83,10 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
         .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
         .collect(Collectors.toMap(Function.identity(), pair -> {
           String topic = nameTransformer.getIdentifier(config.getTopicPattern()
-                .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
-                .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")));
-          return PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()), config.getProducerConfig(), config.uriForTopic(topic));
+              .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
+              .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")));
+          return PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()), config.getProducerConfig(),
+              config.uriForTopic(topic));
         }));
   }
 

@@ -50,15 +50,16 @@ public class PulsarDestination extends BaseConnector implements Destination {
       if (!testTopic.isBlank()) {
         final String key = UUID.randomUUID().toString();
         final GenericRecord value = Schema.generic(PulsarDestinationConfig.getSchemaInfo())
-          .newRecordBuilder()
-          .set(PulsarDestination.COLUMN_NAME_AB_ID, key)
-          .set(PulsarDestination.COLUMN_NAME_STREAM, "test-topic-stream")
-          .set(PulsarDestination.COLUMN_NAME_EMITTED_AT, System.currentTimeMillis())
-          .set(PulsarDestination.COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value")))
-          .build();
+            .newRecordBuilder()
+            .set(PulsarDestination.COLUMN_NAME_AB_ID, key)
+            .set(PulsarDestination.COLUMN_NAME_STREAM, "test-topic-stream")
+            .set(PulsarDestination.COLUMN_NAME_EMITTED_AT, System.currentTimeMillis())
+            .set(PulsarDestination.COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value")))
+            .build();
 
         final PulsarClient client = PulsarUtils.buildClient(pulsarConfig.getServiceUrl());
-        final Producer<GenericRecord> producer = PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()), pulsarConfig.getProducerConfig(), pulsarConfig.uriForTopic(testTopic));
+        final Producer<GenericRecord> producer = PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()),
+            pulsarConfig.getProducerConfig(), pulsarConfig.uriForTopic(testTopic));
         final MessageId messageId = producer.send(value);
 
         producer.flush();

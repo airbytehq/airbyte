@@ -15,7 +15,6 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -29,13 +28,12 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.Message;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.Schema;
-import org.apache.pulsar.client.api.SubscriptionType;
 import org.apache.pulsar.client.api.SubscriptionInitialPosition;
+import org.apache.pulsar.client.api.SubscriptionType;
 import org.apache.pulsar.client.api.schema.GenericRecord;
 import org.testcontainers.containers.PulsarContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -57,8 +55,8 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected JsonNode getConfig() throws UnknownHostException {
     String brokers = Stream.concat(getIpAddresses().stream(), Stream.of("localhost"))
-      .map(ip -> ip + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT))
-      .collect(Collectors.joining(","));
+        .map(ip -> ip + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT))
+        .collect(Collectors.joining(","));
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("pulsar_brokers", brokers)
         .put("use_tls", false)
@@ -105,7 +103,8 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace) throws IOException {
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+      throws IOException {
     return retrieveRecords(testEnv, streamName, namespace, null);
   }
 
@@ -113,21 +112,22 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
                                            final String streamName,
                                            final String namespace,
-                                           final JsonNode streamSchema) throws IOException {
+                                           final JsonNode streamSchema)
+      throws IOException {
     final PulsarClient client = PulsarClient.builder()
-      .serviceUrl(PULSAR.getPulsarBrokerUrl())
-      .build();
+        .serviceUrl(PULSAR.getPulsarBrokerUrl())
+        .build();
     final String topic = namingResolver.getIdentifier(namespace + "." + streamName + "." + TOPIC_NAME);
     final Consumer<GenericRecord> consumer = client.newConsumer(Schema.AUTO_CONSUME())
-      .topic(topic)
-      .subscriptionName("test-subscription-" + UUID.randomUUID())
-      .enableRetry(true)
-      .subscriptionType(SubscriptionType.Exclusive)
-      .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
-      .subscribe();
+        .topic(topic)
+        .subscriptionName("test-subscription-" + UUID.randomUUID())
+        .enableRetry(true)
+        .subscriptionType(SubscriptionType.Exclusive)
+        .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
+        .subscribe();
 
     final List<JsonNode> records = new ArrayList<>();
-    while(!consumer.hasReachedEndOfTopic()) {
+    while (!consumer.hasReachedEndOfTopic()) {
       Message<GenericRecord> message = consumer.receive(5, TimeUnit.SECONDS);
       if (message == null) {
         break;
@@ -146,10 +146,10 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
   private List<String> getIpAddresses() throws UnknownHostException {
     try {
       return Streams.stream(NetworkInterface.getNetworkInterfaces().asIterator())
-        .flatMap(ni -> Streams.stream(ni.getInetAddresses().asIterator()))
-        .map(InetAddress::getHostAddress)
-        .filter(InetAddresses::isUriInetAddress)
-        .collect(Collectors.toList());
+          .flatMap(ni -> Streams.stream(ni.getInetAddresses().asIterator()))
+          .map(InetAddress::getHostAddress)
+          .filter(InetAddresses::isUriInetAddress)
+          .collect(Collectors.toList());
     } catch (SocketException e) {
       return Collections.singletonList(InetAddress.getLocalHost().getHostAddress());
     }

@@ -22,7 +22,6 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -35,7 +34,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.schema.GenericRecord;
 import org.junit.jupiter.api.AfterEach;
@@ -73,10 +71,10 @@ public class PulsarRecordConsumerTest {
   @SuppressWarnings("unchecked")
   public void testBuildProducerMap(final String topicPattern, final String expectedTopic) throws UnknownHostException {
     String brokers = Stream.concat(getIpAddresses().stream(), Stream.of("localhost"))
-      .map(ip -> ip + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT))
-      .collect(Collectors.joining(","));
+        .map(ip -> ip + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT))
+        .collect(Collectors.joining(","));
     final PulsarDestinationConfig config = PulsarDestinationConfig
-      .getPulsarDestinationConfig(getConfig(brokers, topicPattern));
+        .getPulsarDestinationConfig(getConfig(brokers, topicPattern));
     final PulsarRecordConsumer recordConsumer = new PulsarRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
 
     final Map<AirbyteStreamNameNamespacePair, Producer<GenericRecord>> producerMap = recordConsumer.buildProducerMap();
@@ -90,7 +88,7 @@ public class PulsarRecordConsumerTest {
   @SuppressWarnings("unchecked")
   void testCannotConnectToBrokers() throws Exception {
     final PulsarDestinationConfig config = PulsarDestinationConfig
-      .getPulsarDestinationConfig(getConfig(PULSAR.getHost() + ":" + (PULSAR.getMappedPort(PulsarContainer.BROKER_PORT) + 10), TOPIC_NAME));
+        .getPulsarDestinationConfig(getConfig(PULSAR.getHost() + ":" + (PULSAR.getMappedPort(PulsarContainer.BROKER_PORT) + 10), TOPIC_NAME));
     final PulsarRecordConsumer consumer = new PulsarRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
     final List<AirbyteMessage> expectedRecords = getNRecords(10);
 
@@ -143,10 +141,10 @@ public class PulsarRecordConsumerTest {
   private List<String> getIpAddresses() throws UnknownHostException {
     try {
       return Streams.stream(NetworkInterface.getNetworkInterfaces().asIterator())
-        .flatMap(ni -> Streams.stream(ni.getInetAddresses().asIterator()))
-        .map(InetAddress::getHostAddress)
-        .filter(InetAddresses::isUriInetAddress)
-        .collect(Collectors.toList());
+          .flatMap(ni -> Streams.stream(ni.getInetAddresses().asIterator()))
+          .map(InetAddress::getHostAddress)
+          .filter(InetAddresses::isUriInetAddress)
+          .collect(Collectors.toList());
     } catch (SocketException e) {
       return Collections.singletonList(InetAddress.getLocalHost().getHostAddress());
     }

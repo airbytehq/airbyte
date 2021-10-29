@@ -5,10 +5,8 @@
 package io.airbyte.integrations.destination.pulsar;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
-import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import org.apache.pulsar.client.api.CompressionType;
 import org.apache.pulsar.client.api.schema.RecordSchemaBuilder;
 import org.apache.pulsar.client.api.schema.SchemaBuilder;
@@ -55,7 +53,7 @@ public class PulsarDestinationConfig {
     return recordSchemaBuilder.build(SchemaType.JSON);
   }
 
-  public String uriForTopic(String topic) {
+  public String uriForTopic(final String topic) {
     return topicPrefix + topic;
   }
 
@@ -73,8 +71,8 @@ public class PulsarDestinationConfig {
 
   private String buildServiceUrl(final JsonNode config) {
     return String.format("pulsar%s://%s",
-      config.get("use_tls").asBoolean() ? "+ssl" : "",
-      config.get("pulsar_brokers").asText());
+        config.get("use_tls").asBoolean() ? "+ssl" : "",
+        config.get("pulsar_brokers").asText());
   }
 
   private String buildTestTopic(final JsonNode config) {
@@ -87,9 +85,9 @@ public class PulsarDestinationConfig {
 
   private String buildTopicPrefix(final JsonNode config) {
     return String.format("%s://%s/%s/",
-      config.get("topic_type").asText(),
-      config.get("topic_tenant").asText(),
-      config.get("topic_namespace").asText());
+        config.get("topic_type").asText(),
+        config.get("topic_tenant").asText(),
+        config.get("topic_namespace").asText());
   }
 
   private Map<String, Object> buildProducerConfig(final JsonNode config) {
