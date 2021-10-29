@@ -35,11 +35,19 @@ This Source is capable of syncing the following Streams:
 
 This connector attempts to back off gracefully when it hits Directory API's rate limits. To find more information about limits, see [Google Directory's Limits and Quotas](https://developers.google.com/admin-sdk/directory/v1/limits) documentation.
 
-## Getting started
+## Getting Started \(Airbyte Cloud\)
 
-Google APIs use the OAuth 2.0 protocol for authentication and authorization. The Source supports [Web server application](https://developers.google.com/identity/protocols/oauth2#webserver) and [Service accounts](https://developers.google.com/identity/protocols/oauth2#serviceaccount) scenarios.
+1. Click `OAuth2.0 authorization` then `Authenticate your Google Directory account`.
+2. You're done.
 
-### Requirements Service accounts scenario
+## Getting Started \(Airbyte Open-Source\)
+
+Google APIs use the OAuth 2.0 protocol for authentication and authorization. This connector supports [Web server application](https://developers.google.com/identity/protocols/oauth2#webserver) and [Service accounts](https://developers.google.com/identity/protocols/oauth2#serviceaccount) scenarios. Therefore, there are 2 options of setting up authorization for this source:
+
+* Create service account specifically for Airbyte and authorize with JWT. Select "JWT authorization" from the "Authentication mechanism" dropdown list.
+* Use your Google account and authorize over Google's OAuth on connection setup. Select "Default OAuth2.0 authorization" from dropdown list.
+
+### Service account requirements
 
 * Credentials to a Google Service Account with delegated Domain Wide Authority
 * Email address of the workspace admin which created the Service Account

@@ -13,7 +13,7 @@
         "type": "object",
         "oneOf": [
           {
-            "title": "Web server application",
+            "title": "Sign in via Google (Oauth)",
             "description": "For these scenario user only needs to give permission to read Google Directory data",
             "type": "object",
             "required": ["client_id", "client_secret", "refresh_token"],
@@ -48,7 +48,7 @@
             }
           },
           {
-            "title": "Service accounts",
+            "title": "Service account Key",
             "description": "For these scenario user should obtain service account's credentials from the Google API Console and provide delegated email",
             "type": "object",
             "required": ["credentials_json", "email"],
