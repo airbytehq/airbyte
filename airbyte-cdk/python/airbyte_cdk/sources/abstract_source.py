@@ -155,7 +155,8 @@ class AbstractSource(Source, ABC):
         logger.info(f"Read {record_counter} records from {stream_name} stream")
 
     def iterate_over_slices(self, slices: Iterator[Optional[Mapping[str, Any]]]) -> Iterator[Mapping[str, Any]]:
-        pass
+        """Wrapper to alter iteration over slices, by default will just return original slice iterator"""
+        return slices
 
     def _read_incremental(
         self,

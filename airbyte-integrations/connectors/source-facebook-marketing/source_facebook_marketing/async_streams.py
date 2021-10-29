@@ -36,7 +36,6 @@ import backoff
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.common import retry_pattern, deep_merge
 from source_facebook_marketing.streams import FBMarketingIncrementalStream
-from source_facebook_marketing.async_streams import AsyncStream
 
 from abc import ABC, abstractmethod
 
@@ -74,7 +73,7 @@ class InsightAsyncJob(AsyncJob):
         self._job = job
 
     @abstractmethod
-    def check_status(self) -> bool:
+    def completed_successfully(self) -> bool:
         """Something that will tell if job was successful"""
         job_status = self._job.api_get()
         logger.info(f"ReportRunId {job_status['report_run_id']} is {job_status['async_percent_completion']}% complete")
@@ -90,7 +89,7 @@ class InsightAsyncJob(AsyncJob):
 
         return False
 
-    def get_result(self) -> Any:
+    def fetch_result(self) -> Any:
         """Reading job result, separate function because we want this to happen after we retrieved jobs in particular order"""
         if not self._result:
             super().get_result()
@@ -98,13 +97,8 @@ class InsightAsyncJob(AsyncJob):
 
         return self._result
 
-    @backoff_policy
-    def fetch_job_result(self, job):
-        for obj in job.get_result():
-            yield obj.export_all_data()
 
-
-class AdsInsights(AsyncStream, FBMarketingIncrementalStream):
+class AdsInsights(FBMarketingIncrementalStream):
     cursor_field = "date_start"
     primary_key = None
 

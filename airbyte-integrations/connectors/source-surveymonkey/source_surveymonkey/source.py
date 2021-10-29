@@ -50,4 +50,4 @@ class SourceSurveymonkey(AbstractSource):
         authenticator = TokenAuthenticator(token=config["access_token"])
         start_date = pendulum.parse(config["start_date"])
         args = {"authenticator": authenticator, "start_date": start_date}
-        return [Surveys(**args), SurveyPages(**args), SurveyQuestions(**args), SurveyResponses(**args),]
+        return [Surveys(**args), SurveyPages(**args), SurveyQuestions(**args), SurveyResponses(**args)]

@@ -120,7 +120,7 @@ class ReportAsyncJob(AsyncJob):
         logger.info("Initiated successfully")
 
     @abstractmethod
-    def check_status(self) -> bool:
+    def completed_successfully(self) -> bool:
         """Something that will tell if job was successful"""
         check_endpoint = f"/v2/reports/{self._report_id}"
         resp = self._send_http_request(urljoin(self._url, check_endpoint), self._profile.profileId)
@@ -133,9 +133,9 @@ class ReportAsyncJob(AsyncJob):
 
         return False
 
-    def get_result(self):
+    def fetch_result(self):
         if not self._result:
-            super().get_result()
+            super().fetch_result()
             self._result = self._download_report()
         return self._result
 
