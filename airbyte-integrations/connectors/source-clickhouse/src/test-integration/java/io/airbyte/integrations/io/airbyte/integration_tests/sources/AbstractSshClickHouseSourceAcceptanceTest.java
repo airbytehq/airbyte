@@ -5,11 +5,8 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -30,7 +27,6 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.jooq.SQLDialect;
 import org.testcontainers.containers.ClickHouseContainer;
 
 public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -99,6 +95,7 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
     populateDatabaseTestData();
 
   }
+
   private void startTestContainers() {
     bastion.initAndStartBastion();
     initAndStartJdbcContainer();
