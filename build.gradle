@@ -1,8 +1,22 @@
+import com.bmuschko.gradle.docker.tasks.image.*
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.bmuschko:gradle-docker-plugin:7.1.0"
+    }
+}
+
 plugins {
     id 'base'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.7.0'
     id 'com.github.hierynomus.license' version '0.16.1'
+    id "com.bmuschko.docker-remote-api" version "7.1.0"
 }
 
 repositories {
@@ -125,9 +139,9 @@ allprojects {
                 ":airbyte-webapp",
         ].toSet().asImmutable()
 
-        if (project.getPath() in composeDeps) {
+        /*if (project.getPath() in composeDeps) {
             composeBuild.dependsOn(project.getPath() + ':assemble')
-        }
+        }*/
     }
 }
 
@@ -233,6 +247,7 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
         testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
         testImplementation 'org.assertj:assertj-core:3.21.0'
+
     }
 
     tasks.withType(Tar) {
@@ -242,9 +257,19 @@ subprojects {
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
+
+// Use task types
+    /*task buildMyAppImage {
+        inputDir = project.projectDir
+        images.add( "airbyte/${project.name}:$version")
+    }
+
+    if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+        build.dependsOn(buildMyAppImage)
+    }*/
 }
 
-task composeBuild {
+/*task composeBuild {
     def buildTag = System.getenv('VERSION') ?: 'dev'
     def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
     def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
@@ -260,12 +285,12 @@ task composeBuild {
             environment 'JDK_VERSION', jdkVersion
         }
     }
-}
-
+}*/
+/*
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     build.dependsOn(composeBuild)
 }
-
+*/
 task('generate') {
     dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
