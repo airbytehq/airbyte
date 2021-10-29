@@ -24,9 +24,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class GithubOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
+public class LeverOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
-  protected static final Path CREDENTIALS_PATH = Path.of("secrets/github.json");
+  protected static final Path CREDENTIALS_PATH = Path.of("secrets/lever.json");
   protected static final String REDIRECT_URL = "http://localhost:8000/oauth_flow";
   protected static final int SERVER_LISTENING_PORT = 8000;
 
@@ -37,7 +37,7 @@ public class GithubOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
   @Override
   protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new GithubOAuthFlow(configRepository);
+    return new LeverOAuthFlow(configRepository);
   }
 
   @Override
@@ -58,13 +58,13 @@ public class GithubOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
     final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", credentialsJson.get("client_id").asText())
-            .put("client_secret", credentialsJson.get("client_secret").asText())
-            .build()))));
+            .withOauthParameterId(UUID.randomUUID())
+            .withSourceDefinitionId(definitionId)
+            .withWorkspaceId(workspaceId)
+            .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("client_id", credentialsJson.get("client_id").asText())
+                    .put("client_secret", credentialsJson.get("client_secret").asText())
+                    .build()))));
     final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
@@ -75,7 +75,7 @@ public class GithubOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
     final Map<String, Object> params = flow.completeSourceOAuth(workspaceId, definitionId,
-        Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
+            Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("access_token"));
     assertTrue(params.get("access_token").toString().length() > 0);
