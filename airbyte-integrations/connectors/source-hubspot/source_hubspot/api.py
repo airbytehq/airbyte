@@ -9,7 +9,7 @@ import urllib.parse
 from abc import ABC, abstractmethod
 from functools import lru_cache, partial
 from http import HTTPStatus
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
 import pendulum as pendulum
@@ -697,6 +697,34 @@ class FormStream(Stream):
     url = "/marketing/v3/forms"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+
+    
+
+class FormSubmssionStream(Stream):
+    url = "/form-integrations/v1/submissions/forms"
+    limit = 50
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
+
+    def list(self, fields) -> Iterable:
+        params = {
+            "limit": 50,
+        }
+        forms = self._api.get(url="/marketing/v3/forms")["results"]
+        for row in forms:
+            self.updated_at_field = "submittedAt"
+            self.created_at_field = "submittedAt"
+            yield from self.read(partial(self._api.get, url=f"{self.url}/{row['id']}"), params)
+    
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in records:
+            values: dict = record.get("values") or None
+            if values:
+                for value_dict in values:
+                    _temp_form_entry = {value_dict["name"]: value_dict["value"]}
+                    record.update(_temp_form_entry)
+                record.pop("values")
+            yield record
 
 
 class MarketingEmailStream(Stream):
