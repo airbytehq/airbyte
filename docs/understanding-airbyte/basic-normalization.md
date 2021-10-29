@@ -61,11 +61,11 @@ You'll notice that some metadata are added to keep track of important informatio
 Additional metadata columns can be added on some tables depending on the usage:
 - On the Slowly Changing Dimension (SCD) tables:
 - `_airbyte_start_at`: equivalent to the cursor column defined on the table, denotes when the row was first seen
-- `_airbyte_end_at`: denotes until when the rows was seen with these particular values. If this column is not NULL, then the record has been updated and this row is no longer the most up to date one.
+- `_airbyte_end_at`: denotes until when the row was seen with these particular values. If this column is not NULL, then the record has been updated and is no longer the most up to date one. If NULL, then the row is the latest version for the record.
 - `_airbyte_active_row`: denotes if the row for the record is the latest version or not.
 - `_airbyte_unique_key_scd`: hash of primary keys + cursors used to de-duplicate the scd table.
 - On de-duplicated (and SCD) tables:
-- `_airbyte_unique_key`: hash of primary kes used to de-duplicate the final table.
+- `_airbyte_unique_key`: hash of primary keys used to de-duplicate the final table.
 
 The [normalization rules](basic-normalization.md#Rules) are _not_ configurable. They are designed to pick a reasonable set of defaults to hit the 80/20 rule of data normalization. We respect that normalization is a detail-oriented problem and that with a fixed set of rules, we cannot normalize your data in such a way that covers all use cases. If this feature does not meet your normalization needs, we always put the full json blob in destination as well, so that you can parse that object however best meets your use case. We will be adding more advanced normalization functionality shortly. Airbyte is focused on the EL of ELT. If you need a really featureful tool for the transformations then, we suggest trying out dbt.
 
@@ -327,7 +327,7 @@ This may be greatly diverge from the `_airbyte_emitted_at` value as the normaliz
 
 Normalization produces tables that are partitioned, clustered, sorted or indexed depending on the destination engine and on the type of tables being built. The goal of these are to make read more performant, especially when running incremental updates.
 
-In general, normalization need to do lookup on the last emitted_at column to know if a record is freshly produced and need to be
+In general, normalization needs to do lookup on the last emitted_at column to know if a record is freshly produced and need to be
 incrementally processed or not. But in certain models, such as SCD tables for example, we also need to retrieve older data to update their type 2 SCD end_date and active_row flags, thus a different partitioning scheme is used to optimize that use case.
 
 ## Extending Basic Normalization
