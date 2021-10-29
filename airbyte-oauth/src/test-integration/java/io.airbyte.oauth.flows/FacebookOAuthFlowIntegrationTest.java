@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.oauth.flows;
+package io.airbyte.oauth.flows.facebook;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -14,6 +14,7 @@ import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.OAuthFlowImplementation;
+import io.airbyte.oauth.flows.OAuthFlowIntegrationTest;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,9 +25,10 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
+public class FacebookOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
   protected static final Path CREDENTIALS_PATH = Path.of("secrets/facebook_marketing.json");
+  protected static final String REDIRECT_URL = "http://localhost:9000/auth_flow";
 
   @Override
   protected Path get_credentials_path() {
@@ -43,9 +45,13 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
     super.setup();
   }
 
+  @Override
+  protected int getServerListeningPort() {
+    return 9000;
+  }
+
   @Test
-  public void testFullGoogleOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
-    int limit = 20;
+  public void testFullFacebookOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
     final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
@@ -60,12 +66,7 @@ public class FacebookMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
             .build()))));
     final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
-    // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
-    // access...
-    while (!serverHandler.isSucceeded() && limit > 0) {
-      Thread.sleep(1000);
-      limit -= 1;
-    }
+    waitForResponse(20);
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
     final Map<String, Object> params = flow.completeSourceOAuth(workspaceId, definitionId,
         Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
