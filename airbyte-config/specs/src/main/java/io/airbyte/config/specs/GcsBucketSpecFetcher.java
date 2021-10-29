@@ -23,15 +23,19 @@ public class GcsBucketSpecFetcher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsBucketSpecFetcher.class);
 
-  private static void validateConfig(final JsonNode json) throws JsonValidationException {
-    final JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator();
-    final JsonNode specJsonSchema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.PROTOCOL.getFile(), "ConnectorSpecification");
-    jsonSchemaValidator.ensure(specJsonSchema, json);
+  private final Storage storage;
+  private final String bucketName;
+
+  public GcsBucketSpecFetcher(final Storage storage, final String bucketName) {
+    this.storage = storage;
+    this.bucketName = bucketName;
   }
 
-  public static Optional<ConnectorSpecification> attemptFetch(final Storage storage,
-                                                              final String bucketName,
-                                                              final String dockerImage) {
+  public String getBucketName() {
+    return bucketName;
+  }
+
+  public Optional<ConnectorSpecification> attemptFetch(final String dockerImage) {
     final String[] dockerImageComponents = dockerImage.split(":");
     Preconditions.checkArgument(dockerImageComponents.length == 2, "Invalidate docker image: " + dockerImage);
     final String dockerImageName = dockerImageComponents[0];
@@ -57,4 +61,9 @@ public class GcsBucketSpecFetcher {
     return Optional.of(Jsons.deserialize(specAsString, ConnectorSpecification.class));
   }
 
+  private static void validateConfig(final JsonNode json) throws JsonValidationException {
+    final JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator();
+    final JsonNode specJsonSchema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.PROTOCOL.getFile(), "ConnectorSpecification");
+    jsonSchemaValidator.ensure(specJsonSchema, json);
+  }
 }

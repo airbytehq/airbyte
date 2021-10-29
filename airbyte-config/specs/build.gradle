@@ -11,13 +11,13 @@ dependencies {
     implementation project(':airbyte-json-validation')
 }
 
-task fetchSeedConnectorSpecs(type: JavaExec, dependsOn: compileJava) {
+task generateSeedConnectorSpecs(type: JavaExec, dependsOn: compileJava) {
     classpath = sourceSets.main.runtimeClasspath
 
-    mainClass = 'io.airbyte.config.specs.FetchSeedConnectorSpecs'
+    mainClass = 'io.airbyte.config.specs.SeedConnectorSpecGenerator'
 
     args '--seed-root'
     args new File(project(":airbyte-config:init").projectDir, '/src/main/resources/seed')
 }
 
-project(":airbyte-config:init").tasks.processResources.dependsOn(fetchSeedConnectorSpecs)
+project(":airbyte-config:init").tasks.processResources.dependsOn(generateSeedConnectorSpecs)
