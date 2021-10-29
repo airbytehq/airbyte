@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "google-cloud-firestore"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "google-cloud-firestore", "google-auth"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1"]
 
