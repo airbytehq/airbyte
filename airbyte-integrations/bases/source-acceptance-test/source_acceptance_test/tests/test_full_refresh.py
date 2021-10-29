@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from collections import defaultdict
 from functools import partial
 from logging import Logger
 
@@ -22,18 +23,27 @@ class TestFullRefresh(BaseTest):
         docker_runner: ConnectorRunner,
         detailed_logger: Logger,
     ):
-        ignored_fields = getattr(inputs, "ignored_fields")
+        ignored_fields = getattr(inputs, "ignored_fields") or {}
         configured_catalog = full_refresh_only_catalog(configured_catalog)
         output = docker_runner.call_read(connector_config, configured_catalog)
-        records_1 = [message.record.data for message in output if message.type == Type.RECORD]
+        records_1 = [message.record for message in output if message.type == Type.RECORD]
+        records_by_stream_1 = defaultdict(list)
+        for record in records_1:
+            records_by_stream_1[record.stream].append(record.data)
 
         output = docker_runner.call_read(connector_config, configured_catalog)
-        records_2 = [message.record.data for message in output if message.type == Type.RECORD]
+        records_2 = [message.record for message in output if message.type == Type.RECORD]
+        records_by_stream_2 = defaultdict(list)
+        for record in records_2:
+            records_by_stream_2[record.stream].append(record.data)
 
-        serializer = partial(serialize, exclude_fields=ignored_fields)
-        output_diff = set(map(serializer, records_1)) - set(map(serializer, records_2))
-        if output_diff:
-            msg = "The two sequential reads should produce either equal set of records or one of them is a strict subset of the other"
-            detailed_logger.info(msg)
-            detailed_logger.log_json_list(output_diff)
-            pytest.fail(msg)
+        for stream in records_by_stream_1.keys():
+            serializer = partial(serialize, exclude_fields=ignored_fields.get(stream))
+            stream_records_1 = records_by_stream_1.get(stream)
+            stream_records_2 = records_by_stream_2.get(stream)
+            output_diff = set(map(serializer, stream_records_1)) - set(map(serializer, stream_records_2))
+            if output_diff:
+                msg = f"{stream}: the two sequential reads should produce either equal set of records or one of them is a strict subset of the other"
+                detailed_logger.info(msg)
+                detailed_logger.log_json_list(output_diff)
+                pytest.fail(msg)
