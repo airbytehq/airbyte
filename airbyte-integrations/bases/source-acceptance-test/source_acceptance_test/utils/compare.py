@@ -4,7 +4,6 @@
 
 
 import functools
-import json
 from typing import List, Mapping, Optional
 
 import icdiff
@@ -52,13 +51,20 @@ def diff_dicts(left, right, use_markup) -> Optional[List[str]]:
 
 
 @functools.total_ordering
-class DictWithHash(dict):
+class HashMixin:
+    _hash = None
 
-    _hash: str = None
+    @staticmethod
+    def get_hash(obj):
+        if isinstance(obj, Mapping):
+            return hash(str({k: (HashMixin.get_hash(v)) for k, v in sorted(obj.items())}))
+        if isinstance(obj, List):
+            return hash(str(sorted([HashMixin.get_hash(v) for v in obj])))
+        return hash(obj)
 
     def __hash__(self):
         if not self._hash:
-            self._hash = hash(json.dumps({k: serialize(v) for k, v in self.items()}, sort_keys=True))
+            self._hash = HashMixin.get_hash(self)
         return self._hash
 
     def __lt__(self, other):
@@ -68,10 +74,17 @@ class DictWithHash(dict):
         return hash(self) == hash(other)
 
 
-def serialize(value) -> str:
-    """Simplify comparison of nested dicts/lists"""
-    if isinstance(value, Mapping):
-        return DictWithHash(value)
-    if isinstance(value, List):
-        return sorted([serialize(v) for v in value])
-    return str(value)
+class DictWithHashMixin(HashMixin, dict):
+    pass
+
+
+class ListWithHashMixin(HashMixin, list):
+    pass
+
+
+def make_hashible(obj):
+    if isinstance(obj, Mapping):
+        return DictWithHashMixin(obj)
+    if isinstance(obj, List):
+        return ListWithHashMixin(obj)
+    return obj
