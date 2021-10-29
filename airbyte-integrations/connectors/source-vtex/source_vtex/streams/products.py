@@ -6,8 +6,9 @@ from airbyte_cdk.sources.streams.http.http import HttpSubStream
 
 class Products(HttpSubStream, VtexStream):
     """
-    TODO: Change class name to match the table/data source this stream
-        corresponds to.
+    This stream brings the product data. It's mandatory to pass a product id,
+    so it has to be a SubStream, therefore in this case a stream that brings
+    product id should be set as parent for this Products stream.
     """
 
     primary_key = "productId"

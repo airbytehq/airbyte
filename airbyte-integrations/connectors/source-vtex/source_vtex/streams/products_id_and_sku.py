@@ -5,8 +5,9 @@ from source_vtex.base_streams import VtexStream
 
 class ProductsIdAndSku(VtexStream):
     """
-    TODO: Change class name to match the table/data source this stream
-        corresponds to.
+    This strem brings a list of product id. For each product it brings too it's
+    SKU ids as follows:
+    "{productId}": ["{skuId1}", "{skuId2}", "{skuId2}"]
     """
 
     primary_key = "productId"
