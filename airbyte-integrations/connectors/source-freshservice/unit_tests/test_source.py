@@ -2,10 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from unittest import mock
 from unittest.mock import MagicMock
 
-import pytest
 import responses
+from requests.exceptions import HTTPError
 from source_freshservice.source import SourceFreshservice
 
 
@@ -17,16 +18,24 @@ def setup_responses():
     )
 
 
-# @responses.activate
-@pytest.mark.skip(reason="I can't get this to work yet")
-def test_check_connection(mocker, test_config):
-    setup_responses()
+@mock.patch("source_freshservice.streams.Tickets.read_records", return_value=iter([1]))
+def test_check_connection_success(mocker):
     source = SourceFreshservice()
     logger_mock = MagicMock()
+    test_config = MagicMock()
     assert source.check_connection(logger_mock, test_config) == (True, None)
 
 
-def test_streams(mocker):
+def test_check_connection_failure(mocker, test_config):
+    source = SourceFreshservice()
+    logger_mock = MagicMock()
+    response = source.check_connection(logger_mock, test_config)
+
+    assert response[0] is False
+    assert type(response[1]) == HTTPError
+
+
+def test_stream_count(mocker):
     source = SourceFreshservice()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
