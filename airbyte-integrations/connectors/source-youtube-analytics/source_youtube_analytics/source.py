@@ -56,6 +56,8 @@ class ReportResources(HttpStream):
         date = kwargs["stream_state"].get("date")
         if date:
             reports = [r for r in reports if int(r["startTime"].date().strftime("%Y%m%d")) >= date]
+        if not reports:
+            reports.append(None)
         return reports
 
     def path(
@@ -97,6 +99,13 @@ class ChannelReports(HttpSubStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return stream_slice["parent"]["downloadUrl"][len(self.url_base):]
+
+    def read_records(self, *, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        parent = stream_slice.get('parent')
+        if parent:
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
+        else:
+            yield from []
 
 
 class SourceYoutubeAnalytics(AbstractSource):
