@@ -2,20 +2,26 @@ connector_image: airbyte/source-mailchimp:dev
 tests:
   spec:
     - spec_path: "source_mailchimp/spec.json"
+      timeout_seconds: 60
   connection:
     # for old spec config (without oneOf)
     - config_path: "secrets/config.json"
       status: "succeed"
+      timeout_seconds: 180
     # for auth with API token
     - config_path: "secrets/config_apikey.json"
       status: "succeed"
+      timeout_seconds: 180
     # for auth with oauth2 token
     - config_path: "secrets/config_oauth.json"
       status: "succeed"
+      timeout_seconds: 180
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
+      timeout_seconds: 180
     - config_path: "integration_tests/invalid_config_oauth.json"
       status: "failed"
+      timeout_seconds: 180
   discovery:
     # for old spec config (without oneOf)
     - config_path: "secrets/config.json"
