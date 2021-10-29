@@ -81,11 +81,17 @@ class BasicReadTestConfig(BaseConfig):
 
 
 class FullRefreshConfig(BaseConfig):
+    """Full refresh test config
+
+    Attributes:
+        ignored_fields for each stream, list of fields path. Path should be in format "object_key/object_key2"
+    """
+
     config_path: str = config_path
     configured_catalog_path: str = configured_catalog_path
     timeout_seconds: int = timeout_seconds
     ignored_fields: Optional[Mapping[str, List[str]]] = Field(
-        description="List of fields path splitted by stream for ignoring in sequential reads test"
+        description="For each stream, list of fields path ignoring in sequential reads test"
     )
 
 
