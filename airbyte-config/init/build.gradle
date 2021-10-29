@@ -1,5 +1,8 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
 plugins {
     id 'java'
+    id 'com.bmuschko.docker-remote-api'
 }
 
 dependencies {
@@ -7,3 +10,11 @@ dependencies {
 
     implementation project(':airbyte-config:models')
 }
+
+def buildTag = System.getenv('VERSION') ?: 'dev'
+// Use task types
+task buildMyAppImage(type: DockerBuildImage) {
+    inputDir = file('.')
+    images.add("airbyte/init:$buildTag")
+}
+build.dependsOn(buildMyAppImage)

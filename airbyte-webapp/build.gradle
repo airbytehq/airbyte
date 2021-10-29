@@ -1,6 +1,9 @@
+import com.bmuschko.gradle.docker.tasks.image.*
+
 plugins {
     id "base"
     id "com.github.node-gradle.node" version "3.1.1"
+    id 'com.bmuschko.docker-remote-api'
 }
 
 def nodeVersion = System.getenv('NODE_VERSION') ?: '14.11.0'
@@ -40,3 +43,10 @@ task copyDocs(type: Copy) {
 
 copyDocs.dependsOn npm_run_build
 assemble.dependsOn copyDocs
+
+// Use task types
+task buildMyAppImage(type: DockerBuildImage) {
+    inputDir = file('.')
+    images.add("airbyte/init:$version")
+}
+build.dependsOn(buildMyAppImage)

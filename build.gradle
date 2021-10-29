@@ -1,5 +1,3 @@
-import com.bmuschko.gradle.docker.tasks.image.*
-
 buildscript {
     repositories {
         maven {
@@ -7,7 +5,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.bmuschko:gradle-docker-plugin:7.1.0"
+        classpath 'com.bmuschko:gradle-docker-plugin:7.1.0'
     }
 }
 
@@ -16,7 +14,6 @@ plugins {
     id 'pmd'
     id 'com.diffplug.spotless' version '5.7.0'
     id 'com.github.hierynomus.license' version '0.16.1'
-    id "com.bmuschko.docker-remote-api" version "7.1.0"
 }
 
 repositories {
@@ -258,39 +255,6 @@ subprojects {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
 
-// Use task types
-    /*task buildMyAppImage {
-        inputDir = project.projectDir
-        images.add( "airbyte/${project.name}:$version")
-    }
-
-    if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
-        build.dependsOn(buildMyAppImage)
-    }*/
-}
-
-/*task composeBuild {
-    def buildTag = System.getenv('VERSION') ?: 'dev'
-    def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
-    def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
-    def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
-    def dockerComposeFile = buildArch == 'arm64' ? 'docker-compose.build-m1.yaml' : 'docker-compose.build.yaml'
-    doFirst {
-        exec {
-            workingDir rootDir
-            commandLine 'docker-compose', '-f', dockerComposeFile, 'build', '--parallel', '--quiet'
-            environment 'VERSION', buildTag
-            environment 'DOCKER_BUILD_PLATFORM', buildPlatform
-            environment 'DOCKER_BUILD_ARCH', buildArch
-            environment 'JDK_VERSION', jdkVersion
-        }
-    }
-}*/
-/*
-if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
-    build.dependsOn(composeBuild)
-}
-*/
 task('generate') {
     dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
