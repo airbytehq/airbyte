@@ -12,8 +12,10 @@ export const documentationKeys = {
 const useDocumentation = (documentationUrl: string): UseDocumentationResult => {
   const { integrationUrl } = useConfig();
   const url =
-    documentationUrl.replace("https://docs.airbyte.io", integrationUrl || "/") +
-    ".md";
+    documentationUrl.replace(
+      "https://docs.airbyte.io",
+      integrationUrl || "/docs"
+    ) + ".md";
 
   return useQuery(documentationKeys.text(documentationUrl), () =>
     fetchDocumentation(url)
