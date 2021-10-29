@@ -95,6 +95,7 @@
     * [Oracle Peoplesoft](integrations/sources/oracle-peoplesoft.md)
     * [Oracle Siebel CRM](integrations/sources/oracle-siebel-crm.md)
     * [Paypal Transaction](integrations/sources/paypal-transaction.md)
+    * [Pinterest](integrations/sources/pinterest.md)
     * [Plaid](integrations/sources/plaid.md)
     * [Pipedrive](integrations/sources/pipedrive.md)
     * [PokéAPI](integrations/sources/pokeapi.md)
