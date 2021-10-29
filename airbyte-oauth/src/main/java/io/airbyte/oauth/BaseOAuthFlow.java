@@ -169,11 +169,11 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         redirectUrl, oAuthParamConfig);
   }
 
-  private Map<String, Object> completeOAuthFlow(final String clientId,
-                                                final String clientSecret,
-                                                final String authCode,
-                                                final String redirectUrl,
-                                                JsonNode oAuthParamConfig)
+  protected Map<String, Object> completeOAuthFlow(final String clientId,
+                                                  final String clientSecret,
+                                                  final String authCode,
+                                                  final String redirectUrl,
+                                                  JsonNode oAuthParamConfig)
       throws IOException {
     var accessTokenUrl = getAccessTokenUrl();
     final HttpRequest request = HttpRequest.newBuilder()

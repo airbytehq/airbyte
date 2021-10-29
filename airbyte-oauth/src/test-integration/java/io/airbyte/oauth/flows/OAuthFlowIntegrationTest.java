@@ -71,7 +71,16 @@ public abstract class OAuthFlowIntegrationTest {
     server.stop(1);
   }
 
-  static class ServerHandler implements HttpHandler {
+  protected void waitForResponse(int limit) throws InterruptedException {
+    // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
+    // access...
+    while (!serverHandler.isSucceeded() && limit > 0) {
+      Thread.sleep(1000);
+      limit -= 1;
+    }
+  }
+
+  public static class ServerHandler implements HttpHandler {
 
     final private String expectedParam;
     private String paramValue;
