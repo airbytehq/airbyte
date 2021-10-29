@@ -15,10 +15,49 @@
       "type": "string"
     },
     "fields": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "flagged": {
+          "type": ["null", "boolean"]
+        },
+        "sprint": {
+          "type": ["null", "object"]
+        },
+        "closedSprints": {
+          "type": ["null", "object"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "project": {
+          "type": ["null", "object"]
+        },
+        "comment": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "object"
+          }
+        },
+        "epic": {
+          "type": ["null", "object"]
+        },
+        "worklog": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "object"
+          }
+        },
+        "updated": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "timetracking": {
+          "type": ["null", "object"]
+        }
+      }
     },
     "boardId": {
-      "type": "string"
+      "type": "integer"
     }
   }
 }
