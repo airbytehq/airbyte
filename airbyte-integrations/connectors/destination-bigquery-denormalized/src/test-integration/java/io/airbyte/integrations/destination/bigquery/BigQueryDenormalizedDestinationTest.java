@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -233,7 +234,9 @@ class BigQueryDenormalizedDestinationTest {
     assertEquals(usersActual.size(), 1);
     final JsonNode resultJson = usersActual.get(0);
 
-    assertEquals(Set.of("2021-10-11T08:36:53"), extractJsonValues(resultJson, "updated_at"));
+    // BigQuery Accepts "YYYY-MM-DD HH:MM:SS[.SSSSSS]" format
+    // returns "yyyy-MM-dd'T'HH:mm:ss" format
+    assertEquals(Set.of(new DateTime("2021-10-11T06:36:53+00:00").toString("yyyy-MM-dd'T'HH:mm:ss")), extractJsonValues(resultJson, "updated_at"));
   }
 
   private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {

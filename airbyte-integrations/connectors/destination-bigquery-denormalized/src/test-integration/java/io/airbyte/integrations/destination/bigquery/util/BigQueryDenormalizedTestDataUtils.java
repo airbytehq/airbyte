@@ -176,7 +176,7 @@ public class BigQueryDenormalizedTestDataUtils {
   public static JsonNode getDataWithJSONDateTimeFormats() {
     return Jsons.deserialize(
         "{\n"
-            + "  \"updated_at\": \"2021-10-11T06:36:53+01:00\"\n"
+            + "  \"updated_at\": \"2021-10-11T06:36:53+00:00\"\n"
             + "}");
   }
 
