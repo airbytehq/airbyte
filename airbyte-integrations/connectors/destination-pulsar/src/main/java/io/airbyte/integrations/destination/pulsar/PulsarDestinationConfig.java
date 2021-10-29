@@ -17,23 +17,24 @@ import org.apache.pulsar.common.schema.SchemaType;
 
 public class PulsarDestinationConfig {
 
-  private final String topicPattern;
-  private final boolean sync;
-  private final Map<String, Object> producerConfig;
   private final String serviceUrl;
+  private final String topicPattern;
+  private final String topicPrefix;
+  private final String testTopic;
+  private final Map<String, Object> producerConfig;
+  private final boolean sync;
 
-  private PulsarDestinationConfig(final String topicPattern, final boolean sync, final JsonNode config) {
-    this.topicPattern = topicPattern;
-    this.sync = sync;
-    this.producerConfig = buildProducerConfig(config);
+  private PulsarDestinationConfig(final JsonNode config) {
     this.serviceUrl = buildServiceUrl(config);
+    this.topicPattern = buildTopicPattern(config);
+    this.topicPrefix = buildTopicPrefix(config);
+    this.testTopic = buildTestTopic(config);
+    this.producerConfig = buildProducerConfig(config);
+    this.sync = isSyncProducer(config);
   }
 
   public static PulsarDestinationConfig getPulsarDestinationConfig(final JsonNode config) {
-    return new PulsarDestinationConfig(
-        config.get("topic_pattern").asText(),
-        config.has("sync_producer") && config.get("sync_producer").asBoolean(),
-        config);
+    return new PulsarDestinationConfig(config);
   }
 
   public Map<String, Object> getProducerConfig() {
@@ -54,6 +55,14 @@ public class PulsarDestinationConfig {
     return recordSchemaBuilder.build(SchemaType.JSON);
   }
 
+  public String uriForTopic(String topic) {
+    return topicPrefix + topic;
+  }
+
+  public String getTestTopic() {
+    return testTopic;
+  }
+
   public String getTopicPattern() {
     return topicPattern;
   }
@@ -63,7 +72,24 @@ public class PulsarDestinationConfig {
   }
 
   private String buildServiceUrl(final JsonNode config) {
-    return "pulsar" + (config.get("use_tls").asBoolean() ? "+ssl" : "") + "://" + config.get("pulsar_brokers").asText();
+    return String.format("pulsar%s://%s",
+      config.get("use_tls").asBoolean() ? "+ssl" : "",
+      config.get("pulsar_brokers").asText());
+  }
+
+  private String buildTestTopic(final JsonNode config) {
+    return config.has("test_topic") ? config.get("test_topic").asText() : "";
+  }
+
+  private String buildTopicPattern(final JsonNode config) {
+    return config.get("topic_pattern").asText();
+  }
+
+  private String buildTopicPrefix(final JsonNode config) {
+    return String.format("%s://%s/%s/",
+      config.get("topic_type").asText(),
+      config.get("topic_tenant").asText(),
+      config.get("topic_namespace").asText());
   }
 
   private Map<String, Object> buildProducerConfig(final JsonNode config) {
@@ -71,13 +97,20 @@ public class PulsarDestinationConfig {
     if (config.has("producer_name")) {
       conf.put("producerName", config.get("producer_name").asText());
     }
+    conf.put("compressionType", CompressionType.valueOf(config.get("compression_type").asText()));
+    conf.put("sendTimeoutMs", config.get("send_timeout_ms").asInt());
+    conf.put("maxPendingMessages", config.get("max_pending_messages").asInt());
+    conf.put("maxPendingMessagesAcrossPartitions", config.get("max_pending_messages_across_partitions").asInt());
     conf.put("batchingEnabled", config.get("batching_enabled").asBoolean());
     conf.put("batchingMaxMessages", config.get("batching_max_messages").asInt());
     conf.put("batchingMaxPublishDelayMicros", config.get("batching_max_publish_delay").asInt() * 1000);
     conf.put("blockIfQueueFull", config.get("block_if_queue_full").asBoolean());
-    conf.put("compressionType", CompressionType.valueOf(config.get("compression_type").asText()));
 
     return conf.build();
+  }
+
+  private boolean isSyncProducer(final JsonNode config) {
+    return config.has("producer_sync") && config.get("producer_sync").asBoolean();
   }
 
 }

@@ -16,7 +16,7 @@ Each record will contain in its key the uuid assigned by Airbyte, and in the val
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed.
 * `_airbyte_emitted_at`:  a timestamp representing when the event was pulled from the data source.
-* `_airbyte_data`: a json blob representing with the event data.
+* `_airbyte_data`: a json blob representing with the event data encoded in base64 .
 * `_airbyte_stream`: the name of each record's stream.
 
 #### Features
@@ -48,9 +48,11 @@ Airbyte should be allowed to write messages into topics, and these topics should
 
 Note that if you choose to use dynamic topic names, you will probably need to enable `allowAutoTopicCreation` to avoid your connection failing if there was an update to the source connector's schema. Otherwise a hardcoded topic name may be best.
 
+Also, notice that the messages will be sent to topics based on the configured Pulsar `topic_tenant` and `topic_namespace` configs with their `topic_type`.
+
 #### Target topics
 
-You can determine the topics to which messages are written via the `topic_pattern` configuration parameter. Messages can be written to either a hardcoded, pre-defined topic, or dynamically written to different topics based on the [namespace](https://docs.airbyte.io/understanding-airbyte/namespaces) or stream they came from.
+You can determine the topics to which messages are written via the `topic_pattern` configuration parameter in its corresponding Pulsar `topic_tenant`-`topic_namespace`. Messages can be written to either a hardcoded, pre-defined topic, or dynamically written to different topics based on the [namespace](https://docs.airbyte.io/understanding-airbyte/namespaces) or stream they came from.
 
 To write all messages to a single hardcoded topic, enter its name in the `topic_pattern` field e.g: setting `topic_pattern` to `my-topic-name` will write all messages from all streams and namespaces to that topic.
 
@@ -65,19 +67,21 @@ If you define output topic dynamically, you might want to enable `allowAutoTopic
 You should now have all the requirements needed to configure Pulsar as a destination in the UI. You can configure the following parameters on the Pulsar destination \(though many of these are optional or have default values\):
 
 * **Pulsar brokers**
+* **Use TLS**
+* **Topic type**
+* **Topic tenant**
+* **Topic namespace**
 * **Topic pattern**
 * **Test topic**
-* **Sync producer**
-* **Use TLS**
 * **Producer name**
-* **Access mode**
+* **Sync producer**
 * **Compression type**
+* **Message send timeout**
+* **Max pending messages**
+* **Max pending messages across partitions**
 * **Enable batching**
-* **Batching max publish delay**
 * **Batching max messages**
-* **Enable chunking**
+* **Batching max publish delay**
 * **Block if queue is full**
-* **Auto update partitions**
-* **Auto update partitions interval**
 
 More info about this can be found in the [Pulsar producer configs documentation site](https://pulsar.apache.org/docs/en/client-libraries-java/#producer).

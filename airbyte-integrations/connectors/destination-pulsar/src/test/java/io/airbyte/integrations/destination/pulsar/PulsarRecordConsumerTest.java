@@ -104,14 +104,20 @@ public class PulsarRecordConsumerTest {
     consumer.close();
   }
 
-  private JsonNode getConfig(final String pulsarBrokers, final String topic) {
+  private JsonNode getConfig(final String brokers, final String topic) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("pulsar_brokers", pulsarBrokers)
-        .put("topic_pattern", topic)
+        .put("pulsar_brokers", brokers)
         .put("use_tls", false)
-        .put("sync_producer", true)
+        .put("topic_type", "non-persistent")
+        .put("topic_tenant", "public")
+        .put("topic_namespace", "default")
+        .put("topic_pattern", topic)
         .put("producer_name", "test-producer")
+        .put("producer_sync", true)
         .put("compression_type", "NONE")
+        .put("send_timeout_ms", 30000)
+        .put("max_pending_messages", 1000)
+        .put("max_pending_messages_across_partitions", 50000)
         .put("batching_enabled", true)
         .put("batching_max_messages", 1000)
         .put("batching_max_publish_delay", 1)
@@ -150,14 +156,15 @@ public class PulsarRecordConsumerTest {
 
     @Override
     public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {
+      String prefix = "non-persistent://public/default/";
       return Stream.of(
-          Arguments.of(TOPIC_NAME, "test_topic"),
-          Arguments.of("test-topic", "test_topic"),
-          Arguments.of("{namespace}", SCHEMA_NAME),
-          Arguments.of("{stream}", STREAM_NAME),
-          Arguments.of("{namespace}.{stream}." + TOPIC_NAME, "public_id_and_name_test_topic"),
-          Arguments.of("{namespace}-{stream}-" + TOPIC_NAME, "public_id_and_name_test_topic"),
-          Arguments.of("topic with spaces", "topic_with_spaces"));
+          Arguments.of(TOPIC_NAME, prefix + "test_topic"),
+          Arguments.of("test-topic", prefix + "test_topic"),
+          Arguments.of("{namespace}", prefix + SCHEMA_NAME),
+          Arguments.of("{stream}", prefix + STREAM_NAME),
+          Arguments.of("{namespace}.{stream}." + TOPIC_NAME, prefix + "public_id_and_name_test_topic"),
+          Arguments.of("{namespace}-{stream}-" + TOPIC_NAME, prefix + "public_id_and_name_test_topic"),
+          Arguments.of("topic with spaces", prefix + "topic_with_spaces"));
     }
 
   }

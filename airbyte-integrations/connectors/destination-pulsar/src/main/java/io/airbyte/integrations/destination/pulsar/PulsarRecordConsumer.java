@@ -86,7 +86,7 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
           String topic = nameTransformer.getIdentifier(config.getTopicPattern()
                 .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
                 .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")));
-          return PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()), config.getProducerConfig(), topic);
+          return PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()), config.getProducerConfig(), config.uriForTopic(topic));
         }));
   }
 

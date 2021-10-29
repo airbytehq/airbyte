@@ -45,7 +45,8 @@ public class PulsarDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final String testTopic = config.has("test_topic") ? config.get("test_topic").asText() : "";
+      final PulsarDestinationConfig pulsarConfig = PulsarDestinationConfig.getPulsarDestinationConfig(config);
+      final String testTopic = pulsarConfig.getTestTopic();
       if (!testTopic.isBlank()) {
         final String key = UUID.randomUUID().toString();
         final GenericRecord value = Schema.generic(PulsarDestinationConfig.getSchemaInfo())
@@ -56,9 +57,8 @@ public class PulsarDestination extends BaseConnector implements Destination {
           .set(PulsarDestination.COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value")))
           .build();
 
-        final PulsarDestinationConfig pulsarConfig = PulsarDestinationConfig.getPulsarDestinationConfig(config);
         final PulsarClient client = PulsarUtils.buildClient(pulsarConfig.getServiceUrl());
-        final Producer<GenericRecord> producer = PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()), pulsarConfig.getProducerConfig(), testTopic);
+        final Producer<GenericRecord> producer = PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()), pulsarConfig.getProducerConfig(), pulsarConfig.uriForTopic(testTopic));
         final MessageId messageId = producer.send(value);
 
         producer.flush();
