@@ -40,17 +40,22 @@ quoting:
 # are materialized, and more!
 models:
   airbyte_utils:
+    +materialized: table
     generated:
       airbyte_ctes:
         +tags: airbyte_internal_cte
         +materialized: ephemeral
-      airbyte_views:
-        +tags: airbyte_internal_views
-        +materialized: view
+      airbyte_incremental:
+        +tags: incremental_tables
+        # incremental is not enabled for Oracle yet
+        #+materialized: incremental
+        +materialized: table
       airbyte_tables:
         +tags: normalized_tables
         +materialized: table
-    +materialized: table
+      airbyte_views:
+        +tags: airbyte_internal_views
+        +materialized: view
 
 vars:
   dbt_utils_dispatch_list: ['airbyte_utils']

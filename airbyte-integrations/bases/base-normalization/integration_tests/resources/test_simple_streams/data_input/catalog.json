@@ -87,6 +87,26 @@
     },
     {
       "stream": {
+        "name": "renamed_dedup_cdc_excluded",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
         "name": "dedup_cdc_excluded",
         "json_schema": {
           "type": ["null", "object"],
@@ -95,9 +115,6 @@
               "type": "integer"
             },
             "name": {
-              "type": ["string", "null"]
-            },
-            "column`_'with\"_quotes": {
               "type": ["string", "null"]
             },
             "_ab_cdc_lsn": {
@@ -150,7 +167,7 @@
         "source_defined_cursor": true,
         "default_cursor_field": []
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
