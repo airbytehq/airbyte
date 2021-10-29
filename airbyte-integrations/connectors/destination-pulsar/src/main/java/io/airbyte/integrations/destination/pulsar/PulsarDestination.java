@@ -21,6 +21,9 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import org.apache.pulsar.client.api.MessageId;
 import org.apache.pulsar.client.api.Producer;
+import org.apache.pulsar.client.api.PulsarClient;
+import org.apache.pulsar.client.api.Schema;
+import org.apache.pulsar.client.api.schema.GenericRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,17 +47,23 @@ public class PulsarDestination extends BaseConnector implements Destination {
     try {
       final String testTopic = config.has("test_topic") ? config.get("test_topic").asText() : "";
       if (!testTopic.isBlank()) {
-        final PulsarDestinationConfig pulsarDestinationConfig = PulsarDestinationConfig.getPulsarDestinationConfig(config);
-        final Producer<JsonNode> producer = pulsarDestinationConfig.getProducer(testTopic);
         final String key = UUID.randomUUID().toString();
-        final JsonNode value = Jsons.jsonNode(ImmutableMap.of(
-            COLUMN_NAME_AB_ID, key,
-            COLUMN_NAME_STREAM, "test-topic-stream",
-            COLUMN_NAME_EMITTED_AT, System.currentTimeMillis(),
-            COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value"))));
+        final GenericRecord value = Schema.generic(PulsarDestinationConfig.getSchemaInfo())
+          .newRecordBuilder()
+          .set(PulsarDestination.COLUMN_NAME_AB_ID, key)
+          .set(PulsarDestination.COLUMN_NAME_STREAM, "test-topic-stream")
+          .set(PulsarDestination.COLUMN_NAME_EMITTED_AT, System.currentTimeMillis())
+          .set(PulsarDestination.COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value")))
+          .build();
 
+        final PulsarDestinationConfig pulsarConfig = PulsarDestinationConfig.getPulsarDestinationConfig(config);
+        final PulsarClient client = PulsarUtils.buildClient(pulsarConfig.getServiceUrl());
+        final Producer<GenericRecord> producer = PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()), pulsarConfig.getProducerConfig(), testTopic);
         final MessageId messageId = producer.send(value);
+
         producer.flush();
+        producer.close();
+        client.close();
 
         LOGGER.info("Successfully sent message id '{}' to Pulsar brokers for topic '{}'.", messageId, testTopic);
       }

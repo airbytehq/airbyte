@@ -10,6 +10,8 @@ import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Streams;
+import com.google.common.net.InetAddresses;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -20,7 +22,13 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -29,6 +37,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.pulsar.client.api.Producer;
+import org.apache.pulsar.client.api.schema.GenericRecord;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -62,12 +71,15 @@ public class PulsarRecordConsumerTest {
   @ParameterizedTest
   @ArgumentsSource(TopicMapArgumentsProvider.class)
   @SuppressWarnings("unchecked")
-  public void testBuildProducerMap(final String topicPattern, final String expectedTopic) {
+  public void testBuildProducerMap(final String topicPattern, final String expectedTopic) throws UnknownHostException {
+    String brokers = Stream.concat(getIpAddresses().stream(), Stream.of("localhost"))
+      .map(ip -> ip + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT))
+      .collect(Collectors.joining(","));
     final PulsarDestinationConfig config = PulsarDestinationConfig
-      .getPulsarDestinationConfig(getConfig(PULSAR.getHost() + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT), topicPattern));
+      .getPulsarDestinationConfig(getConfig(brokers, topicPattern));
     final PulsarRecordConsumer recordConsumer = new PulsarRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
 
-    final Map<AirbyteStreamNameNamespacePair, Producer<JsonNode>> producerMap = recordConsumer.buildProducerMap();
+    final Map<AirbyteStreamNameNamespacePair, Producer<GenericRecord>> producerMap = recordConsumer.buildProducerMap();
     assertEquals(1, producerMap.size());
 
     final AirbyteStreamNameNamespacePair streamNameNamespacePair = new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
@@ -97,17 +109,13 @@ public class PulsarRecordConsumerTest {
         .put("pulsar_brokers", pulsarBrokers)
         .put("topic_pattern", topic)
         .put("use_tls", false)
-        .put("access_mode", "Shared")
         .put("sync_producer", true)
-        .put("compression_type", "NONE")
-        .put("enable_batching", true)
-        .put("batching_max_publish_delay", 1)
-        .put("batching_max_messages", 1000)
-        .put("enable_chunking", false)
         .put("producer_name", "test-producer")
+        .put("compression_type", "NONE")
+        .put("batching_enabled", true)
+        .put("batching_max_messages", 1000)
+        .put("batching_max_publish_delay", 1)
         .put("block_if_queue_full", true)
-        .put("auto_update_partitions", true)
-        .put("auto_update_partitions_interval", 60)
         .build());
   }
 
@@ -123,6 +131,19 @@ public class PulsarRecordConsumerTest {
                 .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
         .collect(Collectors.toList());
 
+  }
+
+  @SuppressWarnings("UnstableApiUsage")
+  private List<String> getIpAddresses() throws UnknownHostException {
+    try {
+      return Streams.stream(NetworkInterface.getNetworkInterfaces().asIterator())
+        .flatMap(ni -> Streams.stream(ni.getInetAddresses().asIterator()))
+        .map(InetAddress::getHostAddress)
+        .filter(InetAddresses::isUriInetAddress)
+        .collect(Collectors.toList());
+    } catch (SocketException e) {
+      return Collections.singletonList(InetAddress.getLocalHost().getHostAddress());
+    }
   }
 
   public static class TopicMapArgumentsProvider implements ArgumentsProvider {

@@ -12,15 +12,11 @@
       "pulsar_brokers",
       "topic_pattern",
       "use_tls",
-      "access_mode",
       "compression_type",
-      "enable_batching",
-      "batching_max_publish_delay",
+      "batching_enabled",
       "batching_max_messages",
-      "block_if_queue_full",
-      "enable_chunking",
-      "auto_update_partitions",
-      "auto_update_partitions_interval"
+      "batching_max_publish_delay",
+      "block_if_queue_full"
     ],
     "additionalProperties": true,
     "properties": {
@@ -60,13 +56,6 @@
         "type": "string",
         "examples": ["airbyte-producer"]
       },
-      "access_mode": {
-        "title": "Access mode",
-        "description": "The type of access to the topic that the producer requires.",
-        "type": "string",
-        "default": "Shared",
-        "enum": ["Shared", "Exclusive", "WaitForExclusive"]
-      },
       "compression_type": {
         "title": "Compression type",
         "description": "Compression type for the producer.",
@@ -74,17 +63,11 @@
         "default": "none",
         "enum": ["NONE", "LZ4", "ZLIB", "ZSTD", "SNAPPY"]
       },
-      "enable_batching": {
+      "batching_enabled": {
         "title": "Enable batching",
         "description": "Control whether automatic batching of messages is enabled for the producer.",
         "type": "boolean",
         "default": true
-      },
-      "batching_max_publish_delay": {
-        "title": "Batching max publish delay",
-        "description": " Time period in milliseconds within which the messages sent will be batched.",
-        "type": "integer",
-        "default": 1
       },
       "batching_max_messages": {
         "title": "Batching max messages",
@@ -92,29 +75,17 @@
         "type": "integer",
         "default": 1000
       },
-      "enable_chunking": {
-        "title": "Enable chunking",
-        "description": "If message size is higher than allowed max publish-payload size by broker then enable chunking helps producer to split message into multiple chunks and publish them to broker separately and in order. NOTE: Batching and chunking cannot be enabled simultaneously. To enable chunking, you must disable batching and only is supported for persisted topics.",
-        "type": "boolean",
-        "default": false
+      "batching_max_publish_delay": {
+        "title": "Batching max publish delay",
+        "description": " Time period in milliseconds within which the messages sent will be batched.",
+        "type": "integer",
+        "default": 1
       },
       "block_if_queue_full": {
         "title": "Block if queue is full",
         "description": "If the send operation should block when the outgoing message queue is full.",
         "type": "boolean",
         "default": false
-      },
-      "auto_update_partitions": {
-        "title": "Auto update partitions",
-        "description": "If enabled, partitioned producer will automatically discover new partitions at runtime. This is only applied on partitioned topics.",
-        "type": "boolean",
-        "default": true
-      },
-      "auto_update_partitions_interval": {
-        "title": "Auto update partitions interval",
-        "description": "Interval of updating partitions in seconds. This only works if 'Auto update partitions' is enabled.",
-        "type": "integer",
-        "default": 60
       }
     }
   }

@@ -4,9 +4,7 @@
 
 package io.airbyte.integrations.destination.pulsar;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
@@ -20,9 +18,12 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import io.airbyte.commons.lang.Exceptions;
+
 import org.apache.pulsar.client.api.Producer;
+import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
+import org.apache.pulsar.client.api.Schema;
+import org.apache.pulsar.client.api.schema.GenericRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,10 +32,11 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
   private static final Logger LOGGER = LoggerFactory.getLogger(PulsarRecordConsumer.class);
 
   private final PulsarDestinationConfig config;
-  private final Map<AirbyteStreamNameNamespacePair, Producer<JsonNode>> producerMap;
+  private final Map<AirbyteStreamNameNamespacePair, Producer<GenericRecord>> producerMap;
   private final ConfiguredAirbyteCatalog catalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final NamingConventionTransformer nameTransformer;
+  private final PulsarClient client;
 
   private AirbyteMessage lastStateMessage = null;
 
@@ -47,6 +49,7 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
     this.nameTransformer = nameTransformer;
+    this.client = PulsarUtils.buildClient(this.config.getServiceUrl());
   }
 
   @Override
@@ -60,13 +63,15 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
       lastStateMessage = airbyteMessage;
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
-      final Producer<JsonNode> producer = producerMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
+      final Producer<GenericRecord> producer = producerMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
       final String key = UUID.randomUUID().toString();
-      final JsonNode value = Jsons.jsonNode(ImmutableMap.of(
-          PulsarDestination.COLUMN_NAME_AB_ID, key,
-          PulsarDestination.COLUMN_NAME_STREAM, recordMessage.getStream(),
-          PulsarDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
-          PulsarDestination.COLUMN_NAME_DATA, recordMessage.getData()));
+      final GenericRecord value = Schema.generic(PulsarDestinationConfig.getSchemaInfo())
+        .newRecordBuilder()
+        .set(PulsarDestination.COLUMN_NAME_AB_ID, key)
+        .set(PulsarDestination.COLUMN_NAME_STREAM, recordMessage.getStream())
+        .set(PulsarDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt())
+        .set(PulsarDestination.COLUMN_NAME_DATA, recordMessage.getData().toString().getBytes())
+        .build();
 
       sendRecord(producer, value);
     } else {
@@ -74,18 +79,18 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
     }
   }
 
-  Map<AirbyteStreamNameNamespacePair, Producer<JsonNode>> buildProducerMap() {
+  Map<AirbyteStreamNameNamespacePair, Producer<GenericRecord>> buildProducerMap() {
     return catalog.getStreams().stream()
         .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
         .collect(Collectors.toMap(Function.identity(), pair -> {
           String topic = nameTransformer.getIdentifier(config.getTopicPattern()
                 .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
                 .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")));
-          return config.getProducer(topic);
+          return PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()), config.getProducerConfig(), topic);
         }));
   }
 
-  private void sendRecord(final Producer<JsonNode> producer, final JsonNode record) {
+  private void sendRecord(final Producer<GenericRecord> producer, final GenericRecord record) {
     producer.sendAsync(record);
     if (config.isSync()) {
       try {
@@ -104,6 +109,8 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
       Exceptions.swallow(producer::flush);
       Exceptions.swallow(producer::close);
     });
+    Exceptions.swallow(client::close);
+
     outputRecordCollector.accept(lastStateMessage);
   }
 
