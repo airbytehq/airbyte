@@ -35,13 +35,16 @@ class VtexStream(HttpStream, ABC):
             'f_creationDate': f'creationDate:[{start_date} TO {start_date}]',
             'page': 1
         }
-
+        
         url = self.url_base + orders_endpoint
-        resp = requests.get(url, params=params, headers=headers, auth=self._session.auth)
+        try:
+            resp = requests.get(url, params=params, headers=headers, auth=self._session.auth)
 
-        if resp.status_code != 200:
-            return False, resp.content
-
+            if resp.status_code != 200:
+                return False, resp.content
+        except Exception as e:
+            return False, str(e)
+            
         return True, None
 
     def fix_date_to_milliseconds(
