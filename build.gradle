@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:7.1.0'
+    }
+}
+
 plugins {
     id 'base'
     id 'pmd'
@@ -58,22 +69,22 @@ def createJavaLicenseWith = { license ->
 // monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
 def createSpotlessTarget = { pattern ->
     def excludes = [
-        '.gradle',
-        'node_modules',
-        '.eggs',
-        '.mypy_cache',
-        '.venv',
-        '*.egg-info',
-        'build',
-        'dbt-project-template',
-        'dbt-project-template-mssql',
-        'dbt-project-template-mysql',
-        'dbt-project-template-oracle',
-        'dbt_test_config',
-        'normalization_test_output',
-        'tools',
-        'secrets',
-        'charts' // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+            '.gradle',
+            'node_modules',
+            '.eggs',
+            '.mypy_cache',
+            '.venv',
+            '*.egg-info',
+            'build',
+            'dbt-project-template',
+            'dbt-project-template-mssql',
+            'dbt-project-template-mysql',
+            'dbt-project-template-oracle',
+            'dbt_test_config',
+            'normalization_test_output',
+            'tools',
+            'secrets',
+            'charts' // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -125,9 +136,9 @@ allprojects {
                 ":airbyte-webapp",
         ].toSet().asImmutable()
 
-        if (project.getPath() in composeDeps) {
+        /*if (project.getPath() in composeDeps) {
             composeBuild.dependsOn(project.getPath() + ':assemble')
-        }
+        }*/
     }
 }
 
@@ -233,6 +244,7 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
         testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
         testImplementation 'org.assertj:assertj-core:3.21.0'
+
     }
 
     tasks.withType(Tar) {
@@ -242,28 +254,6 @@ subprojects {
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
-}
-
-task composeBuild {
-    def buildTag = System.getenv('VERSION') ?: 'dev'
-    def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
-    def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
-    def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
-    def dockerComposeFile = buildArch == 'arm64' ? 'docker-compose.build-m1.yaml' : 'docker-compose.build.yaml'
-    doFirst {
-        exec {
-            workingDir rootDir
-            commandLine 'docker-compose', '-f', dockerComposeFile, 'build', '--parallel', '--quiet'
-            environment 'VERSION', buildTag
-            environment 'DOCKER_BUILD_PLATFORM', buildPlatform
-            environment 'DOCKER_BUILD_ARCH', buildArch
-            environment 'JDK_VERSION', jdkVersion
-        }
-    }
-}
-
-if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
-    build.dependsOn(composeBuild)
 }
 
 task('generate') {

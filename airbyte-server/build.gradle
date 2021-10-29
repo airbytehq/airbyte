@@ -1,7 +1,10 @@
+import com.bmuschko.gradle.docker.tasks.image.*
+
 plugins {
     id 'application'
     id 'maven-publish'
     id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'com.bmuschko.docker-remote-api'
 }
 
 shadowJar {
@@ -126,3 +129,11 @@ run {
     environment "AIRBYTE_ROLE", System.getenv('AIRBYTE_ROLE')
     environment "TEMPORAL_HOST", "localhost:7233"
 }
+
+def buildTag = System.getenv('VERSION') ?: 'dev'
+// Use task types
+task buildMyAppImage(type: DockerBuildImage) {
+    inputDir = file('.')
+    images.add("airbyte/server:$buildTag")
+}
+build.dependsOn(buildMyAppImage)

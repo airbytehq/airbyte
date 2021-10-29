@@ -1,5 +1,8 @@
+import com.bmuschko.gradle.docker.tasks.image.*
+
 plugins {
     id 'java-library'
+    id 'com.bmuschko.docker-remote-api'
 }
 
 dependencies {
@@ -69,3 +72,11 @@ task(dumpJobsSchema, dependsOn: 'classes', type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     args 'jobs', 'dump_schema'
 }
+
+def buildTag = System.getenv('VERSION') ?: 'dev'
+// Use task types
+task buildMyAppImage(type: DockerBuildImage) {
+    inputDir = file('.')
+    images.add("airbyte/db:$buildTag")
+}
+build.dependsOn(buildMyAppImage)
