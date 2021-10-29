@@ -261,10 +261,14 @@ subprojects {
     }
 
 // Use task types
-    task buildMyAppImage(type: DockerBuildImage) {
-        inputDir = file(projectDir)
+    /*task buildMyAppImage {
+        inputDir = project.projectDir
         images.add( "airbyte/${project.name}:$version")
     }
+
+    if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+        build.dependsOn(buildMyAppImage)
+    }*/
 }
 
 /*task composeBuild {

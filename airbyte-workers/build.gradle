@@ -62,3 +62,8 @@ application {
     mainClass = mainClassName
     applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
+
+task buildImage(type: DockerBuildImage) {
+    dependsOn createDockerfile
+    images.add("airbyte/worker:$version")
+}
