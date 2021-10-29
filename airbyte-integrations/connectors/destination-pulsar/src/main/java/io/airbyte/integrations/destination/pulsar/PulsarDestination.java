@@ -57,16 +57,15 @@ public class PulsarDestination extends BaseConnector implements Destination {
             .set(PulsarDestination.COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value")))
             .build();
 
-        final PulsarClient client = PulsarUtils.buildClient(pulsarConfig.getServiceUrl());
-        final Producer<GenericRecord> producer = PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()),
-            pulsarConfig.getProducerConfig(), pulsarConfig.uriForTopic(testTopic));
-        final MessageId messageId = producer.send(value);
+        try (final PulsarClient client = PulsarUtils.buildClient(pulsarConfig.getServiceUrl());
+            final Producer<GenericRecord> producer = PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()),
+                pulsarConfig.getProducerConfig(), pulsarConfig.uriForTopic(testTopic))) {
+          final MessageId messageId = producer.send(value);
 
-        producer.flush();
-        producer.close();
-        client.close();
+          producer.flush();
 
-        LOGGER.info("Successfully sent message id '{}' to Pulsar brokers for topic '{}'.", messageId, testTopic);
+          LOGGER.info("Successfully sent message id '{}' to Pulsar brokers for topic '{}'.", messageId, testTopic);
+        }
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
