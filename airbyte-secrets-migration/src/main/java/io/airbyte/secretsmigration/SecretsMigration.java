@@ -59,7 +59,7 @@ public class SecretsMigration {
         "docker", // configs.getConfigDatabaseUser(),
         "docker", // configs.getConfigDatabasePassword(),
         "jdbc:postgresql://localhost:8011/airbyte") // configs.getConfigDatabaseUrl())
-            .getInitialized();
+        .getInitialized();
 
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(database).withValidation();
 
@@ -70,10 +70,10 @@ public class SecretsMigration {
             Optional.of(new LocalTestingSecretPersistence(database)),
             Optional.of(new LocalTestingSecretPersistence(database)));
 
-    configRepository.setSpecFetcher(dockerImage -> GcsBucketSpecFetcher.attemptFetch(
+    final GcsBucketSpecFetcher bucketSpecFetcher = new GcsBucketSpecFetcher(
         StorageOptions.getDefaultInstance().getService(),
-        "io-airbyte-cloud-spec-cache",
-        dockerImage).get());
+        "io-airbyte-cloud-spec-cache");
+    configRepository.setSpecFetcher(dockerImage -> bucketSpecFetcher.attemptFetch(dockerImage).get());
 
     final SecretsMigration migration = new SecretsMigration(configRepository, configRepository, false);
     LOGGER.info("starting: {}", SecretsMigration.class);

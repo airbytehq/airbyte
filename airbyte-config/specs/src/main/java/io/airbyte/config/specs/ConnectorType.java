@@ -8,10 +8,10 @@ public enum ConnectorType {
 
   SOURCE(
       "source_definitions.yaml",
-      "source_definitions_specs.yaml"),
+      "source_specs.yaml"),
   DESTINATION(
       "destination_definitions.yaml",
-      "destination_definitions_specs.yaml");
+      "destination_specs.yaml");
 
   private final String definitionFileName;
   private final String specFileName;

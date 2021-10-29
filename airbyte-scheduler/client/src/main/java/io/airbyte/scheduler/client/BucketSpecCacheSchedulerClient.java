@@ -15,7 +15,6 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,17 +23,15 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
   private static final Logger LOGGER = LoggerFactory.getLogger(BucketSpecCacheSchedulerClient.class);
 
   private final SynchronousSchedulerClient client;
-  private final Function<String, Optional<ConnectorSpecification>> bucketSpecFetcher;
+  private final GcsBucketSpecFetcher bucketSpecFetcher;
 
   public BucketSpecCacheSchedulerClient(final SynchronousSchedulerClient client, final String bucketName) {
-    this(
-        client,
-        dockerImage -> GcsBucketSpecFetcher.attemptFetch(StorageOptions.getDefaultInstance().getService(), bucketName, dockerImage));
+    this.client = client;
+    this.bucketSpecFetcher = new GcsBucketSpecFetcher(StorageOptions.getDefaultInstance().getService(), bucketName);
   }
 
   @VisibleForTesting
-  BucketSpecCacheSchedulerClient(final SynchronousSchedulerClient client,
-                                 final Function<String, Optional<ConnectorSpecification>> bucketSpecFetcher) {
+  BucketSpecCacheSchedulerClient(final SynchronousSchedulerClient client, final GcsBucketSpecFetcher bucketSpecFetcher) {
     this.client = client;
     this.bucketSpecFetcher = bucketSpecFetcher;
   }
@@ -63,7 +60,7 @@ public class BucketSpecCacheSchedulerClient implements SynchronousSchedulerClien
     Optional<ConnectorSpecification> cachedSpecOptional;
     // never want to fail because we could not fetch from off board storage.
     try {
-      cachedSpecOptional = bucketSpecFetcher.apply(dockerImage);
+      cachedSpecOptional = bucketSpecFetcher.attemptFetch(dockerImage);
       LOGGER.debug("Spec bucket cache: Call to cache did not fail.");
     } catch (final RuntimeException e) {
       cachedSpecOptional = Optional.empty();
