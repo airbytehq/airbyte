@@ -6,8 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-protocol",
-    "base-python",
+    "airbyte-cdk~=0.1",
     "gcsfs==0.7.1",
     "genson==1.2.2",
     "google-cloud-storage==1.35.0",
@@ -24,11 +23,7 @@ MAIN_REQUIREMENTS = [
     "pyxlsb==1.0.8",
 ]
 
-TEST_REQUIREMENTS = [
-    "boto3==1.16.57",
-    "pytest==6.1.2",
-    "pytest-docker==0.10.1",
-]
+TEST_REQUIREMENTS = ["boto3==1.16.57", "pytest==6.1.2", "pytest-docker==0.10.1"]
 
 setup(
     name="source_file",
