@@ -195,6 +195,29 @@ spec:
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
           readOnly: true
+      {{- if .Values.server.cloudSqlProxy.enabled }}
+      - name: cloudsql-proxy 
+        args:
+          - "-instances={{ .Values.server.cloudSqlProxy.gcpProjecId }}:us-central1:{{ .Values.server.cloudSqlProxy.instance }}=tcp:5432"
+          - -credential_file=/secrets/cloudsql/{{ .Values.server.cloudSqlProxy.instance }}-credentials.json
+        command:
+          - /cloud_sql_proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.19.0
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        securityContext:
+          runAsUser: 2
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /secrets/cloudsql/{{ .Values.server.cloudSqlProxy.instance }}-credentials.json
+          name: secret-cloudsql-instance-{{ .Values.server.cloudSqlProxy.instance }}-credentials
+          readOnly: true
+          subPath: key.json
+      {{- end }}
       volumes:
       - name: airbyte-data
         persistentVolumeClaim:
@@ -202,3 +225,10 @@ spec:
       - name: gcs-log-creds-volume
         secret:
           secretName: gcs-log-creds
+      {{- if .Values.server.cloudSqlProxy.enabled }}
+      - name: secret-cloudsql-instance-{{ .Values.server.cloudSqlProxy.instance }}-credentials
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: cloudsql-instance-{{ .Values.server.cloudSqlProxy.instance }}-credentials
+      {{- end }}

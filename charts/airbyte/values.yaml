@@ -347,6 +347,11 @@ server:
   ## - name: SAMPLE_ENV_VAR
   ##   value: "key=sample-value"
   extraEnv: []
+    ### Mundi.io Devops Team Section: GCP CloudSql Sidecar Proxy
+  cloudSqlProxy:
+    enabled: false
+    # gcpProjectId: "gcpProject"
+    # instance: "test" 
 
 ## @section Worker Parameters
 
