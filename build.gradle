@@ -254,6 +254,7 @@ subprojects {
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
+}
 
 task('generate') {
     dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
