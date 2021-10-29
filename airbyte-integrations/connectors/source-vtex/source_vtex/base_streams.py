@@ -152,7 +152,7 @@ class IncrementalVtexStream(VtexStream, ABC):
             return {self.cursor_field: self.start_date}
 
 
-class VtexSubtStream(HttpSubStream, IncrementalVtexStream):
+class VtexSubStream(HttpSubStream, IncrementalVtexStream):
     def next_page_token(
         self, response: requests.Response
     ) -> Optional[Mapping[str, Any]]:

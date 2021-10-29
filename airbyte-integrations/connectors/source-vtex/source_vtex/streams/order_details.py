@@ -1,8 +1,8 @@
 from typing import Any, Mapping
-from source_vtex.base_streams import VtexSubtStream
+from source_vtex.base_streams import VtexSubStream
 
 
-class OrderDetails(VtexSubtStream):
+class OrderDetails(VtexSubStream):
     """
     TODO: Change class name to match the table/data source this stream
         corresponds to.
