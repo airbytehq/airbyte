@@ -9,7 +9,7 @@ with
 {% if is_incremental() %}
 new_data as (
     -- retrieve incremental "new" data
-    select    
+    select
         *
     from {{ ref('dedup_exchange_rate_ab3')  }}
     -- dedup_exchange_rate from {{ source('test_normalization', '_airbyte_raw_dedup_exchange_rate') }}
@@ -18,7 +18,7 @@ new_data as (
 ),
 new_data_ids as (
     -- build a subset of _airbyte_unique_key from rows that are new
-    select distinct 
+    select distinct
         {{ dbt_utils.surrogate_key([
             'id',
             'currency',

@@ -1,4 +1,9 @@
-{{ config(schema="_airbyte_test_normalization", tags=["nested-intermediate"]) }}
+{{ config(
+    sort = "_airbyte_emitted_at",
+    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
+    schema = "_airbyte_test_normalization",
+    tags = [ "nested-intermediate" ]
+) }}
 -- SQL model to build a hash column based on the values of this record
 select
     {{ dbt_utils.surrogate_key([
@@ -8,4 +13,5 @@ select
     tmp.*
 from {{ ref('unnest_alias_children_owner_ab2') }} tmp
 -- owner at unnest_alias/children/owner
+where 1 = 1
 

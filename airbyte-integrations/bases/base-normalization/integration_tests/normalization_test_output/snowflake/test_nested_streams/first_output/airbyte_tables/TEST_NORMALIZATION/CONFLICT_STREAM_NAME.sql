@@ -1,0 +1,19 @@
+
+
+      create or replace transient table "AIRBYTE_DATABASE".TEST_NORMALIZATION."CONFLICT_STREAM_NAME"  as
+      (select * from(
+            
+-- Final base SQL model
+select
+    ID,
+    CONFLICT_STREAM_NAME,
+    _AIRBYTE_AB_ID,
+    _AIRBYTE_EMITTED_AT,
+    convert_timezone('UTC', current_timestamp()) as _AIRBYTE_NORMALIZED_AT,
+    _AIRBYTE_CONFLICT_STREAM_NAME_HASHID
+from "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."CONFLICT_STREAM_NAME_AB3"
+-- CONFLICT_STREAM_NAME from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_CONFLICT_STREAM_NAME
+where 1 = 1
+            ) order by (_AIRBYTE_EMITTED_AT)
+      );
+    alter table "AIRBYTE_DATABASE".TEST_NORMALIZATION."CONFLICT_STREAM_NAME" cluster by (_AIRBYTE_EMITTED_AT);
