@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.oauth.flows;
+package io.airbyte.oauth.flows.facebook;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,13 +25,13 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class FacebookMarketingOAuthFlowTest {
+public class FacebookOAuthFlowTest {
 
   private static final String REDIRECT_URL = "https://airbyte.io";
 
   private HttpClient httpClient;
   private ConfigRepository configRepository;
-  private FacebookMarketingOAuthFlow facebookMarketingOAuthFlow;
+  private FacebookMarketingOAuthFlow facebookOAuthFlow;
 
   private UUID workspaceId;
   private UUID definitionId;
@@ -40,7 +40,7 @@ public class FacebookMarketingOAuthFlowTest {
   public void setup() {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
-    facebookMarketingOAuthFlow = new FacebookMarketingOAuthFlow(configRepository, httpClient, FacebookMarketingOAuthFlowTest::getConstantState);
+    facebookOAuthFlow = new FacebookMarketingOAuthFlow(configRepository, httpClient, FacebookOAuthFlowTest::getConstantState);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
@@ -67,7 +67,7 @@ public class FacebookMarketingOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        facebookMarketingOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        facebookOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
     assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
@@ -89,7 +89,7 @@ public class FacebookMarketingOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        facebookMarketingOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        facebookOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
     assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
