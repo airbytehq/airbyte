@@ -2,20 +2,16 @@
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/gitlab",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Source Gitlab Singer Spec",
+    "title": "Source Gitlab Spec",
     "type": "object",
-    "required": ["api_url", "private_token", "start_date"],
-    "additionalProperties": false,
+    "required": ["api_url", "authentication", "start_date"],
+    "additionalProperties": true,
     "properties": {
       "api_url": {
         "type": "string",
         "examples": ["gitlab.com"],
+        "default": "gitlab.com",
         "description": "Please enter your basic URL from Gitlab instance"
-      },
-      "private_token": {
-        "type": "string",
-        "description": "Log into your Gitlab account and then generate a personal Access Token.",
-        "airbyte_secret": true
       },
       "groups": {
         "type": "string",
@@ -32,7 +28,75 @@
         "description": "The date from which you'd like to replicate data for Gitlab API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
         "examples": ["2021-03-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      },
+      "authentication": {
+        "title": "Authorization Method",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "OAuth2.0",
+            "required": ["client_id", "client_secret", "access_token"],
+            "properties": {
+              "authentication": {
+                "type": "string",
+                "const": "oauth2.0",
+                "enum": ["oauth2.0"],
+                "default": "oauth2.0",
+                "order": 0
+              },
+              "client_id": {
+                "type": "string",
+                "description": "The API ID of the Gitlab developer application.",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "description": "The API Secret the Gitlab developer application.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "description": "Access Token for making authenticated requests.",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "type": "string",
+                "description": "The key to refresh the expired access_token.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Private Token",
+            "type": "object",
+            "required": ["access_token"],
+            "properties": {
+              "authentication": {
+                "type": "string",
+                "const": "access_token",
+                "enum": ["access_token"],
+                "default": "access_token",
+                "order": 0
+              },
+              "access_token": {
+                "type": "string",
+                "description": "Log into your Gitlab account and then generate a personal Access Token.",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["authentication", "0"],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
     }
   }
 }
+
