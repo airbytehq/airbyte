@@ -4,15 +4,22 @@
 
 package io.airbyte.integrations.destination.oracle_strict_encrypt;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.integrations.destination.oracle.OracleDestination;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.Consumer;
 
 public class OracleStrictEncryptDestination extends SpecModifyingDestination implements Destination {
 
@@ -25,11 +32,21 @@ public class OracleStrictEncryptDestination extends SpecModifyingDestination imp
   @Override
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    ((ArrayNode) spec.getConnectionSpecification().get("required")).add("encryption");
-    // We need to remove the first item from one Of, which is responsible for connecting to the source
-    // without encrypted.
-    ((ArrayNode) spec.getConnectionSpecification().get("properties").get("encryption").get("oneOf")).remove(0);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("encryption");
     return spec;
+  }
+
+  @Override
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
+    final JsonNode cloneConfig = Jsons.clone(config);
+    ((ObjectNode) cloneConfig).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "client_nne")
+            .put("encryption_algorithm", "AES256")
+            .build()));
+
+    return super.getConsumer(cloneConfig, catalog, outputRecordCollector);
   }
 
   public static void main(final String[] args) throws Exception {

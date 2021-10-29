@@ -49,10 +49,10 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("schemas", List.of("JDBC_SPACE"))
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-            .put("encryption_method", "client_nne")
-            .put("encryption_algorithm", "AES256")
-            .build()))
+//        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+//            .put("encryption_method", "client_nne")
+//            .put("encryption_algorithm", "AES256")
+//            .build()))
         .build());
   }
 
@@ -172,10 +172,10 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
     final String algorithm = "AES256";
 
     final JsonNode config = getConfig();
-    ((ObjectNode) config).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-        .put("encryption_method", "client_nne")
-        .put("encryption_algorithm", algorithm)
-        .build()));
+//    ((ObjectNode) config).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+//        .put("encryption_method", "client_nne")
+//        .put("encryption_algorithm", algorithm)
+//        .build()));
 
     final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
         config.get("password").asText(),
@@ -199,10 +199,10 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   @Test
   public void testCheckProtocol() throws SQLException {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-        .put("encryption_method", "client_nne")
-        .put("encryption_algorithm", "AES256")
-        .build()));
+//    ((ObjectNode) clone).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+//        .put("encryption_method", "client_nne")
+//        .put("encryption_algorithm", "AES256")
+//        .build()));
 
     final String algorithm = clone.get("encryption")
         .get("encryption_algorithm").asText();
