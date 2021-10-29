@@ -67,7 +67,7 @@ public class HubspotOAuthFlowTest {
   @Test
   public void testCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
     final var response = mock(HttpResponse.class);
-    var returnedCredentials = "{\"access_token\":\"access_token_response\",\"refresh_token\":\"refresh_token_response\"}";
+    var returnedCredentials = "{\"refresh_token\":\"refresh_token_response\"}";
     when(response.body()).thenReturn(returnedCredentials);
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
