@@ -6,7 +6,7 @@
       "type": ["null", "boolean"]
     },
     "dashboard_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "default_value": {
       "type": ["null", "string"]
@@ -19,11 +19,10 @@
     },
     "field": {
       "properties": {},
-      "type": ["null", "object"],
-      "additionalProperties": true
+      "type": ["null", "object"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "listens_to_filters": {
       "items": {
@@ -51,8 +50,7 @@
     },
     "ui_config": {
       "properties": {},
-      "type": ["null", "object"],
-      "additionalProperties": true
+      "type": ["null", "object"]
     }
   }
 }

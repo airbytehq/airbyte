@@ -58,8 +58,6 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-tests'
     include ':airbyte-webapp'
     include ':airbyte-secrets-migration'
-
-    include ':tools:code-generator'
 }
 
 // connectors base
