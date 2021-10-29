@@ -5,6 +5,7 @@
 
 import os
 import re
+from enum import Enum
 from typing import Dict, List, Optional, Tuple
 
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
@@ -31,6 +32,29 @@ from normalization.transform_catalog.utils import (
 # using too many columns breaks ephemeral materialization (somewhere between 480 and 490 columns)
 # let's use a lower value to be safely away from the limit...
 MAXIMUM_COLUMNS_TO_USE_EPHEMERAL = 450
+
+
+class PartitionScheme(Enum):
+    """
+    When possible, normalization will try to output partitioned/indexed/sorted tables (depending on the destination support)
+    This enum specifies which column to use when doing so (which affects how fast the table can be read using that column as predicate)
+    """
+
+    ACTIVE_ROW = "active_row"  # partition by _airbyte_active_row
+    UNIQUE_KEY = "unique_key"  # partition by _airbyte_emitted_at, sorted by _airbyte_unique_key
+    NOTHING = "nothing"  # no partitions
+    DEFAULT = ""  # partition by _airbyte_emitted_at
+
+
+class TableMaterializationType(Enum):
+    """
+    Defines the folders and dbt materialization mode of models (as configured in dbt_project.yml file)
+    """
+
+    CTE = "airbyte_ctes"
+    VIEW = "airbyte_views"
+    TABLE = "airbyte_tables"
+    INCREMENTAL = "airbyte_incremental"
 
 
 class StreamProcessor(object):
@@ -95,6 +119,7 @@ class StreamProcessor(object):
         self.default_schema: str = default_schema
         self.airbyte_ab_id = "_airbyte_ab_id"
         self.airbyte_emitted_at = "_airbyte_emitted_at"
+        self.airbyte_normalized_at = "_airbyte_normalized_at"
         self.airbyte_unique_key = "_airbyte_unique_key"
 
     @staticmethod
@@ -209,43 +234,47 @@ class StreamProcessor(object):
 
         from_table = self.from_table
         # Transformation Pipeline for this stream
-        from_table = self.add_to_outputs(self.generate_json_parsing_model(from_table, column_names), is_intermediate=True, suffix="ab1")
+        from_table = self.add_to_outputs(
+            self.generate_json_parsing_model(from_table, column_names),
+            self.get_model_materialization_mode(is_intermediate=True),
+            suffix="ab1",
+        )
         from_table = self.add_to_outputs(
             self.generate_column_typing_model(from_table, column_names),
-            is_intermediate=True,
-            column_count=column_count,
+            self.get_model_materialization_mode(is_intermediate=True, column_count=column_count),
             suffix="ab2",
         )
-        from_table = self.add_to_outputs(
-            self.generate_id_hashing_model(from_table, column_names),
-            is_intermediate=True,
-            column_count=column_count,
-            suffix="ab3",
-        )
-        if self.destination_sync_mode == DestinationSyncMode.append_dedup:
+        if self.destination_sync_mode != DestinationSyncMode.append_dedup:
             from_table = self.add_to_outputs(
-                self.generate_scd_type_2_model(from_table, column_names),
-                is_intermediate=False,
-                column_count=column_count,
-                suffix="scd",
-                subdir="scd",
+                self.generate_id_hashing_model(from_table, column_names),
+                self.get_model_materialization_mode(is_intermediate=True, column_count=column_count),
+                suffix="ab3",
             )
-            if self.destination_type == DestinationType.ORACLE:
-                where_clause = '\nand "_AIRBYTE_ACTIVE_ROW" = 1'
-            else:
-                where_clause = "\nand _airbyte_active_row = 1"
-
             from_table = self.add_to_outputs(
-                self.generate_final_model(from_table, column_names, self.get_unique_key()) + where_clause,
-                is_intermediate=False,
-                column_count=column_count,
-                unique_key=self.get_unique_key(),
+                self.generate_final_model(from_table, column_names),
+                self.get_model_materialization_mode(is_intermediate=False, column_count=column_count),
             )
         else:
             from_table = self.add_to_outputs(
-                self.generate_final_model(from_table, column_names),
-                is_intermediate=False,
-                column_count=column_count,
+                self.generate_id_hashing_model(from_table, column_names),
+                # Force View materialization here because scd models rely on star* macros that requires it
+                TableMaterializationType.VIEW,
+                suffix="ab3",
+            )
+            from_table = self.add_to_outputs(
+                self.generate_scd_type_2_model(from_table, column_names),
+                self.get_model_materialization_mode(is_intermediate=False, column_count=column_count),
+                suffix="scd",
+                subdir="scd",
+                unique_key=self.name_transformer.normalize_column_name("_airbyte_unique_key_scd"),
+                partition_by=PartitionScheme.ACTIVE_ROW,
+            )
+            where_clause = f"\nand {self.name_transformer.normalize_column_name('_airbyte_active_row')} = 1"
+            from_table = self.add_to_outputs(
+                self.generate_final_model(from_table, column_names, self.get_unique_key()) + where_clause,
+                self.get_model_materialization_mode(is_intermediate=False, column_count=column_count),
+                unique_key=self.get_unique_key(),
+                partition_by=PartitionScheme.UNIQUE_KEY,
             )
         return self.find_children_streams(from_table, column_names)
 
@@ -286,6 +315,8 @@ class StreamProcessor(object):
         children: List[StreamProcessor] = []
         for field in properties.keys():
             children_properties = None
+            is_nested_array = False
+            json_column_name = ""
             if is_airbyte_column(field):
                 pass
             elif is_combining_node(properties[field]):
@@ -331,7 +362,8 @@ select
     {{ field }},
   {%- endfor %}
     {{ col_ab_id }},
-    {{ col_emitted_at }}
+    {{ col_emitted_at }},
+    {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }}
 from {{ from_table }} {{ table_alias }}
 {{ sql_table_comment }}
 {{ unnesting_from }}
@@ -342,6 +374,7 @@ where 1 = 1
         sql = template.render(
             col_ab_id=self.get_ab_id(),
             col_emitted_at=self.get_emitted_at(),
+            col_normalized_at=self.get_normalized_at(),
             table_alias=table_alias,
             unnesting_before_query=self.unnesting_before_query(),
             parent_hash_id=self.parent_hash_id(),
@@ -361,6 +394,9 @@ where 1 = 1
     def get_emitted_at(self, in_jinja: bool = False):
         return self.name_transformer.normalize_column_name(self.airbyte_emitted_at, in_jinja, False)
 
+    def get_normalized_at(self, in_jinja: bool = False):
+        return self.name_transformer.normalize_column_name(self.airbyte_normalized_at, in_jinja, False)
+
     def get_unique_key(self, in_jinja: bool = False):
         return self.name_transformer.normalize_column_name(self.airbyte_unique_key, in_jinja, False)
 
@@ -370,7 +406,8 @@ where 1 = 1
             for field in column_names
         ]
 
-    def extract_json_column(self, property_name: str, json_column_name: str, definition: Dict, column_name: str, table_alias: str) -> str:
+    @staticmethod
+    def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str, table_alias: str) -> str:
         json_path = [property_name]
         # In some cases, some destination aren't able to parse the JSON blob using the original property name
         # we make their life easier by using a pre-populated and sanitized column name instead...
@@ -402,7 +439,8 @@ select
     {{ field }},
   {%- endfor %}
     {{ col_ab_id }},
-    {{ col_emitted_at }}
+    {{ col_emitted_at }},
+    {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }}
 from {{ from_table }}
 {{ sql_table_comment }}
 where 1 = 1
@@ -411,6 +449,7 @@ where 1 = 1
         sql = template.render(
             col_ab_id=self.get_ab_id(),
             col_emitted_at=self.get_emitted_at(),
+            col_normalized_at=self.get_normalized_at(),
             parent_hash_id=self.parent_hash_id(),
             fields=self.cast_property_types(column_names),
             from_table=jinja_call(from_table),
@@ -482,7 +521,8 @@ where 1 = 1
         )
         return template.render(column_name=column_name)
 
-    def generate_snowflake_timestamp_statement(self, column_name: str) -> str:
+    @staticmethod
+    def generate_snowflake_timestamp_statement(column_name: str) -> str:
         """
         Generates snowflake DB specific timestamp case when statement
         """
@@ -573,61 +613,119 @@ where 1 = 1
         return col
 
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
-
         scd_sql_template = """
+with
 {{ '{% if is_incremental() %}' }}
-with previous_active_scd_data as (
+new_data as (
+    -- retrieve incremental "new" data
     select
-        {{ col_ab_id }} as airbyte_previous_active_ab_id,
-        {{ active_row }} as airbyte_is_previous_active_row
-    from {{ '{{ this }}' }}
+        *
+    from {{'{{'}} {{ from_table }}  {{'}}'}}
+    {{ sql_table_comment }}
+    where 1 = 1
+    {{'{{'}} incremental_clause({{ quoted_col_emitted_at }}) {{'}}'}}
+),
+new_data_ids as (
+    -- build a subset of {{ unique_key }} from rows that are new
+    select distinct
+        {{ '{{' }} dbt_utils.surrogate_key([
+          {%- for primary_key in primary_keys %}
+            {{ primary_key }},
+          {%- endfor %}
+        ]) {{ '}}' }} as {{ unique_key }}
+    from new_data
+),
+previous_active_scd_data as (
+    -- retrieve "incomplete old" data that needs to be updated with an end date because of new changes
+    select
+        {{ '{{' }} star_intersect({{ from_table }}, this, from_alias='inc_data', intersect_alias='this_data') {{ '}}' }}
+    from {{ '{{ this }}' }} as this_data
+    -- make a join with new_data using primary key to filter active data that need to be updated only
+    join new_data_ids on this_data.{{ unique_key }} = new_data_ids.{{ unique_key }}
+    -- force left join to NULL values (we just need to transfer column types only for the star_intersect macro)
+    left join {{'{{'}} {{ from_table }}  {{'}}'}} as inc_data on 1 = 0
     where {{ active_row }} = 1
-)
-{{ '{% endif %}' }}
--- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
-select
-  {%- if parent_hash_id %}
-    {{ parent_hash_id }},
-  {%- endif %}
-  {{ '{{' }} dbt_utils.surrogate_key([
-      {%- for primary_key in primary_keys %}
-        {{ primary_key }},
-      {%- endfor %}
-  ]) {{ '}}' }} as {{ unique_key }},
-  {%- for field in fields %}
-    {{ field }},
-  {%- endfor %}
-  {{ cursor_field }} as {{ airbyte_start_at }},
-  lag({{ cursor_field }}) over (
-    partition by {{ primary_key_partition | join(", ") }}
-    order by
-        {{ cursor_field }} {{ order_null }},
-        {{ cursor_field }} desc,
-        {{ col_emitted_at }} desc{{ cdc_updated_at_order }},
-        {{ col_ab_id }}
-  ) as {{ airbyte_end_at }},
-  case when lag({{ cursor_field }}) over (
-    partition by {{ primary_key_partition | join(", ") }}
-    order by
-        {{ cursor_field }} {{ order_null }},
-        {{ cursor_field }} desc,
-        {{ col_emitted_at }} desc{{ cdc_updated_at_order }},
-        {{ col_ab_id }}
-  ) is null {{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
-  {{ col_ab_id }},
-  {{ col_emitted_at }},
-  {{ hash_id }}
-from {{ from_table }} as new_data
-{{ sql_table_comment }}
-{{ '{% if is_incremental() %}' }}
-left join previous_active_scd_data as old_data 
-on new_data.{{ col_ab_id }} = old_data.airbyte_previous_active_ab_id
-where coalesce(old_data.airbyte_is_previous_active_row, 1) = 1
+),
+input_data as (
+    select {{ '{{' }} dbt_utils.star({{ from_table }}) {{ '}}' }} from new_data
+    union all
+    select {{ '{{' }} dbt_utils.star({{ from_table }}) {{ '}}' }} from previous_active_scd_data
+),
 {{ '{% else %}' }}
-where 1 = 1
+input_data as (
+    select *
+    from {{'{{'}} {{ from_table }}  {{'}}'}}
+    {{ sql_table_comment }}
+),
 {{ '{% endif %}' }}
+scd_data as (
+    -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
+    select
+      {%- if parent_hash_id %}
+        {{ parent_hash_id }},
+      {%- endif %}
+      {{ '{{' }} dbt_utils.surrogate_key([
+          {%- for primary_key in primary_keys %}
+            {{ primary_key }},
+          {%- endfor %}
+      ]) {{ '}}' }} as {{ unique_key }},
+      {%- for field in fields %}
+        {{ field }},
+      {%- endfor %}
+      {{ cursor_field }} as {{ airbyte_start_at }},
+      lag({{ cursor_field }}) over (
+        partition by {{ primary_key_partition | join(", ") }}
+        order by
+            {{ cursor_field }} {{ order_null }},
+            {{ cursor_field }} desc,
+            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+      ) as {{ airbyte_end_at }},
+      case when lag({{ cursor_field }}) over (
+        partition by {{ primary_key_partition | join(", ") }}
+        order by
+            {{ cursor_field }} {{ order_null }},
+            {{ cursor_field }} desc,
+            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+      ) is null {{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
+      {{ col_ab_id }},
+      {{ col_emitted_at }},
+      {{ hash_id }}
+    from input_data
+),
+dedup_data as (
+    select
+        -- we need to ensure de-duplicated rows for merge/update queries
+        -- additionally, we generate a unique key for the scd table
+        row_number() over (
+            partition by {{ unique_key }}, {{ airbyte_start_at }}, {{ col_emitted_at }}{{ cdc_cols }}
+            order by {{ col_ab_id }}
+        ) as {{ airbyte_row_num }},
+        {{ '{{' }} dbt_utils.surrogate_key([
+          {{ quoted_unique_key }},
+          {{ quoted_airbyte_start_at }},
+          {{ quoted_col_emitted_at }}{{ quoted_cdc_cols }}
+        ]) {{ '}}' }} as {{ airbyte_unique_key_scd }},
+        scd_data.*
+    from scd_data
+)
+select
+    {%- if parent_hash_id %}
+        {{ parent_hash_id }},
+    {%- endif %}
+    {{ unique_key }},
+    {{ airbyte_unique_key_scd }},
+    {%- for field in fields %}
+        {{ field }},
+    {%- endfor %}
+    {{ airbyte_start_at }},
+    {{ airbyte_end_at }},
+    {{ active_row }},
+    {{ col_ab_id }},
+    {{ col_emitted_at }},
+    {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }},
+    {{ hash_id }}
+from dedup_data where {{ airbyte_row_num }} = 1
         """
-
         template = Template(scd_sql_template)
 
         order_null = "is null asc"
@@ -637,37 +735,60 @@ where 1 = 1
             # SQL Server treats NULL values as the lowest values, then sorted in ascending order, NULLs come first.
             order_null = "desc"
 
+        # TODO move all cdc columns out of scd models
         cdc_active_row_pattern = ""
         cdc_updated_order_pattern = ""
+        cdc_cols = ""
+        quoted_cdc_cols = ""
         if "_ab_cdc_deleted_at" in column_names.keys():
             col_cdc_deleted_at = self.name_transformer.normalize_column_name("_ab_cdc_deleted_at")
             col_cdc_updated_at = self.name_transformer.normalize_column_name("_ab_cdc_updated_at")
+            quoted_col_cdc_deleted_at = self.name_transformer.normalize_column_name("_ab_cdc_deleted_at", in_jinja=True)
+            quoted_col_cdc_updated_at = self.name_transformer.normalize_column_name("_ab_cdc_updated_at", in_jinja=True)
             cdc_active_row_pattern = f"and {col_cdc_deleted_at} is null "
             cdc_updated_order_pattern = f", {col_cdc_updated_at} desc"
+            cdc_cols = (
+                f", cast({col_cdc_deleted_at} as "
+                + "{{ dbt_utils.type_string() }})"
+                + f", cast({col_cdc_updated_at} as "
+                + "{{ dbt_utils.type_string() }})"
+            )
+            quoted_cdc_cols = f", {quoted_col_cdc_deleted_at}, {quoted_col_cdc_updated_at}"
 
         if "_ab_cdc_log_pos" in column_names.keys():
             col_cdc_log_pos = self.name_transformer.normalize_column_name("_ab_cdc_log_pos")
+            quoted_col_cdc_log_pos = self.name_transformer.normalize_column_name("_ab_cdc_log_pos", in_jinja=True)
             cdc_updated_order_pattern += f", {col_cdc_log_pos} desc"
+            cdc_cols += f", cast({col_cdc_log_pos} as " + "{{ dbt_utils.type_string() }})"
+            quoted_cdc_cols += f", {quoted_col_cdc_log_pos}"
 
         sql = template.render(
             order_null=order_null,
             airbyte_start_at=self.name_transformer.normalize_column_name("_airbyte_start_at"),
+            quoted_airbyte_start_at=self.name_transformer.normalize_column_name("_airbyte_start_at", in_jinja=True),
             airbyte_end_at=self.name_transformer.normalize_column_name("_airbyte_end_at"),
             active_row=self.name_transformer.normalize_column_name("_airbyte_active_row"),
-            lag_emitted_at=self.get_emitted_at(in_jinja=True),
+            airbyte_row_num=self.name_transformer.normalize_column_name("_airbyte_row_num"),
+            quoted_airbyte_row_num=self.name_transformer.normalize_column_name("_airbyte_row_num", in_jinja=True),
+            airbyte_unique_key_scd=self.name_transformer.normalize_column_name("_airbyte_unique_key_scd"),
+            unique_key=self.get_unique_key(),
+            quoted_unique_key=self.get_unique_key(in_jinja=True),
             col_ab_id=self.get_ab_id(),
             col_emitted_at=self.get_emitted_at(),
+            quoted_col_emitted_at=self.get_emitted_at(in_jinja=True),
+            col_normalized_at=self.get_normalized_at(),
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),
             cursor_field=self.get_cursor_field(column_names),
             primary_keys=self.list_primary_keys(column_names),
             primary_key_partition=self.get_primary_key_partition(column_names),
-            unique_key=self.get_unique_key(),
             hash_id=self.hash_id(),
-            from_table=jinja_call(from_table),
+            from_table=from_table,
             sql_table_comment=self.sql_table_comment(include_from_table=True),
             cdc_active_row=cdc_active_row_pattern,
             cdc_updated_at_order=cdc_updated_order_pattern,
+            cdc_cols=cdc_cols,
+            quoted_cdc_cols=quoted_cdc_cols,
         )
         return sql
 
@@ -738,6 +859,7 @@ select
   {%- endfor %}
     {{ col_ab_id }},
     {{ col_emitted_at }},
+    {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }},
     {{ hash_id }}
 from {{ from_table }}
 {{ sql_table_comment }}
@@ -747,6 +869,7 @@ where 1 = 1
         sql = template.render(
             col_ab_id=self.get_ab_id(),
             col_emitted_at=self.get_emitted_at(),
+            col_normalized_at=self.get_normalized_at(),
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),
             hash_id=self.hash_id(),
@@ -769,38 +892,28 @@ where 1 = 1
         )
         return sql
 
-    def list_fields(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+    @staticmethod
+    def list_fields(column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [column_names[field][0] for field in column_names]
 
     def add_to_outputs(
         self,
         sql: str,
-        is_intermediate: bool,
-        column_count: int = 0,
+        materialization_mode: TableMaterializationType,
         suffix: str = "",
         unique_key: str = "",
         subdir: str = "",
+        partition_by: PartitionScheme = PartitionScheme.DEFAULT,
     ) -> str:
-        config = {}
+        is_intermediate = materialization_mode in [TableMaterializationType.CTE, TableMaterializationType.VIEW]
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
         truncate_name = self.destination_type == DestinationType.MYSQL
         table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
         file_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
         file = f"{file_name}.sql"
-        if is_intermediate:
-            if column_count <= MAXIMUM_COLUMNS_TO_USE_EPHEMERAL:
-                output = os.path.join("airbyte_ctes", subdir, self.schema, file)
-            else:
-                # dbt throws "maximum recursion depth exceeded" exception at runtime
-                # if ephemeral is used with large number of columns, use views instead
-                output = os.path.join("airbyte_views", subdir, self.schema, file)
-        else:
-            if self.source_sync_mode == SyncMode.incremental:
-                output = os.path.join("airbyte_incremental", subdir, self.schema, file)
-                sql = self.add_incremental_clause(sql)
-            else:
-                output = os.path.join("airbyte_tables", subdir, self.schema, file)
+        output = os.path.join(materialization_mode.value, subdir, self.schema, file)
+        config = self.get_model_partition_config(partition_by, unique_key)
         if file_name != table_name:
             # The alias() macro configs a model's final table name.
             config["alias"] = f'"{table_name}"'
@@ -809,10 +922,9 @@ where 1 = 1
             config["schema"] = f'"{self.default_schema}"'
         else:
             config["schema"] = f'"{schema}"'
-        if unique_key:
-            config["unique_key"] = f'"{unique_key}"'
-        else:
-            config["unique_key"] = f"env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', {self.get_ab_id(in_jinja=True)})"
+        if self.source_sync_mode == SyncMode.incremental and suffix != "scd":
+            # incremental is handled in the SCD SQL already
+            sql = self.add_incremental_clause(sql)
         template = Template(
             """
 {{ '{{' }} config(
@@ -828,6 +940,79 @@ where 1 = 1
         json_path = self.current_json_path()
         print(f"  Generating {output} from {json_path}")
         return ref_table(file_name)
+
+    def get_model_materialization_mode(self, is_intermediate: bool, column_count: int = 0) -> TableMaterializationType:
+        if is_intermediate:
+            if column_count <= MAXIMUM_COLUMNS_TO_USE_EPHEMERAL:
+                return TableMaterializationType.CTE
+            else:
+                # dbt throws "maximum recursion depth exceeded" exception at runtime
+                # if ephemeral is used with large number of columns, use views instead
+                return TableMaterializationType.VIEW
+        else:
+            if self.source_sync_mode == SyncMode.incremental:
+                return TableMaterializationType.INCREMENTAL
+            else:
+                return TableMaterializationType.TABLE
+
+    def get_model_partition_config(self, partition_by: PartitionScheme, unique_key: str) -> Dict:
+        """
+        Defines partition, clustering and unique key parameters for each destination.
+        The goal of these are to make read more performant.
+
+        In general, we need to do lookups on the last emitted_at column to know if a record is freshly produced and need to be
+        incrementally processed or not.
+        But in certain models, such as SCD tables for example, we also need to retrieve older data to update their type 2 SCD end_dates,
+        thus a different partitioning scheme is used to optimize that use case.
+        """
+        config = {}
+        if self.destination_type == DestinationType.BIGQUERY:
+            # see https://docs.getdbt.com/reference/resource-configs/bigquery-configs
+            if partition_by in [PartitionScheme.UNIQUE_KEY, PartitionScheme.ACTIVE_ROW]:
+                config["cluster_by"] = '["_airbyte_unique_key","_airbyte_emitted_at"]'
+            else:
+                config["cluster_by"] = '"_airbyte_emitted_at"'
+            if partition_by == PartitionScheme.ACTIVE_ROW:
+                config["partition_by"] = (
+                    '{"field": "_airbyte_active_row", "data_type": "int64", ' '"range": {"start": 0, "end": 1, "interval": 1}}'
+                )
+            elif partition_by == PartitionScheme.NOTHING:
+                pass
+            else:
+                config["partition_by"] = '{"field": "_airbyte_emitted_at", "data_type": "timestamp", "granularity": "day"}'
+        elif self.destination_type == DestinationType.POSTGRES:
+            # see https://docs.getdbt.com/reference/resource-configs/postgres-configs
+            if partition_by == PartitionScheme.ACTIVE_ROW:
+                config["indexes"] = "[{'columns':['_airbyte_active_row','_airbyte_unique_key','_airbyte_emitted_at'],'type': 'btree'}]"
+            elif partition_by == PartitionScheme.UNIQUE_KEY:
+                config["indexes"] = "[{'columns':['_airbyte_unique_key','_airbyte_emitted_at'],'type': 'btree'}]"
+            else:
+                config["indexes"] = "[{'columns':['_airbyte_emitted_at'],'type':'hash'}]"
+        elif self.destination_type == DestinationType.REDSHIFT:
+            # see https://docs.getdbt.com/reference/resource-configs/redshift-configs
+            if partition_by == PartitionScheme.ACTIVE_ROW:
+                config["sort"] = '["_airbyte_active_row", "_airbyte_unique_key", "_airbyte_emitted_at"]'
+            elif partition_by == PartitionScheme.UNIQUE_KEY:
+                config["sort"] = '["_airbyte_unique_key", "_airbyte_emitted_at"]'
+            elif partition_by == PartitionScheme.NOTHING:
+                pass
+            else:
+                config["sort"] = '"_airbyte_emitted_at"'
+        elif self.destination_type == DestinationType.SNOWFLAKE:
+            # see https://docs.getdbt.com/reference/resource-configs/snowflake-configs
+            if partition_by == PartitionScheme.ACTIVE_ROW:
+                config["cluster_by"] = '["_AIRBYTE_ACTIVE_ROW", "_AIRBYTE_UNIQUE_KEY", "_AIRBYTE_EMITTED_AT"]'
+            elif partition_by == PartitionScheme.UNIQUE_KEY:
+                config["cluster_by"] = '["_AIRBYTE_UNIQUE_KEY", "_AIRBYTE_EMITTED_AT"]'
+            elif partition_by == PartitionScheme.NOTHING:
+                pass
+            else:
+                config["cluster_by"] = '["_AIRBYTE_EMITTED_AT"]'
+        if unique_key:
+            config["unique_key"] = f'"{unique_key}"'
+        else:
+            config["unique_key"] = f"env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', {self.get_ab_id(in_jinja=True)})"
+        return config
 
     def get_model_tags(self, is_intermediate: bool) -> str:
         tags = ""

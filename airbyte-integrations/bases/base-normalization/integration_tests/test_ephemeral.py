@@ -54,7 +54,7 @@ def test_destination_supported_limits(destination_type: DestinationType, column_
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable (MYSQL is also skipped)")
     if destination_type.value == DestinationType.ORACLE.value:
         # Airbyte uses a few columns for metadata and Oracle limits are right at 1000
-        column_count = 997
+        column_count = 995
     run_test(destination_type, column_count)
 
 

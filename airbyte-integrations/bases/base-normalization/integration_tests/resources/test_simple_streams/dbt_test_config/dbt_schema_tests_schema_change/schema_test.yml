@@ -35,16 +35,6 @@ models:
             - currency
             - NZD
 
-  - name: dedup_exchange_rate
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          # description: check_deduplication_by_primary_key
-          #  The final table for this stream should have unique composite primary key values.
-          combination_of_columns:
-            - id
-            - currency
-            - NZD
-
   - name: renamed_dedup_cdc_excluded
 # Disabling because incremental dbt is not handling quotes well atm (dbt 0.21.0)
 #    tests:
