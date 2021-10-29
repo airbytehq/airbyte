@@ -33,6 +33,9 @@ import org.slf4j.LoggerFactory;
  * This script is responsible for ensuring that up-to-date {@link ConnectorSpecification}s for every
  * connector definition in the seed are stored in a corresponding resource file, for the purpose of
  * seeding the specs into the config database on server startup.
+ * <p>
+ * Specs are stored in a separate file from the definitions in an effort to keep the definitions
+ * yaml files human-readable and easily-editable, as specs can be rather large.
  */
 public class SeedConnectorSpecGenerator {
 
