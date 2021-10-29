@@ -20,6 +20,12 @@ application {
 
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
+    dependsOn compileTestJava
+    dependsOn distTar
+    dependsOn distZip
+    dependsOn jar
+    dependsOn processTestResources
+    dependsOn startScripts
     inputDir = file('.')
     images.add("airbyte/migration:$version")
 }

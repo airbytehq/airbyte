@@ -14,6 +14,9 @@ dependencies {
 def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
+    dependsOn compileTestJava
+    dependsOn jar
+    dependsOn processTestResources
     inputDir = file('.')
     images.add("airbyte/init:$buildTag")
 }

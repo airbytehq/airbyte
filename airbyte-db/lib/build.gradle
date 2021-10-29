@@ -76,6 +76,9 @@ task(dumpJobsSchema, dependsOn: 'classes', type: JavaExec) {
 def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
+    dependsOn compileTestJava
+    dependsOn jar
+    dependsOn processTestResources
     inputDir = file('.')
     images.add("airbyte/db:$buildTag")
 }

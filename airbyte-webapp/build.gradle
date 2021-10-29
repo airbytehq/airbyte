@@ -46,6 +46,10 @@ assemble.dependsOn copyDocs
 
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
+    dependsOn copyDocs
+    dependsOn nodeSetup
+    dependsOn npmInstall
+    dependsOn npm_run_build
     inputDir = file('.')
     images.add("airbyte/webapp:$version")
 }
