@@ -1,4 +1,6 @@
 {{ config(
+    indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
+    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
     schema = "_airbyte_test_normalization",
     tags = [ "top-level-intermediate" ]
 ) }}
@@ -13,8 +15,10 @@ select
     {{ json_extract_scalar('_airbyte_data', ['NZD'], ['NZD']) }} as nzd,
     {{ json_extract_scalar('_airbyte_data', ['USD'], ['USD']) }} as usd,
     _airbyte_ab_id,
-    _airbyte_emitted_at
+    _airbyte_emitted_at,
+    {{ current_timestamp() }} as _airbyte_normalized_at
 from {{ source('test_normalization', '_airbyte_raw_exchange_rate') }} as table_alias
 -- exchange_rate
 where 1 = 1
+{{ incremental_clause('_airbyte_emitted_at') }}
 
