@@ -233,7 +233,7 @@ class BigQueryDenormalizedDestinationTest {
     assertEquals(usersActual.size(), 1);
     final JsonNode resultJson = usersActual.get(0);
 
-    assertEquals(Set.of("2021-10-11T09:36:53"), extractJsonValues(resultJson, "updated_at"));
+    assertEquals(Set.of("2021-10-11T08:36:53"), extractJsonValues(resultJson, "updated_at"));
   }
 
   private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
