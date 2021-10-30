@@ -112,23 +112,6 @@ def test_write():
     # Create User
     user = create_user_with_all_permissions()
 
-    print("## Starting standard queue test ##")
-
-    # Create Queue
-    queue_name = "amazon-sqs-mock-queue"
-    queue_region = "eu-west-1"
-    client = boto3.client(
-        "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region
-    )
-    queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]
-    # Create config
-    message_delay = 1
-    config = create_config(queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], message_delay)
-    # Create ConfiguredAirbyteCatalog
-    catalog = ConfiguredAirbyteCatalog(streams=get_catalog()["streams"])
-    # Create Destination
-    destination = DestinationAmazonSqs()
-    # Send test message
     test_message = {
         "type": "RECORD",
         "record": {
@@ -139,10 +122,27 @@ def test_write():
     }
     ab_message = AirbyteMessage(**test_message)
 
+    # Common params
+    message_delay = 1
+    queue_region = "eu-west-1"
+
+    # Standard Queue Test
+    print("## Starting standard queue test ##")
+    # Create Queue
+    queue_name = "amazon-sqs-mock-queue"    
+    client = boto3.client(
+        "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region
+    )
+    queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]
+    # Create config    
+    config = create_config(queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], message_delay)
+    # Create ConfiguredAirbyteCatalog
+    catalog = ConfiguredAirbyteCatalog(streams=get_catalog()["streams"])
+    # Create Destination
+    destination = DestinationAmazonSqs()
     # Send messages using write()
     for message in destination.write(config, catalog, [ab_message]):
         print(f"Message Sent with delay of {message_delay} seconds")
-
     # Listen for messages for max 20 seconds
     timeout = time.time() + 20
     print("Listening for messages.")
@@ -162,21 +162,19 @@ def test_write():
             print("Timed out waiting for message after 20 seconds.")
             assert False
 
+    # Standard Queue with a Message Key Test
     print("## Starting body key queue test ##")
-
     # Create Queue
-    key_queue_name = "amazon-sqs-mock-queue"
+    key_queue_name = "amazon-sqs-mock-queue-key"
     key_queue_url = client.create_queue(QueueName=key_queue_name)["QueueUrl"]
     # Create config
     message_body_key = "body"
     key_config = create_config_with_body_key(
         key_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], message_body_key, message_delay
     )
-
     # Send messages using write()
     for message in destination.write(key_config, catalog, [ab_message]):
         print(f"Message Sent with delay of {message_delay} seconds")
-
     # Listen for messages for max 20 seconds
     timeout = time.time() + 20
     print("Listening for messages.")
@@ -196,8 +194,8 @@ def test_write():
             print("Timed out waiting for message after 20 seconds.")
             assert False
 
+    # FIFO Queue Test
     print("## Starting FIFO queue test ##")
-
     # Create Queue
     fifo_queue_name = "amazon-sqs-mock-queue.fifo"
     fifo_queue_url = client.create_queue(QueueName=fifo_queue_name, Attributes={"FifoQueue": "true"})["QueueUrl"]
@@ -205,11 +203,9 @@ def test_write():
     fifo_config = create_fifo_config(
         fifo_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], "fifo-group", message_delay
     )
-
     # Send messages using write()
     for message in destination.write(fifo_config, catalog, [ab_message]):
         print(f"Message Sent with delay of {message_delay} seconds")
-
     # Listen for messages for max 20 seconds
     timeout = time.time() + 20
     print("Listening for messages.")
