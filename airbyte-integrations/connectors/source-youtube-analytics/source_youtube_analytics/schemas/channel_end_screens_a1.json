@@ -27,13 +27,13 @@
       "type": "string"
     },
     "end_screen_element_clicks": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "end_screen_element_impressions": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "end_screen_element_click_rate": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

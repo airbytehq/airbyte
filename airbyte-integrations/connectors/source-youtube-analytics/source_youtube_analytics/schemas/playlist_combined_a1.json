@@ -36,22 +36,22 @@
       "type": "integer"
     },
     "views": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "watch_time_minutes": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "playlist_starts": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "playlist_saves_added": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "playlist_saves_removed": {
-      "type": "integer"
+      "type": ["null", "integer"]
     }
   }
 }

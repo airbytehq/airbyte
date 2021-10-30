@@ -21,85 +21,85 @@
       "type": "string"
     },
     "views": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "comments": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "likes": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "dislikes": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "shares": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "watch_time_minutes": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "average_view_duration_percentage": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "annotation_impressions": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "annotation_clickable_impressions": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "annotation_clicks": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "annotation_click_through_rate": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "annotation_closable_impressions": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "annotation_closes": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "annotation_close_rate": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "card_teaser_impressions": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "card_teaser_clicks": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "card_teaser_click_rate": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "card_impressions": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "card_clicks": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "card_click_rate": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "subscribers_gained": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "subscribers_lost": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "videos_added_to_playlists": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "videos_removed_from_playlists": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "red_views": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "red_watch_time_minutes": {
-      "type": "number"
+      "type": ["null", "number"]
     }
   }
 }

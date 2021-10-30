@@ -27,7 +27,7 @@
       "type": "string"
     },
     "views_percentage": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }
