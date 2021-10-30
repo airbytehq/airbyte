@@ -254,11 +254,11 @@ public class ServerApp implements ServerRunnable {
   @Deprecated
   @SuppressWarnings({"DeprecatedIsStillUsed"})
   private static Optional<AirbyteVersion> runFileMigration(final AirbyteVersion airbyteVersion,
-                                                   final ConfigRepository configRepository,
-                                                   final ConfigPersistence seed,
-                                                   final SpecFetcher specFetcher,
-                                                   final JobPersistence jobPersistence,
-                                                   final Configs configs)
+                                                           final ConfigRepository configRepository,
+                                                           final ConfigPersistence seed,
+                                                           final SpecFetcher specFetcher,
+                                                           final JobPersistence jobPersistence,
+                                                           final Configs configs)
       throws IOException {
     // required before migration
     // TODO: remove this specFetcherFn logic once file migrations are deprecated
