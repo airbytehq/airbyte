@@ -5,19 +5,14 @@
 package io.airbyte.integrations.base;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.cli.Clis;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,31 +25,28 @@ public class IntegrationCliParser {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationCliParser.class);
 
-  private static final OptionGroup COMMAND_GROUP = new OptionGroup();
-
-  static {
-    COMMAND_GROUP.setRequired(true);
-    COMMAND_GROUP.addOption(Option.builder()
-        .longOpt(Command.SPEC.toString().toLowerCase())
-        .desc("outputs the json configuration specification")
-        .build());
-    COMMAND_GROUP.addOption(Option.builder()
-        .longOpt(Command.CHECK.toString().toLowerCase())
-        .desc("checks the config can be used to connect")
-        .build());
-    COMMAND_GROUP.addOption(Option.builder()
-        .longOpt(Command.DISCOVER.toString().toLowerCase())
-        .desc("outputs a catalog describing the source's catalog")
-        .build());
-    COMMAND_GROUP.addOption(Option.builder()
-        .longOpt(Command.READ.toString().toLowerCase())
-        .desc("reads the source and outputs messages to STDOUT")
-        .build());
-    COMMAND_GROUP.addOption(Option.builder()
-        .longOpt(Command.WRITE.toString().toLowerCase())
-        .desc("writes messages from STDIN to the integration")
-        .build());
-  }
+  private static final OptionGroup COMMAND_GROUP = Clis.createOptionGroup(
+      true,
+      Option.builder()
+          .longOpt(Command.SPEC.toString().toLowerCase())
+          .desc("outputs the json configuration specification")
+          .build(),
+      Option.builder()
+          .longOpt(Command.CHECK.toString().toLowerCase())
+          .desc("checks the config can be used to connect")
+          .build(),
+      Option.builder()
+          .longOpt(Command.DISCOVER.toString().toLowerCase())
+          .desc("outputs a catalog describing the source's catalog")
+          .build(),
+      Option.builder()
+          .longOpt(Command.READ.toString().toLowerCase())
+          .desc("reads the source and outputs messages to STDOUT")
+          .build(),
+      Option.builder()
+          .longOpt(Command.WRITE.toString().toLowerCase())
+          .desc("writes messages from STDIN to the integration")
+          .build());
 
   public IntegrationConfig parse(final String[] args) {
     final Command command = parseCommand(args);
@@ -62,20 +54,11 @@ public class IntegrationCliParser {
   }
 
   private static Command parseCommand(final String[] args) {
-    final CommandLineParser parser = new RelaxedParser();
-    final HelpFormatter helpFormatter = new HelpFormatter();
-
     final Options options = new Options();
     options.addOptionGroup(COMMAND_GROUP);
 
-    try {
-      final CommandLine parsed = parser.parse(options, args);
-      return Command.valueOf(parsed.getOptions()[0].getLongOpt().toUpperCase());
-      // if discover, then validate, etc...
-    } catch (final ParseException e) {
-      helpFormatter.printHelp("java-base", options);
-      throw new IllegalArgumentException(e);
-    }
+    final CommandLine parsed = Clis.parse(args, options, Clis.getRelaxedParser());
+    return Command.valueOf(parsed.getOptions()[0].getLongOpt().toUpperCase());
   }
 
   private static IntegrationConfig parseOptions(final String[] args, final Command command) {
@@ -87,26 +70,46 @@ public class IntegrationCliParser {
       case SPEC -> {
         // no args.
       }
-      case CHECK, DISCOVER -> options.addOption(Option
-          .builder().longOpt(JavaBaseConstants.ARGS_CONFIG_KEY).desc(JavaBaseConstants.ARGS_CONFIG_DESC).hasArg(true).required(true).build());
+      case CHECK, DISCOVER -> options.addOption(Option.builder()
+          .longOpt(JavaBaseConstants.ARGS_CONFIG_KEY)
+          .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
+          .hasArg(true)
+          .required(true)
+          .build());
       case READ -> {
-        options.addOption(Option
-            .builder().longOpt(JavaBaseConstants.ARGS_CONFIG_KEY).desc(JavaBaseConstants.ARGS_CONFIG_DESC).hasArg(true).required(true).build());
-        options.addOption(Option
-            .builder().longOpt(JavaBaseConstants.ARGS_CATALOG_KEY).desc(JavaBaseConstants.ARGS_CATALOG_DESC).hasArg(true).build());
-        options.addOption(Option
-            .builder().longOpt(JavaBaseConstants.ARGS_STATE_KEY).desc(JavaBaseConstants.ARGS_PATH_DESC).hasArg(true).build());
+        options.addOption(Option.builder()
+            .longOpt(JavaBaseConstants.ARGS_CONFIG_KEY)
+            .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
+            .hasArg(true)
+            .required(true)
+            .build());
+        options.addOption(Option.builder()
+            .longOpt(JavaBaseConstants.ARGS_CATALOG_KEY)
+            .desc(JavaBaseConstants.ARGS_CATALOG_DESC)
+            .hasArg(true)
+            .build());
+        options.addOption(Option.builder()
+            .longOpt(JavaBaseConstants.ARGS_STATE_KEY)
+            .desc(JavaBaseConstants.ARGS_PATH_DESC)
+            .hasArg(true)
+            .build());
       }
       case WRITE -> {
-        options.addOption(Option
-            .builder().longOpt(JavaBaseConstants.ARGS_CONFIG_KEY).desc(JavaBaseConstants.ARGS_CONFIG_DESC).hasArg(true).required(true).build());
-        options.addOption(Option
-            .builder().longOpt(JavaBaseConstants.ARGS_CATALOG_KEY).desc(JavaBaseConstants.ARGS_CATALOG_DESC).hasArg(true).build());
+        options.addOption(Option.builder()
+            .longOpt(JavaBaseConstants.ARGS_CONFIG_KEY)
+            .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
+            .hasArg(true)
+            .required(true).build());
+        options.addOption(Option.builder()
+            .longOpt(JavaBaseConstants.ARGS_CATALOG_KEY)
+            .desc(JavaBaseConstants.ARGS_CATALOG_DESC)
+            .hasArg(true)
+            .build());
       }
       default -> throw new IllegalStateException("Unexpected value: " + command);
     }
 
-    final CommandLine parsed = runParse(options, args, command);
+    final CommandLine parsed = Clis.parse(args, options, command.toString().toLowerCase());
     Preconditions.checkNotNull(parsed);
     final Map<String, String> argsMap = new HashMap<>();
     for (final Option option : parsed.getOptions()) {
@@ -137,37 +140,6 @@ public class IntegrationCliParser {
       }
       default -> throw new IllegalStateException("Unexpected value: " + command);
     }
-  }
-
-  private static CommandLine runParse(final Options options, final String[] args, final Command command) {
-    final CommandLineParser parser = new DefaultParser();
-    final HelpFormatter helpFormatter = new HelpFormatter();
-
-    try {
-      return parser.parse(options, args);
-    } catch (final ParseException e) {
-      helpFormatter.printHelp(command.toString().toLowerCase(), options);
-      throw new IllegalArgumentException(e);
-    }
-  }
-
-  // https://stackoverflow.com/questions/33874902/apache-commons-cli-1-3-1-how-to-ignore-unknown-arguments
-  private static class RelaxedParser extends DefaultParser {
-
-    @Override
-    public CommandLine parse(final Options options, final String[] arguments) throws ParseException {
-      final List<String> knownArgs = new ArrayList<>();
-      for (int i = 0; i < arguments.length; i++) {
-        if (options.hasOption(arguments[i])) {
-          knownArgs.add(arguments[i]);
-          if (i + 1 < arguments.length && options.getOption(arguments[i]).hasArg()) {
-            knownArgs.add(arguments[i + 1]);
-          }
-        }
-      }
-      return super.parse(options, knownArgs.toArray(new String[0]));
-    }
-
   }
 
 }
