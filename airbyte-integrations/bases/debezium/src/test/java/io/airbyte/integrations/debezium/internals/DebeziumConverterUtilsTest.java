@@ -85,7 +85,7 @@ class DebeziumConverterUtilsTest {
     Number number = 100_000;
 
     String actual = DebeziumConverterUtils.convertDate(number);
-    Assertions.assertEquals("1970-01-01T03:01:40Z", actual);
+    Assertions.assertEquals("1970-01-01T00:01:40Z", actual);
   }
 
   @Test
