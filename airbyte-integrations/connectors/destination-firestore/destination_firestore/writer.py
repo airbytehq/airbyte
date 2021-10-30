@@ -10,7 +10,7 @@ from google.oauth2 import service_account
 
 
 class FirestoreWriter:
-    def __init__(self, project_id: str, credentials_json: Optional[str]=None):
+    def __init__(self, project_id: str, credentials_json: Optional[str] = None):
         connection = {}
 
         connection["project"] = project_id
