@@ -30,7 +30,9 @@ public class Clis {
     try {
       return parser.parse(options, args);
     } catch (final ParseException e) {
-      helpFormatter.printHelp(commandLineSyntax, options);
+      if (commandLineSyntax != null && !commandLineSyntax.isEmpty()) {
+        helpFormatter.printHelp(commandLineSyntax, options);
+      }
       throw new IllegalArgumentException(e);
     }
   }
@@ -40,7 +42,7 @@ public class Clis {
   }
 
   public static CommandLine parse(final String[] args, final Options options, final CommandLineParser parser) {
-    return parse(args, options, parser, "");
+    return parse(args, options, parser, null);
   }
 
   public static CommandLine parse(final String[] args, final Options options) {
