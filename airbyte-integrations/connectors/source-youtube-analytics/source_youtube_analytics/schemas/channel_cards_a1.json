@@ -27,22 +27,22 @@
       "type": "string"
     },
     "card_teaser_impressions": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "card_teaser_clicks": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "card_teaser_click_rate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "card_impressions": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "card_clicks": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "card_click_rate": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

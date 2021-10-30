@@ -24,7 +24,7 @@
       "type": "string"
     },
     "shares": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

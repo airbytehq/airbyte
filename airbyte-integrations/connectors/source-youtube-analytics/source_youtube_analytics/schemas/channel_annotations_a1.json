@@ -27,25 +27,25 @@
       "type": "string"
     },
     "annotation_impressions": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "annotation_clickable_impressions": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "annotation_clicks": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "annotation_click_through_rate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "annotation_closable_impressions": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "annotation_closes": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "annotation_close_rate": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

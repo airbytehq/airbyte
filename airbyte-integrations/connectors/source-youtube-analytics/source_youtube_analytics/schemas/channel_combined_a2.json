@@ -33,22 +33,22 @@
       "type": "integer"
     },
     "views": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "watch_time_minutes": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "average_view_duration_seconds": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "average_view_duration_percentage": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "red_views": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "red_watch_time_minutes": {
-      "type": "number"
+      "type": ["null", "number"]
     }
   }
 }
