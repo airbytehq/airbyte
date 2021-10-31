@@ -6,22 +6,25 @@
     "title": "File Source Spec",
     "type": "object",
     "additionalProperties": false,
-    "required": ["dataset_name", "format", "url", "provider"],
+    "required": ["archive_format", "file_format", "url", "provider"],
     "properties": {
-      "dataset_name": {
+      "archive_format": {
         "type": "string",
-        "description": "Name of the final table where to replicate this file (should include only letters, numbers dash and underscores)"
+        "enum": ["Not Archived", "tar.gz"],
+        "default": "Not Archived",
+        "description": "File Format of the archive file"
       },
-      "format": {
+      "file_format": {
         "type": "string",
-        "enum": ["csv", "json", "jsonl", "excel", "feather", "parquet"],
+        "description": "Valid JSON string describing the File Format of (extracted) file(s). Allowed formats: [\"csv\", \"json\", \"jsonl\", \"excel\", \"feather\", \"parquet\"] (Warning: some format may be experimental, please refer to docs).",
         "default": "csv",
-        "description": "File Format of the file to be replicated (Warning: some format may be experimental, please refer to docs)."
+        "examples": ["csv", "json", "{\"file1.xyz\": \"csv\", \"file2.xyz\": \"json\", \"file3.xyz\": \"jsonl\"}"]
       },
       "reader_options": {
         "type": "string",
+        "default": "{}",
         "description": "This should be a valid JSON string used by each reader/parser to provide additional options and tune its behavior",
-        "examples": ["{}", "{'sep': ' '}"]
+        "examples": ["{\"all\": {\"sep\": \" \"}}", "{\"file1.xyz\": {\"sep\": \" \"}, \"file2.xyz\": {\"sep\": \"|\"}}"]
       },
       "url": {
         "type": "string",

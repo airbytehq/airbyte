@@ -3,14 +3,18 @@
 #
 
 
+import os
 import json
 import traceback
-from typing import Iterable
+from typing import Iterable, Mapping
 from urllib.parse import urlparse
 
 import google
-import pandas as pd
+import tempfile
 import smart_open
+import numpy as np
+import pandas as pd
+import tarfile as tf
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from azure.storage.blob import BlobServiceClient
@@ -363,3 +367,104 @@ class Client:
             "properties": self._stream_properties(),
         }
         yield AirbyteStream(name=self.stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh])
+
+
+class ArchiveClient:
+    """Class that manages reading and parsing data from streams"""
+
+    reader_class = URLFile
+
+    def __init__(self, url: str, provider: dict, archive_format: str, file_format: str, reader_options: str = '{}', ):
+        self._url = url
+        self._provider = provider
+        self._untar_destination = 'local'
+        self._archive_format = archive_format
+
+        try:
+            self._file_format = json.loads(file_format)
+        except json.decoder.JSONDecodeError as err:
+            self._file_format = {'all': (file_format or 'csv')}
+        
+        try:
+            self._reader_options = json.loads(reader_options)
+        except json.decoder.JSONDecodeError as err:
+            error_msg = f"Failed to parse reader options {repr(err)}\n{reader_options}\n{traceback.format_exc()}"
+            logger.error(error_msg)
+            raise ConfigurationError(error_msg) from err
+
+    @property
+    def reader(self) -> reader_class:
+        return self.reader_class(url=self._url, provider=self._provider)
+
+    @property
+    def binary_source(self):
+        binary_formats = {"excel", "feather", "parquet", "orc", "pickle"}
+        return (self._archive_format != 'Not Archived') or (list(self._file_format.values())[0] in binary_formats) # If the archive format is 'Not Archived', then there can only be 1 file to process
+
+    def extract(self) -> Mapping[str, Client]:
+        if self._archive_format == 'Not Archived':
+            return {
+                'downloadedfile': Client(
+                    dataset_name= 'downloadedfile',
+                    url=self._url,
+                    provider=self._provider,
+                    format=list(self._file_format.values())[0],
+                    reader_options=list(self._file_format.values())[0]
+                )
+            }
+
+        else:
+            if self._untar_destination == 'local':
+                with self.reader.open(binary=True) as t_file:
+                    tempdir = tempfile.mkdtemp() + '/'
+                    tf.open(fileobj=t_file).extractall(tempdir)
+                    return {
+                        i: Client(
+                            dataset_name=i,
+                            url=tempdir + i,
+                            provider={'storage': 'local'},
+                            format=self._file_format.get(i, self._file_format.get('all', 'csv')),
+                            reader_options=json.dumps(self._reader_options.get(i, self._reader_options.get('all', {})))
+                        ) for i in os.listdir(tempdir)
+
+                    }
+            else:
+                raise NotImplementedError
+
+
+    @property
+    def streams(self) -> Iterable:
+        """Discovers available streams"""
+
+        dtype_map = {
+            'object': 'string',
+            'float64': 'number',
+            'int64': 'number',
+            'bool': 'boolean'
+        }
+
+        for stream_name, stream_obj in self.extract().items():
+            with stream_obj.reader.open(binary=stream_obj.binary_source) as fp:
+                if stream_obj._reader_format == "json" or stream_obj._reader_format == "jsonl":
+                    properties = stream_obj.load_nested_json_schema(fp)
+
+                else:
+                    df_list = stream_obj.load_dataframes(fp, skip_data=False)
+                    properties = {}
+                    for df in df_list:
+                        for c in df.columns:
+                            properties[c] = {
+                                "type": dtype_map.get(df[c].dtype.name, 'string') if len(df[c].dropna()) else 'string'
+                            }
+
+            yield AirbyteStream(
+                    name=stream_name,
+                    json_schema={
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "properties": properties,
+                    },
+                    supported_sync_modes=[SyncMode.full_refresh]
+                )
+
+
