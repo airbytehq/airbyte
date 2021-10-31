@@ -69,7 +69,7 @@ public class GitlabOAuthFlowTest {
   @Test
   public void testCompleteSourceOAuth() throws IOException, JsonValidationException, InterruptedException, ConfigNotFoundException {
 
-    Map<String, String> returnedCredentials = Map.of("access_token", "access_token_response", "refresh_token", "refresh_token_response");
+    Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response", "access_token", "access_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
