@@ -13,7 +13,11 @@ tests:
     - config_path: "secrets/config.json"
     - config_path: "secrets/config_oauth.json"
   basic_read:
+    # test read with old config
     - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+    # test read with OAuth2.0
+    - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
 # We cannot use these tests for testing Incremental, since for Gitlab the State is saved for each Project separately,
 # and the Acceptance Tests at this stage do not support this functionality.
