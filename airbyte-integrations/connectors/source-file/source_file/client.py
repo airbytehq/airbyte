@@ -430,7 +430,7 @@ class ArchiveClient:
                     dataset_name=self._file_rename['all'],
                     url=self._url,
                     provider=self._provider,
-                    format=self._file_format,
+                    format=self._file_format['all'],
                     reader_options=json.dumps(self._reader_options['all'])
                 )
             }
