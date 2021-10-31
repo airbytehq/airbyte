@@ -49,9 +49,16 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 ### Setup guide
 
+#### Authenticate Gitlab connector using `Private_Token` - personal access token
 Log into Gitlab and then generate a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html).
 
 Your token should have the `read_api` scope, that Grants read access to the API, including all groups and projects, the container registry, and the package registry.
+
+#### Authenticate Gitlab connector using `OAuth2.0` option
+1. Select `OAuth2.0` from `Authorization Method` dropdown
+2. Press `Authenticate your Gitlab account`
+3. Proceed authentication using your credentials and grant the access to `Airbyte` application to your data.
+4. Finish setting up the connector
 
 ## Additional information
 
@@ -61,6 +68,7 @@ GitLab source is working with GitLab API v4. It can also work with self-hosted G
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.3 | 2021-10-29 | [7506](https://github.com/airbytehq/airbyte/pull/7506) | Add `OAuth2.0` authentication option |
 | 0.1.2 | 2021-10-18 | [7108](https://github.com/airbytehq/airbyte/pull/7108) | Allow all domains to be used as `api_url` |
 | 0.1.1 | 2021-10-12 | [6932](https://github.com/airbytehq/airbyte/pull/6932) | Fix pattern field in spec file, remove unused fields from config files, use cache from CDK |
 | 0.1.0 | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174) | Initial Release |
