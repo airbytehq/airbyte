@@ -21,7 +21,12 @@
           "type": "string"
         }
       },
-      "required": ["time", "uniqueQualifier", "applicationName", "customerId"]
+      "required": [
+        "time",
+        "uniqueQualifier",
+        "applicationName",
+        "customerId"
+      ]
     },
     "etag": {
       "type": "string"
@@ -39,23 +44,28 @@
           "type": "string"
         }
       },
-      "required": ["callerType", "email", "profileId"]
+      "required": [
+        "callerType",
+        "email",
+        "profileId"
+      ]
     },
     "events": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "parameters": {
-              "type": "array",
-              "items": [
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "anyOf": [
                 {
                   "type": "object",
                   "properties": {
@@ -65,80 +75,7 @@
                     "value": {
                       "type": "string"
                     }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
+                  }
                 },
                 {
                   "type": "object",
@@ -149,8 +86,7 @@
                     "intValue": {
                       "type": "string"
                     }
-                  },
-                  "required": ["name", "intValue"]
+                  }
                 },
                 {
                   "type": "object",
@@ -158,18 +94,33 @@
                     "name": {
                       "type": "string"
                     },
-                    "value": {
-                      "type": "string"
+                    "boolValue": {
+                      "type": "boolean"
                     }
-                  },
-                  "required": ["name", "value"]
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "multiValue": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 }
               ]
             }
-          },
-          "required": ["type", "name", "parameters"]
+          }
         }
-      ]
+      }
+    },
+    "time": {
+      "type": "string"
     }
   }
 }
