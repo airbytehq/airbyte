@@ -374,7 +374,7 @@ class ArchiveClient:
 
     reader_class = URLFile
 
-    def __init__(self, url: str, provider: dict, archive_format: str, file_format: str, reader_options: str = '{}', ):
+    def __init__(self, url: str, provider: dict, archive_format: str, file_format: str = 'csv', reader_options: str = '{}', file_rename: str = '{}'):
         self._url = url
         self._provider = provider
         self._untar_destination = 'local'
@@ -384,6 +384,10 @@ class ArchiveClient:
             self._file_format = json.loads(file_format)
         except json.decoder.JSONDecodeError as err:
             self._file_format = {'all': (file_format or 'csv')}
+        else:
+            self._file_format = self._file_format or {'all' : 'csv'}
+        finally:
+            assert len(self._file_format.values())
         
         try:
             self._reader_options = json.loads(reader_options)
@@ -392,6 +396,19 @@ class ArchiveClient:
             logger.error(error_msg)
             raise ConfigurationError(error_msg) from err
 
+        try:
+            self._file_rename = json.loads(file_rename)
+        except json.decoder.JSONDecodeError as err:
+            self._file_rename = {'all' : file_rename}
+        else:
+            self._file_rename = self._file_rename or {'all' : 'tablename'}
+        
+
+        if self._archive_format == 'Not Archived':
+            self._file_format = {'all' : next(iter(self._file_format.values()))}
+            self._file_rename = {'all' : next(iter(self._file_rename.values()))}
+            self._reader_options = {'all' : next(iter(self._reader_options.values()))}
+
     @property
     def reader(self) -> reader_class:
         return self.reader_class(url=self._url, provider=self._provider)
@@ -399,17 +416,20 @@ class ArchiveClient:
     @property
     def binary_source(self):
         binary_formats = {"excel", "feather", "parquet", "orc", "pickle"}
-        return (self._archive_format != 'Not Archived') or (list(self._file_format.values())[0] in binary_formats) # If the archive format is 'Not Archived', then there can only be 1 file to process
+        return (
+            (self._archive_format != 'Not Archived') or 
+            (self._file_format['all'] in binary_formats)
+        )
 
     def extract(self) -> Mapping[str, Client]:
         if self._archive_format == 'Not Archived':
             return {
-                'downloadedfile': Client(
-                    dataset_name= 'downloadedfile',
+                self._file_rename['all'] : Client(
+                    dataset_name=self._file_rename['all'],
                     url=self._url,
                     provider=self._provider,
-                    format=list(self._file_format.values())[0],
-                    reader_options=json.dumps(list(self._reader_options.values())[0])
+                    format=self._file_format,
+                    reader_options=json.dumps(self._reader_options['all'])
                 )
             }
 
@@ -419,8 +439,8 @@ class ArchiveClient:
                     tempdir = tempfile.mkdtemp() + '/'
                     tf.open(fileobj=t_file).extractall(tempdir)
                     return {
-                        i: Client(
-                            dataset_name=i,
+                        self._file_rename.get(i, i) : Client(
+                            dataset_name=self._file_rename.get(i, i),
                             url=tempdir + i,
                             provider={'storage': 'local'},
                             format=self._file_format.get(i, self._file_format.get('all', 'csv')),

@@ -20,6 +20,12 @@
         "default": "csv",
         "examples": ["csv", "json", "{\"file1.xyz\": \"csv\", \"file2.xyz\": \"json\", \"file3.xyz\": \"jsonl\"}"]
       },
+      "file_rename": {
+        "type": "string",
+        "description": "Valid JSON/string describing how to rename downloaded file(s). This string determines the name of the destination table for each file",
+        "default": "default_tablename",
+        "examples": ["single_file_table_name", "{\"file1.xyz\": \"tablename1\", \"file2.xyz\": \"tablename2\"}"]
+      },
       "reader_options": {
         "type": "string",
         "default": "{}",
