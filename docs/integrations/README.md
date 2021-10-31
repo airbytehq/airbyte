@@ -14,6 +14,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 | Connector | Grade |
 | :--- | :--- |
+| [Amazon SQS](sources/amazon-sqs.md) | Alpha |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md) | Alpha |
 | [Amplitude](sources/amplitude.md) | Beta |
 | [Apify Dataset](sources/apify-dataset.md) | Alpha |
@@ -56,6 +57,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Jira](sources/jira.md) | Certified |
 | [Klaviyo](sources/klaviyo.md) | Beta |
 | [Klaviyo](sources/kustomer.md) | Alpha |
+| [Lemlist](sources/lemlist.md) | Alpha |
 | [LinkedIn Ads](sources/linkedin-ads.md) | Beta |
 | [Kustomer](sources/kustomer.md) | Alpha |
 | [Lever Hiring](sources/lever-hiring.md) | Beta |
@@ -73,6 +75,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Mongo DB](sources/mongodb-v2.md) | Beta |
 | [MySQL](sources/mysql.md) | Certified |
 | [Okta](sources/okta.md) | Beta |
+| [OneSignal](sources/onesignal.md) | Alpha |
 | [Oracle DB](sources/oracle.md) | Certified |
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md) | Beta |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md) | Beta |
@@ -89,6 +92,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Redshift](sources/redshift.md) | Certified |
 | [S3](sources/s3.md) | Alpha |
 | [Salesforce](sources/salesforce.md) | Certified |
+| [Salesloft](./sources/salesloft.md)| Alpha |
 | [SAP Business One](sources/sap-business-one.md) | Beta |
 | [Sendgrid](sources/sendgrid.md) | Certified |
 | [Shopify](sources/shopify.md) | Certified |
@@ -98,6 +102,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Smartsheets](sources/smartsheets.md) | Beta |
 | [Snowflake](sources/snowflake.md) | Beta |
 | [Square](sources/square.md) | Beta |
+| [Strava](sources/strava.md) | Beta |
 | [Stripe](sources/stripe.md) | Certified |
 | [Sugar CRM](sources/sugar-crm.md) | Beta |
 | [SurveyMonkey](sources/surveymonkey.md) | Beta |

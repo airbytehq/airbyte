@@ -11,6 +11,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
@@ -34,6 +35,10 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
    * query the system table mentioned here
    * https://clickhouse.tech/docs/en/operations/system-tables/columns/ to fetch the primary keys.
    */
+
+  public static final List<String> SSL_PARAMETERS = List.of(
+      "ssl=true",
+      "sslmode=none");
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
@@ -61,6 +66,10 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickHouseSource.class);
   public static final String DRIVER_CLASS = "ru.yandex.clickhouse.ClickHouseDriver";
 
+  public static Source getWrappedSource() {
+    return new SshWrappedSource(new ClickHouseSource(), List.of("host"), List.of("port"));
+  }
+
   /**
    * The reason we use NoOpJdbcStreamingQueryConfiguration(not setting auto commit to false and not
    * setting fetch size to 1000) for ClickHouse is cause method
@@ -73,13 +82,20 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse://%s:%s/%s",
+        config.get("host").asText(),
+        config.get("port").asText(),
+        config.get("database").asText()));
+
+    // assume ssl if not explicitly mentioned.
+    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
+      jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
+    }
+
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("password", config.get("password").asText())
-        .put("jdbc_url", String.format("jdbc:clickhouse://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()))
+        .put("jdbc_url", jdbcUrl.toString())
         .build());
   }
 
@@ -89,7 +105,7 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = new ClickHouseSource();
+    final Source source = ClickHouseSource.getWrappedSource();
     LOGGER.info("starting source: {}", ClickHouseSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", ClickHouseSource.class);

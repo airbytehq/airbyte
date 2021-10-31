@@ -33,6 +33,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          ec2-image-id: ami-0d648081937c75a73
   integration-test:
     timeout-minutes: 240
     needs: start-test-runner
@@ -91,6 +92,7 @@ jobs:
           EXCHANGE_RATES_TEST_CREDS: ${{ secrets.EXCHANGE_RATES_TEST_CREDS }}
           FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS }}
           FACEBOOK_PAGES_INTEGRATION_TEST_CREDS: ${{ secrets.FACEBOOK_PAGES_INTEGRATION_TEST_CREDS }}
+          FILE_SECURE_HTTPS_TEST_CREDS: ${{ secrets.FILE_SECURE_HTTPS_TEST_CREDS }}
           FRESHDESK_TEST_CREDS: ${{ secrets.FRESHDESK_TEST_CREDS }}
           GITLAB_INTEGRATION_TEST_CREDS: ${{ secrets.GITLAB_INTEGRATION_TEST_CREDS }}
           GH_NATIVE_INTEGRATION_TEST_CREDS: ${{ secrets.GH_NATIVE_INTEGRATION_TEST_CREDS }}
@@ -182,6 +184,12 @@ jobs:
           SOURCE_TIKTOK_MARKETING_PROD_TEST_CREDS: ${{ secrets.SOURCE_TIKTOK_MARKETING_PROD_TEST_CREDS }}
           DESTINATION_DATABRICKS_CREDS: ${{ secrets.DESTINATION_DATABRICKS_CREDS }}
           MONGODB_TEST_CREDS: ${{ secrets.MONGODB_TEST_CREDS }}
+          SOURCE_ONESIGNAL_TEST_CREDS: ${{ secrets.SOURCE_ONESIGNAL_TEST_CREDS }}
+          SOURCE_SALESLOFT_TEST_CREDS: ${{ secrets.SOURCE_SALESLOFT_TEST_CREDS }}
+          SOURCE_AMAZON_SQS_TEST_CREDS: ${{ secrets.SOURCE_AMAZON_SQS_TEST_CREDS }}
+          SOURCE_FRESHSERVICE_TEST_CREDS: ${{ secrets.SOURCE_FRESHSERVICE_TEST_CREDS }}
+          SOURCE_LEMLIST_TEST_CREDS: ${{ secrets.SOURCE_LEMLIST_TEST_CREDS }}
+          SOURCE_STRAVA_TEST_CREDS: ${{ secrets.SOURCE_STRAVA_TEST_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}
