@@ -409,7 +409,7 @@ class ArchiveClient:
                     url=self._url,
                     provider=self._provider,
                     format=list(self._file_format.values())[0],
-                    reader_options=list(self._file_format.values())[0]
+                    reader_options=json.dumps(list(self._file_format.values())[0])
                 )
             }
 
