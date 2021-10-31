@@ -1,9 +1,5 @@
-import { useFormikContext } from "formik";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useAsyncFn } from "react-use";
-import { flatten } from "flat";
-import { pick } from "lodash";
-import merge from "lodash.merge";
 
 import {
   ConnectorDefinitionSpecification,
@@ -19,8 +15,8 @@ import { DestinationAuthService } from "core/domain/connector/DestinationAuthSer
 import { useGetService } from "core/servicesProvider";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
-import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 import useRouter from "../useRouter";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 export function useConnectorAuth() {
   const { workspaceId } = useCurrentWorkspace();
@@ -60,6 +56,7 @@ export function useConnectorAuth() {
           workspaceId,
           destinationDefinitionId: ConnectorSpecification.id(connector),
           redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+          inputParams,
         };
         const response = await destinationAuthService.getConsentUrl(payload);
 
@@ -68,13 +65,11 @@ export function useConnectorAuth() {
     },
     completeOauthRequest: async (
       params: SourceGetConsentPayload | DestinationGetConsentPayload,
-      queryParams: Record<string, unknown>,
-      inputParams: Record<string, unknown>
+      queryParams: Record<string, unknown>
     ): Promise<Record<string, unknown>> => {
       const payload: any = {
         ...params,
         queryParams,
-        inputParams,
       };
       return (payload as SourceGetConsentPayload).sourceDefinitionId
         ? sourceAuthService.completeOauth(payload)
@@ -105,71 +100,50 @@ function openWindow(url: string): void {
 }
 
 export function useRunOauthFlow(
-  connector: ConnectorDefinitionSpecification
+  connector: ConnectorDefinitionSpecification,
+  onDone?: (values: {
+    connectionConfiguration: ConnectionConfiguration;
+  }) => void
 ): {
   loading: boolean;
   done?: boolean;
-  run: () => void;
+  run: (oauthInputParams: Record<string, unknown>) => void;
 } {
-  const {
-    values,
-    setValues,
-    validateForm,
-    setFieldTouched,
-  } = useFormikContext();
-  const oAuthFieldsToValidate = useMemo(() => {
-    const oAuthRequired =
-      connector?.authSpecification?.oauth2Specification?.oauthFlowInputFields;
-    return oAuthRequired ? oAuthRequired.map((value) => value.join(".")) : [];
-  }, [connector]);
-
-  const getoAuthInputParameters = (values: ServiceFormValues) => {
-    return pick(values.connectionConfiguration, oAuthFieldsToValidate);
-  };
   const { getConsentUrl, completeOauthRequest } = useConnectorAuth();
+
   const param = useRef<
     SourceGetConsentPayload | DestinationGetConsentPayload
   >();
 
-  const [{ loading }, onStartOauth] = useAsyncFn(async () => {
-    const errors = (await validateForm(values)) as ServiceFormValues;
-    const oAuthErrors = Object.keys(
-      flatten(errors.connectionConfiguration)
-    ).filter((path) => oAuthFieldsToValidate.indexOf(path) != -1);
-
-    if (oAuthErrors.length) {
-      oAuthErrors.forEach((path) => {
-        setFieldTouched(`connectionConfiguration.${path}`, true, false);
-      });
-    } else {
+  const [{ loading }, onStartOauth] = useAsyncFn(
+    async (oauthInputParams: Record<string, unknown>) => {
       const consentRequestInProgress = await getConsentUrl(
         connector,
-        getoAuthInputParameters(values as ServiceFormValues)
+        oauthInputParams
       );
 
       param.current = consentRequestInProgress.payload;
       openWindow(consentRequestInProgress.consentUrl);
-    }
-  }, [connector, values]);
+    },
+    [connector]
+  );
 
   const [{ loading: loadingCompleteOauth, value }, completeOauth] = useAsyncFn(
-    async (queryParams: Record<string, unknown>) => {
+    async (queryParams: Record<string, unknown>): Promise<boolean> => {
       const oauthStartedPayload = param.current;
 
       if (oauthStartedPayload) {
         const connectionConfiguration = await completeOauthRequest(
           oauthStartedPayload,
-          queryParams,
-          getoAuthInputParameters(values as ServiceFormValues)
+          queryParams
         );
 
-        setValues(merge(values, { connectionConfiguration }));
-        return true;
+        onDone?.({ connectionConfiguration });
       }
 
-      return false;
+      return !!oauthStartedPayload;
     },
-    [connector, values]
+    [connector]
   );
 
   const onOathGranted = useCallback(

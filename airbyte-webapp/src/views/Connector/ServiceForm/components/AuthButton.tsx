@@ -6,6 +6,13 @@ import { Button } from "components";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 import { useServiceForm } from "../serviceFormContext";
 
+import { ConnectorDefinitionSpecification } from "core/domain/connector";
+import { useFormikContext } from "formik";
+import { ServiceFormValues } from "../types";
+import merge from "lodash.merge";
+import { flatten } from "flat";
+import { pick } from "lodash";
+
 const AuthSectionRow = styled.div`
   display: flex;
   align-items: center;
@@ -23,7 +30,7 @@ const SuccessMessage = styled.div`
 export const AuthButton: React.FC = () => {
   const { selectedService, selectedConnector } = useServiceForm();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { loading, done, run } = useRunOauthFlow(selectedConnector!);
+  const { loading, done, run } = useFormikOauthAdapter(selectedConnector!);
 
   return (
     <AuthSectionRow>
