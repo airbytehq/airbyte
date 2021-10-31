@@ -99,13 +99,13 @@ public class GitlabOAuthFlow extends BaseOAuthFlow {
     if (data.has("refresh_token")) {
       result.put("refresh_token", data.get("refresh_token").asText());
     } else {
-      throw new IOException(String.format("No1 'refresh_token' in query params from %s", accessTokenUrl));
+      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
     }
     // check for access_token after successful authentication
     if (data.has("access_token")) {
       result.put("access_token", data.get("access_token").asText());
     } else {
-      throw new IOException(String.format("No2 'access_token' in query params from %s", accessTokenUrl));
+      throw new IOException(String.format("Missing 'access_token' in query params from %s", accessTokenUrl));
     }
     // return result as mapping
     return Map.of("credentials", result);
