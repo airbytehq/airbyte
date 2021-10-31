@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Cassandra Destination Spec",
     "type": "object",
-    "required": ["keyspace", "username", "password", "address", "port"],
+    "required": ["keyspace", "username", "password", "address"],
     "additionalProperties": true,
     "properties": {
       "keyspace": {
@@ -53,19 +53,12 @@
         "default": "datacenter1",
         "order": 5
       },
-      "namespaces": {
-        "title": "Enable namespaces",
-        "type": "boolean",
-        "description": "Indicates whether namespaces should be enabled or not.",
-        "default": false,
-        "order": 6
-      },
       "replication": {
         "title": "Replication factor",
         "type": "integer",
         "description": "Indicates to how many nodes the data should be replicated to.",
         "default": 1,
-        "order": 7
+        "order": 6
       }
     }
   }

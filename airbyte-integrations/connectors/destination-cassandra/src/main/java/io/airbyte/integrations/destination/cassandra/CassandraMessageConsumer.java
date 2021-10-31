@@ -97,8 +97,6 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     cassandraStreams.forEach((k, v) -> {
       try {
-        // handle exception if drop table fails, failing to do so will cause the resources
-        // behind CassandraCqlProvider to not be closed and the jvm to not exit.
         cassandraCqlProvider.dropTableIfExists(v.getKeyspace(), v.getTempTableName());
       } catch (Exception e) {
         LOGGER.error("Error while deleting temp table {} with reason: : ", v.getTempTableName(), e);

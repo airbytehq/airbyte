@@ -26,16 +26,13 @@ class CassandraConfig {
 
   private final int replication;
 
-  private final boolean namespaces;
-
   public CassandraConfig(String keyspace,
                          String username,
                          String password,
                          String address,
                          int port,
                          String datacenter,
-                         int replication,
-                         boolean namespaces) {
+                         int replication) {
     this.keyspace = keyspace;
     this.username = username;
     this.password = password;
@@ -43,7 +40,6 @@ class CassandraConfig {
     this.port = port;
     this.datacenter = datacenter;
     this.replication = replication;
-    this.namespaces = namespaces;
   }
 
   public CassandraConfig(JsonNode config) {
@@ -51,10 +47,9 @@ class CassandraConfig {
     this.username = config.get("username").asText();
     this.password = config.get("password").asText();
     this.address = config.get("address").asText();
-    this.port = config.get("port").asInt();
+    this.port = config.get("port").asInt(9042);
     this.datacenter = config.get("datacenter").asText("datacenter1");
     this.replication = config.get("replication").asInt(1);
-    this.namespaces = config.get("namespaces").asBoolean(false);
   }
 
   public String getKeyspace() {
@@ -85,8 +80,17 @@ class CassandraConfig {
     return replication;
   }
 
-  public boolean isNamespaces() {
-    return namespaces;
+  @Override
+  public String toString() {
+    return "CassandraConfig{" +
+        "keyspace='" + keyspace + '\'' +
+        ", username='" + username + '\'' +
+        ", password='" + password + '\'' +
+        ", address='" + address + '\'' +
+        ", port=" + port +
+        ", datacenter='" + datacenter + '\'' +
+        ", replication=" + replication +
+        '}';
   }
 
   @Override

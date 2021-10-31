@@ -33,7 +33,6 @@ class CassandraConfigTest {
         .hasFieldOrPropertyWithValue("address", "127.0.0.1")
         .hasFieldOrPropertyWithValue("port", 9042)
         .hasFieldOrPropertyWithValue("datacenter", "datacenter1")
-        .hasFieldOrPropertyWithValue("namespaces", false)
         .hasFieldOrPropertyWithValue("replication", 1);
 
   }

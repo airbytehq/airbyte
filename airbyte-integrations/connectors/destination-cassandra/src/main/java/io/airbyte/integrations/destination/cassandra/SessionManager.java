@@ -8,13 +8,12 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.lang3.tuple.Pair;
 
 class SessionManager {
 
   // AtomicInteger is used for convenience, this class is not thread safe
   // and needs additional synchronization for that.
-  private static final ConcurrentHashMap<CassandraConfig, Pair<CqlSession, AtomicInteger>> sessions;
+  private static final ConcurrentHashMap<CassandraConfig, Tuple<CqlSession, AtomicInteger>> sessions;
 
   static {
     sessions = new ConcurrentHashMap<>();
@@ -33,15 +32,15 @@ class SessionManager {
   public static CqlSession initSession(CassandraConfig cassandraConfig) {
     var cachedSession = sessions.get(cassandraConfig);
     if (cachedSession != null) {
-      cachedSession.getRight().incrementAndGet();
-      return cachedSession.getLeft();
+      cachedSession.value2().incrementAndGet();
+      return cachedSession.value1();
     } else {
       var session = CqlSession.builder()
           .withLocalDatacenter(cassandraConfig.getDatacenter())
           .addContactPoint(new InetSocketAddress(cassandraConfig.getAddress(), cassandraConfig.getPort()))
           .withAuthCredentials(cassandraConfig.getUsername(), cassandraConfig.getPassword())
           .build();
-      sessions.put(cassandraConfig, Pair.of(session, new AtomicInteger(1)));
+      sessions.put(cassandraConfig, Tuple.of(session, new AtomicInteger(1)));
       return session;
     }
   }
@@ -57,9 +56,9 @@ class SessionManager {
     if (cachedSession == null) {
       throw new IllegalStateException("No session for the provided config");
     }
-    int count = cachedSession.getRight().decrementAndGet();
+    int count = cachedSession.value2().decrementAndGet();
     if (count < 1) {
-      cachedSession.getLeft().close();
+      cachedSession.value1().close();
       sessions.remove(cassandraConfig);
     }
   }

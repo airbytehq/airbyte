@@ -30,8 +30,7 @@ public class TestDataFactory {
         address,
         port,
         "datacenter1",
-        1,
-        false);
+        1);
   }
 
   static JsonNode createJsonConfig(String username, String password, String address, int port) {
@@ -42,7 +41,6 @@ public class TestDataFactory {
         .put("address", address)
         .put("port", port)
         .put("datacenter", "datacenter1")
-        .put("namespaces", true)
         .put("replication", 1)
         .build());
   }

@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.cassandra;
 import java.time.Instant;
 import java.util.UUID;
 
-class TableRecord {
+class CassandraRecord {
 
   private final UUID id;
 
@@ -15,10 +15,14 @@ class TableRecord {
 
   private final Instant timestamp;
 
-  public TableRecord(UUID id, String data, Instant timestamp) {
+  public CassandraRecord(UUID id, String data, Instant timestamp) {
     this.id = id;
     this.data = data;
     this.timestamp = timestamp;
+  }
+
+  static CassandraRecord of(UUID id, String data, Instant timestamp) {
+    return new CassandraRecord(id, data, timestamp);
   }
 
   public UUID getId() {
@@ -35,7 +39,7 @@ class TableRecord {
 
   @Override
   public String toString() {
-    return "TableRecord{" +
+    return "CassandraRecord{" +
         "id=" + id +
         ", data='" + data + '\'' +
         ", timestamp=" + timestamp +

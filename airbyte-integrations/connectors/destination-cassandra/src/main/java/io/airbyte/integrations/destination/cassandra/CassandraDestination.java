@@ -45,8 +45,6 @@ class CassandraDestination extends BaseConnector implements Destination {
     } finally {
       if (cassandraCqlProvider != null) {
         try {
-          // handle exception if drop table fails, failing to do so will cause the resources
-          // behind CassandraCqlProvider to not be closed and the jvm to not exit.
           cassandraCqlProvider.dropTableIfExists(cassandraConfig.getKeyspace(), tableName);
         } catch (Exception e) {
           LOGGER.error("Error while deleting temp table {} with reason: : ", tableName, e);

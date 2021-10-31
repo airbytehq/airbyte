@@ -46,8 +46,8 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
     cassandraCqlProvider.retrieveMetadata().forEach(meta -> {
-      var keyspace = meta.getKeyspace();
-      meta.getTables().forEach(table -> cassandraCqlProvider.truncate(keyspace, table));
+      var keyspace = meta.value1();
+      meta.value2().forEach(table -> cassandraCqlProvider.truncate(keyspace, table));
     });
   }
 
@@ -83,8 +83,8 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
     var keyspace = cassandraNameTransformer.outputKeyspace(namespace);
     var table = cassandraNameTransformer.outputTable(streamName);
     return cassandraCqlProvider.select(keyspace, table).stream()
-        .sorted(Comparator.comparing(TableRecord::getTimestamp))
-        .map(TableRecord::getData)
+        .sorted(Comparator.comparing(CassandraRecord::getTimestamp))
+        .map(CassandraRecord::getData)
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }

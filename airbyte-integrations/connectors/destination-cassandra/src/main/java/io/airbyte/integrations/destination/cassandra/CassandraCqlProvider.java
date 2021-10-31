@@ -7,9 +7,11 @@ package io.airbyte.integrations.destination.cassandra;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.now;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.metadata.TokenMap;
-import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.uuid.Uuids;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
@@ -23,7 +25,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,68 +91,72 @@ class CassandraCqlProvider implements Closeable {
     cqlSession.execute(query);
   }
 
-  public List<TableRecord> select(String keyspace, String tableName) {
+  public void truncate(String keyspace, String tableName) {
+    var query = QueryBuilder.truncate(keyspace, tableName).build();
+    cqlSession.execute(query);
+  }
+
+  public List<CassandraRecord> select(String keyspace, String tableName) {
     var query = QueryBuilder.selectFrom(keyspace, tableName)
         .columns(columnId, columnData, columnTimestamp)
-        .all()
         .build();
     return cqlSession.execute(query)
-        .map(result -> new TableRecord(
+        .map(result -> new CassandraRecord(
             result.get(columnId, UUID.class),
             result.get(columnData, String.class),
             result.get(columnTimestamp, Instant.class)))
         .all();
   }
 
-  public void truncate(String keyspace, String tableName) {
-    var query = QueryBuilder.truncate(keyspace, tableName).build();
-    cqlSession.execute(query);
+  public List<Tuple<String, List<String>>> retrieveMetadata() {
+    return cqlSession.getMetadata().getKeyspaces().values().stream()
+        .map(keyspace -> Tuple.of(keyspace.getName().toString(), keyspace.getTables().values()
+            .stream()
+            .map(table -> table.getName().toString())
+            .collect(Collectors.toList())))
+        .collect(Collectors.toList());
   }
 
   public void copy(String keyspace, String sourceTable, String destinationTable) {
-    var metadata = cqlSession.getMetadata();
+    var select = String.format("SELECT * FROM %s.%s WHERE token(%s) > ? AND token(%s) <= ?",
+        keyspace, sourceTable, columnId, columnId);
 
-    var ranges = metadata.getTokenMap()
+    var selectStatement = cqlSession.prepare(select);
+
+    var insert = String.format("INSERT INTO %s.%s (%s, %s, %s) VALUES (?, ?, ?)",
+        keyspace, destinationTable, columnId, columnData, columnTimestamp);
+
+    var insertStatement = cqlSession.prepare(insert);
+    // insertStatement.setConsistencyLevel(ConsistencyLevel.ONE);
+
+    // perform full table scan in parallel using token ranges
+    // optimal for copying large amounts of data
+    cqlSession.getMetadata().getTokenMap()
         .map(TokenMap::getTokenRanges)
-        .orElseThrow(IllegalStateException::new);
-
-    // query for retrieving data from different token ranges in parallel
-    var pStatement = cqlSession.prepare(
-        "SELECT * FROM " + keyspace + "." + sourceTable +
-            " WHERE token(" + columnId + ") > ? AND token(" + columnId + ") <= ?");
-
-    // explore datastax 4.x async api as an alternative for async processing
-    ranges.stream()
-        .map(range -> pStatement.bind(range.getStart(), range.getEnd()))
-        .map(bStatement -> executorService.submit(() -> executeQuery(bStatement, keyspace, destinationTable)))
+        .orElseThrow(IllegalStateException::new)
+        .stream()
+        .flatMap(range -> range.unwrap().stream())
+        .map(range -> selectStatement.bind(range.getStart(), range.getEnd()))
+        .map(selectBoundStatement -> Tuple.of(selectBoundStatement, insertStatement))
+        // explore datastax 4.x async api as an alternative for async processing
+        .map(statements -> executorService.submit(() -> batchInsert(statements.value1(), statements.value2())))
         .forEach(this::awaitThread);
 
   }
 
-  public List<MetadataTuple> retrieveMetadata() {
-    Function<KeyspaceMetadata, MetadataTuple> metaMapper = keyspace -> new MetadataTuple(
-        keyspace.getName().toString(),
-        keyspace.getTables().values().stream()
-            .map(table -> table.getName().toString())
-            .collect(Collectors.toList()));
+  private void batchInsert(BoundStatement select, PreparedStatement insert) {
+    // unlogged removes the log record for increased insert speed
+    var batchStatement = BatchStatement.builder(BatchType.UNLOGGED);
 
-    var metadata = cqlSession.getMetadata();
+    cqlSession.execute(select).all().stream()
+        .map(r -> CassandraRecord.of(
+            r.get(columnId, UUID.class),
+            r.get(columnData, String.class),
+            r.get(columnTimestamp, Instant.class)))
+        .map(r -> insert.bind(r.getId(), r.getData(), r.getTimestamp()))
+        .forEach(batchStatement::addStatement);
 
-    return metadata.getKeyspaces().values().stream()
-        .map(metaMapper)
-        .collect(Collectors.toList());
-  }
-
-  private void executeQuery(BoundStatement statement, String keyspace, String destinationTable) {
-    var resultSet = cqlSession.execute(statement);
-    resultSet.forEach(result -> {
-      var query = QueryBuilder.insertInto(keyspace, destinationTable)
-          .value(columnId, QueryBuilder.literal(result.get(columnId, UUID.class)))
-          .value(columnData, QueryBuilder.literal(result.get(columnData, String.class)))
-          .value(columnTimestamp, QueryBuilder.literal(result.get(columnTimestamp, Instant.class)))
-          .build();
-      cqlSession.execute(query);
-    });
+    cqlSession.execute(batchStatement.build());
   }
 
   private void awaitThread(Future<?> future) {
@@ -167,10 +172,10 @@ class CassandraCqlProvider implements Closeable {
 
   @Override
   public void close() {
-    // close cassandra session for the given config
-    SessionManager.closeSession(cassandraConfig);
     // wait for tasks completion and terminate executor gracefully
     executorService.shutdown();
+    // close cassandra session for the given config
+    SessionManager.closeSession(cassandraConfig);
   }
 
 }

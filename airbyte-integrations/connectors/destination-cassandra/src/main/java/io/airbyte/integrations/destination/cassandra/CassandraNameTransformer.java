@@ -17,13 +17,10 @@ class CassandraNameTransformer extends StandardNameTransformer {
   }
 
   String outputKeyspace(String namespace) {
-    if (cassandraConfig.isNamespaces()) {
-      return namespace != null
-          ? CharMatcher.is('_').trimLeadingFrom(Names.toAlphanumericAndUnderscore(namespace))
-          : cassandraConfig.getKeyspace();
-    } else {
+    if (namespace == null || namespace.isBlank()) {
       return cassandraConfig.getKeyspace();
     }
+    return CharMatcher.is('_').trimLeadingFrom(Names.toAlphanumericAndUnderscore(namespace));
   }
 
   String outputTable(String streamName) {
