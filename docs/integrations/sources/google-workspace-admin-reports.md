@@ -58,4 +58,4 @@ You should now be ready to use the Google Workspace Admin Reports API connector 
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.5   | 2021-10-07 | [6878](https://github.com/airbytehq/airbyte/pull/6878) | Integrate SAT |
+| 0.1.5   | 2021-10-07 | [6878](https://github.com/airbytehq/airbyte/pull/6878) | Improve testing & output schemas |
