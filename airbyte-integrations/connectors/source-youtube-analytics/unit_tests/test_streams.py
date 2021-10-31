@@ -6,17 +6,59 @@ import datetime
 from collections import OrderedDict
 from unittest.mock import MagicMock
 
-from source_youtube_analytics.source import ChannelReports, ReportResources
+from source_youtube_analytics.source import ChannelReports, JobsStream, ReportResources
+
+
+def test_jobs_stream_list(requests_mock):
+    json_result = {
+        "jobs": [
+            {
+                "id": "038777e7-dc6e-43c8-b86f-ed954c7acd95",
+                "name": "Airbyte reporting job",
+                "reportTypeId": "channel_playback_location_a2",
+                "createTime": "2021-10-30T20:32:58Z",
+            },
+            {
+                "id": "1c20da45-0604-4d60-85db-925989df1db6",
+                "name": "Airbyte reporting job",
+                "reportTypeId": "channel_basic_a2",
+                "createTime": "2021-10-25T19:48:36Z",
+            },
+        ]
+    }
+
+    mock_jobs_call = requests_mock.get("https://youtubereporting.googleapis.com/v1/jobs", json=json_result)
+    jobs_stream = JobsStream()
+    jobs = jobs_stream.list()
+    assert jobs == json_result["jobs"]
+    assert mock_jobs_call.called_once
+
+
+def test_jobs_stream_create(requests_mock):
+    name = "channel_basic_a2"
+    json_result = {
+        "createTime": "2021-10-30T20:32:58Z",
+        "id": "038777e7-dc6e-43c8-b86f-ed954c7acd95",
+        "name": "Airbyte reporting job",
+        "reportTypeId": name,
+    }
+
+    mock_jobs_call = requests_mock.post("https://youtubereporting.googleapis.com/v1/jobs", json=json_result)
+    jobs_stream = JobsStream()
+    result = jobs_stream.create(name)
+    assert result == json_result["id"]
+    assert mock_jobs_call.called_once
 
 
 def test_report_resources_path(requests_mock):
     mock_jobs_call = requests_mock.post("https://youtubereporting.googleapis.com/v1/jobs", json={"id": "job1"})
 
-    stream = ReportResources("stream_name", "job1")
+    jobs_stream = JobsStream()
+    stream = ReportResources("stream_name", jobs_stream, "job1")
     assert stream.path() == "jobs/job1/reports"
     assert not mock_jobs_call.called_once
 
-    stream = ReportResources("stream_name", job_id=None)
+    stream = ReportResources("stream_name", jobs_stream, job_id=None)
     assert not mock_jobs_call.called_once
     assert stream.path() == "jobs/job1/reports"
     assert mock_jobs_call.called_once
@@ -26,13 +68,14 @@ def test_report_resources_path(requests_mock):
 
 
 def test_report_resources_parse_response():
-    stream = ReportResources("stream_name", "job1")
+    jobs_stream = JobsStream()
+    stream = ReportResources("stream_name", jobs_stream, "job1")
 
     response = MagicMock()
     response.json = MagicMock(return_value={})
-    assert stream.parse_response(response, stream_state={}) == []
+    assert stream.parse_response(response, stream_state={}) == [None]
     response.json = MagicMock(return_value={"reports": []})
-    assert stream.parse_response(response, stream_state={}) == []
+    assert stream.parse_response(response, stream_state={}) == [None]
 
     reports = [
         {
@@ -77,12 +120,14 @@ def test_report_resources_parse_response():
 
 
 def test_report_resources_next_page_token():
-    stream = ReportResources("stream_name", "job1")
+    jobs_stream = JobsStream()
+    stream = ReportResources("stream_name", jobs_stream, "job1")
     assert stream.next_page_token({}) is None
 
 
 def test_channel_reports_path():
-    parent = ReportResources("stream_name", "job1")
+    jobs_stream = JobsStream()
+    parent = ReportResources("stream_name", jobs_stream, "job1")
     stream = ChannelReports("stream_name", [], parent=parent)
 
     stream_slice = {
@@ -101,7 +146,8 @@ def test_channel_reports_path():
 
 
 def test_channel_reports_parse_response():
-    parent = ReportResources("stream_name", "job1")
+    jobs_stream = JobsStream()
+    parent = ReportResources("stream_name", jobs_stream, "job1")
     stream = ChannelReports("stream_name", ["date", "channel_id"], parent=parent)
 
     response = MagicMock()
