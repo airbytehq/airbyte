@@ -56,3 +56,12 @@
 {% macro sqlserver__cast_to_boolean(field) -%}
     cast({{ field }} as bit)
 {%- endmacro %}
+
+{# empty_string_to_null -------------------------------------------------     #}
+{% macro empty_string_to_null(field) -%}
+    {{ return(adapter.dispatch('empty_string_to_null')(field)) }}
+{%- endmacro %}
+
+{%- macro default__empty_string_to_null(field) -%}
+    nullif({{ field }}, '')
+{%- endmacro %}

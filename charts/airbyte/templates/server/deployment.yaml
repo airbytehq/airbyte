@@ -53,8 +53,8 @@ spec:
         - name: DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.externalDatabase.existingSecret }}
-              key: {{ .Values.externalDatabase.existingSecretPasswordKey }}
+              name: {{ include "airbyte.postgresql.secretName" . }}
+              key: {{ include "airbyte.database.existingsecret.key" . }}
         {{- end }}
         - name: DATABASE_URL
           valueFrom:
@@ -153,6 +153,9 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: GCP_STORAGE_BUCKET
+        {{- if .Values.server.extraEnv }}
+        {{ .Values.server.extraEnv | toYaml | nindent 8 }}
+        {{- end }}
         {{- if .Values.server.livenessProbe.enabled }}
         livenessProbe:
           httpGet:

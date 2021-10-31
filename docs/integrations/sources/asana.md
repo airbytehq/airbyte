@@ -2,8 +2,7 @@
 
 ## Sync overview
 
-This source can sync data for the [Asana API](https://developers.asana.com/docs). It supports only Full Refresh syncs. 
-
+This source can sync data for the [Asana API](https://developers.asana.com/docs). It supports only Full Refresh syncs.
 
 ### Output schema
 
@@ -53,15 +52,14 @@ The Asana connector should not run into Asana API limitations under normal usage
 
 ### Setup guide
 
-Please follow these [steps](https://developers.asana.com/docs/personal-access-token)
-to obtain Personal Access Token for your account.
-
+Please follow these [steps](https://developers.asana.com/docs/personal-access-token) to obtain Personal Access Token for your account.
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.3   | 2021-10-06 | [](https://github.com/airbytehq/airbyte/pull/) | Add oauth init flow parameters support |
-| 0.1.2   | 2021-09-24 | [6402](https://github.com/airbytehq/airbyte/pull/6402) | Fix SAT tests: update schemas and invalid_config.json file |
-| 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add entrypoint and bump version for connector |
-| 0.1.0   | 2021-05-25 | [3510](https://github.com/airbytehq/airbyte/pull/3510) | New Source: Asana |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.3 | 2021-10-06 |  | Add oauth init flow parameters support |
+| 0.1.2 | 2021-09-24 | [6402](https://github.com/airbytehq/airbyte/pull/6402) | Fix SAT tests: update schemas and invalid\_config.json file |
+| 0.1.1 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add entrypoint and bump version for connector |
+| 0.1.0 | 2021-05-25 | [3510](https://github.com/airbytehq/airbyte/pull/3510) | New Source: Asana |
+

@@ -6,8 +6,6 @@ package io.airbyte.server.handlers;
 
 import static java.util.stream.Collectors.toMap;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -18,10 +16,10 @@ import io.airbyte.api.model.AirbyteStreamConfiguration;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
+import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.JobConfigType;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead;
@@ -34,7 +32,6 @@ import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.WebBackendConnectionCreate;
 import io.airbyte.api.model.WebBackendConnectionRead;
 import io.airbyte.api.model.WebBackendConnectionReadList;
@@ -55,7 +52,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
-import org.apache.logging.log4j.util.Strings;
 
 public class WebBackendConnectionsHandler {
 
@@ -82,17 +78,17 @@ public class WebBackendConnectionsHandler {
     this.operationsHandler = operationsHandler;
   }
 
-  public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
+  public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     final List<WebBackendConnectionRead> reads = Lists.newArrayList();
-    for (ConnectionRead connection : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
+    for (final ConnectionRead connection : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
       reads.add(buildWebBackendConnectionRead(connection));
     }
     return new WebBackendConnectionReadList().connections(reads);
   }
 
-  private WebBackendConnectionRead buildWebBackendConnectionRead(ConnectionRead connectionRead)
+  private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceRead source = getSourceRead(connectionRead);
     final DestinationRead destination = getDestinationRead(connectionRead);
@@ -100,31 +96,33 @@ public class WebBackendConnectionsHandler {
     final WebBackendConnectionRead WebBackendConnectionRead = getWebBackendConnectionRead(connectionRead, source, destination, operations);
 
     final JobReadList syncJobReadList = getSyncJobs(connectionRead);
-    Predicate<JobRead> hasRunningJob = (JobRead job) -> !TERMINAL_STATUSES.contains(job.getStatus());
+    final Predicate<JobRead> hasRunningJob = (JobRead job) -> !TERMINAL_STATUSES.contains(job.getStatus());
     WebBackendConnectionRead.setIsSyncing(syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).anyMatch(hasRunningJob));
     setLatestSyncJobProperties(WebBackendConnectionRead, syncJobReadList);
     return WebBackendConnectionRead;
   }
 
-  private SourceRead getSourceRead(ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
+  private SourceRead getSourceRead(final ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(connectionRead.getSourceId());
     return sourceHandler.getSource(sourceIdRequestBody);
   }
 
-  private DestinationRead getDestinationRead(ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
+  private DestinationRead getDestinationRead(final ConnectionRead connectionRead)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(connectionRead.getDestinationId());
     return destinationHandler.getDestination(destinationIdRequestBody);
   }
 
-  private OperationReadList getOperationReadList(ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
+  private OperationReadList getOperationReadList(final ConnectionRead connectionRead)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     return operationsHandler.listOperationsForConnection(connectionIdRequestBody);
   }
 
-  private WebBackendConnectionRead getWebBackendConnectionRead(ConnectionRead connectionRead,
-                                                               SourceRead source,
-                                                               DestinationRead destination,
-                                                               OperationReadList operations) {
+  private WebBackendConnectionRead getWebBackendConnectionRead(final ConnectionRead connectionRead,
+                                                               final SourceRead source,
+                                                               final DestinationRead destination,
+                                                               final OperationReadList operations) {
     return new WebBackendConnectionRead()
         .connectionId(connectionRead.getConnectionId())
         .sourceId(connectionRead.getSourceId())
@@ -143,14 +141,14 @@ public class WebBackendConnectionsHandler {
         .resourceRequirements(connectionRead.getResourceRequirements());
   }
 
-  private JobReadList getSyncJobs(ConnectionRead connectionRead) throws IOException {
+  private JobReadList getSyncJobs(final ConnectionRead connectionRead) throws IOException {
     final JobListRequestBody jobListRequestBody = new JobListRequestBody()
         .configId(connectionRead.getConnectionId().toString())
         .configTypes(Collections.singletonList(JobConfigType.SYNC));
     return jobHistoryHandler.listJobsFor(jobListRequestBody);
   }
 
-  private void setLatestSyncJobProperties(WebBackendConnectionRead WebBackendConnectionRead, JobReadList syncJobReadList) {
+  private void setLatestSyncJobProperties(final WebBackendConnectionRead WebBackendConnectionRead, final JobReadList syncJobReadList) {
     syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).findFirst()
         .ifPresent(job -> {
           WebBackendConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
@@ -158,12 +156,12 @@ public class WebBackendConnectionsHandler {
         });
   }
 
-  public WebBackendConnectionReadList webBackendSearchConnections(WebBackendConnectionSearch webBackendConnectionSearch)
+  public WebBackendConnectionReadList webBackendSearchConnections(final WebBackendConnectionSearch webBackendConnectionSearch)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     final List<WebBackendConnectionRead> reads = Lists.newArrayList();
-    for (ConnectionRead connectionRead : connectionsHandler.listConnections().getConnections()) {
-      if (matchSearch(webBackendConnectionSearch, connectionRead)) {
+    for (final ConnectionRead connectionRead : connectionsHandler.listConnections().getConnections()) {
+      if (connectionsHandler.matchSearch(toConnectionSearch(webBackendConnectionSearch), connectionRead)) {
         reads.add(buildWebBackendConnectionRead(connectionRead));
       }
     }
@@ -171,104 +169,7 @@ public class WebBackendConnectionsHandler {
     return new WebBackendConnectionReadList().connections(reads);
   }
 
-  private boolean matchSearch(WebBackendConnectionSearch connectionSearch, ConnectionRead connectionRead)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
-
-    final ConnectionRead connectionReadFromSearch = fromConnectionSearch(connectionSearch, connectionRead);
-    final SourceRead sourceRead = sourceHandler.getSource(new SourceIdRequestBody().sourceId(connectionRead.getSourceId()));
-    final SourceRead sourceReadFromSearch = fromSourceSearch(connectionSearch.getSource(), sourceRead);
-    final DestinationRead destinationRead =
-        destinationHandler.getDestination(new DestinationIdRequestBody().destinationId(connectionRead.getDestinationId()));
-    final DestinationRead destinationReadFromSearch = fromDestinationSearch(connectionSearch.getDestination(), destinationRead);
-
-    return (connectionReadFromSearch == null || connectionReadFromSearch.equals(connectionRead)) &&
-        (sourceReadFromSearch == null || sourceReadFromSearch.equals(sourceRead)) &&
-        (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
-  }
-
-  private ConnectionRead fromConnectionSearch(WebBackendConnectionSearch connectionSearch, ConnectionRead connectionRead) {
-    if (connectionSearch == null)
-      return connectionRead;
-
-    final ConnectionRead fromSearch = new ConnectionRead();
-    fromSearch.connectionId(connectionSearch.getConnectionId() == null ? connectionRead.getConnectionId() : connectionSearch.getConnectionId());
-    fromSearch.destinationId(connectionSearch.getDestinationId() == null ? connectionRead.getDestinationId() : connectionSearch.getDestinationId());
-    fromSearch.name(Strings.isBlank(connectionSearch.getName()) ? connectionRead.getName() : connectionSearch.getName());
-    fromSearch.namespaceFormat(Strings.isBlank(connectionSearch.getNamespaceFormat()) || connectionSearch.getNamespaceFormat().equals("null")
-        ? connectionRead.getNamespaceFormat()
-        : connectionSearch.getNamespaceFormat());
-    fromSearch.namespaceDefinition(
-        connectionSearch.getNamespaceDefinition() == null ? connectionRead.getNamespaceDefinition() : connectionSearch.getNamespaceDefinition());
-    fromSearch.prefix(Strings.isBlank(connectionSearch.getPrefix()) ? connectionRead.getPrefix() : connectionSearch.getPrefix());
-    fromSearch.schedule(connectionSearch.getSchedule() == null ? connectionRead.getSchedule() : connectionSearch.getSchedule());
-    fromSearch.sourceId(connectionSearch.getSourceId() == null ? connectionRead.getSourceId() : connectionSearch.getSourceId());
-    fromSearch.status(connectionSearch.getStatus() == null ? connectionRead.getStatus() : connectionSearch.getStatus());
-
-    // these properties are not enabled in the search
-    fromSearch.resourceRequirements(connectionRead.getResourceRequirements());
-    fromSearch.syncCatalog(connectionRead.getSyncCatalog());
-    fromSearch.operationIds(connectionRead.getOperationIds());
-
-    return fromSearch;
-  }
-
-  private SourceRead fromSourceSearch(SourceSearch sourceSearch, SourceRead sourceRead) {
-    if (sourceSearch == null)
-      return sourceRead;
-
-    final SourceRead fromSearch = new SourceRead();
-    fromSearch.name(Strings.isBlank(sourceSearch.getName()) ? sourceRead.getName() : sourceSearch.getName());
-    fromSearch
-        .sourceDefinitionId(sourceSearch.getSourceDefinitionId() == null ? sourceRead.getSourceDefinitionId() : sourceSearch.getSourceDefinitionId());
-    fromSearch.sourceId(sourceSearch.getSourceId() == null ? sourceRead.getSourceId() : sourceSearch.getSourceId());
-    fromSearch.sourceName(Strings.isBlank(sourceSearch.getSourceName()) ? sourceRead.getSourceName() : sourceSearch.getSourceName());
-    fromSearch.workspaceId(sourceSearch.getWorkspaceId() == null ? sourceRead.getWorkspaceId() : sourceSearch.getWorkspaceId());
-    if (sourceSearch.getConnectionConfiguration() == null) {
-      fromSearch.connectionConfiguration(sourceRead.getConnectionConfiguration());
-    } else {
-      JsonNode connectionConfiguration = sourceSearch.getConnectionConfiguration();
-      sourceRead.getConnectionConfiguration().fieldNames()
-          .forEachRemaining(field -> {
-            if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
-              ((ObjectNode) connectionConfiguration).set(field, sourceRead.getConnectionConfiguration().get(field));
-            }
-          });
-      fromSearch.connectionConfiguration(connectionConfiguration);
-    }
-
-    return fromSearch;
-  }
-
-  private DestinationRead fromDestinationSearch(DestinationSearch destinationSearch, DestinationRead destinationRead) {
-    if (destinationSearch == null)
-      return destinationRead;
-
-    final DestinationRead fromSearch = new DestinationRead();
-    fromSearch.name(Strings.isBlank(destinationSearch.getName()) ? destinationRead.getName() : destinationSearch.getName());
-    fromSearch.destinationDefinitionId(destinationSearch.getDestinationDefinitionId() == null ? destinationRead.getDestinationDefinitionId()
-        : destinationSearch.getDestinationDefinitionId());
-    fromSearch
-        .destinationId(destinationSearch.getDestinationId() == null ? destinationRead.getDestinationId() : destinationSearch.getDestinationId());
-    fromSearch.destinationName(
-        Strings.isBlank(destinationSearch.getDestinationName()) ? destinationRead.getDestinationName() : destinationSearch.getDestinationName());
-    fromSearch.workspaceId(destinationSearch.getWorkspaceId() == null ? destinationRead.getWorkspaceId() : destinationSearch.getWorkspaceId());
-    if (destinationSearch.getConnectionConfiguration() == null) {
-      fromSearch.connectionConfiguration(destinationRead.getConnectionConfiguration());
-    } else {
-      JsonNode connectionConfiguration = destinationSearch.getConnectionConfiguration();
-      destinationRead.getConnectionConfiguration().fieldNames()
-          .forEachRemaining(field -> {
-            if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
-              ((ObjectNode) connectionConfiguration).set(field, destinationRead.getConnectionConfiguration().get(field));
-            }
-          });
-      fromSearch.connectionConfiguration(connectionConfiguration);
-    }
-
-    return fromSearch;
-  }
-
-  public WebBackendConnectionRead webBackendGetConnection(WebBackendConnectionRequestBody webBackendConnectionRequestBody)
+  public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
         .connectionId(webBackendConnectionRequestBody.getConnectionId());
@@ -290,17 +191,17 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  protected static AirbyteCatalog updateSchemaWithDiscovery(AirbyteCatalog original, AirbyteCatalog discovered) {
+  protected static AirbyteCatalog updateSchemaWithDiscovery(final AirbyteCatalog original, final AirbyteCatalog discovered) {
     final Map<String, AirbyteStreamAndConfiguration> originalStreamsByName = original.getStreams()
         .stream()
         .collect(toMap(s -> s.getStream().getName(), s -> s));
 
     final List<AirbyteStreamAndConfiguration> streams = new ArrayList<>();
 
-    for (AirbyteStreamAndConfiguration s : discovered.getStreams()) {
+    for (final AirbyteStreamAndConfiguration s : discovered.getStreams()) {
       final AirbyteStream stream = s.getStream();
       final AirbyteStreamAndConfiguration originalStream = originalStreamsByName.get(stream.getName());
-      AirbyteStreamConfiguration outputStreamConfig;
+      final AirbyteStreamConfiguration outputStreamConfig;
 
       if (originalStream != null) {
         final AirbyteStreamConfiguration originalStreamConfig = originalStream.getConfig();
@@ -338,21 +239,21 @@ public class WebBackendConnectionsHandler {
     return new AirbyteCatalog().streams(streams);
   }
 
-  public WebBackendConnectionRead webBackendCreateConnection(WebBackendConnectionCreate webBackendConnectionCreate)
+  public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = createOperations(webBackendConnectionCreate);
     final ConnectionCreate connectionCreate = toConnectionCreate(webBackendConnectionCreate, operationIds);
     return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate));
   }
 
-  public WebBackendConnectionRead webBackendUpdateConnection(WebBackendConnectionUpdate webBackendConnectionUpdate)
+  public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
     final ConnectionRead connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
     if (MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog())) {
-      ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
+      final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
 
       // wait for this to execute
       schedulerHandler.resetConnection(connectionId);
@@ -363,23 +264,23 @@ public class WebBackendConnectionsHandler {
     return buildWebBackendConnectionRead(connectionRead);
   }
 
-  private List<UUID> createOperations(WebBackendConnectionCreate webBackendConnectionCreate)
+  private List<UUID> createOperations(final WebBackendConnectionCreate webBackendConnectionCreate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<UUID> operationIds = new ArrayList<>();
-    for (var operationCreate : webBackendConnectionCreate.getOperations()) {
+    for (final var operationCreate : webBackendConnectionCreate.getOperations()) {
       operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
     }
     return operationIds;
   }
 
-  private List<UUID> updateOperations(WebBackendConnectionUpdate webBackendConnectionUpdate)
+  private List<UUID> updateOperations(final WebBackendConnectionUpdate webBackendConnectionUpdate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionRead connectionRead = connectionsHandler
         .getConnection(new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId()));
     final List<UUID> originalOperationIds = new ArrayList<>(connectionRead.getOperationIds());
     final List<UUID> operationIds = new ArrayList<>();
 
-    for (var operationCreateOrUpdate : webBackendConnectionUpdate.getOperations()) {
+    for (final var operationCreateOrUpdate : webBackendConnectionUpdate.getOperations()) {
       if (operationCreateOrUpdate.getOperationId() == null || !originalOperationIds.contains(operationCreateOrUpdate.getOperationId())) {
         final OperationCreate operationCreate = toOperationCreate(operationCreateOrUpdate);
         operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
@@ -393,17 +294,17 @@ public class WebBackendConnectionsHandler {
     return operationIds;
   }
 
-  private UUID getWorkspaceIdForConnection(UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
+  private UUID getWorkspaceIdForConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
     final UUID sourceId = connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getSourceId();
     return getWorkspaceIdForSource(sourceId);
   }
 
-  private UUID getWorkspaceIdForSource(UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
+  private UUID getWorkspaceIdForSource(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
     return sourceHandler.getSource(new SourceIdRequestBody().sourceId(sourceId)).getWorkspaceId();
   }
 
   @VisibleForTesting
-  protected static OperationCreate toOperationCreate(WebBackendOperationCreateOrUpdate operationCreateOrUpdate) {
+  protected static OperationCreate toOperationCreate(final WebBackendOperationCreateOrUpdate operationCreateOrUpdate) {
     final OperationCreate operationCreate = new OperationCreate();
 
     operationCreate.name(operationCreateOrUpdate.getName());
@@ -414,7 +315,7 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  protected static OperationUpdate toOperationUpdate(WebBackendOperationCreateOrUpdate operationCreateOrUpdate) {
+  protected static OperationUpdate toOperationUpdate(final WebBackendOperationCreateOrUpdate operationCreateOrUpdate) {
     final OperationUpdate operationUpdate = new OperationUpdate();
 
     operationUpdate.operationId(operationCreateOrUpdate.getOperationId());
@@ -425,7 +326,7 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  protected static ConnectionCreate toConnectionCreate(WebBackendConnectionCreate webBackendConnectionCreate, List<UUID> operationIds) {
+  protected static ConnectionCreate toConnectionCreate(final WebBackendConnectionCreate webBackendConnectionCreate, final List<UUID> operationIds) {
     final ConnectionCreate connectionCreate = new ConnectionCreate();
 
     connectionCreate.name(webBackendConnectionCreate.getName());
@@ -444,7 +345,7 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  protected static ConnectionUpdate toConnectionUpdate(WebBackendConnectionUpdate webBackendConnectionUpdate, List<UUID> operationIds) {
+  protected static ConnectionUpdate toConnectionUpdate(final WebBackendConnectionUpdate webBackendConnectionUpdate, final List<UUID> operationIds) {
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate();
 
     connectionUpdate.connectionId(webBackendConnectionUpdate.getConnectionId());
@@ -458,6 +359,22 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
 
     return connectionUpdate;
+  }
+
+  @VisibleForTesting
+  protected static ConnectionSearch toConnectionSearch(final WebBackendConnectionSearch webBackendConnectionSearch) {
+    return new ConnectionSearch()
+        .name(webBackendConnectionSearch.getName())
+        .connectionId(webBackendConnectionSearch.getConnectionId())
+        .source(webBackendConnectionSearch.getSource())
+        .sourceId(webBackendConnectionSearch.getSourceId())
+        .destination(webBackendConnectionSearch.getDestination())
+        .destinationId(webBackendConnectionSearch.getDestinationId())
+        .namespaceDefinition(webBackendConnectionSearch.getNamespaceDefinition())
+        .namespaceFormat(webBackendConnectionSearch.getNamespaceFormat())
+        .prefix(webBackendConnectionSearch.getPrefix())
+        .schedule(webBackendConnectionSearch.getSchedule())
+        .status(webBackendConnectionSearch.getStatus());
   }
 
 }

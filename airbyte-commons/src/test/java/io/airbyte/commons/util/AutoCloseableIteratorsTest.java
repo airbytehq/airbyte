@@ -49,7 +49,7 @@ class AutoCloseableIteratorsTest {
     verify(stream).close();
   }
 
-  private void assertNext(Iterator<String> iterator, String value) {
+  private void assertNext(final Iterator<String> iterator, final String value) {
     assertTrue(iterator.hasNext());
     assertEquals(value, iterator.next());
   }
@@ -96,12 +96,12 @@ class AutoCloseableIteratorsTest {
     verify(onClose2, times(1)).call();
   }
 
-  private void assertOnCloseInvocations(List<VoidCallable> haveClosed, List<VoidCallable> haveNotClosed) throws Exception {
-    for (VoidCallable voidCallable : haveClosed) {
+  private void assertOnCloseInvocations(final List<VoidCallable> haveClosed, final List<VoidCallable> haveNotClosed) throws Exception {
+    for (final VoidCallable voidCallable : haveClosed) {
       verify(voidCallable).call();
     }
 
-    for (VoidCallable voidCallable : haveNotClosed) {
+    for (final VoidCallable voidCallable : haveNotClosed) {
       verify(voidCallable, never()).call();
     }
   }

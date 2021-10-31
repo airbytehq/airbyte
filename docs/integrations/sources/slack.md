@@ -47,6 +47,7 @@ The Slack connector should not run into Slack API limitations under normal usage
 #### Slack connector can be connected using two types of authentication: OAuth2.0 or API Token
 
 #### Using OAuth2.0 authenticator
+
 * Client ID - issued when you created your app
 * Client Secret - issued when you created your app
 * Refresh Token - a special kind of token used to obtain a renewed access token
@@ -54,6 +55,7 @@ The Slack connector should not run into Slack API limitations under normal usage
 You can get more detailed information about this type of authentication by reading [Slack's documentation about OAuth2.0](https://api.slack.com/authentication/oauth-v2).
 
 #### Using API Token
+
 * Slack API Token 
 
 ### Setup guide
@@ -107,11 +109,12 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.12   | 2021-10-07 | [6570](https://github.com/airbytehq/airbyte/pull/6570) | Implement OAuth support with OAuth authenticator |
-| 0.1.11   | 2021-08-27 | [5830](https://github.com/airbytehq/airbyte/pull/5830) | Fixed sync operations hang forever issue |
-| 0.1.10   | 2021-08-27 | [5697](https://github.com/airbytehq/airbyte/pull/5697) | Fixed max retries issue |
-| 0.1.9   | 2021-07-20 | [4860](https://github.com/airbytehq/airbyte/pull/4860) | Fixed reading threads issue |
-| 0.1.8   | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683) | Add float_ts primary key |
-| 0.1.7   | 2021-06-25 | [3978](https://github.com/airbytehq/airbyte/pull/3978) | Release Slack CDK Connector |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.12 | 2021-10-07 | [6570](https://github.com/airbytehq/airbyte/pull/6570) | Implement OAuth support with OAuth authenticator |
+| 0.1.11 | 2021-08-27 | [5830](https://github.com/airbytehq/airbyte/pull/5830) | Fixed sync operations hang forever issue |
+| 0.1.10 | 2021-08-27 | [5697](https://github.com/airbytehq/airbyte/pull/5697) | Fixed max retries issue |
+| 0.1.9 | 2021-07-20 | [4860](https://github.com/airbytehq/airbyte/pull/4860) | Fixed reading threads issue |
+| 0.1.8 | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683) | Add float\_ts primary key |
+| 0.1.7 | 2021-06-25 | [3978](https://github.com/airbytehq/airbyte/pull/3978) | Release Slack CDK Connector |
+

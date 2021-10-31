@@ -25,7 +25,7 @@ public class ConnectorSpecificationHelpers {
           .withConnectionSpecification(Jsons.deserialize(Files.readString(path)))
           .withSupportsDBT(false)
           .withSupportsNormalization(false);
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new RuntimeException(e);
     }
   }

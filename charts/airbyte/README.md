@@ -29,7 +29,7 @@
 | `webapp.replicaCount`        | Number of webapp replicas                                        | `1`              |
 | `webapp.image.repository`    | The repository to use for the airbyte webapp image.              | `airbyte/webapp` |
 | `webapp.image.pullPolicy`    | the pull policy to use for the airbyte webapp image              | `IfNotPresent`   |
-| `webapp.image.tag`           | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.30.15-alpha`  |
+| `webapp.image.tag`           | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.30.23-alpha`  |
 | `webapp.podAnnotations`      | Add extra annotations to the webapp pod(s)                       | `{}`             |
 | `webapp.service.type`        | The service type to use for the webapp service                   | `ClusterIP`      |
 | `webapp.service.port`        | The service port to expose the webapp on                         | `80`             |
@@ -46,8 +46,7 @@
 | `webapp.api.url`             | The webapp API url.                                              | `/api/v1/`       |
 | `webapp.isDemo`              | Set to true if this is a demo                                    | `false`          |
 | `webapp.fullstory.enabled`   | Whether or not to enable fullstory                               | `false`          |
-| `webapp.openreplay.enabled`  | Whether or not to enable openreplay                              | `false`          |
-| `webapp.storytime.enabled`   | Whether or not to enable Papercups storytime                     | `false`          |
+| `webapp.extraEnv`            | Additional env vars for webapp pod(s).                           | `[]`             |
 
 
 ### Scheduler Parameters
@@ -57,13 +56,14 @@
 | `scheduler.replicaCount`       | Number of scheduler replicas                                        | `1`                 |
 | `scheduler.image.repository`   | The repository to use for the airbyte scheduler image.              | `airbyte/scheduler` |
 | `scheduler.image.pullPolicy`   | the pull policy to use for the airbyte scheduler image              | `IfNotPresent`      |
-| `scheduler.image.tag`          | The airbyte scheduler image tag. Defaults to the chart's AppVersion | `0.30.15-alpha`     |
+| `scheduler.image.tag`          | The airbyte scheduler image tag. Defaults to the chart's AppVersion | `0.30.23-alpha`     |
 | `scheduler.podAnnotations`     | Add extra annotations to the scheduler pod                          | `{}`                |
 | `scheduler.resources.limits`   | The resources limits for the scheduler container                    | `{}`                |
 | `scheduler.resources.requests` | The requested resources for the scheduler container                 | `{}`                |
 | `scheduler.nodeSelector`       | Node labels for pod assignment                                      | `{}`                |
 | `scheduler.tolerations`        | Tolerations for scheduler pod assignment.                           | `[]`                |
 | `scheduler.log.level`          | The log level to log at.                                            | `INFO`              |
+| `scheduler.extraEnv`           | Additional env vars for scheduler pod(s).                           | `[]`                |
 
 
 ### Pod Sweeper parameters
@@ -87,7 +87,7 @@
 | `server.replicaCount`                       | Number of server replicas                                        | `1`              |
 | `server.image.repository`                   | The repository to use for the airbyte server image.              | `airbyte/server` |
 | `server.image.pullPolicy`                   | the pull policy to use for the airbyte server image              | `IfNotPresent`   |
-| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.30.15-alpha`  |
+| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.30.23-alpha`  |
 | `server.podAnnotations`                     | Add extra annotations to the server pod                          | `{}`             |
 | `server.livenessProbe.enabled`              | Enable livenessProbe on the server                               | `true`           |
 | `server.livenessProbe.initialDelaySeconds`  | Initial delay seconds for livenessProbe                          | `30`             |
@@ -111,6 +111,7 @@
 | `server.nodeSelector`                       | Node labels for pod assignment                                   | `{}`             |
 | `server.tolerations`                        | Tolerations for server pod assignment.                           | `[]`             |
 | `server.log.level`                          | The log level to log at                                          | `INFO`           |
+| `server.extraEnv`                           | Additional env vars for server pod(s).                           | `[]`             |
 
 
 ### Worker Parameters
@@ -120,7 +121,7 @@
 | `worker.replicaCount`                       | Number of worker replicas                                        | `1`              |
 | `worker.image.repository`                   | The repository to use for the airbyte worker image.              | `airbyte/worker` |
 | `worker.image.pullPolicy`                   | the pull policy to use for the airbyte worker image              | `IfNotPresent`   |
-| `worker.image.tag`                          | The airbyte worker image tag. Defaults to the chart's AppVersion | `0.30.15-alpha`  |
+| `worker.image.tag`                          | The airbyte worker image tag. Defaults to the chart's AppVersion | `0.30.23-alpha`  |
 | `worker.podAnnotations`                     | Add extra annotations to the worker pod(s)                       | `{}`             |
 | `worker.livenessProbe.enabled`              | Enable livenessProbe on the worker                               | `true`           |
 | `worker.livenessProbe.initialDelaySeconds`  | Initial delay seconds for livenessProbe                          | `30`             |
@@ -154,6 +155,7 @@
 | `temporal.service.port`     | The temporal port and exposed kubernetes port | `7233`                  |
 | `temporal.nodeSelector`     | Node labels for pod assignment                | `{}`                    |
 | `temporal.tolerations`      | Tolerations for pod assignment.               | `[]`                    |
+| `temporal.extraEnv`         | Additional env vars for temporal pod(s).      | `[]`                    |
 
 
 ### Airbyte Database parameters

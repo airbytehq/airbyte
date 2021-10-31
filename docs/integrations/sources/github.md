@@ -41,21 +41,17 @@ This connector outputs the following incremental streams:
 
 ### Notes
 
-1. Only 3 streams from above 12 incremental streams (`comments`, `commits` and `issues`) are pure incremental
-meaning that they:
-    - read only new records;
-    - output only new records.
+1. Only 3 streams from above 12 incremental streams \(`comments`, `commits` and `issues`\) are pure incremental meaning that they:
+   * read only new records;
+   * output only new records.
 
-    Other 8 incremental streams are also incremental but with one difference, they:
-    - read all records;
-    - output only new records.
+     Other 8 incremental streams are also incremental but with one difference, they:
 
-    Please, consider this behaviour when using those 8 incremental streams because it may affect you API call limits.
+   * read all records;
+   * output only new records.
 
-2. We are passing few parameters (`since`, `sort` and `direction`) to GitHub in order to filter records and sometimes
-   for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub
-   instead of records (respective `WARN` log message will be outputted). In this case Specifying more recent
-   `start_date` may help.
+     Please, consider this behaviour when using those 8 incremental streams because it may affect you API call limits.
+2. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
 
 ### Features
 
@@ -82,7 +78,6 @@ The Github connector should not run into Github API limitations under normal usa
 
 **Note**: if you want to specify the organization to receive data from all its repositories, then you should specify it according to the following pattern: `<organization>/*`
 
-
 ### Setup guide
 
 Log into Github and then generate a [personal access token](https://github.com/settings/tokens).
@@ -95,21 +90,22 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.2.3   | 2021-10-06 | [6833](https://github.com/airbytehq/airbyte/pull/6833) | Fix config backward compatability |
-| 0.2.2   | 2021-10-05 | [6761](https://github.com/airbytehq/airbyte/pull/6761) | Add oauth worflow specification |
-| 0.2.1   | 2021-09-22 | [6223](https://github.com/airbytehq/airbyte/pull/6223) | Add option to pull commits from user-specified branches |
-| 0.2.0   | 2021-09-19 | [5898](https://github.com/airbytehq/airbyte/pull/5898) and [6227](https://github.com/airbytehq/airbyte/pull/6227) | Don't minimize any output fields & add better error handling  |
-| 0.1.11  | 2021-09-15 | [5949](https://github.com/airbytehq/airbyte/pull/5949) | Add caching for all streams |
-| 0.1.10  | 2021-09-09 | [5860](https://github.com/airbytehq/airbyte/pull/5860) | Add reaction streams |
-| 0.1.9   | 2021-09-02 | [5788](https://github.com/airbytehq/airbyte/pull/5788) | Handling empty repository, check method using RepositoryStats stream |
-| 0.1.8   | 2021-09-01 | [5757](https://github.com/airbytehq/airbyte/pull/5757) | Add more streams |
-| 0.1.7   | 2021-08-27 | [5696](https://github.com/airbytehq/airbyte/pull/5696) | Handle negative backoff values |
-| 0.1.6   | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5223) | Add MultipleTokenAuthenticator |
-| 0.1.5   | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5456) | Fix set up validation |
-| 0.1.4   | 2021-08-13 | [5136](https://github.com/airbytehq/airbyte/pull/5136) | Support syncing multiple repositories/organizations |
-| 0.1.3   | 2021-08-03 | [5156](https://github.com/airbytehq/airbyte/pull/5156) | Extended existing schemas with `users` property for certain streams |
-| 0.1.2   | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708) | Fix bug with IssueEvents stream and add handling for rate limiting |
-| 0.1.1   | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590) | Fix schema in the `pull_request` stream |
-| 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174) | New Source: GitHub |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.2.3 | 2021-10-06 | [6833](https://github.com/airbytehq/airbyte/pull/6833) | Fix config backward compatability |
+| 0.2.2 | 2021-10-05 | [6761](https://github.com/airbytehq/airbyte/pull/6761) | Add oauth worflow specification |
+| 0.2.1 | 2021-09-22 | [6223](https://github.com/airbytehq/airbyte/pull/6223) | Add option to pull commits from user-specified branches |
+| 0.2.0 | 2021-09-19 | [5898](https://github.com/airbytehq/airbyte/pull/5898) and [6227](https://github.com/airbytehq/airbyte/pull/6227) | Don't minimize any output fields & add better error handling |
+| 0.1.11 | 2021-09-15 | [5949](https://github.com/airbytehq/airbyte/pull/5949) | Add caching for all streams |
+| 0.1.10 | 2021-09-09 | [5860](https://github.com/airbytehq/airbyte/pull/5860) | Add reaction streams |
+| 0.1.9 | 2021-09-02 | [5788](https://github.com/airbytehq/airbyte/pull/5788) | Handling empty repository, check method using RepositoryStats stream |
+| 0.1.8 | 2021-09-01 | [5757](https://github.com/airbytehq/airbyte/pull/5757) | Add more streams |
+| 0.1.7 | 2021-08-27 | [5696](https://github.com/airbytehq/airbyte/pull/5696) | Handle negative backoff values |
+| 0.1.6 | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5223) | Add MultipleTokenAuthenticator |
+| 0.1.5 | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5456) | Fix set up validation |
+| 0.1.4 | 2021-08-13 | [5136](https://github.com/airbytehq/airbyte/pull/5136) | Support syncing multiple repositories/organizations |
+| 0.1.3 | 2021-08-03 | [5156](https://github.com/airbytehq/airbyte/pull/5156) | Extended existing schemas with `users` property for certain streams |
+| 0.1.2 | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708) | Fix bug with IssueEvents stream and add handling for rate limiting |
+| 0.1.1 | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590) | Fix schema in the `pull_request` stream |
+| 0.1.0 | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174) | New Source: GitHub |
+

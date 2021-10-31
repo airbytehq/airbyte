@@ -23,7 +23,7 @@ public class MoreMappers {
     return result;
   }
 
-  public static ObjectMapper initYamlMapper(YAMLFactory factory) {
+  public static ObjectMapper initYamlMapper(final YAMLFactory factory) {
     return new ObjectMapper(factory).registerModule(new JavaTimeModule());
   }
 

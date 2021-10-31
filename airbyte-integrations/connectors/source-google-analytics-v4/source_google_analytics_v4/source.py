@@ -140,7 +140,6 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
         if next_page_token:
             request_body["reportRequests"][0].update(next_page_token)
-
         return request_body
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -202,13 +201,11 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
         start_date = min(start_date, end_date)
         date_slices = []
-
         while start_date <= end_date:
             end_date_slice = start_date.add(days=self.window_in_days)
             date_slices.append({"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date_slice)})
             # add 1 day for start next slice from next day and not duplicate data from previous slice end date.
             start_date = end_date_slice.add(days=1)
-
         return date_slices
 
     def get_data(self, data):
@@ -217,7 +214,6 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                 data = data.get(data_field, [])
             else:
                 return []
-
         return data
 
     def lookup_data_type(self, field_type, attribute):
@@ -383,55 +379,29 @@ class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
 
-class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
-    """
-    This class supports either default authorization_code and JWT OAuth
-    authorizations in case of service account.
-
-    Request example for API token extraction:
+class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
+    """Request example for API token extraction:
     curl --location --request POST
     https://oauth2.googleapis.com/token?grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=signed_JWT
     """
 
-    use_jwt_auth: bool = False
-
     def __init__(self, config):
-        client_secret, client_id, refresh_token = None, None, None
-        if "credentials_json" in config:
-            # Backward compatability with previous config format. Use
-            # credentials_json from config root.
-            auth = config
-        else:
-            auth = config["credentials"]
-        if "credentials_json" in auth:
-            # Service account JWT authorization
-            self.use_jwt_auth = True
-            credentials_json = json.loads(auth["credentials_json"])
-            client_secret, client_id, refresh_token = credentials_json["private_key"], credentials_json["private_key_id"], None
-            self.client_email = credentials_json["client_email"]
-        else:
-            # OAuth 2.0 authorization_code authorization
-            client_secret, client_id, refresh_token = auth["client_secret"], auth["client_id"], auth["refresh_token"]
+        self.credentials_json = json.loads(config["credentials_json"])
+        self.client_email = self.credentials_json["client_email"]
         self.scope = "https://www.googleapis.com/auth/analytics.readonly"
 
         super().__init__(
             token_refresh_endpoint="https://oauth2.googleapis.com/token",
-            client_secret=client_secret,
-            client_id=client_id,
-            refresh_token=refresh_token,
-            scopes=[self.scope],
+            client_secret=self.credentials_json["private_key"],
+            client_id=self.credentials_json["private_key_id"],
+            refresh_token=None,
         )
 
     def refresh_access_token(self) -> Tuple[str, int]:
         """
-        Calling the Google OAuth 2.0 token endpoint. Used for authorizing
-        with signed JWT if credentials_json provided by config. Otherwise use
-        default OAuth2.0 workflow.
-        :return tuple with access token and token's time-to-live.
+        Calling the Google OAuth 2.0 token endpoint. Used for authorizing signed JWT.
+        Returns tuple with access token and token's time-to-live
         """
-        if not self.use_jwt_auth:
-            return super().refresh_access_token()
-
         response_json = None
         try:
             response = requests.request(method="POST", url=self.token_refresh_endpoint, params=self.get_refresh_request_params())
@@ -452,7 +422,6 @@ class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
     def get_refresh_request_params(self) -> Mapping[str, any]:
         """
         Sign the JWT with RSA-256 using the private key found in service account JSON file.
-        Not used with default OAuth2.0 authorization_code grant_type.
         """
         token_lifetime = 3600  # token lifetime is 1 hour
 
@@ -469,34 +438,74 @@ class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
         }
         headers = {"kid": self.client_id}
         signed_jwt = jwt.encode(payload, self.client_secret, headers=headers, algorithm="RS256")
-        return {"grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer", "assertion": signed_jwt}
+        return {"grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer", "assertion": str(signed_jwt)}
+
+
+class TestStreamConnection(GoogleAnalyticsV4Stream):
+    """
+    Test the connectivity and permissions to read the data from the stream.
+    Because of the nature of the connector, the streams are created dynamicaly.
+    We declare the static stream like this to be able to test out the prmissions to read the particular view_id."""
 
 
 class SourceGoogleAnalyticsV4(AbstractSource):
     """Google Analytics lets you analyze data about customer engagement with your website or application."""
 
+    @staticmethod
+    def get_authenticator(config):
+        # backwards compatibility, credentials_json used to be in the top level of the connector
+        if config.get("credentials_json"):
+            return GoogleAnalyticsServiceOauth2Authenticator(config)
+
+        auth_params = config.get("credentials")
+
+        if auth_params.get("auth_type") == "Service" or auth_params.get("credentials_json"):
+            return GoogleAnalyticsServiceOauth2Authenticator(auth_params)
+        else:
+            return Oauth2Authenticator(
+                token_refresh_endpoint="https://oauth2.googleapis.com/token",
+                client_secret=auth_params.get("client_secret"),
+                client_id=auth_params.get("client_id"),
+                refresh_token=auth_params.get("refresh_token"),
+                scopes=["https://www.googleapis.com/auth/analytics.readonly"],
+            )
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
+
+        # declare additional variables
+        authenticator = self.get_authenticator(config)
+        config["authenticator"] = authenticator
+        config["metrics"] = ["ga:14dayUsers"]
+        config["dimensions"] = ["ga:date"]
+
+        # Produce only one date-slice to check the reading permissions
+        first_stream_slice = TestStreamConnection(config).stream_slices(stream_state=None)[0]
+
         try:
-            url = f"{GoogleAnalyticsV4TypesList.url_base}"
-
-            authenticator = GoogleAnalyticsOauth2Authenticator(config)
-
-            session = requests.get(url, headers=authenticator.get_auth_header())
-            session.raise_for_status()
-
+            # test the eligibility of custom_reports input
             custom_reports = config.get("custom_reports")
             if custom_reports:
                 json.loads(custom_reports)
-            return True, None
-        except (requests.exceptions.RequestException, ValueError) as e:
-            if e == ValueError:
-                logger.error("Invalid custom reports json structure.")
-            return False, e
+
+            # test the reading operation
+            read_check = list(TestStreamConnection(config).read_records(sync_mode=None, stream_slice=first_stream_slice))
+            if read_check:
+                return True, None
+
+        except ValueError as e:
+            return False, f"Invalid custom reports json structure. {e}"
+
+        except requests.exceptions.RequestException as e:
+            error_msg = e.response.json().get("error")
+            if e.response.status_code == 403:
+                return False, f"Please check the permissions for the requested view_id: {config['view_id']}. {error_msg}"
+            else:
+                return False, f"{error_msg}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         streams: List[GoogleAnalyticsV4Stream] = []
 
-        authenticator = GoogleAnalyticsOauth2Authenticator(config)
+        authenticator = self.get_authenticator(config)
 
         config["authenticator"] = authenticator
 

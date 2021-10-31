@@ -76,7 +76,7 @@ public class AirbyteTestContainer {
     waitForAirbyte();
   }
 
-  private static Map<String, String> prepareDockerComposeEnvVariables(File envFile) throws IOException {
+  private static Map<String, String> prepareDockerComposeEnvVariables(final File envFile) throws IOException {
     LOGGER.info("Searching for environment in {}", envFile);
     Preconditions.checkArgument(envFile.exists(), "could not find docker compose environment");
 
@@ -88,7 +88,7 @@ public class AirbyteTestContainer {
   /**
    * TestContainers docker compose files cannot have container_names, so we filter them.
    */
-  private static File prepareDockerComposeFile(File originalDockerComposeFile) throws IOException {
+  private static File prepareDockerComposeFile(final File originalDockerComposeFile) throws IOException {
     final File cleanedDockerComposeFile = Files.createTempFile(Path.of("/tmp"), "docker_compose", "acceptance_test").toFile();
 
     try (final Scanner scanner = new Scanner(originalDockerComposeFile)) {
@@ -124,7 +124,7 @@ public class AirbyteTestContainer {
       try {
         healthApi.getHealthCheck();
         break;
-      } catch (ApiException e) {
+      } catch (final ApiException e) {
         lastException = e;
         LOGGER.info("airbyte not ready yet. attempt: {}", i);
       }
@@ -136,7 +136,7 @@ public class AirbyteTestContainer {
     }
   }
 
-  private void serviceLogConsumer(DockerComposeContainer<?> composeContainer, String service) {
+  private void serviceLogConsumer(final DockerComposeContainer<?> composeContainer, final String service) {
     composeContainer.withLogConsumer(service, logConsumer(customServiceLogListeners.get(service)));
   }
 
@@ -147,7 +147,7 @@ public class AirbyteTestContainer {
    *        consumer. if null do nothing.
    * @return log consumer
    */
-  private Consumer<OutputFrame> logConsumer(Consumer<String> customConsumer) {
+  private Consumer<OutputFrame> logConsumer(final Consumer<String> customConsumer) {
     return c -> {
       if (c != null && c.getBytes() != null) {
         final String log = new String(c.getBytes());
@@ -180,7 +180,7 @@ public class AirbyteTestContainer {
 
     try {
       stopRetainVolumesInternal();
-    } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | NoSuchFieldException e) {
+    } catch (final InvocationTargetException | IllegalAccessException | NoSuchMethodException | NoSuchFieldException e) {
       throw new RuntimeException(e);
     }
   }
@@ -218,28 +218,28 @@ public class AirbyteTestContainer {
     private final Map<String, String> env;
     private final Map<String, Consumer<String>> customServiceLogListeners;
 
-    public Builder(File dockerComposeFile) {
+    public Builder(final File dockerComposeFile) {
       this.dockerComposeFile = dockerComposeFile;
       this.customServiceLogListeners = new HashMap<>();
       this.env = new HashMap<>();
     }
 
-    public Builder setEnv(File envFile) throws IOException {
+    public Builder setEnv(final File envFile) throws IOException {
       this.env.putAll(prepareDockerComposeEnvVariables(envFile));
       return this;
     }
 
-    public Builder setEnv(Map<String, String> env) {
+    public Builder setEnv(final Map<String, String> env) {
       this.env.putAll(env);
       return this;
     }
 
-    public Builder setEnvVariable(String propertyName, String propertyValue) {
+    public Builder setEnvVariable(final String propertyName, final String propertyValue) {
       this.env.put(propertyName, propertyValue);
       return this;
     }
 
-    public Builder setLogListener(String serviceName, Consumer<String> logConsumer) {
+    public Builder setLogListener(final String serviceName, final Consumer<String> logConsumer) {
       this.customServiceLogListeners.put(serviceName, logConsumer);
       return this;
     }
