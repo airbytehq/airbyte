@@ -395,6 +395,8 @@ class ArchiveClient:
             error_msg = f"Failed to parse reader options {repr(err)}\n{reader_options}\n{traceback.format_exc()}"
             logger.error(error_msg)
             raise ConfigurationError(error_msg) from err
+        else:
+            self._reader_options = self._reader_options or {'all' : {}}
 
         try:
             self._file_rename = json.loads(file_rename)
