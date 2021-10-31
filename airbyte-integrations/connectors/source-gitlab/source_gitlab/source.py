@@ -36,18 +36,21 @@ from .streams import (
     Users,
 )
 
-class GitlabAuthenticator(TokenAuthenticator):
 
+class GitlabAuthenticator(TokenAuthenticator):
     def __init__(self, config: Dict):
         self.config = config
 
     def get_auth(self) -> TokenAuthenticator:
         private_token = self.config.get("private_token")
-        oauth_token = self.config.get("authentication").get("access_token")
+        oauth_token = self.config.get("credentials")
         if private_token:
+            # support of old config
             return TokenAuthenticator(token=private_token)
         if oauth_token:
-            return TokenAuthenticator(token=oauth_token)
+            # support of new config with oauth2.0
+            return TokenAuthenticator(token=oauth_token.get("access_token"))
+
 
 class SourceGitlab(AbstractSource):
     def _generate_main_streams(self, config: Mapping[str, Any]) -> Tuple[GitlabStream, GitlabStream]:

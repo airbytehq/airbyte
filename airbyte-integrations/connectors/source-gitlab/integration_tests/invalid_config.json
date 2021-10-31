@@ -4,8 +4,8 @@
   "start_date": "2021-01-01T00:00:00Z",
   "groups": "new-group-airbute",
   "projects": "new-group-airbute/new-ci-test-project",
-  "authentication": {
-      "authentication": "access_token",
+  "credentials": {
+      "credentials": "access_token",
       "access_token": "migrated_from_old_config"
   }
 }
