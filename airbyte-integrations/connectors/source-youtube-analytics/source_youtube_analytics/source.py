@@ -9,7 +9,6 @@ import io
 import json
 import pkgutil
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import urljoin
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -19,26 +18,57 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
+class JobsStream(HttpStream):
+    " https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs "
+
+    name = None
+    primary_key = None
+    http_method = None
+    url_base = "https://youtubereporting.googleapis.com/v1/"
+    JOB_NAME = "Airbyte reporting job"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        return [response.json()]
+
+    def path(self, **kwargs) -> str:
+        return "jobs"
+
+    def request_body_json(self, **kwargs) -> Optional[Mapping]:
+        if self.name:
+            return {"name": self.JOB_NAME, "reportTypeId": self.name}
+
+    def list(self):
+        " https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/list "
+        self.name = None
+        self.http_method = "GET"
+        results = list(self.read_records(sync_mode=None))
+        result = results[0]
+        return result.get("jobs", {})
+
+    def create(self, name):
+        " https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/create "
+        self.name = name
+        self.http_method = "POST"
+        results = list(self.read_records(sync_mode=None))
+        result = results[0]
+        return result["id"]
+
+
 class ReportResources(HttpStream):
+    " https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs.reports/list "
+
     name = None
     primary_key = "id"
     url_base = "https://youtubereporting.googleapis.com/v1/"
 
-    def __init__(self, name: str, job_id: str, **kwargs):
+    def __init__(self, name: str, jobs_stream: JobsStream, job_id: str, **kwargs):
         self.name = name
+        self.jobs_stream = jobs_stream
         self.job_id = job_id
         return super().__init__(**kwargs)
-
-    def create_job(self, name):
-        request_json = {
-            "name": "Airbyte reporting job",
-            "reportTypeId": name,
-        }
-        url = urljoin(self.url_base, "jobs")
-        response = self._session.post(url, json=request_json)
-        response.raise_for_status()
-        response_json = response.json()
-        return response_json["id"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -64,12 +94,14 @@ class ReportResources(HttpStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         if not self.job_id:
-            self.job_id = self.create_job(self.name)
+            self.job_id = self.jobs_stream.create(self.name)
             self.logger.info(f"YouTube reporting job is created: '{self.job_id}'")
         return "jobs/{}/reports".format(self.job_id)
 
 
 class ChannelReports(HttpSubStream):
+    " https://developers.google.com/youtube/reporting/v1/reports/channel_reports "
+
     name = None
     primary_key = None
     cursor_field = "date"
@@ -92,8 +124,8 @@ class ChannelReports(HttpSubStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if not current_stream_state:
-            return {"date": latest_record["date"]}
-        return {"date": max(current_stream_state["date"], latest_record["date"])}
+            return {self.cursor_field: latest_record[self.cursor_field]}
+        return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -101,7 +133,7 @@ class ChannelReports(HttpSubStream):
         return stream_slice["parent"]["downloadUrl"][len(self.url_base):]
 
     def read_records(self, *, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        parent = stream_slice.get('parent')
+        parent = stream_slice.get("parent")
         if parent:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         else:
@@ -123,18 +155,12 @@ class SourceYoutubeAnalytics(AbstractSource):
             scopes=["https://www.googleapis.com/auth/yt-analytics-monetary.readonly"],
         )
 
-    def get_jobs(self, authenticator):
-        headers = authenticator.get_auth_header()
-        url = urljoin(ReportResources.url_base, "jobs")
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        return response.json().get("jobs", {})
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         authenticator = self.get_authenticator(config)
+        jobs_stream = JobsStream(authenticator=authenticator)
 
         try:
-            self.get_jobs(authenticator)
+            jobs_stream.list()
         except Exception as e:
             return False, str(e)
 
@@ -142,7 +168,8 @@ class SourceYoutubeAnalytics(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
-        jobs = self.get_jobs(authenticator)
+        jobs_stream = JobsStream(authenticator=authenticator)
+        jobs = jobs_stream.list()
         report_to_job_id = {j["reportTypeId"]: j["id"] for j in jobs}
 
         channel_reports = json.loads(pkgutil.get_data("source_youtube_analytics", "defaults/channel_reports.json"))
@@ -152,6 +179,6 @@ class SourceYoutubeAnalytics(AbstractSource):
             stream_name = channel_report["id"]
             dimensions = channel_report["dimensions"]
             job_id = report_to_job_id.get(stream_name)
-            parent = ReportResources(name=stream_name, job_id=job_id, authenticator=authenticator)
+            parent = ReportResources(name=stream_name, jobs_stream=jobs_stream, job_id=job_id, authenticator=authenticator)
             streams.append(ChannelReports(name=stream_name, dimensions=dimensions, parent=parent, authenticator=authenticator))
         return streams
