@@ -195,6 +195,7 @@ jobs:
           SOURCE_FRESHSERVICE_TEST_CREDS: ${{ secrets.SOURCE_FRESHSERVICE_TEST_CREDS }}
           SOURCE_LEMLIST_TEST_CREDS: ${{ secrets.SOURCE_LEMLIST_TEST_CREDS }}
           SOURCE_STRAVA_TEST_CREDS: ${{ secrets.SOURCE_STRAVA_TEST_CREDS }}
+          SOURCE_PAYSTACK_TEST_CREDS: ${{ secrets.SOURCE_PAYSTACK_TEST_CREDS }}
       - run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
           ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
