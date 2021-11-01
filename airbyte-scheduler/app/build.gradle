@@ -68,7 +68,6 @@ task copyGeneratedTar(type: Copy) {
     into 'docker'
 }
 
-
 def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {

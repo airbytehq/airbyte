@@ -77,7 +77,7 @@ task copyGeneratedXml(type: Copy) {
     from('src/main/resources') {
         include 'init.sql'
     }
-    into 'docker'
+    into 'docker/bin'
 }
 
 def buildTag = System.getenv('VERSION') ?: 'dev'
