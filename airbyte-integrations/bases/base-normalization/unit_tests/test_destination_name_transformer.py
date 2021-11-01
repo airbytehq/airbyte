@@ -4,7 +4,6 @@
 
 
 import os
-from re import I
 
 import pytest
 from normalization.destination_type import DestinationType
