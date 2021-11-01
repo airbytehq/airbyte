@@ -5,11 +5,13 @@
 package io.airbyte.oauth.flows;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -76,7 +78,9 @@ public class GitlabOAuthFlowTest {
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
         gitlaboAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    // assertTrue(Jsons.serialize(Map.of("credentials", returnedCredentials)),
+    // Jsons.serialize(actualQueryParams));
+    assertTrue(Maps.difference(Map.of("credentials", returnedCredentials), actualQueryParams).areEqual());
   }
 
 }
