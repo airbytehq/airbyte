@@ -29,19 +29,20 @@ REPORT_MAPPING = {
 class GoogleAds:
     DEFAULT_PAGE_SIZE = 1000
 
-    def __init__(self, credentials: Mapping[str, Any], customer_id: str):
+    def __init__(self, credentials: Mapping[str, Any], customer_ids: List[str]):
         self.client = GoogleAdsClient.load_from_dict(credentials)
-        self.customer_id = customer_id
+        self.customer_ids = customer_ids
         self.ga_service = self.client.get_service("GoogleAdsService")
 
-    def send_request(self, query: str) -> SearchGoogleAdsResponse:
+    def send_request(self, query: str) -> List[SearchGoogleAdsResponse]:
         client = self.client
-        search_request = client.get_type("SearchGoogleAdsRequest")
-        search_request.customer_id = self.customer_id
-        search_request.query = query
-        search_request.page_size = self.DEFAULT_PAGE_SIZE
+        for customer_id in self.customer_ids:
+            search_request = client.get_type("SearchGoogleAdsRequest")
+            search_request.customer_id = customer_id
+            search_request.query = query
+            search_request.page_size = self.DEFAULT_PAGE_SIZE
 
-        return self.ga_service.search(search_request)
+            yield self.ga_service.search(search_request)
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """

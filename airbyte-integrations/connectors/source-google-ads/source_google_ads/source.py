@@ -40,7 +40,7 @@ class SourceGoogleAds(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             logger.info("Checking the config")
-            google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
+            google_api = GoogleAds(credentials=self.get_credentials(config), customer_ids=config["customer_ids"])
             account_stream = Accounts(api=google_api)
             list(account_stream.read_records(sync_mode=SyncMode.full_refresh))
             # Check custom query request validity by sending metric request with non-existant time window
@@ -55,7 +55,7 @@ class SourceGoogleAds(AbstractSource):
             return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error.failure)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
+        google_api = GoogleAds(credentials=self.get_credentials(config), customer_ids=config["customer_ids"])
         incremental_stream_config = dict(
             api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"]
         )
