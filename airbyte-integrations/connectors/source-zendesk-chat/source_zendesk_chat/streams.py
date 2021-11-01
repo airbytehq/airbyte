@@ -5,16 +5,19 @@
 
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from urllib.parse import parse_qs, urlparse
 
 import pendulum
 import requests
-from base_python import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream
 
 
-class Stream(HttpStream):
+class Stream(HttpStream, ABC):
     url_base = "https://www.zopim.com/api/v2/"
+    primary_key = "id"
 
     data_field = None
+
     limit = 100
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
@@ -26,7 +29,12 @@ class Stream(HttpStream):
         return self.name
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return {}
+        response_data = response.json()
+
+        if "next_url" in response_data:
+            next_url = response_data["next_url"]
+            cursor = parse_qs(urlparse(next_url).query)["cursor"]
+            return {"cursor": cursor}
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
@@ -48,11 +56,14 @@ class Stream(HttpStream):
             response_data = response_data.get(self.data_field, [])
 
         if isinstance(response_data, list):
-            return response_data
+            return list(map(self.parse_response_obj, response_data))
         elif isinstance(response_data, dict):
-            return [response_data]
+            return [self.parse_response_obj(response_data)]
         else:
             raise Exception(f"Unsupported type of response data for stream {self.name}")
+
+    def parse_response_obj(self, response_obj: dict) -> dict:
+        return response_obj
 
 
 class BaseIncrementalStream(Stream, ABC):
@@ -95,8 +106,9 @@ class TimeIncrementalStream(BaseIncrementalStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_benchmark = self._field_to_datetime(latest_record[self.cursor_field])
         if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: str(max(latest_benchmark, self._field_to_datetime(current_stream_state[self.cursor_field])))}
-        return {self.cursor_field: str(latest_benchmark)}
+            state = max(latest_benchmark, self._field_to_datetime(current_stream_state[self.cursor_field]))
+            return {self.cursor_field: state.strftime("%Y-%m-%dT%H:%M:%SZ")}
+        return {self.cursor_field: latest_benchmark.strftime("%Y-%m-%dT%H:%M:%SZ")}
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
@@ -116,6 +128,10 @@ class TimeIncrementalStream(BaseIncrementalStream, ABC):
 
     def path(self, **kwargs) -> str:
         return f"incremental/{self.name}"
+
+    def parse_response_obj(self, response_obj: dict) -> dict:
+        response_obj[self.cursor_field] = pendulum.parse(response_obj[self.cursor_field]).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return response_obj
 
 
 class IdIncrementalStream(BaseIncrementalStream):
@@ -167,11 +183,27 @@ class AgentTimelines(TimeIncrementalStream):
             params["start_time"] = params["start_time"] * 1000000
         return params
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_data = response.json()
+        stream_data = self.get_stream_data(response_data)
+
+        def generate_key(record):
+            record.update({"id": "|".join((str(record.get("agent_id", "")), str(record.get("start_time", ""))))})
+            return record
+
+        # associate the surrogate key
+        yield from map(
+            generate_key,
+            stream_data,
+        )
+
 
 class Accounts(Stream):
     """
     Accounts Stream: https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account
     """
+
+    primary_key = "account_key"
 
     def path(self, **kwargs) -> str:
         return "account"
@@ -237,8 +269,15 @@ class RoutingSettings(Stream):
     Routing Settings Stream: https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings
     """
 
+    primary_key = ""
+
     name = "routing_settings"
     data_field = "data"
 
-    def path(self, **kwargs) -> str:
+    def path(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
         return "routing_settings/account"
