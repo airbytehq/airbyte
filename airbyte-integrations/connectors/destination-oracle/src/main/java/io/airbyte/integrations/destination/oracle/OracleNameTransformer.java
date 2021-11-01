@@ -12,21 +12,21 @@ import java.util.UUID;
 public class OracleNameTransformer extends ExtendedNameTransformer {
 
   @Override
-  protected String applyDefaultCase(String input) {
+  protected String applyDefaultCase(final String input) {
     return input.toUpperCase();
   }
 
   @Override
-  public String getRawTableName(String streamName) {
+  public String getRawTableName(final String streamName) {
     return convertStreamName("airbyte_raw_" + streamName);
   }
 
   @Override
-  public String getTmpTableName(String streamName) {
+  public String getTmpTableName(final String streamName) {
     return convertStreamName("airbyte_tmp_" + streamName + "_" + UUID.randomUUID().toString().replace("-", ""));
   }
 
-  private String maxStringLength(String value, Integer length) {
+  private String maxStringLength(final String value, final Integer length) {
     if (value.length() <= length) {
       return value;
     }
@@ -34,14 +34,14 @@ public class OracleNameTransformer extends ExtendedNameTransformer {
   }
 
   @Override
-  public String convertStreamName(String input) {
+  public String convertStreamName(final String input) {
     String result = super.convertStreamName(input);
     if (!result.isEmpty() && result.charAt(0) == '_') {
       result = result.substring(1);
     }
     // prior to Oracle version 12.2, identifiers are not allowed to exceed 30 characters in length.
     // However, from version 12.2 they can be up to 128 bytes long. (Note: bytes, not characters).
-    return maxStringLength(result, 30);
+    return maxStringLength(result, 128);
   }
 
 }

@@ -3,7 +3,6 @@
 #
 
 import functools
-import json
 from typing import List, Mapping, Optional
 
 import dpath.exceptions
@@ -53,14 +52,17 @@ def diff_dicts(left, right, use_markup) -> Optional[List[str]]:
 
 
 @functools.total_ordering
-class DictWithHash(dict):
-
-    _hash: str = None
+class HashMixin:
+    @staticmethod
+    def get_hash(obj):
+        if isinstance(obj, Mapping):
+            return hash(str({k: (HashMixin.get_hash(v)) for k, v in sorted(obj.items())}))
+        if isinstance(obj, List):
+            return hash(str(sorted([HashMixin.get_hash(v) for v in obj])))
+        return hash(obj)
 
     def __hash__(self):
-        if not self._hash:
-            self._hash = hash(json.dumps({k: serialize(v) for k, v in self.items()}, sort_keys=True))
-        return self._hash
+        return HashMixin.get_hash(self)
 
     def __lt__(self, other):
         return hash(self) < hash(other)
@@ -69,21 +71,29 @@ class DictWithHash(dict):
         return hash(self) == hash(other)
 
 
-def serialize(value, exclude_fields: List[str] = None) -> str:
+class DictWithHashMixin(HashMixin, dict):
+    pass
+
+
+class ListWithHashMixin(HashMixin, list):
+    pass
+
+
+def make_hashable(obj, exclude_fields: List[str] = None) -> str:
     """
-    Simplify comparison of nested dicts/lists
-    :param value value for comparison
-    :param exclude_fields if value is Mapping, some fields can be excluded
-    """
-    if isinstance(value, Mapping):
+   Simplify comparison of nested dicts/lists
+   :param obj value for comparison
+   :param exclude_fields if value is Mapping, some fields can be excluded
+   """
+    if isinstance(obj, Mapping):
         # If value is Mapping, some fields can be excluded
         exclude_fields = exclude_fields or []
         for field in exclude_fields:
             try:
-                dpath.util.delete(value, field)
+                dpath.util.delete(obj, field)
             except dpath.exceptions.PathNotFound:
                 pass
-        return DictWithHash(value)
-    if isinstance(value, List):
-        return sorted([serialize(v) for v in value])
-    return str(value)
+        return DictWithHashMixin(obj)
+    if isinstance(obj, List):
+        return ListWithHashMixin(obj)
+    return obj

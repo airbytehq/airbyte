@@ -24,19 +24,19 @@ public class GcsDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsDestination.class);
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new GcsDestination()).run(args);
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      GcsDestinationConfig destinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
-      AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(destinationConfig);
+      final GcsDestinationConfig destinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
+      final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(destinationConfig);
       s3Client.putObject(destinationConfig.getBucketName(), "test", "check-content");
       s3Client.deleteObject(destinationConfig.getBucketName(), "test");
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
@@ -46,10 +46,10 @@ public class GcsDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog configuredCatalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
-    GcsWriterFactory formatterFactory = new ProductionWriterFactory();
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog configuredCatalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    final GcsWriterFactory formatterFactory = new ProductionWriterFactory();
     return new GcsConsumer(GcsDestinationConfig.getGcsDestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
   }
 

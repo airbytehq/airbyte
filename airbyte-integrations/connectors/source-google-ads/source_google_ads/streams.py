@@ -12,7 +12,9 @@ from google.ads.googleads.v8.services.services.google_ads_service.pagers import 
 from .google_ads import GoogleAds
 
 
-def chunk_date_range(start_date: str, conversion_window: int, field: str, end_date: str = None) -> Iterable[Mapping[str, any]]:
+def chunk_date_range(
+    start_date: str, conversion_window: int, field: str, end_date: str = None, time_unit: str = "months", days_of_data_storage: int = None
+) -> Iterable[Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
     Returns a list of the beginning and ending timetsamps of each month between the start date and now.
@@ -21,6 +23,10 @@ def chunk_date_range(start_date: str, conversion_window: int, field: str, end_da
     intervals = []
     end_date = pendulum.parse(end_date) if end_date else pendulum.now()
     start_date = pendulum.parse(start_date)
+
+    # For some metrics we can only get data not older than N days, it is Google Ads policy
+    if days_of_data_storage:
+        start_date = max(start_date, pendulum.now().subtract(days=days_of_data_storage - conversion_window))
 
     # As in to return some state when state in abnormal
     if start_date > end_date:
@@ -32,7 +38,7 @@ def chunk_date_range(start_date: str, conversion_window: int, field: str, end_da
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date < end_date:
         intervals.append({field: start_date.to_date_string()})
-        start_date = start_date.add(months=1)
+        start_date = start_date.add(**{time_unit: 1})
 
     return intervals
 
@@ -55,8 +61,10 @@ class GoogleAdsStream(Stream, ABC):
 
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
+    days_of_data_storage = None
     cursor_field = "segments.date"
     primary_key = None
+    time_unit = "months"
 
     def __init__(self, start_date: str, conversion_window_days: int, **kwargs):
         self.conversion_window_days = conversion_window_days
@@ -67,16 +75,22 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         stream_state = stream_state or {}
         start_date = stream_state.get(self.cursor_field) or self._start_date
 
-        return chunk_date_range(start_date=start_date, conversion_window=self.conversion_window_days, field=self.cursor_field)
+        return chunk_date_range(
+            start_date=start_date,
+            conversion_window=self.conversion_window_days,
+            field=self.cursor_field,
+            time_unit=self.time_unit,
+            days_of_data_storage=self.days_of_data_storage,
+        )
 
     @staticmethod
-    def get_date_params(stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None):
+    def get_date_params(stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None, time_unit: str = "months"):
         end_date = end_date or pendulum.yesterday()
         start_date = pendulum.parse(stream_slice.get(cursor_field))
         if start_date > pendulum.now():
             return start_date.to_date_string(), start_date.add(days=1).to_date_string()
 
-        end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(months=1))
+        end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(**{time_unit: 1}))
 
         # Fix issue #4806, start date should always be lower than end date.
         if start_date.add(days=1).date() >= end_date.date():
@@ -100,7 +114,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return current_stream_state
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
-        start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
+        start_date, end_date = self.get_date_params(stream_slice, self.cursor_field, time_unit=self.time_unit)
         query = GoogleAds.convert_schema_into_query(
             schema=self.get_json_schema(), report_name=self.name, from_date=start_date, to_date=end_date, cursor_field=self.cursor_field
         )
@@ -179,3 +193,12 @@ class UserLocationReport(IncrementalGoogleAdsStream):
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v8/user_location_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#geo_performance
     """
+
+
+class ClickView(IncrementalGoogleAdsStream):
+    """
+    ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView
+    """
+
+    time_unit = "days"
+    days_of_data_storage = 90

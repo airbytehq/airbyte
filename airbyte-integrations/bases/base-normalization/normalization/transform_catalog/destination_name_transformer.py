@@ -23,6 +23,8 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.MYSQL.value: 64,
     # https://oracle-base.com/articles/12c/long-identifiers-12cr2
     DestinationType.ORACLE.value: 128,
+    # https://docs.microsoft.com/en-us/sql/odbc/microsoft/column-name-limitations?view=sql-server-ver15
+    DestinationType.MSSQL.value: 64,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -201,6 +203,9 @@ class DestinationNameTransformer:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.upper()
         elif self.destination_type.value == DestinationType.MYSQL.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
+        elif self.destination_type.value == DestinationType.MSSQL.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
         elif self.destination_type.value == DestinationType.ORACLE.value:

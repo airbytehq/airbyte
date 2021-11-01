@@ -10,8 +10,7 @@ The Airbyte Kafka destination allows you to sync data to Kafka. Each stream is w
 
 Each stream will be output into a Kafka topic.
 
-Currently, this connector only writes data with JSON format. More formats (e.g. Apache Avro) will be supported in 
-the future.
+Currently, this connector only writes data with JSON format. More formats \(e.g. Apache Avro\) will be supported in the future.
 
 Each record will contain in its key the uuid assigned by Airbyte, and in the value these 3 fields:
 
@@ -29,7 +28,6 @@ Each record will contain in its key the uuid assigned by Airbyte, and in the val
 | Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
 | Namespaces | Yes |  |
 
-
 ## Getting started
 
 ### Requirements
@@ -46,41 +44,25 @@ Make sure your Kafka brokers can be accessed by Airbyte.
 
 #### **Permissions**
 
-Airbyte should be allowed to write messages into topics, and these topics should be created before writing into Kafka
-or, at least, enable the configuration in the brokers `auto.create.topics.enable` (which is not recommended for
-production environments).
+Airbyte should be allowed to write messages into topics, and these topics should be created before writing into Kafka or, at least, enable the configuration in the brokers `auto.create.topics.enable` \(which is not recommended for production environments\).
 
-Note that if you choose to use dynamic topic names, you will probably need to enable `auto.create.topics.enable` 
-to avoid your connection failing if there was an update to the source connector's schema. Otherwise a hardcoded 
-topic name may be best. 
+Note that if you choose to use dynamic topic names, you will probably need to enable `auto.create.topics.enable` to avoid your connection failing if there was an update to the source connector's schema. Otherwise a hardcoded topic name may be best.
 
 #### Target topics
 
-You can determine the topics to which messages are written via the `topic_pattern` configuration parameter.
-Messages can be written to either a hardcoded, pre-defined topic, or dynamically written to different topics 
-based on the [namespace](https://docs.airbyte.io/understanding-airbyte/namespaces) or stream they came from.
+You can determine the topics to which messages are written via the `topic_pattern` configuration parameter. Messages can be written to either a hardcoded, pre-defined topic, or dynamically written to different topics based on the [namespace](https://docs.airbyte.io/understanding-airbyte/namespaces) or stream they came from.
 
-To write all messages to a single hardcoded topic, enter its name in the `topic_pattern` field 
-e.g: setting `topic_pattern` to `my-topic-name` will write all messages from all streams and namespaces to that topic.
+To write all messages to a single hardcoded topic, enter its name in the `topic_pattern` field e.g: setting `topic_pattern` to `my-topic-name` will write all messages from all streams and namespaces to that topic.
 
-To define the output topics dynamically, you can leverage the `{namespace}` and `{stream}` pattern variables, 
-which cause messages to be written to different topics based on the values present when producing the records.
-For example, setting the `topic_pattern` parameter to `airbyte_syncs/{namespace}/{stream}` means that messages 
-from namespace `n1` and stream `s1` will get written to the topic `airbyte_syncs/n1/s1`, and messages 
-from `s2` to `airbyte_syncs/n1/s2` etc.
+To define the output topics dynamically, you can leverage the `{namespace}` and `{stream}` pattern variables, which cause messages to be written to different topics based on the values present when producing the records. For example, setting the `topic_pattern` parameter to `airbyte_syncs/{namespace}/{stream}` means that messages from namespace `n1` and stream `s1` will get written to the topic `airbyte_syncs/n1/s1`, and messages from `s2` to `airbyte_syncs/n1/s2` etc.
 
-If you define output topic dynamically, you might want to enable `auto.create.topics.enable` to 
-avoid your connection failing if there was an update to the source connector's schema.
-Otherwise, you'll need to manually create topics in Kafka as they are added/updated in the source, which is the
-recommended option for production environments.
+If you define output topic dynamically, you might want to enable `auto.create.topics.enable` to avoid your connection failing if there was an update to the source connector's schema. Otherwise, you'll need to manually create topics in Kafka as they are added/updated in the source, which is the recommended option for production environments.
 
-**NOTICE**: a naming convention transformation will be applied to the target topic name using 
-the `StandardNameTransformer` so that some special characters will be replaced.
+**NOTICE**: a naming convention transformation will be applied to the target topic name using the `StandardNameTransformer` so that some special characters will be replaced.
 
 ### Setup the Kafka destination in Airbyte
 
-You should now have all the requirements needed to configure Kafka as a destination in the UI. You can configure the 
-following parameters on the Kafka destination (though many of these are optional or have default values):
+You should now have all the requirements needed to configure Kafka as a destination in the UI. You can configure the following parameters on the Kafka destination \(though many of these are optional or have default values\):
 
 * **Bootstrap servers**
 * **Topic pattern**
@@ -110,12 +92,13 @@ following parameters on the Kafka destination (though many of these are optional
 
 More info about this can be found in the [Kafka producer configs documentation site](https://kafka.apache.org/documentation/#producerconfigs).
 
-*NOTE*: Some configurations for SSL are not available yet.
+_NOTE_: Some configurations for SSL are not available yet.
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.2   | 2021-09-14 | [#6040](https://github.com/airbytehq/airbyte/pull/6040) | Change spec.json and config parser |
-| 0.1.1   | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
-| 0.1.0   | 2021-07-21 | [#3746](https://github.com/airbytehq/airbyte/pull/3746) | Initial Release |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.2 | 2021-09-14 | [\#6040](https://github.com/airbytehq/airbyte/pull/6040) | Change spec.json and config parser |
+| 0.1.1 | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
+| 0.1.0 | 2021-07-21 | [\#3746](https://github.com/airbytehq/airbyte/pull/3746) | Initial Release |
+

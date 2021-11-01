@@ -13,8 +13,8 @@ import {
   useCurrentUser,
 } from "packages/cloud/services/auth/AuthService";
 import { RowFieldItem } from "packages/cloud/views/auth/components/FormComponents";
-import { EmailSection } from "./components/EmailSection";
-import { PasswordSection } from "./components/PasswordSection";
+
+import { EmailSection, PasswordSection } from "./components";
 
 const Header = styled.div`
   display: flex;

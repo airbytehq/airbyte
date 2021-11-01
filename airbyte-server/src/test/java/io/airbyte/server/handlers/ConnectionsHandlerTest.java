@@ -14,18 +14,23 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.AirbyteCatalog;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
+import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.DestinationSearch;
 import io.airbyte.api.model.NamespaceDefinitionType;
+import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnection;
@@ -71,6 +76,7 @@ class ConnectionsHandlerTest {
   private UUID operationId;
   private StandardSyncOperation standardSyncOperation;
   private WorkspaceHelper workspaceHelper;
+  private TrackingClient trackingClient;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -87,7 +93,8 @@ class ConnectionsHandlerTest {
         .withWorkspaceId(workspaceId);
     destination = new DestinationConnection()
         .withDestinationId(destinationId)
-        .withWorkspaceId(workspaceId);
+        .withWorkspaceId(workspaceId)
+        .withConfiguration(Jsons.jsonNode(Collections.singletonMap("apiKey", "123-abc")));
     standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
@@ -110,7 +117,8 @@ class ConnectionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     uuidGenerator = mock(Supplier.class);
     workspaceHelper = mock(WorkspaceHelper.class);
-    connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper);
+    trackingClient = mock(TrackingClient.class);
+    connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper, trackingClient);
 
     when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(workspaceId);
@@ -184,8 +192,8 @@ class ConnectionsHandlerTest {
   @Test
   void testCreateConnectionWithBadDefinitionIds() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
-    UUID sourceIdBad = UUID.randomUUID();
-    UUID destinationIdBad = UUID.randomUUID();
+    final UUID sourceIdBad = UUID.randomUUID();
+    final UUID destinationIdBad = UUID.randomUUID();
 
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withName("source-test")
@@ -341,6 +349,137 @@ class ConnectionsHandlerTest {
     assertEquals(
         ConnectionHelpers.generateExpectedConnectionRead(standardSync),
         actualConnectionReadList.getConnections().get(0));
+  }
+
+  @Test
+  void testSearchConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final ConnectionRead connectionRead1 = ConnectionHelpers.connectionReadFromStandardSync(standardSync);
+    final StandardSync standardSync2 = new StandardSync()
+        .withConnectionId(UUID.randomUUID())
+        .withName("test connection")
+        .withNamespaceDefinition(JobSyncConfig.NamespaceDefinitionType.CUSTOMFORMAT)
+        .withNamespaceFormat("ns_format")
+        .withPrefix("test_prefix")
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withCatalog(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog())
+        .withSourceId(sourceId)
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(operationId))
+        .withManual(true)
+        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+    final ConnectionRead connectionRead2 = ConnectionHelpers.connectionReadFromStandardSync(standardSync2);
+    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+        .withName("source-test")
+        .withSourceDefinitionId(UUID.randomUUID());
+    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+        .withName("destination-test")
+        .withDestinationDefinitionId(UUID.randomUUID());
+
+    when(configRepository.listStandardSyncs())
+        .thenReturn(Lists.newArrayList(standardSync, standardSync2));
+    when(configRepository.getSourceConnection(source.getSourceId()))
+        .thenReturn(source);
+    when(configRepository.getDestinationConnection(destination.getDestinationId()))
+        .thenReturn(destination);
+    when(configRepository.getStandardSync(standardSync.getConnectionId()))
+        .thenReturn(standardSync);
+    when(configRepository.getStandardSync(standardSync2.getConnectionId()))
+        .thenReturn(standardSync2);
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+        .thenReturn(sourceDefinition);
+    when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
+        .thenReturn(destinationDefinition);
+
+    final ConnectionSearch connectionSearch = new ConnectionSearch();
+    ConnectionReadList actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+
+    connectionSearch.namespaceDefinition(null);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(2, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(1));
+
+    final SourceSearch sourceSearch = new SourceSearch().sourceId(UUID.randomUUID());
+    connectionSearch.setSource(sourceSearch);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(0, actualConnectionReadList.getConnections().size());
+
+    sourceSearch.sourceId(connectionRead1.getSourceId());
+    connectionSearch.setSource(sourceSearch);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(2, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(1));
+
+    final DestinationSearch destinationSearch = new DestinationSearch();
+    connectionSearch.setDestination(destinationSearch);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(2, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(1));
+
+    destinationSearch.connectionConfiguration(Jsons.jsonNode(Collections.singletonMap("apiKey", "not-found")));
+    connectionSearch.setDestination(destinationSearch);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(0, actualConnectionReadList.getConnections().size());
+
+    destinationSearch.connectionConfiguration(Jsons.jsonNode(Collections.singletonMap("apiKey", "123-abc")));
+    connectionSearch.setDestination(destinationSearch);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(2, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(1));
+
+    connectionSearch.name("non-existent");
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(0, actualConnectionReadList.getConnections().size());
+
+    connectionSearch.name(connectionRead1.getName());
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+
+    connectionSearch.name(connectionRead2.getName());
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(0));
+
+    connectionSearch.namespaceDefinition(connectionRead1.getNamespaceDefinition());
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(0, actualConnectionReadList.getConnections().size());
+
+    connectionSearch.name(null);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+
+    connectionSearch.namespaceDefinition(connectionRead2.getNamespaceDefinition());
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(0));
+
+    connectionSearch.namespaceDefinition(null);
+    connectionSearch.status(ConnectionStatus.INACTIVE);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(0, actualConnectionReadList.getConnections().size());
+
+    connectionSearch.status(ConnectionStatus.ACTIVE);
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(2, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(1));
+
+    connectionSearch.prefix(connectionRead1.getPrefix());
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead1, actualConnectionReadList.getConnections().get(0));
+
+    connectionSearch.prefix(connectionRead2.getPrefix());
+    actualConnectionReadList = connectionsHandler.searchConnections(connectionSearch);
+    assertEquals(1, actualConnectionReadList.getConnections().size());
+    assertEquals(connectionRead2, actualConnectionReadList.getConnections().get(0));
   }
 
   @Test

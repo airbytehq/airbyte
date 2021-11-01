@@ -16,11 +16,9 @@ class CloudWorkspacesService extends AirbyteRequestService {
   }
 
   public async get(workspaceId: string): Promise<CloudWorkspace> {
-    const cloudWorkspace = await this.fetch<CloudWorkspace>(`${this.url}/get`, {
+    return await this.fetch<CloudWorkspace>(`${this.url}/get`, {
       workspaceId,
     });
-
-    return cloudWorkspace;
   }
 
   public async getUsage(workspaceId: string): Promise<CloudWorkspaceUsage> {
@@ -37,6 +35,13 @@ class CloudWorkspacesService extends AirbyteRequestService {
   public async remove(workspaceId: string): Promise<void> {
     return this.fetch<void>(`${this.url}/delete`, {
       workspaceId,
+    });
+  }
+
+  public async rename(workspaceId: string, name: string): Promise<void> {
+    return this.fetch<void>(`${this.url}/rename`, {
+      workspaceId,
+      name,
     });
   }
 
@@ -65,10 +70,10 @@ class CloudWorkspacesService extends AirbyteRequestService {
       name: string;
     }
   ): Promise<CloudWorkspace> {
-    return this.fetch<CloudWorkspace>(
-      `web_backend/permissioned_cloud_workspace/create`,
-      { workspaceId, ...cloudWorkspaceCreatePayload }
-    );
+    return this.fetch<CloudWorkspace>(`${this.url}/update`, {
+      workspaceId,
+      ...cloudWorkspaceCreatePayload,
+    });
   }
 }
 

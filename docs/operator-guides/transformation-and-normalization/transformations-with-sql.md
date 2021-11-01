@@ -1,14 +1,16 @@
 # Transformations with SQL \(Part 1/3\)
 
-## Overview
+## Transformations with SQL \(Part 1/3\)
+
+### Overview
 
 This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using plain SQL queries.
 
 This is the first part of ELT tutorial. The second part goes deeper with [Transformations with dbt](transformations-with-dbt.md) and then wrap-up with a third part on [Transformations with Airbyte](transformations-with-airbyte.md).
 
-# (Examples outputs are updated with Airbyte version 0.23.0-alpha from May 2021)
+## \(Examples outputs are updated with Airbyte version 0.23.0-alpha from May 2021\)
 
-## First transformation step: Normalization
+### First transformation step: Normalization
 
 At its core, Airbyte is geared to handle the EL \(Extract Load\) steps of an ELT process. These steps can also be referred in Airbyte's dialect as "Source" and "Destination".
 
@@ -34,7 +36,7 @@ In order to do so, we will now describe how you can leverage the basic normaliza
 
 Note: We will rely on docker commands that we've gone over as part of another [Tutorial on Exploring Docker Volumes](../browsing-output-logs.md).
 
-## \(Optional\) Configure some Covid \(data\) source and Postgres destinations
+### \(Optional\) Configure some Covid \(data\) source and Postgres destinations
 
 If you have sources and destinations already setup on your deployment, you can skip to the next section.
 
@@ -57,7 +59,7 @@ After setting up the connectors, we can trigger the sync and study the logs:
 
 Notice that the process ran in the `/tmp/workspace/5/0` folder.
 
-## Identify Workspace ID with Normalize steps
+### Identify Workspace ID with Normalize steps
 
 If you went through the previous setup of source/destination section and run a sync, you were able to identify which workspace was used, let's define some environment variables to remember this:
 
@@ -72,7 +74,7 @@ Or if you want to find any folder where the normalize step was run:
 NORMALIZE_WORKSPACE=`docker run --rm -i -v airbyte_workspace:/data  busybox find /data -path "*normalize/models*" | sed -E "s;/data/([0-9]+/[0-9]+/)normalize/.*;\1;g" | sort | uniq | tail -n 1`
 ```
 
-## Export Plain SQL files
+### Export Plain SQL files
 
 Airbyte is internally using a specialized tool for handling transformations called dbt.
 
@@ -114,7 +116,7 @@ Example Output:
 ```sql
  create  table "postgres".quarantine."covid_epidemiology_f11__dbt_tmp"
   as (
-    
+
 with __dbt__CTE__covid_epidemiology_ab1_558 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
@@ -175,7 +177,7 @@ from __dbt__CTE__covid_epidemiology_ab1_558
 select
     *,
     md5(cast(
-    
+
     coalesce(cast("key" as 
     varchar
 ), '') || '-' || coalesce(cast("date" as 
@@ -222,7 +224,7 @@ from __dbt__CTE__covid_epidemiology_ab3_558
   );
 ```
 
-### Simple SQL Query
+#### Simple SQL Query
 
 We could simplify the SQL query by removing some parts that may be unnecessary for your current usage \(such as generating a md5 column; [Why exactly would I want to use that?!](https://blog.getdbt.com/the-most-underutilized-function-in-sql/)\).
 
@@ -249,7 +251,7 @@ as (
 );
 ```
 
-### Customize SQL Query
+#### Customize SQL Query
 
 Feel free to:
 
@@ -314,3 +316,4 @@ create view "postgres"."public"."covid_epidemiology" as (
 Then you can run in your preferred SQL editor or tool!
 
 If you are familiar with dbt or want to learn more about it, you can continue with the following [tutorial using dbt](transformations-with-dbt.md)...
+

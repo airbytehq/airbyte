@@ -9,6 +9,25 @@ Related documentation on normalization is available here:
 
 Below are short descriptions of the kind of tests that may be affected by changes to the normalization code.
 
+### Build & Activate Virtual Environment and install dependencies
+From this connector directory, create a virtual environment:
+```
+python3 -m venv .venv
+```
+
+This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
+development environment of choice. To activate it from the terminal, run:
+```
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
+
+Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
+used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
+If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
+should work as you expect.
+
 ## Unit Tests
 
 Unit tests are automatically included when building the normalization project.
@@ -56,6 +75,7 @@ allowed characters, if quotes are needed or not, and the length limitations:
 - [snowflake](../../../docs/integrations/destinations/snowflake.md)
 - [mysql](../../../docs/integrations/destinations/mysql.md)
 - [oracle](../../../docs/integrations/destinations/oracle.md)
+- [mssql](../../../docs/integrations/destinations/mssql.md)
 
 Rules about truncations, for example for both of these strings which are too long for the postgres 64 limit:
 - `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
@@ -88,12 +108,26 @@ or can also be invoked on github, thanks to the slash commands posted as comment
 
     /test connector=bases/base-normalization
 
+You can restrict the tests to a subset of destinations by specifying a comma separated list of destinations.
+For example, let's say you are working on a change to normalization for Postgres, with Gradle:
+
+    NORMALIZATION_TEST_TARGET=postgres ./gradlew :airbyte-integrations:bases:base-normalization:integrationTest
+
+or directly with pytest:
+
+    NORMALIZATION_TEST_TARGET=postgres  pytest airbyte-integrations/bases/base-normalization/integration_tests
+
 Note that these tests are connecting and processing data on top of real data warehouse destinations.
-Therefore, valid credentials files are expected to be injected in the `secrets/` folder in order to run 
+Therefore, valid credentials files are expected to be injected in the `secrets/` folder in order to run
 (not included in git repository).
 
 This is usually automatically done by the CI thanks to the `tools/bin/ci_credentials.sh` script or you can 
 re-use the `destination_config.json` passed to destination connectors.
+
+As normalization supports more and more destinations, tests are relying on an increasing number of destinations. 
+As a result, it is possible that the docker garbage collector is triggered to wipe "unused" docker images while the 
+integration tests for normalization are running. Thus, if you encounter errors about a connector's docker image not being 
+present locally (even though it was built beforehand), make sure to increase the docker image storage size of your docker engine ("defaultKeepStorage" for mac for example).
 
 ### Integration Tests Definitions for test_ephemeral.py:
 The test here focus on benchmarking the "ephemeral" materialization mode of dbt. Depending on the number of
@@ -182,6 +216,9 @@ So, for each target destination, the steps run by the tests are:
 6. Deploy the `schema_tests` and `data_tests` files into the test workspace folder.
 7. Execute dbt cli command: `dbt tests` from the test workspace folder to run verifications and checks with dbt.
 8. Optional checks (nothing for the moment)
+
+Note that the tests are using the normalization code from the python files directly, so it is not necessary to rebuild the docker images
+in between when iterating on the code base. However, dbt cli and destination connectors are invoked thanks to the dev docker images.
 
 ### Integration Test Checks:
 

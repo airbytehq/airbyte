@@ -62,10 +62,17 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
+      throws Exception {
+    final String tableName = namingResolver.getIdentifier(streamName);
+    return retrieveRecordsFromTable(tableName, namespace);
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-      final String streamName,
-      final String namespace,
-      final JsonNode streamSchema)
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -84,6 +91,11 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
+  protected boolean supportsNormalization() {
+    return true;
+  }
+
+  @Override
   protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     final String resolved = namingResolver.getIdentifier(identifier);
@@ -96,7 +108,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     return result;
   }
 
-  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(JdbcDatabaseContainer<?> db) {
+  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(final JdbcDatabaseContainer<?> db) {
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
@@ -122,7 +134,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
-    var schema = schemaName == null ? this.schemaName : schemaName;
+    final var schema = schemaName == null ? this.schemaName : schemaName;
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
@@ -132,7 +144,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
             .query(
                 ctx -> ctx
                     .fetch(String.format("USE %s;"
-                            + "SELECT * FROM %s.%s ORDER BY %s ASC;",
+                        + "SELECT * FROM %s.%s ORDER BY %s ASC;",
                         database, schema, tableName.toLowerCase(),
                         JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                     .stream()

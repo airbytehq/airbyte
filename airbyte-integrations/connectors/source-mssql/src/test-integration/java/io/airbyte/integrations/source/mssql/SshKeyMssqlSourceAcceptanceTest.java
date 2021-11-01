@@ -8,9 +8,9 @@ import io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod;
 
 public class SshKeyMssqlSourceAcceptanceTest extends AbstractSshMssqlSourceAcceptanceTest {
 
-
   @Override
   public TunnelMethod getTunnelMethod() {
-   return TunnelMethod.SSH_KEY_AUTH;
+    return TunnelMethod.SSH_KEY_AUTH;
   }
+
 }

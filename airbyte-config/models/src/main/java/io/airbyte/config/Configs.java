@@ -4,6 +4,7 @@
 
 package io.airbyte.config;
 
+import io.airbyte.commons.version.AirbyteVersion;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +14,7 @@ public interface Configs {
 
   String getAirbyteRole();
 
-  String getAirbyteVersion();
+  AirbyteVersion getAirbyteVersion();
 
   String getAirbyteApiHost();
 
@@ -67,6 +68,8 @@ public interface Configs {
 
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
+  String getJobImagePullPolicy();
+
   List<WorkerPodToleration> getWorkerPodTolerations();
 
   Map<String, String> getWorkerNodeSelectors();
@@ -106,6 +109,8 @@ public interface Configs {
   String getGcpStorageBucket();
 
   String getGoogleApplicationCredentials();
+
+  boolean getPublishMetrics();
 
   SecretPersistenceType getSecretPersistenceType();
 

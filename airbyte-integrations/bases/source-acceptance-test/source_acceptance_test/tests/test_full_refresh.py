@@ -10,7 +10,7 @@ import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import ConnectionTestConfig
-from source_acceptance_test.utils import ConnectorRunner, SecretDict, full_refresh_only_catalog, serialize
+from source_acceptance_test.utils import ConnectorRunner, SecretDict, full_refresh_only_catalog, make_hashable
 
 
 @pytest.mark.default_timeout(20 * 60)
@@ -38,10 +38,10 @@ class TestFullRefresh(BaseTest):
             records_by_stream_2[record.stream].append(record.data)
 
         for stream in records_by_stream_1.keys():
-            serializer = partial(serialize, exclude_fields=ignored_fields.get(stream))
+            serializer = partial(make_hashable, exclude_fields=ignored_fields.get(stream))
             stream_records_1 = records_by_stream_1.get(stream)
             stream_records_2 = records_by_stream_2.get(stream)
-            output_diff = set(map(serializer, stream_records_1)) - set(map(serializer, stream_records_2))
+            output_diff = set(map(serializer, stream_records_1)).symmetric_difference(set(map(serializer, stream_records_2)))
             if output_diff:
                 msg = f"{stream}: the two sequential reads should produce either equal set of records or one of them is a strict subset of the other"
                 detailed_logger.info(msg)

@@ -14,23 +14,51 @@ import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { useAuth } from "packages/firebaseReact";
 
+export type AuthUpdatePassword = (
+  email: string,
+  currentPassword: string,
+  newPassword: string
+) => Promise<void>;
+
+export type AuthRequirePasswordReset = (email: string) => Promise<void>;
+export type AuthConfirmPasswordReset = (
+  code: string,
+  newPassword: string
+) => Promise<void>;
+
+export type AuthLogin = (values: {
+  email: string;
+  password: string;
+}) => Promise<User | null>;
+
+export type AuthSignUp = (form: {
+  email: string;
+  password: string;
+}) => Promise<User | null>;
+
+export type AuthChangeEmail = (
+  email: string,
+  password: string
+) => Promise<void>;
+
+export type AuthSendEmailVerification = () => Promise<void>;
+export type AuthVerifyEmail = (code: string) => Promise<void>;
+export type AuthLogout = () => void;
+
 type AuthContextApi = {
   user: User | null;
   inited: boolean;
   emailVerified: boolean;
   isLoading: boolean;
-  login: (values: { email: string; password: string }) => Promise<User | null>;
-  signUp: (form: { email: string; password: string }) => Promise<User | null>;
-  updatePassword: (
-    email: string,
-    currentPassword: string,
-    newPassword: string
-  ) => Promise<void>;
-  requirePasswordReset: (email: string) => Promise<void>;
-  confirmPasswordReset: (code: string, newPassword: string) => Promise<void>;
-  sendEmailVerification: () => Promise<void>;
-  verifyEmail: (code: string) => Promise<void>;
-  logout: () => void;
+  login: AuthLogin;
+  signUp: AuthSignUp;
+  updatePassword: AuthUpdatePassword;
+  updateEmail: AuthChangeEmail;
+  requirePasswordReset: AuthRequirePasswordReset;
+  confirmPasswordReset: AuthConfirmPasswordReset;
+  sendEmailVerification: AuthSendEmailVerification;
+  verifyEmail: AuthVerifyEmail;
+  logout: AuthLogout;
 };
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
@@ -46,7 +74,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   );
   const auth = useAuth();
   const userService = useGetUserService();
-  const authService = useMemo(() => new GoogleAuthService(() => auth), []);
+  const authService = useMemo(() => new GoogleAuthService(() => auth), [auth]);
 
   useEffect(() => {
     auth.onAuthStateChanged(async (currentUser) => {
@@ -100,6 +128,10 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         loggedOut();
         await queryClient.invalidateQueries();
       },
+      async updateEmail(email, password): Promise<void> {
+        await userService.changeEmail(email);
+        return authService.updateEmail(email, password);
+      },
       async updatePassword(
         email: string,
         currentPassword: string,
@@ -120,8 +152,11 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.confirmEmailVerify(code);
         emailVerified(true);
       },
-      async confirmPasswordReset(code: string, email: string): Promise<void> {
-        await authService.finishResetPassword(code, email);
+      async confirmPasswordReset(
+        code: string,
+        newPassword: string
+      ): Promise<void> {
+        await authService.finishResetPassword(code, newPassword);
       },
       async signUp(form: {
         email: string;

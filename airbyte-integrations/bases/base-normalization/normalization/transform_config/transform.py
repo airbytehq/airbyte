@@ -21,6 +21,7 @@ class DestinationType(Enum):
     snowflake = "snowflake"
     mysql = "mysql"
     oracle = "oracle"
+    mssql = "mssql"
 
 
 class TransformConfig:
@@ -28,10 +29,6 @@ class TransformConfig:
         inputs = self.parse(args)
         original_config = self.read_json_config(inputs["config"])
         integration_type = inputs["integration_type"]
-
-        transformed_dbt_project = self.transform_dbt_project(integration_type)
-        self.write_yaml_config(inputs["output_path"], transformed_dbt_project, "dbt_project.yml")
-
         transformed_config = self.transform(integration_type, original_config)
         self.write_yaml_config(inputs["output_path"], transformed_config, "profiles.yml")
         if self.is_ssh_tunnelling(original_config):
@@ -55,18 +52,6 @@ class TransformConfig:
             "output_path": parsed_args.out,
         }
 
-    def transform_dbt_project(self, integration_type: DestinationType):
-        data = pkgutil.get_data(self.__class__.__module__.split(".")[0], "transform_config/dbt_project_base.yml")
-        if not data:
-            raise FileExistsError("Failed to load profile_base.yml")
-        base_project = yaml.load(data, Loader=yaml.FullLoader)
-
-        if integration_type.value == DestinationType.oracle.value:
-            base_project["quoting"]["database"] = False
-            base_project["quoting"]["identifier"] = False
-
-        return base_project
-
     def transform(self, integration_type: DestinationType, config: Dict[str, Any]):
         data = pkgutil.get_data(self.__class__.__module__.split(".")[0], "transform_config/profile_base.yml")
         if not data:
@@ -80,6 +65,7 @@ class TransformConfig:
             DestinationType.snowflake.value: self.transform_snowflake,
             DestinationType.mysql.value: self.transform_mysql,
             DestinationType.oracle.value: self.transform_oracle,
+            DestinationType.mssql.value: self.transform_mssql,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -144,6 +130,7 @@ class TransformConfig:
             "type": "bigquery",
             "project": config["project_id"],
             "dataset": config["dataset_id"],
+            "priority": config.get("transformation_priority", "interactive"),
             "threads": 32,
             "retries": 1,
         }
@@ -152,7 +139,8 @@ class TransformConfig:
             dbt_config["keyfile_json"] = json.loads(config["credentials_json"])
         else:
             dbt_config["method"] = "oauth"
-
+        if "dataset_location" in config:
+            dbt_config["location"] = config["dataset_location"]
         return dbt_config
 
     @staticmethod
@@ -253,6 +241,25 @@ class TransformConfig:
             "dbname": config["sid"],
             "schema": config["schema"],
             "threads": 4,
+        }
+        return dbt_config
+
+    @staticmethod
+    def transform_mssql(config: Dict[str, Any]):
+        print("transform_mssql")
+        # https://docs.getdbt.com/reference/warehouse-profiles/mssql-profile
+        dbt_config = {
+            "type": "sqlserver",
+            "driver": "ODBC Driver 17 for SQL Server",
+            "server": config["host"],
+            "port": config["port"],
+            "schema": config["schema"],
+            "database": config["database"],
+            "user": config["username"],
+            "password": config["password"],
+            "threads": 32,
+            # "authentication": "sql",
+            # "trusted_connection": True,
         }
         return dbt_config
 

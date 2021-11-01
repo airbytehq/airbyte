@@ -4,6 +4,7 @@
 
 package io.airbyte.server.handlers;
 
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -17,15 +18,17 @@ public class WebBackendDestinationsHandler {
   private final DestinationHandler destinationHandler;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  public WebBackendDestinationsHandler(DestinationHandler destinationHandler, ConfigRepository configRepository) {
+  public WebBackendDestinationsHandler(final DestinationHandler destinationHandler,
+                                       final ConfigRepository configRepository,
+                                       final TrackingClient trackingClient) {
     this.destinationHandler = destinationHandler;
-    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, true);
+    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
   }
 
-  public DestinationRead webBackendCreateDestination(DestinationCreate destinationCreate)
+  public DestinationRead webBackendCreateDestination(final DestinationCreate destinationCreate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     destinationCreate.connectionConfiguration(
-        oAuthConfigSupplier.injectSourceOAuthParameters(
+        oAuthConfigSupplier.injectDestinationOAuthParameters(
             destinationCreate.getDestinationDefinitionId(),
             destinationCreate.getWorkspaceId(),
             destinationCreate.getConnectionConfiguration()));

@@ -24,11 +24,11 @@ public class DockerUtils {
       .build();
   private static final DockerClient DOCKER_CLIENT = DockerClientImpl.getInstance(CONFIG, HTTP_CLIENT);
 
-  public static String getTaggedImageName(String dockerRepository, String tag) {
+  public static String getTaggedImageName(final String dockerRepository, final String tag) {
     return String.join(":", dockerRepository, tag);
   }
 
-  public static String buildImage(String dockerFilePath, String tag) {
+  public static String buildImage(final String dockerFilePath, final String tag) {
     return DOCKER_CLIENT.buildImageCmd()
         .withDockerfile(new File(dockerFilePath))
         .withTags(Set.of(tag))

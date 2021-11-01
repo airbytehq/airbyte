@@ -1,10 +1,7 @@
 import React, { useEffect } from "react";
-import * as FullStory from "@fullstory/browser";
 
 import { useConfig } from "config";
-import useFullStory from "hooks/useFullStory";
 import AnalyticsServiceProvider, { useAnalytics } from "hooks/useAnalytics";
-import useTracker from "hooks/useOpenReplay";
 import useSegment from "hooks/useSegment";
 import { useGetService } from "core/servicesProvider";
 
@@ -22,20 +19,6 @@ function WithAnalytics({
   useEffect(() => {
     analyticsService.identify(customerId);
   }, [analyticsService, customerId]);
-
-  // openreplay section
-  const tracker = useTracker(config.openreplay);
-  useEffect(() => {
-    tracker.userID(customerId);
-  }, [tracker, customerId]);
-
-  // fullstory section
-  const initializedFullstory = useFullStory(config.fullstory);
-  useEffect(() => {
-    if (initializedFullstory) {
-      FullStory.identify(customerId);
-    }
-  }, [initializedFullstory, customerId]);
 
   return null;
 }

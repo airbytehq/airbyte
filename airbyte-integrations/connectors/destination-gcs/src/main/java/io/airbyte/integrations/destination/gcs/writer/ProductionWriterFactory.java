@@ -26,19 +26,19 @@ public class ProductionWriterFactory implements GcsWriterFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(ProductionWriterFactory.class);
 
   @Override
-  public S3Writer create(GcsDestinationConfig config,
-                         AmazonS3 s3Client,
-                         ConfiguredAirbyteStream configuredStream,
-                         Timestamp uploadTimestamp)
+  public S3Writer create(final GcsDestinationConfig config,
+                         final AmazonS3 s3Client,
+                         final ConfiguredAirbyteStream configuredStream,
+                         final Timestamp uploadTimestamp)
       throws Exception {
-    S3Format format = config.getFormatConfig().getFormat();
+    final S3Format format = config.getFormatConfig().getFormat();
 
     if (format == S3Format.AVRO || format == S3Format.PARQUET) {
-      AirbyteStream stream = configuredStream.getStream();
+      final AirbyteStream stream = configuredStream.getStream();
 
-      JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-      Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
-      JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
+      final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
+      final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
+      final JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
 
       LOGGER.info("Paquet schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
       if (nameUpdater.hasNameUpdate()) {

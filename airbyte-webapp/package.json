@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.30.10-alpha",
+  "version": "0.30.23-alpha",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
@@ -11,15 +11,12 @@
     "lint": "eslint --ext js,ts,tsx src"
   },
   "dependencies": {
-    "@asayerio/tracker": "^5.6.8",
     "@fortawesome/fontawesome-svg-core": "^1.2.27",
     "@fortawesome/free-brands-svg-icons": "^5.15.2",
     "@fortawesome/free-regular-svg-icons": "^5.14.0",
     "@fortawesome/free-solid-svg-icons": "^5.12.1",
     "@fortawesome/react-fontawesome": "^0.1.8",
     "@fullstory/browser": "^1.4.9",
-    "@papercups-io/chat-widget": "^1.1.5",
-    "@papercups-io/storytime": "^1.0.6",
     "@rest-hooks/legacy": "^2.0.5",
     "@sentry/react": "^6.11.0",
     "@sentry/tracing": "^6.11.0",
