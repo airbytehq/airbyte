@@ -13,5 +13,5 @@ COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
 RUN pip install .
 
-LABEL io.airbyte.version=0.1.3
-LABEL io.airbyte.name=airbyte/source-appsflyer-singer
+LABEL io.airbyte.version=0.1.6
+LABEL io.airbyte.name=blotout/source-appsflyer-singer
