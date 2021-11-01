@@ -15,7 +15,7 @@ from docker.errors import ContainerError
 from jsonschema import validate
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
-from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, serialize, verify_records_schema
+from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
@@ -308,8 +308,8 @@ class TestBasicRead(BaseTest):
                     r2 = TestBasicRead.remove_extra_fields(r2, r1)
                 assert r1 == r2, f"Stream {stream_name}: Mismatch of record order or values"
         else:
-            expected = set(map(serialize, expected))
-            actual = set(map(serialize, actual))
+            expected = set(map(make_hashable, expected))
+            actual = set(map(make_hashable, actual))
             missing_expected = set(expected) - set(actual)
 
             if missing_expected:
