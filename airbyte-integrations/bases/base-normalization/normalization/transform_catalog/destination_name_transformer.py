@@ -226,7 +226,6 @@ def transform_standard_naming(input_name: str) -> str:
     result = strip_accents(result)
     result = sub(r"\s+", "_", result)
     result = sub(r"[^a-zA-Z0-9_]", "_", result)
-    result = sub(r"\n", "_", result)
     return result
 
 

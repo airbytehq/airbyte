@@ -4,12 +4,14 @@
 
 
 import os
+from re import I
 
 import pytest
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.destination_name_transformer import (
     DestinationNameTransformer,
     strip_accents,
+    transform_json_naming,
     transform_standard_naming,
 )
 
@@ -96,6 +98,17 @@ def test_strip_accents(input_str: str, expected: str):
 )
 def test_transform_standard_naming(input_str: str, expected: str):
     assert transform_standard_naming(input_str) == expected
+
+
+@pytest.mark.parametrize(
+    "expected, input_str",
+    [
+        ("_identifier_name_", "'identifier_name'"),
+        ("_identifier_name_", "\nidentifier\nname\n"),
+    ],
+)
+def test_transform_json_naming(input_str: str, expected: str):
+    assert transform_json_naming(input_str) == expected
 
 
 @pytest.mark.parametrize(
