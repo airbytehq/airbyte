@@ -89,10 +89,21 @@
   "modals.addUser.button.cancel": "Cancel",
   "modals.addUser.button.submit": "Send invitation",
   "workspaces.viewAllWorkspaces": "View all workspaces",
+  "settings.accessManagement.roleViewers": "<b>Viewers</b> are in read-only and cannot edit or\u00a0add connections.",
+  "settings.accessManagement.roleEditors": "<b>Editors</b> can edit connections",
+  "settings.accessManagement.roleAdmin": "<b>Admin</b> can also manage users",
+
+  "credits.date": "Date",
+  "credits.amount": "Credits",
 
   "firebase.auth.success": "A new confirmation email has been sent to you",
   "firebase.auth.error.invalidPassword": "Incorrect password",
   "firebase.auth.error.networkRequestFailed": "There appears to be a network issue. Please try again later.",
   "firebase.auth.error.tooManyRequests": "Too many retries. Please wait 10 minutes before trying again.",
-  "firebase.auth.error.default": "Confirmation email cannot be sent. Please try again later."
+  "firebase.auth.error.default": "Confirmation email cannot be sent. Please try again later.",
+
+  "signup.password.minLength": "Password should be at least 6 characters",
+  "email.duplicate": "Email already exists",
+  "password.validation": "Your password is too weak",
+  "password.invalid": "Invalid password"
 }
