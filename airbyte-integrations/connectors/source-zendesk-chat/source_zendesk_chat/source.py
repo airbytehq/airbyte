@@ -27,9 +27,8 @@ class ZendeskAuthentication:
         if not access_token:
             # the new config supports `OAuth2.0`
             access_token = self.config["credentials"]["access_token"]
-    
+
         return TokenAuthenticator(token=access_token)
-        
 
 
 class SourceZendeskChat(AbstractSource):
