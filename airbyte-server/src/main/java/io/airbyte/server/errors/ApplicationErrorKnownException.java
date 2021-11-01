@@ -6,11 +6,11 @@ package io.airbyte.server.errors;
 
 public class ApplicationErrorKnownException extends KnownException {
 
-  public ApplicationErrorKnownException(String message) {
+  public ApplicationErrorKnownException(final String message) {
     super(message);
   }
 
-  public ApplicationErrorKnownException(String message, Throwable cause) {
+  public ApplicationErrorKnownException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

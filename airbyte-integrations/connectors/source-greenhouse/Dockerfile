@@ -1,18 +1,16 @@
-FROM airbyte/integration-base-python:0.1.1
+FROM python:3.7-slim
 
 # Bash is installed for more convenient debugging.
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
-ENV CODE_PATH="source_greenhouse"
-ENV AIRBYTE_IMPL_MODULE="source_greenhouse"
-ENV AIRBYTE_IMPL_PATH="SourceGreenhouse"
-
 WORKDIR /airbyte/integration_code
-COPY $CODE_PATH ./$CODE_PATH
+COPY source_greenhouse ./source_greenhouse
+COPY main.py ./
 COPY setup.py ./
 RUN pip install .
 
-ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
+ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.2.4
+LABEL io.airbyte.version=0.2.5
 LABEL io.airbyte.name=airbyte/source-greenhouse

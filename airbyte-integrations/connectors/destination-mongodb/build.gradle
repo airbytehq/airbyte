@@ -16,7 +16,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
 
-    compile 'org.mongodb:mongodb-driver-sync:4.3.0'
+    implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
 
     testImplementation 'org.testcontainers:mongodb:1.15.3'
 

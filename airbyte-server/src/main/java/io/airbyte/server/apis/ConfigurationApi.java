@@ -113,7 +113,6 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendDestinationsHandler;
 import io.airbyte.server.handlers.WebBackendSourcesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
-import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -170,12 +169,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobNotifier,
         temporalService,
         new OAuthConfigSupplier(configRepository, false, trackingClient));
-    final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
-    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
+    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository, workspaceHelper, trackingClient);
     operationsHandler = new OperationsHandler(configRepository);
-    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
+    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
@@ -198,7 +196,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         seed,
         workspaceHelper,
         archiveTtlManager,
-        specFetcher);
+        specFetcher,
+        true);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
@@ -335,7 +334,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public SourceReadList searchSources(SourceSearch sourceSearch) {
+  public SourceReadList searchSources(final SourceSearch sourceSearch) {
     return execute(() -> sourceHandler.searchSources(sourceSearch));
   }
 
@@ -439,7 +438,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public DestinationReadList searchDestinations(DestinationSearch destinationSearch) {
+  public DestinationReadList searchDestinations(final DestinationSearch destinationSearch) {
     return execute(() -> destinationHandler.searchDestinations(destinationSearch));
   }
 
@@ -476,7 +475,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public ConnectionReadList searchConnections(ConnectionSearch connectionSearch) {
+  public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch) {
     return execute(() -> connectionsHandler.searchConnections(connectionSearch));
   }
 
@@ -655,6 +654,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public ImportRead importIntoWorkspace(final ImportRequestBody importRequestBody) {
     return execute(() -> archiveHandler.importIntoWorkspace(importRequestBody));
+  }
+
+  public boolean canImportDefinitons() {
+    return archiveHandler.canImportDefinitions();
   }
 
   private <T> T execute(final HandlerCall<T> call) {

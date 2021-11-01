@@ -15,9 +15,9 @@ public class ConfigsDatabaseMigratorTest extends AbstractConfigsDatabaseTest {
 
   @Test
   public void dumpSchema() throws IOException {
-    DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigratorTest.class.getSimpleName());
+    final DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigratorTest.class.getSimpleName());
     migrator.migrate();
-    String schema = migrator.dumpSchema();
+    final String schema = migrator.dumpSchema();
     MigrationDevHelper.dumpSchema(schema, SCHEMA_DUMP_FILE, false);
   }
 

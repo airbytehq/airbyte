@@ -7,7 +7,7 @@ type IProps = {
   icon?: string;
 };
 
-const Content = styled.div`
+export const Content = styled.div`
   background: ${({ theme }) => theme.lightPrimaryColor};
   border-radius: 4px;
   width: 356px;

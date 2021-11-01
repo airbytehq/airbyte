@@ -27,9 +27,9 @@ class DebeziumEventUtilsTest {
     final String stream = "names";
     final Instant emittedAt = Instant.now();
     final CdcMetadataInjector cdcMetadataInjector = new DummyMetadataInjector();
-    ChangeEvent<String, String> insertChangeEvent = mockChangeEvent("insert_change_event.json");
-    ChangeEvent<String, String> updateChangeEvent = mockChangeEvent("update_change_event.json");
-    ChangeEvent<String, String> deleteChangeEvent = mockChangeEvent("delete_change_event.json");
+    final ChangeEvent<String, String> insertChangeEvent = mockChangeEvent("insert_change_event.json");
+    final ChangeEvent<String, String> updateChangeEvent = mockChangeEvent("update_change_event.json");
+    final ChangeEvent<String, String> deleteChangeEvent = mockChangeEvent("delete_change_event.json");
 
     final AirbyteMessage actualInsert = DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcMetadataInjector, emittedAt);
     final AirbyteMessage actualUpdate = DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, cdcMetadataInjector, emittedAt);
@@ -44,7 +44,7 @@ class DebeziumEventUtilsTest {
     deepCompare(expectedDelete, actualDelete);
   }
 
-  private static ChangeEvent<String, String> mockChangeEvent(String resourceName) throws IOException {
+  private static ChangeEvent<String, String> mockChangeEvent(final String resourceName) throws IOException {
     final ChangeEvent<String, String> mocked = mock(ChangeEvent.class);
     final String resource = MoreResources.readResource(resourceName);
     when(mocked.value()).thenReturn(resource);
@@ -52,7 +52,7 @@ class DebeziumEventUtilsTest {
     return mocked;
   }
 
-  private static AirbyteMessage createAirbyteMessage(String stream, Instant emittedAt, String resourceName) throws IOException {
+  private static AirbyteMessage createAirbyteMessage(final String stream, final Instant emittedAt, final String resourceName) throws IOException {
     final String data = MoreResources.readResource(resourceName);
 
     final AirbyteRecordMessage recordMessage = new AirbyteRecordMessage()
@@ -66,20 +66,20 @@ class DebeziumEventUtilsTest {
         .withRecord(recordMessage);
   }
 
-  private static void deepCompare(Object expected, Object actual) {
+  private static void deepCompare(final Object expected, final Object actual) {
     assertEquals(Jsons.deserialize(Jsons.serialize(expected)), Jsons.deserialize(Jsons.serialize(actual)));
   }
 
   public static class DummyMetadataInjector implements CdcMetadataInjector {
 
     @Override
-    public void addMetaData(ObjectNode event, JsonNode source) {
-      long lsn = source.get("lsn").asLong();
+    public void addMetaData(final ObjectNode event, final JsonNode source) {
+      final long lsn = source.get("lsn").asLong();
       event.put("_ab_cdc_lsn", lsn);
     }
 
     @Override
-    public String namespace(JsonNode source) {
+    public String namespace(final JsonNode source) {
       return source.get("schema").asText();
     }
 

@@ -16,6 +16,9 @@
     },
     "projectId": {
       "type": "string"
+    },
+    "projectKey": {
+      "type": "string"
     }
   }
 }

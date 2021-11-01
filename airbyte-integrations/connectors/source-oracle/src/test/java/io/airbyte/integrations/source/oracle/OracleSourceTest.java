@@ -69,7 +69,7 @@ class OracleSourceTest {
         .put("schemas", List.of("TEST"))
         .build());
 
-    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
             config.get("host").asText(),
@@ -87,7 +87,7 @@ class OracleSourceTest {
     database.close();
   }
 
-  private JsonNode getConfig(OracleContainer oracleDb) {
+  private JsonNode getConfig(final OracleContainer oracleDb) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", oracleDb.getHost())
         .put("port", oracleDb.getFirstMappedPort())
@@ -102,8 +102,8 @@ class OracleSourceTest {
     ORACLE_DB.close();
   }
 
-  private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
-    for (AirbyteMessage actualMessage : messages) {
+  private static void setEmittedAtToNull(final Iterable<AirbyteMessage> messages) {
+    for (final AirbyteMessage actualMessage : messages) {
       if (actualMessage.getRecord() != null) {
         actualMessage.getRecord().setEmittedAt(null);
       }
@@ -118,11 +118,11 @@ class OracleSourceTest {
     assertEquals(ASCII_MESSAGES, actualMessages);
   }
 
-  private static AirbyteMessage createRecord(String stream, Map<Object, Object> data) {
+  private static AirbyteMessage createRecord(final String stream, final Map<Object, Object> data) {
     return new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream));
   }
 
-  private static Map<Object, Object> map(Object... entries) {
+  private static Map<Object, Object> map(final Object... entries) {
     if (entries.length % 2 != 0) {
       throw new IllegalArgumentException("Entries must have even length");
     }

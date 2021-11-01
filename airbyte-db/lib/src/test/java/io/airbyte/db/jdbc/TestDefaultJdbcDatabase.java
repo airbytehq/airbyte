@@ -96,7 +96,7 @@ public class TestDefaultJdbcDatabase {
     assertEquals(RECORDS_AS_JSON, actual.collect(Collectors.toList()));
   }
 
-  private JdbcDatabase getDatabaseFromConfig(JsonNode config) {
+  private JdbcDatabase getDatabaseFromConfig(final JsonNode config) {
     return Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -107,7 +107,7 @@ public class TestDefaultJdbcDatabase {
         "org.postgresql.Driver");
   }
 
-  private JsonNode getConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
+  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())

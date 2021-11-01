@@ -13,7 +13,7 @@ public abstract class NotificationClient {
   protected boolean sendOnSuccess;
   protected boolean sendOnFailure;
 
-  public NotificationClient(Notification notification) {
+  public NotificationClient(final Notification notification) {
     this.sendOnSuccess = notification.getSendOnSuccess();
     this.sendOnFailure = notification.getSendOnFailure();
   }

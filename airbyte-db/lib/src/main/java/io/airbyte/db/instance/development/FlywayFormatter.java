@@ -32,13 +32,13 @@ public class FlywayFormatter {
   /**
    * Format the {@link DatabaseMigrator#list} output.
    */
-  static String formatMigrationInfoList(List<MigrationInfo> migrationInfoList) {
-    Field<String> type = field("Type", SQLDataType.VARCHAR);
-    Field<String> version = field("Version", SQLDataType.VARCHAR);
-    Field<String> description = field("Description", SQLDataType.VARCHAR);
-    Field<String> state = field("State", SQLDataType.VARCHAR);
-    Field<Date> migratedAt = field("MigratedAt", SQLDataType.DATE);
-    Result<Record5<String, String, String, String, Date>> result = CTX.newResult(type, version, description, state, migratedAt);
+  static String formatMigrationInfoList(final List<MigrationInfo> migrationInfoList) {
+    final Field<String> type = field("Type", SQLDataType.VARCHAR);
+    final Field<String> version = field("Version", SQLDataType.VARCHAR);
+    final Field<String> description = field("Description", SQLDataType.VARCHAR);
+    final Field<String> state = field("State", SQLDataType.VARCHAR);
+    final Field<Date> migratedAt = field("MigratedAt", SQLDataType.DATE);
+    final Result<Record5<String, String, String, String, Date>> result = CTX.newResult(type, version, description, state, migratedAt);
     migrationInfoList.forEach(info -> result.add(CTX.newRecord(type, version, description, state, migratedAt).values(
         info.getType().name(),
         info.getVersion().toString(),
@@ -48,12 +48,12 @@ public class FlywayFormatter {
     return result.format();
   }
 
-  static String formatMigrationOutputList(List<MigrateOutput> migrationOutputList) {
-    Field<String> type = field("Type", SQLDataType.VARCHAR);
-    Field<String> version = field("Version", SQLDataType.VARCHAR);
-    Field<String> description = field("Description", SQLDataType.VARCHAR);
-    Field<String> script = field("Script", SQLDataType.VARCHAR);
-    Result<Record4<String, String, String, String>> result = CTX.newResult(type, version, description, script);
+  static String formatMigrationOutputList(final List<MigrateOutput> migrationOutputList) {
+    final Field<String> type = field("Type", SQLDataType.VARCHAR);
+    final Field<String> version = field("Version", SQLDataType.VARCHAR);
+    final Field<String> description = field("Description", SQLDataType.VARCHAR);
+    final Field<String> script = field("Script", SQLDataType.VARCHAR);
+    final Result<Record4<String, String, String, String>> result = CTX.newResult(type, version, description, script);
     migrationOutputList.forEach(output -> result.add(CTX.newRecord(type, version, description, script).values(
         String.format("%s %s", output.type, output.category),
         output.version,
@@ -65,7 +65,7 @@ public class FlywayFormatter {
   /**
    * Format the {@link DatabaseMigrator#migrate} output.
    */
-  static String formatMigrationResult(MigrateResult result) {
+  static String formatMigrationResult(final MigrateResult result) {
     return String.format("Version: %s -> %s\n", result.initialSchemaVersion, result.targetSchemaVersion)
         + String.format("Migrations executed: %s\n", result.migrationsExecuted)
         + formatMigrationOutputList(result.migrations);

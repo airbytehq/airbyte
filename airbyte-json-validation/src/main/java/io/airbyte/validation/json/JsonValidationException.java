@@ -6,11 +6,11 @@ package io.airbyte.validation.json;
 
 public class JsonValidationException extends Exception {
 
-  public JsonValidationException(String message) {
+  public JsonValidationException(final String message) {
     super(message);
   }
 
-  public JsonValidationException(String message, Throwable cause) {
+  public JsonValidationException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

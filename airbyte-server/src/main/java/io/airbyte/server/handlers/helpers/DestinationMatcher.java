@@ -14,12 +14,12 @@ public class DestinationMatcher implements Matchable<DestinationRead> {
 
   private final DestinationSearch search;
 
-  public DestinationMatcher(DestinationSearch search) {
+  public DestinationMatcher(final DestinationSearch search) {
     this.search = search;
   }
 
   @Override
-  public DestinationRead match(DestinationRead query) {
+  public DestinationRead match(final DestinationRead query) {
     if (search == null) {
       return query;
     }
@@ -38,7 +38,7 @@ public class DestinationMatcher implements Matchable<DestinationRead> {
     } else if (query.getConnectionConfiguration() == null) {
       fromSearch.connectionConfiguration(search.getConnectionConfiguration());
     } else {
-      JsonNode connectionConfiguration = search.getConnectionConfiguration();
+      final JsonNode connectionConfiguration = search.getConnectionConfiguration();
       query.getConnectionConfiguration().fieldNames()
           .forEachRemaining(field -> {
             if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {

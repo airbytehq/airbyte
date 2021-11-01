@@ -50,7 +50,7 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
    *
    * @param databaseName Name of the database that the connector is syncing
    */
-  public static void setDatabaseName(String databaseName) {
+  public static void setDatabaseName(final String databaseName) {
     if (FilteredFileDatabaseHistory.databaseName == null) {
       FilteredFileDatabaseHistory.databaseName = databaseName;
     } else if (!FilteredFileDatabaseHistory.databaseName.equals(databaseName)) {
@@ -61,10 +61,10 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
   }
 
   @Override
-  public void configure(Configuration config,
-                        HistoryRecordComparator comparator,
-                        DatabaseHistoryListener listener,
-                        boolean useCatalogBeforeSchema) {
+  public void configure(final Configuration config,
+                        final HistoryRecordComparator comparator,
+                        final DatabaseHistoryListener listener,
+                        final boolean useCatalogBeforeSchema) {
     fileDatabaseHistory.configure(config, comparator, listener, useCatalogBeforeSchema);
   }
 
@@ -74,12 +74,12 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
   }
 
   @Override
-  public void storeRecord(HistoryRecord record) throws DatabaseHistoryException {
+  public void storeRecord(final HistoryRecord record) throws DatabaseHistoryException {
     if (record == null) {
       return;
     }
     try {
-      String dbNameInRecord = record.document().getString(Fields.DATABASE_NAME);
+      final String dbNameInRecord = record.document().getString(Fields.DATABASE_NAME);
       if (databaseName != null && dbNameInRecord != null && !dbNameInRecord.equals(databaseName)) {
         return;
       }
@@ -93,7 +93,7 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
           .getDeclaredMethod("storeRecord", record.getClass());
       storeRecordMethod.setAccessible(true);
       storeRecordMethod.invoke(fileDatabaseHistory, record);
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+    } catch (final NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }
@@ -106,7 +106,7 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
   }
 
   @Override
-  protected void recoverRecords(Consumer<HistoryRecord> records) {
+  protected void recoverRecords(final Consumer<HistoryRecord> records) {
     try {
       /**
        * We are using reflection because the method
@@ -117,7 +117,7 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
           .getDeclaredMethod("recoverRecords", Consumer.class);
       recoverRecords.setAccessible(true);
       recoverRecords.invoke(fileDatabaseHistory, records);
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+    } catch (final NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }
