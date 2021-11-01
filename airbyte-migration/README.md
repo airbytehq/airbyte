@@ -41,16 +41,4 @@ See [MigrationRunner](./src/main/java/io/airbyte/migrate/MigrationRunner.java) f
 
 ## Run migration in production
 
-```sh
-BUILD_VERSION=$(cat .env | grep VERSION | awk -F"=" '{print $2}')
-INPUT_PATH=<path to directory containing downloaded airbyte_archive.tar.gz>
-OUTPUT_PATH=<path to where migrated archive will be written (should end in .tar.gz)>
-TARGET_VERSION=<version you are migrating to or empty for latest>
-
-docker run --rm -v ${INPUT_PATH}:/config airbyte/migration:${BUILD_VERSION} -- \
-  --input /config/airbyte_archive.tar.gz \
-  --output ${OUTPUT_PATH} \
-  [ --target-version ${TARGET_VERSION} ]
-```
-
 See [Upgrading Airbyte](https://docs.airbyte.io/tutorials/upgrading-airbyte) for details.

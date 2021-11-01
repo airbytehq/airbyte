@@ -64,13 +64,3 @@ services:
       context: airbyte-webapp
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
-  migration:
-    platform: ${DOCKER_BUILD_PLATFORM}
-    image: airbyte/migration:${VERSION}
-    build:
-      dockerfile: Dockerfile
-      args:
-        JDK_VERSION: ${JDK_VERSION}
-      context: airbyte-migration
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}
