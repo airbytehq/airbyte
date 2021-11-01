@@ -45,7 +45,9 @@ export NODE_VERSION=16.11.1
 SUB_BUILD=PLATFORM ./gradlew build
 ```
 
-There are some known issues (unit tests failing and Temporal failing during runs). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
+Please note that though the `JDK_VERSION` variable is set to `17`, you should still run the command with JDK 14 locally. Otherwise, `testconatiners` will run into a JNA related issue.
+
+There are some known issues (Temporal failing during runs, and some connectors not working). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
 
 {% endhint %}
 
@@ -87,7 +89,7 @@ In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
 
 ```bash
-SUB_BUILD=PLATFORM ./gradlew build
+SUB_BUILD=PLATFORM ./gradlew clean build
 VERSION=dev docker-compose up
 SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
 ```
@@ -162,7 +164,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 * Rebuild the project
 
   ```bash
-   SUB_BUILD=PLATFORM ./gradlew build
+   SUB_BUILD=PLATFORM ./gradlew clean build
    VERSION=dev docker-compose up -V
   ```
 

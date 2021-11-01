@@ -9,7 +9,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "is_permanent": {
       "type": ["null", "boolean"]

@@ -6,6 +6,8 @@ package io.airbyte.workers.protocols.airbyte;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
@@ -28,56 +30,62 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteStreamFactory.class);
 
+  private final MdcScope containerLogMDC;
   private final AirbyteProtocolPredicate protocolValidator;
   private final Logger logger;
 
   public DefaultAirbyteStreamFactory() {
-    this(new AirbyteProtocolPredicate(), LOGGER);
+    this(new Builder().build());
   }
 
-  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate, final Logger logger) {
+  public DefaultAirbyteStreamFactory(final MdcScope containerLogMDC) {
+    this(new AirbyteProtocolPredicate(), LOGGER, containerLogMDC);
+  }
+
+  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate, final Logger logger, final MdcScope containerLogMDC) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
+    this.containerLogMDC = containerLogMDC;
   }
 
   @Override
   public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
     return bufferedReader
         .lines()
-        .map(s -> {
-          final Optional<JsonNode> j = Jsons.tryDeserialize(s);
-          if (j.isEmpty()) {
+        .flatMap(line -> {
+          final Optional<JsonNode> jsonLine = Jsons.tryDeserialize(line);
+          if (jsonLine.isEmpty()) {
             // we log as info all the lines that are not valid json
             // some sources actually log their process on stdout, we
             // want to make sure this info is available in the logs.
-            logger.info(s);
+            try (containerLogMDC) {
+              logger.info(line);
+            }
           }
-          return j;
+          return jsonLine.stream();
         })
-        .filter(Optional::isPresent)
-        .map(Optional::get)
         // filter invalid messages
-        .filter(j -> {
-          final boolean res = protocolValidator.test(j);
+        .filter(jsonLine -> {
+          final boolean res = protocolValidator.test(jsonLine);
           if (!res) {
-            logger.error("Validation failed: {}", Jsons.serialize(j));
+            logger.error("Validation failed: {}", Jsons.serialize(jsonLine));
           }
           return res;
         })
-        .map(j -> {
-          final Optional<AirbyteMessage> m = Jsons.tryObject(j, AirbyteMessage.class);
+        .flatMap(jsonLine -> {
+          final Optional<AirbyteMessage> m = Jsons.tryObject(jsonLine, AirbyteMessage.class);
           if (m.isEmpty()) {
-            logger.error("Deserialization failed: {}", Jsons.serialize(j));
+            logger.error("Deserialization failed: {}", Jsons.serialize(jsonLine));
           }
-          return m;
+          return m.stream();
         })
-        .filter(Optional::isPresent)
-        .map(Optional::get)
         // filter logs
-        .filter(m -> {
-          final boolean isLog = m.getType() == AirbyteMessage.Type.LOG;
+        .filter(airbyteMessage -> {
+          final boolean isLog = airbyteMessage.getType() == AirbyteMessage.Type.LOG;
           if (isLog) {
-            internalLog(m.getLog());
+            try (containerLogMDC) {
+              internalLog(airbyteMessage.getLog());
+            }
           }
           return !isLog;
         });

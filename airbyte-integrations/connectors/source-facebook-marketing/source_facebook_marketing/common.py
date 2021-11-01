@@ -2,12 +2,12 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import sys
 from typing import Any, Iterable, Sequence
 
 import backoff
 import pendulum
-import logging
 from facebook_business.exceptions import FacebookRequestError
 
 # The Facebook API error codes indicating rate-limiting are listed at
