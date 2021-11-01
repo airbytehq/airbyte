@@ -133,18 +133,27 @@ run {
 def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
+    dependsOn copySeed
+    dependsOn processResources
+    dependsOn processTestResources
+    dependsOn jar
     dependsOn shadowJar
     dependsOn compileTestJava
-    dependsOn copySeed
     dependsOn distTar
     dependsOn distZip
-    dependsOn jar
-    dependsOn processTestResources
     dependsOn shadowDistTar
     dependsOn shadowDistZip
     dependsOn startScripts
     dependsOn startShadowScripts
+    dependsOn test
+    dependsOn jacocoTestReport
     inputDir = file('.')
     images.add("airbyte/server:$buildTag")
 }
 build.dependsOn(buildMyAppImage)
+startScripts.dependsOn(shadowJar)
+distTar.dependsOn(shadowJar)
+distZip.dependsOn(shadowJar)
+startShadowScripts.dependsOn(jar)
+shadowDistTar.dependsOn(jar)
+shadowDistZip.dependsOn(jar)
