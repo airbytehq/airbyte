@@ -42,17 +42,21 @@ quoting:
 # are materialized, and more!
 models:
   airbyte_utils:
+    +materialized: table
     generated:
       airbyte_ctes:
         +tags: airbyte_internal_cte
         +materialized: ephemeral
-      airbyte_views:
-        +tags: airbyte_internal_views
-        +materialized: view
+      airbyte_incremental:
+        +tags: incremental_tables
+        +materialized: incremental
+        +on_schema_change: sync_all_columns
       airbyte_tables:
         +tags: normalized_tables
         +materialized: table
-    +materialized: table
+      airbyte_views:
+        +tags: airbyte_internal_views
+        +materialized: view
 
 dispatch:
   - macro_namespace: dbt_utils
