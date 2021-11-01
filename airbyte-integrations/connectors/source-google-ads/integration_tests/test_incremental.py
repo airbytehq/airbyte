@@ -49,7 +49,7 @@ SAMPLE_CATALOG = {
 
 def test_incremental_sync(config):
     google_ads_client = SourceGoogleAds()
-    state = "2021-05-24"
+    state = "2021-10-01"
     records = google_ads_client.read(
         AirbyteLogger(), config, ConfiguredAirbyteCatalog.parse_obj(SAMPLE_CATALOG), {"ad_group_ad_report": {"segments.date": state}}
     )
@@ -63,7 +63,7 @@ def test_incremental_sync(config):
             assert record.record.data["segments.date"] >= current_state
 
     # Next sync
-    state = "2021-06-04"
+    state = "2021-10-17"
     records = google_ads_client.read(
         AirbyteLogger(), config, ConfiguredAirbyteCatalog.parse_obj(SAMPLE_CATALOG), {"ad_group_ad_report": {"segments.date": state}}
     )
@@ -76,7 +76,7 @@ def test_incremental_sync(config):
             assert record.record.data["segments.date"] >= current_state
 
     # Abnormal state
-    state = "2029-06-04"
+    state = "2029-10-17"
     records = google_ads_client.read(
         AirbyteLogger(), config, ConfiguredAirbyteCatalog.parse_obj(SAMPLE_CATALOG), {"ad_group_ad_report": {"segments.date": state}}
     )
