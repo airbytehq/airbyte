@@ -3,15 +3,8 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
-import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 import { useServiceForm } from "../serviceFormContext";
-
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
-import { useFormikContext } from "formik";
-import { ServiceFormValues } from "../types";
-import merge from "lodash.merge";
-import { flatten } from "flat";
-import { pick } from "lodash";
+import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
 
 const AuthSectionRow = styled.div`
   display: flex;
@@ -34,7 +27,7 @@ export const AuthButton: React.FC = () => {
 
   return (
     <AuthSectionRow>
-      <Button isLoading={loading} type="button" onClick={run}>
+      <Button isLoading={loading} type="button" onClick={() => run()}>
         {done ? (
           <>
             <FormattedMessage id="connectorForm.reauthenticate" />

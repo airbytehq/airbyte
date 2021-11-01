@@ -1,17 +1,23 @@
 import { useFormikContext } from "formik";
 import merge from "lodash.merge";
 import pick from "lodash.pick";
-// import { flatten } from "flat";
 
 import { ServiceFormValues } from "../types";
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 
-function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification) {
+function useFormikOauthAdapter(
+  connector: ConnectorDefinitionSpecification
+): {
+  loading: boolean;
+  done?: boolean;
+  run: () => Promise<void>;
+} {
   const {
     values,
     setValues,
     setFieldTouched,
+    errors,
   } = useFormikContext<ServiceFormValues>();
 
   const onDone = (v: Pick<ServiceFormValues, "connectionConfiguration">) =>
@@ -29,17 +35,16 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification) {
         ) ?? [];
 
       if (oauthInputFields.length) {
-        // const errors = await validateForm(values);
-        //
-        // const oAuthErrors = Object.keys(
-        //   flatten(errors.connectionConfiguration)
-        // ).filter((path) => oauthInputFields.indexOf(path) !== -1);
+        oauthInputFields.forEach((path) =>
+          setFieldTouched(`connectionConfiguration.${path}`, true, true)
+        );
 
-        if (oauthInputFields.length) {
-          // TODO: check if it's easier just to set field as touched by the route and autovalidate
-          oauthInputFields.forEach((path) => {
-            setFieldTouched(`connectionConfiguration.${path}`, true, true);
-          });
+        const oAuthErrors = pick(
+          errors.connectionConfiguration,
+          oauthInputFields
+        );
+
+        if (Object.keys(oAuthErrors).length) {
           return;
         }
       }
