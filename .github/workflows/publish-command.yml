@@ -70,10 +70,6 @@ jobs:
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
       - name: Write Integration Test Credentials # TODO DRY this with test-command.yml
-        run: ./tools/bin/ci_credentials.sh test ${{ github.event.inputs.connector }}
-        env:
-          SECRETS_JSON: ${{ toJson(secrets) }}
-          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
         run: ./tools/bin/ci_credentials.sh publish  ${{ github.event.inputs.connector }}
         env:
           SECRETS_JSON: ${{ toJson(secrets) }}
