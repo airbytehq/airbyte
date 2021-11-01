@@ -52,8 +52,6 @@ def diff_dicts(left, right, use_markup) -> Optional[List[str]]:
 
 @functools.total_ordering
 class HashMixin:
-    _hash = None
-
     @staticmethod
     def get_hash(obj):
         if isinstance(obj, Mapping):
@@ -63,9 +61,7 @@ class HashMixin:
         return hash(obj)
 
     def __hash__(self):
-        if not self._hash:
-            self._hash = HashMixin.get_hash(self)
-        return self._hash
+        return HashMixin.get_hash(self)
 
     def __lt__(self, other):
         return hash(self) < hash(other)
