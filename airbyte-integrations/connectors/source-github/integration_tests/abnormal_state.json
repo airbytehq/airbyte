@@ -39,6 +39,11 @@
       "updated_at": "2121-06-28T17:24:51Z"
     }
   },
+  "pull_request_stats": {
+    "airbytehq/integration-test": {
+      "updated_at": "2121-06-29T02:04:57Z"
+    }
+  },
   "pull_requests": {
     "airbytehq/integration-test": {
       "updated_at": "2121-06-28T23:36:35Z"
@@ -52,6 +57,11 @@
   "review_comments": {
     "airbytehq/integration-test": {
       "updated_at": "2121-06-23T23:57:07Z"
+    }
+  },
+  "reviews": {
+    "airbytehq/integration-test": {
+      "submitted_at": "2121-06-29T02:04:57Z"
     }
   },
   "stargazers": {

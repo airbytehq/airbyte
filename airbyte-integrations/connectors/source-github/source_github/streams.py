@@ -645,7 +645,7 @@ class PullRequestSubStream(SemiIncrementalGithubStream, ABC):
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        return None
+        return self.page_size
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for stream_slice in super().stream_slices(**kwargs):
@@ -653,7 +653,7 @@ class PullRequestSubStream(SemiIncrementalGithubStream, ABC):
             if self._parent_stream.is_sorted_descending:
                 pull_requests.reverse()
             for pull_request in pull_requests:
-                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"], self.cursor_field: pull_request[self.cursor_field]}
+                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"]}
 
     def read_records(
         self,
@@ -686,7 +686,6 @@ class PullRequestStats(PullRequestSubStream):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record = {key: value for key, value in super().transform(record=record, repository=stream_slice["repository"]).items() if key in self.record_keys}
-        record[self.cursor_field] = stream_slice[self.cursor_field]
         return record
 
 
@@ -695,10 +694,20 @@ class Reviews(PullRequestSubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
     """
 
+    cursor_field = "submitted_at"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}/reviews"
+
+    # Set the parent stream state's cursor field before fetching its records
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_state = deepcopy(stream_state) or {}
+        for repository in self.repositories:
+            if repository in parent_state and self.cursor_field in parent_state[repository]:
+                parent_state[repository][self._parent_stream.cursor_field] = parent_state[repository][self.cursor_field]
+        yield from super().stream_slices(stream_state=parent_state, **kwargs)
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         for record in response.json():  # GitHub puts records in an array.
@@ -706,7 +715,6 @@ class Reviews(PullRequestSubStream):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=stream_slice["repository"])
-        record[self.cursor_field] = stream_slice[self.cursor_field]
         return record
 
 
