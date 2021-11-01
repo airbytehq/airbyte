@@ -4,33 +4,49 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "YouTube Analytics Spec",
     "type": "object",
-    "required": ["client_id", "client_secret", "refresh_token"],
+    "required": ["credentials"],
     "additionalProperties": false,
     "properties": {
-      "client_id": {
-        "title": "Client ID",
-        "type": "string",
-        "description": "The Client ID of your developer application",
-        "airbyte_secret": true
-      },
-      "client_secret": {
-        "title": "Client Secret",
-        "type": "string",
-        "description": "The client secret of your developer application",
-        "airbyte_secret": true
-      },
-      "refresh_token": {
-        "title": "Refresh Token",
-        "type": "string",
-        "description": "A refresh token generated using the above client ID and secret",
-        "airbyte_secret": true
-      },
-      "access_token": {
-        "title": "Access Token",
-        "type": "string",
-        "description": "A access token generated using the above client ID, secret and refresh_token",
-        "airbyte_secret": true
+      "credentials": {
+        "title": "Authenticate via OAuth 2.0",
+        "type": "object",
+        "required": ["client_id", "client_secret", "refresh_token"],
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "title": "Client ID",
+            "type": "string",
+            "description": "The Client ID of your developer application",
+            "airbyte_secret": true
+          },
+          "client_secret": {
+            "title": "Client Secret",
+            "type": "string",
+            "description": "The client secret of your developer application",
+            "airbyte_secret": true
+          },
+          "refresh_token": {
+            "title": "Refresh Token",
+            "type": "string",
+            "description": "A refresh token generated using the above client ID and secret",
+            "airbyte_secret": true
+          },
+          "access_token": {
+            "title": "Access Token",
+            "type": "string",
+            "description": "A access token generated using the above client ID, secret and refresh_token",
+            "airbyte_secret": true
+          }
+        }
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials"],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
     }
   }
 }

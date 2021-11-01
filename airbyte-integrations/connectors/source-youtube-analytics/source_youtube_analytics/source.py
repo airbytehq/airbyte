@@ -143,9 +143,10 @@ class ChannelReports(HttpSubStream):
 class SourceYoutubeAnalytics(AbstractSource):
     @staticmethod
     def get_authenticator(config):
-        client_id = config["client_id"]
-        client_secret = config["client_secret"]
-        refresh_token = config["refresh_token"]
+        credentials = config["credentials"]
+        client_id = credentials["client_id"]
+        client_secret = credentials["client_secret"]
+        refresh_token = credentials["refresh_token"]
 
         return Oauth2Authenticator(
             token_refresh_endpoint="https://oauth2.googleapis.com/token",
