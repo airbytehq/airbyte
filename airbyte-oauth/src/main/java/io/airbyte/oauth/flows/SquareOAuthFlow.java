@@ -45,7 +45,6 @@ public class SquareOAuthFlow extends BaseOAuthFlow {
       // Need to have decoded format, otherwice square fails saying that scope is incorrect
       return URLDecoder.decode(new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
-          // .addParameter("redirect_uri", redirectUrl)
           .addParameter("scope", SCOPE_VALUE)
           .addParameter("session", "False")
           .addParameter("state", getState())
@@ -79,7 +78,6 @@ public class SquareOAuthFlow extends BaseOAuthFlow {
     return ImmutableMap.<String, String>builder()
         // required
         .put("client_id", clientId)
-        // .put("redirect_uri", redirectUrl)
         .put("client_secret", clientSecret)
         .put("code", authCode)
         .put("grant_type", "authorization_code")
