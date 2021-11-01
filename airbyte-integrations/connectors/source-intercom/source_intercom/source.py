@@ -313,7 +313,8 @@ class SourceIntercom(AbstractSource):
         config["start_date"] = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
 
-        authorization = config.get("authorization", {})
+        # for compatibility with old spec.json files just use full config if authorization key doesn't exist
+        authorization = config.get("authorization", config)
         auth = TokenAuthenticator(token=authorization["access_token"])
         return [
             Admins(authenticator=auth, **config),

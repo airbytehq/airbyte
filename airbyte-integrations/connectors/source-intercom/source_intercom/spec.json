@@ -5,7 +5,7 @@
     "title": "Source Intercom Spec",
     "type": "object",
     "required": ["authorization", "start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "start_date": {
         "type": "string",
