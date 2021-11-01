@@ -28,7 +28,7 @@ RUN chmod +x ./kubectl
 RUN mv ./kubectl /usr/local/bin
 
 # Move worker app
-ADD build/distributions/${APPLICATION}*.tar /app
+ADD build/distributions/${APPLICATION}-0.30.23-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.30.23-alpha/bin/${APPLICATION}"]
