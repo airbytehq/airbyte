@@ -23,8 +23,7 @@
       },
       "redirect_uri": {
         "type": "string",
-        "description": "Outreach redirect URI.",
-        "airbyte_secret": true
+        "description": "Outreach redirect URI."
       },
       "start_date": {
         "type": "string",
