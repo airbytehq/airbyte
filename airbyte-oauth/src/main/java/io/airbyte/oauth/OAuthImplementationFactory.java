@@ -10,6 +10,7 @@ import io.airbyte.oauth.flows.AsanaOAuthFlow;
 import io.airbyte.oauth.flows.FacebookMarketingOAuthFlow;
 import io.airbyte.oauth.flows.GithubOAuthFlow;
 import io.airbyte.oauth.flows.SalesforceOAuthFlow;
+import io.airbyte.oauth.flows.SquareOAuthFlow;
 import io.airbyte.oauth.flows.TrelloOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
@@ -33,6 +34,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
+        .put("airbyte/source-square", new SquareOAuthFlow(configRepository))
         .build();
   }
 
