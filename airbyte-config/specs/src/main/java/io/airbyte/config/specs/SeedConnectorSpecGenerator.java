@@ -35,11 +35,11 @@ import org.slf4j.LoggerFactory;
  * yaml files human-readable and easily-editable, as specs can be rather large.
  * <p>
  * Specs are fetched from the GCS spec cache bucket, so if any specs are missing from the bucket
- * then this will fail. This choice was made because: 1) This script only fetches specs for
- * connectors that Airbyte publishes 2) Specs are pushed to GCS every time Airbyte publishes a
- * connector version 3) Airbyte has full control over the GCS spec bucket. Therefore the decision
- * was that this script should fail if a spec is missing, rather than execute a separate potentially
- * brittle code path.
+ * then this will fail. Note that this script only pulls specs from the bucket cache; it never
+ * pushes specs to the bucket. Since this script runs at build time, the decision was to depend on
+ * the bucket cache rather than running a docker container to fetch the spec during the build which
+ * could be slow and unwieldy. If there is a failure, check the bucket cache and figure out how to
+ * get the correct spec in there.
  */
 public class SeedConnectorSpecGenerator {
 
