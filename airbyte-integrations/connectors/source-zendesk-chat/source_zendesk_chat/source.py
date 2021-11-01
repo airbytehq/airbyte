@@ -11,7 +11,7 @@ from base_python import AbstractSource, Stream, TokenAuthenticator
 from .api import Accounts, Agents, AgentTimelines, Bans, Chats, Departments, Goals, Roles, RoutingSettings, Shortcuts, Skills, Triggers
 
 
-class ZendeskAuthentication(TokenAuthenticator):
+class ZendeskAuthentication:
     """ Provides the authentication capabilities for both old and new methods. """
 
     def __init__(self, config: Dict):
@@ -25,6 +25,7 @@ class ZendeskAuthentication(TokenAuthenticator):
         if not access_token:
             # the new config supports `OAuth2.0`
             access_token = self.config["credentials"]["access_token"]
+    
         return TokenAuthenticator(token=access_token)
         
 
