@@ -7,6 +7,7 @@ package io.airbyte.config.specs;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.cli.Clis;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
@@ -20,12 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +55,7 @@ public class SeedConnectorSpecGenerator {
   }
 
   public static void main(final String[] args) throws Exception {
-    final CommandLine parsed = parse(args);
+    final CommandLine parsed = Clis.parse(args, OPTIONS);
     final Path outputRoot = Path.of(parsed.getOptionValue(SEED_ROOT_OPTION.getOpt()));
 
     final GcsBucketSpecFetcher bucketSpecFetcher = new GcsBucketSpecFetcher(StorageOptions.getDefaultInstance().getService(), SPEC_BUCKET_NAME);
@@ -112,18 +109,6 @@ public class SeedConnectorSpecGenerator {
             dockerImage,
             bucketSpecFetcher.getBucketName())));
     return new DockerImageSpec().withDockerImage(dockerImage).withSpec(spec);
-  }
-
-  private static CommandLine parse(final String[] args) {
-    final CommandLineParser parser = new DefaultParser();
-    final HelpFormatter helpFormatter = new HelpFormatter();
-
-    try {
-      return parser.parse(OPTIONS, args);
-    } catch (final ParseException e) {
-      helpFormatter.printHelp("", OPTIONS);
-      throw new IllegalArgumentException(e);
-    }
   }
 
 }
