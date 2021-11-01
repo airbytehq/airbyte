@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties":
+  {
+      "protocolNumber":
+      {
+          "type": "string",
+          "format": "uuid"
+      },
+      "agentName":
+      {
+          "type": "string"
+      },
+      "agentLogin":
+      {
+          "type": "string"
+      },
+      "groupName":
+      {
+          "type": "string"
+      },
+      "channel":
+      {
+          "type": "string"
+      },
+      "departmentName":
+      {
+          "type": "string"
+      },
+      "onSystemDate":
+      {
+          "type": "integer"
+      },
+      "contactStartedDate":
+      {
+          "type": "integer"
+      },
+      "contactFinishedDate":
+      {
+          "type": "integer"
+      },
+      "customerInQueueTime":
+      {
+          "type": "integer"
+      },
+      "agentServingTime":
+      {
+          "type": "integer"
+      },
+      "contactTotalTime":
+      {
+          "type": "integer"
+      },
+      "contactState":
+      {
+          "type": "string"
+      },
+      "contactStateDetail":
+      {
+          "type": "string"
+      },
+      "classifications":
+      {
+          "type": "array",
+          "items":
+          {
+              "type": "string"
+          }
+      },
+      "mailQueue":
+      {
+          "type": "string"
+      },
+      "mailStartQueue":
+      {
+          "type":
+          [
+              "string",
+              "null"
+          ]
+      },
+      "origin":
+      {
+          "type": "string"
+      },
+      "identifications":
+      {
+          "type": "array",
+          "items":
+          {
+              "$ref": "#/definitions/property"
+          }
+      },
+      "formAnswers":
+      {
+          "type": "array",
+          "items":
+          {
+              "$ref": "#/definitions/formAnswer"
+          }
+      },
+      "ratings":
+      {
+          "type": "array",
+          "items":
+          {
+              "$ref": "#/definitions/formAnswer"
+          }
+      },
+      "properties":
+      {
+          "type": "array",
+          "items":
+          {
+              "$ref": "#/definitions/property"
+          }
+      }
+  },
+  "definitions":
+  {
+      "property":
+      {
+          "type": "object",
+          "properties":
+          {
+              "key":
+              {
+                  "type": "string"
+              },
+              "value":
+              {
+                  "type": "string"
+              }
+          }
+      },
+      "formAnswer":
+      {
+          "type": "object",
+          "properties":
+          {
+              "question":
+              {
+                  "type": "string"
+              },
+              "answer":
+              {
+                  "type": "string"
+              }
+          }
+      }
+  }
+}
