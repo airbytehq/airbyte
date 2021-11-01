@@ -1,3 +1,13 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
 plugins {
-    id "airbyte-docker"
+    id 'com.bmuschko.docker-remote-api'
 }
+
+def buildTag = System.getenv('VERSION') ?: 'dev'
+// Use task types
+task buildMyAppImage(type: DockerBuildImage) {
+    inputDir = file('docker')
+    images.add("airbyte/db:$buildTag")
+}
+assemble.dependsOn(buildMyAppImage)
