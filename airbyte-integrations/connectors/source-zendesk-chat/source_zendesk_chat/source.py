@@ -5,10 +5,12 @@
 
 from typing import Any, Dict, List, Mapping, Tuple
 
-from airbyte_protocol import SyncMode
-from base_python import AbstractSource, Stream, TokenAuthenticator
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
-from .api import Accounts, Agents, AgentTimelines, Bans, Chats, Departments, Goals, Roles, RoutingSettings, Shortcuts, Skills, Triggers
+from .streams import Accounts, Agents, AgentTimelines, Bans, Chats, Departments, Goals, Roles, RoutingSettings, Shortcuts, Skills, Triggers
 
 
 class ZendeskAuthentication:
@@ -32,9 +34,10 @@ class ZendeskAuthentication:
 
 class SourceZendeskChat(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
+        authenticator = ZendeskAuthentication(config).get_auth()
         try:
-            authenticator = ZendeskAuthentication(config).get_auth()
-            list(RoutingSettings(authenticator=authenticator).read_records(SyncMode.full_refresh))
+            records = RoutingSettings(authenticator=authenticator).read_records(sync_mode=SyncMode.full_refresh)
+            next(records)
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Zendesk Chat API with the provided credentials - {error}"
