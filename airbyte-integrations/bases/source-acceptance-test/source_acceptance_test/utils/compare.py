@@ -82,7 +82,7 @@ class ListWithHashMixin(HashMixin, list):
     pass
 
 
-def make_hashible(obj):
+def make_hashable(obj):
     if isinstance(obj, Mapping):
         return DictWithHashMixin(obj)
     if isinstance(obj, List):

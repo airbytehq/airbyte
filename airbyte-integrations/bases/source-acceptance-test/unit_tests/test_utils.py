@@ -3,7 +3,7 @@
 #
 
 import pytest
-from source_acceptance_test.utils.compare import make_hashible
+from source_acceptance_test.utils.compare import make_hashable
 
 
 def not_sorted_data():
@@ -143,7 +143,7 @@ def sorted_data():
 )
 def test_compare_two_records_nested_with_different_orders(obj1, obj2, is_same):
     """Test that compare two records with equals, not sorted data."""
-    output_diff = set(map(make_hashible, [obj1])).symmetric_difference(set(map(make_hashible, [obj2])))
+    output_diff = set(map(make_hashable, [obj1])).symmetric_difference(set(map(make_hashable, [obj2])))
     if is_same:
         assert not output_diff, f"{obj1} should be equal to {obj2}"
     else:
