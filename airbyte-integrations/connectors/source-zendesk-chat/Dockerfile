@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-python:0.1.6
+FROM python:3.7-slim
 
 # Bash is installed for more convenient debugging.
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
@@ -6,13 +6,15 @@ RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 ENV CODE_PATH="source_zendesk_chat"
 ENV AIRBYTE_IMPL_MODULE="source_zendesk_chat"
 ENV AIRBYTE_IMPL_PATH="SourceZendeskChat"
+ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main_dev.py"
 
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
+COPY main_dev.py ./
 COPY setup.py ./
 RUN pip install .
 
-ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
+ENTRYPOINT ["python", "/airbyte/integration_code/main_dev.py"]
 
-LABEL io.airbyte.version=0.1.2
+LABEL io.airbyte.version=0.1.3
 LABEL io.airbyte.name=airbyte/source-zendesk-chat
