@@ -143,6 +143,20 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/file
   icon: file.svg
   sourceType: file
+- name: Freshdesk
+  sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
+  dockerRepository: airbyte/source-freshdesk
+  dockerImageTag: 0.2.7
+  documentationUrl: https://docs.airbyte.io/integrations/sources/freshdesk
+  icon: freshdesk.svg
+  sourceType: api
+- name: Freshservice
+  sourceDefinitionId: 9bb85338-ea95-4c93-b267-6be89125b267
+  dockerRepository: airbyte/source-freshservice
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/freshservice
+  icon: freshdesk.svg
+  sourceType: api
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
@@ -165,7 +179,7 @@
 - name: Google Analytics
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/source-google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
@@ -191,7 +205,7 @@
 - name: Google Workspace Admin Reports
   sourceDefinitionId: ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734
   dockerRepository: airbyte/source-google-workspace-admin-reports
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports
   sourceType: api
 - name: Greenhouse
@@ -256,7 +270,7 @@
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.2.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/jira
   icon: jira.svg
   sourceType: api
@@ -512,7 +526,7 @@
 - name: Survey Monkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/surveymonkey
   sourceType: api
 - name: Tempo
