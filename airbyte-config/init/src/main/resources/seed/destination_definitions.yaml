@@ -71,7 +71,7 @@
 - name: Oracle
   destinationDefinitionId: 3986776d-2319-4de9-8af8-db14c0996e72
   dockerRepository: airbyte/destination-oracle
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.io/integrations/destinations/oracle
 - name: Postgres
   destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
