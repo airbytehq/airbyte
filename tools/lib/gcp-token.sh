@@ -67,24 +67,3 @@ function get_gcp_access_token() {
   echo $data | jq -r .access_token
 }
 
-# token=$(get_access_token $SERVICE_ACCOUNT_FILE $SCOPE)
-
-# # Test fetching a secret. Use the latest version
-
-# curl "https://secretmanager.googleapis.com/v1/projects/$PROJECT/secrets/$SECRET/versions/latest:access" \
-#   --request "GET" \
-#   --header "authorization: Bearer $token" \
-#   --header "content-type: application/json" \
-#   --header "x-goog-user-project: $PROJECT"
-
-# # Test writing a new secret
-
-# SECRET_DATA=$(echo "seCr3t" | base64)
-
-
-# curl "https://secretmanager.googleapis.com/v1/projects/$PROJECT/secrets/$SECRET:addVersion" \
-#   --request "POST" \
-#   --header "authorization: Bearer $token" \
-#   --header "content-type: application/json" \
-#   --header "x-goog-user-project: $PROJECT" \
-#   --data "{\"payload\": {\"data\": \"${SECRET_DATA}\"}}"
