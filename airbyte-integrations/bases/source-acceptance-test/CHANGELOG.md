@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.25
+Fix incorrect nested strucutres compare.
+
 ## 0.1.24
 Improve message about errors in the stream's schema: https://github.com/airbytehq/airbyte/pull/6934
 
