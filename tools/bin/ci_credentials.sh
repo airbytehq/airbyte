@@ -48,6 +48,7 @@ function _write_standard_creds() {
     local secrets_dir="airbyte-integrations/connectors/${connector_name}/secrets"
   fi
   mkdir -p "$secrets_dir"
+  echo "Saved a secret => ${secrets_dir}/${cred_filename}"
   echo "$creds" > "${secrets_dir}/${cred_filename}"
 }
 
@@ -57,6 +58,7 @@ function save_all() {
     local cred_filename=$(echo ${key} | cut -d'#' -f2)
     local creds=${SECRET_MAP[${key}]}
     _write_standard_creds ${connector_name} "${creds}" ${cred_filename}
+    
   done
   return 0
 }
@@ -71,8 +73,6 @@ function export_github_secrets(){
     value=${value%?}
     if [[ "$key" == *"_CREDS"* ]]; then
       declare -gxr "${key}"="${value}"
-    else
-      echo "skip the env key: ${key}"
     fi
   done <<< ${pairs}
   unset SECRETS_JSON
@@ -98,6 +98,8 @@ function export_gsm_secrets(){
       --header "content-type: application/json" \
       --header "x-goog-user-project: ${project_id}")
     [[ -z ${data} ]] && error "Can't load secrets' list"
+    [[ ${data} == "{}" ]] && data='{"secrets": []}'
+
     for row in $(echo "${data}" | jq -r '.secrets[] | @base64'); do
       local secret_info=$(echo ${row} | base64 --decode)
       local secret_name=$(echo ${secret_info}| jq -r .name)
