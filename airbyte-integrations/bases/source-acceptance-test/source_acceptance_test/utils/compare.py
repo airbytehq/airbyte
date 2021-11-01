@@ -2,10 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
 import functools
 from typing import List, Mapping, Optional
 
+import dpath.exceptions
+import dpath.util
 import icdiff
 import py
 from pprintpp import pformat
@@ -78,8 +79,20 @@ class ListWithHashMixin(HashMixin, list):
     pass
 
 
-def make_hashable(obj):
+def make_hashable(obj, exclude_fields: List[str] = None) -> str:
+    """
+    Simplify comparison of nested dicts/lists
+    :param obj value for comparison
+    :param exclude_fields if value is Mapping, some fields can be excluded
+    """
     if isinstance(obj, Mapping):
+        # If value is Mapping, some fields can be excluded
+        exclude_fields = exclude_fields or []
+        for field in exclude_fields:
+            try:
+                dpath.util.delete(obj, field)
+            except dpath.exceptions.PathNotFound:
+                pass
         return DictWithHashMixin(obj)
     if isinstance(obj, List):
         return ListWithHashMixin(obj)
