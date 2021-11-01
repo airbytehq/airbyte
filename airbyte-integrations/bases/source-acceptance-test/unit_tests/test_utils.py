@@ -2,6 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from functools import partial
+
 import pytest
 from source_acceptance_test.utils.compare import make_hashable
 
@@ -148,3 +150,17 @@ def test_compare_two_records_nested_with_different_orders(obj1, obj2, is_same):
         assert not output_diff, f"{obj1} should be equal to {obj2}"
     else:
         assert output_diff, f"{obj1} shouldnt be equal to {obj2}"
+
+
+def test_exclude_fields():
+    """Test that check ignoring fields"""
+    data = [
+        sorted_data(),
+    ]
+    ignored_fields = [
+        "organization_id",
+    ]
+    serializer = partial(make_hashable, exclude_fields=ignored_fields)
+    output = map(serializer, data)
+    for item in output:
+        assert "organization_id" not in item
