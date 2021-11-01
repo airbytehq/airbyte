@@ -105,6 +105,10 @@ class IncrementalIntercomStream(IntercomStream, ABC):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         record = super().parse_response(response, stream_state, **kwargs)
 
+        # set initial state to use start_date from spec
+        if not stream_state:
+            stream_state[self.cursor_field] = self.start_date
+
         for record in record:
             yield from self.filter_by_state(stream_state=stream_state, record=record)
 
