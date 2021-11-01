@@ -11,13 +11,19 @@ dependencies {
     implementation project(':airbyte-config:models')
 }
 
+task copyScripts(type: Copy) {
+    from('scripts')
+    into 'docker/bin/scripts'
+}
+
 def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
+    dependsOn copyScripts
     dependsOn compileTestJava
     dependsOn jar
     dependsOn processTestResources
-    inputDir = file('.')
+    inputDir = file('docker')
     images.add("airbyte/init:$buildTag")
 }
-build.dependsOn(buildMyAppImage)
+assemble.dependsOn(buildMyAppImage)
