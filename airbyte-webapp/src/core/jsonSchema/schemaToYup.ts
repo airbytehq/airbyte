@@ -2,7 +2,7 @@ import { JSONSchema7 } from "json-schema";
 import * as yup from "yup";
 
 import { WidgetConfigMap } from "core/form/types";
-import { isDefined } from "../../utils/common";
+import { isDefined } from "utils/common";
 
 /**
  * Returns yup.schema for validation
