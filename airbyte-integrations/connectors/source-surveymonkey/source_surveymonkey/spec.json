@@ -17,16 +17,12 @@
       "credentials": {
         "type": "object",
         "title": "Authentication Type",
+        "description": "Authenticate over oAuth flow or provide token",
         "oneOf": [
           {
             "title": "Authenticate via OAuth",
             "type": "object",
-            "required": [
-              "client_id",
-              "client_secret",
-              "access_token",
-              "auth_type"
-            ],
+            "required": ["access_token", "auth_type"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -35,20 +31,9 @@
                 "default": "OAuth",
                 "order": 0
               },
-              "client_id": {
-                "title": "Client ID",
-                "type": "string",
-                "description": "The Client ID of your developer application",
-                "airbyte_secret": true
-              },
-              "client_secret": {
-                "title": "Client Secret",
-                "type": "string",
-                "description": "The client secret of your developer application",
-                "airbyte_secret": true
-              },
               "access_token": {
                 "title": "Access Token",
+                "description": "",
                 "type": "string",
                 "description": "An access token generated using the above client ID and secret",
                 "airbyte_secret": true
@@ -69,6 +54,7 @@
                 "order": 0
               },
               "access_token": {
+                "title": "Access Token",
                 "type": "string",
                 "airbyte_secret": true,
                 "description": "API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a> for information on how to generate this key."
@@ -83,7 +69,7 @@
     "auth_type": "oauth2.0",
     "oauth2Specification": {
       "rootObject": ["credentials", 0],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowInitParameters": [],
       "oauthFlowOutputParameters": [["access_token"]]
     }
   }
