@@ -51,9 +51,8 @@ public class YamlSeedConfigPersistenceTest {
     assertEquals(s3DestinationId, s3Destination.getDestinationDefinitionId().toString());
     assertEquals("S3", s3Destination.getName());
     assertEquals("airbyte/destination-s3", s3Destination.getDockerRepository());
+    assertEquals("https://docs.airbyte.io/integrations/destinations/s3", s3Destination.getDocumentationUrl());
     assertEquals(URI.create("https://docs.airbyte.io/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
-
-    System.out.println(mysqlSource.getSpec());
   }
 
   @Test

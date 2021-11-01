@@ -94,16 +94,20 @@ public class SeedConnectorSpecGenerator {
 
   @VisibleForTesting
   final List<DockerImageSpec> fetchUpdatedSeedSpecs(final JsonNode seedDefinitions, final JsonNode currentSeedSpecs) {
-    final List<String> seedDefinitionsDockerImages = MoreIterators.toList(seedDefinitions.elements()).stream()
+    final List<String> seedDefinitionsDockerImages = MoreIterators.toList(seedDefinitions.elements())
+        .stream()
         .map(json -> String.format("%s:%s", json.get(DOCKER_REPOSITORY_FIELD).asText(), json.get(DOCKER_IMAGE_TAG_FIELD).asText()))
         .collect(Collectors.toList());
 
-    final Map<String, DockerImageSpec> currentSeedImageToSpec = MoreIterators.toList(currentSeedSpecs.elements()).stream().collect(Collectors.toMap(
-        json -> json.get(DOCKER_IMAGE_FIELD).asText(),
-        json -> new DockerImageSpec().withDockerImage(json.get(DOCKER_IMAGE_FIELD).asText())
-            .withSpec(Jsons.object(json.get(SPEC_FIELD), ConnectorSpecification.class))));
+    final Map<String, DockerImageSpec> currentSeedImageToSpec = MoreIterators.toList(currentSeedSpecs.elements())
+        .stream()
+        .collect(Collectors.toMap(
+            json -> json.get(DOCKER_IMAGE_FIELD).asText(),
+            json -> new DockerImageSpec().withDockerImage(json.get(DOCKER_IMAGE_FIELD).asText())
+                .withSpec(Jsons.object(json.get(SPEC_FIELD), ConnectorSpecification.class))));
 
-    return seedDefinitionsDockerImages.stream()
+    return seedDefinitionsDockerImages
+        .stream()
         .map(dockerImage -> currentSeedImageToSpec.containsKey(dockerImage) ? currentSeedImageToSpec.get(dockerImage) : fetchSpecFromGCS(dockerImage))
         .collect(Collectors.toList());
   }
