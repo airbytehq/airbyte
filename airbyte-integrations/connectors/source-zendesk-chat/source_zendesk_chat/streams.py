@@ -203,6 +203,8 @@ class Accounts(Stream):
     Accounts Stream: https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account
     """
 
+    primary_key = "account_key"
+
     def path(self, **kwargs) -> str:
         return "account"
 
@@ -266,6 +268,8 @@ class RoutingSettings(Stream):
     """
     Routing Settings Stream: https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings
     """
+
+    primary_key = ""
 
     name = "routing_settings"
     data_field = "data"
