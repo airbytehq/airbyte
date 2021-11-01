@@ -63,7 +63,6 @@ public class SquareOAuthFlow extends BaseOAuthFlow {
   @Override
   protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl)
       throws IOException {
-    System.out.println(data);
     if (data.has("refresh_token")) {
       return Map.of("authorization", Map.of("refresh_token", data.get("refresh_token").asText()));
     } else {

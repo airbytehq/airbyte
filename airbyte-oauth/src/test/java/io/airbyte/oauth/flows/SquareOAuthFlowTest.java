@@ -58,16 +58,16 @@ public class SquareOAuthFlowTest {
 
   }
 
-  // @Test
-  // public void testGetSourceConcentUrl() throws IOException, ConfigNotFoundException {
-  // final String concentUrl =
-  // squareAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-  // assertEquals(
-  // //
-  // "https://connect.squareup.com/oauth2/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&scope=CUSTOMERS_WRITE%2BMERCHANT_PROFILE_READ%2BEMPLOYEES_READ%2BPAYMENTS_READ%2BCUSTOMERS_READ%2BTIMECARDS_READ%2BORDERS_READ&session=False&state=state",
-  // "https://connect.squareup.com/oauth2/authorize?client_id=test_client_id&scope=ITEMS_READ+CUSTOMERS_READ&session=False&state=state",
-  // concentUrl);
-  // }
+  @Test
+  public void testGetSourceConcentUrl() throws IOException, ConfigNotFoundException {
+    final String concentUrl =
+        squareAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    assertEquals(
+        "https://connect.squareup.com/oauth2/authorize?client_id=test_client_id&scope=ITEMS_READ"
+            + "+CUSTOMERS_WRITE+MERCHANT_PROFILE_READ+EMPLOYEES_READ+PAYMENTS_READ+CUSTOMERS_READ"
+            + "+TIMECARDS_READ+ORDERS_READ&session=False&state=state",
+        concentUrl);
+  }
 
   @Test
   public void testCompleteSourceOAuth() throws IOException, InterruptedException,
