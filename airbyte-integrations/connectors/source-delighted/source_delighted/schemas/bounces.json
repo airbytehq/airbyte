@@ -11,7 +11,7 @@
     "name": {
       "type": "string"
     },
-    "unsubscribed_at": {
+    "bounced_at": {
       "type": "integer"
     }
   }

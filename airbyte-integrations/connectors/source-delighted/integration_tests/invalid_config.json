@@ -1,3 +1,4 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "api_key": "wrong api key",
+  "since": 1625328197
 }
