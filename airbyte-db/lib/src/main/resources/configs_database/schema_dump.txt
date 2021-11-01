@@ -5,6 +5,7 @@ create table "public"."airbyte_configs"(
   "config_blob" jsonb not null,
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
+  "columnA" int4 null,
   constraint "airbyte_configs_pkey"
     primary key ("id")
 );

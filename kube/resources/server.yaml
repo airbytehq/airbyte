@@ -15,7 +15,8 @@ kind: Deployment
 metadata:
   name: airbyte-server
 spec:
-  replicas: 1
+  replicas: 5
+  #  replicas: 1
   selector:
     matchLabels:
       airbyte: server

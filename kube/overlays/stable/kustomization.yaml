@@ -12,7 +12,8 @@ images:
   - name: airbyte/scheduler
     newTag: 0.30.23-alpha
   - name: airbyte/server
-    newTag: 0.30.23-alpha
+    #    newTag: 0.30.23-alpha
+    newTag: dev
   - name: airbyte/webapp
     newTag: 0.30.23-alpha
   - name: airbyte/worker
