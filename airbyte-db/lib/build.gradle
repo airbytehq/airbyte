@@ -79,7 +79,9 @@ task buildMyAppImage(type: DockerBuildImage) {
     dependsOn compileTestJava
     dependsOn jar
     dependsOn processTestResources
+    dependsOn jacocoTestReport
     inputDir = file('.')
+//     dockerFile = file('Dockerfile')
     images.add("airbyte/db:$buildTag")
 }
 build.dependsOn(buildMyAppImage)
