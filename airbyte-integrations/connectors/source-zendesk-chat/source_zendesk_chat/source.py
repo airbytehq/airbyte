@@ -20,13 +20,13 @@ class ZendeskAuthentication(TokenAuthenticator):
     def get_auth(self) -> TokenAuthenticator:
         """ Return the TokenAuthenticator object with access_token. """
 
+        # the old config supports for backward capability
         access_token = self.config.get("access_token")
-        if access_token:
-            # the old config supports for backward capability
-            return TokenAuthenticator(token=access_token)
-        else:
+        if not access_token:
             # the new config supports `OAuth2.0`
-            return TokenAuthenticator(token=self.config["credentials"]["access_token"])
+            access_token = self.config["credentials"]["access_token"]
+        return TokenAuthenticator(token=access_token)
+        
 
 
 class SourceZendeskChat(AbstractSource):
