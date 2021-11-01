@@ -47,18 +47,14 @@ public class SeedConnectorSpecGenerator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SeedConnectorSpecGenerator.class);
 
-  private static final Options OPTIONS = new Options();
-  private static final Option SEED_ROOT_OPTION = new Option("s", "seed-root", true, "path to where seed resource files are stored");
+  private static final Option SEED_ROOT_OPTION = Option.builder("s").longOpt("seed-root").hasArg(true).required(true)
+      .desc("path to where seed resource files are stored").build();
+  private static final Options OPTIONS = new Options().addOption(SEED_ROOT_OPTION);
 
   private final GcsBucketSpecFetcher bucketSpecFetcher;
 
   SeedConnectorSpecGenerator(final GcsBucketSpecFetcher bucketSpecFetcher) {
     this.bucketSpecFetcher = bucketSpecFetcher;
-  }
-
-  static {
-    SEED_ROOT_OPTION.setRequired(true);
-    OPTIONS.addOption(SEED_ROOT_OPTION);
   }
 
   public static void main(final String[] args) throws Exception {
