@@ -232,7 +232,7 @@ def transform_standard_naming(input_name: str) -> str:
 
 def transform_json_naming(input_name: str) -> str:
     result = sub(r"['\"`]", "_", input_name)
-    result = sub(r"\n", "_", input_name)
+    result = sub(r"\n", "_", result)
     return result
 
 
