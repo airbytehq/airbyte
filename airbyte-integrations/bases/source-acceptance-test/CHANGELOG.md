@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.26
+Add ignored fields for full refresh test
+
 ## 0.1.25
 Fix incorrect nested strucutres compare.
 
