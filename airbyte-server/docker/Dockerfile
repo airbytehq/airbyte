@@ -7,7 +7,7 @@ ENV APPLICATION airbyte-server
 
 WORKDIR /app
 
-COPY build/distributions/${APPLICATION}-0*.tar ${APPLICATION}.tar
+COPY bin/${APPLICATION}-0*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 
