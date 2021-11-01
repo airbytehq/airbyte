@@ -28,7 +28,7 @@ RUN chmod +x ./kubectl
 RUN mv ./kubectl /usr/local/bin
 
 # Move and run worker
-COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+COPY bin/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 

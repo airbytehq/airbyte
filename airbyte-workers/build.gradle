@@ -65,9 +65,19 @@ application {
     applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
+task copyGeneratedTar(type: Copy) {
+    dependsOn distTar
+
+    from('build/distributions') {
+        include 'airbyte-workers-*.tar'
+    }
+    into 'docker/bin'
+}
+
 def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
+    dependsOn copyGeneratedTar
     dependsOn compileTestJava
     dependsOn distTar
     dependsOn distZip
@@ -77,7 +87,7 @@ task buildMyAppImage(type: DockerBuildImage) {
     dependsOn compileIntegrationTestJavaJava
     dependsOn test
     dependsOn jacocoTestReport
-    inputDir = file('.')
+    inputDir = file('docker')
     images.add("airbyte/worker:$buildTag")
 }
 assemble.dependsOn(buildMyAppImage)
