@@ -36,21 +36,36 @@ assemble.dependsOn npm_run_build
 build.finalizedBy test
 
 task copyDocs(type: Copy) {
-    from "${System.getProperty("user.dir")}/docs/integrations"
-    into "${buildDir}/docs/integrations"
+    from "${project.rootProject.projectDir}/docs/integrations"
+    into "docker/bin/docs/integratbimions"
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
+task copyBuild(type: Copy) {
+    from "${project.projectDir}/build"
+    into "docker/bin/build"
+    exclude ".docker"
+}
+
+task copyNginx(type: Copy) {
+    from "${project.projectDir}/nginx"
+    into "docker/bin/nginx"
+}
+
+copyBuild.dependsOn npm_run_build
+copyNginx.dependsOn npm_run_build
 copyDocs.dependsOn npm_run_build
 assemble.dependsOn copyDocs
 
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
+    dependsOn copyBuild
+    dependsOn copyNginx
     dependsOn copyDocs
     dependsOn nodeSetup
     dependsOn npmInstall
     dependsOn npm_run_build
-    inputDir = file('.')
+    inputDir = file('docker')
     images.add("airbyte/webapp:$version")
 }
-build.dependsOn(buildMyAppImage)
+assemble.dependsOn(buildMyAppImage)
