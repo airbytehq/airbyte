@@ -81,10 +81,10 @@ class ListWithHashMixin(HashMixin, list):
 
 def make_hashable(obj, exclude_fields: List[str] = None) -> str:
     """
-   Simplify comparison of nested dicts/lists
-   :param obj value for comparison
-   :param exclude_fields if value is Mapping, some fields can be excluded
-   """
+    Simplify comparison of nested dicts/lists
+    :param obj value for comparison
+    :param exclude_fields if value is Mapping, some fields can be excluded
+    """
     if isinstance(obj, Mapping):
         # If value is Mapping, some fields can be excluded
         exclude_fields = exclude_fields or []

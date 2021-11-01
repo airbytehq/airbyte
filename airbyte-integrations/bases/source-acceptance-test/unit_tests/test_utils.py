@@ -154,7 +154,9 @@ def test_compare_two_records_nested_with_different_orders(obj1, obj2, is_same):
 
 def test_exclude_fields():
     """Test that check ignoring fields"""
-    data = [sorted_data(), ]
+    data = [
+        sorted_data(),
+    ]
     ignored_fields = [
         "organization_id",
     ]
