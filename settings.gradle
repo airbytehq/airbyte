@@ -28,6 +28,7 @@ if(!System.getenv().containsKey("SUB_BUILD")) {
 include ':airbyte-api'
 include ':airbyte-commons'
 include ':airbyte-commons-docker'
+include ':airbyte-commons-cli'
 include ':airbyte-config:models' // reused by acceptance tests in connector base.
 include ':airbyte-db:lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
