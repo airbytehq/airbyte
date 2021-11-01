@@ -44,8 +44,8 @@ This connector attempts to back off gracefully when it hits Directory API's rate
 
 Google APIs use the OAuth 2.0 protocol for authentication and authorization. This connector supports [Web server application](https://developers.google.com/identity/protocols/oauth2#webserver) and [Service accounts](https://developers.google.com/identity/protocols/oauth2#serviceaccount) scenarios. Therefore, there are 2 options of setting up authorization for this source:
 
-* Create service account specifically for Airbyte and authorize with JWT. Select "JWT authorization" from the "Authentication mechanism" dropdown list.
 * Use your Google account and authorize over Google's OAuth on connection setup. Select "Default OAuth2.0 authorization" from dropdown list.
+* Create service account specifically for Airbyte.
 
 ### Service account requirements
 
