@@ -16,10 +16,9 @@ import io.airbyte.integrations.destination.oracle.OracleDestination;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.function.Consumer;
 
 public class OracleStrictEncryptDestination extends SpecModifyingDestination implements Destination {
 
@@ -39,12 +38,13 @@ public class OracleStrictEncryptDestination extends SpecModifyingDestination imp
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
+                                            Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
     final JsonNode cloneConfig = Jsons.clone(config);
     ((ObjectNode) cloneConfig).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-            .put("encryption_method", "client_nne")
-            .put("encryption_algorithm", "AES256")
-            .build()));
+        .put("encryption_method", "client_nne")
+        .put("encryption_algorithm", "AES256")
+        .build()));
 
     return super.getConsumer(cloneConfig, catalog, outputRecordCollector);
   }
