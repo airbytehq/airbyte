@@ -1,38 +1,19 @@
-# MIT License
 #
-# Copyright (c) 2020 Airbyte
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
 
 
 import base64
 from abc import ABC
-from typing import (Any, Iterable, List, Mapping, MutableMapping, Optional,
-                    Tuple)
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from requests.auth import HTTPBasicAuth
 
 
 # Basic full refresh stream
@@ -73,7 +54,6 @@ class DelightedStream(HttpStream, ABC):
 
 
 class IncrementalDelightedStream(DelightedStream, ABC):
-    
     # Getting page size as 'limit' from parrent class
     @property
     def limit(self):
@@ -97,14 +77,13 @@ class IncrementalDelightedStream(DelightedStream, ABC):
 
 
 class People(IncrementalDelightedStream):
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "people.json"
 
 
-class UnsubscribedPeople(IncrementalDelightedStream):
+class Unsubscribes(IncrementalDelightedStream):
     cursor_field = "unsubscribed_at"
     primary_key = "person_id"
 
@@ -114,7 +93,7 @@ class UnsubscribedPeople(IncrementalDelightedStream):
         return "unsubscribes.json"
 
 
-class BouncedPeople(IncrementalDelightedStream):
+class Bounces(IncrementalDelightedStream):
     cursor_field = "bounced_at"
     primary_key = "person_id"
 
@@ -142,6 +121,10 @@ class SurveyResponses(IncrementalDelightedStream):
 
 # Source
 class SourceDelighted(AbstractSource):
+    def _get_authenticator(self, config):
+        token = base64.b64encode(f"{config['api_key']}:".encode("utf-8")).decode("utf-8")
+        return TokenAuthenticator(token=token, auth_method="Basic")
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
 
@@ -151,22 +134,18 @@ class SourceDelighted(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        api_key = config["api_key"]
 
         try:
-            session = requests.get('https://api.delighted.com/v1/people.json', auth=HTTPBasicAuth(api_key, ''))
-            session.raise_for_status()
+            auth = self._get_authenticator(config)
+            args = {"authenticator": auth, "since": config["since"]}
+            stream = SurveyResponses(**args)
+            records = stream.read_records(sync_mode=SyncMode.full_refresh)
+            next(records)
             return True, None
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        token = base64.b64encode(f"{config['api_key']}:".encode("utf-8")).decode("utf-8")
-        auth = TokenAuthenticator(token=token, auth_method="Basic")
-
+        auth = self._get_authenticator(config)
         args = {"authenticator": auth, "since": config["since"]}
-
-        return [People(**args),
-                UnsubscribedPeople(**args),
-                BouncedPeople(**args),
-                SurveyResponses(**args)]
+        return [People(**args), Unsubscribes(**args), Bounces(**args), SurveyResponses(**args)]

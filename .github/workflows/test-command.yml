@@ -191,6 +191,7 @@ jobs:
           SOURCE_LEMLIST_TEST_CREDS: ${{ secrets.SOURCE_LEMLIST_TEST_CREDS }}
           SOURCE_STRAVA_TEST_CREDS: ${{ secrets.SOURCE_STRAVA_TEST_CREDS }}
           SOURCE_PAYSTACK_TEST_CREDS: ${{ secrets.SOURCE_PAYSTACK_TEST_CREDS }}
+          SOURCE_DELIGHTED_TEST_CREDS: ${{ secrets.SOURCE_DELIGHTED_TEST_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}

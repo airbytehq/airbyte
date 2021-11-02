@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 # MIT License
 #
 # Copyright (c) 2020 Airbyte

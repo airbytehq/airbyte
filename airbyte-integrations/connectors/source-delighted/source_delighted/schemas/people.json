@@ -6,10 +6,10 @@
       "type": "string"
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "created_at": {
       "type": "integer"

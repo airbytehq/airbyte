@@ -102,6 +102,12 @@
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/cockroachdb
   sourceType: database
+- name: Delighted
+  sourceDefinitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
+  dockerRepository: airbyte/source-delighted
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/delighted
+  sourceType: api
 - name: Dixa
   sourceDefinitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
   dockerRepository: airbyte/source-dixa
