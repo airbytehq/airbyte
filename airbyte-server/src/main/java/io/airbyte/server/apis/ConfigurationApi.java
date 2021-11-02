@@ -182,7 +182,9 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobPersistence,
         jobNotifier,
         temporalService,
-        new OAuthConfigSupplier(configRepository, false, trackingClient), workerEnvironment, logConfigs);
+        new OAuthConfigSupplier(configRepository, false, trackingClient),
+        workerEnvironment,
+        logConfigs);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);

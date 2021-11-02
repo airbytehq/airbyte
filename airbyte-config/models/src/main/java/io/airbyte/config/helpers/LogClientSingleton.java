@@ -150,7 +150,9 @@ public class LogClientSingleton {
     }
   }
 
-  private boolean shouldUseLocalLogs(final WorkerEnvironment workerEnvironment) {
+  // This method should cease to exist here and become a property on the enum instead
+  // TODO handle this as part of refactor https://github.com/airbytehq/airbyte/issues/7545
+  private static boolean shouldUseLocalLogs(final WorkerEnvironment workerEnvironment) {
     return workerEnvironment.equals(WorkerEnvironment.DOCKER);
   }
 

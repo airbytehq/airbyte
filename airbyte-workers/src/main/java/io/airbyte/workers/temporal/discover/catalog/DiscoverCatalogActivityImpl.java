@@ -71,7 +71,9 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     final Supplier<StandardDiscoverCatalogInput> inputSupplier = () -> input;
 
     final TemporalAttemptExecution<StandardDiscoverCatalogInput, AirbyteCatalog> temporalAttemptExecution = new TemporalAttemptExecution<>(
-        workspaceRoot, workerEnvironment, logConfigs,
+        workspaceRoot,
+        workerEnvironment,
+        logConfigs,
         jobRunConfig,
         getWorkerFactory(launcherConfig),
         inputSupplier,

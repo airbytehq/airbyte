@@ -55,7 +55,9 @@ public class SpecActivityImpl implements SpecActivity {
     final Supplier<JobGetSpecConfig> inputSupplier = () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
 
     final TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification> temporalAttemptExecution = new TemporalAttemptExecution<>(
-        workspaceRoot, workerEnvironment, logConfigs,
+        workspaceRoot,
+        workerEnvironment,
+        logConfigs,
         jobRunConfig,
         getWorkerFactory(launcherConfig),
         inputSupplier,

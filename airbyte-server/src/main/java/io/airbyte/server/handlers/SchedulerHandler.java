@@ -104,7 +104,9 @@ public class SchedulerHandler {
         jobPersistence,
         jobNotifier,
         temporalService,
-        oAuthConfigSupplier, workerEnvironment, logConfigs);
+        oAuthConfigSupplier,
+        workerEnvironment,
+        logConfigs);
   }
 
   @VisibleForTesting

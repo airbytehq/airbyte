@@ -78,7 +78,9 @@ class TemporalAttemptExecutionTest {
         () -> "",
         mdcSetter,
         mock(CancellationHandler.class),
-        SOURCE_USERNAME, SOURCE_PASSWORD, container.getJdbcUrl(),
+        SOURCE_USERNAME,
+        SOURCE_PASSWORD,
+        container.getJdbcUrl(),
         () -> "workflow_id", configs.getAirbyteVersionOrWarning());
   }
 

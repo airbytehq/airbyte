@@ -49,7 +49,7 @@ public class JobConverter {
         .attempts(job.getAttempts().stream().map(attempt -> getAttemptInfoRead(attempt)).collect(Collectors.toList()));
   }
 
-  public JobWithAttemptsRead getJobWithAttemptsRead(final Job job) {
+  public static JobWithAttemptsRead getJobWithAttemptsRead(final Job job) {
     final String configId = job.getScope();
     final JobConfigType configType = Enums.convertTo(job.getConfigType(), JobConfigType.class);
 
@@ -70,7 +70,7 @@ public class JobConverter {
         .logs(getLogRead(attempt.getLogPath()));
   }
 
-  public AttemptRead getAttemptRead(final Attempt attempt) {
+  public static AttemptRead getAttemptRead(final Attempt attempt) {
     return new AttemptRead()
         .id(attempt.getId())
         .status(Enums.convertTo(attempt.getStatus(), AttemptStatus.class))
@@ -98,7 +98,6 @@ public class JobConverter {
   }
 
   public SynchronousJobRead getSynchronousJobRead(final SynchronousResponse<?> response) {
-    final Configs configs = new EnvConfigs();
     return getSynchronousJobRead(response.getMetadata());
   }
 
