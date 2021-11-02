@@ -2,10 +2,10 @@
   "people": {
     "created_at": "1601586688"
   },
-  "unsubscribed_people": {
+  "unsubscribes": {
     "unsubscribed_at": "1601586688"
   },
-  "bounced_people": {
+  "bounces": {
     "bounced_at": "1601586688"
   },
   "survey_responses": {

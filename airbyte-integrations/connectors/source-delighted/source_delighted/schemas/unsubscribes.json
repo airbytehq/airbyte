@@ -9,7 +9,7 @@
       "type": "string"
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "unsubscribed_at": {
       "type": "integer"
