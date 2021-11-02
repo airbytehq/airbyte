@@ -34,10 +34,5 @@ class SourceSurveymonkey(AbstractSource):
 
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
-        # backward compatibility
-        if config.get("access_token"):
-            token = config.get("access_token")
-        else:
-            token = config.get("credentials", {}).get("access_token")
-
+        token = config["access_token"]
         return TokenAuthenticator(token=token)
