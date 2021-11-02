@@ -1102,6 +1102,7 @@ public class AcceptanceTests {
     dbConfig.put("port", psql.getFirstMappedPort());
     dbConfig.put("database", psql.getDatabaseName());
     dbConfig.put("username", psql.getUsername());
+    dbConfig.put("ssl", false);
 
     if (withSchema) {
       dbConfig.put("schema", "public");
