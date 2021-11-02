@@ -30,7 +30,7 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_file",
+    name="source_file_secure",
     description="Source implementation for File",
     author="Airbyte",
     author_email="contact@airbyte.io",

@@ -8,7 +8,3 @@ plugins {
 airbytePython {
     moduleDirectory 'source_file_secure'
 }
-
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
-}
