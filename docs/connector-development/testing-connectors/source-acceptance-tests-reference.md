@@ -167,6 +167,7 @@ This test performs two read operations on all streams which support full refresh
 | `config_path` | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog |
 | `timeout_seconds` | int | 20\*60 | Test execution timeout in seconds |
+| `ignored_fields` | dict | None |For each stream, list of fields path ignoring in sequential reads test|
 
 ## Test Incremental sync
 

@@ -14,6 +14,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 | Connector | Grade |
 | :--- | :--- |
+| [Amazon SQS](sources/amazon-sqs.md) | Alpha |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md) | Alpha |
 | [Amplitude](sources/amplitude.md) | Beta |
 | [Apify Dataset](sources/apify-dataset.md) | Alpha |
@@ -56,6 +57,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Jira](sources/jira.md) | Certified |
 | [Klaviyo](sources/klaviyo.md) | Beta |
 | [Klaviyo](sources/kustomer.md) | Alpha |
+| [Lemlist](sources/lemlist.md) | Alpha |
 | [LinkedIn Ads](sources/linkedin-ads.md) | Beta |
 | [Kustomer](sources/kustomer.md) | Alpha |
 | [Lever Hiring](sources/lever-hiring.md) | Beta |
@@ -78,6 +80,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md) | Beta |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md) | Beta |
 | [PayPal Transaction](sources/paypal-transaction.md) | Beta |
+| [Paystack](sources/paystack.md) | Alpha |
 | [Pipedrive](sources/pipedrive.md) | Alpha |
 | [Plaid](sources/plaid.md) | Alpha |
 | [PokéAPI](sources/pokeapi.md) | Beta |
@@ -100,6 +103,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Smartsheets](sources/smartsheets.md) | Beta |
 | [Snowflake](sources/snowflake.md) | Beta |
 | [Square](sources/square.md) | Beta |
+| [Strava](sources/strava.md) | Beta |
 | [Stripe](sources/stripe.md) | Certified |
 | [Sugar CRM](sources/sugar-crm.md) | Beta |
 | [SurveyMonkey](sources/surveymonkey.md) | Beta |
@@ -126,6 +130,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [BigQuery](destinations/bigquery.md) | Certified |
 | [Chargify \(Keen\)](destinations/chargify.md) | Alpha |
 | [Databricks](destinations/databricks.md) | Beta |
+| [Elasticsearch](destinations/elasticsearch.md) | Alpha |
 | [Google Cloud Storage \(GCS\)](destinations/gcs.md) | Alpha |
 | [Google Pubsub](destinations/pubsub.md) | Alpha |
 | [Kafka](destinations/kafka.md) | Alpha |

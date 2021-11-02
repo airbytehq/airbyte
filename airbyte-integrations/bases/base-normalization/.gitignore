@@ -12,5 +12,6 @@ integration_tests/normalization_test_output/*/*/*.json
 integration_tests/normalization_test_output/*/*/*.md
 integration_tests/normalization_test_output/*/*/macros/
 integration_tests/normalization_test_output/*/*/tests/
+integration_tests/normalization_test_output/*/*/models/dbt_data_tests/
 integration_tests/normalization_test_output/*/*/models/dbt_schema_tests/
-
+integration_tests/normalization_test_output/*/*/modified_models/
