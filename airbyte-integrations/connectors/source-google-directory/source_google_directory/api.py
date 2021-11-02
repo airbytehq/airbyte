@@ -24,6 +24,7 @@ class API:
     def __init__(self, credentials: Mapping[str, Any]):
         self._creds = None
         self._raw_credentials = credentials
+        self._service = None
 
     @staticmethod
     def _load_account_info(credentials_json: str) -> Dict:
@@ -59,8 +60,8 @@ class API:
     def _construct_resource(self) -> Resource:
         if not self._creds:
             self._obtain_creds()
-        service = build("admin", "directory_v1", credentials=self._creds)
-        return service
+        if not self._service:
+            self._service = build("admin", "directory_v1", credentials=self._creds)
 
     def _get_resource(self, name: str):
         service = self._construct_resource()
