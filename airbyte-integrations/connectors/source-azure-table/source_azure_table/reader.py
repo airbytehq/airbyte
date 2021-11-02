@@ -1,7 +1,8 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
+# Reader uses azure data table python package(https://pypi.org/project/azure-data-tables/) to interact with table services
+#  
 
 import re
 from typing import Dict, Iterable, List
@@ -14,9 +15,43 @@ from . import constants
 
 
 class Reader:
-    """ This reader reads data from given table """
+    """ 
+    This reader reads data from given table 
+
+    Attributes
+    ----------
+    logger : AirbyteLogger
+        Airbyte's Logger instance
+    account_name : str
+        The name of your storage account.
+    access_key : str
+        The access key to your storage account. Read more about access keys here - https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal#view-account-access-keys
+    endpoint_suffix : str
+        The Table service account URL suffix. Read more about suffixes here - https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string#create-a-connection-string-with-an-endpoint-suffix
+    connection_string: str
+        storage account connection string created using above params. Read more about connection string here - https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string#configure-a-connection-string-for-an-azure-storage-account
+    
+    Methods
+    -------
+    get_table_service()
+        Returns azure table service client from connection string. 
+
+    get_table_client(table_name: str)
+        Returns azure table client from connection string.
+
+    get_streams()
+        Fetches all tables from storage account and returns them in Airbyte stream.
+
+    """
 
     def __init__(self, logger: AirbyteLogger, config: dict):
+        """
+        Parameters
+        ----------
+        config : dict
+            Airbyte's configuration obect
+        
+        """
         self.logger = logger
         self.account_name = config[constants.azure_storage_account_name_key_name]
         self.access_key = config[constants.azure_storage_access_key_key_name]
@@ -27,12 +62,27 @@ class Reader:
         )
 
     def get_table_service(self) -> TableServiceClient:
+        """
+        Returns azure table service client from connection string. 
+        Table service client facilitate interaction with tables. Please read more here - https://docs.microsoft.com/en-us/rest/api/storageservices/operations-on-tables
+        
+        """
         try:
             return TableServiceClient.from_connection_string(conn_str=self.connection_string)
         except Exception as e:
             raise Exception(f"An exception occurred: {str(e)}")
 
     def get_table_client(self, table_name: str) -> TableClient:
+        """
+        Returns azure table client from connection string.
+        Table client facilitate interaction with table entities/rows. Please read more here - https://docs.microsoft.com/en-us/rest/api/storageservices/operations-on-entities
+
+        Parameters
+        ----------
+        table_name : str
+            table name for which you would like create table client for.
+        
+        """
         try:
             if not table_name:
                 raise Exception("An exception occurred: table name is not valid.")
@@ -41,6 +91,9 @@ class Reader:
             raise Exception(f"An exception occurred: {str(e)}")
 
     def get_streams(self) -> List[AirbyteStream]:
+        """
+        Fetches all tables from storage account and returns them in Airbyte stream.
+        """
         try:
             streams = []
             table_client = self.get_table_service()
@@ -57,6 +110,7 @@ class Reader:
 
     @property
     def get_typed_schema(self) -> object:
+        """ Static schema for tables """
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
