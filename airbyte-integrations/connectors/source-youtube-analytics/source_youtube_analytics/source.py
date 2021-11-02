@@ -153,7 +153,6 @@ class SourceYoutubeAnalytics(AbstractSource):
             client_id=client_id,
             client_secret=client_secret,
             refresh_token=refresh_token,
-            scopes=["https://www.googleapis.com/auth/yt-analytics-monetary.readonly"],
         )
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:

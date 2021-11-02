@@ -43,7 +43,7 @@ This source is capable of syncing the following reports and their data:
 ## Getting Started
 
 * Go to the [YouTube Reporting API dashboard](https://console.cloud.google.com/apis/api/youtubereporting.googleapis.com/overview) in the project for your service user. Enable the API for your account.
-* Use your Google account and authorize over Google's OAuth 2.0 on connection setup.
+* Use your Google account and authorize over Google's OAuth 2.0 on connection setup. Please make sure to grant the following [authorization scope](https://developers.google.com/youtube/reporting/v1/reports#step-1:-retrieve-authorization-credentials): `https://www.googleapis.com/auth/yt-analytics.readonly`.
 
 ## Rate Limits & Performance Considerations \(Airbyte Open-Source\)
 
