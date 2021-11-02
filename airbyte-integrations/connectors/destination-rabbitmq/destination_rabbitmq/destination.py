@@ -18,43 +18,22 @@ from pika.credentials import PlainCredentials
 _DEFAULT_PORT = 5672
 
 
-class DestinationRabbitmq(Destination):
-    def _create_connection(self, config: Mapping[str, Any]) -> BlockingConnection:
-        host = config['host']
-        port = config.get('port') or _DEFAULT_PORT
-        virtual_host = config.get('virtual_host')
-        username = config.get('username')
-        password = config.get('password')
-        
-        if username and password:
-            credentials = PlainCredentials(username=username, password=password)
-            if virtual_host:
-                connection = BlockingConnection(pika.ConnectionParameters(
-                    host=host,
-                    port=port,
-                    virtual_host=virtual_host,
-                    credentials=credentials
-                ))
-            else:
-                connection = BlockingConnection(pika.ConnectionParameters(
-                    host=host,
-                    port=port,
-                    credentials=credentials
-                ))
-        else:
-            if virtual_host:
-                connection = BlockingConnection(pika.ConnectionParameters(
-                    host=host,
-                    port=port,
-                    virtual_host=virtual_host,
-                ))
-            else:
-                connection = BlockingConnection(pika.ConnectionParameters(
-                    host=host,
-                    port=port
-                ))
-        return connection
+def create_connection(config: Mapping[str, Any]) -> BlockingConnection:
+    username = config.get('username')
+    password = config.get('password')
+    virtual_host = config.get('virtual_host')
+    params = pika.ConnectionParameters(
+        host=config['host'],
+        port=config.get('port') or _DEFAULT_PORT
+    )
+    if username and password:
+        params.credentials = PlainCredentials(username=username, password=password)
+    if virtual_host:
+        params.virtual_host = virtual_host
+    return BlockingConnection(params)
 
+
+class DestinationRabbitmq(Destination):
     def write(
             self,
             config: Mapping[str, Any],
@@ -63,7 +42,7 @@ class DestinationRabbitmq(Destination):
     ) -> Iterable[AirbyteMessage]:
         exchange = config.get('exchange')
         routing_key = config['routing_key']
-        connection = self._create_connection(config=config)
+        connection = create_connection(config=config)
         channel = connection.channel()
 
         try:
@@ -83,15 +62,12 @@ class DestinationRabbitmq(Destination):
                 else:
                     # Let's ignore other message types for now
                     continue
-        except Exception as e:
-            print(f'Failed: {e}')
-            pass
         finally:
             connection.close()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
-            connection = self._create_connection(config=config)
+            connection = create_connection(config=config)
         except Exception as e:
             logger.error(f'Failed to create connection. Error: {e}')
             return AirbyteConnectionStatus(status=Status.FAILED, message=f'Could not create connection: {repr(e)}')
