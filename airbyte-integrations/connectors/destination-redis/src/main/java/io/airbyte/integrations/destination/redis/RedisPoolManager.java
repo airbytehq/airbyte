@@ -1,7 +1,6 @@
 package io.airbyte.integrations.destination.redis;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 /*
 * Pool Manager for keeping track of opened pools and connections.
@@ -14,10 +13,7 @@ class RedisPoolManager {
     }
 
     static Jedis initConnection(RedisConfig redisConfig) {
-
-        var jedisPool = new JedisPool(redisConfig.getHost(), redisConfig.getPort());
-
-        return jedisPool.getResource();
+        return new Jedis(redisConfig.getHost(), redisConfig.getPort());
     }
 
     static void closeConnection() {

@@ -27,4 +27,13 @@ public class RedisRecord {
     public Instant getTimestamp() {
         return timestamp;
     }
+
+    @Override
+    public String toString() {
+        return "RedisRecord{" +
+            "id=" + id +
+            ", data='" + data + '\'' +
+            ", timestamp=" + timestamp +
+            '}';
+    }
 }

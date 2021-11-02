@@ -42,6 +42,7 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
             .collect(Collectors.toUnmodifiableMap(
                 AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam,
                 k -> new RedisStreamConfig(
+                    nameTransformer.outputNamespace(k.getStream().getNamespace()),
                     nameTransformer.outputKey(k.getStream().getName()),
                     nameTransformer.outputTmpKey(k.getStream().getName()),
                     k.getDestinationSyncMode())));

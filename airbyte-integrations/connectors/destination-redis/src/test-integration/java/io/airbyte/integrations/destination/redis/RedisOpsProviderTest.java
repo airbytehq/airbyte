@@ -1,73 +1,95 @@
 package io.airbyte.integrations.destination.redis;
 
-import java.util.Map;
-import java.util.stream.Collectors;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import redis.clients.jedis.JedisPool;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RedisOpsProviderTest {
 
-    private RedisContainerInitializr.RedisContainer redisContainer;
-
-    private JedisPool jedisPool;
+    private RedisOpsProvider redisOpsProvider;
 
     @BeforeAll
     void setup() {
-        redisContainer = RedisContainerInitializr.initContainer();
-        this.jedisPool = new JedisPool(redisContainer.getHost(), redisContainer.getFirstMappedPort());
+        var redisContainer = RedisContainerInitializr.initContainer();
+        var redisConfig = TestDataFactory.redisConfig(
+            redisContainer.getHost(),
+            redisContainer.getFirstMappedPort()
+        );
+        redisOpsProvider = new RedisOpsProvider(redisConfig);
+    }
+
+    @AfterEach
+    void clean() {
+        redisOpsProvider.flush();
     }
 
     @Test
-    void test() {
-
-        var jedis = jedisPool.getResource();
-        var key = generateIncrKey("namespace", "stream");
-
-        var incr1 = jedis.incr(key);
-        jedis.hmset(generateKey("namespace", "stream", incr1), Map.of("f1", "v1"));
-        var incr2 = jedis.incr(key);
-        jedis.hmset(generateKey("namespace", "stream", incr2), Map.of("f2", "v2"));
-        var incr3 = jedis.incr(key);
-        jedis.hmset(generateKey("namespace", "stream", incr3), Map.of("f2", "v2"));
-        var incr4 = jedis.incr(key);
-        jedis.hmset(generateKey("namespace", "stream", incr4), Map.of("f2", "v2"));
-        var incr5 = jedis.incr(key);
-        jedis.hmset(generateKey("namespace", "stream", incr5), Map.of("f2", "v2"));
-        var incr6 = jedis.incr(key);
-        jedis.hmset(generateKey("namespace", "stream", incr6), Map.of("f2", "v2"));
-        var incr7 = jedis.incr(key);
-        jedis.hmset(generateKey("namespace", "stream", incr7), Map.of("f2", "v2"));
-        var incr8 = jedis.incr(key);
-        jedis.hmset(generateKey("namespace", "stream", incr8), Map.of("f2", "v2"));
-        var incr9 = jedis.incr(key);
-        jedis.hmset(generateKey("namespace", "stream", incr9), Map.of("f2", "v2"));
-        var incr10 = jedis.incr(key);
-        jedis.hmset(generateKey("namespace", "stream", incr10), Map.of("f2", "v2"));
-
-        var keys = jedis.keys( "namespace:stream:[0-9]*").stream()
-            //.filter(k -> !k.contains("incr"))
-            .collect(Collectors.toList());
-
-        keys.forEach(System.out::println);
-
-        keys.stream().map(jedis::hgetAll).forEach(System.out::println);
-
-        jedis.set(key, "0");
-        System.out.println("VALUE: " + jedis.get(key));
-        jedis.incr(key);
-        System.out.println("VALUE2: " + jedis.get(key));
-
+    void testInsert() {
+        assertDoesNotThrow(() -> {
+            redisOpsProvider.insert("namespace1", "stream1", "{\"property\":\"data1\"}");
+            redisOpsProvider.insert("namespace2", "stream2", "{\"property\":\"data2\"}");
+            redisOpsProvider.insert("namespace3", "stream3", "{\"property\":\"data3\"}");
+        });
     }
 
-    private String generateIncrKey(String namespace, String stream) {
-        return namespace + ":" + stream + ":" + "incr";
+    @Test
+    void testGetAll() {
+        // given
+        redisOpsProvider.insert("namespace", "stream", "{\"property\":\"data1\"}");
+        redisOpsProvider.insert("namespace", "stream", "{\"property\":\"data2\"}");
+
+        // when
+        var redisRecords = redisOpsProvider.getAll("namespace", "stream");
+
+        // then
+        assertThat(redisRecords)
+            .isNotNull()
+            .hasSize(2)
+            .anyMatch(r -> r.getData().equals("{\"property\":\"data1\"}"))
+            .anyMatch(r -> r.getData().equals("{\"property\":\"data2\"}"));
     }
 
-    private String generateKey(String namespace, String stream, Long id) {
-        return namespace + ":" + stream + ":" + id;
+    @Test
+    void testDelete() {
+
+        // given
+        redisOpsProvider.insert("namespace", "stream", "{\"property\":\"data1\"}");
+        redisOpsProvider.insert("namespace", "stream", "{\"property\":\"data2\"}");
+
+        // when
+        redisOpsProvider.delete("namespace", "stream");
+        var redisRecords = redisOpsProvider.getAll("namespace", "stream");
+
+        // then
+        assertThat(redisRecords).isEmpty();
+    }
+
+    @Test
+    void testRename() {
+        // given
+        redisOpsProvider.insert("namespace", "stream1", "{\"property\":\"data1\"}");
+        redisOpsProvider.insert("namespace", "stream1", "{\"property\":\"data2\"}");
+        redisOpsProvider.insert("namespace", "stream2", "{\"property\":\"data3\"}");
+        redisOpsProvider.insert("namespace", "stream2", "{\"property\":\"data4\"}");
+
+        // when
+        redisOpsProvider.rename("namespace", "stream1", "stream2");
+        var redisRecords = redisOpsProvider.getAll("namespace", "stream2");
+
+
+        // then
+        assertThat(redisRecords)
+            .isNotNull()
+            .hasSize(4)
+            .anyMatch(r -> r.getData().equals("{\"property\":\"data1\"}"))
+            .anyMatch(r -> r.getData().equals("{\"property\":\"data2\"}"))
+            .anyMatch(r -> r.getData().equals("{\"property\":\"data3\"}"))
+            .anyMatch(r -> r.getData().equals("{\"property\":\"data4\"}"));
     }
 
 }

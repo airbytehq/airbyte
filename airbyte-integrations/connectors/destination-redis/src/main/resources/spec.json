@@ -1,21 +1,46 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redis",
-  "supportsIncremental": TODO,
-  "supported_destination_sync_modes": ["TODO"],
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": [
+    "overwrite",
+    "append"
+  ],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "TODO",
+    "title": "Redis Destination Spec",
     "type": "object",
     "required": [
-      "TODO"
+      "host",
+      "password"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
-      "TODO_sample_field": {
-        "title": "Sample Field",
+      "host": {
+        "title": "Host",
+        "description": "Redis host to connect to.",
         "type": "string",
-        "description": "",
-        "examples": [""]
+        "examples": [
+          "localhost,127.0.0.1"
+        ],
+        "order": 1
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of Redis.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 6379,
+        "order": 2
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with Redis.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 3
       }
     }
   }

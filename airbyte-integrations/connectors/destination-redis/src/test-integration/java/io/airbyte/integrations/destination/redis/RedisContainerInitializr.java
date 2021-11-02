@@ -6,6 +6,10 @@ class RedisContainerInitializr {
 
     private static RedisContainer redisContainer;
 
+    private RedisContainerInitializr() {
+
+    }
+
     static RedisContainer initContainer() {
         if (redisContainer == null) {
             redisContainer = new RedisContainer()

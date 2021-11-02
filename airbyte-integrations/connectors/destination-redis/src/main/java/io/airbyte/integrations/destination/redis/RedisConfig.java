@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 class RedisConfig {
 
-    private String host;
+    private final String host;
 
-    private int port;
+    private final int port;
 
-    private String password;
+    private final String password;
 
     public RedisConfig(JsonNode jsonNode) {
         this.host = jsonNode.get("host").asText();

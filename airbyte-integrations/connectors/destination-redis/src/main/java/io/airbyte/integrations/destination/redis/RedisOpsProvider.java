@@ -12,6 +12,8 @@ public class RedisOpsProvider implements Closeable {
 
     private final Jedis jedis;
 
+    private static final String PATTERN = ":[0-9]*";
+
     public RedisOpsProvider(RedisConfig redisConfig) {
         this.jedis = RedisPoolManager.initConnection(redisConfig);
     }
@@ -26,21 +28,26 @@ public class RedisOpsProvider implements Closeable {
     }
 
     public void rename(String namespace, String key, String newkey) {
-        //reset index?
-
+        var baseKey = generateBaseKey(namespace, key);
+        var baseNewKey = generateBaseKey(namespace, newkey);
+        jedis.keys(baseKey + PATTERN).forEach(k -> {
+            var index = jedis.incr(baseNewKey);
+            jedis.rename(k, generateIndexKey(baseNewKey, index));
+        });
     }
 
-    public void delete(String namespace, String key) {
-        var baseKey = generateBaseKey(namespace, key);
-        jedis.keys(baseKey + ":[0-9]*").forEach(jedis::del);
+    public void delete(String namespace, String stream) {
+        var baseKey = generateBaseKey(namespace, stream);
+        jedis.keys(baseKey + PATTERN).forEach(jedis::del);
+        // reset index?
     }
 
     public List<RedisRecord> getAll(String namespace, String stream) {
         var baseKey = generateBaseKey(namespace, stream);
-        return jedis.keys(baseKey + ":[0-9]*").stream()
+        return jedis.keys(baseKey + PATTERN).stream()
             .map(k -> Tuple.of(k, jedis.hgetAll(k)))
             .map(t -> new RedisRecord(
-                Long.parseLong(t.value1().substring(t.value1().lastIndexOf(":" + 1))),
+                Long.parseLong(t.value1().substring(t.value1().lastIndexOf(":") + 1)),
                 t.value2().get(JavaBaseConstants.COLUMN_NAME_DATA),
                 Instant.ofEpochMilli(Long.parseLong(t.value2().get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)))))
             .collect(Collectors.toList());
@@ -50,9 +57,13 @@ public class RedisOpsProvider implements Closeable {
         jedis.ping(message);
     }
 
+    public void flush() {
+        jedis.flushAll();
+    }
+
     @Override
     public void close() {
-
+        jedis.close();
     }
 
     private String generateBaseKey(String namespace, String stream) {
