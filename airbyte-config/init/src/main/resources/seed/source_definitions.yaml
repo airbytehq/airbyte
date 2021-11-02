@@ -192,7 +192,7 @@
 - name: Google Directory
   sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
   dockerRepository: airbyte/source-google-directory
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-directory
   sourceType: api
 - name: Google Search Console

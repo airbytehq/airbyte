@@ -5,7 +5,7 @@
 
 from typing import Any, Mapping, Tuple
 
-from base_python import BaseClient
+from airbyte_cdk.sources.deprecated.client import BaseClient
 
 from .api import API, GroupMembersAPI, GroupsAPI, UsersAPI
 
