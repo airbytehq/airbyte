@@ -1,0 +1,14 @@
+{
+  "people": {
+    "created_at": "1601586688"
+  },
+  "unsubscribed_people": {
+    "unsubscribed_at": "1601586688"
+  },
+  "bounced_people": {
+    "bounced_at": "1601586688"
+  },
+  "survey_responses": {
+    "updated_at": "1601586688"
+  }
+}
