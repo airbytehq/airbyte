@@ -8,20 +8,13 @@ tests:
     - config_path: "secrets/config.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
-<<<<<<< HEAD
       status: "failed"
-=======
-      status: "exception"
->>>>>>> master
   discovery:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-<<<<<<< HEAD
       empty_streams: ["bounces"]
-=======
->>>>>>> master
   incremental: # TODO if your connector does not implement incremental sync, remove this block
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
