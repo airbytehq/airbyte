@@ -47,7 +47,7 @@ class CassandraDestination extends BaseConnector implements Destination {
         try {
           cassandraCqlProvider.dropTableIfExists(cassandraConfig.getKeyspace(), tableName);
         } catch (Exception e) {
-          LOGGER.error("Error while deleting temp table {} with reason: : ", tableName, e);
+          LOGGER.error("Error while deleting temp table {} with reason: ", tableName, e);
         }
         cassandraCqlProvider.close();
       }
