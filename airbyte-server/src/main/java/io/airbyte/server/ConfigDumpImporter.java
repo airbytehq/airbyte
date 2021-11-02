@@ -596,7 +596,7 @@ public class ConfigDumpImporter {
   }
 
   /**
-   * List all configurations of type @param <T> that already exists (we'll be using this to know which
+   * List all configurations of type @param &lt;T&gt; that already exists (we'll be using this to know which
    * ids are already in use)
    */
   public interface ListConfigCall<T> {

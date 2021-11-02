@@ -28,7 +28,7 @@ public class AutoCloseableIterators {
 
   /**
    * Coerces a vanilla {@link Iterator} into a {@link AutoCloseableIterator}. The provided
-   * {@param onClose} function will be called at most one time.
+   * onClose function will be called at most one time.
    *
    * @param iterator autocloseable iterator to add another close to
    * @param onClose the function that will be called on close

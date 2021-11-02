@@ -35,7 +35,6 @@ public interface CancellationHandler {
      *
      * @param onCancellationCallback a runnable that will only run when Temporal indicates the activity
      *        should be killed (cancellation or timeout).
-     * @throws WorkerException
      */
     @Override
     public void checkAndHandleCancellation(final Runnable onCancellationCallback) {
