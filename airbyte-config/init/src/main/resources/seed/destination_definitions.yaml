@@ -23,6 +23,11 @@
   dockerRepository: airbyte/destination-dynamodb
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/dynamodb
+- destinationDefinitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
+  name: Elasticsearch
+  dockerRepository: airbyte/destination-elasticsearch
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/elasticsearch
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
