@@ -65,11 +65,11 @@ public class JsonSchemaValidator {
       return;
     }
 
+    // Be careful not to echo the request data back at the user as it may contain secrets data.
     throw new JsonValidationException(String.format(
-        "json schema validation failed. \nerrors: %s \nschema: \n%s \nobject: \n%s",
+        "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
         Strings.join(validationMessages, ", "),
-        schemaJson.toPrettyString(),
-        objectJson.toPrettyString()));
+        schemaJson.toPrettyString()));
   }
 
   public void ensureAsRuntime(final JsonNode schemaJson, final JsonNode objectJson) {
