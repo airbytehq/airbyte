@@ -20,6 +20,7 @@ function write_standard_creds() {
   local connector_name=$1
   local creds=$2
   local cred_filename=${3:-config.json}
+  local source_name=${4:-github}
   if [[ $CONNECTOR_NAME != "all" && ${connector_name} != ${CONNECTOR_NAME} ]]; then
     return 0
   fi
@@ -30,6 +31,7 @@ function write_standard_creds() {
     echo "The connector '${key}' was added before"
     return 0
   fi
+  echo "register the secret ${key} from ${source_name}"
   SECRET_MAP[${key}]="${creds}"
   return 0
 }
@@ -123,7 +125,7 @@ function export_gsm_secrets(){
       [[ -z ${secret_data} ]] && error "Can't load secrets' list"
 
       secret_data=$(echo ${secret_data} | jq -r '.payload.data // ""' | base64 -d)
-      write_standard_creds "${label_connector}" "${secret_data}" "${filename}"
+      write_standard_creds "${label_connector}" "${secret_data}" "${filename}" "gsm"
     done
     next_token=`echo ${data} | jq -r '.nextPageToken // ""'`
     [[ -z ${next_token} ]] && break
