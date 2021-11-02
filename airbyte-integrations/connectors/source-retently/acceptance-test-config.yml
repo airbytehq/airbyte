@@ -1,4 +1,4 @@
-connector_image: airbyte/source-retently
+connector_image: airbyte/source-retently:dev
 tests:
   spec:
     - spec_path: "source_retently/spec.json"

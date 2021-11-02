@@ -24,9 +24,18 @@
 
 from source_retently.source import SourceRetently
 from unittest.mock import MagicMock
+import responses
 
+def setup_responses():
+    responses.add(
+        responses.GET,
+        "https://app.retently.com/api/v2/companies",
+        json={"data": {"companies": [{}]}},
+    )
 
+@responses.activate
 def test_check_connection(mocker):
+    setup_responses()
     source = SourceRetently()
     logger_mock, config_mock = MagicMock(), MagicMock()
     assert source.check_connection(logger_mock, config_mock) == (True, None)
