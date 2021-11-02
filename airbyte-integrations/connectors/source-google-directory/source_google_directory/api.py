@@ -12,7 +12,7 @@ import backoff
 from google.auth.transport.requests import Request
 from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import Resource, build
+from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
 
 from .utils import rate_limit_handling
@@ -57,15 +57,15 @@ class API:
         elif "client_id" and "client_secret" in self._raw_credentials:
             self._obtain_web_app_creds()
 
-    def _construct_resource(self) -> Resource:
+    def _construct_resource(self):
         if not self._creds:
             self._obtain_creds()
         if not self._service:
             self._service = build("admin", "directory_v1", credentials=self._creds)
 
     def _get_resource(self, name: str):
-        service = self._construct_resource()
-        return getattr(service, name)
+        self._construct_resource()
+        return getattr(self._service, name)
 
     @backoff.on_exception(backoff.expo, GoogleApiHttpError, max_tries=7, giveup=rate_limit_handling)
     def get(self, name: str, params: Dict = None) -> Dict:
