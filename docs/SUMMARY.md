@@ -112,6 +112,7 @@
     * [Salesforce](integrations/sources/salesforce.md)
     * [SalesLoft](integrations/sources/salesloft.md)
     * [Sendgrid](integrations/sources/sendgrid.md)
+    * [Sentry](integrations/sources/sentry.md)
     * [Shopify](integrations/sources/shopify.md)
     * [Shortio](integrations/sources/shortio.md)
     * [Slack](integrations/sources/slack.md)
