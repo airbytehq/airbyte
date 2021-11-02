@@ -4,15 +4,19 @@
 
 package io.airbyte.server;
 
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -27,11 +31,14 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.BucketSpecCacheSchedulerClient;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SynchronousJobMetadata;
+import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -235,6 +242,10 @@ public class ServerApp implements ServerRunnable {
       runFlywayMigration(configs, configDatabase, jobDatabase);
       configPersistence.loadData(seed);
 
+      // todo (lmossman) - this will only exist temporarily to ensure all definitions contain specs. It
+      // will be removed after the faux major version bump
+      migrateAllDefinitionsToContainSpec(configRepository, configPersistence, syncSchedulerClient);
+
       return apiFactory.create(
           schedulerJobClient,
           cachingSchedulerClient,
@@ -254,6 +265,56 @@ public class ServerApp implements ServerRunnable {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);
     }
+  }
+
+  /**
+   * Check that each spec in the database has a spec. If it doesn't, add it. If it can't be added,
+   * delete it and all connections and sources that depend on it. The goal is to end up in a working
+   * state.
+   *
+   * @param configRepository - access to the db
+   * @param configPersistence - lower level access to the db
+   * @param schedulerClient - scheduler client so that specs can be fetched as needed
+   * @throws Exception
+   */
+  private static void migrateAllDefinitionsToContainSpec(final ConfigRepository configRepository,
+                                                         final ConfigPersistence configPersistence,
+                                                         final SynchronousSchedulerClient schedulerClient)
+      throws Exception {
+    for (final StandardSourceDefinition sourceDef : configRepository.listStandardSourceDefinitions()) {
+      if (sourceDef.getSpec() == null) {
+        final SynchronousResponse<ConnectorSpecification> getSpecJob = schedulerClient
+            .createGetSpecJob(sourceDef.getDockerRepository() + ":" + sourceDef.getDockerImageTag());
+        if (getSpecJob.isSuccess()) {
+          final StandardSourceDefinition updatedDef = Jsons.clone(sourceDef).withSpec(getSpecJob.getOutput());
+          configRepository.writeStandardSourceDefinition(updatedDef);
+        } else {
+          trackSpecBackfillFailure(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag(), getSpecJob.getMetadata());
+        }
+      }
+    }
+
+    for (final StandardDestinationDefinition destDef : configRepository.listStandardDestinationDefinitions()) {
+      if (destDef.getSpec() == null) {
+        final SynchronousResponse<ConnectorSpecification> getSpecJob = schedulerClient
+            .createGetSpecJob(destDef.getDockerRepository() + ":" + destDef.getDockerImageTag());
+        if (getSpecJob.isSuccess()) {
+          final StandardDestinationDefinition updatedDef = Jsons.clone(destDef).withSpec(getSpecJob.getOutput());
+          configRepository.writeStandardDestinationDefinition(updatedDef);
+        } else {
+          trackSpecBackfillFailure(destDef.getDockerRepository(), destDef.getDockerImageTag(), getSpecJob.getMetadata());
+        }
+      }
+    }
+  }
+
+  private static void trackSpecBackfillFailure(final String dockerRepo, final String dockerImageTag, final SynchronousJobMetadata specJobMetadata) {
+    final TrackingClient trackingClient = TrackingClientSingleton.get();
+    final ImmutableMap<String, Object> metadata = ImmutableMap.of(
+        "docker_image_name", dockerRepo,
+        "docker_image_tag", dockerImageTag,
+        "spec_job_metadata", specJobMetadata);
+    trackingClient.track(UUID.fromString("000000"), "failed_spec_backfill", metadata);
   }
 
   @Deprecated
