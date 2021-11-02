@@ -596,6 +596,16 @@
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-talk
   sourceType: api
+- sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
+  name: Sentry
+  dockerRepository: airbyte/source-sentry
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/sentry
+- sourceDefinitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
+  name: OneSignal
+  dockerRepository: airbyte/source-onesignal
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
 - name: Zoom
   sourceDefinitionId: aea2fd0d-377d-465e-86c0-4fdc4f688e51
   dockerRepository: airbyte/source-zoom-singer
@@ -607,37 +617,10 @@
   sourceDefinitionId: 3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5
   dockerRepository: airbyte/source-zuora
   dockerImageTag: 0.1.3
-  documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb-v2
-  icon: mongodb.svg
-  sourceType: database
-- sourceDefinitionId: d917a47b-8537-4d0d-8c10-36a9928d4265
-  name: Kafka
-  dockerRepository: airbyte/source-kafka
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/kafka
-  sourceType: database
-- sourceDefinitionId: 3981c999-bd7d-4afc-849b-e53dea90c948
-  name: Lever Hiring
-  dockerRepository: airbyte/source-lever-hiring
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/lever-hiring
+  documentationUrl: https://docs.airbyte.io/integrations/sources/zuora
   sourceType: api
-- sourceDefinitionId: eaf2379c-94b3-45ee-93f3-ab8d5e25a8c0
-  name: Azure Table Storage
+- name: Azure Table Storage
   dockerRepository: airbyte/source-azure-table
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/azure-table
   sourceType: database
-- sourceDefinitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
-  name: OneSignal
-  dockerRepository: airbyte/source-onesignal
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
-  sourceType: api
-- sourceDefinitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
-  name: SalesLoft
-  dockerRepository: airbyte/source-salesloft
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
-  documentationUrl: https://docs.airbyte.io/integrations/sources/zuora
-  sourceType: api
