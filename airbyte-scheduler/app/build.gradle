@@ -64,6 +64,8 @@ run {
 task copyGeneratedTar(type: Copy) {
     dependsOn distTar
 
+    delete 'docker/bin'
+
     from('build/distributions') {
         include 'airbyte-scheduler-*.tar'
     }
