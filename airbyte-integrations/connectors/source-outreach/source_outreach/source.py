@@ -15,10 +15,14 @@ from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.auth.oauth import Oauth2Authenticator
 
 
+_TOKEN_REFRESH_ENDPOINT = "https://api.outreach.io/oauth/token"
+_URL_BASE = "https://api.outreach.io/api/v2/"
+
+
 # Basic full refresh stream
 class OutreachStream(HttpStream, ABC):
 
-    url_base = "https://api.outreach.io/api/v2/"
+    url_base = _URL_BASE
 
     def __init__(
         self,
@@ -30,6 +34,10 @@ class OutreachStream(HttpStream, ABC):
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Returns the token for the next page as per https://api.outreach.io/api/v2/docs#pagination.
+        It uses cursor-based pagination, by sending the 'page[size]' and 'page[after]' parameters.
+        """
         try:
             next_page_url = response.json().get("links").get("next")
             params = parse.parse_qs(parse.urlparse(next_page_url).query)
@@ -79,6 +87,11 @@ class IncrementalOutreachStream(OutreachStream, ABC):
 
 
 class Prospects(IncrementalOutreachStream):
+    """
+    Prospect stream. Yields data from the GET /prospects endpoint.
+    See https://api.outreach.io/api/v2/docs#prospect
+    """
+
     primary_key = "id"
 
     def path(self, **kwargs) -> str:
@@ -86,6 +99,11 @@ class Prospects(IncrementalOutreachStream):
 
 
 class Sequences(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /sequences endpoint.
+    See https://api.outreach.io/api/v2/docs#sequence
+    """
+
     primary_key = "id"
 
     def path(self, **kwargs) -> str:
@@ -93,6 +111,11 @@ class Sequences(IncrementalOutreachStream):
 
 
 class SequenceStates(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /sequences endpoint.
+    See https://api.outreach.io/api/v2/docs#sequenceState
+    """
+
     primary_key = "id"
 
     def path(self, **kwargs) -> str:
@@ -117,7 +140,7 @@ class SourceOutreach(AbstractSource):
     def _create_authenticator(self, config):
         return OutreachAuthenticator(
             redirect_uri=config["redirect_uri"],
-            token_refresh_endpoint="https://api.outreach.io/oauth/token",
+            token_refresh_endpoint=_TOKEN_REFRESH_ENDPOINT,
             client_id=config["client_id"],
             client_secret=config["client_secret"],
             refresh_token=config["refresh_token"],
@@ -126,7 +149,7 @@ class SourceOutreach(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             access_token, _ = self._create_authenticator(config).refresh_access_token()
-            response = requests.get("https://api.outreach.io/api/v2", headers={"Authorization": f"Bearer {access_token}"})
+            response = requests.get(_URL_BASE, headers={"Authorization": f"Bearer {access_token}"})
             response.raise_for_status()
             return True, None
         except Exception as e:
