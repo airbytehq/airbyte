@@ -1,3 +1,4 @@
 {
-  "access_token": "1234567890abcdefghijk"
+  "credentials_json": "<The contents of the JSON service account key>",
+  "email": "test@test.test"
 }
