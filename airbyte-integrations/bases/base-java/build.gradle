@@ -4,6 +4,10 @@ plugins {
 }
 
 dependencies {
+    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-commons-cli')
+    implementation project(':airbyte-json-validation')
+
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'org.apache.sshd:sshd-mina:2.7.0'
     // bouncycastle is pinned to version-match the transitive dependency from kubernetes client-java
@@ -12,8 +16,6 @@ dependencies {
     implementation 'org.bouncycastle:bcpkix-jdk15on:1.66'
     implementation 'org.bouncycastle:bctls-jdk15on:1.66'
 
-    implementation project(':airbyte-protocol:models')
-    implementation project(":airbyte-json-validation")
     implementation "org.testcontainers:testcontainers:1.15.3"
     implementation "org.testcontainers:jdbc:1.15.3"
 
