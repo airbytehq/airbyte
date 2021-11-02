@@ -9,7 +9,6 @@ data
 .classpath
 .project
 .settings
-bin
 
 # Logs
 acceptance_tests_logs/
