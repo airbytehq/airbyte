@@ -73,6 +73,12 @@ class FreshsalesStream(HttpStream, ABC):
         else:
             return
 
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        view_id = self.get_view_id()
+        return f"{self.object_name}/view/{view_id}"
+
 
 class Contacts(FreshsalesStream):
     """
@@ -81,12 +87,6 @@ class Contacts(FreshsalesStream):
 
     object_name = "contacts"
     filter_name = "All Contacts"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        view_id = self.get_view_id()
-        return f"{self.object_name}/view/{view_id}"
 
 
 class Accounts(FreshsalesStream):
@@ -97,56 +97,41 @@ class Accounts(FreshsalesStream):
     object_name = "sales_accounts"
     filter_name = "All Accounts"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        view_id = self.get_view_id()
-        return f"{self.object_name}/view/{view_id}"
+
+class Deals(FreshsalesStream):
+    object_name = "deals"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = response.json()
+        records = json_response.get(self.object_name, []) if self.object_name is not None else json_response
+        # This is to remove data form widget development. Keeping this in failed integration tests.
+        for record in records:
+            record.pop("fc_widget_collaboration", None)
+        yield from records
 
 
-class OpenDeals(FreshsalesStream):
+class OpenDeals(Deals):
     """
     API docs: https://developers.freshworks.com/crm/api/#deals
     """
 
-    object_name = "deals"
     filter_name = "Open Deals"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        view_id = self.get_view_id()
-        return f"{self.object_name}/view/{view_id}"
 
-
-class WonDeals(FreshsalesStream):
+class WonDeals(Deals):
     """
     API docs: https://developers.freshworks.com/crm/api/#deals
     """
 
-    object_name = "deals"
     filter_name = "Won Deals"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        view_id = self.get_view_id()
-        return f"{self.object_name}/view/{view_id}"
 
-
-class LostDeals(FreshsalesStream):
+class LostDeals(Deals):
     """
     API docs: https://developers.freshworks.com/crm/api/#deals
     """
 
-    object_name = "deals"
     filter_name = "Lost Deals"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        view_id = self.get_view_id()
-        return f"{self.object_name}/view/{view_id}"
 
 
 class OpenTasks(FreshsalesStream):
