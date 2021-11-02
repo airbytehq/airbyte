@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.sync;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -32,16 +36,17 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
   private final AirbyteConfigValidator validator;
 
   public DbtTransformationActivityImpl(
-      final ProcessFactory processFactory,
-      final SecretsHydrator secretsHydrator,
-      final Path workspaceRoot) {
+                                       final ProcessFactory processFactory,
+                                       final SecretsHydrator secretsHydrator,
+                                       final Path workspaceRoot) {
     this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
   }
 
-  @VisibleForTesting DbtTransformationActivityImpl(final ProcessFactory processFactory,
-                                                   final SecretsHydrator secretsHydrator,
-                                                   final Path workspaceRoot,
-                                                   final AirbyteConfigValidator validator) {
+  @VisibleForTesting
+  DbtTransformationActivityImpl(final ProcessFactory processFactory,
+                                final SecretsHydrator secretsHydrator,
+                                final Path workspaceRoot,
+                                final AirbyteConfigValidator validator) {
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
@@ -81,7 +86,8 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
         resourceRequirements,
         new DbtTransformationRunner(
             processFactory, NormalizationRunnerFactory.create(
-            destinationLauncherConfig.getDockerImage(),
-            processFactory)));
+                destinationLauncherConfig.getDockerImage(),
+                processFactory)));
   }
+
 }

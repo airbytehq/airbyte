@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.sync;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -38,11 +42,12 @@ public class NormalizationActivityImpl implements NormalizationActivity {
     this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment);
   }
 
-  @VisibleForTesting NormalizationActivityImpl(final ProcessFactory processFactory,
-                                               final SecretsHydrator secretsHydrator,
-                                               final Path workspaceRoot,
-                                               final AirbyteConfigValidator validator,
-                                               final WorkerEnvironment workerEnvironment) {
+  @VisibleForTesting
+  NormalizationActivityImpl(final ProcessFactory processFactory,
+                            final SecretsHydrator secretsHydrator,
+                            final Path workspaceRoot,
+                            final AirbyteConfigValidator validator,
+                            final WorkerEnvironment workerEnvironment) {
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;

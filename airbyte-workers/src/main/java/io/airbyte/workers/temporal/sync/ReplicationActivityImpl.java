@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.sync;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -44,10 +48,11 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
   }
 
-  @VisibleForTesting ReplicationActivityImpl(final ProcessFactory processFactory,
-                                             final SecretsHydrator secretsHydrator,
-                                             final Path workspaceRoot,
-                                             final AirbyteConfigValidator validator) {
+  @VisibleForTesting
+  ReplicationActivityImpl(final ProcessFactory processFactory,
+                          final SecretsHydrator secretsHydrator,
+                          final Path workspaceRoot,
+                          final AirbyteConfigValidator validator) {
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
@@ -107,10 +112,10 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   }
 
   private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getWorkerFactory(
-      final IntegrationLauncherConfig sourceLauncherConfig,
-      final IntegrationLauncherConfig destinationLauncherConfig,
-      final JobRunConfig jobRunConfig,
-      final StandardSyncInput syncInput) {
+                                                                                                    final IntegrationLauncherConfig sourceLauncherConfig,
+                                                                                                    final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                    final JobRunConfig jobRunConfig,
+                                                                                                    final StandardSyncInput syncInput) {
     return () -> {
       final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
           sourceLauncherConfig.getJobId(),
@@ -140,4 +145,5 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           new AirbyteMessageTracker());
     };
   }
+
 }
