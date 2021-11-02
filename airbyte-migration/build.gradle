@@ -36,10 +36,10 @@ task copyGeneratedTar(type: Copy) {
 }
 
 // Use task types
-task buildMyAppImage(type: DockerBuildImage) {
+task buildDockerImage(type: DockerBuildImage) {
     dependsOn copyDocker
     dependsOn copyGeneratedTar
     inputDir = file('build/docker')
     images.add("airbyte/migration:$version")
 }
-build.dependsOn(buildMyAppImage)
+build.dependsOn(buildDockerImage)

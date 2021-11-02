@@ -1,3 +1,5 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
 buildscript {
     repositories {
         maven {
@@ -121,6 +123,33 @@ spotless {
     }
 }
 check.dependsOn 'spotlessApply'
+
+allprojects {
+    task copyDockerTest(type: Copy) {
+        delete "build/docker"
+
+        from "${project.projectDir}/Dockerfile"
+        into "build/docker/"
+    }
+
+    // Use task types
+    task buildDockerImageTest(type: DockerBuildImage) {
+        dependsOn copyDockerTest
+
+        def buildTag = System.getenv('VERSION') ?: 'dev'
+        def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
+        def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
+        def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
+
+        def artifactName = project.name.replaceFirst("airbyte-", "")
+
+        inputDir = file('build/docker')
+        platform = buildPlatform
+        images.add("airbyte/$artifactName:$buildTag")
+        buildArgs.put('JDK_VERSION', jdkVersion)
+        buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
+    }
+}
 
 allprojects {
     apply plugin: 'base'

@@ -1,4 +1,4 @@
-import com.bmuschko.gradle.docker.tasks.image.*
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 plugins {
     id "base"
@@ -55,7 +55,7 @@ task copyDocs(type: Copy) {
     dependsOn copyDocker
 
     from "${project.rootProject.projectDir}/docs/integrations"
-    into "build/docker/bin/docs/integratbimions"
+    into "build/docker/bin/docs/integrations"
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
@@ -72,7 +72,7 @@ copyDocs.dependsOn npm_run_build
 assemble.dependsOn copyDocs
 
 // Use task types
-task buildMyAppImage(type: DockerBuildImage) {
+task buildDockerImage(type: DockerBuildImage) {
     dependsOn copyDocker
     dependsOn copyBuild
     dependsOn copyNginx
@@ -80,4 +80,4 @@ task buildMyAppImage(type: DockerBuildImage) {
     inputDir = file('build/docker')
     images.add("airbyte/webapp:$version")
 }
-assemble.dependsOn(buildMyAppImage)
+assemble.dependsOn(buildDockerImage)

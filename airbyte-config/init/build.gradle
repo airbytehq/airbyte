@@ -26,8 +26,8 @@ task copyScripts(type: Copy) {
 def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
-    dependsOn copyDocker
     dependsOn copyScripts
+    dependsOn copyDocker
     inputDir = file('build/docker')
     images.add("airbyte/init:$buildTag")
 }

@@ -1,4 +1,4 @@
-import com.bmuschko.gradle.docker.tasks.image.*
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 plugins {
     id 'application'
@@ -148,17 +148,10 @@ task copyGeneratedTar(type: Copy) {
 
 def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
-task buildMyAppImage(type: DockerBuildImage) {
+task buildDockerImage(type: DockerBuildImage) {
     dependsOn copyDocker
     dependsOn copyGeneratedTar
     inputDir = file('build/docker')
     images.add("airbyte/server:$buildTag")
 }
-assemble.dependsOn(buildMyAppImage)
-startScripts.dependsOn(shadowJar)
-distTar.dependsOn(shadowJar)
-distZip.dependsOn(shadowJar)
-startShadowScripts.dependsOn(jar)
-shadowDistTar.dependsOn(jar)
-shadowDistZip.dependsOn(jar)
-copyGeneratedTar.dependsOn(shadowDistTar)
+assemble.dependsOn(buildDockerImage)

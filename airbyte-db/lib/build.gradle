@@ -1,4 +1,4 @@
-import com.bmuschko.gradle.docker.tasks.image.*
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 plugins {
     id 'java-library'
@@ -80,7 +80,7 @@ task copyDocker(type: Copy) {
     into "build/docker/"
 }
 
-task copyGeneratedXml(type: Copy) {
+task copyInitSql(type: Copy) {
     dependsOn copyDocker
 
     from('src/main/resources') {
@@ -91,10 +91,10 @@ task copyGeneratedXml(type: Copy) {
 
 def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
-task buildMyAppImage(type: DockerBuildImage) {
+task buildDockerImage(type: DockerBuildImage) {
     dependsOn copyDocker
-    dependsOn copyGeneratedXml
+    dependsOn copyInitSql
     inputDir = file('build/docker')
     images.add("airbyte/db:$buildTag")
 }
-assemble.dependsOn(buildMyAppImage)
+assemble.dependsOn(buildDockerImage)

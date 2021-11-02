@@ -1,5 +1,5 @@
 import org.jsonschema2pojo.SourceType
-import com.bmuschko.gradle.docker.tasks.image.*
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 plugins {
     id 'application'
@@ -84,11 +84,11 @@ task copyGeneratedTar(type: Copy) {
 
 def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
-task buildMyAppImage(type: DockerBuildImage) {
+task buildDockerImage(type: DockerBuildImage) {
     dependsOn copyDocker
     dependsOn copyGeneratedTar
     dependsOn distTar
     inputDir = file('build/docker')
     images.add("airbyte/worker:$buildTag")
 }
-assemble.dependsOn(buildMyAppImage)
+assemble.dependsOn(buildDockerImage)
