@@ -56,7 +56,10 @@ public class SalesforceOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(final String clientId, final String clientSecret, final String authCode, final String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         .putAll(super.getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))
         .put("grant_type", "authorization_code")

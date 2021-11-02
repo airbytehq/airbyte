@@ -22,7 +22,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
  * <li>Dump the database schema.</li>
  * <li>Create a connection for jOOQ code generation.</li>
  * </ul>
- * <p></p>
+ * <p>
+ * </p>
  * Reference: https://github.com/sabomichal/jooq-meta-postgres-flyway
  */
 public abstract class FlywayMigrationDatabase extends PostgresDatabase {

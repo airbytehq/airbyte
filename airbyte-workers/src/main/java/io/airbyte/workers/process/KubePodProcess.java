@@ -57,7 +57,8 @@ import org.slf4j.MDC;
  * is so the parent process can forward data into the child's stdin and read the child's stdout and
  * stderr streams and copy configuration files over.
  *
- * This is made possible by: <ul>
+ * This is made possible by:
+ * <ul>
  * <li>1) An init container that creates 3 named pipes corresponding to stdin, stdout and std err on
  * a shared volume.</li>
  * <li>2) Config files (e.g. config.json, catalog.json etc) are copied from the parent process into
