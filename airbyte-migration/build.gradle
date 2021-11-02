@@ -18,21 +18,28 @@ application {
     mainClass = 'io.airbyte.migrate.MigrationRunner'
 }
 
+task copyDocker(type: Copy) {
+    delete "build/docker"
+
+    from "${project.projectDir}/Dockerfile"
+    into "build/docker/"
+}
+
 task copyGeneratedTar(type: Copy) {
     dependsOn distTar
-
-    delete 'docker/bin'
+    dependsOn copyDocker
 
     from('build/distributions') {
         include 'airbyte-migration-*.tar'
     }
-    into 'docker/bin'
+    into 'build/docker/bin'
 }
 
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
+    dependsOn copyDocker
     dependsOn copyGeneratedTar
-    inputDir = file('docker')
+    inputDir = file('build/docker')
     images.add("airbyte/migration:$version")
 }
 build.dependsOn(buildMyAppImage)

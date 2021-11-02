@@ -4,10 +4,19 @@ plugins {
     id 'com.bmuschko.docker-remote-api'
 }
 
+task copyDocker(type: Copy) {
+    delete "build/docker"
+
+    from "${project.projectDir}/Dockerfile"
+    into "build/docker/"
+}
+
 def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
-    inputDir = file('docker')
+    dependsOn copyDocker
+
+    inputDir = file('build/docker')
     images.add("airbyte/cli:$buildTag")
 }
 assemble.dependsOn(buildMyAppImage)

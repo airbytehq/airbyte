@@ -35,21 +35,35 @@ task test(type: NpmTask) {
 assemble.dependsOn npm_run_build
 build.finalizedBy test
 
-task copyDocs(type: Copy) {
-    from "${project.rootProject.projectDir}/docs/integrations"
-    into "docker/bin/docs/integratbimions"
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
+task copyDocker(type: Copy) {
+    delete "build/docker"
+
+    from "${project.projectDir}/Dockerfile"
+    into "build/docker/"
 }
 
 task copyBuild(type: Copy) {
+    dependsOn copyDocker
+
     from "${project.projectDir}/build"
-    into "docker/bin/build"
+    into "build/docker/bin/build"
     exclude ".docker"
+    exclude "docker"
+}
+
+task copyDocs(type: Copy) {
+    dependsOn copyDocker
+
+    from "${project.rootProject.projectDir}/docs/integrations"
+    into "build/docker/bin/docs/integratbimions"
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
 task copyNginx(type: Copy) {
+    dependsOn copyDocker
+
     from "${project.projectDir}/nginx"
-    into "docker/bin/nginx"
+    into "build/docker/bin/nginx"
 }
 
 copyBuild.dependsOn npm_run_build
@@ -59,10 +73,11 @@ assemble.dependsOn copyDocs
 
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
+    dependsOn copyDocker
     dependsOn copyBuild
     dependsOn copyNginx
     dependsOn copyDocs
-    inputDir = file('docker')
+    inputDir = file('build/docker')
     images.add("airbyte/webapp:$version")
 }
 assemble.dependsOn(buildMyAppImage)

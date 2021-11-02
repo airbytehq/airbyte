@@ -61,32 +61,29 @@ run {
 
 }
 
-task copyGeneratedTar(type: Copy) {
-    dependsOn distTar
+task copyDocker(type: Copy) {
+    delete "build/docker"
 
-    delete 'docker/bin'
+    from "${project.projectDir}/Dockerfile"
+    into "build/docker/"
+}
+
+task copyGeneratedTar(type: Copy) {
+    dependsOn copyDocker
+    dependsOn distTar
 
     from('build/distributions') {
         include 'airbyte-scheduler-*.tar'
     }
-    into 'docker/bin'
+    into 'build/docker/bin'
 }
 
 def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
     dependsOn copyGeneratedTar
-    dependsOn processResources
-    dependsOn processTestResources
-    dependsOn compileJava
-    dependsOn compileTestJava
-    dependsOn test
-    dependsOn jar
-    dependsOn startScripts
-    dependsOn distTar
-    dependsOn distZip
-    dependsOn jacocoTestReport
-    inputDir = file('docker')
+    dependsOn copyDocker
+    inputDir = file('build/docker')
     images.add("airbyte/scheduler:$buildTag")
 }
 assemble.dependsOn(buildMyAppImage)
