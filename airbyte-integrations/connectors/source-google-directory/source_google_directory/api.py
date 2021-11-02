@@ -10,7 +10,7 @@ from typing import Callable, Dict, Iterator, Sequence
 
 import backoff
 from google.oauth2 import service_account
-from googleapiclient.discovery import Resource, build
+from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
 
 from .utils import rate_limit_handling
@@ -23,25 +23,26 @@ class API:
         self._creds = None
         self._credentials_json = credentials_json
         self._admin_email = email
+        self._service = None
 
     def _load_account_info(self) -> Dict:
         account_info = json.loads(self._credentials_json)
         return account_info
 
-    def _obtain_creds(self) -> service_account.Credentials:
+    def _obtain_creds(self):
         account_info = self._load_account_info()
         creds = service_account.Credentials.from_service_account_info(account_info, scopes=SCOPES)
         self._creds = creds.with_subject(self._admin_email)
 
-    def _construct_resource(self) -> Resource:
+    def _construct_resource(self):
         if not self._creds:
             self._obtain_creds()
-        service = build("admin", "directory_v1", credentials=self._creds)
-        return service
+        if not self._service:
+            self._service = build("admin", "directory_v1", credentials=self._creds)
 
     def _get_resource(self, name: str):
-        service = self._construct_resource()
-        return getattr(service, name)
+        self._construct_resource()
+        return getattr(self._service, name)
 
     @backoff.on_exception(backoff.expo, GoogleApiHttpError, max_tries=7, giveup=rate_limit_handling)
     def get(self, name: str, params: Dict = None) -> Dict:
