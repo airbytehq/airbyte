@@ -14,61 +14,18 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?$",
         "examples": ["2021-01-01T00:00:00Z"]
       },
-      "credentials": {
-        "type": "object",
-        "title": "Authentication Type",
-        "description": "Authenticate over oAuth flow or provide token",
-        "oneOf": [
-          {
-            "title": "Authenticate via OAuth",
-            "type": "object",
-            "required": ["access_token", "auth_type"],
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "OAuth",
-                "enum": ["OAuth"],
-                "default": "OAuth",
-                "order": 0
-              },
-              "access_token": {
-                "title": "Access Token",
-                "description": "",
-                "type": "string",
-                "description": "An access token generated using the above client ID and secret",
-                "airbyte_secret": true
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "Token Authentication",
-            "additionalProperties": false,
-            "required": ["access_token", "auth_type"],
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "Token",
-                "enum": ["Token"],
-                "default": "Token",
-                "order": 0
-              },
-              "access_token": {
-                "title": "Access Token",
-                "type": "string",
-                "airbyte_secret": true,
-                "description": "API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a> for information on how to generate this key."
-              }
-            }
-          }
-        ]
+      "access_token": {
+        "title": "Access Token",
+        "type": "string",
+        "airbyte_secret": true,
+        "description": "API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a> for information on how to generate this key."
       }
     }
   },
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": ["credentials", 0],
+      "rootObject": [],
       "oauthFlowInitParameters": [],
       "oauthFlowOutputParameters": [["access_token"]]
     }

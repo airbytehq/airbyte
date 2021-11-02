@@ -4,9 +4,11 @@
 
 package io.airbyte.oauth.flows;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
+import com.google.common.base.Preconditions;
 import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -58,6 +60,12 @@ public class SurveymonkeyOAuthFlow extends BaseOAuthFlow {
         .putAll(super.getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))
         .put("grant_type", "authorization_code")
         .build();
+  }
+
+  @Override
+  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
+    Preconditions.checkArgument(data.has("access_token"), "Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL);
+    return Map.of("access_token", data.get("access_token").asText());
   }
 
 }

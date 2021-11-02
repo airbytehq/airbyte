@@ -95,7 +95,7 @@ public class SurveymonkeyOAuthFlowTest {
     final Map<String, Object> actualQueryParams =
         surveymonkeyOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(returnedCredentials, actualQueryParams);
   }
 
   @Test
@@ -109,7 +109,7 @@ public class SurveymonkeyOAuthFlowTest {
     final Map<String, Object> actualQueryParams =
         surveymonkeyOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(returnedCredentials, actualQueryParams);
   }
 
 }

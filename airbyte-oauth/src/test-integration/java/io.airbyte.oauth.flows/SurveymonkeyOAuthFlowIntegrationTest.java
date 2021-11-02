@@ -70,10 +70,8 @@ public class SurveymonkeyOAuthFlowIntegrationTest extends OAuthFlowIntegrationTe
     final Map<String, Object> params = flow.completeSourceOAuth(workspaceId, definitionId,
         Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
-    assertTrue(params.containsKey("credentials"));
-    final Map<String, Object> credentials = (Map<String, Object>) params.get("credentials");
-    assertTrue(credentials.containsKey("access_token"));
-    assertTrue(credentials.get("access_token").toString().length() > 0);
+    assertTrue(params.containsKey("access_token"));
+    assertTrue(params.get("access_token").toString().length() > 0);
   }
 
 }
