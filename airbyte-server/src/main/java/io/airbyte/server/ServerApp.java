@@ -294,7 +294,7 @@ public class ServerApp implements ServerRunnable {
     for (final StandardDestinationDefinition destDef : configRepository.listStandardDestinationDefinitions()) {
       if (destDef.getSpec() == null) {
         final SynchronousResponse<ConnectorSpecification> getSpecJob = schedulerClient
-            .createGetSpecJob(destDef.getDockerRepository() + "" + destDef.getDockerImageTag());
+            .createGetSpecJob(destDef.getDockerRepository() + ":" + destDef.getDockerImageTag());
         if (getSpecJob.isSuccess()) {
           final StandardDestinationDefinition updatedDef = Jsons.clone(destDef).withSpec(getSpecJob.getOutput());
           configRepository.writeStandardDestinationDefinition(updatedDef);
