@@ -65,7 +65,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * Merges the correspondiingspec JSON into the definition JSON. This is necessary because specs are
+   * Merges the corresponding spec JSON into the definition JSON. This is necessary because specs are
    * stored in a separate resource file from definitions.
    *
    * @param definitionJson JSON of connector definition that is missing a spec
