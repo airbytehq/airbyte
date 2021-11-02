@@ -18,6 +18,7 @@ import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSheetsOAuthFlow;
+import io.airbyte.oauth.flows.google.YouTubeAnalyticsOAuthFlow;
 import java.util.Map;
 import java.util.UUID;
 
@@ -39,6 +40,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
+        .put("airbyte/source-youtube-analytics", new YouTubeAnalyticsOAuthFlow(configRepository))
         .build();
   }
 
