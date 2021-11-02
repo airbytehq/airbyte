@@ -54,7 +54,6 @@ class DelightedStream(HttpStream, ABC):
 
 
 class IncrementalDelightedStream(DelightedStream, ABC):
-
     # Getting page size as 'limit' from parrent class
     @property
     def limit(self):
