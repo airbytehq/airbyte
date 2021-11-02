@@ -36,11 +36,12 @@ public final class DebeziumConverterUtils {
     } else if (input instanceof LocalDate) {
       return DataTypeUtils.toISO8601String((LocalDate) input);
     } else if (input instanceof Duration) {
-      return DataTypeUtils.toISO8601UTCString((Duration) input);
+      return DataTypeUtils.toISO8601String((Duration) input);
     } else if (input instanceof Timestamp) {
       return DataTypeUtils.toISO8601String(((Timestamp) input).toLocalDateTime());
     } else if (input instanceof Number) {
-      return DataTypeUtils.toISO8601UTCString(((Number) input).longValue());
+      return DataTypeUtils.toISO8601String(
+          new Timestamp(((Number) input).longValue()).toLocalDateTime());
     } else if (input instanceof String) {
       try {
         return LocalDateTime.parse((String) input).toString();

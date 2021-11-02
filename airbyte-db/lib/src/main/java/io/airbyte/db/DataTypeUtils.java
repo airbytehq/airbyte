@@ -13,18 +13,12 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.TimeZone;
 import java.util.function.Function;
 
 public class DataTypeUtils {
 
   public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT_PATTERN); // Quoted "Z" to indicate UTC, no timezone offset
-  public static final DateFormat DATE_FORMAT_UTC = new SimpleDateFormat(DATE_FORMAT_PATTERN);
-
-  static {
-    DATE_FORMAT_UTC.setTimeZone(TimeZone.getTimeZone("UTC"));
-  }
 
   public static <T> T returnNullIfInvalid(final DataTypeSupplier<T> valueProducer) {
     return returnNullIfInvalid(valueProducer, ignored -> true);
@@ -44,19 +38,7 @@ public class DataTypeUtils {
   }
 
   public static String toISO8601String(final long epochMillis) {
-    return toISO8601String(DATE_FORMAT, epochMillis);
-  }
-
-  public static String toISO8601UTCString(final long epochMillis) {
-    return toISO8601String(DATE_FORMAT_UTC, epochMillis);
-  }
-
-  public static String toISO8601String(DateFormat dateFormat, long epochMillis) {
-    return dateFormat.format(Date.from(Instant.ofEpochMilli(epochMillis)));
-  }
-
-  public static String getString(DateFormat dateFormat, long epochMillis) {
-    return dateFormat.format(Date.from(Instant.ofEpochMilli(epochMillis)));
+    return DATE_FORMAT.format(Date.from(Instant.ofEpochMilli(epochMillis)));
   }
 
   public static String toISO8601String(final java.util.Date date) {
@@ -72,15 +54,7 @@ public class DataTypeUtils {
   }
 
   public static String toISO8601String(final Duration duration) {
-    return toISO8601String(DATE_FORMAT, duration);
-  }
-
-  public static String toISO8601UTCString(final Duration duration) {
-    return toISO8601String(DATE_FORMAT_UTC, duration);
-  }
-
-  public static String toISO8601String(DateFormat dateFormat, Duration duration) {
-    return dateFormat.format(Date.from(Instant.ofEpochSecond(Math.abs(duration.getSeconds()), Math.abs(duration.getNano()))));
+    return DATE_FORMAT.format(Date.from(Instant.ofEpochSecond(Math.abs(duration.getSeconds()), Math.abs(duration.getNano()))));
   }
 
 }
