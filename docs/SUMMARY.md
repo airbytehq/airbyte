@@ -144,6 +144,7 @@
     * [BigQuery](integrations/destinations/bigquery.md)
     * [Databricks](integrations/destinations/databricks.md)
     * [DynamoDB](integrations/destinations/dynamodb.md)
+    * [Elasticsearch](integrations/destinations/elasticsearch.md)
     * [Chargify](integrations/destinations/chargify.md)
     * [Google Cloud Storage \(GCS\)](integrations/destinations/gcs.md)
     * [Google PubSub](integrations/destinations/pubsub.md)
