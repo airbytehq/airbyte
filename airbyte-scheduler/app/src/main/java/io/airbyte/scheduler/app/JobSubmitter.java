@@ -49,7 +49,9 @@ public class JobSubmitter implements Runnable {
                       final JobPersistence persistence,
                       final TemporalWorkerRunFactory temporalWorkerRunFactory,
                       final JobTracker jobTracker,
-                      final JobNotifier jobNotifier, final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs) {
+                      final JobNotifier jobNotifier,
+                      final WorkerEnvironment workerEnvironment,
+                      final LogConfigs logConfigs) {
     this.threadPool = threadPool;
     this.persistence = persistence;
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
