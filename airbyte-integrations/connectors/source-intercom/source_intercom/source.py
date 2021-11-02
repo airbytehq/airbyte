@@ -92,6 +92,8 @@ class IntercomStream(HttpStream, ABC):
 class IncrementalIntercomStream(IntercomStream, ABC):
     cursor_field = "updated_at"
 
+    # TODO: Override __init__ to properly set stream_state based on start_date when state is empty
+
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
         """
         Endpoint does not provide query filtering params, but they provide us
@@ -106,7 +108,7 @@ class IncrementalIntercomStream(IntercomStream, ABC):
         record = super().parse_response(response, stream_state, **kwargs)
 
         # set initial state to use start_date from spec
-        if not stream_state:
+        if not stream_state or self.cursor_field not in stream_state :
             stream_state[self.cursor_field] = self.start_date
 
         for record in record:
