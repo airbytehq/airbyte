@@ -74,6 +74,7 @@ task copyDocker(type: Copy) {
 
 task copyGeneratedTar(type: Copy) {
     dependsOn copyDocker
+    dependsOn distTar
 
     from('build/distributions') {
         include 'airbyte-workers-*.tar'
@@ -86,6 +87,7 @@ def buildTag = System.getenv('VERSION') ?: 'dev'
 task buildMyAppImage(type: DockerBuildImage) {
     dependsOn copyDocker
     dependsOn copyGeneratedTar
+    dependsOn distTar
     inputDir = file('build/docker')
     images.add("airbyte/worker:$buildTag")
 }
