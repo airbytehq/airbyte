@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "9bb85338-ea95-4c93-b267-6be89125b267",
+  "name": "Freshservice",
+  "dockerRepository": "airbyte/source-freshservice",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/freshservice"
+}
