@@ -204,7 +204,7 @@
             "type": ["null", "string"]
           },
           "grams": {
-            "type": ["null", "integer"]
+            "type": ["null", "number"]
           },
           "images": {
             "type": ["null", "object"]
