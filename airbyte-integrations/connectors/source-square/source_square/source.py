@@ -413,6 +413,8 @@ class SourceSquare(AbstractSource):
             )
         elif auth_type == "Apikey":
             auth = TokenAuthenticator(token=authorization.get("api_key"))
+        elif not auth_type and config.get("api_key"):
+            auth = TokenAuthenticator(token=config.get("api_key"))
         else:
             raise Exception(f"Invalid auth type: {auth_type}")
 

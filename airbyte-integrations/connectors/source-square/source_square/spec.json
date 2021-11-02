@@ -5,7 +5,7 @@
     "title": "Square Source CDK Specifications",
     "type": "object",
     "required": ["authorization", "is_sandbox"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "is_sandbox": {
         "type": "boolean",
