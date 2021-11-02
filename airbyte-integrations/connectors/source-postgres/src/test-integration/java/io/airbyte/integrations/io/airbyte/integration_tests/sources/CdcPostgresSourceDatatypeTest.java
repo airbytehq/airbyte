@@ -17,10 +17,6 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-/**
- * None of the tests in this class use the cdc path (run the tests and search for `using CDC: false`
- * in logs). This is exact same as {@link PostgresSourceAcceptanceTest}
- */
 public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final String SLOT_NAME_BASE = "debezium_slot";
@@ -54,6 +50,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("replication_method", replicationMethod)
+        .put("ssl", false)
         .build());
 
     final Database database = Databases.createDatabase(
@@ -138,25 +135,23 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("1", "32767", "0", "-32767")
             .build());
 
-    // BUG https://github.com/airbytehq/airbyte/issues/3932
-    // BIT type is currently parsed as a Boolean which is incorrect
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("bit")
-    // .fullSourceDataType("BIT(3)")
-    // .airbyteType(JsonSchemaPrimitive.NUMBER)
-    // .addInsertValues("B'101'")
-    // //.addExpectedValues("101")
-    // - .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("bit")
+            .fullSourceDataType("BIT(3)")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("B'101'", "B'111'", "null")
+            .addExpectedValues("101", "111", null)
+            .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("bit_varying")
-    // .fullSourceDataType("BIT VARYING(5)")
-    // .airbyteType(JsonSchemaPrimitive.NUMBER)
-    // .addInsertValues("B'101'", "null")
-    // .addExpectedValues("101", null)
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("bit_varying")
+            .fullSourceDataType("BIT VARYING(5)")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("B'101'", "null")
+            .addExpectedValues("101", null)
+            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -222,36 +217,28 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
                 "128.1.0.0/16", "2001:4f8:3:ba::/64")
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it doesnt suppose to handle BC
-    // dates
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("date")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("'1999-01-08'", "null") // "'199-10-10 BC'"
-    // .addExpectedValues("1999-01-08T00:00:00Z", null) // , "199-10-10 BC")
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("date")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'January 7, 1999'", "'1999-01-08'", "'1/9/1999'", "'January 10, 99 BC'", "'January 11, 99 AD'", "null")
+            .addExpectedValues("1999-01-07", "1999-01-08", "1999-01-09", "0099-01-10", "1999-01-11", null)
+            .build());
 
-    // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
-    // JdbcUtils -> setJsonField contains:
-    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float8")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'123'", "'1234567890.1234567'", "null")
-            .addExpectedValues("123.0", "1.2345678901234567E9", null)
+            .addInsertValues("'123'", "'1234567890.1234567'", "'-Infinity'", "'Infinity'", "'NaN'", "null")
+            .addExpectedValues("123.0", "1.2345678901234567E9", "-Infinity", "Infinity", "NaN", null)
             .build());
 
-    // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
-    // JdbcUtils -> setJsonField contains:
-    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'123'", "'1234567890.1234567'", "null")
-            .addExpectedValues("123.0", "1.2345678901234567E9", null)
+            .addInsertValues("'123'", "'1234567890.1234567'", "'-Infinity'", "'Infinity'", "'NaN'", "null")
+            .addExpectedValues("123.0", "1.2345678901234567E9", "-Infinity", "Infinity", "NaN", null)
             .build());
 
     addDataTypeTestData(
@@ -270,13 +257,15 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues(null, "-2147483648", "2147483647")
             .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("interval")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("null", "'P1Y2M3DT4H5M6S'", "'-178000000'", "'178000000'")
-    // .addExpectedValues(null, "1 year 2 mons 3 days 04:05:06", "-49444:26:40", "49444:26:40")
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("interval")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("null", "'P1Y2M3DT4H5M6S'", "'PT4H5M6S'", "'-300'", "'-178000000'",
+                "'178000000'", "'1-2'", "'3 4:05:06'", "'P0002-02-03T04:05:06'")
+            .addExpectedValues(null, "1 year 2 mons 3 days 04:05:06", "04:05:06", "-00:05:00", "-49444:26:40",
+                "49444:26:40", "1 year 2 mons 00:00:00", "3 days 04:05:06", "2 year 2 mons 3 days 04:05:06")
+            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -313,39 +302,35 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
                 "08:00:2b:01:02:03:04:07")
             .build());
 
-    // The Money type fails when amount is > 1,000. in JdbcUtils-> rowToJson as r.getObject(i);
-    // Bad value for type double : 1,000.01
-    // The reason is that in jdbc implementation money type is tried to get as Double (jdbc
-    // implementation)
-    // Max values for Money type: "-92233720368547758.08", "92233720368547758.07"
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("money")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("null", "'999.99'")
-    // .addExpectedValues(null, "999.99")
-    // .build());
+    // Max values for Money type should be: "-92233720368547758.08", "92233720368547758.07",
+    // debezium return rounded value for values more than 999999999999999 and less than
+    // -999999999999999,
+    // we map these value as null;
+    // opened issue https://github.com/airbytehq/airbyte/issues/7338
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("money")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("null", "'999.99'", "'1,000.01'", "'-999999999999.99'", "'-999999999999999'", "'999999999999.99'", "'999999999999999'",
+                "'-92233720368547758.08'", "'92233720368547758.07'")
+            .addExpectedValues(null, "999.99", "1000.01", "-999999999999.99", "-999999999999999", "999999999999.99", "999999999999999",
+                null, null)
+            .build());
 
-    // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
-    // we try to map it like this, so it fails
-    // case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("numeric")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'99999'", "null")
-            .addExpectedValues("99999", null)
+            .addInsertValues("'99999'", "'NAN'", null)
+            .addExpectedValues("99999", "NAN", null)
             .build());
 
-    // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
-    // we try to map it like this, so it fails
-    // case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("99999", "5.1", "0", "null")
-            .addExpectedValues("99999", "5.1", "0", null)
+            .addInsertValues("99999", "5.1", "0", "'NAN'", "null")
+            .addExpectedValues("99999", "5.1", "0", "NAN", null)
             .build());
 
     addDataTypeTestData(
@@ -353,8 +338,8 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .sourceType("numeric")
             .fullSourceDataType("numeric(13,4)")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("0.1880", "10.0000", "5213.3468", "null")
-            .addExpectedValues("0.1880", "10.0000", "5213.3468", null)
+            .addInsertValues("0.1880", "10.0000", "5213.3468", "'NAN'", "null")
+            .addExpectedValues("0.1880", "10.0000", "5213.3468", "NAN", null)
             .build());
 
     addDataTypeTestData(
@@ -374,51 +359,45 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
-    // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("null", "'04:05:06'", "'2021-04-12 05:06:07'", "'04:05 PM'")
+            .addExpectedValues(null, "04:05:06", "05:06:07", "16:05:00")
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
-    // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timetz")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("null", "'04:05:06+03'", "'2021-04-12 05:06:07+00'", "'060708-03'")
+            .addExpectedValues(null, "04:05:06+03", "05:06:07+00", "06:07:08-03")
             .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("timestamp")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "null")
-    // .addExpectedValues("2004-10-19T10:23:54Z", null)
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("timestamp")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "null")
+            .addExpectedValues("2004-10-19T10:23:54Z", null)
+            .build());
 
-    // May be run locally, but correct the timezone aacording to your location
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("timestamptz")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("TIMESTAMP '2004-10-19 10:23:54+02'", "null")
-    // .addExpectedValues("2004-10-19T07:23:54Z", null)
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("timestamptz")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54+03'", "null")
+            .addExpectedValues("2004-10-19T07:23:54Z", null)
+            .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("tsvector")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
-    // .addExpectedValues(
-    // "'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7")
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("tsvector")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
+            .addExpectedValues("'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7")
+            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -456,13 +435,13 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("[\"10000\",\"10000\",\"10000\",\"10000\"]", null)
             .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("inventory_item")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("ROW('fuzzy dice', 42, 1.99)", "null")
-    // .addExpectedValues("(\"fuzzy dice\",42,1.99)", null)
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("inventory_item")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("ROW('fuzzy dice', 42, 1.99)", "null")
+            .addExpectedValues("(\"fuzzy dice\",42,1.99)", null)
+            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -472,62 +451,62 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("(\"2010-01-01 14:30:00\",\"2010-01-01 15:30:00\")", null)
             .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("box")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
-    // .addExpectedValues("(15,18),(3,7)", "(0,0),(0,0)", null)
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("box")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
+            .addExpectedValues("(15.0,18.0),(3.0,7.0)", "(0.0,0.0),(0.0,0.0)", null)
+            .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("circle")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("'(5,7),10'", "'(0,0),0'", "'(-10,-4),10'", "null")
-    // .addExpectedValues("<(5,7),10>", "<(0,0),0>", "<(-10,-4),10>", null)
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("circle")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'(5,7),10'", "'(0,0),0'", "'(-10,-4),10'", "null")
+            .addExpectedValues("<(5.0,7.0),10.0>", "<(0.0,0.0),0.0>", "<(-10.0,-4.0),10.0>", null)
+            .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("line")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("'{4,5,6}'", "'{0,1,0}'", "null")
-    // .addExpectedValues("{4,5,6}", "{0,1,0}", null)
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("line")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'{4,5,6}'", "'{0,1,0}'", "null")
+            .addExpectedValues("{4.0,5.0,6.0}", "{0.0,1.0,0.0}", null)
+            .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("lseg")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
-    // .addExpectedValues("[(3,7),(15,18)]", "[(0,0),(0,0)]", null)
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("lseg")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
+            .addExpectedValues("[(3.0,7.0),(15.0,18.0)]", "[(0.0,0.0),(0.0,0.0)]", null)
+            .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("path")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
-    // .addExpectedValues("((3,7),(15,18))", "((0,0),(0,0))", null)
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("path")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'((3,7),(15.5,18.2))'", "'((0,0),(0,0))'", "null")
+            .addExpectedValues("((3.0,7.0),(15.5,18.2))", "((0.0,0.0),(0.0,0.0))", null)
+            .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("point")
-    // .airbyteType(JsonSchemaPrimitive.NUMBER)
-    // .addInsertValues("'(3,7)'", "'(0,0)'", "'(999999999999999999999999,0)'", "null")
-    // .addExpectedValues("(3,7)", "(0,0)", "(1e+24,0)", null)
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("point")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("'(3,7)'", "'(0,0)'", "'(999999999999999999999999,0)'", "null")
+            .addExpectedValues("(3.0,7.0)", "(0.0,0.0)", "(1.0E24,0.0)", null)
+            .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("polygon")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'",
-    // "'((0,0),(999999999999999999999999,0))'", "null")
-    // .addExpectedValues("((3,7),(15,18))", "((0,0),(0,0))", "((0,0),(1e+24,0))", null)
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("polygon")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'",
+                "'((0,0),(999999999999999999999999,0))'", "null")
+            .addExpectedValues("((3.0,7.0),(15.0,18.0))", "((0.0,0.0),(0.0,0.0))", "((0.0,0.0),(1.0E24,0.0))", null)
+            .build());
   }
 
 }

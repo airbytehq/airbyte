@@ -235,7 +235,7 @@ Postgres data types are mapped to the following data types when synchronizing da
 | `lseg` | string |  |
 | `macaddr` | string |  |
 | `macaddr8` | string |  |
-| `money` | string |  |
+| `money` | string | When running logical replication (CDC), `money` values larger than 999999999999999 (15 nines) or smaller than -999999999999999 (15 nines)  are transmitted as null; |
 | `mood` | string |  |
 | `numeric` | number |  |
 | `path` | string |  |
@@ -263,6 +263,7 @@ Postgres data types are mapped to the following data types when synchronizing da
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.3.13 | 2021-10-26 | [7339](https://github.com/airbytehq/airbyte/pull/7339) | Support or improve support for Interval, Money, Date, various geometric data types, inventory_items, and others |
 | 0.3.12 | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
 | 0.3.11 | 2021-09-02 | [5742](https://github.com/airbytehq/airbyte/pull/5742) | Add SSH Tunnel support |
 | 0.3.9 | 2021-08-17 | [5304](https://github.com/airbytehq/airbyte/pull/5304) | Fix CDC OOM issue |
