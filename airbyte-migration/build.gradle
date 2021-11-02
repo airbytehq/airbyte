@@ -21,12 +21,13 @@ application {
 task copyGeneratedTar(type: Copy) {
     dependsOn distTar
 
+    delete 'docker/bin'
+
     from('build/distributions') {
         include 'airbyte-migration-*.tar'
     }
     into 'docker/bin'
 }
-
 
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
