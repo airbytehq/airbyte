@@ -74,6 +74,9 @@ task(dumpJobsSchema, dependsOn: 'classes', type: JavaExec) {
 }
 
 task copyGeneratedXml(type: Copy) {
+
+    delete 'docker/bin'
+
     from('src/main/resources') {
         include 'init.sql'
     }
@@ -84,10 +87,6 @@ def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
     dependsOn copyGeneratedXml
-    dependsOn compileTestJava
-    dependsOn jar
-    dependsOn processTestResources
-    dependsOn jacocoTestReport
     inputDir = file('docker')
     images.add("airbyte/db:$buildTag")
 }

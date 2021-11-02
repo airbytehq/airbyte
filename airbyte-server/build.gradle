@@ -133,6 +133,8 @@ run {
 task copyGeneratedTar(type: Copy) {
     dependsOn distTar
 
+    delete 'docker/bin'
+
     from('build/distributions') {
         include 'airbyte-server-*.tar'
     }
@@ -143,20 +145,6 @@ def buildTag = System.getenv('VERSION') ?: 'dev'
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
     dependsOn copyGeneratedTar
-    dependsOn copySeed
-    dependsOn processResources
-    dependsOn processTestResources
-    dependsOn jar
-    dependsOn shadowJar
-    dependsOn compileTestJava
-    dependsOn distTar
-    dependsOn distZip
-    dependsOn shadowDistTar
-    dependsOn shadowDistZip
-    dependsOn startScripts
-    dependsOn startShadowScripts
-    dependsOn test
-    dependsOn jacocoTestReport
     inputDir = file('docker')
     images.add("airbyte/server:$buildTag")
 }

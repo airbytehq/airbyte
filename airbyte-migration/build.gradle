@@ -32,15 +32,6 @@ task copyGeneratedTar(type: Copy) {
 // Use task types
 task buildMyAppImage(type: DockerBuildImage) {
     dependsOn copyGeneratedTar
-    dependsOn compileTestJava
-    dependsOn processResources
-    dependsOn processTestResources
-    dependsOn test
-    dependsOn jacocoTestReport
-    dependsOn distTar
-    dependsOn distZip
-    dependsOn jar
-    dependsOn startScripts
     inputDir = file('docker')
     images.add("airbyte/migration:$version")
 }

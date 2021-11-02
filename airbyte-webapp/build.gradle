@@ -62,9 +62,6 @@ task buildMyAppImage(type: DockerBuildImage) {
     dependsOn copyBuild
     dependsOn copyNginx
     dependsOn copyDocs
-    dependsOn nodeSetup
-    dependsOn npmInstall
-    dependsOn npm_run_build
     inputDir = file('docker')
     images.add("airbyte/webapp:$version")
 }
