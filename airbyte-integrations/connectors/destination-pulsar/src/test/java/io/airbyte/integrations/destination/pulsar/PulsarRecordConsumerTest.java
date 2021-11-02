@@ -9,7 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.net.InetAddresses;
 import io.airbyte.commons.json.Jsons;
@@ -18,8 +20,10 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.net.InetAddress;
@@ -27,6 +31,8 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,17 +57,6 @@ import org.testcontainers.utility.DockerImageName;
 @DisplayName("PulsarRecordConsumer")
 public class PulsarRecordConsumerTest {
 
-  private static final String TOPIC_NAME = "test.topic";
-  private static final String SCHEMA_NAME = "public";
-  private static final String STREAM_NAME = "id_and_name";
-
-  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
-      CatalogHelpers.createConfiguredAirbyteStream(
-          STREAM_NAME,
-          SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING))));
-
   private static final StandardNameTransformer NAMING_RESOLVER = new StandardNameTransformer();
 
   private static PulsarContainer PULSAR;
@@ -69,18 +64,18 @@ public class PulsarRecordConsumerTest {
   @ParameterizedTest
   @ArgumentsSource(TopicMapArgumentsProvider.class)
   @SuppressWarnings("unchecked")
-  public void testBuildProducerMap(final String topicPattern, final String expectedTopic) throws UnknownHostException {
+  public void testBuildProducerMap(final ConfiguredAirbyteCatalog catalog, final String streamName, final String namespace, final String topicPattern, final String expectedTopic) throws UnknownHostException {
     String brokers = Stream.concat(getIpAddresses().stream(), Stream.of("localhost"))
         .map(ip -> ip + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT))
         .collect(Collectors.joining(","));
     final PulsarDestinationConfig config = PulsarDestinationConfig
         .getPulsarDestinationConfig(getConfig(brokers, topicPattern));
-    final PulsarRecordConsumer recordConsumer = new PulsarRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
 
+    final PulsarRecordConsumer recordConsumer = new PulsarRecordConsumer(config, catalog, mock(Consumer.class), NAMING_RESOLVER);
     final Map<AirbyteStreamNameNamespacePair, Producer<GenericRecord>> producerMap = recordConsumer.buildProducerMap();
-    assertEquals(1, producerMap.size());
+    assertEquals(Sets.newHashSet(catalog.getStreams()).size(), producerMap.size());
 
-    final AirbyteStreamNameNamespacePair streamNameNamespacePair = new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
+    final AirbyteStreamNameNamespacePair streamNameNamespacePair = new AirbyteStreamNameNamespacePair(streamName, namespace);
     assertEquals(expectedTopic, producerMap.get(streamNameNamespacePair).getTopic());
   }
 
@@ -88,9 +83,18 @@ public class PulsarRecordConsumerTest {
   @SuppressWarnings("unchecked")
   void testCannotConnectToBrokers() throws Exception {
     final PulsarDestinationConfig config = PulsarDestinationConfig
-        .getPulsarDestinationConfig(getConfig(PULSAR.getHost() + ":" + (PULSAR.getMappedPort(PulsarContainer.BROKER_PORT) + 10), TOPIC_NAME));
-    final PulsarRecordConsumer consumer = new PulsarRecordConsumer(config, CATALOG, mock(Consumer.class), NAMING_RESOLVER);
-    final List<AirbyteMessage> expectedRecords = getNRecords(10);
+        .getPulsarDestinationConfig(getConfig(PULSAR.getHost() + ":" + (PULSAR.getMappedPort(PulsarContainer.BROKER_PORT) + 10), "test-topic"));
+
+    final String streamName = "test-stream";
+    final String namespace = "test-schema";
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+      CatalogHelpers.createConfiguredAirbyteStream(
+        streamName,
+        namespace,
+        Field.of("id", JsonSchemaPrimitive.NUMBER),
+        Field.of("name", JsonSchemaPrimitive.STRING))));
+    final PulsarRecordConsumer consumer = new PulsarRecordConsumer(config, catalog, mock(Consumer.class), NAMING_RESOLVER);
+    final List<AirbyteMessage> expectedRecords = getNRecords(10, streamName, namespace);
 
     assertThrows(RuntimeException.class, consumer::start);
 
@@ -98,7 +102,7 @@ public class PulsarRecordConsumerTest {
 
     consumer.accept(new AirbyteMessage()
         .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 0)))));
+        .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(namespace + "." + streamName, 0)))));
     consumer.close();
   }
 
@@ -110,7 +114,6 @@ public class PulsarRecordConsumerTest {
         .put("topic_tenant", "public")
         .put("topic_namespace", "default")
         .put("topic_pattern", topic)
-        .put("producer_name", "test-producer")
         .put("producer_sync", true)
         .put("compression_type", "NONE")
         .put("send_timeout_ms", 30000)
@@ -123,14 +126,14 @@ public class PulsarRecordConsumerTest {
         .build());
   }
 
-  private List<AirbyteMessage> getNRecords(final int n) {
+  private List<AirbyteMessage> getNRecords(final int n, final String streamName, final String namespace) {
     return IntStream.range(0, n)
         .boxed()
         .map(i -> new AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(new AirbyteRecordMessage()
-                .withStream(STREAM_NAME)
-                .withNamespace(SCHEMA_NAME)
+                .withStream(streamName)
+                .withNamespace(namespace)
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
         .collect(Collectors.toList());
@@ -151,18 +154,52 @@ public class PulsarRecordConsumerTest {
   }
 
   public static class TopicMapArgumentsProvider implements ArgumentsProvider {
+    private static final String TOPIC_NAME = "test.topic";
+    private static final String SCHEMA_NAME1 = "public";
+    private static final String STREAM_NAME1 = "id_and_name";
+    private static final String SCHEMA_NAME2 = SCHEMA_NAME1 + 2;
+    private static final String STREAM_NAME2 = STREAM_NAME1 + 2;
+
+    private final ConfiguredAirbyteStream stream1 = CatalogHelpers.createConfiguredAirbyteStream(
+      SCHEMA_NAME1,
+      STREAM_NAME1,
+      Field.of("id", JsonSchemaPrimitive.NUMBER),
+      Field.of("name", JsonSchemaPrimitive.STRING));
+    private final ConfiguredAirbyteStream stream2 = CatalogHelpers.createConfiguredAirbyteStream(
+      SCHEMA_NAME2,
+      STREAM_NAME2,
+      Field.of("id", JsonSchemaPrimitive.NUMBER),
+      Field.of("name", JsonSchemaPrimitive.STRING));
 
     @Override
     public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {
-      String prefix = "non-persistent://public/default/";
-      return Stream.of(
-          Arguments.of(TOPIC_NAME, prefix + "test_topic"),
-          Arguments.of("test-topic", prefix + "test_topic"),
-          Arguments.of("{namespace}", prefix + SCHEMA_NAME),
-          Arguments.of("{stream}", prefix + STREAM_NAME),
-          Arguments.of("{namespace}.{stream}." + TOPIC_NAME, prefix + "public_id_and_name_test_topic"),
-          Arguments.of("{namespace}-{stream}-" + TOPIC_NAME, prefix + "public_id_and_name_test_topic"),
-          Arguments.of("topic with spaces", prefix + "topic_with_spaces"));
+      final String prefix = "non-persistent://public/default/";
+
+      final List<ConfiguredAirbyteCatalog> catalogs = new ArrayList<>();
+      catalogs.add(new ConfiguredAirbyteCatalog().withStreams(List.of(stream1)));
+      catalogs.add(new ConfiguredAirbyteCatalog().withStreams(List.of(stream1, stream1)));
+      catalogs.add(new ConfiguredAirbyteCatalog().withStreams(List.of(stream1, stream2)));
+
+      return catalogs.stream()
+        .flatMap(catalog ->
+          catalog.getStreams().stream()
+            .map(stream -> buildArgs(catalog, stream.getStream(), prefix))
+            .flatMap(Collection::stream));
+    }
+
+    private List<Arguments> buildArgs(final ConfiguredAirbyteCatalog catalog, final AirbyteStream stream, final String prefix) {
+      final String transformedTopic = NAMING_RESOLVER.getIdentifier(TOPIC_NAME);
+      final String transformedName = NAMING_RESOLVER.getIdentifier(stream.getName());
+      final String transformedNamespace = NAMING_RESOLVER.getIdentifier(stream.getNamespace());
+
+      return ImmutableList.of(
+        Arguments.of(catalog, stream.getName(), stream.getNamespace(), TOPIC_NAME, prefix + "test_topic"),
+        Arguments.of(catalog, stream.getName(), stream.getNamespace(), "test-topic", prefix + "test_topic"),
+        Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{namespace}", prefix + transformedNamespace),
+        Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{stream}", prefix + transformedName),
+        Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{namespace}.{stream}." + TOPIC_NAME, prefix + transformedNamespace + "_" + transformedName + "_" + transformedTopic),
+        Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{namespace}-{stream}-" + TOPIC_NAME, prefix + transformedNamespace + "_" + transformedName + "_" + transformedTopic),
+        Arguments.of(catalog, stream.getName(), stream.getNamespace(), "topic with spaces", prefix + "topic_with_spaces"));
     }
 
   }

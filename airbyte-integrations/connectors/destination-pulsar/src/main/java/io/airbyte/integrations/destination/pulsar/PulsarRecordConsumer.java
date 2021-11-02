@@ -87,7 +87,7 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
               .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")));
           return PulsarUtils.buildProducer(client, Schema.generic(PulsarDestinationConfig.getSchemaInfo()), config.getProducerConfig(),
               config.uriForTopic(topic));
-        }));
+        }, (existing, newValue) -> existing));
   }
 
   private void sendRecord(final Producer<GenericRecord> producer, final GenericRecord record) {
