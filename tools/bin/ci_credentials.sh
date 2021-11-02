@@ -65,14 +65,13 @@ function save_all() {
 
 
 function export_github_secrets(){
-  local pairs=`echo ${SECRETS_JSON} | jq -c 'keys[] as $k | "\($k)=\(.[$k])"'`
-  while read pair; do
-    local key=`echo ${pair} | cut -d'=' -f1`
-    key=${key#?}
-    local value=`echo ${pair} | cut -d'=' -f2-`
-    value=${value%?}
+  local pairs=`echo ${SECRETS_JSON} | jq -c 'keys[] as $k | {"name": $k, "value": .[$k]} | @base64'`
+  while read row; do
+    pair=$(echo "${row}" | tr -d '"' | base64 -d)
+    local key=$(echo ${pair} | jq -r .name)  
+    local value=$(echo ${pair} | jq -r .value)
     if [[ "$key" == *"_CREDS"* ]]; then
-      declare -gxr "${key}"="${value}"
+      declare -gxr "${key}"="$(echo ${value})"
     fi
   done <<< ${pairs}
   unset SECRETS_JSON
