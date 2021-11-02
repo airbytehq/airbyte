@@ -12,7 +12,7 @@
     },
     {
       "stream": {
-        "name": "unsubscribed_people",
+        "name": "unsubscribes",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
@@ -22,7 +22,7 @@
     },
     {
       "stream": {
-        "name": "bounced_people",
+        "name": "bounces",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
