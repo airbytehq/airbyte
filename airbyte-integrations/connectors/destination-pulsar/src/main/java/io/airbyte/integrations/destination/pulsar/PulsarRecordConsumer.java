@@ -99,7 +99,9 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
         LOGGER.error("Error sending message to topic.", e);
         throw new RuntimeException("Cannot send message to Pulsar. Error: " + e.getMessage(), e);
       }
-      outputRecordCollector.accept(lastStateMessage);
+      if (lastStateMessage != null) {
+        outputRecordCollector.accept(lastStateMessage);
+      }
     }
   }
 
@@ -111,7 +113,9 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
     });
     Exceptions.swallow(client::close);
 
-    outputRecordCollector.accept(lastStateMessage);
+    if (lastStateMessage != null) {
+      outputRecordCollector.accept(lastStateMessage);
+    }
   }
 
 }
