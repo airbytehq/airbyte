@@ -22,7 +22,7 @@
               "coupon": {
                 "type": ["null", "object"],
                 "properties": {
-                  "id": {"type": ["null", "object"]},
+                  "id": {"type": ["null", "string"]},
                   "amount_off": {"type": ["null", "integer"]},
                   "currency": {"type": ["null", "string"]},
                   "duration": {"type": ["null", "string"]},
