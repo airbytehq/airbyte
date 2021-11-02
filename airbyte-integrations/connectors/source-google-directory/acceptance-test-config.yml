@@ -17,3 +17,6 @@ tests:
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      "API returns different lastLoginTime for some users, eteg is generated on all data and also same time different"
+      ignored_fields:
+        "users": ["etag", "lastLoginTime"]
