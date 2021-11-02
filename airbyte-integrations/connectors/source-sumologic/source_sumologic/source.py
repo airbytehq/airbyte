@@ -36,7 +36,7 @@ class IncrementalSumologicStream(SumologicStream, ABC):
         return "_receipttime" if self.config.get("by_receipt_time", False) else "_messagetime"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(int(latest_record.get(self.cursor_field, 0)), int(current_stream_state.get(self.cursor_field, 0)))}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, "0"), current_stream_state.get(self.cursor_field, "0"))}
 
 
 class Messages(IncrementalSumologicStream):

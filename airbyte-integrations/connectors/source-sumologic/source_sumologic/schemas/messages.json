@@ -3,49 +3,49 @@
   "type": "object",
   "properties": {
     "_messageid": {
-      "type": "integer"
+      "type": "string"
     },
     "_sourceid": {
-      "type": "integer"
+      "type": "string"
     },
     "_sourcename": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "_sourcehost": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "_sourcecategory": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "_format": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "_size": {
-      "type": ["null", "integer"]
+      "type": "string"
     },
     "_messagetime": {
-      "type": "integer"
+      "type": "string"
     },
     "_receipttime": {
-      "type": "integer"
+      "type": "string"
     },
     "_messagecount": {
-      "type": "integer"
+      "type": "string"
     },
     "_raw": {
       "type": "string"
     },
     "_source": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "_collectorid": {
-      "type": "integer"
+      "type": "string"
     },
     "_collector": {
       "type": "string"
     },
     "_blockid": {
-      "type": "integer"
+      "type": "string"
     }
   }
 }
