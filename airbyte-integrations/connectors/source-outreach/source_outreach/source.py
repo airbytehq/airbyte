@@ -19,7 +19,7 @@ from airbyte_cdk.sources.streams.http.auth.oauth import Oauth2Authenticator
 class OutreachStream(HttpStream, ABC):
 
     url_base = "https://api.outreach.io/api/v2/"
-    
+
     def __init__(
         self,
         authenticator: HttpAuthenticator,
@@ -31,11 +31,11 @@ class OutreachStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
-            next_page_url = response.json().get('links').get('next')
+            next_page_url = response.json().get("links").get("next")
             params = parse.parse_qs(parse.urlparse(next_page_url).query)
-            if not params or 'page[after]' not in params:
+            if not params or "page[after]" not in params:
                 return {}
-            return {"after": params['page[after]'][0]}
+            return {"after": params["page[after]"][0]}
         except Exception as e:
             raise KeyError(f"error parsing next_page token: {e}")
 
@@ -64,23 +64,22 @@ class IncrementalOutreachStream(OutreachStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
 
-        current_stream_state_date = current_stream_state.get('updatedAt', self.start_date)
-        latest_record_date = latest_record.get('attributes', {}).get('updatedAt', self.start_date)
+        current_stream_state_date = current_stream_state.get("updatedAt", self.start_date)
+        latest_record_date = latest_record.get("attributes", {}).get("updatedAt", self.start_date)
 
-        return {'updatedAt': max(current_stream_state_date, latest_record_date)}
+        return {"updatedAt": max(current_stream_state_date, latest_record_date)}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if 'updatedAt' in stream_state:
-            params["filter[updatedAt]"] = stream_state['updatedAt'] + '..inf'
+        if "updatedAt" in stream_state:
+            params["filter[updatedAt]"] = stream_state["updatedAt"] + "..inf"
         return params
 
 
 class Prospects(IncrementalOutreachStream):
     primary_key = "id"
-    cursor_field = "attributes/properties/updatedAt"
 
     def path(self, **kwargs) -> str:
         return "prospects"
@@ -88,7 +87,6 @@ class Prospects(IncrementalOutreachStream):
 
 class Sequences(IncrementalOutreachStream):
     primary_key = "id"
-    cursor_field = "attributes/properties/updatedAt"
 
     def path(self, **kwargs) -> str:
         return "sequences"
@@ -96,29 +94,21 @@ class Sequences(IncrementalOutreachStream):
 
 class SequenceStates(IncrementalOutreachStream):
     primary_key = "id"
-    cursor_field = "attributes/properties/updatedAt"
 
     def path(self, **kwargs) -> str:
         return "sequenceStates"
 
 
 class OutreachAuthenticator(Oauth2Authenticator):
-    def __init__(self, redirect_uri: str,
-        token_refresh_endpoint: str,
-        client_id: str,
-        client_secret: str,
-        refresh_token: str):
+    def __init__(self, redirect_uri: str, token_refresh_endpoint: str, client_id: str, client_secret: str, refresh_token: str):
         super().__init__(
-            token_refresh_endpoint=token_refresh_endpoint,
-            client_id=client_id,
-            client_secret=client_secret,
-            refresh_token=refresh_token
+            token_refresh_endpoint=token_refresh_endpoint, client_id=client_id, client_secret=client_secret, refresh_token=refresh_token
         )
         self.redirect_uri = redirect_uri
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         payload = super().get_refresh_request_body()
-        payload['redirect_uri'] = self.redirect_uri
+        payload["redirect_uri"] = self.redirect_uri
         return payload
 
 
@@ -140,7 +130,7 @@ class SourceOutreach(AbstractSource):
             response.raise_for_status()
             return True, None
         except Exception as e:
-            logger.error(f'Failed to check connection. Error: {e}')
+            logger.error(f"Failed to check connection. Error: {e}")
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

@@ -20,7 +20,7 @@ def patch_base_class(mocker):
 def test_request_params(patch_base_class):
     stream = OutreachStream(authenticator=MagicMock())
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {'count': 'false', 'page[size]': 100}
+    expected_params = {"count": "false", "page[size]": 100}
     assert stream.request_params(**inputs) == expected_params
 
 
@@ -29,7 +29,7 @@ def test_next_page_token(patch_base_class):
     response = MagicMock()
     response.json.return_value = {"links": {"next": "http://api.outreach.io/api/v2/prospects?page[after]=100"}}
     inputs = {"response": response}
-    expected_token = {'after': '100'}
+    expected_token = {"after": "100"}
     assert stream.next_page_token(**inputs) == expected_token
 
 
@@ -37,17 +37,13 @@ def test_parse_response(patch_base_class):
     stream = OutreachStream(authenticator=MagicMock())
     response = MagicMock()
     response.json.return_value = {
-        "data": [{
-            "id": 123,
-            "attributes": {"name": "John Doe"},
-            "relationships": {"account": {"data": {"type": "account", "id": 4}}}
-        }]
+        "data": [{"id": 123, "attributes": {"name": "John Doe"}, "relationships": {"account": {"data": {"type": "account", "id": 4}}}}]
     }
     inputs = {"response": response}
     expected_parsed_object = {
         "id": 123,
         "attributes": {"name": "John Doe"},
-        "relationships": {"account": {"data": {"type": "account", "id": 4}}}
+        "relationships": {"account": {"data": {"type": "account", "id": 4}}},
     }
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
