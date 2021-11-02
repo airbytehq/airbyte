@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Intercom Spec",
     "type": "object",
-    "required": ["authorization", "start_date"],
+    "required": ["start_date"],
     "additionalProperties": true,
     "properties": {
       "start_date": {
