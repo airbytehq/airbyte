@@ -380,12 +380,12 @@ class CheckoutSessionsLineItems(StripeStream):
         params["expand[]"] = "data.discounts"
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
 
         response_json = response.json()
         data = response_json.get("data", [])
-        if data:
-            cs_id = kwargs.get("stream_slice").get("checkout_session_id", None)
+        if data and stream_slice:
+            cs_id = stream_slice.get("checkout_session_id", None)
             for e in data:
                 e["checkout_session_id"] = cs_id
         yield from data
