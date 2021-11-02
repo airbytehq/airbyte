@@ -298,7 +298,8 @@ class SourceIntercom(AbstractSource):
     """
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        authorization = config.get("authorization", {})
+        # for compatibility with old spec.json files just use full config if authorization key doesn't exist
+        authorization = config.get("authorization", config)
         authenticator = TokenAuthenticator(token=authorization["access_token"])
         try:
             url = f"{IntercomStream.url_base}/tags"
