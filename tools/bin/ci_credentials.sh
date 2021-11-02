@@ -143,6 +143,7 @@ write_standard_creds source-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "confi
 write_standard_creds source-square "$SOURCE_SQUARE_CREDS"
 write_standard_creds source-strava "$SOURCE_STRAVA_TEST_CREDS"
 write_standard_creds source-paystack "$SOURCE_PAYSTACK_TEST_CREDS"
+write_standard_creds source-sentry "$SOURCE_SENTRY_TEST_CREDS"
 write_standard_creds source-stripe "$SOURCE_STRIPE_CREDS"
 write_standard_creds source-stripe "$STRIPE_INTEGRATION_CONNECTED_ACCOUNT_TEST_CREDS" "connected_account_config.json"
 write_standard_creds source-surveymonkey "$SURVEYMONKEY_TEST_CREDS"
