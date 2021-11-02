@@ -4,7 +4,7 @@
 
 package io.airbyte.config.specs;
 
-public enum ConnectorType {
+public enum SeedConnectorType {
 
   SOURCE(
       "source_definitions.yaml",
@@ -16,8 +16,8 @@ public enum ConnectorType {
   private final String definitionFileName;
   private final String specFileName;
 
-  ConnectorType(final String definitionFileName,
-                final String specFileName) {
+  SeedConnectorType(final String definitionFileName,
+                    final String specFileName) {
     this.definitionFileName = definitionFileName;
     this.specFileName = specFileName;
   }
