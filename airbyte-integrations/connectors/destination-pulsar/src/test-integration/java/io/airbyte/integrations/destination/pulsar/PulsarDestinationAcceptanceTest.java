@@ -58,12 +58,13 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .map(ip -> ip + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT))
         .collect(Collectors.joining(","));
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("pulsar_brokers", brokers)
+        .put("brokers", brokers)
         .put("use_tls", false)
         .put("topic_type", "persistent")
         .put("topic_tenant", "public")
         .put("topic_namespace", "default")
         .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
+        .put("producer_name", "test-producer-" + UUID.randomUUID())
         .put("producer_sync", true)
         .put("compression_type", "NONE")
         .put("send_timeout_ms", 30000)
@@ -79,7 +80,7 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("pulsar_brokers", PULSAR.getHost() + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT))
+        .put("brokers", PULSAR.getHost() + ":" + PULSAR.getMappedPort(PulsarContainer.BROKER_PORT))
         .put("use_tls", false)
         .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
         .put("producer_sync", true)

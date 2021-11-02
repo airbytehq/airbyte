@@ -9,7 +9,7 @@
     "title": "Pulsar Destination Spec",
     "type": "object",
     "required": [
-      "pulsar_brokers",
+      "brokers",
       "use_tls",
       "topic_type",
       "topic_tenant",
@@ -26,7 +26,7 @@
     ],
     "additionalProperties": true,
     "properties": {
-      "pulsar_brokers": {
+      "brokers": {
         "title": "Pulsar brokers",
         "description": "A list of host/port pairs to use for establishing the initial connection to the Pulsar cluster.",
         "type": "string",

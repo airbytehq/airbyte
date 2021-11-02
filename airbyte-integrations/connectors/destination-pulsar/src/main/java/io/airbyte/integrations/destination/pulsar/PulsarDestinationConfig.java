@@ -72,7 +72,7 @@ public class PulsarDestinationConfig {
   private String buildServiceUrl(final JsonNode config) {
     return String.format("pulsar%s://%s",
         config.get("use_tls").asBoolean() ? "+ssl" : "",
-        config.get("pulsar_brokers").asText());
+        config.get("brokers").asText());
   }
 
   private String buildTestTopic(final JsonNode config) {

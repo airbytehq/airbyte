@@ -108,7 +108,7 @@ public class PulsarRecordConsumerTest {
 
   private JsonNode getConfig(final String brokers, final String topic) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("pulsar_brokers", brokers)
+        .put("brokers", brokers)
         .put("use_tls", false)
         .put("topic_type", "non-persistent")
         .put("topic_tenant", "public")
