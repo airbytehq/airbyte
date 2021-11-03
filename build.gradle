@@ -73,8 +73,7 @@ def createSpotlessTarget = { pattern ->
         'normalization_test_output',
         'tools',
         'secrets',
-        'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
-        'resources/seed/*_specs.yaml'
+        'charts' // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
