@@ -5,7 +5,7 @@ ENV APPLICATION airbyte-scheduler
 
 WORKDIR /app
 
-ADD build/distributions/${APPLICATION}-0.30.26-alpha.tar /app
+ADD build/distributions/${APPLICATION}-0.30.27-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.30.26-alpha/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.30.27-alpha/bin/${APPLICATION}"]
