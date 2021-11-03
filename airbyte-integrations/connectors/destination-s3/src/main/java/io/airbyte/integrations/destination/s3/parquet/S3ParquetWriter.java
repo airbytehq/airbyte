@@ -8,7 +8,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
-import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -29,6 +28,7 @@ import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
@@ -36,7 +36,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
   private final ParquetWriter<Record> parquetWriter;
   private final AvroRecordFactory avroRecordFactory;
-  private final Schema parquetSchema;
+  private final Schema schema;
   private final String outputFilename;
 
   public S3ParquetWriter(final S3DestinationConfig config,
@@ -44,7 +44,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
                          final ConfiguredAirbyteStream configuredStream,
                          final Timestamp uploadTimestamp,
                          final Schema schema,
-                         final JsonFieldNameUpdater nameUpdater)
+                         final JsonAvroConverter converter)
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
 
@@ -69,8 +69,8 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
         .withDictionaryPageSize(formatConfig.getDictionaryPageSize())
         .withDictionaryEncoding(formatConfig.isDictionaryEncoding())
         .build();
-    this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
-    this.parquetSchema = schema;
+    this.avroRecordFactory = new AvroRecordFactory(schema, converter);
+    this.schema = schema;
   }
 
   public static Configuration getHadoopConfig(final S3DestinationConfig config) {
@@ -88,8 +88,8 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     return hadoopConfig;
   }
 
-  public Schema getParquetSchema() {
-    return parquetSchema;
+  public Schema getSchema() {
+    return schema;
   }
 
   /**

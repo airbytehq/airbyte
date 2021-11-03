@@ -11,7 +11,6 @@ import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
-import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
@@ -27,6 +26,7 @@ import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
 
@@ -42,7 +42,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
                        final ConfiguredAirbyteStream configuredStream,
                        final Timestamp uploadTimestamp,
                        final Schema schema,
-                       final JsonFieldNameUpdater nameUpdater)
+                       final JsonAvroConverter converter)
       throws IOException {
     super(config, s3Client, configuredStream);
 
@@ -52,7 +52,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
-    this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
+    this.avroRecordFactory = new AvroRecordFactory(schema, converter);
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
         config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.

@@ -90,7 +90,7 @@ public class DatabricksStreamCopier implements StreamCopier {
         s3Config.getBucketName(), s3Config.getBucketPath(), databricksConfig.getDatabaseSchema(), streamName);
 
     LOGGER.info("[Stream {}] Database schema: {}", streamName, schemaName);
-    LOGGER.info("[Stream {}] Parquet schema: {}", streamName, parquetWriter.getParquetSchema());
+    LOGGER.info("[Stream {}] Parquet schema: {}", streamName, parquetWriter.getSchema());
     LOGGER.info("[Stream {}] Tmp table {} location: {}", streamName, tmpTableName, tmpTableLocation);
     LOGGER.info("[Stream {}] Data table {} location: {}", streamName, destTableName, destTableLocation);
 

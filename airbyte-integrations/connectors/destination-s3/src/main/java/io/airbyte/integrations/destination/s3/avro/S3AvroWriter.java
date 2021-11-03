@@ -24,6 +24,7 @@ import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class S3AvroWriter extends BaseS3Writer implements S3Writer {
 
@@ -39,7 +40,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
                       final ConfiguredAirbyteStream configuredStream,
                       final Timestamp uploadTimestamp,
                       final Schema schema,
-                      final JsonFieldNameUpdater nameUpdater)
+                      final JsonAvroConverter converter)
       throws IOException {
     super(config, s3Client, configuredStream);
 
@@ -49,7 +50,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
-    this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
+    this.avroRecordFactory = new AvroRecordFactory(schema, converter);
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
         config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
