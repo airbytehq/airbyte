@@ -4,7 +4,6 @@
 
 
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib import parse
 
@@ -83,7 +82,7 @@ class IncrementalOktaStream(OktaStream, ABC):
         pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        lowest_date = str(datetime.min)
+        lowest_date = str(pendulum.datetime.min)
         return {
             self.cursor_field: max(
                 latest_record.get(self.cursor_field, lowest_date),
