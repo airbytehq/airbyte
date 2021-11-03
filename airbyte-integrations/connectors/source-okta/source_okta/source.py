@@ -4,6 +4,7 @@
 
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib import parse
 
@@ -90,9 +91,14 @@ class IncrementalOktaStream(OktaStream, ABC):
             )
         }
 
-    def request_params(self, stream_state=None, **kwargs):
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
+        params = super().request_params(stream_state, stream_slice, next_page_token)
         latest_entry = stream_state.get(self.cursor_field)
         if latest_entry:
             params["filter"] = f'{self.cursor_field} gt "{latest_entry}"'
@@ -113,6 +119,22 @@ class Logs(IncrementalOktaStream):
 
     def path(self, **kwargs) -> str:
         return "logs"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        stream_state = stream_state or {}
+        params = {
+            "limit": self.page_size,
+            **(next_page_token or {}),
+        }
+        latest_entry = stream_state.get(self.cursor_field)
+        if latest_entry:
+            params["since"] = latest_entry
+        return params
 
 
 class Users(IncrementalOktaStream):
