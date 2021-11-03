@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -42,6 +43,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,6 +74,10 @@ class BigQueryDenormalizedDestinationTest {
   private static final AirbyteMessage MESSAGE_USERS3 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(getDataWithFormats())
+          .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage MESSAGE_USERS4 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+          .withData(getDataWithJSONDateTimeFormats())
           .withEmittedAt(NOW.toEpochMilli()));
 
   private JsonNode config;
@@ -109,6 +115,7 @@ class BigQueryDenormalizedDestinationTest {
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);
     MESSAGE_USERS3.getRecord().setNamespace(datasetId);
+    MESSAGE_USERS4.getRecord().setNamespace(datasetId);
 
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
     dataset = bigquery.create(datasetInfo);
@@ -199,7 +206,7 @@ class BigQueryDenormalizedDestinationTest {
 
     // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
     // expect to receive the value we sent.
-    assertEquals(extractJsonValues(resultJson, "updated_at"), Set.of("2018-08-19T12:11:35.220"));
+    assertEquals(extractJsonValues(resultJson, "updated_at"), Set.of("2021-10-11T06:36:53"));
 
     final Schema expectedSchema = Schema.of(
         Field.of("name", StandardSQLTypeName.STRING),
@@ -209,6 +216,29 @@ class BigQueryDenormalizedDestinationTest {
         Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
 
     assertEquals(BigQueryUtils.getTableDefinition(bigquery, dataset.getDatasetId().getDataset(), USERS_STREAM_NAME).getSchema(), expectedSchema);
+  }
+
+  @Test
+  void testIfJSONDateTimeWasConvertedToBigQueryFormat() throws Exception {
+    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
+        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchemaWithDateTime()))
+        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+
+    final BigQueryDestination destination = new BigQueryDenormalizedDestination();
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+
+    consumer.accept(MESSAGE_USERS4);
+    consumer.close();
+
+    final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
+    assertEquals(usersActual.size(), 1);
+    final JsonNode resultJson = usersActual.get(0);
+
+    // BigQuery Accepts "YYYY-MM-DD HH:MM:SS[.SSSSSS]" format
+    // returns "yyyy-MM-dd'T'HH:mm:ss" format
+    assertEquals(Set.of(new DateTime("2021-10-11T06:36:53+00:00").toString("yyyy-MM-dd'T'HH:mm:ss")), extractJsonValues(resultJson, "updated_at"));
+    //check nested datetime
+    assertEquals(Set.of(new DateTime("2021-11-11T06:36:53+00:00").toString("yyyy-MM-dd'T'HH:mm:ss")), extractJsonValues(resultJson.get("items"), "nested_datetime"));
   }
 
   private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
@@ -233,7 +263,6 @@ class BigQueryDenormalizedDestinationTest {
             .newBuilder(
                 String.format("select TO_JSON_STRING(t) as jsonValue from %s.%s t;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
             .setUseLegacySql(false).build();
-
     BigQueryUtils.executeQuery(bigquery, queryConfig);
 
     return StreamSupport
@@ -249,171 +278,4 @@ class BigQueryDenormalizedDestinationTest {
         arguments(getSchemaWithInvalidArrayType(), MESSAGE_USERS1),
         arguments(getSchema(), MESSAGE_USERS2));
   }
-
-  private static JsonNode getSchema() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"type\": [\n"
-            + "    \"object\"\n"
-            + "  ],\n"
-            + "  \"properties\": {\n"
-            + "    \"name\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    \"permissions\": {\n"
-            + "      \"type\": [\n"
-            + "        \"array\"\n"
-            + "      ],\n"
-            + "      \"items\": {\n"
-            + "        \"type\": [\n"
-            + "          \"object\"\n"
-            + "        ],\n"
-            + "        \"properties\": {\n"
-            + "          \"domain\": {\n"
-            + "            \"type\": [\n"
-            + "              \"string\"\n"
-            + "            ]\n"
-            + "          },\n"
-            + "          \"grants\": {\n"
-            + "            \"type\": [\n"
-            + "              \"array\"\n"
-            + "            ],\n"
-            + "            \"items\": {\n"
-            + "              \"type\": [\n"
-            + "                \"string\"\n"
-            + "              ]\n"
-            + "            }\n"
-            + "          }\n"
-            + "        }\n"
-            + "      }\n"
-            + "    }\n"
-            + "  }\n"
-            + "}");
-
-  }
-
-  private static JsonNode getSchemaWithFormats() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"type\": [\n"
-            + "    \"object\"\n"
-            + "  ],\n"
-            + "  \"properties\": {\n"
-            + "    \"name\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    \"date_of_birth\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ],\n"
-            + "      \"format\": \"date\"\n"
-            + "    },\n"
-            + "    \"updated_at\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ],\n"
-            + "      \"format\": \"date-time\"\n"
-            + "    }\n"
-            + "  }\n"
-            + "}");
-  }
-
-  private static JsonNode getSchemaWithInvalidArrayType() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"type\": [\n"
-            + "    \"object\"\n"
-            + "  ],\n"
-            + "  \"properties\": {\n"
-            + "    \"name\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    \"permissions\": {\n"
-            + "      \"type\": [\n"
-            + "        \"array\"\n"
-            + "      ],\n"
-            + "      \"items\": {\n"
-            + "        \"type\": [\n"
-            + "          \"object\"\n"
-            + "        ],\n"
-            + "        \"properties\": {\n"
-            + "          \"domain\": {\n"
-            + "            \"type\": [\n"
-            + "              \"string\"\n"
-            + "            ]\n"
-            + "          },\n"
-            + "          \"grants\": {\n"
-            + "            \"type\": [\n"
-            + "              \"array\"\n" // missed "items" element
-            + "            ]\n"
-            + "          }\n"
-            + "        }\n"
-            + "      }\n"
-            + "    }\n"
-            + "  }\n"
-            + "}");
-
-  }
-
-  private static JsonNode getData() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"name\": \"Andrii\",\n"
-            + "  \"permissions\": [\n"
-            + "    {\n"
-            + "      \"domain\": \"abs\",\n"
-            + "      \"grants\": [\n"
-            + "        \"admin\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    {\n"
-            + "      \"domain\": \"tools\",\n"
-            + "      \"grants\": [\n"
-            + "        \"read\", \"write\"\n"
-            + "      ]\n"
-            + "    }\n"
-            + "  ]\n"
-            + "}");
-  }
-
-  private static JsonNode getDataWithFormats() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"name\": \"Andrii\",\n"
-            + "  \"date_of_birth\": \"1996-01-25\",\n"
-            + "  \"updated_at\": \"2018-08-19 12:11:35.22\"\n"
-            + "}");
-  }
-
-  private static JsonNode getDataWithEmptyObjectAndArray() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"name\": \"Andrii\",\n"
-            + "  \"permissions\": [\n"
-            + "    {\n"
-            + "      \"domain\": \"abs\",\n"
-            + "      \"items\": {},\n" // empty object
-            + "      \"grants\": [\n"
-            + "        \"admin\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    {\n"
-            + "      \"domain\": \"tools\",\n"
-            + "      \"grants\": [],\n" // empty array
-            + "      \"items\": {\n" // object with empty array and object
-            + "        \"object\": {},\n"
-            + "        \"array\": []\n"
-            + "      }\n"
-            + "    }\n"
-            + "  ]\n"
-            + "}");
-
-  }
-
 }
