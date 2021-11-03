@@ -40,6 +40,12 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 The connector is restricted by normal Pinterest [requests limitation](https://developer.atlassian.com/cloud/trello/guides/rest-api/rate-limits/).
 
+#####  Rate Limits
+
+Analytics streams - 300 calls per day / per user \
+Ad accounts streams (Campaigns, Ad groups, Ads) - 1000 calls per min / per user / per app \
+Boards streams - 10 calls per sec / per user / per app
+
 The Pinterest connector should not run into Pinterest API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
@@ -58,5 +64,5 @@ Please read [How to get your credentials](https://developers.pinterest.com/docs/
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2021-10-29 | [0000](https://github.com/airbytehq/airbyte/pull/0000) | Release Pinterest CDK Connector |
+| 0.1.0 | 2021-10-29 | [7493](https://github.com/airbytehq/airbyte/pull/7493) | Release Pinterest CDK Connector |
 
