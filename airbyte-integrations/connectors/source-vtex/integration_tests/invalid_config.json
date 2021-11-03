@@ -1,3 +1,6 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "start_date": "2021-10-20T00:00:00.000Z",
+  "app_key": "notapikey",
+  "app_token": "notatoken",
+  "client_name": "airbyte"
 }

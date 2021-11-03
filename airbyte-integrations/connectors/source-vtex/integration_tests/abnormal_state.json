@@ -1,5 +1,8 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "orders": {
+    "creationDate": "2050-10-28T20:33:05.5394205+00:00"
+  },
+  "order_details": {
+    "creationDate": "2050-10-28T20:33:05.5394205+00:00"
   }
 }

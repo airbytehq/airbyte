@@ -39,20 +39,31 @@ class VtexStream(HttpStream, ABC):
             "f_creationDate": f"creationDate:[{start_date} TO {start_date}]",
             "page": 1,
         }
-
+        
         url = self.url_base + orders_endpoint
-        resp = requests.get(
-            url, params=params, headers=headers, auth=self._session.auth
-        )
+        try:
+            resp = requests.get(url, params=params, headers=headers, auth=self._session.auth)
 
-        if resp.status_code != 200:
-            return False, resp.content
-
+            if resp.status_code != 200:
+                return False, resp.content
+        except Exception as e:
+            return False, str(e)
+            
         return True, None
 
-    def next_page_token(
-        self, response: requests.Response
-    ) -> Optional[Mapping[str, Any]]:
+    def fix_date_to_milliseconds(
+        self,
+        date_str: str
+    ) -> str:
+        """
+        Not sure why, VTEX answer comes with 7 digits for
+        millisecond date format, here we try to make sure it stays with
+        6 digits
+        """
+        length_up_to_sixth_digit = 26
+        return date_str[:length_up_to_sixth_digit] + '+00:00'
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
         page = response_json["paging"]["currentPage"]
         totalPages = response_json["paging"]["pages"]
@@ -76,7 +87,15 @@ class VtexStream(HttpStream, ABC):
         ).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
         if stream_state and self.cursor_field in stream_state:
-            start_date = stream_state[self.cursor_field]
+            date_from_state = stream_state[self.cursor_field]
+
+            if len(date_from_state) >= 33:
+                fixed_date = self.fix_date_to_milliseconds(date_from_state)
+                start_date_response_format = datetime.datetime.strptime(
+                    fixed_date, FROM_VTEX_DATE_MASK
+                )
+                start_date = start_date_response_format.strftime(DATE_MASK)
+                
 
         page = next_page_token["page"] if next_page_token else 1
 
@@ -103,17 +122,6 @@ class IncrementalVtexStream(VtexStream, ABC):
     def cursor_field(self) -> str:
         return "creationDate"
 
-    def format_date_to_milliseconds(self, date_str: str) -> str:
-        """
-        Not sure why, VTEX answer comes with 7 digits for
-        millisecond date format, here we try to make sure it stays with
-        6 digits
-        """
-
-        splited_array = date_str.split("+")
-        first_half = splited_array[0][:-1]
-        return first_half + "+" + splited_array[1]
-
     def get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
@@ -124,32 +132,33 @@ class IncrementalVtexStream(VtexStream, ABC):
         record with the stream's most recent state object and returning an
         updated state object.
         """
-        if (
-            current_stream_state is not None
-            and self.cursor_field in current_stream_state
-        ):
-            current_date = current_stream_state[self.cursor_field]
+        latest_record_date_str = latest_record.get(self.cursor_field)
+        latest_record_date_millisecond_fix_str = self.fix_date_to_milliseconds(
+            latest_record_date_str
+        )
+
+        latest_record_parsed_date = datetime.datetime.strptime(
+            latest_record_date_millisecond_fix_str,
+            FROM_VTEX_DATE_MASK
+        )
+        
+        if current_stream_state is not None and self.cursor_field in current_stream_state:
+            current_date_str = current_stream_state[self.cursor_field]
+            current_date_millisecond_fix_str = self.fix_date_to_milliseconds(
+                current_date_str
+            )   
             current_parsed_date = datetime.datetime.strptime(
-                current_date, DATE_MASK
+                current_date_millisecond_fix_str, 
+                FROM_VTEX_DATE_MASK
             )
-
-            latest_record_date = latest_record.get(self.cursor_field)
-            if len(latest_record_date) >= 33:
-                latest_record_date = self.format_date_to_milliseconds(
-                    latest_record_date
-                )
-
-            latest_record_parsed_date = datetime.datetime.strptime(
-                latest_record_date, FROM_VTEX_DATE_MASK
-            )
-
-            return {
-                self.cursor_field: max(
-                    current_parsed_date, latest_record_parsed_date
-                ).strftime(DATE_MASK)
-            }
+            
+            # We are keeping in the state the same weird format as the record
+            if current_parsed_date > latest_record_parsed_date:
+                return {self.cursor_field: current_date_str}
+            else:
+                return {self.cursor_field: latest_record_date_str}
         else:
-            return {self.cursor_field: self.start_date}
+            return {self.cursor_field: latest_record_date_str}
 
 
 class VtexSubStream(HttpSubStream, IncrementalVtexStream):
