@@ -4,7 +4,6 @@
 
 
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib import parse
 
@@ -114,7 +113,7 @@ class Groups(IncrementalOktaStream):
 
 
 class Logs(IncrementalOktaStream):
-    
+
     cursor_field = "published"
     primary_key = "uuid"
 
