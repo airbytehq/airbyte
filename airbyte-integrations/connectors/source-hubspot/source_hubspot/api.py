@@ -14,8 +14,8 @@ from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapp
 import backoff
 import pendulum as pendulum
 import requests
+from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from base_python.entrypoint import logger
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
 # The value is obtained experimentally, Hubspot allows the URL length up to ~16300 symbols,
@@ -374,7 +374,7 @@ class Stream(ABC):
                     'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
                     'correlationId': '111111-2222-3333-4444-55555555555'}
                 """
-                logger.warn(f"Stream `{self.entity}` cannot be procced. {response.get('message')}")
+                logger.warning(f"Stream `{self.entity}` cannot be procced. {response.get('message')}")
                 return
 
             if response.get(self.data_field) is None:
