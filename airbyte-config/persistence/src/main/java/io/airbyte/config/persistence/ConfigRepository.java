@@ -461,7 +461,7 @@ public class ConfigRepository {
 
   /**
    * Converts between a dumpConfig() output and a replaceAllConfigs() input, by deserializing the
-   * string/jsonnode into the AirbyteConfig, Stream<Object<AirbyteConfig.getClassName()>
+   * string/jsonnode into the AirbyteConfig, Stream&lt;Object&lt;AirbyteConfig.getClassName()&gt;&gt;
    *
    * @param configurations from dumpConfig()
    * @return input suitable for replaceAllConfigs()

@@ -125,7 +125,7 @@ public interface JobPersistence {
   <T> void writeOutput(long jobId, int attemptNumber, T output) throws IOException;
 
   /**
-   * @param configType - type of config, e.g. sync
+   * @param configTypes - type of config, e.g. sync
    * @param configId - id of that config
    * @return lists job in descending order by created_at
    * @throws IOException - what you do when you IO
@@ -196,8 +196,6 @@ public interface JobPersistence {
 
   /**
    * Purges job history while ensuring that the latest saved-state information is maintained.
-   *
-   * @throws IOException
    */
   void purgeJobHistory();
 

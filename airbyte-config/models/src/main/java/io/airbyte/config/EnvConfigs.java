@@ -289,9 +289,11 @@ public class EnvConfigs implements Configs {
   /**
    * Returns worker pod tolerations parsed from its own environment variable. The value of the env is
    * a string that represents one or more tolerations.
+   * <ul>
    * <li>Tolerations are separated by a `;`
    * <li>Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and
    * separated by `,`
+   * </ul>
    * <p>
    * For example:- The following represents two tolerations, one checking existence and another
    * matching a value

@@ -36,8 +36,6 @@ public class KubePortManagerSingleton {
 
   /**
    * Make sure init(ports) is called once prior to repeatedly using getInstance().
-   *
-   * @return
    */
   public static synchronized KubePortManagerSingleton getInstance() {
     if (instance == null) {
@@ -49,8 +47,6 @@ public class KubePortManagerSingleton {
   /**
    * Sets up the port range; make sure init(ports) is called once prior to repeatedly using
    * getInstance().
-   *
-   * @return
    */
   public static synchronized void init(final Set<Integer> ports) {
     if (instance != null) {
