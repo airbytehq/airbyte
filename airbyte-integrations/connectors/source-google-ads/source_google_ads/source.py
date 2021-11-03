@@ -23,6 +23,7 @@ from .streams import (
     ClickView,
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
+    KeywordView,
     ShoppingPerformanceReport,
     UserLocationReport,
 )
@@ -74,6 +75,7 @@ class SourceGoogleAds(AbstractSource):
             AdGroupAds(api=google_api),
             AdGroups(api=google_api),
             Accounts(api=google_api),
-            Campaigns(api=google_api),
+            Campaigns(**incremental_stream_config),
             ClickView(**incremental_stream_config),
+            KeywordView(**incremental_stream_config)
         ] + custom_query_streams

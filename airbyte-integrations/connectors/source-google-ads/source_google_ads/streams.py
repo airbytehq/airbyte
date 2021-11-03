@@ -129,7 +129,7 @@ class Accounts(GoogleAdsStream):
     primary_key = "customer.id"
 
 
-class Campaigns(GoogleAdsStream):
+class Campaigns(IncrementalGoogleAdsStream):
     """
     Campaigns stream: https://developers.google.com/google-ads/api/fields/v8/campaign
     """
@@ -202,3 +202,8 @@ class ClickView(IncrementalGoogleAdsStream):
 
     time_unit = "days"
     days_of_data_storage = 90
+
+class KeywordView(IncrementalGoogleAdsStream):
+    """
+    KeywordView stream: https://developers.google.com/google-ads/api/fields/v8/keyword_view
+    """
