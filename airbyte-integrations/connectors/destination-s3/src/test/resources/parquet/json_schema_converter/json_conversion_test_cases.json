@@ -25,7 +25,7 @@
           "default": null
         },
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -36,7 +36,7 @@
     },
     "avroObject": {
       "node_id": "abc123",
-      "_ab_additional_properties": null
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -99,7 +99,7 @@
                   "default": null
                 },
                 {
-                  "name":"_ab_additional_properties",
+                  "name":"_airbyte_additional_properties",
                   "type":[
                     "null",
                     { "type":"map", "values":"string" }
@@ -112,7 +112,7 @@
           "default": null
         },
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -126,9 +126,9 @@
       "user": {
         "first_name": "charles",
         "last_name": "darwin",
-        "_ab_additional_properties": null
+        "_airbyte_additional_properties": null
       },
-      "_ab_additional_properties": null
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -173,7 +173,7 @@
           "default": null
         },
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -186,7 +186,7 @@
       "_airbyte_ab_id": "752fcd83-7e46-41da-b7ff-f05cb070c893",
       "_airbyte_emitted_at": 1634982000,
       "node_id": "abc123",
-      "_ab_additional_properties": null
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -217,7 +217,7 @@
           "default": null
         },
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -228,7 +228,7 @@
     },
     "avroObject": {
       "node_id": "abc123",
-      "_ab_additional_properties": null
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -257,7 +257,7 @@
           "default": null
         },
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -268,7 +268,7 @@
     },
     "avroObject": {
       "identifier": 65536.0,
-      "_ab_additional_properties": null
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -306,7 +306,7 @@
           "default": null
         },
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -317,7 +317,7 @@
     },
     "avroObject": {
       "identifier": ["151", "152"],
-      "_ab_additional_properties": null
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -366,7 +366,7 @@
           "default": null
         },
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -377,7 +377,7 @@
     },
     "avroObject": {
       "identifiers": ["151", 152, true, false],
-      "_ab_additional_properties": null
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -416,7 +416,7 @@
           "default": null
         },
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -427,7 +427,7 @@
     },
     "avroObject": {
       "created_at": 1634982000,
-      "_ab_additional_properties": null
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -482,7 +482,7 @@
                   "default": null
                 },
                 {
-                  "name":"_ab_additional_properties",
+                  "name":"_airbyte_additional_properties",
                   "type":[
                     "null",
                     { "type":"map", "values":"string" }
@@ -495,7 +495,7 @@
           "default": null
         },
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -507,9 +507,9 @@
     "avroObject": {
       "user": {
         "created_at": "1634982000",
-        "_ab_additional_properties": null
+        "_airbyte_additional_properties": null
       },
-      "_ab_additional_properties": null
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -551,7 +551,7 @@
           "default": null
         },
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -562,7 +562,7 @@
     },
     "avroObject": {
       "identifiers": [151, 152, "153", true, false],
-      "_ab_additional_properties": null
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -592,7 +592,7 @@
           "default": null
         },
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -603,12 +603,64 @@
     },
     "avroObject": {
       "_5field_name": "theory of relativity",
-      "_ab_additional_properties": null
+      "_airbyte_additional_properties": null
     }
   },
   {
-    "schemaName": "record_with_additional_properties",
+    "schemaName": "record_with_airbyte_additional_properties",
     "namespace": "namespace12",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "_airbyte_additional_properties": {
+          "type": "object"
+        }
+      }
+    },
+    "jsonObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": {
+        "username": "343-guilty-spark",
+        "password": 1439,
+        "active": true
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_with_airbyte_additional_properties",
+      "namespace": "namespace12",
+      "fields": [
+        {
+          "name": "node_id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
+        }
+      ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": {
+        "username": "343-guilty-spark",
+        "password": "1439",
+        "active": "true"
+      }
+    }
+  },
+  {
+    "schemaName": "record_with_ab_additional_properties",
+    "namespace": "namespace13",
     "appendAirbyteFields": false,
     "jsonSchema": {
       "type": "object",
@@ -631,8 +683,8 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "record_with_additional_properties",
-      "namespace": "namespace12",
+      "name": "record_with_ab_additional_properties",
+      "namespace": "namespace13",
       "fields": [
         {
           "name": "node_id",
@@ -640,7 +692,7 @@
           "default": null
         },
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -651,7 +703,7 @@
     },
     "avroObject": {
       "node_id": "abc123",
-      "_ab_additional_properties": {
+      "_airbyte_additional_properties": {
         "username": "343-guilty-spark",
         "password": "1439",
         "active": "true"
@@ -660,7 +712,7 @@
   },
   {
     "schemaName": "record_without_properties",
-    "namespace": "namespace13",
+    "namespace": "namespace14",
     "appendAirbyteFields": false,
     "jsonSchema": {
       "type": "object"
@@ -673,10 +725,10 @@
     "avroSchema": {
       "type": "record",
       "name": "record_without_properties",
-      "namespace": "namespace13",
+      "namespace": "namespace14",
       "fields": [
         {
-          "name":"_ab_additional_properties",
+          "name":"_airbyte_additional_properties",
           "type":[
             "null",
             { "type":"map", "values":"string" }
@@ -686,7 +738,7 @@
       ]
     },
     "avroObject": {
-      "_ab_additional_properties": {
+      "_airbyte_additional_properties": {
         "username": "343-guilty-spark",
         "password": "1439",
         "active": "true"

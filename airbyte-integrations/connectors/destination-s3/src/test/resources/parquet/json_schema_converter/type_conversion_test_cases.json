@@ -101,7 +101,7 @@
             "default": null
           },
           {
-            "name": "_ab_additional_properties",
+            "name": "_airbyte_additional_properties",
             "type": [
               "null",
               {"type": "map", "values": "string"}
@@ -124,13 +124,20 @@
         "name": "object_field_without_properties",
         "fields": [
           {
-            "name": "_ab_additional_properties",
+            "name": "_airbyte_additional_properties",
             "type": ["null", {"type": "map", "values": "string"}],
             "default": null
           }
         ]
       }
     ]
+  },
+  {
+    "fieldName": "_airbyte_additional_properties",
+    "jsonFieldSchema": {
+      "type": "object"
+    },
+    "avroFieldType": ["null", {"type":"map","values":"string"}]
   },
   {
     "fieldName": "_ab_additional_properties",

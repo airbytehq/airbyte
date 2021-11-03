@@ -130,6 +130,12 @@ public class JsonToAvroSchemaConverter {
     }
 
     for (final String fieldName : fieldNames) {
+      // ignore additional properties fields, which will be consolidated
+      // into one field at the end
+      if (AvroConstants.JSON_EXTRA_PROPS_FIELDS.contains(fieldName)) {
+        continue;
+      }
+
       final String stdFieldName = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName);
       final JsonNode fieldDefinition = properties.get(fieldName);
       SchemaBuilder.FieldBuilder<Schema> fieldBuilder = assembler.name(stdFieldName);
@@ -146,11 +152,9 @@ public class JsonToAvroSchemaConverter {
           .withDefault(null);
     }
 
-    // support additional properties
-    if (!fieldNames.contains(AvroConstants.ADDITIONAL_PROPERTIES_FIELD_NAME)) {
-      assembler = assembler.name(AvroConstants.ADDITIONAL_PROPERTIES_FIELD_NAME)
-          .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
-    }
+    // support additional properties in one field
+    assembler = assembler.name(AvroConstants.AVRO_EXTRA_PROPS_FIELD)
+        .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
 
     return assembler.endRecord();
   }
@@ -159,7 +163,9 @@ public class JsonToAvroSchemaConverter {
     Preconditions
         .checkState(fieldType != JsonSchemaType.NULL, "Null types should have been filtered out");
 
-    if (fieldName.equals(AvroConstants.ADDITIONAL_PROPERTIES_FIELD_NAME)) {
+    // the additional properties fields are filtered out and never passed into this method;
+    // but this method is able to handle them for completeness
+    if (AvroConstants.JSON_EXTRA_PROPS_FIELDS.contains(fieldName)) {
       return AdditionalPropertyField.FIELD_SCHEMA;
     }
 
