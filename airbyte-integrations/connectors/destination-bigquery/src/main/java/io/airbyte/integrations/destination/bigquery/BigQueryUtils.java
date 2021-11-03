@@ -169,15 +169,15 @@ public class BigQueryUtils {
   }
 
   /**
-   * @param timeStampFields - list contains fields of DATETIME format
+   * @param dateTimeFields - list contains fields of DATETIME format
    * @param data - Json will be sent to Google BigData service
    *
    *  The special DATETIME format is required to save this type to BigQuery.
    *  @see <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#details_of_loading_json_data">Supported Google bigquery datatype</a>
    *  This method is responsible to adapt JSON DATETIME to Bigquery
    */
-  public static void transformJsonDateTimeToBigDataFormat(List<String> timeStampFields, ObjectNode data) {
-    timeStampFields.forEach(e -> {
+  public static void transformJsonDateTimeToBigDataFormat(List<String> dateTimeFields, ObjectNode data) {
+    dateTimeFields.forEach(e -> {
       if (data.findValue(e) != null && !data.get(e).isNull()) {
         String googleBigQueryDateFormat = QueryParameterValue
             .dateTime(new DateTime(data
