@@ -23,6 +23,7 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -53,8 +54,6 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.InsertValuesStepN;
 import org.jooq.JSONB;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
 import org.jooq.Named;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -76,7 +75,6 @@ public class DefaultJobPersistence implements JobPersistence {
       .of("pg_toast", "information_schema", "pg_catalog", "import_backup", "pg_internal",
           "catalog_history");
 
-  private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   protected static final String DEFAULT_SCHEMA = "public";
   private static final String BACKUP_SCHEMA = "import_backup";
   public static final String DEPLOYMENT_ID_KEY = "deployment_id";
@@ -618,7 +616,7 @@ public class DefaultJobPersistence implements JobPersistence {
             .filter(f -> f.getDataType().getTypeName().equals("jsonb"))
             .map(Field::getName)
             .collect(Collectors.toSet());
-        final JsonNode row = Jsons.deserialize(record.formatJSON(DB_JSON_FORMAT));
+        final JsonNode row = Jsons.deserialize(record.formatJSON(JdbcUtils.getDefaultJSONFormat()));
         // for json fields, deserialize them so they are treated as objects instead of strings. this is to
         // get around that formatJson doesn't handle deserializing them for us.
         jsonFieldNames.forEach(jsonFieldName -> ((ObjectNode) row).replace(jsonFieldName, Jsons.deserialize(row.get(jsonFieldName).asText())));
