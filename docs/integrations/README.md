@@ -77,6 +77,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Oracle DB](sources/oracle.md) | Certified |
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md) | Beta |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md) | Beta |
+| [Outreach](./sources/outreach.md)| Alpha |
 | [PayPal Transaction](sources/paypal-transaction.md) | Beta |
 | [Pipedrive](sources/pipedrive.md) | Alpha |
 | [Plaid](sources/plaid.md) | Alpha |
