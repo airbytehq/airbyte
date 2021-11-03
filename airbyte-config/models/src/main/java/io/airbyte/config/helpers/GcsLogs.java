@@ -135,7 +135,7 @@ public class GcsLogs implements CloudLogs {
       blob.downloadTo(os);
     }
     os.close();
-    final var data = new GcsLogs().tailCloudLog(new LogConfigDelegator(new EnvConfigs()), "tail", 6);
+    final var data = new GcsLogs().tailCloudLog((new EnvConfigs()).getLogConfigs(), "tail", 6);
     System.out.println(data);
   }
 

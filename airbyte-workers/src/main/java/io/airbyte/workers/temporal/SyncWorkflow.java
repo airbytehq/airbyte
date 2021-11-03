@@ -21,6 +21,7 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.State;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -156,20 +157,49 @@ public interface SyncWorkflow {
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
+    private final WorkerEnvironment workerEnvironment;
+    private final LogConfigs logConfigs;
 
-    public ReplicationActivityImpl(final ProcessFactory processFactory, final SecretsHydrator secretsHydrator, final Path workspaceRoot) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
+    private final String databaseUser;
+    private final String databasePassword;
+    private final String databaseUrl;
+    private final String airbyteVersion;
+
+    public ReplicationActivityImpl(
+                                   final ProcessFactory processFactory,
+                                   final SecretsHydrator secretsHydrator,
+                                   final Path workspaceRoot,
+                                   final WorkerEnvironment workerEnvironment,
+                                   final LogConfigs logConfigs,
+                                   final String databaseUser,
+                                   final String databasePassword,
+                                   final String databaseUrl,
+                                   final String airbyteVersion) {
+      this(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, new AirbyteConfigValidator(), databaseUser,
+          databasePassword, databaseUrl, airbyteVersion);
     }
 
     @VisibleForTesting
     ReplicationActivityImpl(final ProcessFactory processFactory,
                             final SecretsHydrator secretsHydrator,
                             final Path workspaceRoot,
-                            final AirbyteConfigValidator validator) {
+                            final WorkerEnvironment workerEnvironment,
+                            final LogConfigs logConfigs,
+                            final AirbyteConfigValidator validator,
+                            final String databaseUser,
+                            final String databasePassword,
+                            final String databaseUrl,
+                            final String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
+      this.workerEnvironment = workerEnvironment;
+      this.logConfigs = logConfigs;
+      this.databaseUser = databaseUser;
+      this.databasePassword = databasePassword;
+      this.databaseUrl = databaseUrl;
+      this.airbyteVersion = airbyteVersion;
     }
 
     @Override
@@ -191,11 +221,11 @@ public interface SyncWorkflow {
       };
 
       final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
-          workspaceRoot,
+          workspaceRoot, workerEnvironment, logConfigs,
           jobRunConfig,
           getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
           inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler());
+          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
       final ReplicationOutput attemptOutput = temporalAttempt.get();
       final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
@@ -280,12 +310,23 @@ public interface SyncWorkflow {
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
     private final WorkerEnvironment workerEnvironment;
+    private final LogConfigs logConfigs;
+    private final String databaseUser;
+    private final String databasePassword;
+    private final String databaseUrl;
+    private final String airbyteVersion;
 
     public NormalizationActivityImpl(final ProcessFactory processFactory,
                                      final SecretsHydrator secretsHydrator,
                                      final Path workspaceRoot,
-                                     final WorkerEnvironment workerEnvironment) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment);
+                                     final WorkerEnvironment workerEnvironment,
+                                     final LogConfigs logConfig,
+                                     final String databaseUser,
+                                     final String databasePassword,
+                                     final String databaseUrl,
+                                     final String airbyteVersion) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfig, databaseUser, databasePassword,
+          databaseUrl, airbyteVersion);
     }
 
     @VisibleForTesting
@@ -293,12 +334,22 @@ public interface SyncWorkflow {
                               final SecretsHydrator secretsHydrator,
                               final Path workspaceRoot,
                               final AirbyteConfigValidator validator,
-                              final WorkerEnvironment workerEnvironment) {
+                              final WorkerEnvironment workerEnvironment,
+                              final LogConfigs logConfigs,
+                              final String databaseUser,
+                              final String databasePassword,
+                              final String databaseUrl,
+                              final String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
       this.workerEnvironment = workerEnvironment;
+      this.logConfigs = logConfigs;
+      this.databaseUser = databaseUser;
+      this.databasePassword = databasePassword;
+      this.databaseUrl = databaseUrl;
+      this.airbyteVersion = airbyteVersion;
     }
 
     @Override
@@ -315,11 +366,11 @@ public interface SyncWorkflow {
       };
 
       final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
-          workspaceRoot,
+          workspaceRoot, workerEnvironment, logConfigs,
           jobRunConfig,
           getWorkerFactory(destinationLauncherConfig, jobRunConfig),
           inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler());
+          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
       return temporalAttemptExecution.get();
     }
@@ -356,23 +407,47 @@ public interface SyncWorkflow {
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
+    private final WorkerEnvironment workerEnvironment;
+    private final LogConfigs logConfigs;
+    private final String databaseUser;
+    private final String databasePassword;
+    private final String databaseUrl;
+    private final String airbyteVersion;
 
-    public DbtTransformationActivityImpl(
-                                         final ProcessFactory processFactory,
+    public DbtTransformationActivityImpl(final ProcessFactory processFactory,
                                          final SecretsHydrator secretsHydrator,
-                                         final Path workspaceRoot) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
+                                         final Path workspaceRoot,
+                                         final WorkerEnvironment workerEnvironment,
+                                         final LogConfigs logConfigs,
+                                         final String databaseUser,
+                                         final String databasePassword,
+                                         final String databaseUrl,
+                                         final String airbyteVersion) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs, databaseUser,
+          databasePassword, databaseUrl, airbyteVersion);
     }
 
     @VisibleForTesting
     DbtTransformationActivityImpl(final ProcessFactory processFactory,
                                   final SecretsHydrator secretsHydrator,
                                   final Path workspaceRoot,
-                                  final AirbyteConfigValidator validator) {
+                                  final AirbyteConfigValidator validator,
+                                  final WorkerEnvironment workerEnvironment,
+                                  final LogConfigs logConfigs,
+                                  final String databaseUser,
+                                  final String databasePassword,
+                                  final String databaseUrl,
+                                  final String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
+      this.workerEnvironment = workerEnvironment;
+      this.logConfigs = logConfigs;
+      this.databaseUser = databaseUser;
+      this.databasePassword = databasePassword;
+      this.databaseUrl = databaseUrl;
+      this.airbyteVersion = airbyteVersion;
     }
 
     @Override
@@ -390,11 +465,11 @@ public interface SyncWorkflow {
       };
 
       final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
-          workspaceRoot,
+          workspaceRoot, workerEnvironment, logConfigs,
           jobRunConfig,
           getWorkerFactory(destinationLauncherConfig, jobRunConfig, resourceRequirements),
           inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler());
+          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
       return temporalAttemptExecution.get();
     }

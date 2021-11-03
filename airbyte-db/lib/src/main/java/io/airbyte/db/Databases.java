@@ -33,6 +33,9 @@ public class Databases {
                                                          final String jdbcConnectionString,
                                                          final Function<Database, Boolean> isDbReady) {
     Database database = null;
+    if (jdbcConnectionString == null || jdbcConnectionString.trim().equals("")) {
+      throw new IllegalArgumentException("Using a null or empty jdbc url will hang database creation; aborting.");
+    }
 
     while (database == null) {
       LOGGER.warn("Waiting for database to become available...");

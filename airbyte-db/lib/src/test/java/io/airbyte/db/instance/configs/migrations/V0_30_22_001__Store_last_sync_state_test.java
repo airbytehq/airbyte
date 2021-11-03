@@ -24,7 +24,6 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobOutput.OutputType;
 import io.airbyte.config.StandardSyncOutput;
@@ -39,6 +38,7 @@ import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.flywaydb.core.api.configuration.Configuration;
 import org.flywaydb.core.api.migration.Context;
@@ -52,6 +52,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.Timeout;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTest {
@@ -86,6 +87,8 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   private static Database jobDatabase;
 
   @BeforeAll
+  @Timeout(value = 2,
+           unit = TimeUnit.MINUTES)
   public static void setupJobDatabase() throws Exception {
     jobDatabase = new JobsDatabaseInstance(
         container.getUsername(),
@@ -97,8 +100,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   @Test
   @Order(10)
   public void testGetJobsDatabase() {
-    // when there is no database environment variable, the return value is empty
-    assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase(new EnvConfigs()).isEmpty());
+    assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase("", "", "").isEmpty());
 
     // when there is database environment variable, return the database
     final Configs configs = mock(Configs.class);
@@ -106,7 +108,8 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
     when(configs.getDatabasePassword()).thenReturn(container.getPassword());
     when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
 
-    assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase(configs).isPresent());
+    assertTrue(V0_30_22_001__Store_last_sync_state
+        .getJobsDatabase(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).isPresent());
   }
 
   @Test
@@ -180,12 +183,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
         .where(COLUMN_CONFIG_TYPE.eq(ConfigSchema.STANDARD_SYNC_STATE.name()))
         .execute());
 
-    final Configs configs = mock(Configs.class);
-    when(configs.getDatabaseUser()).thenReturn(container.getUsername());
-    when(configs.getDatabasePassword()).thenReturn(container.getPassword());
-    when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
-
-    final var migration = new V0_30_22_001__Store_last_sync_state(configs);
+    final var migration = new V0_30_22_001__Store_last_sync_state(container.getUsername(), container.getPassword(), container.getJdbcUrl());
     // this context is a flyway class; only the getConnection method is needed to run the migration
     final Context context = new Context() {
 

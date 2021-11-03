@@ -24,8 +24,10 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
@@ -91,7 +93,7 @@ public class JobSubmitterTest {
         persistence,
         workerRunFactory,
         jobTracker,
-        jobNotifier));
+        jobNotifier, WorkerEnvironment.DOCKER, LogConfiguration.EMPTY));
   }
 
   @Test

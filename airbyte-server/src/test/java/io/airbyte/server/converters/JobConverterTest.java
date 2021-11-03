@@ -18,8 +18,10 @@ import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.LogRead;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -45,6 +47,7 @@ class JobConverterTest {
   private static final Path LOG_PATH = Path.of("log_path");
   private static final long CREATED_AT = System.currentTimeMillis() / 1000;
 
+  private JobConverter jobConverter;
   private Job job;
 
   private static final JobInfoRead JOB_INFO =
@@ -71,6 +74,7 @@ class JobConverterTest {
 
   @BeforeEach
   public void setUp() {
+    jobConverter = new JobConverter(WorkerEnvironment.DOCKER, LogConfiguration.EMPTY);
     job = mock(Job.class);
     final Attempt attempt = mock(Attempt.class);
     when(job.getId()).thenReturn(JOB_ID);
@@ -91,17 +95,17 @@ class JobConverterTest {
 
   @Test
   public void testGetJobInfoRead() {
-    assertEquals(JOB_INFO, JobConverter.getJobInfoRead(job));
+    assertEquals(JOB_INFO, jobConverter.getJobInfoRead(job));
   }
 
   @Test
   public void testGetJobWithAttemptsRead() {
-    assertEquals(JOB_WITH_ATTEMPTS_READ, JobConverter.getJobWithAttemptsRead(job));
+    assertEquals(JOB_WITH_ATTEMPTS_READ, jobConverter.getJobWithAttemptsRead(job));
   }
 
   @Test
   public void testGetJobRead() {
-    final JobWithAttemptsRead jobReadActual = JobConverter.getJobWithAttemptsRead(job);
+    final JobWithAttemptsRead jobReadActual = jobConverter.getJobWithAttemptsRead(job);
     assertEquals(JOB_WITH_ATTEMPTS_READ, jobReadActual);
   }
 

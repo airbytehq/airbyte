@@ -15,11 +15,12 @@ import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.LogRead;
 import io.airbyte.api.model.SynchronousJobRead;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.models.Attempt;
@@ -32,10 +33,18 @@ public class JobConverter {
 
   private static final int LOG_TAIL_SIZE = 1000000;
 
-  public static JobInfoRead getJobInfoRead(final Job job) {
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
+
+  public JobConverter(final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs) {
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+  }
+
+  public JobInfoRead getJobInfoRead(final Job job) {
     return new JobInfoRead()
         .job(getJobWithAttemptsRead(job).getJob())
-        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptInfoRead).collect(Collectors.toList()));
+        .attempts(job.getAttempts().stream().map(attempt -> getAttemptInfoRead(attempt)).collect(Collectors.toList()));
   }
 
   public static JobWithAttemptsRead getJobWithAttemptsRead(final Job job) {
@@ -50,10 +59,10 @@ public class JobConverter {
             .createdAt(job.getCreatedAtInSecond())
             .updatedAt(job.getUpdatedAtInSecond())
             .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
-        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).collect(Collectors.toList()));
+        .attempts(job.getAttempts().stream().map(attempt -> getAttemptRead(attempt)).collect(Collectors.toList()));
   }
 
-  public static AttemptInfoRead getAttemptInfoRead(final Attempt attempt) {
+  public AttemptInfoRead getAttemptInfoRead(final Attempt attempt) {
     return new AttemptInfoRead()
         .attempt(getAttemptRead(attempt))
         .logs(getLogRead(attempt.getLogPath()));
@@ -78,20 +87,19 @@ public class JobConverter {
         .endedAt(attempt.getEndedAtInSecond().orElse(null));
   }
 
-  public static LogRead getLogRead(final Path logPath) {
+  public LogRead getLogRead(final Path logPath) {
     try {
-      final var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), logPath);
-      return new LogRead().logLines(logs);
+      return new LogRead().logLines(LogClientSingleton.getInstance().getJobLogFile(workerEnvironment, logConfigs, logPath));
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static SynchronousJobRead getSynchronousJobRead(final SynchronousResponse<?> response) {
+  public SynchronousJobRead getSynchronousJobRead(final SynchronousResponse<?> response) {
     return getSynchronousJobRead(response.getMetadata());
   }
 
-  public static SynchronousJobRead getSynchronousJobRead(final SynchronousJobMetadata metadata) {
+  public SynchronousJobRead getSynchronousJobRead(final SynchronousJobMetadata metadata) {
     final JobConfigType configType = Enums.convertTo(metadata.getConfigType(), JobConfigType.class);
 
     return new SynchronousJobRead()
@@ -101,7 +109,7 @@ public class JobConverter {
         .createdAt(metadata.getCreatedAt())
         .endedAt(metadata.getEndedAt())
         .succeeded(metadata.isSucceeded())
-        .logs(JobConverter.getLogRead(metadata.getLogPath()));
+        .logs(getLogRead(metadata.getLogPath()));
   }
 
 }

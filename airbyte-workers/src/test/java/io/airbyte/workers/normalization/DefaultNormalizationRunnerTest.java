@@ -17,7 +17,9 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
@@ -45,7 +47,7 @@ class DefaultNormalizationRunnerTest {
   static {
     try {
       logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-      LogClientSingleton.setJobMdc(logJobRoot);
+      LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfiguration.EMPTY, logJobRoot);
     } catch (final IOException e) {
       e.printStackTrace();
     }

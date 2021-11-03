@@ -35,6 +35,7 @@ import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -48,6 +49,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.State;
+import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -153,7 +155,9 @@ class SchedulerHandlerTest {
         jobPersistence,
         jobNotifier,
         mock(WorkflowServiceStubs.class),
-        mock(OAuthConfigSupplier.class));
+        mock(OAuthConfigSupplier.class),
+        WorkerEnvironment.DOCKER,
+        LogConfiguration.EMPTY);
   }
 
   @Test
