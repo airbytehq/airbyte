@@ -63,7 +63,7 @@ copyDocs.dependsOn npm_run_build
 assemble.dependsOn copyDocs
 copyDocker.dependsOn(npm_run_build)
 
-Task dockerBuildTask = getDockerBuildTask("webapp", "${project.projectDir}/build/docker")
+Task dockerBuildTask = getDockerBuildTask("webapp", project.projectDir)
 dockerBuildTask.dependsOn(copyBuild)
 dockerBuildTask.dependsOn(copyNginx)
 dockerBuildTask.dependsOn(copyDocs)

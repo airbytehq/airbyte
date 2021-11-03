@@ -26,6 +26,6 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("migration", "${project.projectDir}/build/docker")
+Task dockerBuildTask = getDockerBuildTask("migration", project.projectDir)
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)
