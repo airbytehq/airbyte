@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "eca08d79-7b92-4065-b7f3-79c14836ebe7",
+  "name": "Freshsales",
+  "dockerRepository": "airbyte/source-freshsales",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/freshsales"
+}

@@ -729,7 +729,6 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
             yield item
 
-
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.

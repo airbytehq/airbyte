@@ -199,6 +199,7 @@ jobs:
           SOURCE_DELIGHTED_TEST_CREDS: ${{ secrets.SOURCE_DELIGHTED_TEST_CREDS }}
           SOURCE_RETENTLY_TEST_CREDS: ${{ secrets.SOURCE_RETENTLY_TEST_CREDS }}
           SOURCE_SENTRY_TEST_CREDS: ${{ secrets.SOURCE_SENTRY_TEST_CREDS }}
+          SOURCE_FRESHSALES_TEST_CREDS: ${{ secrets.SOURCE_FRESHSALES_TEST_CREDS }}
       - run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
           ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache

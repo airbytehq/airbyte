@@ -194,6 +194,7 @@ jobs:
           SOURCE_DELIGHTED_TEST_CREDS: ${{ secrets.SOURCE_DELIGHTED_TEST_CREDS }}
           SOURCE_RETENTLY_TEST_CREDS: ${{ secrets.SOURCE_RETENTLY_TEST_CREDS }}
           SOURCE_SENTRY_TEST_CREDS: ${{ secrets.SOURCE_SENTRY_TEST_CREDS }}
+          SOURCE_FRESHSALES_TEST_CREDS: ${{ secrets.SOURCE_FRESHSALES_TEST_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}

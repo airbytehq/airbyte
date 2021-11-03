@@ -74,6 +74,7 @@ write_standard_creds source-file "$AZURE_STORAGE_INTEGRATION_TEST_CREDS" "azblob
 write_standard_creds source-file "$FILE_SECURE_HTTPS_TEST_CREDS"
 write_standard_creds source-file-secure "$FILE_SECURE_HTTPS_TEST_CREDS"
 write_standard_creds source-freshdesk "$FRESHDESK_TEST_CREDS"
+write_standard_creds source-freshsales "$SOURCE_FRESHSALES_TEST_CREDS" 
 write_standard_creds source-freshservice "$SOURCE_FRESHSERVICE_TEST_CREDS"
 write_standard_creds source-facebook-marketing "$FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS"
 write_standard_creds source-facebook-pages "$FACEBOOK_PAGES_INTEGRATION_TEST_CREDS"
