@@ -28,8 +28,8 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository))
         .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository))
-        .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
-        .put("airbyte/source-slack", new SlackOAuthFlow(configRepository))
+          .put("airbyte/source-slack", new SlackOAuthFlow(configRepository))
+          .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))  
         .build();
   }
 
