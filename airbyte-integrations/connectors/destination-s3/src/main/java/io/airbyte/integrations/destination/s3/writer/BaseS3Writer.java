@@ -52,6 +52,10 @@ public abstract class BaseS3Writer implements S3Writer {
     this.outputPrefix = S3OutputPathHelper.getOutputPrefix(config.getBucketPath(), stream);
   }
 
+  public AirbyteStream getStream() {
+    return stream;
+  }
+
   public String getOutputPrefix() {
     return outputPrefix;
   }

@@ -150,15 +150,21 @@ public class JsonToAvroSchemaConverter {
     Preconditions
         .checkState(fieldType != JsonSchemaType.NULL, "Null types should have been filtered out");
 
-    final Schema fieldSchema;
+    Schema fieldSchema = null;
     switch (fieldType) {
       case NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
-//
-
-      case STRING -> fieldSchema =(fieldDefinition.has("format") &&
-              fieldDefinition.get("format").asText().equals("date-time"))
-              ? LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG))
-              : Schema.create(fieldType.getAvroType());
+      case STRING -> {
+        if(fieldDefinition.has("format")){
+          String format = fieldDefinition.get("format").asText();
+          if(format.equals("date-time")){
+            fieldSchema = LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG));
+          }else if(format.equals("date")){
+            fieldSchema = LogicalTypes.date().addToSchema(Schema.create(Type.INT));
+          }
+        }else {
+          fieldSchema =Schema.create(fieldType.getAvroType());
+        }
+    }
       case COMBINED -> {
         final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
         final List<Schema> unionTypes = getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get());
