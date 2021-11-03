@@ -110,11 +110,8 @@ Once you've finished iterating on the changes to a connector as specified in its
 2. Update the connector definition in the Airbyte connector index to use the new version:
    * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
    * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
-3. Update the connector JSON definition. To find the appropriate JSON file to update, find a JSON file `<uuid>.json` where the UUID portion is the ID specified in the YAML file you modified in step 2. The relevant directories are: 
-   * `airbyte-config/init/src/main/resources/config/STANDARD_SOURCE_DEFINITION/<uuid>.json` for sources
-   * `airbyte-config/init/src/main/resources/config/STANDARD_DESTINATION_DEFINITION/<uuid>.json` for destinations
-4. Submit a PR containing the changes you made.
-5. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
+3. Submit a PR containing the changes you made.
+4. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
 
    ```text
    # to run integration tests for the connector
@@ -126,7 +123,7 @@ Once you've finished iterating on the changes to a connector as specified in its
    /publish connector=(connectors|bases)/<connector_name>
    ```
 
-6. The new version of the connector is now available for everyone who uses it. Thank you!
+5. The new version of the connector is now available for everyone who uses it. Thank you!
 
 ## Using credentials in CI
 
