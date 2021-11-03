@@ -12,6 +12,7 @@ import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
@@ -153,13 +154,13 @@ public class BigQueryUtils {
   }
 
   /**
-   * @param schema - schema of the database
+   * @param fieldList - the list to be checked
    * @return The list of fields with datetime format.
    *
    */
-  public static List<String> getDateTimeFieldsFromSchema(Schema schema) {
+  public static List<String> getDateTimeFieldsFromSchema(FieldList fieldList) {
     List<String> dateTimeFields = new ArrayList<>();
-    for (Field field : schema.getFields()) {
+    for (Field field : fieldList) {
       if (field.getType().getStandardType().equals(StandardSQLTypeName.DATETIME)) {
         dateTimeFields.add(field.getName());
       }
@@ -168,7 +169,6 @@ public class BigQueryUtils {
   }
 
   /**
-   * @param recordMessage - the record will be processed
    * @param timeStampFields - list contains fields of DATETIME format
    * @param data - Json will be sent to Google BigData service
    *
@@ -176,11 +176,11 @@ public class BigQueryUtils {
    *  @see <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#details_of_loading_json_data">Supported Google bigquery datatype</a>
    *  This method is responsible to adapt JSON DATETIME to Bigquery
    */
-  public static void transformJsonDateTimeToBigDataFormat(AirbyteRecordMessage recordMessage, List<String> timeStampFields, ObjectNode data) {
+  public static void transformJsonDateTimeToBigDataFormat(List<String> timeStampFields, ObjectNode data) {
     timeStampFields.forEach(e -> {
-      if (recordMessage.getData().findValue(e) != null && !recordMessage.getData().get(e).isNull()) {
+      if (data.findValue(e) != null && !data.get(e).isNull()) {
         String googleBigQueryDateFormat = QueryParameterValue
-            .dateTime(new DateTime(recordMessage.getData()
+            .dateTime(new DateTime(data
                 .findValue(e)
                 .asText())
                 .toString(BIG_QUERY_DATETIME_FORMAT))

@@ -237,6 +237,8 @@ class BigQueryDenormalizedDestinationTest {
     // BigQuery Accepts "YYYY-MM-DD HH:MM:SS[.SSSSSS]" format
     // returns "yyyy-MM-dd'T'HH:mm:ss" format
     assertEquals(Set.of(new DateTime("2021-10-11T06:36:53+00:00").toString("yyyy-MM-dd'T'HH:mm:ss")), extractJsonValues(resultJson, "updated_at"));
+    //check nested datetime
+    assertEquals(Set.of(new DateTime("2021-11-11T06:36:53+00:00").toString("yyyy-MM-dd'T'HH:mm:ss")), extractJsonValues(resultJson.get("items"), "nested_datetime"));
   }
 
   private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {

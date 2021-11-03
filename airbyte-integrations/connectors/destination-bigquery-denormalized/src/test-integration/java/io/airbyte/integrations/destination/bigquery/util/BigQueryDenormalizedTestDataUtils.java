@@ -98,6 +98,21 @@ public class BigQueryDenormalizedTestDataUtils {
             + "        \"string\"\n"
             + "      ],\n"
             + "      \"format\": \"date-time\"\n"
+            + "    },\n"
+            + "    \"items\": {\n"
+            + "      \"type\": [\n"
+            + "        \"object\"\n"
+            + "      ],\n"
+            + "      \"properties\": {\n"
+            + "        \"nested_datetime\": {\n"
+            + "          \"type\": [\n"
+            + "            \"string\"\n"
+            + "          ],\n"
+            + "          \"format\": \"date-time\"\n"
+            + "        }\n"
+            +
+            "      "
+            + "}\n"
             + "    }\n"
             + "  }\n"
             + "}");
@@ -176,7 +191,10 @@ public class BigQueryDenormalizedTestDataUtils {
   public static JsonNode getDataWithJSONDateTimeFormats() {
     return Jsons.deserialize(
         "{\n"
-            + "  \"updated_at\": \"2021-10-11T06:36:53+00:00\"\n"
+            + "  \"updated_at\": \"2021-10-11T06:36:53+00:00\",\n"
+            + "  \"items\": {\n"
+            + "    \"nested_datetime\": \"2021-11-11T06:36:53+00:00\"\n"
+            + "  }\n"
             + "}");
   }
 
