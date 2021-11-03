@@ -7,8 +7,6 @@ plugins {
 dependencies {
     implementation 'javax.validation:validation-api:1.1.0.Final'
     implementation 'org.apache.commons:commons-lang3:3.11'
-
-    implementation project(':airbyte-commons')
 }
 
 jsonSchema2Pojo {
