@@ -22,11 +22,6 @@ ENV APPLICATION airbyte-workers
 
 WORKDIR /app
 
-# Install kubectl
-RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.14/bin/linux/${ARCH}/kubectl
-RUN chmod +x ./kubectl
-RUN mv ./kubectl /usr/local/bin
-
 # Move worker app
 ADD build/distributions/${APPLICATION}-0.30.25-alpha.tar /app
 
