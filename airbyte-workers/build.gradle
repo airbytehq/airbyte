@@ -4,7 +4,6 @@ plugins {
     id 'application'
     id 'com.github.eirnym.js2p' version '1.0'
     id 'airbyte-integration-test-java'
-    id 'com.bmuschko.docker-remote-api'
 }
 
 configurations {
@@ -74,6 +73,6 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("worker", project.projectDir)
+Task dockerBuildTask = getDockerBuildTask("worker",  "$project.projectDir")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)

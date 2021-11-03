@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    id 'com.bmuschko.docker-remote-api'
 }
 
 dependencies {
@@ -16,6 +15,6 @@ task copyScripts(type: Copy) {
     into 'build/docker/bin/scripts'
 }
 
-Task dockerBuildTask = getDockerBuildTask("init", project.projectDir)
+Task dockerBuildTask = getDockerBuildTask("init",  "$project.projectDir")
 dockerBuildTask.dependsOn(copyScripts)
 assemble.dependsOn(dockerBuildTask)

@@ -2,7 +2,6 @@ plugins {
     id 'application'
     id 'maven-publish'
     id 'com.github.johnrengelman.shadow' version '7.1.0'
-    id 'com.bmuschko.docker-remote-api'
 }
 
 shadowJar {
@@ -138,6 +137,6 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("server", project.projectDir)
+Task dockerBuildTask = getDockerBuildTask("server",  "$project.projectDir")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)

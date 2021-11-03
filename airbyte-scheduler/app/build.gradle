@@ -1,6 +1,5 @@
 plugins {
     id 'application'
-    id 'com.bmuschko.docker-remote-api'
 }
 
 dependencies {
@@ -69,6 +68,6 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("scheduler", project.projectDir)
+Task dockerBuildTask = getDockerBuildTask("scheduler",  "$project.projectDir")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)

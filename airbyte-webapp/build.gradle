@@ -1,7 +1,6 @@
 plugins {
     id "base"
     id "com.github.node-gradle.node" version "3.1.1"
-    id 'com.bmuschko.docker-remote-api'
 }
 
 def nodeVersion = System.getenv('NODE_VERSION') ?: '14.11.0'
@@ -63,7 +62,7 @@ copyDocs.dependsOn npm_run_build
 assemble.dependsOn copyDocs
 copyDocker.dependsOn(npm_run_build)
 
-Task dockerBuildTask = getDockerBuildTask("webapp", project.projectDir)
+Task dockerBuildTask = getDockerBuildTask("webapp",  "$project.projectDir")
 dockerBuildTask.dependsOn(copyBuild)
 dockerBuildTask.dependsOn(copyNginx)
 dockerBuildTask.dependsOn(copyDocs)
