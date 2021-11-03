@@ -135,7 +135,7 @@ public abstract class OAuthFlowIntegrationTest {
       }
       final Map<String, String> result = new HashMap<>();
       for (String param : query.split("&")) {
-        String[] entry = param.split("=");
+        String[] entry = param.split("=", 2);
         if (entry.length > 1) {
           result.put(entry[0], entry[1]);
         } else {
