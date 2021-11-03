@@ -4,12 +4,14 @@
 
 
 from abc import ABC
+from datetime import date
 from typing import (Any, Iterable, List, Mapping, MutableMapping, Optional,
                     Tuple, Union)
-from airbyte_cdk.models.airbyte_protocol import SyncMode
+from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import requests
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -42,6 +44,9 @@ class LinnworksStream(HttpStream, ABC):
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code != requests.codes.ok:
+            return None
+
         json = response.json()
         if not isinstance(json, list):
             json = [json]
@@ -93,6 +98,53 @@ class StockLocations(LinnworksStream):
             )
             record.update(next(srecords))
             yield record
+
+
+class StockItems(LinnworksStream):
+    # https://apps.linnworks.net//Api/Method/Stock-GetStockItemsFull
+    # Response: List<StockItemFull> https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Inventory-ClassBase-StockItemFull
+    # Allows 250 calls per minute
+    primary_key = "stock_item_int_id"
+    page_size = 200
+
+    raise_on_http_errors = False
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "/api/Stock/GetStockItemsFull"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        url = urlparse(response.request.url)
+        qs = dict(parse_qsl(url.query))
+
+        page_size = int(qs.get("entriesPerPage", self.page_size))
+        page_number = int(qs.get("pageNumber", 0))
+
+        data = response.json()
+
+        if response.status_code == requests.codes.ok and len(data) == page_size:
+            return {
+                "entriesPerPage": page_size,
+                "pageNumber": page_number + 1,
+            }
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "entriesPerPage": self.page_size,
+            "pageNumber": 1,
+            "loadCompositeParents": "true",
+            "loadVariationParents": "true",
+            "dataRequirements": "[0,1,2,3,4,5,6,7,8]",
+            "searchTypes": "[0,1,2]",
+        }
+
+        if next_page_token:
+            params.update(next_page_token)
+
+        return params
 
 
 # Basic incremental stream
@@ -254,5 +306,6 @@ class SourceLinnworks(AbstractSource):
         auth = self._auth(config)
         return [
             StockLocations(authenticator=auth),
+            StockItems(authenticator=auth),
             Employees(authenticator=auth)
         ]
