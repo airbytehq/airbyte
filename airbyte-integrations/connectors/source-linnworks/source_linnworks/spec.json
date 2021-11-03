@@ -12,12 +12,16 @@
     "additionalProperties": false,
     "properties": {
       "application_id": {
+        "title": "Application ID",
         "type": "string"
       },
       "application_secret": {
-        "type": "string"
+        "title": "Application secret",
+        "type": "string",
+        "airbyte_secret": true
       },
       "token": {
+        "title": "Token",
         "type": "string"
       }
     }
