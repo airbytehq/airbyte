@@ -10,7 +10,6 @@ import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
@@ -57,7 +56,6 @@ public class JobSubmitter implements Runnable {
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
     this.jobTracker = jobTracker;
     this.jobNotifier = jobNotifier;
-    final Configs configs = new EnvConfigs();
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
   }
