@@ -3,7 +3,7 @@
 #
 
 import pytest
-from base_python.logger import AirbyteLogger
+from airbyte_cdk import AirbyteLogger
 from source_file_secure import SourceFileSecure
 from source_file_secure.source import LOCAL_STORAGE_NAME
 

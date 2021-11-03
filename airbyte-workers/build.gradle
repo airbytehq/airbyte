@@ -1,5 +1,4 @@
 import org.jsonschema2pojo.SourceType
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 plugins {
     id 'application'

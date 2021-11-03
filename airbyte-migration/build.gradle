@@ -1,5 +1,3 @@
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-
 plugins {
     id 'application'
     id 'com.bmuschko.docker-remote-api'
