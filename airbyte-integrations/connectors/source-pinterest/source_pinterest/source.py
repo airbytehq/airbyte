@@ -28,8 +28,14 @@ class PinterestStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
-        self.start_date = config["start_date"]
-        self.window_in_days = config["window_in_days"]
+
+    @property
+    def start_date(self):
+        return self.config["start_date"]
+
+    @property
+    def window_in_days(self):
+        return self.config["window_in_days"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("bookmark", {}) if self.data_fields else {}
@@ -41,9 +47,19 @@ class PinterestStream(HttpStream, ABC):
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
             next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return next_page_token if next_page_token else {}
+        return next_page_token or {}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        """
+        For Pinterest analytics streams rate limit is 300 calls per day / per user.
+        Handling of rate limits for Pinterest analytics streams described in should_retry method of PinterestAnalyticsStream.
+        Response example:
+            {
+                "code": 8,
+                "message": "You have exceeded your rate limit. Try again later."
+            }
+        """
+
         data = response.json()
         exceeded_rate_limit = False
 
@@ -86,17 +102,17 @@ class AdAccounts(PinterestStream):
 
 class BoardSections(PinterestSubStream, PinterestStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"boards/{stream_slice.get('parent').get('id')}/sections"
+        return f"boards/{stream_slice['parent']['id']}/sections"
 
 
 class BoardPins(PinterestSubStream, PinterestStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"boards/{stream_slice.get('parent').get('id')}/pins"
+        return f"boards/{stream_slice['parent']['id']}/pins"
 
 
 class BoardSectionPins(PinterestSubStream, PinterestStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"boards/{stream_slice.get('sub_parent').get('parent').get('id')}/sections/{stream_slice.get('parent').get('id')}/pins"
+        return f"boards/{stream_slice['sub_parent']['parent']['id']}/sections/{stream_slice['parent']['id']}/pins"
 
 
 class IncrementalPinterestStream(PinterestStream, ABC):
@@ -146,13 +162,12 @@ class IncrementalPinterestStream(PinterestStream, ABC):
         while start_date <= end_date:
             # the amount of days for each data-chunk begining from start_date
             end_date_slice = start_date.add(days=self.window_in_days)
-            date_slices.append(
-                {"start_date": to_datetime_str(start_date), "end_date": to_datetime_str(end_date_slice)})
+            date_slice = {"start_date": to_datetime_str(start_date), "end_date": to_datetime_str(end_date_slice)}
+
+            yield date_slice
 
             # add 1 day for start next slice from next day and not duplicate data from previous slice end date.
             start_date = end_date_slice.add(days=1)
-
-        return date_slices
 
 
 class IncrementalPinterestSubStream(IncrementalPinterestStream):
@@ -200,7 +215,7 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
                        })
 
         if self.analytics_target_ids:
-            params.update({self.analytics_target_ids: stream_slice.get('parent').get('id')})
+            params.update({self.analytics_target_ids: stream_slice['parent']['id']})
 
         return params
 
@@ -231,43 +246,43 @@ class UserAccountAnalytics(PinterestAnalyticsStream):
 
 class AdAccountAnalytics(PinterestAnalyticsStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice.get('parent').get('id')}/analytics"
+        return f"ad_accounts/{stream_slice['parent']['id']}/analytics"
 
 
 class Campaigns(ServerSideFilterStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice.get('parent').get('id')}/campaigns"
+        return f"ad_accounts/{stream_slice['parent']['id']}/campaigns"
 
 
 class CampaignAnalytics(PinterestAnalyticsStream):
     analytics_target_ids = "campaign_ids"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice.get('sub_parent').get('parent').get('id')}/campaigns/analytics"
+        return f"ad_accounts/{stream_slice['sub_parent']['parent']['id']}/campaigns/analytics"
 
 
 class AdGroups(ServerSideFilterStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice.get('parent').get('id')}/ad_groups"
+        return f"ad_accounts/{stream_slice['parent']['id']}/ad_groups"
 
 
 class AdGroupAnalytics(PinterestAnalyticsStream):
     analytics_target_ids = "ad_group_ids"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice.get('sub_parent').get('parent').get('id')}/ad_groups/analytics"
+        return f"ad_accounts/{stream_slice['sub_parent']['parent']['id']}/ad_groups/analytics"
 
 
 class Ads(ServerSideFilterStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice.get('parent').get('id')}/ads"
+        return f"ad_accounts/{stream_slice['parent']['id']}/ads"
 
 
 class AdAnalytics(PinterestAnalyticsStream):
     analytics_target_ids = "ad_ids"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"ad_accounts/{stream_slice.get('sub_parent').get('parent').get('id')}/ads/analytics"
+        return f"ad_accounts/{stream_slice['sub_parent']['parent']['id']}/ads/analytics"
 
 
 class SourcePinterest(AbstractSource):
