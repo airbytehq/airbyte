@@ -113,6 +113,7 @@ class Groups(IncrementalOktaStream):
 
 
 class Logs(IncrementalOktaStream):
+    
     cursor_field = "published"
     primary_key = "uuid"
 
@@ -125,6 +126,8 @@ class Logs(IncrementalOktaStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
+        # The log stream use a different params to get data
+        # https://developer.okta.com/docs/reference/api/system-log/#datetime-filter
         stream_state = stream_state or {}
         params = {
             "limit": self.page_size,
