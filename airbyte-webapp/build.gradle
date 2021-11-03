@@ -63,10 +63,10 @@ copyBuild.dependsOn npm_run_build
 copyNginx.dependsOn npm_run_build
 copyDocs.dependsOn npm_run_build
 assemble.dependsOn copyDocs
-
-project.properties.put("artifactName" , "webapp")
-buildDockerImage.dependsOn(copyBuild)
-buildDockerImage.dependsOn(copyNginx)
-buildDockerImage.dependsOn(copyDocs)
 copyDocker.dependsOn(npm_run_build)
-assemble.dependsOn(buildDockerImage)
+
+Task dockerBuildTask = getDockerBuildTask("webapp", "${project.projectDir}/build/docker")
+dockerBuildTask.dependsOn(copyBuild)
+dockerBuildTask.dependsOn(copyNginx)
+dockerBuildTask.dependsOn(copyDocs)
+assemble.dependsOn(dockerBuildTask)

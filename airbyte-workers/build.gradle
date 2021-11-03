@@ -75,6 +75,6 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-project.properties.put("artifactName" , "worker")
-buildDockerImage.dependsOn(copyGeneratedTar)
-assemble.dependsOn(buildDockerImage)
+Task dockerBuildTask = getDockerBuildTask("worker", "${project.projectDir}/build/docker")
+dockerBuildTask.dependsOn(copyGeneratedTar)
+assemble.dependsOn(dockerBuildTask)

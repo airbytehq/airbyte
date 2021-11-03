@@ -12,10 +12,12 @@ dependencies {
 }
 
 task copyScripts(type: Copy) {
+    dependsOn copyDocker
+
     from('scripts')
     into 'build/docker/bin/scripts'
 }
 
-project.properties.put("artifactName" , "worker")
-buildDockerImage.dependsOn(copyScripts)
-assemble.dependsOn(buildDockerImage)
+Task dockerBuildTask = getDockerBuildTask("init", "${project.projectDir}/build/docker")
+dockerBuildTask.dependsOn(copyScripts)
+assemble.dependsOn(dockerBuildTask)

@@ -124,6 +124,21 @@ spotless {
 }
 check.dependsOn 'spotlessApply'
 
+def Task getDockerBuildTask(String artifactName, String dockerBuildDir) {
+    return task ("buildDockerImage-$artifactName" (type: DockerBuildImage) {
+        def buildTag = System.getenv('VERSION') ?: 'dev'
+        def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
+        def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
+        def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
+
+        inputDir = file(dockerBuildDir)
+        platform = buildPlatform
+        images.add("airbyte/$artifactName:$buildTag")
+        buildArgs.put('JDK_VERSION', jdkVersion)
+        buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
+    })
+}
+
 allprojects {
     apply plugin: 'com.bmuschko.docker-remote-api'
 
@@ -132,41 +147,6 @@ allprojects {
 
         from "${project.projectDir}/Dockerfile"
         into "build/docker/"
-    }
-
-    // Use task types
-    task buildDockerImage(type: DockerBuildImage) {
-        dependsOn copyDocker
-
-        def buildTag = System.getenv('VERSION') ?: 'dev'
-        def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
-        def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
-        def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
-
-        def projectPathToArtifactName = [
-                ":airbyte-config:init": "config",
-                ":airbyte-db:lib": "db",
-                ":airbyte-migration": "migration",
-                ":airbyte-scheduler:app": "scheduler",
-                ":airbyte-workers": "worker",
-                ":airbyte-server": "server",
-                ":airbyte-webapp": "webapp",
-        ]
-
-        if (projectPathToArtifactName.keySet().contains(project.getPath())) {
-            assemble.dependsOn buildDockerImage
-            def artifactName = projectPathToArtifactName[project.getPath()]
-
-            println(project.getPath())
-            println(artifactName)
-            println(projectPathToArtifactName)
-
-            inputDir = file('build/docker')
-            platform = buildPlatform
-            images.add("airbyte/$artifactName:$buildTag")
-            buildArgs.put('JDK_VERSION', jdkVersion)
-            buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
-        }
     }
 }
 
