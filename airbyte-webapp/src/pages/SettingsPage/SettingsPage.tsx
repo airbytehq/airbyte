@@ -20,9 +20,9 @@ import { CategoryItem } from "components/SideMenu/SideMenu";
 
 const Content = styled.div`
   margin: 0 33px 0 27px;
-  height: 100%;
   display: flex;
   flex-direction: row;
+  padding-bottom: 15px;
 `;
 const MainView = styled.div`
   width: 100%;
