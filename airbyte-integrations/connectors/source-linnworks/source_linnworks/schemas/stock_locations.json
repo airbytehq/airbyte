@@ -1,73 +1,69 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "array",
-  "items": {
-    "type": "object",
-    "$comment": "https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Inventory-ClassBase-StockLocation",
-    "properties": {
-      "address1": {
-        "type": "string",
-        "description": "1st line of address"
-      },
-      "address2": {
-        "type": "string",
-        "description": "2nd line of address"
-      },
-      "city": {
-        "type": "string",
-        "description": "City"
-      },
-      "county": {
-        "type": "string",
-        "description": "County / Region"
-      },
-      "country": {
-        "type": "string",
-        "description": "Country"
-      },
-      "zip_code": {
-        "type": "string",
-        "description": "Postal code"
-      },
-      "is_not_trackable": {
-        "type": "boolean",
-        "description": "Not trackable"
-      },
-      "location_tag": {
-        "type": "string",
-        "description": "Location tag"
-      },
-      "count_in_order_until_acknowledgement": {
-        "type": "boolean",
-        "description": "Count in order"
-      },
-      "fulfilment_center_deduct_stock_when_processed": {
-        "type": "boolean",
-        "description": "Fulfilment center and stock will be deducted when order processed"
-      },
-      "is_warehouse_managed": {
-        "type": "boolean",
-        "description": "Indicates if the location is warehosue managed"
-      },
-      "stock_location_id": {
-        "type": "string",
-        "description": "Location ID"
-      },
-      "location_name": {
-        "type": "string",
-        "description": "Location name"
-      },
-      "is_fulfillment_center": {
-        "type": "boolean",
-        "description": "If location is a fulfilment center"
-      },
-      "stock_location_int_id": {
-        "type": "integer",
-        "description": "Stock location integer id"
-      },
-      "bin_rack": {
-        "type": "string"
-      }
+  "type": "object",
+  "properties": {
+    "address1": {
+      "type": "string",
+      "description": "1st line of address"
+    },
+    "address2": {
+      "type": "string",
+      "description": "2nd line of address"
+    },
+    "city": {
+      "type": "string",
+      "description": "City"
+    },
+    "county": {
+      "type": "string",
+      "description": "County / Region"
+    },
+    "country": {
+      "type": "string",
+      "description": "Country"
+    },
+    "zip_code": {
+      "type": "string",
+      "description": "Postal code"
+    },
+    "is_not_trackable": {
+      "type": "boolean",
+      "description": "Not trackable"
+    },
+    "location_tag": {
+      "type": "string",
+      "description": "Location tag"
+    },
+    "count_in_order_until_acknowledgement": {
+      "type": "boolean",
+      "description": "Count in order"
+    },
+    "fulfilment_center_deduct_stock_when_processed": {
+      "type": "boolean",
+      "description": "Fulfilment center and stock will be deducted when order processed"
+    },
+    "is_warehouse_managed": {
+      "type": "boolean",
+      "description": "Indicates if the location is warehosue managed"
+    },
+    "stock_location_id": {
+      "type": "string",
+      "description": "Location ID"
+    },
+    "location_name": {
+      "type": "string",
+      "description": "Location name"
+    },
+    "is_fulfillment_center": {
+      "type": "boolean",
+      "description": "If location is a fulfilment center"
+    },
+    "stock_location_int_id": {
+      "type": "integer",
+      "description": "Stock location integer id"
+    },
+    "bin_rack": {
+      "type": "string"
     }
   }
 }
