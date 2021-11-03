@@ -23,6 +23,8 @@ import org.apache.http.client.utils.URIBuilder;
  * https://help.salesforce.com/s/articleView?language=en_US&amp;id=sf.remoteaccess_oauth_web_server_flow.htm
  */
 public class SalesforceOAuthFlow extends BaseOAuthFlow {
+  // Clickable link for IDE
+  // https://help.salesforce.com/s/articleView?language=en_US&id=sf.remoteaccess_oauth_web_server_flow.htm
 
   private static final String AUTHORIZE_URL = "https://login.salesforce.com/services/oauth2/authorize";
   private static final String ACCESS_TOKEN_URL = "https://login.salesforce.com/services/oauth2/token";
