@@ -22,14 +22,18 @@ public class OAuthImplementationFactory {
     OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
         .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository))
         .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository))
+        .put("airbyte/source-facebook-pages", new FacebookPagesOAuthFlow(configRepository))
         .put("airbyte/source-github", new GithubOAuthFlow(configRepository))
         .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository))
         .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository))
         .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository))
         .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository))
+        .put("airbyte/source-instagram", new InstagramOAuthFlow(configRepository))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository))
-          .put("airbyte/source-slack", new SlackOAuthFlow(configRepository))
-          .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))  
+        .put("airbyte/source-slack", new SlackOAuthFlow(configRepository))
+        .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))  
+        .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository))
+        .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
         .build();
   }
 

@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation 'commons-cli:commons-cli:1.4'
+
+    implementation project(':airbyte-commons')
+    implementation project(':airbyte-commons-cli')
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-json-validation')
+}
+
+task generateSeedConnectorSpecs(type: JavaExec, dependsOn: compileJava) {
+    classpath = sourceSets.main.runtimeClasspath
+
+    mainClass = 'io.airbyte.config.specs.SeedConnectorSpecGenerator'
+
+    args '--seed-root'
+    args new File(project(":airbyte-config:init").projectDir, '/src/main/resources/seed')
+}
+
+project(":airbyte-config:init").tasks.processResources.dependsOn(generateSeedConnectorSpecs)
