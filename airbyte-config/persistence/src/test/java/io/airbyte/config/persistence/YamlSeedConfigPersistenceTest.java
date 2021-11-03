@@ -15,6 +15,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardWorkspace;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -41,6 +42,7 @@ public class YamlSeedConfigPersistenceTest {
     assertEquals("airbyte/source-mysql", mysqlSource.getDockerRepository());
     assertEquals("https://docs.airbyte.io/integrations/sources/mysql", mysqlSource.getDocumentationUrl());
     assertEquals("mysql.svg", mysqlSource.getIcon());
+    assertEquals(URI.create("https://docs.airbyte.io/integrations/sources/mysql"), mysqlSource.getSpec().getDocumentationUrl());
 
     // destination
     final String s3DestinationId = "4816b78f-1489-44c1-9060-4b19d5fa9362";
@@ -50,13 +52,16 @@ public class YamlSeedConfigPersistenceTest {
     assertEquals("S3", s3Destination.getName());
     assertEquals("airbyte/destination-s3", s3Destination.getDockerRepository());
     assertEquals("https://docs.airbyte.io/integrations/destinations/s3", s3Destination.getDocumentationUrl());
+    assertEquals(URI.create("https://docs.airbyte.io/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
   }
 
   @Test
   public void testGetInvalidConfig() {
-    assertThrows(UnsupportedOperationException.class,
+    assertThrows(
+        UnsupportedOperationException.class,
         () -> PERSISTENCE.getConfig(ConfigSchema.STANDARD_SYNC, "invalid_id", StandardSync.class));
-    assertThrows(ConfigNotFoundException.class,
+    assertThrows(
+        ConfigNotFoundException.class,
         () -> PERSISTENCE.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, "invalid_id", StandardWorkspace.class));
   }
 

@@ -10,10 +10,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.config.specs.GcsBucketSpecFetcher;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -21,18 +21,18 @@ import org.junit.jupiter.api.Test;
 class BucketSpecCacheSchedulerClientTest {
 
   private SynchronousSchedulerClient defaultClientMock;
-  private Function<String, Optional<ConnectorSpecification>> bucketSpecFetcherMock;
+  private GcsBucketSpecFetcher bucketSpecFetcherMock;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() {
     defaultClientMock = mock(SynchronousSchedulerClient.class);
-    bucketSpecFetcherMock = mock(Function.class);
+    bucketSpecFetcherMock = mock(GcsBucketSpecFetcher.class);
   }
 
   @Test
   void testGetsSpecIfPresent() throws IOException {
-    when(bucketSpecFetcherMock.apply("source-pokeapi:0.1.0")).thenReturn(Optional.of(new ConnectorSpecification()));
+    when(bucketSpecFetcherMock.attemptFetch("source-pokeapi:0.1.0")).thenReturn(Optional.of(new ConnectorSpecification()));
     final BucketSpecCacheSchedulerClient client = new BucketSpecCacheSchedulerClient(defaultClientMock, bucketSpecFetcherMock);
     assertEquals(new ConnectorSpecification(), client.createGetSpecJob("source-pokeapi:0.1.0").getOutput());
     verifyNoInteractions(defaultClientMock);
@@ -40,7 +40,7 @@ class BucketSpecCacheSchedulerClientTest {
 
   @Test
   void testCallsDelegateIfNotPresent() throws IOException {
-    when(bucketSpecFetcherMock.apply("source-pokeapi:0.1.0")).thenReturn(Optional.empty());
+    when(bucketSpecFetcherMock.attemptFetch("source-pokeapi:0.1.0")).thenReturn(Optional.empty());
     when(defaultClientMock.createGetSpecJob("source-pokeapi:0.1.0"))
         .thenReturn(new SynchronousResponse<>(new ConnectorSpecification(), mock(SynchronousJobMetadata.class)));
     final BucketSpecCacheSchedulerClient client = new BucketSpecCacheSchedulerClient(defaultClientMock, bucketSpecFetcherMock);
@@ -49,7 +49,7 @@ class BucketSpecCacheSchedulerClientTest {
 
   @Test
   void testCallsDelegateIfException() throws IOException {
-    when(bucketSpecFetcherMock.apply("source-pokeapi:0.1.0")).thenThrow(new RuntimeException("induced exception"));
+    when(bucketSpecFetcherMock.attemptFetch("source-pokeapi:0.1.0")).thenThrow(new RuntimeException("induced exception"));
     when(defaultClientMock.createGetSpecJob("source-pokeapi:0.1.0"))
         .thenReturn(new SynchronousResponse<>(new ConnectorSpecification(), mock(SynchronousJobMetadata.class)));
     final BucketSpecCacheSchedulerClient client = new BucketSpecCacheSchedulerClient(defaultClientMock, bucketSpecFetcherMock);
@@ -62,7 +62,7 @@ class BucketSpecCacheSchedulerClientTest {
   @Disabled
   @Test
   void testGetsSpecFromBucket() throws IOException {
-    when(bucketSpecFetcherMock.apply("source-pokeapi:0.1.0")).thenReturn(Optional.of(new ConnectorSpecification()));
+    when(bucketSpecFetcherMock.attemptFetch("source-pokeapi:0.1.0")).thenReturn(Optional.of(new ConnectorSpecification()));
     // todo (cgardens) - replace with prod bucket.
     final BucketSpecCacheSchedulerClient client = new BucketSpecCacheSchedulerClient(defaultClientMock, "cg-specs");
     final ConnectorSpecification actualSpec = client.createGetSpecJob("source-pokeapi:0.1.0").getOutput();
