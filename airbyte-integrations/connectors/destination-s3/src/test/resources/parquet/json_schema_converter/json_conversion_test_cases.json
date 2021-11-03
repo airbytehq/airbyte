@@ -11,6 +11,9 @@
         }
       }
     },
+    "jsonObject": {
+      "node_id": "abc123"
+    },
     "avroSchema": {
       "type": "record",
       "name": "simple_schema",
@@ -20,8 +23,20 @@
           "name": "node_id",
           "type": ["null", "string"],
           "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -45,6 +60,13 @@
             }
           }
         }
+      }
+    },
+    "jsonObject": {
+      "node_id": "abc123",
+      "user": {
+        "first_name": "charles",
+        "last_name": "darwin"
       }
     },
     "avroSchema": {
@@ -75,13 +97,38 @@
                   "name": "last_name",
                   "type": ["null", "string"],
                   "default": null
+                },
+                {
+                  "name":"_airbyte_additional_properties",
+                  "type":[
+                    "null",
+                    { "type":"map", "values":"string" }
+                  ],
+                  "default":null
                 }
               ]
             }
           ],
           "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "user": {
+        "first_name": "charles",
+        "last_name": "darwin",
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -95,6 +142,11 @@
           "type": ["null", "string"]
         }
       }
+    },
+    "jsonObject": {
+      "_airbyte_ab_id": "752fcd83-7e46-41da-b7ff-f05cb070c893",
+      "_airbyte_emitted_at": 1634982000,
+      "node_id": "abc123"
     },
     "avroSchema": {
       "type": "record",
@@ -119,8 +171,22 @@
           "name": "node_id",
           "type": ["null", "string"],
           "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default": null
         }
       ]
+    },
+    "avroObject": {
+      "_airbyte_ab_id": "752fcd83-7e46-41da-b7ff-f05cb070c893",
+      "_airbyte_emitted_at": 1634982000,
+      "node_id": "abc123",
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -135,6 +201,9 @@
         }
       }
     },
+    "jsonObject": {
+      "node:id": "abc123"
+    },
     "avroSchema": {
       "type": "record",
       "name": "name_with_special_characters",
@@ -146,8 +215,20 @@
           "doc": "_airbyte_original_name:node:id",
           "type": ["null", "string"],
           "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -162,6 +243,9 @@
         }
       }
     },
+    "jsonObject": {
+      "identifier": 65536.0
+    },
     "avroSchema": {
       "type": "record",
       "name": "record_with_union_type",
@@ -171,8 +255,20 @@
           "name": "identifier",
           "type": ["null", "double", "string"],
           "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
+    },
+    "avroObject": {
+      "identifier": 65536.0,
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -190,6 +286,9 @@
         }
       }
     },
+    "jsonObject": {
+      "identifier": ["151", "152"]
+    },
     "avroSchema": {
       "type": "record",
       "name": "array_with_same_type",
@@ -205,8 +304,20 @@
             }
           ],
           "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
+    },
+    "avroObject": {
+      "identifier": ["151", "152"],
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -235,6 +346,9 @@
         }
       }
     },
+    "jsonObject": {
+      "identifiers": ["151", 152, true, false]
+    },
     "avroSchema": {
       "type": "record",
       "name": "array_with_union_type",
@@ -250,8 +364,20 @@
             }
           ],
           "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
+    },
+    "avroObject": {
+      "identifiers": ["151", 152, true, false],
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -276,6 +402,9 @@
         }
       }
     },
+    "jsonObject": {
+      "created_at": 1634982000
+    },
     "avroSchema": {
       "type": "record",
       "name": "field_with_combined_restriction",
@@ -285,8 +414,20 @@
           "name": "created_at",
           "type": ["null", "string", "int"],
           "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
+    },
+    "avroObject": {
+      "created_at": 1634982000,
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -316,6 +457,11 @@
         }
       }
     },
+    "jsonObject": {
+      "user": {
+        "created_at": "1634982000"
+      }
+    },
     "avroSchema": {
       "type": "record",
       "name": "record_with_combined_restriction_field",
@@ -334,13 +480,36 @@
                   "name": "created_at",
                   "type": ["null", "string", "int"],
                   "default": null
+                },
+                {
+                  "name":"_airbyte_additional_properties",
+                  "type":[
+                    "null",
+                    { "type":"map", "values":"string" }
+                  ],
+                  "default":null
                 }
               ]
             }
           ],
           "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
+    },
+    "avroObject": {
+      "user": {
+        "created_at": "1634982000",
+        "_airbyte_additional_properties": null
+      },
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -362,6 +531,9 @@
         }
       }
     },
+    "jsonObject": {
+      "identifiers": [151, 152, "153", true, false]
+    },
     "avroSchema": {
       "type": "record",
       "name": "array_with_combined_restriction_field",
@@ -377,8 +549,20 @@
             }
           ],
           "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
+    },
+    "avroObject": {
+      "identifiers": [151, 152, "153", true, false],
+      "_airbyte_additional_properties": null
     }
   },
   {
@@ -388,10 +572,13 @@
     "jsonSchema": {
       "type": "object",
       "properties": {
-        "5filed_name": {
+        "5field_name": {
           "type": ["null", "string"]
         }
       }
+    },
+    "jsonObject": {
+      "_5field_name": "theory of relativity"
     },
     "avroSchema": {
       "type": "record",
@@ -399,12 +586,163 @@
       "namespace": "namespace11",
       "fields": [
         {
-          "name": "_5filed_name",
+          "name": "_5field_name",
           "type": ["null", "string"],
-          "doc": "_airbyte_original_name:5filed_name",
+          "doc": "_airbyte_original_name:5field_name",
           "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
         }
       ]
+    },
+    "avroObject": {
+      "_5field_name": "theory of relativity",
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "record_with_airbyte_additional_properties",
+    "namespace": "namespace12",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "_airbyte_additional_properties": {
+          "type": "object"
+        }
+      }
+    },
+    "jsonObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": {
+        "username": "343-guilty-spark",
+        "password": 1439,
+        "active": true
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_with_airbyte_additional_properties",
+      "namespace": "namespace12",
+      "fields": [
+        {
+          "name": "node_id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
+        }
+      ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": {
+        "username": "343-guilty-spark",
+        "password": "1439",
+        "active": "true"
+      }
+    }
+  },
+  {
+    "schemaName": "record_with_ab_additional_properties",
+    "namespace": "namespace13",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "_ab_additional_properties": {
+          "type": "object"
+        }
+      }
+    },
+    "jsonObject": {
+      "node_id": "abc123",
+      "_ab_additional_properties": {
+        "username": "343-guilty-spark",
+        "password": 1439,
+        "active": true
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_with_ab_additional_properties",
+      "namespace": "namespace13",
+      "fields": [
+        {
+          "name": "node_id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
+        }
+      ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": {
+        "username": "343-guilty-spark",
+        "password": "1439",
+        "active": "true"
+      }
+    }
+  },
+  {
+    "schemaName": "record_without_properties",
+    "namespace": "namespace14",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object"
+    },
+    "jsonObject": {
+      "username": "343-guilty-spark",
+      "password": 1439,
+      "active": true
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_without_properties",
+      "namespace": "namespace14",
+      "fields": [
+        {
+          "name":"_airbyte_additional_properties",
+          "type":[
+            "null",
+            { "type":"map", "values":"string" }
+          ],
+          "default":null
+        }
+      ]
+    },
+    "avroObject": {
+      "_airbyte_additional_properties": {
+        "username": "343-guilty-spark",
+        "password": "1439",
+        "active": "true"
+      }
     }
   }
 ]
