@@ -40,8 +40,8 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_tplcentral",
     description="Source implementation for Tplcentral.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Labanoras Tech",
+    author_email="jv@labanoras.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
