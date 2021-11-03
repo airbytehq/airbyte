@@ -47,7 +47,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
     String contentType;
     Function<Map<String, String>, String> converter;
 
-    TOKEN_REQUEST_CONTENT_TYPE(String contentType, Function<Map<String, String>, String> converter) {
+    TOKEN_REQUEST_CONTENT_TYPE(final String contentType, final Function<Map<String, String>, String> converter) {
       this.contentType = contentType;
       this.converter = converter;
     }
@@ -58,18 +58,18 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   protected HttpClient httpClient;
   private final Supplier<String> stateSupplier;
 
-  public BaseOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+  public BaseOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     this(configRepository, httpClient, BaseOAuthFlow::generateRandomState);
   }
 
-  public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+  public BaseOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     this(configRepository, httpClient, stateSupplier, TOKEN_REQUEST_CONTENT_TYPE.URL_ENCODED);
   }
 
-  public BaseOAuthFlow(ConfigRepository configRepository,
-                       HttpClient httpClient,
-                       Supplier<String> stateSupplier,
-                       TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
+  public BaseOAuthFlow(final ConfigRepository configRepository,
+                       final HttpClient httpClient,
+                       final Supplier<String> stateSupplier,
+                       final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
     super(configRepository);
     this.httpClient = httpClient;
     this.stateSupplier = stateSupplier;
@@ -142,9 +142,9 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
                                                   final String clientSecret,
                                                   final String authCode,
                                                   final String redirectUrl,
-                                                  JsonNode oAuthParamConfig)
+                                                  final JsonNode oAuthParamConfig)
       throws IOException {
-    var accessTokenUrl = getAccessTokenUrl();
+    final var accessTokenUrl = getAccessTokenUrl();
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers
             .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
@@ -164,7 +164,10 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   /**
    * Query parameters to provide the access token url with.
    */
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         // required
         .put("client_id", clientId)
@@ -179,7 +182,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
    * specific redirection URL along with query parameters. This function should parse and extract the
    * code from these query parameters in order to continue the OAuth Flow.
    */
-  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
+  protected String extractCodeParameter(final Map<String, Object> queryParams) throws IOException {
     if (queryParams.containsKey("code")) {
       return (String) queryParams.get("code");
     } else {
@@ -192,7 +195,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
    */
   protected abstract String getAccessTokenUrl();
 
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
+  protected Map<String, Object> extractRefreshToken(final JsonNode data, final String accessTokenUrl) throws IOException {
     final Map<String, Object> result = new HashMap<>();
     if (data.has("refresh_token")) {
       result.put("refresh_token", data.get("refresh_token").asText());
@@ -228,7 +231,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   protected static String toJson(final Map<String, String> body) {
     final Gson gson = new Gson();
-    Type gsonType = new TypeToken<Map<String, String>>() {
+    final Type gsonType = new TypeToken<Map<String, String>>() {
 
     }.getType();
     return gson.toJson(body, gsonType);
