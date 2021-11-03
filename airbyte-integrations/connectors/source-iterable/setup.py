@@ -11,7 +11,7 @@ MAIN_REQUIREMENTS = [
     "requests~=2.25",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "responses==0.13.3"]
 
 
 setup(
@@ -20,6 +20,9 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS + TEST_REQUIREMENTS,
+    install_requires=MAIN_REQUIREMENTS,
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
     package_data={"": ["*.json", "schemas/*.json"]},
 )

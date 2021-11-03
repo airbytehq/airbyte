@@ -69,7 +69,7 @@ class IterableExportStream(IterableStream, ABC):
         self.stream_params = {"dataTypeName": self.data_field}
 
     def path(self, **kwargs) -> str:
-        return "/export/data.json"
+        return "export/data.json"
 
     @staticmethod
     def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
@@ -113,6 +113,21 @@ class IterableExportStream(IterableStream, ABC):
             record = json.loads(obj)
             record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
             yield record
+
+    def request_kwargs(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        """
+        https://api.iterable.com/api/docs#export_exportDataJson
+        Sending those type of requests could download large piece of json
+        objects splitted with newline character.
+        Passing stream=True argument to requests.session.send method to avoid
+        loading whole analytics report content into memory.
+        """
+        return {"stream": True}
 
 
 class Lists(IterableStream):
