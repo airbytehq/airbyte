@@ -5,16 +5,21 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
@@ -24,15 +29,20 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BigQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
+  private static final String BIG_QUERY_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSSS";
 
   static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
@@ -143,4 +153,40 @@ public class BigQueryUtils {
     return bigquery.getTable(tableId).getDefinition();
   }
 
+  /**
+   * @param fieldList - the list to be checked
+   * @return The list of fields with datetime format.
+   *
+   */
+  public static List<String> getDateTimeFieldsFromSchema(FieldList fieldList) {
+    List<String> dateTimeFields = new ArrayList<>();
+    for (Field field : fieldList) {
+      if (field.getType().getStandardType().equals(StandardSQLTypeName.DATETIME)) {
+        dateTimeFields.add(field.getName());
+      }
+    }
+    return dateTimeFields;
+  }
+
+  /**
+   * @param dateTimeFields - list contains fields of DATETIME format
+   * @param data - Json will be sent to Google BigData service
+   *
+   *  The special DATETIME format is required to save this type to BigQuery.
+   *  @see <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#details_of_loading_json_data">Supported Google bigquery datatype</a>
+   *  This method is responsible to adapt JSON DATETIME to Bigquery
+   */
+  public static void transformJsonDateTimeToBigDataFormat(List<String> dateTimeFields, ObjectNode data) {
+    dateTimeFields.forEach(e -> {
+      if (data.findValue(e) != null && !data.get(e).isNull()) {
+        String googleBigQueryDateFormat = QueryParameterValue
+            .dateTime(new DateTime(data
+                .findValue(e)
+                .asText())
+                .toString(BIG_QUERY_DATETIME_FORMAT))
+            .getValue();
+        data.put(e, googleBigQueryDateFormat);
+      }
+    });
+  }
 }
