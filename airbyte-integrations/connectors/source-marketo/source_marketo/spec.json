@@ -33,7 +33,8 @@
         "type": "integer",
         "description": "The amount of days for each data-chunk begining from start_date. (Min=1, as for a Day; Max=30, as for a Month).",
         "examples": [1, 5, 10, 15, 30],
-        "default": 30
+        "default": 30,
+        "maximum": 30
       }
     }
   }
