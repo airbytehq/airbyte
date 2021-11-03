@@ -65,13 +65,6 @@ application {
     applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
-task copyDocker(type: Copy) {
-    delete "build/docker"
-
-    from "${project.projectDir}/Dockerfile"
-    into "build/docker/"
-}
-
 task copyGeneratedTar(type: Copy) {
     dependsOn copyDocker
     dependsOn distTar
@@ -82,13 +75,6 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-def buildTag = System.getenv('VERSION') ?: 'dev'
-// Use task types
-task buildDockerImage(type: DockerBuildImage) {
-    dependsOn copyDocker
-    dependsOn copyGeneratedTar
-    dependsOn distTar
-    inputDir = file('build/docker')
-    images.add("airbyte/worker:$buildTag")
-}
+project.properties.put("artifactName" , "worker")
+buildDockerImage.dependsOn(copyGeneratedTar)
 assemble.dependsOn(buildDockerImage)

@@ -35,13 +35,6 @@ task test(type: NpmTask) {
 assemble.dependsOn npm_run_build
 build.finalizedBy test
 
-task copyDocker(type: Copy) {
-    delete "build/docker"
-
-    from "${project.projectDir}/Dockerfile"
-    into "build/docker/"
-}
-
 task copyBuild(type: Copy) {
     dependsOn copyDocker
 
@@ -71,13 +64,9 @@ copyNginx.dependsOn npm_run_build
 copyDocs.dependsOn npm_run_build
 assemble.dependsOn copyDocs
 
-// Use task types
-task buildDockerImage(type: DockerBuildImage) {
-    dependsOn copyDocker
-    dependsOn copyBuild
-    dependsOn copyNginx
-    dependsOn copyDocs
-    inputDir = file('build/docker')
-    images.add("airbyte/webapp:$version")
-}
+project.properties.put("artifactName" , "webapp")
+buildDockerImage.dependsOn(copyBuild)
+buildDockerImage.dependsOn(copyNginx)
+buildDockerImage.dependsOn(copyDocs)
+copyDocker.dependsOn(npm_run_build)
 assemble.dependsOn(buildDockerImage)

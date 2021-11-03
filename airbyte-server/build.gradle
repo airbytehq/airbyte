@@ -130,15 +130,9 @@ run {
     environment "TEMPORAL_HOST", "localhost:7233"
 }
 
-task copyDocker(type: Copy) {
-    delete "build/docker"
-
-    from "${project.projectDir}/Dockerfile"
-    into "build/docker/"
-}
-
 task copyGeneratedTar(type: Copy) {
     dependsOn copyDocker
+    dependsOn distTar
 
     from('build/distributions') {
         include 'airbyte-server-*.tar'
@@ -146,12 +140,6 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-def buildTag = System.getenv('VERSION') ?: 'dev'
-// Use task types
-task buildDockerImage(type: DockerBuildImage) {
-    dependsOn copyDocker
-    dependsOn copyGeneratedTar
-    inputDir = file('build/docker')
-    images.add("airbyte/server:$buildTag")
-}
+project.properties.put("artifactName" , "server")
+buildDockerImage.dependsOn(copyGeneratedTar)
 assemble.dependsOn(buildDockerImage)

@@ -11,24 +11,11 @@ dependencies {
     implementation project(':airbyte-config:models')
 }
 
-task copyDocker(type: Copy) {
-    delete "build/docker"
-
-    from "${project.projectDir}/Dockerfile"
-    into "build/docker/"
-}
-
 task copyScripts(type: Copy) {
     from('scripts')
     into 'build/docker/bin/scripts'
 }
 
-def buildTag = System.getenv('VERSION') ?: 'dev'
-// Use task types
-task buildMyAppImage(type: DockerBuildImage) {
-    dependsOn copyScripts
-    dependsOn copyDocker
-    inputDir = file('build/docker')
-    images.add("airbyte/init:$buildTag")
-}
-assemble.dependsOn(buildMyAppImage)
+project.properties.put("artifactName" , "worker")
+buildDockerImage.dependsOn(copyScripts)
+assemble.dependsOn(buildDockerImage)

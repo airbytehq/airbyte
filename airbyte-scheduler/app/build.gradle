@@ -61,13 +61,6 @@ run {
 
 }
 
-task copyDocker(type: Copy) {
-    delete "build/docker"
-
-    from "${project.projectDir}/Dockerfile"
-    into "build/docker/"
-}
-
 task copyGeneratedTar(type: Copy) {
     dependsOn copyDocker
     dependsOn distTar
@@ -78,12 +71,6 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-def buildTag = System.getenv('VERSION') ?: 'dev'
-// Use task types
-task buildDockerImage(type: DockerBuildImage) {
-    dependsOn copyGeneratedTar
-    dependsOn copyDocker
-    inputDir = file('build/docker')
-    images.add("airbyte/scheduler:$buildTag")
-}
+project.properties.put("artifactName" , "scheduler")
+buildDockerImage.dependsOn(copyGeneratedTar)
 assemble.dependsOn(buildDockerImage)

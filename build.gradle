@@ -125,7 +125,9 @@ spotless {
 check.dependsOn 'spotlessApply'
 
 allprojects {
-    task copyDockerTest(type: Copy) {
+    apply plugin: 'com.bmuschko.docker-remote-api'
+
+    task copyDocker(type: Copy) {
         delete "build/docker"
 
         from "${project.projectDir}/Dockerfile"
@@ -133,15 +135,15 @@ allprojects {
     }
 
     // Use task types
-    task buildDockerImageTest(type: DockerBuildImage) {
-        dependsOn copyDockerTest
+    task buildDockerImage(type: DockerBuildImage) {
+        dependsOn copyDocker
 
         def buildTag = System.getenv('VERSION') ?: 'dev'
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
         def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
         def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
 
-        def artifactName = project.name.replaceFirst("airbyte-", "")
+       def artifactName = project.getProperties().get("artifactName")
 
         inputDir = file('build/docker')
         platform = buildPlatform

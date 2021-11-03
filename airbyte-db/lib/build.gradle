@@ -73,13 +73,6 @@ task(dumpJobsSchema, dependsOn: 'classes', type: JavaExec) {
     args 'jobs', 'dump_schema'
 }
 
-task copyDocker(type: Copy) {
-    delete "build/docker"
-
-    from "${project.projectDir}/Dockerfile"
-    into "build/docker/"
-}
-
 task copyInitSql(type: Copy) {
     dependsOn copyDocker
 
@@ -89,12 +82,6 @@ task copyInitSql(type: Copy) {
     into 'build/docker/bin'
 }
 
-def buildTag = System.getenv('VERSION') ?: 'dev'
-// Use task types
-task buildDockerImage(type: DockerBuildImage) {
-    dependsOn copyDocker
-    dependsOn copyInitSql
-    inputDir = file('build/docker')
-    images.add("airbyte/db:$buildTag")
-}
+project.properties.put("artifactName" , "db")
+buildDockerImage.dependsOn(copyInitSql)
 assemble.dependsOn(buildDockerImage)
