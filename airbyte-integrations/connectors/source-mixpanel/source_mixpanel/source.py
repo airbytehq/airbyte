@@ -515,7 +515,9 @@ class Engage(MixpanelStream):
                 # from API: '$browser'
                 # to stream: 'browser'
                 property_name = property_name[1:]
-            schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
+            # Do not overwrite 'standard' hard-coded properties, add 'custom' properties
+            if property_name not in schema["properties"]:
+                schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
 
         return schema
 
