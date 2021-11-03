@@ -3,16 +3,16 @@
 ## Versioning
 
 Temporal is maintaining an internal history of the activity it runs. This history is based on a specific order. If we restart a temporal workflow with
-a new implementation that have a different order, the workflow will be stuck and will need manual action to be properly restarted. Temporal provides
-and API to be able to manage those changes smoothly. However, temporal is very permissive in the way to generate those version. Airbyte will follow
+a new implementation that has a different order, the workflow will be stuck and will need manual action to be properly restarted. Temporal provides
+an API to be able to manage those changes smoothly. However, temporal is very permissive with version rules. Airbyte will follow
 the following rules:
 
 - There will be one global version per workflow, meaning that we will use a single tag per workflow.
-- All the following code modification will need to bump the version number, it won't be limited to a release of a new airbyte version
+- All the following code modifications will need to bump the version number, it won't be limited to a release of a new airbyte version
     - Addition of an activity
     - Deletion of an activity
     - Change of the input of an activity
-    - Addition of a sleep timer
+    - Addition of a temporal sleep timer
 
 The way to use this version should be the following:
 
