@@ -38,11 +38,11 @@ export const Header = styled.div`
 export const Container = styled.div`
   display: flex;
   position: absolute;
-  z-index: 99999;
+  z-index: 9998;
   width: 100vw;
   height: 100vh;
   top: 0;
-  left: 0;
+  right: 0;
   justify-content: flex-end;
   background-color: rgba(32, 32, 32, 0.09);
 `;
