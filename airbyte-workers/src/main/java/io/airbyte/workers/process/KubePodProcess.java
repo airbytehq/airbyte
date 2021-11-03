@@ -325,21 +325,21 @@ public class KubePodProcess extends Process {
     final Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
         .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", "socat -d -d -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
+        .withCommand("sh", "-c", "socat -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
     final Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
         .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
+        .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
     final Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
         .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
+        .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
