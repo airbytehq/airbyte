@@ -92,12 +92,10 @@ public class DriftOAuthFlow extends BaseOAuthFlow {
 
   protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
     final Map<String, Object> result = new HashMap<>();
-    if (data.has("refresh_token")) {
-      result.put("refresh_token", data.get("refresh_token").asText());
-    } else if (data.has("access_token")) {
+    if (data.has("access_token")) {
       result.put("access_token", data.get("access_token").asText());
     } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
+      throw new IOException(String.format("Missing 'access_token' in query params from %s", accessTokenUrl));
     }
     return Map.of("credentials", result);
   }
