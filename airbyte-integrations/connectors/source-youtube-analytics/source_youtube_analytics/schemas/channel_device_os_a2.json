@@ -6,25 +6,25 @@
       "type": "integer"
     },
     "channel_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "video_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "live_or_on_demand": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "subscribed_status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "country_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "device_type": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "operating_system": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "views": {
       "type": ["null", "integer"]
