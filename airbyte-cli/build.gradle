@@ -1,2 +1,0 @@
-project.properties.put("artifactName" , "cli")
-assemble.dependsOn(buildDockerImage)
