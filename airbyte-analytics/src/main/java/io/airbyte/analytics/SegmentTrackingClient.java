@@ -16,6 +16,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+/**
+ *
+ */
 public class SegmentTrackingClient implements TrackingClient {
 
   private static final String SEGMENT_WRITE_KEY = "7UDdp5K55CyiGgsauOr2pNNujGvmhaeu";

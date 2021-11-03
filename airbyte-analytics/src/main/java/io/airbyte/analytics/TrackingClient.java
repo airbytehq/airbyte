@@ -7,6 +7,21 @@ package io.airbyte.analytics;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * General interface for user level Airbyte usage reporting. We use Segment for behavioural
+ * reporting, so this interface mirrors the Segment backend api sdk.
+ *
+ * For more information see
+ * https://segment.com/docs/connections/sources/catalog/libraries/server/http-api/.
+ *
+ * This interface allows us to easily stub this out via the {@link LoggingTrackingClient}. The main
+ * implementation is in {@link SegmentTrackingClient}.
+ *
+ * Although the methods seem to take in workspace id, this id is used to index into more metadata.
+ * See {@link SegmentTrackingClient} for more information.
+ *
+ * Keep in mind that this interface is also relied on in Airbyte Cloud.
+ */
 public interface TrackingClient {
 
   void identify(UUID workspaceId);
