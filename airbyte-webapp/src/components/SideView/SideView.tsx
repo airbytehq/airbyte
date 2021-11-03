@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import { Actions, Container, Content, Body, Close, Header } from "./styled";
@@ -20,7 +21,7 @@ const SideView: React.FC<Props> = ({ children, onClose, headerLink }) => {
     return () => document.removeEventListener("keyup", handleEsq);
   });
 
-  return (
+  return createPortal(
     <Container>
       <Content>
         <Header>
@@ -29,7 +30,8 @@ const SideView: React.FC<Props> = ({ children, onClose, headerLink }) => {
         </Header>
         <Body>{children}</Body>
       </Content>
-    </Container>
+    </Container>,
+    document.body
   );
 };
 
