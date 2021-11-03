@@ -1,3 +1,5 @@
 {
-  "fix-me": "TODO"
+  "application_id": "the_id",
+  "application_secret": "the_secret",
+  "token": "the_token"
 }
