@@ -5,10 +5,8 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
@@ -21,7 +19,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,40 +45,11 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     return new YamlSeedConfigPersistence(seedDefinitionsResourceClass);
   }
 
-  private YamlSeedConfigPersistence(final Class<?> seedResourceClass) throws IOException {
-    final Map<String, JsonNode> sourceDefinitionConfigs = getConfigs(seedResourceClass, SeedType.STANDARD_SOURCE_DEFINITION);
-    final Map<String, JsonNode> sourceSpecConfigs = getConfigs(seedResourceClass, SeedType.SOURCE_SPEC);
-    final Map<String, JsonNode> fullSourceDefinitionConfigs = sourceDefinitionConfigs.entrySet().stream()
-        .collect(Collectors.toMap(Entry::getKey, e -> mergeSpecIntoDefinition(e.getValue(), sourceSpecConfigs)));
-
-    final Map<String, JsonNode> destinationDefinitionConfigs = getConfigs(seedResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION);
-    final Map<String, JsonNode> destinationSpecConfigs = getConfigs(seedResourceClass, SeedType.DESTINATION_SPEC);
-    final Map<String, JsonNode> fullDestinationDefinitionConfigs = destinationDefinitionConfigs.entrySet().stream()
-        .collect(Collectors.toMap(Entry::getKey, e -> mergeSpecIntoDefinition(e.getValue(), destinationSpecConfigs)));
-
+  private YamlSeedConfigPersistence(final Class<?> seedDefinitionsResourceClass) throws IOException {
     this.allSeedConfigs = ImmutableMap.<SeedType, Map<String, JsonNode>>builder()
-        .put(SeedType.STANDARD_SOURCE_DEFINITION, fullSourceDefinitionConfigs)
-        .put(SeedType.STANDARD_DESTINATION_DEFINITION, fullDestinationDefinitionConfigs).build();
-  }
-
-  /**
-   * Merges the corresponding spec JSON into the definition JSON. This is necessary because specs are
-   * stored in a separate resource file from definitions.
-   *
-   * @param definitionJson JSON of connector definition that is missing a spec
-   * @param specConfigs map of docker image to JSON of docker image/connector spec pair
-   * @return JSON of connector definition including the connector spec
-   */
-  private JsonNode mergeSpecIntoDefinition(final JsonNode definitionJson, final Map<String, JsonNode> specConfigs) {
-    final String dockerImage = DockerUtils.getTaggedImageName(
-        definitionJson.get("dockerRepository").asText(),
-        definitionJson.get("dockerImageTag").asText());
-    final JsonNode specConfigJson = specConfigs.get(dockerImage);
-    if (specConfigJson == null || specConfigJson.get("spec") == null) {
-      throw new UnsupportedOperationException(String.format("There is no seed spec for docker image %s", dockerImage));
-    }
-    ((ObjectNode) definitionJson).set("spec", specConfigJson.get("spec"));
-    return definitionJson;
+        .put(SeedType.STANDARD_SOURCE_DEFINITION, getConfigs(seedDefinitionsResourceClass, SeedType.STANDARD_SOURCE_DEFINITION))
+        .put(SeedType.STANDARD_DESTINATION_DEFINITION, getConfigs(seedDefinitionsResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION))
+        .build();
   }
 
   @SuppressWarnings("UnstableApiUsage")
