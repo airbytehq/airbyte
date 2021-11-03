@@ -49,9 +49,20 @@ server_logs () { echo "server logs:" && kubectl logs deployment.apps/airbyte-ser
 scheduler_logs () { echo "scheduler logs:" && kubectl logs deployment.apps/airbyte-scheduler; }
 pod_sweeper_logs () { echo "pod sweeper logs:" && kubectl logs deployment.apps/airbyte-pod-sweeper; }
 worker_logs () { echo "worker logs:" && kubectl logs deployment.apps/airbyte-worker; }
+db_logs () { echo "db logs:" && kubectl logs deployment.apps/airbyte-db; }
+temporal_logs () { echo "temporal logs:" && kubectl logs deployment.apps/airbyte-temporal; }
 describe_pods () { echo "describe pods:" && kubectl describe pods; }
 describe_nodes () { echo "describe nodes:" && kubectl describe nodes; }
-print_all_logs () { server_logs; scheduler_logs; worker_logs; pod_sweeper_logs; describe_nodes; describe_pods; }
+print_all_logs () {
+  server_logs;
+  scheduler_logs;
+  worker_logs;
+  db_logs;
+  temporal_logs;
+  pod_sweeper_logs;
+  describe_nodes;
+  describe_pods;
+}
 trap "echo 'kube logs:' && print_all_logs" EXIT
 
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
