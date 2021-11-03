@@ -10,6 +10,7 @@ import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.AliasMessage;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
+import io.airbyte.config.StandardWorkspace;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +18,24 @@ import java.util.UUID;
 import java.util.function.Function;
 
 /**
+ * This class is a wrapper around the Segment backend Java SDK.
  *
+ * In general, the Segment SDK events have two pieces to them, a top-level userId field and a map of
+ * properties.
+ *
+ * As of 2021/11/03, the top level userId field is standardised on the
+ * {@link StandardWorkspace#getCustomerId()} field. This field is a random UUID generated when a
+ * workspace model is created. This standardisation is through OSS Airbyte and Cloud Airbyte. This
+ * join key now underpins Airbyte OSS Segment tracking. Although the id is meaninglss and the name
+ * confusing, it is not worth performing a migration at this time. Interested parties can look at
+ * https://github.com/airbytehq/airbyte/issues/7456 for more context.
+ *
+ * Consumers utilising this class must understand that the top-level userId field is subject to this
+ * constraint.
+ *
+ * See the following document for details on tracked events. Please update this document if tracked
+ * events change.
+ * https://docs.google.com/spreadsheets/d/1lGLmLIhiSPt_-oaEf3CpK-IxXnCO0NRHurvmWldoA2w/edit#gid=1567609168
  */
 public class SegmentTrackingClient implements TrackingClient {
 
@@ -71,15 +89,17 @@ public class SegmentTrackingClient implements TrackingClient {
       identityMetadata.put(AIRBYTE_ROLE, airbyteRole);
     }
 
+    final String joinKey = trackingIdentity.getCustomerId().toString();
     analytics.enqueue(IdentifyMessage.builder()
         // user id is scoped by workspace. there is no cross-workspace tracking.
-        .userId(trackingIdentity.getCustomerId().toString())
+        .userId(joinKey)
         .traits(identityMetadata));
   }
 
   @Override
   public void alias(final UUID workspaceId, final String previousCustomerId) {
-    analytics.enqueue(AliasMessage.builder(previousCustomerId).userId(identityFetcher.apply(workspaceId).getCustomerId().toString()));
+    final var joinKey = identityFetcher.apply(workspaceId).getCustomerId().toString();
+    analytics.enqueue(AliasMessage.builder(previousCustomerId).userId(joinKey));
   }
 
   @Override
@@ -95,8 +115,10 @@ public class SegmentTrackingClient implements TrackingClient {
     if (!metadata.isEmpty()) {
       trackingIdentity.getEmail().ifPresent(email -> mapCopy.put("email", email));
     }
+
+    final var joinKey = trackingIdentity.getCustomerId().toString();
     analytics.enqueue(TrackMessage.builder(action)
-        .userId(trackingIdentity.getCustomerId().toString())
+        .userId(joinKey)
         .properties(mapCopy));
   }
 
