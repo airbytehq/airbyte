@@ -56,6 +56,7 @@ Select the correct region \(EU or US\) for your Mixpanel project. See detail [he
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.3` | 2021-10-30 | [7505](https://github.com/airbytehq/airbyte/issues/7505) | Guarantee that standard and custom mixpanel properties in the `Engage` stream are written as strings |
 | `0.1.2` | 2021-11-02 | [7439](https://github.com/airbytehq/airbyte/issues/7439) | Added delay for all streams to match API limitation of requests rate |
 | `0.1.1` | 2021-09-16 | [6075](https://github.com/airbytehq/airbyte/issues/6075) | Added option to select project region |
 | `0.1.0` | 2021-07-06 | [3698](https://github.com/airbytehq/airbyte/issues/3698) | created CDK native mixpanel connector |
