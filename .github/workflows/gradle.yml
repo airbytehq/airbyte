@@ -459,6 +459,17 @@ jobs:
       - name: Build Platform Docker Images
         run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
 
+      - name: Run Kubernetes End-to-End Acceptance Tests
+        env:
+          USER: root
+          HOME: /home/runner
+          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
+          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
+          SECRET_STORE_FOR_CONFIGS: ${{ secrets.SECRET_STORE_FOR_CONFIGS }}
+        run: |
+          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
+
       - name: Run Logging Tests
         run: ./tools/bin/cloud_storage_logging_test.sh
         env:
@@ -481,16 +492,6 @@ jobs:
         run: |
           CI=true ./tools/bin/gcp_acceptance_tests.sh
 
-      - name: Run Kubernetes End-to-End Acceptance Tests
-        env:
-          USER: root
-          HOME: /home/runner
-          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
-          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
-          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
-          SECRET_STORE_FOR_CONFIGS: ${{ secrets.SECRET_STORE_FOR_CONFIGS }}
-        run: |
-          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
     name: Stop Kube Acceptance Test EC2 Runner
