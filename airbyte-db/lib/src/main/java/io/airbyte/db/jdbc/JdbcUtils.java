@@ -12,7 +12,7 @@ public class JdbcUtils {
 
   private static final JSONFormat defaultJSONFormat = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
 
-  public static JdbcSourceOperations getDefaultSourcxeOperations() {
+  public static JdbcSourceOperations getDefaultSourceOperations() {
     return defaultSourceOperations;
   }
 
