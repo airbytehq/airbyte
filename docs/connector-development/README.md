@@ -107,11 +107,8 @@ The steps for updating an existing connector are the same as for building a new 
 Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions to ship the new version of the connector with Airbyte out of the box.
 
 1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\). 
-2. Update the connector definition in the Airbyte connector index to use the new version:
-   * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
-   * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
-3. Submit a PR containing the changes you made.
-4. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
+2. Submit a PR containing the changes you made.
+3. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
 
    ```text
    # to run integration tests for the connector
@@ -122,7 +119,12 @@ Once you've finished iterating on the changes to a connector as specified in its
    # Example: /publish connector=connectors/source-hubspot
    /publish connector=(connectors|bases)/<connector_name>
    ```
-
+4. Update the connector definition in the Airbyte connector index to use the new version:
+   * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
+   * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
+   
+   Then rebuild the platform to generate the seed spec yaml files, and commit the changes to the PR.
+   
 5. The new version of the connector is now available for everyone who uses it. Thank you!
 
 ## Using credentials in CI
