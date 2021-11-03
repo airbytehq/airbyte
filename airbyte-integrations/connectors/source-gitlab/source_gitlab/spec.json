@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Gitlab Spec",
     "type": "object",
-    "required": ["api_url", "credentials", "start_date"],
+    "required": ["api_url", "start_date"],
     "additionalProperties": true,
     "properties": {
       "api_url": {
