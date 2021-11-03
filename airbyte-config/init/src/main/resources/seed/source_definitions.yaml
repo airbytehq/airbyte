@@ -156,6 +156,12 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshdesk
   icon: freshdesk.svg
   sourceType: api
+- name: Freshsales
+  sourceDefinitionId: eca08d79-7b92-4065-b7f3-79c14836ebe7
+  dockerRepository: airbyte/source-freshsales
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/freshsales
+  sourceType: api
 - name: Freshservice
   sourceDefinitionId: 9bb85338-ea95-4c93-b267-6be89125b267
   dockerRepository: airbyte/source-freshservice
@@ -192,7 +198,7 @@
 - name: Google Directory
   sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
   dockerRepository: airbyte/source-google-directory
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-directory
   sourceType: api
 - name: Google Search Console
@@ -230,7 +236,7 @@
 - name: Hubspot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.1.22
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -256,7 +262,7 @@
 - name: Iterable
   sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
   dockerRepository: airbyte/source-iterable
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/iterable
   sourceType: api
 - name: Jira
@@ -328,7 +334,7 @@
 - name: Mixpanel
   sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
   dockerRepository: airbyte/source-mixpanel
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/mixpanel
   icon: mixpanel.svg
   sourceType: api
@@ -349,7 +355,7 @@
 - name: Okta
   sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   dockerRepository: airbyte/source-okta
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/okta
   sourceType: api
 - name: OneSignal
