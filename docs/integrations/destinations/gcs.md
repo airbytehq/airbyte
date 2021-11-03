@@ -98,7 +98,7 @@ Here is the available compression codecs:
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is converted to an Avro schema, and then the Json object is converted to an Avro record based on the Avro schema. Because the data stream can come from any data source, the Avro S3 destination connector has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.io/integrations/destinations/s3#data-schema).
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
 
 ### CSV
 
@@ -194,7 +194,7 @@ These parameters are related to the `ParquetOutputFormat`. See the [Java doc](ht
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. See the `Data schema` section from the [Avro output](gcs.md#avro) for rules and limitations.
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
 
 ## Getting started
 
