@@ -26,7 +26,7 @@ import java.util.function.Function;
  * As of 2021/11/03, the top level userId field is standardised on the
  * {@link StandardWorkspace#getCustomerId()} field. This field is a random UUID generated when a
  * workspace model is created. This standardisation is through OSS Airbyte and Cloud Airbyte. This
- * join key now underpins Airbyte OSS Segment tracking. Although the id is meaninglss and the name
+ * join key now underpins Airbyte OSS Segment tracking. Although the id is meaningless and the name
  * confusing, it is not worth performing a migration at this time. Interested parties can look at
  * https://github.com/airbytehq/airbyte/issues/7456 for more context.
  *
