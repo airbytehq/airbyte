@@ -19,7 +19,7 @@ setup(
     name="source_airtable",
     description="Source implementation for Airtable.",
     author="Airbyte",
-    author_email="contact@airbyte.io",
+    author_email="anhtuan.nguyen@me.com",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
