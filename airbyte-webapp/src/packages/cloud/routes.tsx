@@ -39,6 +39,7 @@ import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView/
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView/AccountSettingsView";
 import OnboardingPage from "pages/OnboardingPage";
 import { CreditsPage } from "packages/cloud/views/credits";
+import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
 import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 import useRouter from "hooks/useRouter";
 import { WithPageAnalytics } from "pages/withPageAnalytics";
@@ -232,13 +233,15 @@ export const Routing: React.FC = () => {
 
   return (
     <Router>
-      <WithPageAnalytics />
       <Suspense fallback={<LoadingPage />}>
         {inited ? (
           <>
             {user && emailVerified && (
               <WorkspaceServiceProvider>
-                <MainViewRoutes />
+                <AnalyticsInitializer>
+                  <WithPageAnalytics />
+                  <MainViewRoutes />
+                </AnalyticsInitializer>
               </WorkspaceServiceProvider>
             )}
             {user && !emailVerified && (

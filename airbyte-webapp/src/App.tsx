@@ -11,7 +11,6 @@ import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
 import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import NotificationService from "hooks/services/Notification";
-import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
 import {
   useCurrentWorkspace,
   usePickFirstWorkspace,
@@ -100,11 +99,9 @@ const App: React.FC = () => {
                 <FeatureService features={Features}>
                   <NotificationService>
                     <AppServices>
-                      <AnalyticsInitializer>
-                        <OnboardingServiceProvider>
-                          <Routing />
-                        </OnboardingServiceProvider>
-                      </AnalyticsInitializer>
+                      <OnboardingServiceProvider>
+                        <Routing />
+                      </OnboardingServiceProvider>
                     </AppServices>
                   </NotificationService>
                 </FeatureService>

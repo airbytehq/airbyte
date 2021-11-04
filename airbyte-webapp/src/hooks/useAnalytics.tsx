@@ -9,14 +9,23 @@ function AnalyticsServiceProvider({
   children,
   userId,
   version,
+  workspaceId,
 }: {
   children: React.ReactNode;
   version?: string;
   userId?: string;
+  workspaceId?: string;
 }) {
   const analyticsService: AnalyticsService = useMemo(
-    () => new AnalyticsService(userId, version),
-    [version, userId]
+    () =>
+      new AnalyticsService(
+        {
+          userId,
+          workspaceId,
+        },
+        version
+      ),
+    [version, userId, workspaceId]
   );
   return (
     <analyticsServiceContext.Provider value={analyticsService}>

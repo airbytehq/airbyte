@@ -17,6 +17,7 @@ import ConnectionPage from "./ConnectionPage";
 import SettingsPage from "./SettingsPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "views/layout/MainView";
+import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
 
 import { useWorkspace } from "hooks/services/useWorkspace";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
@@ -122,10 +123,10 @@ export const Routing: React.FC = () => {
         {!workspace.initialSetupComplete ? (
           <PreferencesRoutes />
         ) : (
-          <>
+          <AnalyticsInitializer>
             <WithPageAnalytics />
             <MainViewRoutes />
-          </>
+          </AnalyticsInitializer>
         )}
       </Suspense>
     </Router>

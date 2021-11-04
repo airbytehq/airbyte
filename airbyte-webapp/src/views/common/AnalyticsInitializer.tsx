@@ -4,13 +4,9 @@ import { useConfig } from "config";
 import AnalyticsServiceProvider, { useAnalytics } from "hooks/useAnalytics";
 import useSegment from "hooks/useSegment";
 import { useGetService } from "core/servicesProvider";
+import useWorkspace from "hooks/services/useWorkspace";
 
-function WithAnalytics({
-  customerId,
-}: {
-  customerId: string;
-  workspaceId?: string;
-}) {
+function WithAnalytics({ customerId }: { customerId: string }) {
   const config = useConfig();
 
   // segment section
@@ -30,10 +26,15 @@ const AnalyticsInitializer: React.FC<{
     "useCustomerIdProvider"
   );
   const customerId = customerIdProvider();
+  const { workspace } = useWorkspace();
   const config = useConfig();
 
   return (
-    <AnalyticsServiceProvider userId={customerId} version={config.version}>
+    <AnalyticsServiceProvider
+      userId={customerId}
+      workspaceId={workspace.workspaceId}
+      version={config.version}
+    >
       <WithAnalytics customerId={customerId} />
       {children}
     </AnalyticsServiceProvider>

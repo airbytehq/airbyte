@@ -1,7 +1,15 @@
 import { SegmentAnalytics } from "./types";
 
+export type AdditionalAnalyticsTraits = {
+  userId?: string;
+  workspaceId?: string;
+};
+
 export class AnalyticsService {
-  constructor(private userId?: string, private version?: string) {}
+  constructor(
+    private additionalAnalyticsTraits: AdditionalAnalyticsTraits,
+    private version?: string
+  ) {}
 
   private getSegmentAnalytics = (): SegmentAnalytics | undefined =>
     window.analytics;
@@ -14,7 +22,7 @@ export class AnalyticsService {
 
   track = (name: string, properties: Record<string, unknown>): void =>
     this.getSegmentAnalytics()?.track?.(name, {
-      user_id: this.userId,
+      ...this.additionalAnalyticsTraits,
       ...properties,
       airbyte_version: this.version,
       environment: this.version === "dev" ? "dev" : "prod",
