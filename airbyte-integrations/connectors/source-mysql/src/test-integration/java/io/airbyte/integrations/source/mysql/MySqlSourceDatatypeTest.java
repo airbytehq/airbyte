@@ -102,7 +102,6 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("1")
             .build());
 
-
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")

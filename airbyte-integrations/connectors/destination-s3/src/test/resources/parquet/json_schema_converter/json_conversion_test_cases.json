@@ -25,12 +25,9 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
@@ -99,12 +96,9 @@
                   "default": null
                 },
                 {
-                  "name":"_airbyte_additional_properties",
-                  "type":[
-                    "null",
-                    { "type":"map", "values":"string" }
-                  ],
-                  "default":null
+                  "name": "_airbyte_additional_properties",
+                  "type": ["null", { "type": "map", "values": "string" }],
+                  "default": null
                 }
               ]
             }
@@ -112,12 +106,9 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
@@ -173,11 +164,8 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
           "default": null
         }
       ]
@@ -217,12 +205,9 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
@@ -257,12 +242,9 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
@@ -306,12 +288,9 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
@@ -366,12 +345,9 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
@@ -416,12 +392,9 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
@@ -482,12 +455,9 @@
                   "default": null
                 },
                 {
-                  "name":"_airbyte_additional_properties",
-                  "type":[
-                    "null",
-                    { "type":"map", "values":"string" }
-                  ],
-                  "default":null
+                  "name": "_airbyte_additional_properties",
+                  "type": ["null", { "type": "map", "values": "string" }],
+                  "default": null
                 }
               ]
             }
@@ -495,12 +465,9 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
@@ -551,12 +518,9 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
@@ -592,12 +556,9 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
@@ -640,12 +601,9 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
@@ -692,12 +650,9 @@
           "default": null
         },
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
@@ -728,12 +683,9 @@
       "namespace": "namespace14",
       "fields": [
         {
-          "name":"_airbyte_additional_properties",
-          "type":[
-            "null",
-            { "type":"map", "values":"string" }
-          ],
-          "default":null
+          "name": "_airbyte_additional_properties",
+          "type": ["null", { "type": "map", "values": "string" }],
+          "default": null
         }
       ]
     },
