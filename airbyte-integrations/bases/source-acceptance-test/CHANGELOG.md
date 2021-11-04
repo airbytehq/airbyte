@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.28
+Print stream name when incremental sync tests fail
+
 ## 0.1.27
 Add ignored fields for full refresh test (unit tests)
 

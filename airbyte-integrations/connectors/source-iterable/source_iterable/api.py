@@ -88,12 +88,8 @@ class IterableExportStream(IterableStream, ABC):
         """
         latest_benchmark = latest_record[self.cursor_field]
         if current_stream_state.get(self.cursor_field):
-            return {
-                self.cursor_field: max(
-                    latest_benchmark, self._field_to_datetime(current_stream_state[self.cursor_field])
-                ).to_datetime_string()
-            }
-        return {self.cursor_field: latest_benchmark.to_datetime_string()}
+            return {self.cursor_field: str(max(latest_benchmark, self._field_to_datetime(current_stream_state[self.cursor_field])))}
+        return {self.cursor_field: str(latest_benchmark)}
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
@@ -362,6 +358,7 @@ class Templates(IterableExportStream):
         records = response_json.get(self.data_field, [])
 
         for record in records:
+            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
             yield record
 
 
