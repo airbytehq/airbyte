@@ -118,7 +118,7 @@ public class SeedConnectorSpecGenerator {
     LOGGER.info("Seeded spec not found for docker image {} - fetching from GCS bucket {}...", dockerImage, bucketSpecFetcher.getBucketName());
     final ConnectorSpecification spec = bucketSpecFetcher.attemptFetch(dockerImage)
         .orElseThrow(() -> new RuntimeException(String.format(
-            "Failed to fetch valid spec file for docker image %s from GCS bucket %s. This will continue to fail until the connector change has been approved and published.",
+            "Failed to fetch valid spec file for docker image %s from GCS bucket %s. This will continue to fail until the connector change has been approved and published. See https://github.com/airbytehq/airbyte/tree/master/docs/connector-development#publishing-a-connector for more details.",
             dockerImage,
             bucketSpecFetcher.getBucketName())));
     return new DockerImageSpec().withDockerImage(dockerImage).withSpec(spec);
