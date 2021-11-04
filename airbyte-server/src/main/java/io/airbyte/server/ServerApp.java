@@ -4,10 +4,12 @@
 
 package io.airbyte.server;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.api.model.LogRead;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -19,6 +21,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
@@ -44,6 +47,7 @@ import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
@@ -243,7 +247,12 @@ public class ServerApp implements ServerRunnable {
 
       // todo (lmossman) - this will only exist temporarily to ensure all definitions contain specs. It
       // will be removed after the faux major version bump
-      migrateAllDefinitionsToContainSpec(configRepository, cachingSchedulerClient);
+      migrateAllDefinitionsToContainSpec(
+          configRepository,
+          cachingSchedulerClient,
+          trackingClient,
+          configs.getWorkerEnvironment(),
+          configs.getLogConfigs());
 
       return apiFactory.create(
           schedulerJobClient,
@@ -273,10 +282,18 @@ public class ServerApp implements ServerRunnable {
    *
    * @param configRepository - access to the db
    * @param schedulerClient - scheduler client so that specs can be fetched as needed
+   * @param trackingClient
+   * @param workerEnvironment
+   * @param logConfigs
    */
-  private static void migrateAllDefinitionsToContainSpec(final ConfigRepository configRepository,
-                                                         final SynchronousSchedulerClient schedulerClient)
-      throws Exception {
+  @VisibleForTesting
+  static void migrateAllDefinitionsToContainSpec(final ConfigRepository configRepository,
+                                                 final SynchronousSchedulerClient schedulerClient,
+                                                 final TrackingClient trackingClient,
+                                                 final WorkerEnvironment workerEnvironment,
+                                                 final LogConfigs logConfigs)
+      throws JsonValidationException, IOException {
+    final JobConverter jobConverter = new JobConverter(workerEnvironment, logConfigs);
     for (final StandardSourceDefinition sourceDef : configRepository.listStandardSourceDefinitions()) {
       try {
         if (sourceDef.getSpec() == null) {
@@ -295,14 +312,19 @@ public class ServerApp implements ServerRunnable {
                 "migrateAllDefinitionsToContainSpec - Spec for Source Definition {} was successfully written to the db record.",
                 sourceDef.getName());
           } else {
+            final LogRead logRead = jobConverter.getLogRead(getSpecJob.getMetadata().getLogPath());
             LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Failed to retrieve spec for Source Definition {}.",
-                sourceDef.getName());
-            throw new RuntimeException(String.format("Failed to retrieve spec for Source Definition %s", sourceDef.getName()));
+                "migrateAllDefinitionsToContainSpec - Failed to retrieve spec for Source Definition {}. Logs: {}",
+                sourceDef.getName(),
+                logRead.toString());
+            throw new RuntimeException(String.format(
+                "Failed to retrieve spec for Source Definition %s. Logs: %s",
+                sourceDef.getName(),
+                logRead.toString()));
           }
         }
       } catch (final Exception e) {
-        trackSpecBackfillFailure(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag(), e);
+        trackSpecBackfillFailure(trackingClient, configRepository, sourceDef.getDockerRepository(), sourceDef.getDockerImageTag(), e);
       }
     }
 
@@ -324,25 +346,36 @@ public class ServerApp implements ServerRunnable {
                 "migrateAllDefinitionsToContainSpec - Spec for Destination Definition {} was successfully written to the db record.",
                 destDef.getName());
           } else {
+            final LogRead logRead = jobConverter.getLogRead(getSpecJob.getMetadata().getLogPath());
             LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Failed to retrieve spec for Destination Definition {}.",
-                destDef.getName());
-            throw new RuntimeException(String.format("Failed to retrieve spec for Destination Definition %s", destDef.getName()));
+                "migrateAllDefinitionsToContainSpec - Failed to retrieve spec for Destination Definition {}. Logs: {}",
+                destDef.getName(),
+                logRead.toString());
+            throw new RuntimeException(String.format(
+                "Failed to retrieve spec for Destination Definition %s. Logs: %s",
+                destDef.getName(),
+                logRead.toString()));
           }
         }
       } catch (final Exception e) {
-        trackSpecBackfillFailure(destDef.getDockerRepository(), destDef.getDockerImageTag(), e);
+        trackSpecBackfillFailure(trackingClient, configRepository, destDef.getDockerRepository(), destDef.getDockerImageTag(), e);
       }
     }
   }
 
-  private static void trackSpecBackfillFailure(final String dockerRepo, final String dockerImageTag, final Exception exception) {
-    final TrackingClient trackingClient = TrackingClientSingleton.get();
+  private static void trackSpecBackfillFailure(final TrackingClient trackingClient,
+                                               final ConfigRepository configRepository,
+                                               final String dockerRepo,
+                                               final String dockerImageTag,
+                                               final Exception exception)
+      throws JsonValidationException, IOException {
+    final UUID workspaceId = configRepository.listStandardWorkspaces(true).get(0).getWorkspaceId();
+
     final ImmutableMap<String, Object> metadata = ImmutableMap.of(
         "docker_image_name", dockerRepo,
         "docker_image_tag", dockerImageTag,
         "exception", exception);
-    trackingClient.track(UUID.fromString("000000"), "failed_spec_backfill", metadata);
+    trackingClient.track(workspaceId, "failed_spec_backfill", metadata);
   }
 
   @Deprecated
