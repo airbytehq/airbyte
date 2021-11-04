@@ -62,7 +62,7 @@ SAMPLE_CONFIG = {
         "client_secret": "client_secret",
         "refresh_token": "refresh_token",
     },
-    "customer_ids": ["customer_id"],
+    "customer_id": "customer_id",
 }
 
 EXPECTED_CRED = {
@@ -76,7 +76,7 @@ EXPECTED_CRED = {
 def test_google_ads_init(mocker):
     google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
     google_ads_client = GoogleAds(**SAMPLE_CONFIG)
-    assert google_ads_client.customer_ids == SAMPLE_CONFIG["customer_ids"]
+    assert google_ads_client.customer_ids == SAMPLE_CONFIG["customer_id"].split(',')
     assert google_client_mocker.load_from_dict.call_args[0][0] == EXPECTED_CRED
 
 
@@ -88,7 +88,7 @@ def test_send_request(mocker):
     page_size = 1000
     response = list(google_ads_client.send_request(query))
 
-    assert response[0].customer_id == SAMPLE_CONFIG["customer_ids"][0]
+    assert response[0].customer_id == SAMPLE_CONFIG["customer_id"].split(',')[0]
     assert response[0].query == query
     assert response[0].page_size == page_size
 
