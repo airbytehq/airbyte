@@ -58,6 +58,7 @@ import org.slf4j.MDC;
  * stderr streams and copy configuration files over.
  *
  * This is made possible by:
+ * <ul>
  * <li>1) An init container that creates 3 named pipes corresponding to stdin, stdout and std err on
  * a shared volume.</li>
  * <li>2) Config files (e.g. config.json, catalog.json etc) are copied from the parent process into
@@ -76,7 +77,7 @@ import org.slf4j.MDC;
  * handling.</li>
  * <li>8) A heartbeat sidecar checks if the worker that launched the pod is still alive. If not, the
  * pod will fail.</li>
- *
+ * </ul>
  * The docker image used for this pod process must expose a AIRBYTE_ENTRYPOINT which contains the
  * entrypoint we will wrap when creating the main container in the pod.
  *
