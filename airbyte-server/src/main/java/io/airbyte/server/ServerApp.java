@@ -76,8 +76,9 @@ public class ServerApp implements ServerRunnable {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
   /**
-   * We can't support automatic migration for kube before this version because we had a bug in kube which would cause airbyte db to erase state upon
-   * termination, as a result the automatic migration wouldn't run
+   * We can't support automatic migration for kube before this version because we had a bug in kube
+   * which would cause airbyte db to erase state upon termination, as a result the automatic migration
+   * wouldn't run
    */
   private static final AirbyteVersion KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION = new AirbyteVersion("0.26.5-alpha");
   private final AirbyteVersion airbyteVersion;
@@ -173,7 +174,7 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
-        .getAndInitialize();
+            .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).migrateFileConfigs(configs);
 
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
@@ -188,7 +189,7 @@ public class ServerApp implements ServerRunnable {
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl())
-        .getAndInitialize();
+            .getAndInitialize();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
     createDeploymentIfNoneExists(jobPersistence);
@@ -266,11 +267,12 @@ public class ServerApp implements ServerRunnable {
   }
 
   /**
-   * Check that each spec in the database has a spec. If it doesn't, add it. If it can't be added, track the failure in Segment. The goal is to try to
-   * end up in a state where all definitions in the db contain specs, and to understand what is stopping us from getting there.
+   * Check that each spec in the database has a spec. If it doesn't, add it. If it can't be added,
+   * track the failure in Segment. The goal is to try to end up in a state where all definitions in
+   * the db contain specs, and to understand what is stopping us from getting there.
    *
    * @param configRepository - access to the db
-   * @param schedulerClient  - scheduler client so that specs can be fetched as needed
+   * @param schedulerClient - scheduler client so that specs can be fetched as needed
    */
   private static void migrateAllDefinitionsToContainSpec(final ConfigRepository configRepository,
                                                          final SynchronousSchedulerClient schedulerClient)
@@ -377,7 +379,8 @@ public class ServerApp implements ServerRunnable {
   }
 
   /**
-   * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and no other operation is allowed
+   * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
+   * no other operation is allowed
    */
   private static void runAutomaticMigration(final ConfigRepository configRepository,
                                             final JobPersistence jobPersistence,
