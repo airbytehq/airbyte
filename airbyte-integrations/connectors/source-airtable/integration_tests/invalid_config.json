@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "api_key": "key1234567890",
+  "base_id": "app1234567890",
+  "tables": ["Imported table", "Table 2"]
 }
