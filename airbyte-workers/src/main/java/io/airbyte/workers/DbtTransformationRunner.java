@@ -31,10 +31,9 @@ public class DbtTransformationRunner implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationRunner.class);
   private static final String DBT_ENTRYPOINT_SH = "entrypoint.sh";
-  private static final MdcScope CONTAINER_LOG_MDC = new Builder()
+  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("dbt")
-      .setPrefixColor(Color.CYAN)
-      .build();
+      .setPrefixColor(Color.CYAN);
 
   private final ProcessFactory processFactory;
   private final NormalizationRunner normalizationRunner;
@@ -93,9 +92,8 @@ public class DbtTransformationRunner implements AutoCloseable {
           processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", resourceRequirements,
               Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.CUSTOM_STEP),
               dbtArguments);
-
-      LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC);
-      LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC);
+      LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
+      LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);
 
       WorkerUtils.wait(process);
 
