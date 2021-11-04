@@ -21,7 +21,7 @@
       "tables": {
         "type": "array",
         "desctiption": "The list of tables to integrate",
-        "examples": ["['table 1']", "['table 1', 'table 2']"]
+        "examples": ["table 1", "table 2"]
       }
     }
   }
