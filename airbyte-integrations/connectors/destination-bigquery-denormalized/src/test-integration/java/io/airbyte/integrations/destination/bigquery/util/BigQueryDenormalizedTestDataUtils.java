@@ -1,10 +1,14 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 
 public class BigQueryDenormalizedTestDataUtils {
-  
+
   public static JsonNode getSchema() {
     return Jsons.deserialize(
         "{\n"
@@ -221,4 +225,5 @@ public class BigQueryDenormalizedTestDataUtils {
             + "  ]\n"
             + "}");
   }
+
 }
