@@ -487,6 +487,9 @@ where 1 = 1
                 # in case of datetime, we don't need to use [cast] function, use try_parse instead.
                 sql_type = jinja_call("type_timestamp_with_timezone()")
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
+            if self.destination_type == DestinationType.CLICKHOUSE:
+                sql_type = jinja_call("type_timestamp_with_timezone()")
+                return f"parseDateTime64BestEffortOrNull(trim(BOTH '\"' from {replace_operation})) as {column_name}"
             # in all other cases
             sql_type = jinja_call("type_timestamp_with_timezone()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
@@ -499,16 +502,26 @@ where 1 = 1
                 # in case of date, we don't need to use [cast] function, use try_parse instead.
                 sql_type = jinja_call("type_date()")
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
+            if self.destination_type == DestinationType.CLICKHOUSE:
+                sql_type = jinja_call("type_date()")
+                return f"parseDateTimeBestEffortOrNull(trim(BOTH '\"' from {replace_operation})) as {column_name}"
             # in all other cases
             sql_type = jinja_call("type_date()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
+            if self.destination_type == DestinationType.CLICKHOUSE:
+                trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
+                sql_type = f"'{sql_type}'"
+                return f"nullif(accurateCastOrNull({trimmed_column_name}, {sql_type}), 'null') as {column_name}"
         else:
             print(f"WARN: Unknown type {definition['type']} for column {property_name} at {self.current_json_path()}")
             return column_name
 
-        return f"cast({column_name} as {sql_type}) as {column_name}"
+        if self.destination_type == DestinationType.CLICKHOUSE:
+            return f"accurateCastOrNull({column_name}, '{sql_type}') as {column_name}"
+        else:
+            return f"cast({column_name} as {sql_type}) as {column_name}"
 
     @staticmethod
     def generate_mysql_date_format_statement(column_name: str) -> str:
@@ -643,7 +656,7 @@ previous_active_scd_data as (
     -- make a join with new_data using primary key to filter active data that need to be updated only
     join new_data_ids on this_data.{{ unique_key }} = new_data_ids.{{ unique_key }}
     -- force left join to NULL values (we just need to transfer column types only for the star_intersect macro)
-    left join {{'{{'}} {{ from_table }}  {{'}}'}} as inc_data on 1 = 0
+    {{ enable_left_join_null }}left join {{'{{'}} {{ from_table }}  {{'}}'}} as inc_data on 1 = 0
     where {{ active_row }} = 1
 ),
 input_data as (
@@ -660,37 +673,35 @@ input_data as (
 {{ '{% endif %}' }}
 scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
-    select
-      {%- if parent_hash_id %}
-        {{ parent_hash_id }},
-      {%- endif %}
-      {{ '{{' }} dbt_utils.surrogate_key([
-          {%- for primary_key in primary_keys %}
-            {{ primary_key }},
-          {%- endfor %}
-      ]) {{ '}}' }} as {{ unique_key }},
-      {%- for field in fields %}
-        {{ field }},
-      {%- endfor %}
-      {{ cursor_field }} as {{ airbyte_start_at }},
-      lag({{ cursor_field }}) over (
-        partition by {{ primary_key_partition | join(", ") }}
-        order by
-            {{ cursor_field }} {{ order_null }},
-            {{ cursor_field }} desc,
-            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
-      ) as {{ airbyte_end_at }},
-      case when lag({{ cursor_field }}) over (
-        partition by {{ primary_key_partition | join(", ") }}
-        order by
-            {{ cursor_field }} {{ order_null }},
-            {{ cursor_field }} desc,
-            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
-      ) is null {{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
-      {{ col_ab_id }},
-      {{ col_emitted_at }},
-      {{ hash_id }}
-    from input_data
+    select *,
+      {{ case_begin }} {{ airbyte_end_at }} is null {{ cdc_active_row }} {{ case_then }} 1 {{ case_else }} 0 {{ case_end }} as {{ active_row }}
+    from (
+      select
+        {%- if parent_hash_id %}
+          {{ parent_hash_id }},
+        {%- endif %}
+        {{ '{{' }} dbt_utils.surrogate_key([
+            {%- for primary_key in primary_keys %}
+              {{ primary_key }},
+            {%- endfor %}
+        ]) {{ '}}' }} as {{ unique_key }},
+        {%- for field in fields %}
+          {{ field }},
+        {%- endfor %}
+        {{ cursor_field }} as {{ airbyte_start_at }},
+        {{ lag_begin }}({{ cursor_field }}) over (
+          partition by {{ primary_key_partition | join(", ") }}
+          order by
+              {{ cursor_field }} {{ order_null }},
+              {{ cursor_field }} desc,
+              {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+          {{ lag_end }}
+        ) as {{ airbyte_end_at }},
+        {{ col_ab_id }},
+        {{ col_emitted_at }},
+        {{ hash_id }}
+      from input_data
+    ) table_alias
 ),
 dedup_data as (
     select
@@ -735,6 +746,36 @@ from dedup_data where {{ airbyte_row_num }} = 1
             # SQL Server treats NULL values as the lowest values, then sorted in ascending order, NULLs come first.
             order_null = "desc"
 
+        lag_begin = "lag"
+        lag_end = ""
+        if self.destination_type == DestinationType.CLICKHOUSE:
+            # ClickHouse doesn't support lag() yet, this is a workaround solution
+            # Ref: https://clickhouse.com/docs/en/sql-reference/window-functions/
+            lag_begin = "anyOrNull"
+            lag_end = "ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING"
+
+        case_begin = "case when"
+        case_then = "then"
+        case_else = "else"
+        case_end = "end"
+        if self.destination_type == DestinationType.CLICKHOUSE:
+            # ClickHouse doesn't have CASE WHEN, use multiIf instead
+            # Ref: https://clickhouse.com/docs/en/sql-reference/functions/conditional-functions/#multiif
+            case_begin = "multiIf("
+            case_then = ","
+            case_else = ","
+            case_end = ")"
+
+        enable_left_join_null = ""
+        cast_begin = "cast("
+        cast_as = " as "
+        cast_end = ")"
+        if self.destination_type == DestinationType.CLICKHOUSE:
+            enable_left_join_null = "--"
+            cast_begin = "accurateCastOrNull("
+            cast_as = ", '"
+            cast_end = "')"
+
         # TODO move all cdc columns out of scd models
         cdc_active_row_pattern = ""
         cdc_updated_order_pattern = ""
@@ -748,10 +789,12 @@ from dedup_data where {{ airbyte_row_num }} = 1
             cdc_active_row_pattern = f"and {col_cdc_deleted_at} is null "
             cdc_updated_order_pattern = f", {col_cdc_updated_at} desc"
             cdc_cols = (
-                f", cast({col_cdc_deleted_at} as "
-                + "{{ dbt_utils.type_string() }})"
-                + f", cast({col_cdc_updated_at} as "
-                + "{{ dbt_utils.type_string() }})"
+                f", {cast_begin}{col_cdc_deleted_at}{cast_as}"
+                + "{{ dbt_utils.type_string() }}"
+                + f"{cast_end}"
+                + f", {cast_begin}{col_cdc_updated_at}{cast_as}"
+                + "{{ dbt_utils.type_string() }}"
+                + f"{cast_end}"
             )
             quoted_cdc_cols = f", {quoted_col_cdc_deleted_at}, {quoted_col_cdc_updated_at}"
 
@@ -759,7 +802,7 @@ from dedup_data where {{ airbyte_row_num }} = 1
             col_cdc_log_pos = self.name_transformer.normalize_column_name("_ab_cdc_log_pos")
             quoted_col_cdc_log_pos = self.name_transformer.normalize_column_name("_ab_cdc_log_pos", in_jinja=True)
             cdc_updated_order_pattern += f", {col_cdc_log_pos} desc"
-            cdc_cols += f", cast({col_cdc_log_pos} as " + "{{ dbt_utils.type_string() }})"
+            cdc_cols += f", {cast_begin}{col_cdc_log_pos}{cast_as}" + "{{ dbt_utils.type_string() }}" + f"{cast_end}"
             quoted_cdc_cols += f", {quoted_col_cdc_log_pos}"
 
         sql = template.render(
@@ -789,6 +832,13 @@ from dedup_data where {{ airbyte_row_num }} = 1
             cdc_updated_at_order=cdc_updated_order_pattern,
             cdc_cols=cdc_cols,
             quoted_cdc_cols=quoted_cdc_cols,
+            lag_begin=lag_begin,
+            lag_end=lag_end,
+            case_begin=case_begin,
+            case_then=case_then,
+            case_else=case_else,
+            case_end=case_end,
+            enable_left_join_null=enable_left_join_null,
         )
         return sql
 

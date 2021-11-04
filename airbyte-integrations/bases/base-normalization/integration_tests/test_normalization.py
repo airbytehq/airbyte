@@ -68,7 +68,7 @@ def setup_test_path(request):
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
-    if destination_type.value == DestinationType.ORACLE.value and test_resource_name == "test_nested_streams":
+    if destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value) and test_resource_name == "test_nested_streams":
         pytest.skip(f"Destinations {destination_type} does not support nested streams")
 
     target_schema = dbt_test_utils.target_schema
@@ -126,7 +126,7 @@ def run_incremental_normalization(destination_type: DestinationType, test_resour
 def run_schema_change_normalization(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
     if destination_type.value in [DestinationType.MSSQL.value, DestinationType.MYSQL.value, DestinationType.ORACLE.value]:
         pytest.skip(f"{destination_type} does not support schema change in incremental yet (requires dbt 0.21.0+)")
-    if destination_type.value in [DestinationType.SNOWFLAKE.value]:
+    if destination_type.value in [DestinationType.SNOWFLAKE.value, DestinationType.CLICKHOUSE.value]:
         pytest.skip(f"{destination_type} is disabled as it doesnt support schema change in incremental yet (column type changes)")
 
     setup_schema_change_data(destination_type, test_resource_name, test_root_dir)
@@ -182,6 +182,9 @@ def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -
     elif destination_type.value == DestinationType.ORACLE.value:
         copy_tree("../dbt-project-template-oracle", test_root_dir)
         dbt_project_yaml = "../dbt-project-template-oracle/dbt_project.yml"
+    elif destination_type.value == DestinationType.CLICKHOUSE.value:
+        copy_tree("../dbt-project-template-clickhouse", test_root_dir)
+        dbt_project_yaml = "../dbt-project-template-clickhouse/dbt_project.yml"
     if destination_type.value not in (DestinationType.REDSHIFT.value, DestinationType.ORACLE.value):
         # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
         dbt_test_utils.copy_replace(
