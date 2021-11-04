@@ -251,7 +251,7 @@ jobs:
         with:
           if: ${{ github.ref == 'refs/airbyte-jenny/javadocs-autopublish' }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build
+          publish_dir: ./build/docs/javadoc
 
 
       - name: Slack Notification - Failure
