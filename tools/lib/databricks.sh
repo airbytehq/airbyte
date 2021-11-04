@@ -2,10 +2,11 @@
 
 . tools/lib/lib.sh
 
-# Download Spark JDBC driver for the Databricks destination.
+# Download Spark JDBC driver for the Databricks connector.
 # The original driver file was downloaded from
 # https://databricks.com/spark/jdbc-drivers-download
-# with the acceptance to the terms & conditions.
+# with the acceptance of the following terms & conditions:
+# https://databricks.com/jdbc-odbc-driver-license
 _get_databricks_jdbc_driver() {
   local connector_path="airbyte-integrations/connectors/destination-databricks"
 
