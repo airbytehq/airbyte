@@ -24,7 +24,7 @@
 
     <Appenders>
         <Console name="Default" target="SYSTEM_OUT">
-            <PatternLayout pattern="${default-pattern}"/>
+	    <JsonTemplateLayout eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json"/>
         </Console>
 
         <Routing name="LogSplit">
@@ -35,7 +35,7 @@
                 </Route>
                 <Route>
                     <File name="${ctx:job_log_path}-local" fileName="${ctx:job_log_path}">
-                        <PatternLayout pattern="${docker-worker-file-pattern}"/>
+	    		<JsonTemplateLayout eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json"/>
                     </File>
                 </Route>
             </Routes>
@@ -61,7 +61,7 @@
                       s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
                       s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
                       gcpStorageBucket="${gcp-storage-bucket}" gcpStorageBlobNamePrefix="job-logging${ctx:cloud_job_log_path}">
-                        <PatternLayout pattern="${cloud-worker-file-pattern}"/>
+	    		<JsonTemplateLayout eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json"/>
                     </Log4j2Appender>
                 </Route>
             </Routes>
@@ -80,7 +80,7 @@
                             fileName="${ctx:workspace_app_root}/logs.log"
                             filePattern="${ctx:workspace_app_root}/logs.%i.log.gz"
                             ignoreExceptions="false">
-                        <PatternLayout pattern="${docker-worker-file-pattern}"/>
+	    		<JsonTemplateLayout eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json"/>
                         <Policies>
                             <SizeBasedTriggeringPolicy size="100MB" />
                         </Policies>
@@ -103,7 +103,7 @@
                       s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
                       s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
                       gcpStorageBucket="${gcp-storage-bucket}" gcpStorageBlobNamePrefix="app-logging${ctx:cloud_workspace_app_root}">
-                        <PatternLayout pattern="${cloud-worker-file-pattern}"/>
+	    		<JsonTemplateLayout eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json"/>
                     </Log4j2Appender>
                 </Route>
             </Routes>

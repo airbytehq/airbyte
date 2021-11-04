@@ -220,6 +220,9 @@ subprojects {
         implementation 'org.slf4j:jcl-over-slf4j:1.7.30' //JCL bridge
         implementation 'org.slf4j:log4j-over-slf4j:1.7.30' // log4j1.2 bridge
 
+	// JSON format log4j output
+        implementation 'org.apache.logging.log4j:log4j-layout-template-json:2.14.0'
+
         // Dependencies for logging to cloud storage, as well as the various clients used to do so.
         implementation 'com.therealvan:appender-log4j2:3.1.2-SNAPSHOT'
         implementation 'com.amazonaws:aws-java-sdk-s3:1.12.6'
