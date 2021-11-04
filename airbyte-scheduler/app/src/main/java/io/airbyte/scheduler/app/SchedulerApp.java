@@ -15,8 +15,10 @@ import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
@@ -81,6 +83,8 @@ public class SchedulerApp {
   private final int submitterNumThreads;
   private final int maxSyncJobAttempts;
   private final String airbyteVersionOrWarnings;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
 
   public SchedulerApp(final Path workspaceRoot,
                       final JobPersistence jobPersistence,
@@ -90,7 +94,9 @@ public class SchedulerApp {
                       final TemporalClient temporalClient,
                       final Integer submitterNumThreads,
                       final Integer maxSyncJobAttempts,
-                      final String airbyteVersionOrWarnings) {
+                      final String airbyteVersionOrWarnings,
+                      final WorkerEnvironment workerEnvironment,
+                      final LogConfigs logConfigs) {
     this.workspaceRoot = workspaceRoot;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
@@ -100,6 +106,8 @@ public class SchedulerApp {
     this.submitterNumThreads = submitterNumThreads;
     this.maxSyncJobAttempts = maxSyncJobAttempts;
     this.airbyteVersionOrWarnings = airbyteVersionOrWarnings;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
   }
 
   public void start() throws IOException {
@@ -116,7 +124,7 @@ public class SchedulerApp {
         jobPersistence,
         temporalWorkerRunFactory,
         new JobTracker(configRepository, jobPersistence, trackingClient),
-        jobNotifier);
+        jobNotifier, workerEnvironment, logConfigs);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -187,7 +195,8 @@ public class SchedulerApp {
 
     final Configs configs = new EnvConfigs();
 
-    LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getSchedulerLogsRoot(configs));
+    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
+        LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot()));
 
     final Path workspaceRoot = configs.getWorkspaceRoot();
     LOGGER.info("workspaceRoot = " + workspaceRoot);
@@ -250,7 +259,7 @@ public class SchedulerApp {
         temporalClient,
         Integer.parseInt(configs.getSubmitterNumThreads()),
         configs.getMaxSyncJobAttempts(),
-        configs.getAirbyteVersionOrWarning())
+        configs.getAirbyteVersionOrWarning(), configs.getWorkerEnvironment(), configs.getLogConfigs())
             .start();
   }
 

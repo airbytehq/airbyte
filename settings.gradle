@@ -11,6 +11,12 @@ gradleEnterprise {
     }
 }
 
+sourceControl {
+    gitRepository("https://github.com/airbytehq/json-avro-converter.git") {
+        producesModule("tech.allegro.schema.json2avro:converter")
+    }
+}
+
 rootProject.name = 'airbyte'
 
 // SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE. Blank is equivalent to all.
@@ -42,7 +48,6 @@ include ':airbyte-workers' // reused by acceptance tests in connector base.
 include ':airbyte-analytics' // transitively used by airbyte-workers.
 include ':airbyte-config:init' // transitively used by airbyte-workers.
 include ':airbyte-config:persistence' // transitively used by airbyte-workers.
-include ':airbyte-config:specs' // transitively used by airbyte-workers.
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
 include ':airbyte-notification' // transitively used by airbyte-workers.
 include ':airbyte-scheduler:models' // transitively used by airbyte-workers.
