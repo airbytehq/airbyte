@@ -29,7 +29,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -172,9 +171,10 @@ public class BigQueryUtils {
    * @param dateTimeFields - list contains fields of DATETIME format
    * @param data - Json will be sent to Google BigData service
    *
-   *  The special DATETIME format is required to save this type to BigQuery.
-   *  @see <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#details_of_loading_json_data">Supported Google bigquery datatype</a>
-   *  This method is responsible to adapt JSON DATETIME to Bigquery
+   *        The special DATETIME format is required to save this type to BigQuery.
+   * @see <a href=
+   *      "https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#details_of_loading_json_data">Supported
+   *      Google bigquery datatype</a> This method is responsible to adapt JSON DATETIME to Bigquery
    */
   public static void transformJsonDateTimeToBigDataFormat(List<String> dateTimeFields, ObjectNode data) {
     dateTimeFields.forEach(e -> {
@@ -183,10 +183,11 @@ public class BigQueryUtils {
             .dateTime(new DateTime(data
                 .findValue(e)
                 .asText())
-                .toString(BIG_QUERY_DATETIME_FORMAT))
+                    .toString(BIG_QUERY_DATETIME_FORMAT))
             .getValue();
         data.put(e, googleBigQueryDateFormat);
       }
     });
   }
+
 }

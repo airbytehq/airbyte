@@ -19,7 +19,6 @@ import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest {
 
