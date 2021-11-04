@@ -4,6 +4,7 @@ set -e
 set -x
 
 . tools/lib/lib.sh
+. tools/lib/databricks.sh
 
 USAGE="
 Usage: $(basename "$0") <cmd>
@@ -32,28 +33,15 @@ cmd_scaffold() {
   )
 }
 
-# Download Spark JDBC driver for the Databricks destination.
-download_spark_jdbc() {
-  local path=$1; shift
-  local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
-
-  if [[ "airbyte/destination-databricks" == "${image_name}" ]] ; then
-    if [[ -f "$path"/lib/SparkJDBC42.jar ]] ; then
-      echo "Spark JDBC driver already exists"
-    else
-      echo "Downloading Spark JDBC driver..."
-      gsutil cp gs://io-airbyte-build-dependencies/SparkJDBC42.jar "$path"/lib
-    fi
-  fi
-}
-
 cmd_build() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
   local run_tests=$1; shift || run_tests=true
 
-  download_spark_jdbc "$path"
+  if [[ "airbyte-integrations/connectors/destination-databricks" == "${path}" ]]; then
+    _get_databricks_jdbc_driver
+  fi
 
   echo "Building $path"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
