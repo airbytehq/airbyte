@@ -21,6 +21,7 @@ from source_hubspot.api import (
     FormSubmssionStream,
     MarketingEmailStream,
     OwnerStream,
+    PropertyHistoryStream,
     SubscriptionChangeStream,
     WorkflowStream,
 )
@@ -49,6 +50,7 @@ class Client(BaseClient):
             "marketing_emails": MarketingEmailStream(**common_params),
             "owners": OwnerStream(**common_params),
             "products": CRMObjectStream(entity="product", **common_params),
+            "property_history": PropertyHistoryStream(**common_params),
             "subscription_changes": SubscriptionChangeStream(**common_params),
             "tickets": CRMObjectStream(entity="ticket", **common_params),
             "workflows": WorkflowStream(**common_params),

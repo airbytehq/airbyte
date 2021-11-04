@@ -698,14 +698,50 @@ class FormStream(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
 
-    
+
+class PropertyHistoryStream(Stream):
+    more_key = "has-more"
+    url = "/contacts/v1/lists/all/contacts/all"
+    updated_at_field = "timestamp"
+    created_at_field = "timestamp"
+    data_field = "contacts"
+    page_field = "vid-offset"
+    page_filter = "vidOffset"
+
+    def list(self, fields) -> Iterable:
+        properties = self._api.get(f"/properties/v2/contact/properties")
+        properties_list = [single_property["name"] for single_property in properties]
+        params = {"propertyMode": "value_and_history", "property": properties_list}
+        yield from self.read(partial(self._api.get, url=self.url), params)
+
+    def _transform(self, records: Iterable) -> Iterable:
+        record: Dict[str, Dict]
+        for record in records:
+            properties = record.get("properties")
+            vid = record.get("vid")
+            value_dict: Dict
+            for key, value_dict in properties.items():
+                versions = value_dict.get("versions")
+                if key == "lastmodifieddate":
+                    continue
+                if versions:
+                    for version in versions:
+                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_datetime_string()
+                        version["property"] = key
+                        version["vid"] = vid
+                        yield version
+
 
 class FormSubmssionStream(Stream):
     url = "/form-integrations/v1/submissions/forms"
     limit = 50
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    page_field = "paging"
+    page_filter = "after"
 
+    ## TODO: Add Dynamic Properties
+    ## TODO: Form GUID as value
     def list(self, fields) -> Iterable:
         params = {
             "limit": 50,
@@ -715,7 +751,7 @@ class FormSubmssionStream(Stream):
             self.updated_at_field = "submittedAt"
             self.created_at_field = "submittedAt"
             yield from self.read(partial(self._api.get, url=f"{self.url}/{row['id']}"), params)
-    
+
     def _transform(self, records: Iterable) -> Iterable:
         for record in records:
             values: dict = record.get("values") or None
