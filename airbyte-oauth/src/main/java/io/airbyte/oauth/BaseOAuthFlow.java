@@ -26,13 +26,18 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.client.utils.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * Class implementing generic oAuth 2.0 flow.
  */
 public abstract class BaseOAuthFlow extends BaseOAuthConfig {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseOAuthFlow.class);
 
   /**
    * Simple enum of content type strings and their respective encoding functions used for POSTing the
@@ -141,10 +146,10 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   @Override
   public Map<String, Object> completeSourceOAuth(
-                                                 final UUID workspaceId,
-                                                 final UUID sourceDefinitionId,
-                                                 final Map<String, Object> queryParams,
-                                                 final String redirectUrl)
+      final UUID workspaceId,
+      final UUID sourceDefinitionId,
+      final Map<String, Object> queryParams,
+      final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return completeOAuthFlow(
@@ -183,7 +188,6 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         .header("Content-Type", tokenReqContentType.contentType)
         .header("Accept", "application/json")
         .build();
-    // TODO: Handle error response to report better messages
     try {
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       return extractRefreshToken(Jsons.deserialize(response.body()), accessTokenUrl);
@@ -230,7 +234,8 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
     } else if (data.has("access_token")) {
       result.put("access_token", data.get("access_token").asText());
     } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
+      LOGGER.info("Oauth flow failed. Data received from server: {}", data);
+      throw new IOException(String.format("Missing 'refresh_token' in query params from %s. Response: %s", accessTokenUrl));
     }
     return Map.of("credentials", result);
 
