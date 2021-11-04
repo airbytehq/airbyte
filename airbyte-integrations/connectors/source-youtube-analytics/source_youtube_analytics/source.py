@@ -103,7 +103,7 @@ class ChannelReports(HttpSubStream):
     name = None
     primary_key = None
     cursor_field = "date"
-    url_base = "https://youtubereporting.googleapis.com/v1/"
+    url_base = ""
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, name: str, dimensions: List[str], **kwargs):
@@ -128,7 +128,7 @@ class ChannelReports(HttpSubStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return stream_slice["parent"]["downloadUrl"][len(self.url_base):]
+        return stream_slice["parent"]["downloadUrl"]
 
     def read_records(self, *, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         parent = stream_slice.get("parent")

@@ -130,6 +130,7 @@ def test_channel_reports_path():
     parent = ReportResources("stream_name", jobs_stream, "job1")
     stream = ChannelReports("stream_name", [], parent=parent)
 
+    downloadUrl = "https://youtubereporting.googleapis.com/v1/media/CHANNEL/ybpwL6sPt6SSzazIV400WQ/jobs/1c20da45-0604-4d60-85db-925989df1db6/reports/4317112913?alt=media"
     stream_slice = {
         "parent": {
             "id": "4317112913",
@@ -137,12 +138,12 @@ def test_channel_reports_path():
             "startTime": datetime.datetime(2021, 10, 25, 7, 0, tzinfo=datetime.timezone.utc),
             "endTime": datetime.datetime(2021, 10, 26, 7, 0, tzinfo=datetime.timezone.utc),
             "createTime": datetime.datetime(2021, 10, 27, 4, 59, 46, 114806, tzinfo=datetime.timezone.utc),
-            "downloadUrl": "https://youtubereporting.googleapis.com/v1/media/CHANNEL/ybpwL6sPt6SSzazIV400WQ/jobs/1c20da45-0604-4d60-85db-925989df1db6/reports/4317112913?alt=media",
+            "downloadUrl": downloadUrl,
         }
     }
 
     path = stream.path(stream_state={}, stream_slice=stream_slice, next_page_token=None)
-    assert path == "media/CHANNEL/ybpwL6sPt6SSzazIV400WQ/jobs/1c20da45-0604-4d60-85db-925989df1db6/reports/4317112913?alt=media"
+    assert path == downloadUrl
 
 
 def test_channel_reports_parse_response():
