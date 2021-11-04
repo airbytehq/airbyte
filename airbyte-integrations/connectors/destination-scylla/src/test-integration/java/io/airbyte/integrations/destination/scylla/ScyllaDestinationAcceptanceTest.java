@@ -68,6 +68,11 @@ class ScyllaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
+  protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
                                            String streamName,
                                            String namespace,

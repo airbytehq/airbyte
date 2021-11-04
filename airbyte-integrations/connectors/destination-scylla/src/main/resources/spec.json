@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Scylla Destination Spec",
     "type": "object",
-    "required": ["keyspace", "username", "password", "address"],
+    "required": ["keyspace", "username", "password", "address", "port"],
     "additionalProperties": true,
     "properties": {
       "keyspace": {

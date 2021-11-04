@@ -46,7 +46,7 @@ public class ScyllaDestination extends BaseConnector implements Destination {
         try {
           scyllaCqlProvider.dropTableIfExists(scyllaConfig.getKeyspace(), tableName);
         } catch (Exception e) {
-          LOGGER.error("Error while deleting temp table {} with reason: : ", tableName, e);
+          LOGGER.error("Error while deleting temp table {} with reason: ", tableName, e);
         }
         scyllaCqlProvider.close();
       }

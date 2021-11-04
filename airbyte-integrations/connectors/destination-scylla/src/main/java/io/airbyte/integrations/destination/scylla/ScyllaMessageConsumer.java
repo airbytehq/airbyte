@@ -89,7 +89,7 @@ public class ScyllaMessageConsumer extends FailureTrackingAirbyteMessageConsumer
             default -> throw new UnsupportedOperationException("Unsupported destination sync mode");
           }
         } catch (Exception e) {
-          LOGGER.error("Error while copying data to table {}: : ", v.getTableName(), e);
+          LOGGER.error("Error while copying data to table {}: ", v.getTableName(), e);
         }
       });
       outputRecordCollector.accept(lastMessage);
@@ -99,7 +99,7 @@ public class ScyllaMessageConsumer extends FailureTrackingAirbyteMessageConsumer
       try {
         scyllaCqlProvider.dropTableIfExists(v.getKeyspace(), v.getTempTableName());
       } catch (Exception e) {
-        LOGGER.error("Error while deleting temp table {} with reason: : ", v.getTempTableName(), e);
+        LOGGER.error("Error while deleting temp table {} with reason: ", v.getTempTableName(), e);
       }
     });
     scyllaCqlProvider.close();

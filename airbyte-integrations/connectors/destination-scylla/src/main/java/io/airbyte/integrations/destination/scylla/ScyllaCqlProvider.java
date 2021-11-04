@@ -135,8 +135,7 @@ public class ScyllaCqlProvider implements Closeable {
     cluster.getMetadata().getTokenRanges().stream()
         .flatMap(range -> range.unwrap().stream())
         .map(range -> selectStatement.bind(range.getStart(), range.getEnd()))
-        .map(selectBoundStatement -> Tuple.of(selectBoundStatement, insertStatement))
-        .map(statements -> executorService.submit(() -> batchInsert(statements.value1(), statements.value2())))
+        .map(selectBoundStatement -> executorService.submit(() -> batchInsert(selectBoundStatement, insertStatement)))
         .forEach(this::awaitThread);
 
   }

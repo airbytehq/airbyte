@@ -3,6 +3,8 @@ version: '3'
 services:
   scylla1:
     image: scylladb/scylla
+    ports:
+      - "9042:9042"
     container_name: scylla1
     command: --smp 1
 
