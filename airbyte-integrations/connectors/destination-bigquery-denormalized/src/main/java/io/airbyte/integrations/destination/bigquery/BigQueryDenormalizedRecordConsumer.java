@@ -40,10 +40,10 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
   private final Set<String> invalidKeys;
 
   public BigQueryDenormalizedRecordConsumer(final BigQuery bigquery,
-      final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector,
-      final StandardNameTransformer namingResolver) {
+                                            final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector,
+                                            final StandardNameTransformer namingResolver) {
     super(bigquery, writeConfigs, catalog, outputRecordCollector, false, false);
     this.namingResolver = namingResolver;
     invalidKeys = new HashSet<>();
