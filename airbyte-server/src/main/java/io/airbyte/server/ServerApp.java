@@ -243,7 +243,7 @@ public class ServerApp implements ServerRunnable {
 
       // todo (lmossman) - this will only exist temporarily to ensure all definitions contain specs. It
       // will be removed after the faux major version bump
-      migrateAllDefinitionsToContainSpec(configRepository, configPersistence, syncSchedulerClient);
+      migrateAllDefinitionsToContainSpec(configRepository, cachingSchedulerClient);
 
       return apiFactory.create(
           schedulerJobClient,
