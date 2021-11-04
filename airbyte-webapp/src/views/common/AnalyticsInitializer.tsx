@@ -4,7 +4,6 @@ import { useConfig } from "config";
 import AnalyticsServiceProvider, { useAnalytics } from "hooks/useAnalytics";
 import useSegment from "hooks/useSegment";
 import { useGetService } from "core/servicesProvider";
-import useWorkspace from "hooks/services/useWorkspace";
 
 function WithAnalytics({ customerId }: { customerId: string }) {
   const config = useConfig();
@@ -22,20 +21,19 @@ function WithAnalytics({ customerId }: { customerId: string }) {
 const AnalyticsInitializer: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const customerIdProvider = useGetService<() => string>(
-    "useCustomerIdProvider"
-  );
-  const customerId = customerIdProvider();
-  const { workspace } = useWorkspace();
+  const customerIdProvider = useGetService<
+    () => { userId: string; worspaceId: string }
+  >("useCustomerIdProvider");
+  const { worspaceId, userId } = customerIdProvider();
   const config = useConfig();
 
   return (
     <AnalyticsServiceProvider
-      userId={customerId}
-      workspaceId={workspace.workspaceId}
+      userId={userId}
+      workspaceId={worspaceId}
       version={config.version}
     >
-      <WithAnalytics customerId={customerId} />
+      <WithAnalytics customerId={userId} />
       {children}
     </AnalyticsServiceProvider>
   );

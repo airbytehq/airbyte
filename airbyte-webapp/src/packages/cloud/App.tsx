@@ -13,6 +13,7 @@ import { Routing } from "packages/cloud/routes";
 import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
+import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
 import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
 import { AppServicesProvider } from "./services/AppServicesProvider";
@@ -60,7 +61,9 @@ const App: React.FC = () => {
                     <AppServicesProvider>
                       <AuthenticationProvider>
                         <IntercomProvider>
-                          <Routing />
+                          <AnalyticsInitializer>
+                            <Routing />
+                          </AnalyticsInitializer>
                         </IntercomProvider>
                       </AuthenticationProvider>
                     </AppServicesProvider>

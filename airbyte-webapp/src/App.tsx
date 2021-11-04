@@ -11,6 +11,7 @@ import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
 import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import NotificationService from "hooks/services/Notification";
+import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
 import {
   useCurrentWorkspace,
   usePickFirstWorkspace,
@@ -30,7 +31,10 @@ import {
 function useCustomerIdProvider() {
   const workspace = useCurrentWorkspace();
 
-  return workspace.customerId;
+  return {
+    userId: workspace.customerId,
+    workspaceId: workspace.workspaceId,
+  };
 }
 
 const Features: Feature[] = [
@@ -99,9 +103,11 @@ const App: React.FC = () => {
                 <FeatureService features={Features}>
                   <NotificationService>
                     <AppServices>
-                      <OnboardingServiceProvider>
-                        <Routing />
-                      </OnboardingServiceProvider>
+                      <AnalyticsInitializer>
+                        <OnboardingServiceProvider>
+                          <Routing />
+                        </OnboardingServiceProvider>
+                      </AnalyticsInitializer>
                     </AppServices>
                   </NotificationService>
                 </FeatureService>
