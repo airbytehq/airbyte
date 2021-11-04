@@ -12,30 +12,18 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.io.IOException;
+import io.airbyte.workers.process.ProcessFactory;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Comparator;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
-import org.junit.jupiter.api.Test;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
+import org.junit.jupiter.api.Disabled;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.ClickHouseContainer;
 import org.testcontainers.containers.Network;
-
-import java.sql.SQLException;
-import java.lang.Thread;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import io.airbyte.workers.process.DockerProcessFactory;
-import io.airbyte.workers.process.ProcessFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import java.util.ArrayList;
 
 public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -86,13 +74,13 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     // ClickHouse official JDBC driver use HTTP protocal, its default port is 8123
     // dbt clickhouse adapter use native protocal, its default port is 9000
     return Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", db.getHost())
-            .put("port", useNativePort ? db.getMappedPort(ClickHouseContainer.NATIVE_PORT) : db.getFirstMappedPort())
-            .put("database", DB_NAME)
-            .put("username", db.getUsername())
-            .put("password", db.getPassword())
-            .put("schema", DB_NAME)
-            .build());
+        .put("host", db.getHost())
+        .put("port", useNativePort ? db.getMappedPort(ClickHouseContainer.NATIVE_PORT) : db.getFirstMappedPort())
+        .put("database", DB_NAME)
+        .put("username", db.getUsername())
+        .put("password", db.getPassword())
+        .put("schema", DB_NAME)
+        .build());
   }
 
   @Override
@@ -100,19 +88,20 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     String ipAddress = db.getContainerInfo().getNetworkSettings().getIpAddress();
 
     return Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", db.getHost())
-            .put("port", db.getFirstMappedPort())
-            .put("database", DB_NAME)
-            .put("username", db.getUsername())
-            .put("password", "wrong password")
-            .put("schema", DB_NAME)
-            .build());
+        .put("host", db.getHost())
+        .put("port", db.getFirstMappedPort())
+        .put("database", DB_NAME)
+        .put("username", db.getUsername())
+        .put("password", "wrong password")
+        .put("schema", DB_NAME)
+        .build());
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName,
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv,
+                                                     final String streamName,
                                                      final String namespace)
-          throws Exception {
+      throws Exception {
     return retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), namespace);
   }
 
@@ -121,11 +110,11 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
                                            String streamName,
                                            String namespace,
                                            JsonNode streamSchema)
-          throws Exception {
+      throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-            .stream()
-            .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
-            .collect(Collectors.toList());
+        .stream()
+        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .collect(Collectors.toList());
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
@@ -134,8 +123,8 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     final JdbcDatabase jdbcDB = getDatabase(getConfig());
     useNativePort = oldUseNativePort;
     return jdbcDB.query(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .collect(Collectors.toList());
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -153,13 +142,13 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
     return Databases.createJdbcDatabase(
-            config.get("username").asText(),
-            config.has("password") ? config.get("password").asText() : null,
-            String.format("jdbc:clickhouse://%s:%s/%s",
-                    config.get("host").asText(),
-                    config.get("port").asText(),
-                    config.get("database").asText()),
-            ClickhouseDestination.DRIVER_CLASS);
+        config.get("username").asText(),
+        config.has("password") ? config.get("password").asText() : null,
+        String.format("jdbc:clickhouse://%s:%s/%s",
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("database").asText()),
+        ClickhouseDestination.DRIVER_CLASS);
   }
 
   @Override
@@ -175,8 +164,8 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   }
 
   /**
-   * The SQL script generated by dbt in 'test' step isn't compatible
-   * with ClickHouse, so we skip this test for now
+   * The SQL script generated by dbt in 'test' step isn't compatible with ClickHouse, so we skip this
+   * test for now
    *
    * @throws Exception
    */
@@ -187,9 +176,10 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   }
 
   /**
-   * The normalization container needs native port, while destination
-   * container needs HTTP port, we can't inject the port switch statement
-   * into DestinationAcceptanceTest.runSync() method for this test, so we skip it.
+   * The normalization container needs native port, while destination container needs HTTP port, we
+   * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
+   * test, so we skip it.
+   *
    * @throws Exception
    */
   @Disabled
@@ -198,13 +188,15 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   }
 
   /**
-   * The normalization container needs native port, while destination
-   * container needs HTTP port, we can't inject the port switch statement
-   * into DestinationAcceptanceTest.runSync() method for this test, so we skip it.
+   * The normalization container needs native port, while destination container needs HTTP port, we
+   * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
+   * test, so we skip it.
+   *
    * @throws Exception
    */
   @Disabled
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
     super.testSyncWithNormalization(messagesFilename, catalogFilename);
   }
+
 }

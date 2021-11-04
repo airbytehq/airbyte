@@ -68,7 +68,10 @@ def setup_test_path(request):
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
-    if destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value) and test_resource_name == "test_nested_streams":
+    if (
+        destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value)
+        and test_resource_name == "test_nested_streams"
+    ):
         pytest.skip(f"Destinations {destination_type} does not support nested streams")
 
     target_schema = dbt_test_utils.target_schema

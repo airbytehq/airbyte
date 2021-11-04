@@ -2533,8 +2533,7 @@ MSSQL = {
     "REGR_SYY",
 }
 
-CLICKHOUSE = {
-}
+CLICKHOUSE = {}
 
 RESERVED_KEYWORDS = {
     DestinationType.BIGQUERY.value: BIGQUERY,

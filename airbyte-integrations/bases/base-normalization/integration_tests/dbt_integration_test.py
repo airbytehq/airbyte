@@ -13,8 +13,8 @@ import subprocess
 import sys
 import threading
 import time
-from typing import Any, Dict, List
 from copy import copy
+from typing import Any, Dict, List
 
 from normalization.destination_type import DestinationType
 from normalization.transform_config.transform import TransformConfig

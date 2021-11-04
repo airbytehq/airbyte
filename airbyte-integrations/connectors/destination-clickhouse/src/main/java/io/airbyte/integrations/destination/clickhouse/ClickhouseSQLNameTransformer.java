@@ -8,9 +8,9 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
 public class ClickhouseSQLNameTransformer extends ExtendedNameTransformer {
 
-    @Override
-    protected String applyDefaultCase(final String input) {
-        return input.toLowerCase();
-    }
+  @Override
+  protected String applyDefaultCase(final String input) {
+    return input.toLowerCase();
+  }
 
 }
