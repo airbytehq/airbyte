@@ -102,6 +102,16 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("1")
             .build());
 
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("smallint")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .fullSourceDataType("smallint unsigned")
+            .addInsertValues("null", "0", "65535")
+            .addExpectedValues(null, "0", "65535")
+            .build());
+
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("mediumint")
