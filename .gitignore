@@ -1,6 +1,7 @@
 .gradle
 .idea
 *.iml
+*.swp
 build
 out
 .DS_Store
