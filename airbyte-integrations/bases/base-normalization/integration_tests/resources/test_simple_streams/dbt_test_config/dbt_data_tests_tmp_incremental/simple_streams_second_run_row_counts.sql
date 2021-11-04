@@ -2,7 +2,7 @@ with table_row_counts as (
     select distinct '_airbyte_raw_exchange_rate' as label, count(*) as row_count, 5 as expected_count
     from {{ source('test_normalization', '_airbyte_raw_exchange_rate') }}
 union all
-    select distinct 'exchange_rate' as label, count(*) as row_count, 13 as expected_count
+    select distinct 'exchange_rate' as label, count(*) as row_count, 5 as expected_count
     from {{ ref('exchange_rate') }}
 
 union all
@@ -32,10 +32,10 @@ union all
     select distinct '_airbyte_raw_pos_dedup_cdcx' as label, count(*) as row_count, 6 as expected_count
     from {{ source('test_normalization', '_airbyte_raw_pos_dedup_cdcx') }}
 union all
-    select distinct 'pos_dedup_cdcx_scd' as label, count(*) as row_count, 6 as expected_count
+    select distinct 'pos_dedup_cdcx_scd' as label, count(*) as row_count, 8 as expected_count
     from {{ ref('pos_dedup_cdcx_scd') }}
 union all
-    select distinct 'pos_dedup_cdcx' as label, count(*) as row_count, 2 as expected_count
+    select distinct 'pos_dedup_cdcx' as label, count(*) as row_count, 3 as expected_count
     from {{ ref('pos_dedup_cdcx') }}
 )
 select *
