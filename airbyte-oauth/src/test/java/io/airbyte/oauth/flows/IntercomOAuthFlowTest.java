@@ -48,11 +48,10 @@ public class IntercomOAuthFlowTest {
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.jsonNode(
-            Map.of("authorization",
-                ImmutableMap.builder()
-                    .put("client_id", "test_client_id")
-                    .put("client_secret", "test_client_secret")
-                    .build())))));
+            ImmutableMap.builder()
+                .put("client_id", "test_client_id")
+                .put("client_secret", "test_client_secret")
+                .build()))));
     intercomoAuthFlow = new IntercomOAuthFlow(configRepository, httpClient, IntercomOAuthFlowTest::getConstantState);
 
   }
@@ -75,7 +74,7 @@ public class IntercomOAuthFlowTest {
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
         intercomoAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    assertEquals(Jsons.serialize(Map.of("authorization", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
 
 }

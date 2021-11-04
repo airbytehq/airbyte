@@ -1,7 +1,4 @@
 {
   "start_date": "2021-11-22T20:32:05Z",
-  "authorization": {
-      "auth_type": "Apikey",
-      "access_token": "invalid_access_token"
-  }
+  "access_token": "invalid_access_token"
 }

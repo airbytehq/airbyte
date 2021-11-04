@@ -298,9 +298,7 @@ class SourceIntercom(AbstractSource):
     """
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        # for compatibility with old spec.json files just use full config if authorization key doesn't exist
-        authorization = config.get("authorization", config)
-        authenticator = TokenAuthenticator(token=authorization["access_token"])
+        authenticator = TokenAuthenticator(token=config["access_token"])
         try:
             url = f"{IntercomStream.url_base}/tags"
             auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
@@ -314,9 +312,7 @@ class SourceIntercom(AbstractSource):
         config["start_date"] = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
 
-        # for compatibility with old spec.json files just use full config if authorization key doesn't exist
-        authorization = config.get("authorization", config)
-        auth = TokenAuthenticator(token=authorization["access_token"])
+        auth = TokenAuthenticator(token=config["access_token"])
         return [
             Admins(authenticator=auth, **config),
             Companies(authenticator=auth, **config),

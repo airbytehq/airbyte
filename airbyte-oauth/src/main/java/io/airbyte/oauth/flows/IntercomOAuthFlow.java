@@ -50,27 +50,4 @@ public class IntercomOAuthFlow extends BaseOAuthFlow {
     return ACCESS_TOKEN_URL;
   }
 
-  @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
-    if (data.has("access_token")) {
-      return Map.of("authorization", Map.of("access_token", data.get("access_token").asText()));
-    } else {
-      throw new IOException(String.format("Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL));
-    }
-  }
-
-  @Override
-  protected String getClientIdUnsafe(final JsonNode config) {
-    // the config object containing client ID and secret is nested inside the "authorization" object
-    Preconditions.checkArgument(config.hasNonNull("authorization"));
-    return super.getClientIdUnsafe(config.get("authorization"));
-  }
-
-  @Override
-  protected String getClientSecretUnsafe(final JsonNode config) {
-    // the config object containing client ID and secret is nested inside the "authorization" object
-    Preconditions.checkArgument(config.hasNonNull("authorization"));
-    return super.getClientSecretUnsafe(config.get("authorization"));
-  }
-
 }
