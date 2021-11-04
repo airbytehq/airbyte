@@ -47,4 +47,5 @@ export interface DestinationGetConsentPayload {
   redirectUrl: string;
   destinationDefinitionId: string;
   workspaceId: string;
+  inputParams: Record<string, unknown>;
 }
