@@ -226,7 +226,7 @@ jobs:
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Build
-        run: SUB_BUILD=PLATFORM ./gradlew build --scan
+        run: SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
 
       - name: Publish Javadoc to Github Pages gh-pages branch
         uses: peaceiris/actions-gh-pages@v3
