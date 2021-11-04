@@ -6,24 +6,7 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "properties": {
-            "_airtable_id": { "type": ["null", "string"] },
-            "_airtable_created_time": { "type": ["null", "string"] },
-            "ID": { "type": ["null", "string"] },
-            "FIRST_NAME": { "type": ["null", "string"] },
-            "LAST_NAME": { "type": ["null", "string"] },
-            "EMAIL": { "type": ["null", "string"] },
-            "AGE": { "type": ["null", "string"] },
-            "CITY": { "type": ["null", "string"] },
-            "STATE": { "type": ["null", "string"] },
-            "COUNTRY": { "type": ["null", "string"] },
-            "ZIP": { "type": ["null", "string"] },
-            "LATITUDE": { "type": ["null", "string"] },
-            "LONGITUDE": { "type": ["null", "string"] },
-            "GENDER": { "type": ["null", "string"] },
-            "CREATED_AT": { "type": ["null", "string"] },
-            "TRAFFIC_SOURCE": { "type": ["null", "string"] }
-          }
+          "properties": {}
         },
         "supported_sync_modes": ["full_refresh"],
         "supported_destination_sync_modes": ["overwrite", "append_dedup"]
@@ -37,24 +20,21 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "properties": {
-            "_airtable_id": { "type": ["null", "string"] },
-            "_airtable_created_time": { "type": ["null", "string"] },
-            "ID": { "type": ["null", "string"] },
-            "FIRST_NAME": { "type": ["null", "string"] },
-            "LAST_NAME": { "type": ["null", "string"] },
-            "EMAIL": { "type": ["null", "string"] },
-            "AGE": { "type": ["null", "string"] },
-            "CITY": { "type": ["null", "string"] },
-            "STATE": { "type": ["null", "string"] },
-            "COUNTRY": { "type": ["null", "string"] },
-            "ZIP": { "type": ["null", "string"] },
-            "LATITUDE": { "type": ["null", "string"] },
-            "LONGITUDE": { "type": ["null", "string"] },
-            "GENDER": { "type": ["null", "string"] },
-            "CREATED_AT": { "type": ["null", "string"] },
-            "TRAFFIC_SOURCE": { "type": ["null", "string"] }
-          }
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "supported_destination_sync_modes": ["overwrite", "append_dedup"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "Table 3",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
         },
         "supported_sync_modes": ["full_refresh"],
         "supported_destination_sync_modes": ["overwrite", "append_dedup"]

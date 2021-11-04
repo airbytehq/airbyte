@@ -15,12 +15,12 @@
       },
       "base_id": {
         "type": "string",
-        "desctiption": "The base ID to integrate data from",
+        "description": "The base ID to integrate data from",
         "examples": ["app1234567890"]
       },
       "tables": {
         "type": "array",
-        "desctiption": "The list of tables to integrate",
+        "description": "The list of tables to integrate",
         "examples": ["table 1", "table 2"]
       }
     }

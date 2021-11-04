@@ -80,13 +80,14 @@ class SourceAirtable(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         auth = TokenAuthenticator(token=config["api_key"]).get_auth_header()
-        url = f"https://api.airtable.com/v0/{config['base_id']}/{config['tables'][0]}"
-        try:
-            response = requests.get(url, headers=auth)
-            response.raise_for_status()
-            return True, None
-        except requests.exceptions.HTTPError as e:
-            return False, e
+        for table in config["tables"]:
+            url = f"https://api.airtable.com/v0/{config['base_id']}/{table}?pageSize=1"
+            try:
+                response = requests.get(url, headers=auth)
+                response.raise_for_status()
+            except requests.exceptions.HTTPError as e:
+                return False, e
+        return True, None
 
     def discover(self, logger: AirbyteLogger, config) -> AirbyteCatalog:
         streams = []
