@@ -17,7 +17,7 @@ import org.slf4j.MDC;
  * <pre>
  *   <code>
  *     try(final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(
- *      new HashMap<String, String>() {{
+ *      new HashMap&lt;String, String&gt;() {{
  *        put("my", "value");
  *      }}
  *     )) {
