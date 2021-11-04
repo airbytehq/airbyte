@@ -362,6 +362,7 @@ class Templates(IterableExportStream):
         records = response_json.get(self.data_field, [])
 
         for record in records:
+            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
             yield record
 
 
