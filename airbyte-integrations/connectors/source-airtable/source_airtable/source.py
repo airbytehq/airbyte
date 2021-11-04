@@ -92,7 +92,7 @@ class SourceAirtable(AbstractSource):
         streams = []
         auth = TokenAuthenticator(token=config["api_key"]).get_auth_header()
         for table in config["tables"]:
-            url = f"https://api.airtable.com/v0/{config['base_id']}/{config['tables'][0]}?pageSize=1"
+            url = f"https://api.airtable.com/v0/{config['base_id']}/{table}?pageSize=1"
             response = requests.get(url, headers=auth)
             response.raise_for_status()
             record = response.json().get("records", [])[0].get("fields", {})
