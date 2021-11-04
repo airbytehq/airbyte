@@ -1,7 +1,7 @@
 plugins {
     id 'airbyte-python'
     id 'airbyte-docker'
-    id 'airbyte-standard-source-test-file'
+    id 'airbyte-source-acceptance-test'
 }
 
 airbytePython {
