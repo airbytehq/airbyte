@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * relational DB source.
  *
  * see io.airbyte.integrations.source.jdbc.AbstractJdbcSource if you are implementing a relational
- *      DB which can be accessed via JDBC driver.
+ * DB which can be accessed via JDBC driver.
  */
 public abstract class AbstractRelationalDbSource<DataType, Database extends SqlDatabase> extends
     AbstractDbSource<DataType, Database> implements Source {

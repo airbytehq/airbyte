@@ -26,7 +26,8 @@ import org.slf4j.LoggerFactory;
  * This implementation is similar to
  * {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier}. The difference is that
  * this implementation creates Parquet staging files, instead of CSV ones.
- * <p></p>
+ * <p>
+ * </p>
  * It does the following operations:
  * <ul>
  * <li>1. Parquet writer writes data stream into staging parquet file in
