@@ -56,6 +56,15 @@ class RechargeStream(HttpStream, ABC):
         else:
             return [response_data]
 
+    def should_retry(self, response: requests.Response) -> bool:
+        res = super().should_retry(response)
+        if res:
+            return res
+
+        # For some reason for large responses API server can return non-complete result
+        content_length = int(response.headers.get('Content-Length', 0))
+        return bool(content_length) and content_length > len(response.content)
+
 
 class IncrementalRechargeStream(RechargeStream, ABC):
 
