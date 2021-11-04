@@ -102,10 +102,7 @@
           },
           {
             "name": "_airbyte_additional_properties",
-            "type": [
-              "null",
-              {"type": "map", "values": "string"}
-            ],
+            "type": ["null", { "type": "map", "values": "string" }],
             "default": null
           }
         ]
@@ -125,7 +122,7 @@
         "fields": [
           {
             "name": "_airbyte_additional_properties",
-            "type": ["null", {"type": "map", "values": "string"}],
+            "type": ["null", { "type": "map", "values": "string" }],
             "default": null
           }
         ]
@@ -137,33 +134,33 @@
     "jsonFieldSchema": {
       "type": "object"
     },
-    "avroFieldType": ["null", {"type":"map","values":"string"}]
+    "avroFieldType": ["null", { "type": "map", "values": "string" }]
   },
   {
     "fieldName": "_ab_additional_properties",
     "jsonFieldSchema": {
       "type": "object"
     },
-    "avroFieldType": ["null", {"type":"map","values":"string"}]
+    "avroFieldType": ["null", { "type": "map", "values": "string" }]
   },
   {
     "fieldName": "any_of_field",
     "jsonFieldSchema": {
-      "anyOf": [{"type": "string"}, {"type": "integer"}]
+      "anyOf": [{ "type": "string" }, { "type": "integer" }]
     },
     "avroFieldType": ["null", "string", "int"]
   },
   {
     "fieldName": "all_of_field",
     "jsonFieldSchema": {
-      "allOf": [{"type": "string"}, {"type": "integer"}]
+      "allOf": [{ "type": "string" }, { "type": "integer" }]
     },
     "avroFieldType": ["null", "string", "int"]
   },
   {
     "fieldName": "one_of_field",
     "jsonFieldSchema": {
-      "oneOf": [{"type": "string"}, {"type": "integer"}]
+      "oneOf": [{ "type": "string" }, { "type": "integer" }]
     },
     "avroFieldType": ["null", "string", "int"]
   }
