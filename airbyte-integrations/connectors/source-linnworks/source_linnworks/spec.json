@@ -7,7 +7,8 @@
     "required": [
       "application_id",
       "application_secret",
-      "token"
+      "token",
+      "start_date"
     ],
     "additionalProperties": false,
     "properties": {
@@ -23,6 +24,11 @@
       "token": {
         "title": "Token",
         "type": "string"
+      },
+      "start_date": {
+        "title": "Start date",
+        "type": "string",
+        "format": "date-time"
       }
     }
   }
