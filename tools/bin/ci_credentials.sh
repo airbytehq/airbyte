@@ -21,6 +21,10 @@ function write_standard_creds() {
   local creds=$2
   local cred_filename=${3:-config.json}
   local source_name=${4:-github}
+
+  [ -z "$connector_name" ] && error "Empty connector name"
+  [ -z "$creds" ] && error "!!!!!Creds not set for $connector_name"
+
   if [[ $CONNECTOR_NAME != "all" && ${connector_name} != ${CONNECTOR_NAME} ]]; then
     return 0
   fi
@@ -38,11 +42,11 @@ function write_standard_creds() {
 
 function _write_standard_creds() {
   local connector_name=$1
-  local creds=$2
-  local cred_filename=$3
-
-  [ -z "$connector_name" ] && error "Empty connector name"
-  [ -z "$creds" ] && error "!!!!!Creds not set for $connector_name"
+  local cred_filename=$2
+  local creds=$3
+  if jq -e . >/dev/null 2>&1 <<<${creds}; then
+      error "Failed to parse JSON for '${connector_name}' => ${cred_filename}"
+  fi
 
   if [ "$connector_name" = "base-normalization" ]; then
     local secrets_dir="airbyte-integrations/bases/${connector_name}/secrets"
@@ -59,7 +63,7 @@ function save_all() {
     local connector_name=$(echo ${key} | cut -d'#' -f1)
     local cred_filename=$(echo ${key} | cut -d'#' -f2)
     local creds=${SECRET_MAP[${key}]}
-    _write_standard_creds ${connector_name} "${creds}" ${cred_filename}
+    _write_standard_creds ${connector_name} ${cred_filename} "${creds}" 
     
   done
   return 0
@@ -88,7 +92,7 @@ function export_gsm_secrets(){
 
   # docs: https://cloud.google.com/secret-manager/docs/filtering#api
   local filter="name:SECRET_"
-  [[ ${CONNECTOR_NAME} != "all" ]] && filter="${filter} AND labels.connector=${CONNECTOR_NAME}"
+  [[ ${CONNECTOR_NAME} != "all" ]] && filter="${filter} AND labels.connector:${CONNECTOR_NAME}"
   local uri="https://secretmanager.googleapis.com/v1/projects/${project_id}/secrets"
   local next_token=''
   while true; do
@@ -105,18 +109,22 @@ function export_gsm_secrets(){
       local secret_info=$(echo ${row} | base64 --decode)
       local secret_name=$(echo ${secret_info}| jq -r .name)
       local label_filename=$(echo ${secret_info}| jq -r '.labels.filename // "config"')
-      local label_connector=$(echo ${secret_info}| jq -r '.labels.connector // ""')
+      local label_connectors=$(echo ${secret_info}| jq -r '.labels.connector // ""')
       local label_command=$(echo ${secret_info}| jq -r ".labels.command // \"${COMMAND_NAME}\"")
 
       # skip secrets without the label "connector"
-      [[ -z ${label_connector} ]] && continue
+      [[ -z ${label_connectors} ]] && continue
+      if [[ "$label_connectors" != *"${CONNECTOR_NAME}"* ]]; then
+        echo "Not found ${CONNECTOR_NAME} info into the label 'connector' of the secret ${secret_name}"
+        continue
+      fi
       # skip secrets for other comments
       # all secrets without the "command" label will be added too
       [[ ${label_command} != ${COMMAND_NAME} ]] && continue
       # all secret file names should be finished with ".json"
       # but '.' cant be used
       local filename="${label_filename}.json"
-      echo "found the Google secret: ${secret_name} => ${filename} for the command '${label_command}'"
+      echo "found the Google secret of ${label_connectors}: ${secret_name} => ${filename} for the command '${label_command}'"
       local secret_uri="https://secretmanager.googleapis.com/v1/${secret_name}/versions/latest:access"
       local secret_data=$(curl -s --get --fail "${secret_uri}" \
         --header "authorization: Bearer ${access_token}" \
@@ -125,7 +133,7 @@ function export_gsm_secrets(){
       [[ -z ${secret_data} ]] && error "Can't load secrets' list"
 
       secret_data=$(echo ${secret_data} | jq -r '.payload.data // ""' | base64 -d)
-      write_standard_creds "${label_connector}" "${secret_data}" "${filename}" "gsm"
+      write_standard_creds "${CONNECTOR_NAME}" "${secret_data}" "${filename}" "gsm"
     done
     next_token=`echo ${data} | jq -r '.nextPageToken // ""'`
     [[ -z ${next_token} ]] && break
