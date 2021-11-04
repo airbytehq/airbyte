@@ -165,7 +165,7 @@ class StockItems(LinnworksStream):
 
 
 class IncrementalLinnworksStream(LinnworksStream, ABC):
-    state_checkpoint_interval = None
+    state_checkpoint_interval = 100
 
     @property
     def cursor_field(self) -> str:
