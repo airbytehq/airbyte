@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!Dockerfile.test
+!main.py
+!source_isc_seven_rivers
+!setup.py
+!secrets
