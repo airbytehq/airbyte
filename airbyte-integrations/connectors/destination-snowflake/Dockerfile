@@ -1,5 +1,11 @@
 FROM airbyte/integration-base-java:dev
 
+RUN apt-get update && apt-get install -y curl zip
+
+RUN curl -o /tmp/YourKit-JavaProfiler-2021.3-docker.zip https://www.yourkit.com/download/docker/YourKit-JavaProfiler-2021.3-docker.zip && \
+  unzip /tmp/YourKit-JavaProfiler-2021.3-docker.zip -d /usr/local && \
+  rm /tmp/YourKit-JavaProfiler-2021.3-docker.zip
+
 WORKDIR /airbyte
 
 ENV APPLICATION destination-snowflake

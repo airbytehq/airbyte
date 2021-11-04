@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
@@ -162,4 +163,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
   }
 
+  @Test
+  public void testIt(){
+    System.out.println("hi");
+  }
 }
