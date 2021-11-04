@@ -36,7 +36,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         else:
             session = boto3session.Session()
             client_config = Config(signature_version=UNSIGNED)
-        client = make_s3_client(self._provider, config=client_config, session=session)
+        client = make_s3_client(provider, config=client_config, session=session)
 
         ctoken = None
         while True:

@@ -70,7 +70,7 @@ class TwilioStream(HttpStream, ABC):
     def custom_transform_function(original_value: Any, field_schema: Mapping[str, Any]) -> Any:
         if original_value and "format" in field_schema and field_schema["format"] == "date-time":
             try:
-                return pendulum.from_format(original_value, "ddd, D MMM YYYY HH:mm:ss ZZ").in_timezone('UTC').to_iso8601_string()
+                return pendulum.from_format(original_value, "ddd, D MMM YYYY HH:mm:ss ZZ").in_timezone("UTC").to_iso8601_string()
             except ValueError:
                 # Twilio API returns datetime in two formats:
                 #   - RFC2822, like "Fri, 11 Dec 2020 04:28:40 +0000";

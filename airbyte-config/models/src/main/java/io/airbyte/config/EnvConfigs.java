@@ -7,6 +7,7 @@ package io.airbyte.config;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogClientSingleton;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -117,8 +118,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getAirbyteVersion() {
-    return getEnsureEnv(AIRBYTE_VERSION);
+  public AirbyteVersion getAirbyteVersion() {
+    return new AirbyteVersion(getEnsureEnv(AIRBYTE_VERSION));
   }
 
   @Override
