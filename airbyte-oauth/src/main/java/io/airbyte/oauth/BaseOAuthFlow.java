@@ -188,7 +188,6 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         .header("Content-Type", tokenReqContentType.contentType)
         .header("Accept", "application/json")
         .build();
-    // TODO: Handle error response to report better messages
     try {
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       return extractRefreshToken(Jsons.deserialize(response.body()), accessTokenUrl);
