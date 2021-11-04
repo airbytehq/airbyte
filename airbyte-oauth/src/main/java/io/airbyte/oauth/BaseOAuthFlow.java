@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -146,10 +145,10 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   @Override
   public Map<String, Object> completeSourceOAuth(
-      final UUID workspaceId,
-      final UUID sourceDefinitionId,
-      final Map<String, Object> queryParams,
-      final String redirectUrl)
+                                                 final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return completeOAuthFlow(
