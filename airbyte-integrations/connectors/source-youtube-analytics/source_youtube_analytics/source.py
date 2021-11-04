@@ -78,9 +78,7 @@ class ReportResources(HttpStream):
         reports = []
         for report in response_json.get("reports", []):
             report = {**report}
-            report["createTime"] = datetime.datetime.strptime(report["createTime"], "%Y-%m-%dT%H:%M:%S.%f%z")
             report["startTime"] = datetime.datetime.strptime(report["startTime"], "%Y-%m-%dT%H:%M:%S%z")
-            report["endTime"] = datetime.datetime.strptime(report["endTime"], "%Y-%m-%dT%H:%M:%S%z")
             reports.append(report)
         reports.sort(key=lambda x: x["startTime"])
         date = kwargs["stream_state"].get("date")
