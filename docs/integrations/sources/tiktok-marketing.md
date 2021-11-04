@@ -51,4 +51,5 @@ Please read [How to get your AppID, Secret and Access Token](https://ads.tiktok.
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.1   | 2021-11-04 | []() | Add OAuth support |
 | 0.1.0   | 2021-09-18 | [5887](https://github.com/airbytehq/airbyte/pull/5887) | Release TikTok Marketing CDK Connector |

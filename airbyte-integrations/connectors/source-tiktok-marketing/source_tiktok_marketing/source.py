@@ -5,7 +5,7 @@
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification, SyncMode
+from airbyte_cdk.models import ConnectorSpecification, SyncMode, AuthSpecification, AuthType, OAuth2Specification
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -39,17 +39,48 @@ class SourceTiktokMarketing(AbstractSource):
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
             connectionSpecification=SourceTiktokMarketingSpec.schema(),
+            authSpecification=AuthSpecification(
+                auth_type=AuthType.oauth2_0,
+                oauth2Specification=OAuth2Specification(
+                    rootObject=["credentials", 0],
+                    oauthFlowInitParameters=[["client_id"], ["client_secret"]],
+                    oauthFlowOutputParameters=[["access_token"]]
+                )
+            )
         )
 
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Converts an input configure to stream arguments"""
+        credentials = config.get("credentials")
+        if credentials:
+            auth_type = credentials["auth_type"]
+            if auth_type == "Oauth":
+                access_token = credentials["access_token"]
+                app_id = credentials["app_id"]
+                secret = credentials["secret"]
+                advertiser_id = int(credentials.get("advertiser_id", 0))
+            elif auth_type == "Access token":
+                access_token = credentials["access_token"]
+                app_id = int(credentials["environment"].get("app_id", 0))
+                secret = credentials["environment"].get("secret")
+                advertiser_id = int(credentials["environment"].get("advertiser_id", 0))
+            else:
+                raise Exception(f"Invalid auth type: {auth_type}")
+        else:
+            access_token = config.get("access_token")
+            if not access_token:
+                raise Exception("No access_token in creds")
+            app_id = int(config["environment"].get("app_id", 0))
+            secret = config["environment"].get("secret")
+            advertiser_id = int(config["environment"].get("advertiser_id", 0))
+
         return {
-            "authenticator": TiktokTokenAuthenticator(config["access_token"]),
+            "authenticator": TiktokTokenAuthenticator(access_token),
             "start_time": config.get("start_time") or "2021-01-01",
-            "advertiser_id": int(config["environment"].get("advertiser_id", 0)),
-            "app_id": int(config["environment"].get("app_id", 0)),
-            "secret": config["environment"].get("secret"),
+            "advertiser_id": advertiser_id,
+            "app_id": app_id,
+            "secret": secret
         }
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:

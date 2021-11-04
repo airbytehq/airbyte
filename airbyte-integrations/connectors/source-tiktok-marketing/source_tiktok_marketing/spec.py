@@ -15,6 +15,37 @@ from pydantic import BaseModel, Field
 DEFAULT_START_DATE = "01-09-2016"
 
 
+class OauthCredSpec(BaseModel):
+    class Config:
+        title = "OAuth authentication"
+
+    auth_type: str = Field(default="Oauth", const=True, order=0, enum=["Oauth"])
+
+    app_id: str = Field(
+        title="App ID",
+        description="The App id applied by the developer.",
+        airbyte_secret=True
+    )
+
+    secret: str = Field(
+        title="Secret",
+        description="The private key of the developer's application.",
+        airbyte_secret=True,
+    )
+
+    access_token: str = Field(
+        title="Access Token",
+        description="Long-term Authorized Access Token.",
+        airbyte_secret=True
+    )
+
+    # it is string because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
+    advertiser_id: str = Field(
+        title="Advertiser ID",
+        description="The Advertiser ID  which generated for the developer's Sandbox application."
+    )
+
+
 class SandboxEnvSpec(BaseModel):
     class Config:
         title = "Sandbox"
@@ -23,6 +54,7 @@ class SandboxEnvSpec(BaseModel):
 
     # it is string because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
     advertiser_id: str = Field(
+        title="Advertiser ID",
         description="The Advertiser ID  which generated for the developer's Sandbox application.",
     )
 
@@ -35,21 +67,41 @@ class ProductionEnvSpec(BaseModel):
 
     # it is float because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
     app_id: str = Field(
-        description="The App id applied by the developer.",
+        title="App ID",
+        description="The App id applied by the developer."
     )
-    secret: str = Field(description="The private key of the developer's application.", airbyte_secret=True)
+    secret: str = Field(
+        title="Secret",
+        description="The private key of the developer's application.",
+        airbyte_secret=True,
+    )
+
+
+class AccessTokenCredSpec(BaseModel):
+    class Config:
+        title = "Access token authentication"
+
+    auth_type: str = Field(default="Access token", const=True, order=1, enum=["Access token"])
+
+    environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(default=ProductionEnvSpec.Config.title)
+
+    access_token: str = Field(
+        title="Access Token",
+        description="Long-term Authorized Access Token.",
+        airbyte_secret=True
+    )
 
 
 class SourceTiktokMarketingSpec(BaseModel):
     class Config:
         title = "TikTok Marketing Source Spec"
 
-    environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(default=ProductionEnvSpec.Config.title)
-
-    access_token: str = Field(description="Long-term Authorized Access Token.", airbyte_secret=True)
+    credentials: Union[OauthCredSpec, AccessTokenCredSpec] = Field(title="Authorization Method")
 
     start_date: str = Field(
-        description="Start Date in format: YYYY-MM-DD.", default=DEFAULT_START_DATE, pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        description="Start Date in format: YYYY-MM-DD.",
+        default=DEFAULT_START_DATE,
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
     )
 
     @staticmethod
@@ -74,5 +126,5 @@ class SourceTiktokMarketingSpec(BaseModel):
     def schema(cls) -> dict:
         """ we're overriding the schema classmethod to enable some post-processing """
         schema = super().schema()
-        schema = cls.change_format_to_oneOf(schema, "environment")
+        schema = cls.change_format_to_oneOf(schema, "credentials")
         return cls.resolve_refs(schema)
