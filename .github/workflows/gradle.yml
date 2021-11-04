@@ -106,7 +106,7 @@ jobs:
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
 
       - name: Build
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build gitPublish --scan
+        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build javadoc --scan
 
       - name: Ensure no file change
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
@@ -245,6 +245,14 @@ jobs:
 
       - name: Automatic Migration Acceptance Test
         run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
+
+      - name: Publish Javadoc to Github Pages gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          if: ${{ github.ref == 'refs/airbyte-jenny/javadocs-autopublish' }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
