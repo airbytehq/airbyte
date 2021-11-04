@@ -16,72 +16,70 @@ import org.slf4j.LoggerFactory;
 
 class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedisDestinationAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedisDestinationAcceptanceTest.class);
 
-    private JsonNode configJson;
+  private JsonNode configJson;
 
-    private RedisOpsProvider redisOpsProvider;
+  private RedisOpsProvider redisOpsProvider;
 
-    private RedisNameTransformer redisNameTransformer;
+  private RedisNameTransformer redisNameTransformer;
 
-    private static RedisContainerInitializr.RedisContainer redisContainer;
+  private static RedisContainerInitializr.RedisContainer redisContainer;
 
-    @BeforeAll
-    static void initContainer() {
-        redisContainer = RedisContainerInitializr.initContainer();
-    }
+  @BeforeAll
+  static void initContainer() {
+    redisContainer = RedisContainerInitializr.initContainer();
+  }
 
-    @Override
-    protected void setup(TestDestinationEnv testEnv) {
-        configJson = TestDataFactory.jsonConfig(
-            redisContainer.getHost(),
-            redisContainer.getFirstMappedPort()
-        );
-        var redisConfig = new RedisConfig(configJson);
-        redisOpsProvider = new RedisOpsProvider(redisConfig);
-        redisNameTransformer = new RedisNameTransformer();
-    }
+  @Override
+  protected void setup(TestDestinationEnv testEnv) {
+    configJson = TestDataFactory.jsonConfig(
+        redisContainer.getHost(),
+        redisContainer.getFirstMappedPort());
+    var redisConfig = new RedisConfig(configJson);
+    redisOpsProvider = new RedisOpsProvider(redisConfig);
+    redisNameTransformer = new RedisNameTransformer();
+  }
 
-    @Override
-    protected void tearDown(TestDestinationEnv testEnv) {
-        redisOpsProvider.flush();
-    }
+  @Override
+  protected void tearDown(TestDestinationEnv testEnv) {
+    redisOpsProvider.flush();
+  }
 
-    @Override
-    protected String getImageName() {
-        return "airbyte/destination-redis:dev";
-    }
+  @Override
+  protected String getImageName() {
+    return "airbyte/destination-redis:dev";
+  }
 
-    @Override
-    protected JsonNode getConfig() {
-        return configJson;
-    }
+  @Override
+  protected JsonNode getConfig() {
+    return configJson;
+  }
 
-    @Override
-    protected JsonNode getFailCheckConfig() {
-        return TestDataFactory.jsonConfig(
-            "127.0.0.9",
-            8080
-        );
-    }
+  @Override
+  protected JsonNode getFailCheckConfig() {
+    return TestDataFactory.jsonConfig(
+        "127.0.0.9",
+        8080);
+  }
 
-    @Override
-    protected boolean implementsNamespaces() {
-        return true;
-    }
+  @Override
+  protected boolean implementsNamespaces() {
+    return true;
+  }
 
-    @Override
-    protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                             String streamName,
-                                             String namespace,
-                                             JsonNode streamSchema) {
-        var nm = redisNameTransformer.outputNamespace(namespace);
-        var key = redisNameTransformer.outputKey(streamName);
-        return redisOpsProvider.getAll(nm, key).stream()
-            .sorted(Comparator.comparing(RedisRecord::getTimestamp))
-            .map(RedisRecord::getData)
-            .map(Jsons::deserialize)
-            .collect(Collectors.toList());
-    }
+  @Override
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
+                                           String streamName,
+                                           String namespace,
+                                           JsonNode streamSchema) {
+    var nm = redisNameTransformer.outputNamespace(namespace);
+    var key = redisNameTransformer.outputKey(streamName);
+    return redisOpsProvider.getAll(nm, key).stream()
+        .sorted(Comparator.comparing(RedisRecord::getTimestamp))
+        .map(RedisRecord::getData)
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList());
+  }
 
 }

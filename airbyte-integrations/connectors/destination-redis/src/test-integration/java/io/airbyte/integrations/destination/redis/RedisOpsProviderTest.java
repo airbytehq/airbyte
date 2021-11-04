@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.redis;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,85 +15,83 @@ import org.junit.jupiter.api.TestInstance;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RedisOpsProviderTest {
 
-    private RedisOpsProvider redisOpsProvider;
+  private RedisOpsProvider redisOpsProvider;
 
-    @BeforeAll
-    void setup() {
-        var redisContainer = RedisContainerInitializr.initContainer();
-        var redisConfig = TestDataFactory.redisConfig(
-            redisContainer.getHost(),
-            redisContainer.getFirstMappedPort()
-        );
-        redisOpsProvider = new RedisOpsProvider(redisConfig);
-    }
+  @BeforeAll
+  void setup() {
+    var redisContainer = RedisContainerInitializr.initContainer();
+    var redisConfig = TestDataFactory.redisConfig(
+        redisContainer.getHost(),
+        redisContainer.getFirstMappedPort());
+    redisOpsProvider = new RedisOpsProvider(redisConfig);
+  }
 
-    @AfterEach
-    void clean() {
-        redisOpsProvider.flush();
-    }
+  @AfterEach
+  void clean() {
+    redisOpsProvider.flush();
+  }
 
-    @Test
-    void testInsert() {
-        assertDoesNotThrow(() -> {
-            redisOpsProvider.insert("namespace1", "stream1", "{\"property\":\"data1\"}");
-            redisOpsProvider.insert("namespace2", "stream2", "{\"property\":\"data2\"}");
-            redisOpsProvider.insert("namespace3", "stream3", "{\"property\":\"data3\"}");
-        });
-    }
+  @Test
+  void testInsert() {
+    assertDoesNotThrow(() -> {
+      redisOpsProvider.insert("namespace1", "stream1", "{\"property\":\"data1\"}");
+      redisOpsProvider.insert("namespace2", "stream2", "{\"property\":\"data2\"}");
+      redisOpsProvider.insert("namespace3", "stream3", "{\"property\":\"data3\"}");
+    });
+  }
 
-    @Test
-    void testGetAll() {
-        // given
-        redisOpsProvider.insert("namespace", "stream", "{\"property\":\"data1\"}");
-        redisOpsProvider.insert("namespace", "stream", "{\"property\":\"data2\"}");
+  @Test
+  void testGetAll() {
+    // given
+    redisOpsProvider.insert("namespace", "stream", "{\"property\":\"data1\"}");
+    redisOpsProvider.insert("namespace", "stream", "{\"property\":\"data2\"}");
 
-        // when
-        var redisRecords = redisOpsProvider.getAll("namespace", "stream");
+    // when
+    var redisRecords = redisOpsProvider.getAll("namespace", "stream");
 
-        // then
-        assertThat(redisRecords)
-            .isNotNull()
-            .hasSize(2)
-            .anyMatch(r -> r.getData().equals("{\"property\":\"data1\"}"))
-            .anyMatch(r -> r.getData().equals("{\"property\":\"data2\"}"));
-    }
+    // then
+    assertThat(redisRecords)
+        .isNotNull()
+        .hasSize(2)
+        .anyMatch(r -> r.getData().equals("{\"property\":\"data1\"}"))
+        .anyMatch(r -> r.getData().equals("{\"property\":\"data2\"}"));
+  }
 
-    @Test
-    void testDelete() {
+  @Test
+  void testDelete() {
 
-        // given
-        redisOpsProvider.insert("namespace", "stream", "{\"property\":\"data1\"}");
-        redisOpsProvider.insert("namespace", "stream", "{\"property\":\"data2\"}");
+    // given
+    redisOpsProvider.insert("namespace", "stream", "{\"property\":\"data1\"}");
+    redisOpsProvider.insert("namespace", "stream", "{\"property\":\"data2\"}");
 
-        // when
-        redisOpsProvider.delete("namespace", "stream");
-        var redisRecords = redisOpsProvider.getAll("namespace", "stream");
+    // when
+    redisOpsProvider.delete("namespace", "stream");
+    var redisRecords = redisOpsProvider.getAll("namespace", "stream");
 
-        // then
-        assertThat(redisRecords).isEmpty();
-    }
+    // then
+    assertThat(redisRecords).isEmpty();
+  }
 
-    @Test
-    void testRename() {
-        // given
-        redisOpsProvider.insert("namespace", "stream1", "{\"property\":\"data1\"}");
-        redisOpsProvider.insert("namespace", "stream1", "{\"property\":\"data2\"}");
-        redisOpsProvider.insert("namespace", "stream2", "{\"property\":\"data3\"}");
-        redisOpsProvider.insert("namespace", "stream2", "{\"property\":\"data4\"}");
+  @Test
+  void testRename() {
+    // given
+    redisOpsProvider.insert("namespace", "stream1", "{\"property\":\"data1\"}");
+    redisOpsProvider.insert("namespace", "stream1", "{\"property\":\"data2\"}");
+    redisOpsProvider.insert("namespace", "stream2", "{\"property\":\"data3\"}");
+    redisOpsProvider.insert("namespace", "stream2", "{\"property\":\"data4\"}");
 
-        // when
-        redisOpsProvider.rename("namespace", "stream1", "stream2");
-        var redisRecords = redisOpsProvider.getAll("namespace", "stream2");
+    // when
+    redisOpsProvider.rename("namespace", "stream1", "stream2");
+    var redisRecords = redisOpsProvider.getAll("namespace", "stream2");
 
-
-        // then
-        assertThat(redisRecords)
-            .isNotNull()
-            .hasSize(4)
-            .anyMatch(r -> r.getData().equals("{\"property\":\"data1\"}"))
-            .anyMatch(r -> r.getData().equals("{\"property\":\"data2\"}"))
-            .anyMatch(r -> r.getData().equals("{\"property\":\"data3\"}"))
-            .anyMatch(r -> r.getData().equals("{\"property\":\"data4\"}"));
-    }
+    // then
+    assertThat(redisRecords)
+        .isNotNull()
+        .hasSize(4)
+        .anyMatch(r -> r.getData().equals("{\"property\":\"data1\"}"))
+        .anyMatch(r -> r.getData().equals("{\"property\":\"data2\"}"))
+        .anyMatch(r -> r.getData().equals("{\"property\":\"data3\"}"))
+        .anyMatch(r -> r.getData().equals("{\"property\":\"data4\"}"));
+  }
 
 }

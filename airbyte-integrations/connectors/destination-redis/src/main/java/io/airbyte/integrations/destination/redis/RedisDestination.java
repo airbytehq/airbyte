@@ -18,38 +18,38 @@ import org.slf4j.LoggerFactory;
 
 class RedisDestination extends BaseConnector implements Destination {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedisDestination.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedisDestination.class);
 
-    public static void main(String[] args) throws Exception {
-        new IntegrationRunner(new RedisDestination()).run(args);
+  public static void main(String[] args) throws Exception {
+    new IntegrationRunner(new RedisDestination()).run(args);
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(JsonNode config) {
+    var redisConfig = new RedisConfig(config);
+
+    RedisOpsProvider redisOpsProvider = null;
+    try {
+      redisOpsProvider = new RedisOpsProvider(redisConfig);
+      // check connection and write permissions
+      redisOpsProvider.ping("Connection check");
+      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+    } catch (Exception e) {
+      LOGGER.error("Can't establish Redis connection with reason: ", e);
+      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
+    } finally {
+      if (redisOpsProvider != null) {
+        redisOpsProvider.close();
+      }
     }
 
-    @Override
-    public AirbyteConnectionStatus check(JsonNode config) {
-        var redisConfig = new RedisConfig(config);
+  }
 
-        RedisOpsProvider redisOpsProvider = null;
-        try {
-            redisOpsProvider = new RedisOpsProvider(redisConfig);
-            // check connection and write permissions
-            redisOpsProvider.ping("Connection check");
-            return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-        } catch (Exception e) {
-            LOGGER.error("Can't establish Redis connection with reason: ", e);
-            return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
-        } finally {
-            if (redisOpsProvider != null) {
-                redisOpsProvider.close();
-            }
-        }
-
-    }
-
-    @Override
-    public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                              ConfiguredAirbyteCatalog configuredCatalog,
-                                              Consumer<AirbyteMessage> outputRecordCollector) {
-        return new RedisMessageConsumer(new RedisConfig(config), configuredCatalog, outputRecordCollector);
-    }
+  @Override
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog configuredCatalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector) {
+    return new RedisMessageConsumer(new RedisConfig(config), configuredCatalog, outputRecordCollector);
+  }
 
 }
