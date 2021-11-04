@@ -61,9 +61,9 @@ class RechargeStream(HttpStream, ABC):
         if res:
             return res
 
-        # For some reason for large responses API, server can return non-complete result
+        # For some reason, successful responses contains incomplete data
         content_length = int(response.headers.get('Content-Length', 0))
-        return bool(content_length) and content_length > len(response.content)
+        return response.status_code == 200 and content_length > len(response.content)
 
 
 class IncrementalRechargeStream(RechargeStream, ABC):
