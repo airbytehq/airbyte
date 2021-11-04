@@ -15,17 +15,17 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthConfig;
+import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.UUID;
 
-/*
+/**
  * Following docs from
  * https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth
  */
-public class TrelloOAuthFlow extends BaseOAuthConfig {
+public class TrelloOAuthFlow extends BaseOAuthFlow {
 
   private static final String REQUEST_TOKEN_URL = "https://trello.com/1/OAuthGetRequestToken";
   private static final String AUTHENTICATE_URL = "https://trello.com/1/OAuthAuthorizeToken";
@@ -50,12 +50,14 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
     this.transport = transport;
   }
 
+  @Override
   public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return getConsentUrl(oAuthParamConfig, redirectUrl);
   }
 
+  @Override
   public String getDestinationConsentUrl(final UUID workspaceId, final UUID destinationDefinitionId, final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
@@ -80,6 +82,7 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
     return oAuthAuthorizeTemporaryTokenUrl.build();
   }
 
+  @Override
   public Map<String, Object> completeSourceOAuth(
                                                  final UUID workspaceId,
                                                  final UUID sourceDefinitionId,
@@ -91,6 +94,7 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
     return completeOAuth(oAuthParamConfig, queryParams, redirectUrl);
   }
 
+  @Override
   public Map<String, Object> completeDestinationOAuth(final UUID workspaceId,
                                                       final UUID destinationDefinitionId,
                                                       final Map<String, Object> queryParams,

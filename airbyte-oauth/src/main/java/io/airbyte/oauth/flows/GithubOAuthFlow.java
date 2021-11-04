@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -21,7 +21,7 @@ import org.apache.http.client.utils.URIBuilder;
  * Following docs from
  * https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps#web-application-flow
  */
-public class GithubOAuthFlow extends BaseOAuthFlow {
+public class GithubOAuthFlow extends BaseOAuth2Flow {
 
   private static final String AUTHORIZE_URL = "https://github.com/login/oauth/authorize";
   private static final String ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";

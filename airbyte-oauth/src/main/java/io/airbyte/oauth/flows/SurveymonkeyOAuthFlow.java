@@ -9,7 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -21,7 +21,7 @@ import org.apache.http.client.utils.URIBuilder;
 /**
  * https://developer.surveymonkey.com/api/v3/?#authentication
  */
-public class SurveymonkeyOAuthFlow extends BaseOAuthFlow {
+public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
 
   private static final String AUTHORIZE_URL = "https://api.surveymonkey.com/oauth/authorize";
   private static final String ACCESS_TOKEN_URL = "https://api.surveymonkey.com/oauth/token";

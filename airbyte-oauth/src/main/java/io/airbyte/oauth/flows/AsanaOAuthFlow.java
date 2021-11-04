@@ -9,7 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -21,7 +21,7 @@ import org.apache.http.client.utils.URIBuilder;
 /**
  * Following docs from https://developers.asana.com/docs/oauth
  */
-public class AsanaOAuthFlow extends BaseOAuthFlow {
+public class AsanaOAuthFlow extends BaseOAuth2Flow {
 
   private static final String AUTHORIZE_URL = "https://app.asana.com/-/oauth_authorize";
   private static final String ACCESS_TOKEN_URL = "https://app.asana.com/-/oauth_token";
