@@ -202,10 +202,12 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
     def request_body_data(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
+        from_date = stream_slice[self.cursor_field]
+        to_date = pendulum.tomorrow('UTC').isoformat()
         request = {
             "DateField": "received",
-            "FromDate": stream_slice[self.cursor_field],
-            "ToDate": pendulum.tomorrow('UTC').isoformat(),
+            "FromDate": from_date,
+            "ToDate": max(from_date, to_date),
             "PageNumber": 1,
             "ResultsPerPage": self.page_size,
             "SearchSorting": {
