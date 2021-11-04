@@ -79,5 +79,5 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.0.1 | 2021-11-04 | [\#9999](https://github.com/airbytehq/airbyte/pull/9999) | Add ClickHouse destination |
+| 0.0.1 | 2021-11-04 | [\#7620](https://github.com/airbytehq/airbyte/pull/7620) | Add ClickHouse destination |
 
