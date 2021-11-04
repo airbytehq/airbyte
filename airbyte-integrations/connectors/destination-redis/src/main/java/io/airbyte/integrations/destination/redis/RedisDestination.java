@@ -28,7 +28,6 @@ class RedisDestination extends BaseConnector implements Destination {
     public AirbyteConnectionStatus check(JsonNode config) {
         var redisConfig = new RedisConfig(config);
 
-        //String key = "namespace:key:" + UUID.randomUUID().toString().replace("-", "");
         RedisOpsProvider redisOpsProvider = null;
         try {
             redisOpsProvider = new RedisOpsProvider(redisConfig);
@@ -36,7 +35,7 @@ class RedisDestination extends BaseConnector implements Destination {
             redisOpsProvider.ping("Connection check");
             return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
         } catch (Exception e) {
-            LOGGER.error("Can't establish Scylla connection with reason: ", e);
+            LOGGER.error("Can't establish Redis connection with reason: ", e);
             return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
         } finally {
             if (redisOpsProvider != null) {

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
+class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisDestinationAcceptanceTest.class);
 
@@ -58,16 +58,16 @@ public class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
     }
 
     @Override
-    protected boolean implementsNamespaces() {
-        return true;
-    }
-
-    @Override
     protected JsonNode getFailCheckConfig() {
         return TestDataFactory.jsonConfig(
             "127.0.0.9",
             8080
         );
+    }
+
+    @Override
+    protected boolean implementsNamespaces() {
+        return true;
     }
 
     @Override

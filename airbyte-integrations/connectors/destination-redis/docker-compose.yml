@@ -1,13 +1,14 @@
 version: "3.2"
 services:
   redis:
-    image: "redis"
+    image: "redis:6.2.6"
     command: redis-server --requirepass pw
     ports:
       - "6379:6379"
-    volumes:
-      - $PWD/redis-data:/var/lib/redis
-      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+#    uncomment if you want to mount volumes for persistence
+#    volumes:
+#      - $PWD/redis-data:/var/lib/redis
+#      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_REPLICATION_MODE=master
     networks:

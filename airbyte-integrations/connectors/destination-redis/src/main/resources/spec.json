@@ -13,9 +13,11 @@
     "type": "object",
     "required": [
       "host",
+      "port",
+      "username",
       "password"
     ],
-    "additionalProperties": true,
+    "additionalProperties": false,
     "properties": {
       "host": {
         "title": "Host",
@@ -35,12 +37,18 @@
         "default": 6379,
         "order": 2
       },
+      "username": {
+        "title": "Username",
+        "description": "Username associated with Redis.",
+        "type": "string",
+        "order": 3
+      },
       "password": {
         "title": "Password",
         "description": "Password associated with Redis.",
         "type": "string",
         "airbyte_secret": true,
-        "order": 3
+        "order": 4
       }
     }
   }

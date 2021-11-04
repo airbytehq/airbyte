@@ -2,9 +2,6 @@ package io.airbyte.integrations.destination.redis;
 
 import redis.clients.jedis.Jedis;
 
-/*
-* Pool Manager for keeping track of opened pools and connections.
-* */
 class RedisPoolManager {
 
 
@@ -13,15 +10,17 @@ class RedisPoolManager {
     }
 
     static Jedis initConnection(RedisConfig redisConfig) {
-        return new Jedis(redisConfig.getHost(), redisConfig.getPort());
-    }
-
-    static void closeConnection() {
-
-        // close connection
-
-        // close pool when all connections have been released
-
+        Jedis jedis = null;
+        try {
+            jedis = new Jedis(redisConfig.getHost(), redisConfig.getPort());
+            jedis.auth(redisConfig.getUsername(), redisConfig.getPassword());
+            return jedis;
+        } catch (Exception e) {
+            if (jedis != null) {
+                jedis.close();
+            }
+            throw e;
+        }
     }
 
 }
