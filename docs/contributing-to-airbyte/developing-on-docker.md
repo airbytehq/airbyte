@@ -1,12 +1,9 @@
 # Developing on docker
 
-## Version
-
-This doc is relevant starting from the version 0.30.28-alpha. Prior to that, it was another design.
-
 ## Incrementality 
 
-The docker build is fully incremental, which means that it will only build an image if it is needed. We need to keep it that way.
+The docker build is fully incremental for the platform build, which means that it will only build an image if it is needed. We need to keep it that 
+way.
 A task generator, `getDockerBuildTask`, is available for building a docker image for any given module. Behind the scene, it will generate a 
 task which will run the build of a docker image in a specific folder. The goal is to make sure that we have an isolated 
 context which helps with incrementality. All files that need to be present in the docker image will need to be copy into this folder. The generate 
