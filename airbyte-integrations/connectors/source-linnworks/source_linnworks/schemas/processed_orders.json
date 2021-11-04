@@ -1,0 +1,258 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "pk_order_id": {
+      "type": "string",
+      "description": "Order ID"
+    },
+    "c_shipping_address": {
+      "type": "string",
+      "description": "Customer's shipping address"
+    },
+    "d_received_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date when order was received on a channel"
+    },
+    "d_processed_on": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date when order was processed"
+    },
+    "time_diff": {
+      "type": "number",
+      "description": "Days elapsed between order received and order processed"
+    },
+    "f_postage_cost": {
+      "type": "number",
+      "description": "Order postage cost"
+    },
+    "f_total_charge": {
+      "type": "number",
+      "description": "Order total charge"
+    },
+    "postage_cost_ex_tax": {
+      "type": "number",
+      "description": "Postage cost excluding tax"
+    },
+    "subtotal": {
+      "type": "number",
+      "description": "Order subtotal"
+    },
+    "f_tax": {
+      "type": "number",
+      "description": "Order tax"
+    },
+    "total_discount": {
+      "type": "number",
+      "description": "Total discount"
+    },
+    "profit_margin": {
+      "type": "number",
+      "description": "Profit margin"
+    },
+    "country_tax_rate": {
+      "type": "number",
+      "description": "Country specific tax rate"
+    },
+    "n_order_id": {
+      "type": "integer",
+      "description": "Linnworks order ID"
+    },
+    "n_status": {
+      "type": "integer",
+      "description": "Order status"
+    },
+    "c_currency": {
+      "type": "string",
+      "description": "Order currency"
+    },
+    "postal_tracking_number": {
+      "type": "string",
+      "description": "Postal tracking number"
+    },
+    "c_country": {
+      "type": "string",
+      "description": "Country"
+    },
+    "source": {
+      "type": "string",
+      "description": "ChannelName/Source (e.g. EBAY)"
+    },
+    "postal_service_name": {
+      "type": "string",
+      "description": "Postal service name (e.g. Next day delivery)"
+    },
+    "postal_service_code": {
+      "type": "string",
+      "description": "Postal service code"
+    },
+    "vendor": {
+      "type": "string",
+      "description": "Courier name (e.g. DPD)"
+    },
+    "billing_email_address": {
+      "type": "string"
+    },
+    "reference_num": {
+      "type": "string",
+      "description": "Order reference number"
+    },
+    "secondary_reference": {
+      "type": "string",
+      "description": "An additional reference number for the order"
+    },
+    "external_reference": {
+      "type": "string",
+      "description": "This is an additional reference number from the sales channel, typically used by eBay"
+    },
+    "address1": {
+      "type": "string",
+      "description": "Order first line of address"
+    },
+    "address2": {
+      "type": "string",
+      "description": "Order second line of address"
+    },
+    "address3": {
+      "type": "string",
+      "description": "Order third line of address"
+    },
+    "town": {
+      "type": "string",
+      "description": "Town"
+    },
+    "region": {
+      "type": "string",
+      "description": "Region, county, area"
+    },
+    "buyer_phone_number": {
+      "type": "string",
+      "description": "Buyer phone number"
+    },
+    "company": {
+      "type": "string",
+      "description": "Company"
+    },
+    "sub_source": {
+      "type": "string",
+      "description": "Order subsource (e.g. EBAY1)"
+    },
+    "channel_buyer_name": {
+      "type": "string",
+      "description": "Channel specific name used to identify the buyer, such as a username, normally used for eBay"
+    },
+    "account_name": {
+      "type": "string",
+      "description": "Customer channel account name"
+    },
+    "c_full_name": {
+      "type": "string",
+      "description": "Customer full name"
+    },
+    "c_email_address": {
+      "type": "string",
+      "description": "Customer email address"
+    },
+    "c_post_code": {
+      "type": "string",
+      "description": "Post Code"
+    },
+    "d_paid_on": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When order was marked as PAID"
+    },
+    "d_cancelled_on": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When order was cancelled"
+    },
+    "package_category": {
+      "type": "string",
+      "description": "Package category"
+    },
+    "package_title": {
+      "type": "string",
+      "description": "Package name"
+    },
+    "item_weight": {
+      "type": "number",
+      "description": "Items weight"
+    },
+    "total_weight": {
+      "type": "number",
+      "description": "Total order weight"
+    },
+    "folder_collection": {
+      "type": "string",
+      "description": "Folder name of an order"
+    },
+    "c_billing_address": {
+      "type": "string",
+      "description": "Customer billing address"
+    },
+    "billing_name": {
+      "type": "string",
+      "description": "Customer billing name"
+    },
+    "billing_company": {
+      "type": "string",
+      "description": "Customer billing company"
+    },
+    "billing_address1": {
+      "type": "string",
+      "description": "Billing address line one"
+    },
+    "billing_address2": {
+      "type": "string",
+      "description": "Billing address line two"
+    },
+    "billing_address3": {
+      "type": "string",
+      "description": "Billing address line three"
+    },
+    "billing_town": {
+      "type": "string",
+      "description": "Billing town"
+    },
+    "billing_region": {
+      "type": "string",
+      "description": "Billing region, area, county"
+    },
+    "billing_post_code": {
+      "type": "string",
+      "description": "Billing postcode"
+    },
+    "billing_country_name": {
+      "type": "string",
+      "description": "Billing country"
+    },
+    "billing_phone_number": {
+      "type": "string",
+      "description": "Billing phone number"
+    },
+    "hold_or_cancel": {
+      "type": "boolean",
+      "description": "If order on hold or cancelled."
+    },
+    "is_resend": {
+      "type": "boolean",
+      "description": "If order was created from a resend"
+    },
+    "is_exchange": {
+      "type": "boolean",
+      "description": "If order was created from an exchange"
+    },
+    "tax_id": {
+      "type": "string",
+      "description": "Order tax id"
+    },
+    "fulfilment_location_name": {
+      "type": "string",
+      "description": "Order fulfilment location"
+    }
+  }
+}

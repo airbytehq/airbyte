@@ -3,7 +3,7 @@
 #
 
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from datetime import date
 from typing import (Any, Iterable, List, Mapping, MutableMapping, Optional,
                     Tuple, Union)
@@ -21,6 +21,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import \
 from requests.auth import AuthBase
 
 from .util import normalize
+import json
 
 
 class LinnworksStream(HttpStream, ABC):
@@ -30,10 +31,11 @@ class LinnworksStream(HttpStream, ABC):
     def url_base(self) -> str:
         return self.authenticator.get_server()
 
-    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
+    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, start_date: str = None):
         super().__init__(authenticator=authenticator)
 
         self._authenticator = authenticator
+        self.start_date = start_date
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -52,6 +54,21 @@ class LinnworksStream(HttpStream, ABC):
             json = [json]
         for record in json:
             yield normalize(record)
+
+
+class LinnworksGenericPagedResult(ABC):
+    @abstractmethod
+    def paged_result(self, response: requests.Response) -> Mapping[str, Any]:
+        pass
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        result = self.paged_result(response)
+        del result["Data"]
+        result = normalize(result)
+
+        if result["page_number"] < result["total_pages"]:
+            result["page_number"] += 1
+            return result
 
 
 class Location(LinnworksStream):
@@ -147,75 +164,69 @@ class StockItems(LinnworksStream):
         return params
 
 
-# Basic incremental stream
 class IncrementalLinnworksStream(LinnworksStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
-
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
 
     @property
     def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
         return []
 
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        if not stream_state:
+            stream_state = {}
+
+        return [{
+            self.cursor_field: stream_state.get(self.cursor_field, self.start_date),
+        }]
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
+        current = current_stream_state.get(self.cursor_field, "")
+        latest = latest_record.get(self.cursor_field, "")
+
+        return {
+            self.cursor_field: max(latest, current),
+        }
 
 
-class Employees(IncrementalLinnworksStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
+class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
+    # https://apps.linnworks.net/Api/Method/ProcessedOrders-SearchProcessedOrders
+    # Response: SearchProcessedOrdersResponse https://apps.linnworks.net/Api/Class/API_Linnworks-Controllers-ProcessedOrders-Responses-SearchProcessedOrdersResponse
+    # Allows 150 calls per minute
+    primary_key = "n_order_id"
+    cursor_field = "d_received_date"
+    page_size = 500
 
     def path(self, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-        return "single". Required.
-        """
-        return "employees"
+        return "/api/ProcessedOrders/SearchProcessedOrders"
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
+    def request_body_data(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        request = {
+            "DateField": "received",
+            "FromDate": stream_slice[self.cursor_field],
+            "ToDate": pendulum.tomorrow('UTC').isoformat(),
+            "PageNumber": 1,
+            "ResultsPerPage": self.page_size,
+            "SearchSorting": {
+                "SortField": "dReceivedDate",
+                "SortDirection": "ASC"
+            }
+        }
 
-        Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
-        section of the docs for more information.
+        if next_page_token:
+            request["PageNumber"] = next_page_token["page_number"]
 
-        The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
-        necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
-        This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
+        return {
+            "request": json.dumps(request, separators=(",", ":")),
+        }
 
-        An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
-        craft that specific request.
+    def paged_result(self, response: requests.Response) -> Mapping[str, Any]:
+        return response.json()["ProcessedOrders"]
 
-        For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
-        this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
-        till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
-        the date query param.
-        """
-        raise NotImplementedError(
-            "Implement stream slices or delete this method!")
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for record in self.paged_result(response)["Data"]:
+            yield normalize(record)
 
 
 class LinnworksAuthenticator(Oauth2Authenticator):
@@ -307,5 +318,5 @@ class SourceLinnworks(AbstractSource):
         return [
             StockLocations(authenticator=auth),
             StockItems(authenticator=auth),
-            Employees(authenticator=auth)
+            ProcessedOrders(authenticator=auth, start_date=config["start_date"])
         ]
