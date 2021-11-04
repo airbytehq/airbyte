@@ -135,6 +135,7 @@ class ChannelReports(HttpSubStream):
         if parent:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         else:
+            self.logger.info("no data from parent stream")
             yield from []
 
 
