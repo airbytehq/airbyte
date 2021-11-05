@@ -11,6 +11,7 @@ import com.google.gson.reflect.TypeToken;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +36,6 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseOAuthFlow.class);
-  private final Object lock = new Object();
 
   /**
    * Simple enum of content type strings and their respective encoding functions used for POSTing the
@@ -111,10 +112,10 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   @Override
   public Map<String, Object> completeSourceOAuth(
-                                                 final UUID workspaceId,
-                                                 final UUID sourceDefinitionId,
-                                                 final Map<String, Object> queryParams,
-                                                 final String redirectUrl)
+      final UUID workspaceId,
+      final UUID sourceDefinitionId,
+      final Map<String, Object> queryParams,
+      final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return completeOAuthFlow(
@@ -155,9 +156,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         .build();
     try {
       HttpResponse<String> response;
-      synchronized (lock) {
-        response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      }
+      response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       return extractRefreshToken(Jsons.deserialize(response.body()), accessTokenUrl);
     } catch (final InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
@@ -231,7 +230,9 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   protected static String toJson(final Map<String, String> body) {
     final Gson gson = new Gson();
-    Type gsonType = new TypeToken<Map<String, String>>() {}.getType();
+    Type gsonType = new TypeToken<Map<String, String>>() {
+
+    }.getType();
     return gson.toJson(body, gsonType);
   }
 
