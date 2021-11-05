@@ -31,6 +31,13 @@ public class LeverOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
   protected static final int SERVER_LISTENING_PORT = 8000;
 
   @Override
+  protected String getCallBackServerPath() {
+    return "/oauth_flow";
+  }
+
+
+
+  @Override
   protected Path get_credentials_path() {
     return CREDENTIALS_PATH;
   }
@@ -42,7 +49,7 @@ public class LeverOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
   @Override
   protected int getServerListeningPort() {
-    return SERVER_LISTENING_PORT;
+    return 8000;
   }
 
   @BeforeEach
@@ -77,8 +84,9 @@ public class LeverOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
     final Map<String, Object> params = flow.completeSourceOAuth(workspaceId, definitionId,
             Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
-    assertTrue(params.containsKey("access_token"));
-    assertTrue(params.get("access_token").toString().length() > 0);
+    assertTrue(params.containsKey("refresh_token"));
+    assertTrue(params.get("refresh_token").toString().length() > 0);
+
   }
 
 }
