@@ -20,7 +20,7 @@ export const Actions = styled.div`
 export const Body = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 10px 25px;
+  padding: 70px 25px 0;
 `;
 
 export const Close = styled.div`
@@ -49,6 +49,9 @@ export const Header = styled.div`
   background-color: rgba(40, 39, 120, 1);
   padding: 0 20px;
   color: #ffffff;
+  position: fixed;
+  top: 0;
+  width: 60vw;
 `;
 
 export const Container = styled.div`
@@ -75,4 +78,5 @@ export const Content = styled.div`
   animation-name: ${animate};
   animation-duration: 0.1s;
   animation-fill-mode: both;
+  position: relative;
 `;
