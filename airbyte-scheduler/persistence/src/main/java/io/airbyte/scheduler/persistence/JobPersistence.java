@@ -7,7 +7,6 @@ package io.airbyte.scheduler.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.config.State;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
@@ -36,7 +35,8 @@ public interface JobPersistence {
   /**
    * Enqueue a new job. Its initial status will be pending.
    *
-   * @param scope key that will be used to determine if two jobs should not be run at the same time.
+   * @param scope key that will be used to determine if two jobs should not be run at the same time;
+   *        it is the primary id of the standard sync (StandardSync#connectionId)
    * @param jobConfig configuration for the job
    * @return job id
    * @throws IOException exception due to interaction with persistence
@@ -117,10 +117,15 @@ public interface JobPersistence {
    */
   Optional<String> getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException;
 
+  /**
+   * When the output is a StandardSyncOutput, caller of this method should persiste
+   * StandardSyncOutput#state in the configs database by calling
+   * ConfigRepository#updateConnectionState, which takes care of persisting the connection state.
+   */
   <T> void writeOutput(long jobId, int attemptNumber, T output) throws IOException;
 
   /**
-   * @param configType - type of config, e.g. sync
+   * @param configTypes - type of config, e.g. sync
    * @param configId - id of that config
    * @return lists job in descending order by created_at
    * @throws IOException - what you do when you IO
@@ -145,19 +150,6 @@ public interface JobPersistence {
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
-
-  /**
-   * if a job does not succeed, we assume that it synced nothing. that is the most conservative
-   * assumption we can make. as long as all destinations write the final data output in a
-   * transactional way, this will be true. if this changes, then we may end up writing duplicate data
-   * with our incremental append only. this is preferable to failing to send data at all. our
-   * incremental append only most closely resembles a deliver at least once strategy anyway.
-   *
-   * @param connectionId - id of the connection whose state we want to fetch.
-   * @return the current state, if any of, the connection
-   * @throws IOException exception due to interaction with persistence
-   */
-  Optional<State> getCurrentState(UUID connectionId) throws IOException;
 
   Optional<Job> getNextJob() throws IOException;
 
@@ -204,8 +196,6 @@ public interface JobPersistence {
 
   /**
    * Purges job history while ensuring that the latest saved-state information is maintained.
-   *
-   * @throws IOException
    */
   void purgeJobHistory();
 
