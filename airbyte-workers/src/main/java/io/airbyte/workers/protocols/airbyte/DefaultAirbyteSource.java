@@ -38,10 +38,9 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(10, ChronoUnit.HOURS);
   private static final Duration FORCED_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
 
-  private static final MdcScope CONTAINER_LOG_MDC = new Builder()
+  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("source")
-      .setPrefixColor(Color.BLUE)
-      .build();
+      .setPrefixColor(Color.BLUE);
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
@@ -51,7 +50,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Iterator<AirbyteMessage> messageIterator = null;
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC), new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
   @VisibleForTesting
@@ -75,7 +74,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
         sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
         sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source", CONTAINER_LOG_MDC);
+    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source", CONTAINER_LOG_MDC_BUILDER);
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())

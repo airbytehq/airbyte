@@ -220,6 +220,7 @@
   * [Technical Stack](understanding-airbyte/tech-stack.md)
   * [Change Data Capture \(CDC\)](understanding-airbyte/cdc.md)
   * [Namespaces](understanding-airbyte/namespaces.md)
+  * [Json to Avro Conversion](understanding-airbyte/json-avro-conversion.md)
   * [Glossary of Terms](understanding-airbyte/glossary.md)
 * [API documentation](api-documentation.md)
 * [Project Overview](project-overview/README.md)

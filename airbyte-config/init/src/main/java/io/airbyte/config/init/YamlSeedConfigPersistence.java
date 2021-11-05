@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.config.persistence;
+package io.airbyte.config.init;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -14,7 +14,8 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.init.SeedType;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URL;
