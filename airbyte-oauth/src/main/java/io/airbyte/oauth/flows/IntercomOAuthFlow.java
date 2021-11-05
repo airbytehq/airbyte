@@ -6,7 +6,6 @@ package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
@@ -48,6 +47,17 @@ public class IntercomOAuthFlow extends BaseOAuthFlow {
   @Override
   protected String getAccessTokenUrl() {
     return ACCESS_TOKEN_URL;
+  }
+
+  @Override
+  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
+    // Facebook does not have refresh token but calls it "long lived access token" instead:
+    // see https://developers.facebook.com/docs/facebook-login/access-tokens/refreshing
+    if (data.has("access_token")) {
+      return Map.of("access_token", data.get("access_token").asText());
+    } else {
+      throw new IOException(String.format("Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL));
+    }
   }
 
 }
