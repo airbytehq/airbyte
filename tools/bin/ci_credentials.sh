@@ -86,6 +86,7 @@ write_standard_creds source-google-analytics-v4 "$GOOGLE_ANALYTICS_V4_TEST_CREDS
 write_standard_creds source-google-analytics-v4 "$GOOGLE_ANALYTICS_V4_TEST_CREDS_SRV_ACC" "service_config.json"
 write_standard_creds source-google-analytics-v4 "$GOOGLE_ANALYTICS_V4_TEST_CREDS_OLD" "old_config.json"
 write_standard_creds source-google-directory "$GOOGLE_DIRECTORY_TEST_CREDS"
+write_standard_creds source-google-directory "$GOOGLE_DIRECTORY_TEST_CREDS_OAUTH" "config_oauth.json"
 write_standard_creds source-google-search-console "$GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS"
 write_standard_creds source-google-search-console "$GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC" "service_account_config.json"
 write_standard_creds source-google-sheets "$GOOGLE_SHEETS_TESTS_CREDS"
