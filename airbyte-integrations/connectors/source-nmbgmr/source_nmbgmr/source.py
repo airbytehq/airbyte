@@ -96,7 +96,8 @@ class NmbgmrStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
@@ -110,6 +111,7 @@ class NmbgmrStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
         yield from response.json()
+
 
 # class Sites(NmbgmrStream):
 #     """
@@ -150,7 +152,8 @@ class IncrementalNmbgmrStream(NmbgmrStream, ABC):
         """
         return []
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+    Mapping[str, Any]:
         """
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
@@ -205,12 +208,22 @@ class WellScreens(NmbgmrStream, ABC):
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "OBJECTID"
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        rj = response.json()
+        if rj:
+            return max(r[self.primary_key] for r in rj)
+
     def path(self, **kwargs) -> str:
         """
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
         return "single". Required.
         """
-        return "wellscreens"
+
+        npt = kwargs['next_page_token']
+        if npt:
+            return f'wellscreens?objectid={npt}'
+        else:
+            return "wellscreens"
 
 
 # Source
