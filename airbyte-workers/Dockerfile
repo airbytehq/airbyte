@@ -22,13 +22,8 @@ ENV APPLICATION airbyte-workers
 
 WORKDIR /app
 
-# Install kubectl
-RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.14/bin/linux/${ARCH}/kubectl
-RUN chmod +x ./kubectl
-RUN mv ./kubectl /usr/local/bin
-
 # Move worker app
-ADD build/distributions/${APPLICATION}-0.30.23-alpha.tar /app
+ADD build/distributions/${APPLICATION}-0.30.31-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.30.23-alpha/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.30.31-alpha/bin/${APPLICATION}"]

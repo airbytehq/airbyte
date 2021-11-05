@@ -85,7 +85,7 @@ def test_simple_path(records, stream_mapping, simple_state):
     paths = {"my_stream": ["id"]}
 
     result = records_with_state(records=records, state=simple_state, stream_mapping=stream_mapping, state_cursor_paths=paths)
-    record_value, state_value = next(result)
+    record_value, state_value, stream_name = next(result)
 
     assert record_value == 1, "record value must be correctly found"
     assert state_value == 11, "state value must be correctly found"
@@ -96,7 +96,7 @@ def test_nested_path(records, stream_mapping, nested_state):
     paths = {"my_stream": ["some_account_id", "ts_updated"]}
 
     result = records_with_state(records=records, state=nested_state, stream_mapping=stream_mapping, state_cursor_paths=paths)
-    record_value, state_value = next(result)
+    record_value, state_value, stream_name = next(result)
 
     assert record_value == pendulum.datetime(2015, 5, 1), "record value must be correctly found"
     assert state_value == pendulum.datetime(2015, 1, 1, 22, 3, 11), "state value must be correctly found"
@@ -116,7 +116,7 @@ def test_absolute_path(records, stream_mapping, singer_state):
     paths = {"my_stream": ["bookmarks", "my_stream", "ts_created"]}
 
     result = records_with_state(records=records, state=singer_state, stream_mapping=stream_mapping, state_cursor_paths=paths)
-    record_value, state_value = next(result)
+    record_value, state_value, stream_name = next(result)
 
     assert record_value == pendulum.datetime(2015, 11, 1, 22, 3, 11), "record value must be correctly found"
     assert state_value == pendulum.datetime(2014, 1, 1, 22, 3, 11), "state value must be correctly found"

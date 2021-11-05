@@ -187,6 +187,7 @@ jobs:
           MONGODB_TEST_CREDS: ${{ secrets.MONGODB_TEST_CREDS }}
           SOURCE_ONESIGNAL_TEST_CREDS: ${{ secrets.SOURCE_ONESIGNAL_TEST_CREDS }}
           SOURCE_SALESLOFT_TEST_CREDS: ${{ secrets.SOURCE_SALESLOFT_TEST_CREDS }}
+          SOURCE_CONFLUENCE_TEST_CREDS: ${{ secrets.SOURCE_CONFLUENCE_TEST_CREDS }}
           SOURCE_AMAZON_SQS_TEST_CREDS: ${{ secrets.SOURCE_AMAZON_SQS_TEST_CREDS }}
           SOURCE_FRESHSERVICE_TEST_CREDS: ${{ secrets.SOURCE_FRESHSERVICE_TEST_CREDS }}
           SOURCE_LEMLIST_TEST_CREDS: ${{ secrets.SOURCE_LEMLIST_TEST_CREDS }}
@@ -195,6 +196,7 @@ jobs:
           SOURCE_DELIGHTED_TEST_CREDS: ${{ secrets.SOURCE_DELIGHTED_TEST_CREDS }}
           SOURCE_RETENTLY_TEST_CREDS: ${{ secrets.SOURCE_RETENTLY_TEST_CREDS }}
           SOURCE_SENTRY_TEST_CREDS: ${{ secrets.SOURCE_SENTRY_TEST_CREDS }}
+          SOURCE_FRESHSALES_TEST_CREDS: ${{ secrets.SOURCE_FRESHSALES_TEST_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}
