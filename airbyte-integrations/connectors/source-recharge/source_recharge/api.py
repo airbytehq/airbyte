@@ -62,7 +62,7 @@ class RechargeStream(HttpStream, ABC):
             return res
 
         # For some reason, successful responses contains incomplete data
-        content_length = int(response.headers.get('Content-Length', 0))
+        content_length = int(response.headers.get("Content-Length", 0))
         return response.status_code == 200 and content_length > len(response.content)
 
 
