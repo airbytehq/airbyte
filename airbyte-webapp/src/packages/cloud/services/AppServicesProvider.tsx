@@ -22,7 +22,7 @@ import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { LoadingPage } from "components";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
-export const useCustomerIdProvider = () => {
+function useCustomerIdProvider() {
   const { user } = useAuthService();
   const { workspaceId } = useCurrentWorkspace();
 
@@ -30,7 +30,7 @@ export const useCustomerIdProvider = () => {
     userId: user?.userId ?? "",
     workspaceId: workspaceId ?? "",
   };
-};
+}
 
 export const useCurrentWorkspaceProvider = (): Workspace => {
   const { currentWorkspaceId } = useWorkspaceService();
