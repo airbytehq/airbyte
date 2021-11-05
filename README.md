@@ -34,8 +34,6 @@ Now visit [http://localhost:8000](http://localhost:8000)
 
 Here is a [step-by-step guide](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/quickstart/getting-started.md) showing you how to load data from an API into a file, all on your computer.
 
-If you want to schedule a 20-min call with our team to help you get set up, please select [some time directly here](https://calendly.com/nataliekwong/airbyte-onboarding).
-
 ## Features
 
 * **Built for extensibility**: Adapt an existing connector to your needs or build a new one with ease.
