@@ -162,6 +162,7 @@
     * [Redshift](integrations/destinations/redshift.md)
     * [S3](integrations/destinations/s3.md)
     * [Snowflake](integrations/destinations/snowflake.md)
+    * [Cassandra](integrations/destinations/cassandra.md)
   * [Custom or New Connector](integrations/custom-connectors.md)
 * [Connector Development](connector-development/README.md)
   * [Tutorials](connector-development/tutorials/README.md)
