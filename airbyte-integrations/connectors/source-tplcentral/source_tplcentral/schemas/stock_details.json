@@ -57,17 +57,11 @@
       "type": "number"
     },
     "secondary_received": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "secondary_available": {
       "description": "unallocated; see IsOnHold for whether it's allocatable",
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "lot_number": {
       "type": "string"
@@ -76,17 +70,11 @@
       "type": "string"
     },
     "expiration_date": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "cost": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "supplier_identifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -194,10 +182,7 @@
       }
     },
     "inventory_units_per_secondary_unit": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "receiver_id": {
       "type": "integer"
@@ -232,16 +217,10 @@
       }
     },
     "weight_imperial": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "weight_metric": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     }
   }
 }

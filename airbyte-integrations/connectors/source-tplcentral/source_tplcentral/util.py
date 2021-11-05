@@ -1,4 +1,7 @@
-from collections import abc
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.utils.casing import camel_to_snake

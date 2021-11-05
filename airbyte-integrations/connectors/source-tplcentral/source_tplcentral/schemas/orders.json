@@ -28,10 +28,7 @@
           "type": "boolean"
         },
         "import_module_id": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "export_module_ids": {
           "type": "string"
@@ -43,102 +40,62 @@
           "type": "boolean"
         },
         "process_date": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "pick_done_date": {
           "description": "Stored and displayed in warehouse time",
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "pick_ticket_print_date": {
           "description": "Stored and displayed in warehouse time",
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "pack_done_date": {
           "description": "Stored in server time, displayed in warehouse time",
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "labels_exported": {
-          "type": [
-            "null",
-            "boolean"
-          ]
+          "type": ["null", "boolean"]
         },
         "invoice_exported_date": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "invoice_delivered_date": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "loaded_state": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
-          "enum": [
-            0,
-            1,
-            2
-          ],
+          "enum": [0, 1, 2],
           "description": "0: not_loaded; 1: loaded; 2: loaded_incomplete"
         },
         "load_out_done_date": {
           "description": "Stored and displayed in warehouse time",
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "reallocated_after_pick_ticket_date": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "route_sent": {
           "type": "boolean"
         },
         "asn_sent_date": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "asn_sent": {
-          "type": [
-            "null",
-            "boolean"
-          ]
+          "type": ["null", "boolean"]
         },
         "pkgs_exported": {
-          "type": [
-            "null",
-            "boolean"
-          ]
+          "type": ["null", "boolean"]
         },
         "batch_identifier": {
           "$schema": "http://json-schema.org/draft-07/schema#",
@@ -203,40 +160,22 @@
                 }
               },
               "length": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "width": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "height": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "weight": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "cod_amount": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "insured_amount": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "tracking_number": {
                 "type": "string"
@@ -249,22 +188,13 @@
                 "format": "date-time"
               },
               "oversize": {
-                "type": [
-                  "null",
-                  "boolean"
-                ]
+                "type": ["null", "boolean"]
               },
               "cod": {
-                "type": [
-                  "null",
-                  "boolean"
-                ]
+                "type": ["null", "boolean"]
               },
               "ucc128": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               },
               "carton_id": {
                 "type": "string"
@@ -292,10 +222,7 @@
                       "type": "integer"
                     },
                     "order_item_pick_exception_id": {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": ["null", "integer"]
                     },
                     "qty": {
                       "type": "number"
@@ -307,10 +234,7 @@
                       "type": "string"
                     },
                     "expiration_date": {
-                      "type": [
-                        "null",
-                        "string"
-                      ],
+                      "type": ["null", "string"],
                       "format": "date-time"
                     },
                     "create_date": {
@@ -364,11 +288,7 @@
         "parcel_label_type": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
-          "enum": [
-            0,
-            1,
-            2
-          ],
+          "enum": [0, 1, 2],
           "description": "0: none; 1: pdf; 2: zpl"
         },
         "customer_identifier": {
@@ -409,16 +329,7 @@
             {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7
-              ],
+              "enum": [0, 1, 2, 3, 4, 5, 6, 7],
               "description": "0: unknown; 1: ui_manual; 2: ui_import; 3: automated_import; 4: external_soap_api; 5: quick_books_soap_api; 6: automated_system_charge; 7: rest_api"
             }
           ]
@@ -432,13 +343,7 @@
             {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2,
-                3,
-                4
-              ],
+              "enum": [0, 1, 2, 3, 4],
               "description": "0: doang_hair (unknown); 1: manual_warehouse_user; 2: manual_customer_user; 3: ftp; 4: api"
             }
           ]
@@ -458,10 +363,7 @@
           }
         },
         "creation_date": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "created_by_identifier": {
@@ -478,10 +380,7 @@
           }
         },
         "last_modified_date": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "last_modified_by_identifier": {
@@ -501,11 +400,7 @@
           "description": "For GET of orders and receivers, the value is reliable. For rql for orders, this property is reliable only for \"Canceled\" status; otherwise use the IsClosed property.",
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
-          "enum": [
-            0,
-            1,
-            2
-          ]
+          "enum": [0, 1, 2]
         }
       }
     },
@@ -557,24 +452,15 @@
               },
               "estimated_qty": {
                 "description": "if present, calculated from SecondaryQty and cannot confirm until Qty entered",
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "estimated_secondary_qty": {
                 "description": "if present, calculated from Qty and cannot confirm until SecondaryQty entered",
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "original_primary_qty": {
                 "description": "on a shorted order, specifies original quantity ordered; otherwise same as Qty",
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "is_order_qty_secondary": {
                 "description": "if both Qty and SecondaryQty present, indicates whether at some point prior to shipping only SecondaryQty was present",
@@ -758,17 +644,11 @@
           },
           "qty": {
             "description": "primary inventory quantity ordered; if not specified, must specify SecondaryQty",
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "secondary_qty": {
             "description": "optional secondary quantity ordered; if not specified, must specify Qty",
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "lot_number": {
             "description": "if present, used to allocate matching inventory",
@@ -780,46 +660,28 @@
           },
           "expiration_date": {
             "description": "if present, used to allocate matching inventory",
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "format": "date-time"
           },
           "weight_imperial": {
             "description": "ship weight of order item, imperial; if specified and metric not specified, business logic computes metric",
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "weight_metric": {
             "description": "ship weight of order item, metric; if specified and imperial not specified, business logic computes imperial; see WeightImperial for further explanation",
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "notes": {
             "type": "string"
           },
           "fulfill_inv_sale_price": {
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "fulfill_inv_discount_pct": {
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "fulfill_inv_discount_amt": {
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "fulfill_inv_note": {
             "type": "string"
@@ -908,27 +770,18 @@
       "type": "string"
     },
     "earliest_ship_date": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "ship_cancel_date": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "notes": {
       "type": "string"
     },
     "num_units1": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "unit1_identifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -944,10 +797,7 @@
       }
     },
     "num_units2": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "unit2_identifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -963,16 +813,10 @@
       }
     },
     "total_weight": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "total_volume": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "billing_code": {
       "type": "string"
@@ -981,16 +825,10 @@
       "type": "string"
     },
     "ups_service_option_charge": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "ups_transportation_charge": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "add_freight_to_cod": {
       "type": "boolean"
@@ -1013,10 +851,7 @@
       }
     },
     "route_pickup_date": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "shipping_notes": {
@@ -1034,25 +869,16 @@
       "additionalProperties": false,
       "properties": {
         "fulfill_inv_shipping_and_handling": {
-          "type": [
-            "null",
-            "number"
-          ]
+          "type": ["null", "number"]
         },
         "fulfill_inv_tax": {
-          "type": [
-            "null",
-            "number"
-          ]
+          "type": ["null", "number"]
         },
         "fulfill_inv_discount_code": {
           "type": "string"
         },
         "fulfill_inv_discount_amount": {
-          "type": [
-            "null",
-            "number"
-          ]
+          "type": ["null", "number"]
         },
         "fulfill_inv_gift_message": {
           "type": "string"
@@ -1123,10 +949,7 @@
           "type": "string"
         },
         "pickup_date": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         }
       }
@@ -1149,17 +972,7 @@
                 "description": "charge type",
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "integer",
-                "enum": [
-                  0,
-                  1,
-                  2,
-                  3,
-                  4,
-                  5,
-                  6,
-                  7,
-                  8
-                ]
+                "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8]
               },
               "subtotal": {
                 "type": "number"
@@ -1267,31 +1080,21 @@
             {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2
-              ],
+              "enum": [0, 1, 2],
               "description": "0: ship_to; 1: sold_to; 2: bill_to"
             }
           ]
         },
         "retailer_id": {
           "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "is_quick_lookup": {
           "type": "boolean"
         },
         "contact_id": {
           "description": "for identifying: if known specify only this; other fields are ignored",
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "company_name": {
           "type": "string"
@@ -1340,11 +1143,7 @@
           "description": "confirmation status",
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
-          "enum": [
-            0,
-            1,
-            2
-          ]
+          "enum": [0, 1, 2]
         }
       }
     },
@@ -1363,31 +1162,21 @@
             {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2
-              ],
+              "enum": [0, 1, 2],
               "description": "0: ship_to; 1: sold_to; 2: bill_to"
             }
           ]
         },
         "retailer_id": {
           "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "is_quick_lookup": {
           "type": "boolean"
         },
         "contact_id": {
           "description": "for identifying: if known specify only this; other fields are ignored",
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "company_name": {
           "type": "string"
@@ -1436,11 +1225,7 @@
           "description": "confirmation status",
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
-          "enum": [
-            0,
-            1,
-            2
-          ]
+          "enum": [0, 1, 2]
         }
       }
     },
@@ -1459,31 +1244,21 @@
             {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2
-              ],
+              "enum": [0, 1, 2],
               "description": "0: ship_to; 1: sold_to; 2: bill_to"
             }
           ]
         },
         "retailer_id": {
           "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "is_quick_lookup": {
           "type": "boolean"
         },
         "contact_id": {
           "description": "for identifying: if known specify only this; other fields are ignored",
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "company_name": {
           "type": "string"
@@ -1532,11 +1307,7 @@
           "description": "confirmation status",
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
-          "enum": [
-            0,
-            1,
-            2
-          ]
+          "enum": [0, 1, 2]
         }
       }
     },

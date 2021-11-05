@@ -35,27 +35,18 @@
           "type": "integer"
         },
         "creation_date": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "last_modified_date": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "deactivated": {
           "type": "boolean"
         },
         "last_price_change": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "has_storage_rates": {
@@ -213,30 +204,17 @@
               }
             },
             "minimum_stock": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "maximum_stock": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "reorder_quantity": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "inventory_method": {
               "type": "integer",
-              "enum": [
-                1,
-                2,
-                3
-              ],
+              "enum": [1, 2, 3],
               "description": "1: FIFO; 2: LIFO; 3: FEFO"
             }
           }
@@ -281,34 +259,19 @@
               "additionalProperties": false,
               "properties": {
                 "net_weight": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "length": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "width": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "height": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "weight": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 }
               }
             },
@@ -318,34 +281,19 @@
               "additionalProperties": false,
               "properties": {
                 "net_weight": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "length": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "width": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "height": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "weight": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 }
               }
             },
@@ -378,60 +326,35 @@
             "track_lot_number": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2
-              ],
+              "enum": [0, 1, 2],
               "description": "0: disallow; 1: allow; 2: require"
             },
             "track_serial_number": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2,
-                3,
-                4
-              ],
+              "enum": [0, 1, 2, 3, 4],
               "description": "0: disallow; 1: allow; 2: allow_unique; 3: require; 4: require_unique"
             },
             "track_expiration_date": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2
-              ],
+              "enum": [0, 1, 2],
               "description": "0: disallow; 1: allow; 2: require"
             },
             "track_cost": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2
-              ],
+              "enum": [0, 1, 2],
               "description": "0: disallow; 1: allow; 2: require"
             },
             "outbound_mobile_serialization": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2
-              ],
+              "enum": [0, 1, 2],
               "description": "0: disable; 1: ignore_quantity_mismatches; 2: disallow_quantity_mismatches"
             },
             "auto_hold_expiration_days_threshold": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "is_pick_lot_number_required": {
               "type": "boolean"
@@ -463,22 +386,13 @@
               }
             },
             "tie": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "high": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "qty": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "imperial": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -486,28 +400,16 @@
               "additionalProperties": false,
               "properties": {
                 "length": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "width": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "height": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "weight": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 }
               }
             },
@@ -517,28 +419,16 @@
               "additionalProperties": false,
               "properties": {
                 "length": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "width": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "height": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "weight": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 }
               }
             },
@@ -635,18 +525,12 @@
               "type": "boolean"
             },
             "mixed_expiration_days_threshold": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
         "days_between_counts": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "auto_hold_on_receive": {
           "type": "boolean"

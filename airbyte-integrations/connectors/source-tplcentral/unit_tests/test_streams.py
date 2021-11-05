@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from http import HTTPStatus
@@ -42,7 +22,7 @@ def config():
             "tpl_key": "{00000000-0000-0000-0000-000000000000}",
             "customer_id": 4,
             "facility_id": 5,
-            "start_date": "2021-10-01"
+            "start_date": "2021-10-01",
         }
     }
 
@@ -112,18 +92,21 @@ def test_next_page_token_with_page_size(patch_base_class_page_size, stream, requ
 
 
 def test_parse_response(stream, requests_mock):
-    requests_mock.get("https://dummy", json={
-        "TotalResults": 2,
-        "CollectionField": [
-            {
-                "Foo": "foo",
-                "Bar": {
-                    "Baz": "baz",
-                },
-                "_links": [],
-            }
-        ]
-    })
+    requests_mock.get(
+        "https://dummy",
+        json={
+            "TotalResults": 2,
+            "CollectionField": [
+                {
+                    "Foo": "foo",
+                    "Bar": {
+                        "Baz": "baz",
+                    },
+                    "_links": [],
+                }
+            ],
+        },
+    )
     resp = requests.get("https://dummy")
     inputs = {"response": resp}
     expected_parsed_object = {"bar": {"baz": "baz"}, "foo": "foo"}
@@ -131,16 +114,19 @@ def test_parse_response(stream, requests_mock):
 
 
 def test_parse_response_with_primary_key(patch_base_class_upstream_primary_key, stream, requests_mock):
-    requests_mock.get("https://dummy", json={
-        "TotalResults": 2,
-        "CollectionField": [
-            {
-                "Nested": {
-                    "PrimaryKey": 42,
+    requests_mock.get(
+        "https://dummy",
+        json={
+            "TotalResults": 2,
+            "CollectionField": [
+                {
+                    "Nested": {
+                        "PrimaryKey": 42,
+                    },
                 },
-            },
-        ]
-    })
+            ],
+        },
+    )
     resp = requests.get("https://dummy")
     inputs = {"response": resp}
     expected_parsed_object = {"nested": {"primary_key": 42}, "test_primary_key": 42}
@@ -148,16 +134,19 @@ def test_parse_response_with_primary_key(patch_base_class_upstream_primary_key, 
 
 
 def test_parse_response_with_cursor_field(patch_base_class_upstream_cursor_field, stream, requests_mock):
-    requests_mock.get("https://dummy", json={
-        "TotalResults": 2,
-        "CollectionField": [
-            {
-                "Nested": {
-                    "Cursor": 43,
+    requests_mock.get(
+        "https://dummy",
+        json={
+            "TotalResults": 2,
+            "CollectionField": [
+                {
+                    "Nested": {
+                        "Cursor": 43,
+                    },
                 },
-            },
-        ]
-    })
+            ],
+        },
+    )
     resp = requests.get("https://dummy")
     inputs = {"response": resp}
     expected_parsed_object = {"nested": {"cursor": 43}, "test_cursor_field": 43}

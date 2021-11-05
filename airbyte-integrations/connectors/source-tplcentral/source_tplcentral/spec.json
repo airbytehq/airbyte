@@ -4,11 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Tplcentral Spec",
     "type": "object",
-    "required": [
-      "url_base",
-      "client_id",
-      "client_secret"
-    ],
+    "required": ["url_base", "client_id", "client_secret"],
     "additionalProperties": false,
     "properties": {
       "url_base": {

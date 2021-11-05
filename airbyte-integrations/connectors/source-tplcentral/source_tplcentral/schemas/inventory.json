@@ -102,10 +102,7 @@
       }
     },
     "inventory_units_per_secondary_unit": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "received_qty": {
       "type": "number"
@@ -120,64 +117,34 @@
       "type": "number"
     },
     "secondary_received_qty": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "secondary_on_hand_qty": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "secondary_available_qty": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "secondary_on_hold_qty": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "weight_imperial": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "weight_imperial_on_hand": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "weight_imperial_available": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "weight_metric": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "weight_metric_on_hand": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "weight_metric_available": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "saved_elements": {
       "type": "array",
@@ -202,17 +169,11 @@
       "type": "string"
     },
     "expiration_date": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "cost": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "supplier_identifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -300,10 +261,7 @@
       "type": "string"
     },
     "on_hold_date": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "on_hold_user_identifier": {

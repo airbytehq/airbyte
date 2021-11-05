@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
@@ -5,7 +9,6 @@ from urllib.parse import parse_qsl, urlparse
 import arrow
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-
 from source_tplcentral.util import deep_get, normalize
 
 
@@ -122,9 +125,7 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
         if stream_state is None:
             stream_state = {}
 
-        return [{
-            self.cursor_field: stream_state.get(self.cursor_field, self.start_date)
-        }]
+        return [{self.cursor_field: stream_state.get(self.cursor_field, self.start_date)}]
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -182,11 +183,13 @@ class StockDetails(IncrementalTplcentralStream):
             next_page_token=next_page_token,
         )
 
-        params.update({
-            "customerid": self.customer_id,
-            "facilityid": self.facility_id,
-            "sort": self.upstream_cursor_field,
-        })
+        params.update(
+            {
+                "customerid": self.customer_id,
+                "facilityid": self.facility_id,
+                "sort": self.upstream_cursor_field,
+            }
+        )
         cursor = stream_slice.get(self.cursor_field)
         if cursor:
             params.update({"rql": f"{self.upstream_cursor_field}=ge={cursor}"})
@@ -212,21 +215,29 @@ class Inventory(IncrementalTplcentralStream):
             next_page_token=next_page_token,
         )
 
-        params.update({
-            "sort": self.upstream_cursor_field,
-            "rql": ";".join([
-                f"CustomerIdentifier.Id=={self.customer_id}",
-                f"FacilityIdentifier.Id=={self.facility_id}",
-            ])
-        })
+        params.update(
+            {
+                "sort": self.upstream_cursor_field,
+                "rql": ";".join(
+                    [
+                        f"CustomerIdentifier.Id=={self.customer_id}",
+                        f"FacilityIdentifier.Id=={self.facility_id}",
+                    ]
+                ),
+            }
+        )
         cursor = stream_slice.get(self.cursor_field)
         if cursor:
-            params.update({
-                "rql": ";".join([
-                    params["rql"],
-                    f"{self.upstream_cursor_field}=ge={cursor}",
-                ])
-            })
+            params.update(
+                {
+                    "rql": ";".join(
+                        [
+                            params["rql"],
+                            f"{self.upstream_cursor_field}=ge={cursor}",
+                        ]
+                    )
+                }
+            )
 
         return params
 
@@ -249,20 +260,28 @@ class Orders(IncrementalTplcentralStream):
             next_page_token=next_page_token,
         )
 
-        params.update({
-            "sort": self.upstream_cursor_field,
-            "rql": ";".join([
-                f"ReadOnly.CustomerIdentifier.Id=={self.customer_id}",
-                f"ReadOnly.FacilityIdentifier.Id=={self.facility_id}",
-            ])
-        })
+        params.update(
+            {
+                "sort": self.upstream_cursor_field,
+                "rql": ";".join(
+                    [
+                        f"ReadOnly.CustomerIdentifier.Id=={self.customer_id}",
+                        f"ReadOnly.FacilityIdentifier.Id=={self.facility_id}",
+                    ]
+                ),
+            }
+        )
         cursor = stream_slice.get(self.cursor_field)
         if cursor:
-            params.update({
-                "rql": ";".join([
-                    params["rql"],
-                    f"{self.upstream_cursor_field}=ge={cursor}",
-                ])
-            })
+            params.update(
+                {
+                    "rql": ";".join(
+                        [
+                            params["rql"],
+                            f"{self.upstream_cursor_field}=ge={cursor}",
+                        ]
+                    )
+                }
+            )
 
         return params
