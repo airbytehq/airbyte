@@ -6,12 +6,14 @@ package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
@@ -20,11 +22,16 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -163,8 +170,39 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
   }
 
+
+  private <T> T parseConfig(final String path, Class<T> clazz) throws IOException {
+    return Jsons.deserialize(MoreResources.readResource(path), clazz);
+  }
+  private  JsonNode parseConfig(final String path) throws IOException {
+    return Jsons.deserialize(MoreResources.readResource(path));
+  }
+
   @Test
-  public void testIt(){
-    System.out.println("hi");
+  public void testIt() throws Exception {
+    final JsonNode config = parseConfig("destination_config.json");
+    final ConfiguredAirbyteCatalog catalog = parseConfig("destination_catalog.json", ConfiguredAirbyteCatalog.class);
+    SnowflakeInsertDestination snowflakeInsertDestination = new SnowflakeInsertDestination();
+    final AirbyteMessageConsumer consumer = snowflakeInsertDestination.getConsumer(config, catalog, (x) -> {});
+    consumeWriteStream(consumer);
+  }
+
+  @VisibleForTesting
+  static void consumeWriteStream(final AirbyteMessageConsumer consumer) throws Exception {
+    // use a Scanner that only processes new line characters to strictly abide with the
+    // https://jsonlines.org/ standard
+    final Scanner input = new Scanner(new File("/Users/sherifnada/code/airbyte/airbyte-integrations/connectors/destination-snowflake/src/test-integration/resources/output.json")).useDelimiter("[\r\n]+");
+    try (consumer) {
+      consumer.start();
+      while (input.hasNext()) {
+        final String inputString = input.next();
+        final Optional<AirbyteMessage> singerMessageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
+        if (singerMessageOptional.isPresent()) {
+          consumer.accept(singerMessageOptional.get());
+        } else {
+          System.out.println("Received invalid message: " + inputString);
+        }
+      }
+    }
   }
 }
