@@ -27,10 +27,10 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
@@ -319,13 +319,16 @@ public class ArchiveHandlerTest {
       final Set<JsonNode> expectedRecords = expected.get(stream).collect(Collectors.toSet());
       final Set<JsonNode> actualRecords = actual.get(stream).collect(Collectors.toSet());
       for (final var expectedRecord : expectedRecords) {
-        assertTrue(actualRecords.contains(expectedRecord),
-            String.format("\n Expected record was not found:\n%s\n Actual records were:\n%s\n",
+        assertTrue(
+            actualRecords.contains(expectedRecord),
+            String.format(
+                "\n Expected record was not found:\n%s\n Actual records were:\n%s\n",
                 expectedRecord,
                 Strings.join(actualRecords, "\n")));
       }
       assertEquals(expectedRecords.size(), actualRecords.size(),
-          String.format("The expected vs actual records does not match:\n expected records:\n%s\n actual records\n%s\n",
+          String.format(
+              "The expected vs actual records does not match:\n expected records:\n%s\n actual records\n%s\n",
               Strings.join(expectedRecords, "\n"),
               Strings.join(actualRecords, "\n")));
     }
