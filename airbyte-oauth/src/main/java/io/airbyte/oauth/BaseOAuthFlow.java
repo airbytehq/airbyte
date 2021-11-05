@@ -16,7 +16,6 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
-import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +35,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseOAuthFlow.class);
   private final Object lock = new Object();
+
   /**
    * Simple enum of content type strings and their respective encoding functions used for POSTing the
    * access token request
@@ -55,19 +55,12 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   }
 
-  protected static HttpClient HTTP_CLIENT;
   private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
+  protected HttpClient httpClient;
   private final Supplier<String> stateSupplier;
 
   public BaseOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
     this(configRepository, httpClient, BaseOAuthFlow::generateRandomState);
-  }
-
-  public BaseOAuthFlow(ConfigRepository configRepository, TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
-    this(configRepository,
-        HttpClient.newBuilder().version(Version.HTTP_1_1).build(),
-        BaseOAuthFlow::generateRandomState,
-        tokenReqContentType);
   }
 
   public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
@@ -79,6 +72,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
                        Supplier<String> stateSupplier,
                        TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
     super(configRepository);
+    this.httpClient = httpClient;
     this.stateSupplier = stateSupplier;
     this.tokenReqContentType = tokenReqContentType;
   }
@@ -161,8 +155,8 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         .build();
     try {
       HttpResponse<String> response;
-      synchronized (lock){
-        response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+      synchronized (lock) {
+        response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       }
       return extractRefreshToken(Jsons.deserialize(response.body()), accessTokenUrl);
     } catch (final InterruptedException e) {

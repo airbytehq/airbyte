@@ -17,7 +17,6 @@ import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Set;

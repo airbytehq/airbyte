@@ -17,7 +17,6 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
@@ -101,8 +100,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.webappUrl,
         ConfigurationApiFactory.airbyteVersion,
         ConfigurationApiFactory.workspaceRoot,
-        ConfigurationApiFactory.httpClient
-    );
+        ConfigurationApiFactory.httpClient);
   }
 
   @Override

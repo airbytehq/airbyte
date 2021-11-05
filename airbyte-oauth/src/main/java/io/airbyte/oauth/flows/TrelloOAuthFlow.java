@@ -40,7 +40,7 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
   private final HttpTransport transport;
 
   public TrelloOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
-    super(configRepository, httpClient);
+    super(configRepository);
     transport = new NetHttpTransport();
   }
 

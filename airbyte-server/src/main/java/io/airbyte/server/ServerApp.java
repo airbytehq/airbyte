@@ -253,8 +253,7 @@ public class ServerApp implements ServerRunnable {
           configs.getWebappUrl(),
           configs.getAirbyteVersion(),
           configs.getWorkspaceRoot(),
-          httpClient
-      );
+          httpClient);
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);

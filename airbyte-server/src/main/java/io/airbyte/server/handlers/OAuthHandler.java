@@ -37,13 +37,11 @@ public class OAuthHandler {
 
   private final ConfigRepository configRepository;
   private final OAuthImplementationFactory oAuthImplementationFactory;
-  private final HttpClient httpClient;
   private final TrackingClient trackingClient;
 
   public OAuthHandler(final ConfigRepository configRepository, final HttpClient httpClient, final TrackingClient trackingClient) {
     this.configRepository = configRepository;
-    this.oAuthImplementationFactory = new OAuthImplementationFactory(configRepository);
-    this.httpClient = httpClient;
+    this.oAuthImplementationFactory = new OAuthImplementationFactory(configRepository, httpClient);
     this.trackingClient = trackingClient;
   }
 

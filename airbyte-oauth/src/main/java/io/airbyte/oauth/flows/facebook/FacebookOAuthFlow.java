@@ -111,7 +111,7 @@ public abstract class FacebookOAuthFlow extends BaseOAuthFlow {
           .GET()
           .uri(uri)
           .build();
-      final HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       final JsonNode responseJson = Jsons.deserialize(response.body());
       Preconditions.checkArgument(responseJson.hasNonNull("access_token"), "%s response should have access_token", responseJson);
       return responseJson.get("access_token").asText();

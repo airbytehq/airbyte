@@ -5,7 +5,6 @@
 package io.airbyte.oauth.flows.facebook;
 
 import io.airbyte.config.persistence.ConfigRepository;
-
 import java.net.http.HttpClient;
 
 // Instagram Graph API require Facebook API User token
