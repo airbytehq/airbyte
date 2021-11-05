@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.config.EnvConfigs;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -36,8 +37,7 @@ public class GcsLogsTest {
    */
   @Test
   public void testRetrieveAllLogs() throws IOException {
-    final var configs = new LogConfigDelegator(new EnvConfigs());
-    final var data = GcsLogs.getFile(configs, "paginate", 6);
+    final File data = GcsLogs.getFile((new EnvConfigs()).getLogConfigs(), "paginate", 6);
 
     final var retrieved = new ArrayList<String>();
     Files.lines(data.toPath()).forEach(retrieved::add);
@@ -56,8 +56,7 @@ public class GcsLogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    final var configs = new LogConfigDelegator(new EnvConfigs());
-    final var data = new GcsLogs().tailCloudLog(configs, "tail", 6);
+    final var data = new GcsLogs().tailCloudLog((new EnvConfigs()).getLogConfigs(), "tail", 6);
 
     final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
     assertEquals(data, expected);

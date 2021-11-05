@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal;
 
-import io.airbyte.workers.WorkerException;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.client.ActivityCompletionException;
@@ -35,7 +34,6 @@ public interface CancellationHandler {
      *
      * @param onCancellationCallback a runnable that will only run when Temporal indicates the activity
      *        should be killed (cancellation or timeout).
-     * @throws WorkerException
      */
     @Override
     public void checkAndHandleCancellation(final Runnable onCancellationCallback) {

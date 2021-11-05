@@ -53,7 +53,10 @@ export const WorkspaceSettingsView: React.FC = () => {
             title={
               <Header>
                 <FormattedMessage id="settings.generalSettings" />
-                <Button onClick={() => selectWorkspace(workspace.workspaceId)}>
+                <Button
+                  type="button"
+                  onClick={() => selectWorkspace(workspace.workspaceId)}
+                >
                   <FormattedMessage id="settings.generalSettings.changeWorkspace" />
                 </Button>
               </Header>
@@ -94,6 +97,7 @@ export const WorkspaceSettingsView: React.FC = () => {
                     </Field>
                     <Buttons>
                       <Button
+                        type="button"
                         secondary
                         disabled={!dirty}
                         onClick={() => resetForm()}

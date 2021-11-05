@@ -34,11 +34,19 @@ spec:
           value: {{ include "airbyte.database.port" . | quote }}
         - name: POSTGRES_USER
           value: {{ include "airbyte.database.user" . }}
+        {{- if .Values.postgresql.enabled }}
+        - name: POSTGRES_PWD
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: DATABASE_PASSWORD
+        {{- else }}
         - name: POSTGRES_PWD
           valueFrom:
             secretKeyRef:
               name: {{ include "airbyte.postgresql.secretName" . }}
               key: {{ include "airbyte.database.existingsecret.key" . }}
+        {{- end }}
         - name: POSTGRES_SEEDS
           value: {{ include "airbyte.database.host" . }}
         - name: DYNAMIC_CONFIG_FILE_PATH
@@ -51,6 +59,9 @@ spec:
         volumeMounts:
         - name: airbyte-temporal-dynamicconfig
           mountPath: "/etc/temporal/config/dynamicconfig/"
+        {{- if .Values.server.resources }}
+        resources: {{- toYaml .Values.temporal.resources | nindent 10 }}
+        {{- end }}
       volumes:
       - name: airbyte-temporal-dynamicconfig
         configMap:
