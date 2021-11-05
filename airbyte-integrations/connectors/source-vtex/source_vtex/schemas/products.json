@@ -1,72 +1,78 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "properties": {
-    "Id": {
-      "type": "number"
-    },
-    "Name": {
-      "type": "string"
-    },
-    "DepartmentId": {
-      "type": "number"
-    },
-    "CategoryId": {
-      "type": "number"
-    },
-    "BrandId": {
-      "type": "number"
-    },
-    "LinkId": {
-      "type": "string"
-    },
-    "RefId": {
-      "type": "string"
-    },
-    "IsVisible": {
-      "type": "boolean"
-    },
-    "Description": {
-      "type": "string"
-    },
-    "DescriptionShort": {
-      "type": "string"
-    },
-    "ReleaseDate": {
-      "type": "string"
-    },
-    "KeyWords": {
-      "type": "string"
-    },
-    "Title": {
-      "type": "string"
-    },
-    "IsActive": {
-      "type": "boolean"
-    },
-    "TaxCode": {
-      "type": "string"
-    },
-    "MetaTagDescription": {
-      "type": "string"
-    },
-    "SupplierId": {
-      "type": "number"
-    },
-    "ShowWithoutStock": {
-      "type": "string"
-    },
-    "ListStoreId": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      }
-    },
-    "AdWordsRemarketingCode": {
-      "type": ["null", "string"]
-    },
-    "LomadeeCampaignCode": {
-      "type": ["null", "string"]
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "Id": {
+            "type": "number"
+        },
+        "Name": {
+            "type": "string"
+        },
+        "DepartmentId": {
+            "type": "number"
+        },
+        "CategoryId": {
+            "type": "number"
+        },
+        "BrandId": {
+            "type": "number"
+        },
+        "LinkId": {
+            "type": "string"
+        },
+        "RefId": {
+            "type": "string"
+        },
+        "IsVisible": {
+            "type": "boolean"
+        },
+        "Description": {
+            "type": "string"
+        },
+        "DescriptionShort": {
+            "type": "string"
+        },
+        "ReleaseDate": {
+            "type": "string"
+        },
+        "KeyWords": {
+            "type": "string"
+        },
+        "Title": {
+            "type": "string"
+        },
+        "IsActive": {
+            "type": "boolean"
+        },
+        "TaxCode": {
+            "type": "string"
+        },
+        "MetaTagDescription": {
+            "type": "string"
+        },
+        "SupplierId": {
+            "type": "number"
+        },
+        "ShowWithoutStock": {
+            "type": "string"
+        },
+        "ListStoreId": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            }
+        },
+        "AdWordsRemarketingCode": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "LomadeeCampaignCode": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
     }
-  }
 }
