@@ -263,14 +263,17 @@ class StreamProcessor(object):
                 is_intermediate=False,
             )
         else:
-            if DestinationType.POSTGRES.value == self.destination_type.value:
-                # because of https://github.com/dbt-labs/docs.getdbt.com/issues/335, we have to use tables for postgres
-                forced_materialization_type = TableMaterializationType.TABLE
+            if self.is_incremental_mode(self.destination_sync_mode):
+                # Force different materialization here because incremental scd models rely on star* macros that requires it
+                if DestinationType.POSTGRES.value == self.destination_type.value:
+                    # because of https://github.com/dbt-labs/docs.getdbt.com/issues/335, we avoid VIEW for postgres
+                    forced_materialization_type = TableMaterializationType.INCREMENTAL
+                else:
+                    forced_materialization_type = TableMaterializationType.VIEW
             else:
-                forced_materialization_type = TableMaterializationType.VIEW
+                forced_materialization_type = TableMaterializationType.CTE
             from_table = self.add_to_outputs(
                 self.generate_id_hashing_model(from_table, column_names),
-                # Force View materialization here because scd models rely on star* macros that requires it
                 forced_materialization_type,
                 is_intermediate=True,
                 suffix="ab3",
