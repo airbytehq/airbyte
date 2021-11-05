@@ -26,6 +26,8 @@ import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivity;
 import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivity;
 import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivityImpl;
+import io.airbyte.workers.temporal.SyncWorkflow.PersistStateActivity;
+import io.airbyte.workers.temporal.SyncWorkflow.PersistStateActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivity;
 import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivityImpl;
 import io.temporal.api.common.v1.WorkflowExecution;
@@ -52,6 +54,7 @@ class SyncWorkflowTest {
   private ReplicationActivityImpl replicationActivity;
   private NormalizationActivityImpl normalizationActivity;
   private DbtTransformationActivityImpl dbtTransformationActivity;
+  private PersistStateActivityImpl persistStateActivity;
 
   // AIRBYTE CONFIGURATION
   private static final long JOB_ID = 11L;
@@ -70,6 +73,7 @@ class SyncWorkflowTest {
       .withAttemptId((long) ATTEMPT_ID)
       .withDockerImage(IMAGE_NAME2);
 
+  private StandardSync sync;
   private StandardSyncInput syncInput;
   private NormalizationInput normalizationInput;
   private OperatorDbtInput operatorDbtInput;
@@ -85,6 +89,7 @@ class SyncWorkflowTest {
     client = testEnv.getWorkflowClient();
 
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
+    sync = syncPair.getKey();
     syncInput = syncPair.getValue();
     replicationSuccessOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog());
 
@@ -99,15 +104,16 @@ class SyncWorkflowTest {
     replicationActivity = mock(ReplicationActivityImpl.class);
     normalizationActivity = mock(NormalizationActivityImpl.class);
     dbtTransformationActivity = mock(DbtTransformationActivityImpl.class);
+    persistStateActivity = mock(PersistStateActivityImpl.class);
   }
 
   // bundle up all of the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
-    worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity);
+    worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
     testEnv.start();
     final SyncWorkflow workflow = client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
 
-    return workflow.run(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput);
+    return workflow.run(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput, sync.getConnectionId());
   }
 
   @Test
@@ -122,6 +128,7 @@ class SyncWorkflowTest {
     assertEquals(replicationSuccessOutput, actualOutput);
 
     verifyReplication(replicationActivity, syncInput);
+    verifyPersistState(persistStateActivity, sync, actualOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
   }
@@ -137,7 +144,9 @@ class SyncWorkflowTest {
     assertThrows(WorkflowFailedException.class, this::execute);
 
     verifyReplication(replicationActivity, syncInput);
+    verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
+    verifyNoInteractions(dbtTransformationActivity);
   }
 
   @Test
@@ -156,7 +165,9 @@ class SyncWorkflowTest {
     assertThrows(WorkflowFailedException.class, this::execute);
 
     verifyReplication(replicationActivity, syncInput);
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
+    verifyNoInteractions(dbtTransformationActivity);
   }
 
   @Test
@@ -173,7 +184,9 @@ class SyncWorkflowTest {
     assertThrows(WorkflowFailedException.class, this::execute);
 
     verifyReplication(replicationActivity, syncInput);
+    verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
+    verifyNoInteractions(dbtTransformationActivity);
   }
 
   @Test
@@ -195,7 +208,9 @@ class SyncWorkflowTest {
     assertThrows(WorkflowFailedException.class, this::execute);
 
     verifyReplication(replicationActivity, syncInput);
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
+    verifyNoInteractions(dbtTransformationActivity);
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -221,6 +236,14 @@ class SyncWorkflowTest {
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
         syncInput);
+  }
+
+  private static void verifyPersistState(final PersistStateActivity persistStateActivity,
+                                         final StandardSync sync,
+                                         final StandardSyncOutput syncOutput) {
+    verify(persistStateActivity).persist(
+        sync.getConnectionId(),
+        syncOutput);
   }
 
   private static void verifyNormalize(final NormalizationActivity normalizationActivity, final NormalizationInput normalizationInput) {
