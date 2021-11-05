@@ -36,12 +36,12 @@ const LoginPage: React.FC = () => {
           password: "",
         }}
         validationSchema={LoginPageValidationSchema}
-        onSubmit={async (values, { setFieldError, setStatus }) =>
+        onSubmit={async (values, { setFieldError }) =>
           login(values).catch((err) => {
             if (err instanceof FieldError) {
               setFieldError(err.field, err.message);
             } else {
-              setStatus(err.message);
+              setFieldError("password", err.message);
             }
           })
         }
