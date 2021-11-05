@@ -105,20 +105,37 @@ class Sites(NmbgmrStream, ABC):
 
     url_base_name = 'sitemetadata'
 
-    def path(self, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-        return "single". Required.
-        """
-        return "sitemetadata"
 
-
-class WellScreens(NmbgmrStream, ABC):
+class WellScreens(NmbgmrStream):
     cursor_field = "OBJECTID"
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "OBJECTID"
     url_base_name = 'wellscreens'
+
+
+class ManualGwl(NmbgmrStream):
+    cursor_field = "OBJECTID"
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = "OBJECTID"
+    url_base_name = 'manual_gwl'
+
+
+class PressureGwl(NmbgmrStream):
+    cursor_field = "OBJECTID"
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = "OBJECTID"
+    url_base_name = 'pressure_gwl'
+
+
+class AcousticGwl(NmbgmrStream):
+    cursor_field = "OBJECTID"
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = "OBJECTID"
+    url_base_name = 'acoustic_gwl'
 
 
 # Source
@@ -144,4 +161,9 @@ class SourceNmbgmr(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Sites(authenticator=auth), WellScreens(authenticator=auth)]
+        return [Sites(authenticator=auth),
+                WellScreens(authenticator=auth),
+                ManualGwl(authenticator=auth),
+                PressureGwl(authenticator=auth),
+                AcousticGwl(authenticator=auth),
+                ]

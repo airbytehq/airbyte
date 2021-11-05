@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "well_screens",
+        "name": "sites",
         "json_schema": {
           "properties": {
             "column_name": {

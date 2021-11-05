@@ -1,0 +1,16 @@
+ {"$schema": "http://json-schema.org/draft-07/schema#",
+                               "type": "object",
+                               "properties": {"OBJECTID": {"type": "number"},
+                                              "PointID": {"type": "string"},
+                                              "WellID": {"type": "string"},
+                                              "GlobalID": {"type": "string"},
+                                              "DateTimeMeasured": {"type": "string",
+                                                                   "format": "date-time"},
+                                              "DepthToWaterBGS": {"type": "number"},
+                                              "WaterHead": {"type": "number"},
+                                              "WaterHeadAdjusted": {"type": "number"},
+                                              "DataSource": {"type": "string"},
+                                              "MeasuringAgency": {"type": "string"},
+                                              "MeasurementMethod": {"type": "string"}
+                                              }
+                               }
