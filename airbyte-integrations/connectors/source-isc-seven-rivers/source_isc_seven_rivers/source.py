@@ -21,9 +21,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
-
+import datetime
 from abc import ABC
+from operator import itemgetter
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -96,7 +96,8 @@ class IscSevenRiversStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
@@ -113,8 +114,7 @@ class IscSevenRiversStream(HttpStream, ABC):
         yield from response.json()['data']
 
 
-
-class MonitoringPoints(IscSevenRiversStream, ABC):
+class MonitoringPoints(IscSevenRiversStream):
     """
     """
 
@@ -128,27 +128,114 @@ class MonitoringPoints(IscSevenRiversStream, ABC):
         """
         return "getMonitoringPoints.ashx"
 
-    # def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-    #     """
-    #     TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
-    #
-    #     Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-    #     This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
-    #     section of the docs for more information.
-    #
-    #     The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
-    #     necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
-    #     This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
-    #
-    #     An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
-    #     craft that specific request.
-    #
-    #     For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
-    #     this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
-    #     till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
-    #     the date query param.
-    #     """
-    #     raise NotImplementedError("Implement stream slices or delete this method!")
+
+class Analytes(IscSevenRiversStream):
+    cursor_field = "id"
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        """
+        return "single". Required.
+        """
+        return "getAnalytes.ashx"
+
+
+class Observations(IscSevenRiversStream):
+    _active_page = None
+
+    def __init__(self, *args, **kw):
+        super(Observations, self).__init__(*args, **kw)
+        p = MonitoringPoints()
+        records = list(p.read_records('full-refresh'))
+        self._pages = (r for r in sorted(r['id'] for r in records))
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        if not next_page_token:
+            next_page_token = next(self._pages)
+
+        self._active_page = next_page_token
+        td = datetime.timedelta(days=1)
+        params = {'id': next_page_token,
+                  'start': 0,
+                  'end': int((datetime.datetime.now() - td).timestamp() * 1000)}
+
+        self._request_params_hook(params)
+        return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        try:
+            r = next(self._pages)
+            return r
+        except StopIteration:
+            pass
+
+    def _request_params_hook(self, params):
+        pass
+
+
+class WaterLevels(Observations):
+    cursor_field = "id"
+    primary_key = "id"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        records = response.json()['data']
+        if records:
+            for r in records:
+                r['monitoring_point_id'] = self._active_page
+            yield from records
+
+    def path(self, **kwargs) -> str:
+        """
+        return "single". Required.
+        """
+        return "getWaterLevels.ashx"
+
+
+class Readings(Observations):
+    cursor_field = "id"
+    primary_key = "id"
+
+    def __init__(self, *args, **kw):
+        super(Readings, self).__init__(*args, **kw)
+        p = MonitoringPoints()
+        ps = list(p.read_records('full-refresh'))
+
+        a = Analytes()
+        ans = list(a.read_records('full-refresh'))
+
+        self._pages = ((pi['id'], ai['id']) for pi in sorted(ps, key=itemgetter('id'))
+                       for ai in sorted(ans, key=itemgetter('id')))
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        records = response.json()['data'] or []
+        if records:
+            for r in records:
+                r['monitoring_point_id'] = self._active_page[0]
+                r['analyte_id'] = self._active_page[1]
+            yield from records
+
+    def _request_params_hook(self, params):
+        params['analyteid'] = params['id'][1]
+        params['monitoringPointId'] = params['id'][0]
+        del params['id']
+
+    def path(self, **kwargs) -> str:
+        """
+        return "single". Required.
+        """
+        return "getReadings.ashx"
 
 
 # Source
@@ -174,4 +261,9 @@ class SourceIscSevenRivers(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [MonitoringPoints(authenticator=auth),]
+        return [
+            MonitoringPoints(authenticator=auth),
+            Analytes(authenticator=auth),
+            WaterLevels(authenticator=auth),
+            Readings(authenticator=auth)
+        ]
