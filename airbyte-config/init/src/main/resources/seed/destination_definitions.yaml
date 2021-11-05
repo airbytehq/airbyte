@@ -13,6 +13,11 @@
   dockerRepository: airbyte/destination-bigquery-denormalized
   dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
+- name: Cassandra
+  destinationDefinitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
+  dockerRepository: airbyte/destination-cassandra
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/cassandra
 - name: Chargify (Keen)
   destinationDefinitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
   dockerRepository: airbyte/destination-keen
