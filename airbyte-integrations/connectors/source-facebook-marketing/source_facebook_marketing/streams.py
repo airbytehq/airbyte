@@ -369,7 +369,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
             if job["async_status"] == "Job Completed":
                 return job
-            if job["async_status"] in ["Job Failed", "Job Skipped"]:
+            elif job["async_status"] in ["Job Failed", "Job Skipped"]:
                 time_range = (job["date_start"], job["date_stop"])
                 if self.times_job_restarted.get(time_range, 0) < 6:
                     params = deep_merge(
