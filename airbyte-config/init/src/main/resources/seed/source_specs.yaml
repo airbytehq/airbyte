@@ -2340,7 +2340,7 @@
         - - "refresh_token"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-db2:0.1.1"
+- dockerImage: "airbyte/source-db2:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
     connectionSpecification:

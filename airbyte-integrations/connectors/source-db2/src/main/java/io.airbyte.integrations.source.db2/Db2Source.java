@@ -7,6 +7,8 @@ package io.airbyte.integrations.source.db2;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.Db2JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -20,7 +22,7 @@ public class Db2Source extends AbstractJdbcSource implements Source {
   public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
 
   public Db2Source() {
-    super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration(), new Db2SourceOperations());
   }
 
   public static void main(final String[] args) throws Exception {
@@ -49,4 +51,8 @@ public class Db2Source extends AbstractJdbcSource implements Source {
         "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS");
   }
 
+  @Override
+  protected JdbcSourceOperations getSourceOperations() {
+    return new Db2SourceOperations();
+  }
 }
