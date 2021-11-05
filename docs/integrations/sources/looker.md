@@ -78,6 +78,7 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.5 | 2021-10-27 | [\#7284](https://github.com/airbytehq/airbyte/pull/7284) | Migrate Looker source to CDK structure, add SAT testing. |
 | 0.2.4 | 2021-06-25 | [\#3911](https://github.com/airbytehq/airbyte/pull/3911) | Added `run_look` endpoint. |
 | 0.2.3 | 2021-06-22 | [\#3587](https://github.com/airbytehq/airbyte/pull/3587) | Added support for self-hosted instances. |
 | 0.2.2 | 2021-06-09 | [\#3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` for kubernetes support. |
