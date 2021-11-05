@@ -89,6 +89,11 @@
   dockerImageTag: 0.3.11
   documentationUrl: https://docs.airbyte.io/integrations/destinations/postgres
   icon: postgresql.svg
+- name: Pulsar
+  destinationDefinitionId: 2340cbba-358e-11ec-8d3d-0242ac130203
+  dockerRepository: airbyte/destination-pulsar
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/pulsar
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift

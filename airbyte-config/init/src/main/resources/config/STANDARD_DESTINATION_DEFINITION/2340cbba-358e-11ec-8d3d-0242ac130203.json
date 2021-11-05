@@ -1,0 +1,7 @@
+{
+  "destinationDefinitionId": "2340cbba-358e-11ec-8d3d-0242ac130203",
+  "name": "Pulsar",
+  "dockerRepository": "airbyte/destination-pulsar",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/pulsar"
+}
