@@ -26,6 +26,22 @@ const LinkToInstruction = styled.span`
   color: ${({ theme }) => theme.primaryColor};
 `;
 
+const HeaderLink = styled.a`
+  color: #fff;
+  text-decoration: none;
+  display: flex;
+  height: 40px;
+  align-items: center;
+  padding: 0 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+`;
+
 const Instruction: React.FC<IProps> = ({
   selectedService,
   documentationUrl,
@@ -39,12 +55,16 @@ const Instruction: React.FC<IProps> = ({
         <SideView
           onClose={() => setIsSideViewOpen(false)}
           headerLink={
-            <a href={documentationUrl} target="_blank" rel="noreferrer">
+            <HeaderLink
+              href={documentationUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               <FormattedMessage
                 id="onboarding.instructionsLink"
                 values={{ name: selectedService.name }}
               />
-            </a>
+            </HeaderLink>
           }
         >
           <Markdown content={docs} />
