@@ -196,9 +196,9 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
       consumer.start();
       while (input.hasNext()) {
         final String inputString = input.next();
-        final Optional<AirbyteMessage> singerMessageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
-        if (singerMessageOptional.isPresent()) {
-          consumer.accept(singerMessageOptional.get());
+        final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
+        if (messageOptional.isPresent()) {
+          consumer.accept(messageOptional.get());
         } else {
           System.out.println("Received invalid message: " + inputString);
         }
