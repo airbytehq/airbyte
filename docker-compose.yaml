@@ -175,27 +175,12 @@ services:
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
       - OPENREPLAY=${OPENREPLAY:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
-  airbyte-temporal-migration:
+  airbyte-temporal:
     image: airbyte/temporal-migration:${VERSION}
     logging: *default-logging
-    container_name: airbyte-temporal-migration
-    environment:
-      - DB=postgresql
-      - DB_PORT=${DATABASE_PORT}
-      - POSTGRES_USER=${DATABASE_USER}
-      - POSTGRES_PWD=${DATABASE_PASSWORD}
-      - POSTGRES_SEEDS=${DATABASE_HOST}
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
-      - LOG_LEVEL=${LOG_LEVEL}
-    volumes:
-      - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
-  airbyte-temporal:
-    image: temporalio/server:1.13.0
-    logging: *default-logging
     container_name: airbyte-temporal
-    command: /bin/sh -c "./start-temporal.sh"
-    depends_on:
-      - "airbyte-temporal-migration"
+    restart: unless-stopped
+    command: ./update-and-start-temporal.sh
     environment:
       - DB=postgresql
       - DB_PORT=${DATABASE_PORT}
@@ -206,25 +191,6 @@ services:
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
       - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
-  #airbyte-temporal:
-  #  image: temporalio/auto-setup:1.7.0
-  #  logging: *default-logging
-  #  container_name: airbyte-temporal
-  #  restart: unless-stopped
-  #  depends_on:
-  #    - "temporal-migration"
-  #  ports:
-  #    - 7233:7233
-  #  environment:
-  #    - DB=postgresql
-  #    - DB_PORT=${DATABASE_PORT}
-  #    - POSTGRES_USER=${DATABASE_USER}
-  #    - POSTGRES_PWD=${DATABASE_PASSWORD}
-  #    - POSTGRES_SEEDS=${DATABASE_HOST}
-  #    - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
-  #    - LOG_LEVEL=${LOG_LEVEL}
-  #  volumes:
-  #    - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
