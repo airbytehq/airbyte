@@ -36,6 +36,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
         .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository))
+        .put("airbyte/source-intercom", new IntercomOAuthFlow(configRepository))
         .build();
   }
 
