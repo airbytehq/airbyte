@@ -1,0 +1,30 @@
+{
+  "streams": [
+    {
+      "name": "apps",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "json_schema": {}
+    },
+    {
+      "name": "devices",
+      "supported_sync_modes": ["incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "created_at",
+      "json_schema": {}
+    },
+    {
+      "name": "notifications",
+      "supported_sync_modes": ["incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "queued_at",
+      "json_schema": {}
+    },
+    {
+      "name": "outcomes",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "json_schema": {}
+    }
+  ]
+}

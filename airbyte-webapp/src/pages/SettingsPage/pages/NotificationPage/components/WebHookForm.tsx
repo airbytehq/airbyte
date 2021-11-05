@@ -4,8 +4,10 @@ import styled from "styled-components";
 import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
-import { Label, Input, LoadingButton } from "components";
+import { Label, Input, LoadingButton, LabeledToggle } from "components";
 import { Row, Cell } from "components/SimpleTableComponents";
+import { WebhookPayload } from "hooks/services/useWorkspace";
+import { equal } from "utils/objects";
 
 const Text = styled.div`
   font-style: normal;
@@ -44,18 +46,20 @@ const Error = styled(Success)`
 
 const webhookValidationSchema = yup.object().shape({
   webhook: yup.string().url("form.url.error"),
+  sendOnSuccess: yup.boolean(),
+  sendOnFailure: yup.boolean(),
 });
 
 type WebHookFormProps = {
-  notificationUrl: string;
+  webhook: WebhookPayload;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
-  onSubmit: (data: { webhook: string }) => void;
-  onTest: (data: { webhook: string }) => void;
+  onSubmit: (data: WebhookPayload) => void;
+  onTest: (data: WebhookPayload) => void;
 };
 
 const WebHookForm: React.FC<WebHookFormProps> = ({
-  notificationUrl,
+  webhook,
   onSubmit,
   successMessage,
   errorMessage,
@@ -97,12 +101,13 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
 
   return (
     <Formik
-      initialValues={{ webhook: notificationUrl }}
+      initialValues={webhook}
+      enableReinitialize={true}
       validateOnBlur={true}
       validateOnChange={false}
       validationSchema={webhookValidationSchema}
-      onSubmit={async (values) => {
-        if (notificationUrl && notificationUrl === values.webhook) {
+      onSubmit={async (values: WebhookPayload) => {
+        if (equal(webhook, values)) {
           await onTest(values);
         } else {
           await onSubmit(values);
@@ -150,6 +155,32 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
               <FormattedMessage id="settings.webhookTestText" />
             </Message>
           ) : null}
+          <InputRow>
+            <Cell flex={1}>
+              <Field name="sendOnFailure">
+                {({ field }: FieldProps<boolean>) => (
+                  <LabeledToggle
+                    name={field.name}
+                    checked={field.value}
+                    onChange={field.onChange}
+                    label={<FormattedMessage id="settings.sendOnFailure" />}
+                  />
+                )}
+              </Field>
+            </Cell>
+            <Cell flex={1}>
+              <Field name="sendOnSuccess">
+                {({ field }: FieldProps<boolean>) => (
+                  <LabeledToggle
+                    name={field.name}
+                    checked={field.value}
+                    onChange={field.onChange}
+                    label={<FormattedMessage id="settings.sendOnSuccess" />}
+                  />
+                )}
+              </Field>
+            </Cell>
+          </InputRow>
         </Form>
       )}
     </Formik>

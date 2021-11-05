@@ -1,18 +1,18 @@
 {
-  "type": "object",
+  "type": ["null", "object"],
   "required": ["id", "created_at", "initial_channel", "requester_id"],
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "created_at": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "initial_channel": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "requester_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "requester_name": {
       "type": ["null", "string"]
@@ -42,9 +42,9 @@
       "type": ["null", "string"]
     },
     "ratings": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "rating_score": {
             "type": ["null", "integer"]
@@ -142,13 +142,13 @@
     "tags": {
       "type": ["null", "array"],
       "items": {
-        "type": "string"
+        "type": ["null", "string"]
       }
     },
     "conversation_wrapup_notes": {
       "type": ["null", "array"],
       "items": {
-        "type": "string"
+        "type": ["null", "string"]
       }
     },
     "transferee_name": {

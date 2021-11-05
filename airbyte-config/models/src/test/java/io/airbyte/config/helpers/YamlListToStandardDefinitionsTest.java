@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -83,8 +63,8 @@ public class YamlListToStandardDefinitionsTest {
     @Test
     @DisplayName("should correctly read yaml file")
     public void correctlyReadTest() throws JsonProcessingException {
-      var jsonDefs = YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, goodDesDefYaml);
-      var defList = mapper.treeToValue(jsonDefs, StandardDestinationDefinition[].class);
+      final var jsonDefs = YamlListToStandardDefinitions.verifyAndConvertToJsonNode(ID_NAME, goodDesDefYaml);
+      final var defList = mapper.treeToValue(jsonDefs, StandardDestinationDefinition[].class);
       assertEquals(1, defList.length);
       assertEquals("Local JSON", defList[0].getName());
     }
@@ -122,7 +102,7 @@ public class YamlListToStandardDefinitionsTest {
     @Test
     @DisplayName("should correctly read yaml file")
     public void correctlyReadTest() {
-      var defs = YamlListToStandardDefinitions
+      final var defs = YamlListToStandardDefinitions
           .verifyAndConvertToModelList(StandardDestinationDefinition.class, goodDesDefYaml);
       assertEquals(1, defs.size());
       assertEquals("Local JSON", defs.get(0).getName());

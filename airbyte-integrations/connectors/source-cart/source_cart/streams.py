@@ -1,29 +1,9 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import urllib.parse
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
@@ -33,8 +13,9 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class CartStream(HttpStream, ABC):
     primary_key = "id"
 
-    def __init__(self, start_date: str, store_name: str, **kwargs):
+    def __init__(self, start_date: str, store_name: str, end_date: str = None, **kwargs):
         self._start_date = start_date
+        self._end_date = end_date
         self.store_name = store_name
         super().__init__(**kwargs)
 
@@ -43,9 +24,15 @@ class CartStream(HttpStream, ABC):
         return f"https://{self.store_name}/api/v1/"
 
     @property
-    @abstractmethod
-    def data_field() -> str:
-        """Field of the response containing data"""
+    def data_field(self) -> str:
+        """
+        Field of the response containing data.
+        By default the value self.name will be used if this property is empty or None
+        """
+        return None
+
+    def path(self, **kwargs) -> str:
+        return self.name
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -57,6 +44,7 @@ class CartStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
+
         if response_json.get("next_page"):
             next_query_string = urllib.parse.urlsplit(response_json.get("next_page")).query
             params = dict(urllib.parse.parse_qsl(next_query_string))
@@ -67,7 +55,7 @@ class CartStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        result = response_json.get(self.data_field, [])
+        result = response_json.get(self.data_field or self.name, [])
         yield from result
 
     def request_params(
@@ -85,10 +73,20 @@ class IncrementalCartStream(CartStream, ABC):
     cursor_field = "updated_at"
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        """
+        Generates a query for incremental logic
+
+        Docs: https://developers.cart.com/docs/rest-api/docs/query_syntax.md
+        """
         params = super().request_params(stream_state=stream_state, **kwargs)
         cursor_value = stream_state.get(self.cursor_field) or self._start_date
         params["sort"] = self.cursor_field
-        params[self.cursor_field] = f"gt:{max(cursor_value, self._start_date)}"
+        start_date = max(cursor_value, self._start_date)
+        query = f"gt:{start_date}"
+        if self._end_date and self._end_date > start_date:
+            query += f" AND lt:{self._end_date}"
+
+        params[self.cursor_field] = query
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -111,18 +109,13 @@ class CustomersCart(IncrementalCartStream):
     data_field = "customers"
 
     def path(self, **kwargs) -> str:
-        return "customers"
+        return self.data_field
 
 
 class Orders(IncrementalCartStream):
     """
     Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1orders/get
     """
-
-    data_field = "orders"
-
-    def path(self, **kwargs) -> str:
-        return "orders"
 
 
 class OrderPayments(IncrementalCartStream):
@@ -132,16 +125,16 @@ class OrderPayments(IncrementalCartStream):
 
     data_field = "payments"
 
-    def path(self, **kwargs) -> str:
-        return "order_payments"
+
+class OrderItems(IncrementalCartStream):
+    """
+    Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_items/get
+    """
+
+    data_field = "items"
 
 
 class Products(IncrementalCartStream):
     """
     Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get
     """
-
-    data_field = "products"
-
-    def path(self, **kwargs) -> str:
-        return "products"

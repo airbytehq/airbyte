@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -30,7 +10,7 @@ from typing import Callable, Dict, Iterator, Sequence
 
 import backoff
 from google.oauth2 import service_account
-from googleapiclient.discovery import Resource, build
+from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
 
 from .utils import rate_limit_handling
@@ -43,25 +23,26 @@ class API:
         self._creds = None
         self._credentials_json = credentials_json
         self._admin_email = email
+        self._service = None
 
     def _load_account_info(self) -> Dict:
         account_info = json.loads(self._credentials_json)
         return account_info
 
-    def _obtain_creds(self) -> service_account.Credentials:
+    def _obtain_creds(self):
         account_info = self._load_account_info()
         creds = service_account.Credentials.from_service_account_info(account_info, scopes=SCOPES)
         self._creds = creds.with_subject(self._admin_email)
 
-    def _construct_resource(self) -> Resource:
+    def _construct_resource(self):
         if not self._creds:
             self._obtain_creds()
-        service = build("admin", "directory_v1", credentials=self._creds)
-        return service
+        if not self._service:
+            self._service = build("admin", "directory_v1", credentials=self._creds)
 
     def _get_resource(self, name: str):
-        service = self._construct_resource()
-        return getattr(service, name)
+        self._construct_resource()
+        return getattr(self._service, name)
 
     @backoff.on_exception(backoff.expo, GoogleApiHttpError, max_tries=7, giveup=rate_limit_handling)
     def get(self, name: str, params: Dict = None) -> Dict:
@@ -122,7 +103,7 @@ class GroupsAPI(StreamAPI):
 
 class GroupMembersAPI(StreamAPI):
     def process_response(self, response: Dict) -> Iterator[dict]:
-        return response["members"]
+        return response.get("members", [])
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         groups = GroupsAPI(self._api)

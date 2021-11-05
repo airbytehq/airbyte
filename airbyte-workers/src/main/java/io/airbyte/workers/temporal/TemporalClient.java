@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
@@ -39,6 +19,9 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
+import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
+import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.temporal.client.WorkflowClient;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -49,18 +32,18 @@ public class TemporalClient {
   private final Path workspaceRoot;
   private final WorkflowClient client;
 
-  public static TemporalClient production(String temporalHost, Path workspaceRoot) {
+  public static TemporalClient production(final String temporalHost, final Path workspaceRoot) {
     return new TemporalClient(TemporalUtils.createTemporalClient(temporalHost), workspaceRoot);
   }
 
   // todo (cgardens) - there are two sources of truth on workspace root. we need to get this down to
   // one. either temporal decides and can report it or it is injected into temporal runs.
-  public TemporalClient(WorkflowClient client, Path workspaceRoot) {
+  public TemporalClient(final WorkflowClient client, final Path workspaceRoot) {
     this.client = client;
     this.workspaceRoot = workspaceRoot;
   }
 
-  public TemporalResponse<ConnectorSpecification> submitGetSpec(UUID jobId, int attempt, JobGetSpecConfig config) {
+  public TemporalResponse<ConnectorSpecification> submitGetSpec(final UUID jobId, final int attempt, final JobGetSpecConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
 
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
@@ -72,7 +55,9 @@ public class TemporalClient {
 
   }
 
-  public TemporalResponse<StandardCheckConnectionOutput> submitCheckConnection(UUID jobId, int attempt, JobCheckConnectionConfig config) {
+  public TemporalResponse<StandardCheckConnectionOutput> submitCheckConnection(final UUID jobId,
+                                                                               final int attempt,
+                                                                               final JobCheckConnectionConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId.toString())
@@ -84,7 +69,7 @@ public class TemporalClient {
         () -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input));
   }
 
-  public TemporalResponse<AirbyteCatalog> submitDiscoverSchema(UUID jobId, int attempt, JobDiscoverCatalogConfig config) {
+  public TemporalResponse<AirbyteCatalog> submitDiscoverSchema(final UUID jobId, final int attempt, final JobDiscoverCatalogConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId.toString())
@@ -96,7 +81,7 @@ public class TemporalClient {
         () -> getWorkflowStub(DiscoverCatalogWorkflow.class, TemporalJobType.DISCOVER_SCHEMA).run(jobRunConfig, launcherConfig, input));
   }
 
-  public TemporalResponse<StandardSyncOutput> submitSync(long jobId, int attempt, JobSyncConfig config) {
+  public TemporalResponse<StandardSyncOutput> submitSync(final long jobId, final int attempt, final JobSyncConfig config, final UUID connectionId) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
 
     final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
@@ -125,15 +110,16 @@ public class TemporalClient {
             jobRunConfig,
             sourceLauncherConfig,
             destinationLauncherConfig,
-            input));
+            input,
+            connectionId));
   }
 
-  private <T> T getWorkflowStub(Class<T> workflowClass, TemporalJobType jobType) {
+  private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
   }
 
   @VisibleForTesting
-  <T> TemporalResponse<T> execute(JobRunConfig jobRunConfig, Supplier<T> executor) {
+  <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
     final Path logPath = WorkerUtils.getLogPath(jobRoot);
 
@@ -142,7 +128,7 @@ public class TemporalClient {
 
     try {
       operationOutput = executor.get();
-    } catch (RuntimeException e) {
+    } catch (final RuntimeException e) {
       exception = e;
     }
 

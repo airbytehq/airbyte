@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.db2;
@@ -29,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import java.util.Collections;
 import java.util.Set;
@@ -92,7 +71,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public void clean() throws Exception {
     // In Db2 before dropping a schema, all objects that were in that schema must be dropped or moved to
     // another schema.
-    for (String tableName : TEST_TABLES) {
+    for (final String tableName : TEST_TABLES) {
       final String dropTableQuery = String
           .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME, tableName);
       super.database.execute(connection -> connection.createStatement().execute(dropTableQuery));
@@ -104,13 +83,13 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            SourceJdbcUtils.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES))));
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            SourceJdbcUtils.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES + 2))));
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES + 2))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
-            SourceJdbcUtils.enquoteIdentifier(connection, TABLE_NAME))));
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME))));
 
     super.tearDown();
   }
@@ -136,7 +115,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getSource() {
+  public AbstractJdbcSource getJdbcSource() {
     return new Db2Source();
   }
 

@@ -3,28 +3,30 @@ import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { User } from "./types";
 
 class UserService extends AirbyteRequestService {
-  get url() {
+  get url(): string {
     return `users`;
   }
 
   public async getByEmail(email: string): Promise<User> {
-    const rs = ((await this.fetch(`${this.url}/get_by_email`, {
+    return this.fetch<User>(`${this.url}/get_by_email`, {
       email,
-    })) as any) as User;
-
-    return rs;
+    });
   }
 
   public async getByAuthId(
     authUserId: string,
     authProvider: string
   ): Promise<User> {
-    const rs = ((await this.fetch(`${this.url}/get_by_auth_id`, {
+    return this.fetch<User>(`${this.url}/get_by_auth_id`, {
       authUserId,
       authProvider,
-    })) as any) as User;
+    });
+  }
 
-    return rs;
+  public async changeEmail(email: string): Promise<void> {
+    return this.fetch<void>(`${this.url}/update`, {
+      email,
+    });
   }
 
   public async create(user: {
@@ -32,22 +34,42 @@ class UserService extends AirbyteRequestService {
     authProvider: string;
     email: string;
     name: string;
+    invitedWorkspaceId?: string;
+    status?: "invited";
   }): Promise<User> {
-    const rs = ((await this.fetch(
-      `web_backend/users/create`,
-      user
-    )) as any) as User;
+    return this.fetch<User>(`web_backend/users/create`, user);
+  }
 
-    return rs;
+  public async remove(workspaceId: string, email: string): Promise<void> {
+    return this.fetch(`web_backend/cloud_workspaces/revoke_user`, {
+      email,
+      workspaceId,
+    });
+  }
+
+  public async invite(
+    users: {
+      email: string;
+    }[],
+    workspaceId: string
+  ): Promise<User[]> {
+    return Promise.all(
+      users.map(async (user) =>
+        this.fetch<User>(`web_backend/cloud_workspaces/invite`, {
+          email: user.email,
+          workspaceId,
+        })
+      )
+    );
   }
 
   public async listByWorkspaceId(workspaceId: string): Promise<User[]> {
-    return (
-      await this.fetch<{ users: User[] }>(
-        `web_backend/permissions/list_users_by_workspace`,
-        { workspaceId }
-      )
-    ).users;
+    const { users } = await this.fetch<{ users: User[] }>(
+      `web_backend/permissions/list_users_by_workspace`,
+      { workspaceId }
+    );
+
+    return users;
   }
 }
 

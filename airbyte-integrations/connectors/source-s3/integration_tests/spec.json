@@ -32,15 +32,16 @@
       "format": {
         "title": "Format",
         "default": "csv",
+        "type": "object",
         "oneOf": [
           {
             "title": "csv",
+            "description": "This connector utilises <a href=\"https: // arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.",
             "type": "object",
             "properties": {
               "filetype": {
-                "title": "CsvFiletype",
-                "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.",
-                "enum": ["csv"],
+                "title": "Filetype",
+                "const": "csv",
                 "type": "string"
               },
               "delimiter": {
@@ -92,25 +93,47 @@
                   "{\"timestamp_parsers\": [\"%m/%d/%Y %H:%M\", \"%Y/%m/%d %H:%M\"], \"strings_can_be_null\": true, \"null_values\": [\"NA\", \"NULL\"]}"
                 ],
                 "type": "string"
+              },
+              "advanced_options": {
+                "title": "Advanced Options",
+                "description": "Optionally add a valid JSON string here to provide additional <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html#pyarrow.csv.ReadOptions\" target=\"_blank\">Pyarrow ReadOptions</a>. Specify 'column_names' here if your CSV doesn't have header, or if you want to use custom column names. 'block_size' and 'encoding' are already used above, specify them again here will override the values above.",
+                "default": "{}",
+                "examples": ["{\"column_names\": [\"column1\", \"column2\"]}"],
+                "type": "string"
               }
-            },
-            "required": ["filetype"]
+            }
           },
           {
-            "title": "Coming Soon...",
+            "title": "parquet",
+            "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for Parquet parsing.",
             "type": "object",
             "properties": {
               "filetype": {
-                "title": "ParquetFiletype",
-                "description": "An enumeration.",
-                "enum": ["parquet"],
+                "title": "Filetype",
+                "const": "parquet",
                 "type": "string"
+              },
+              "buffer_size": {
+                "title": "Buffer Size",
+                "description": "Perform read buffering when deserializing individual column chunks. By default every group column will be loaded fully to memory. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
+                "default": 0,
+                "type": "integer"
+              },
+              "columns": {
+                "title": "Columns",
+                "description": "If you only want to sync a subset of the columns from the file(s), add the columns you want here. Leave it empty to sync all columns.",
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "batch_size": {
+                "title": "Batch Size",
+                "description": "Maximum number of records per batch. Batches may be smaller if there aren\u2019t enough rows in the file. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
+                "default": 65536,
+                "type": "integer"
               }
-            },
-            "required": ["filetype"]
+            }
           }
-        ],
-        "type": "object"
+        ]
       },
       "provider": {
         "title": "S3: Amazon Web Services",
@@ -138,6 +161,22 @@
             "description": "By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files.",
             "default": "",
             "type": "string"
+          },
+          "endpoint": {
+            "title": "Endpoint",
+            "description": "Endpoint to an S3 compatible service. Leave empty to use AWS.",
+            "default": "",
+            "type": "string"
+          },
+          "use_ssl": {
+            "title": "Use Ssl",
+            "description": "Is remote server using secure SSL/TLS connection",
+            "type": "boolean"
+          },
+          "verify_ssl_cert": {
+            "title": "Verify Ssl Cert",
+            "description": "Allow self signed certificates",
+            "type": "boolean"
           }
         },
         "required": ["bucket"]

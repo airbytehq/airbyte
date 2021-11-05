@@ -1,0 +1,31 @@
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-salesforce:dev
+tests:
+  spec:
+    - spec_path: "source_salesforce/spec.json"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+  # Discover test is disabled for this connector, because each time it starts, about 700 requests are consumed, and we have a Salesforce limit of 15,000 requests per day.
+  #  discovery:
+  #    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_rest.json"
+    - config_path: "secrets/config_bulk.json"
+      configured_catalog_path: "integration_tests/configured_catalog_bulk.json"
+  incremental:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_rest.json"
+      future_state_path: "integration_tests/future_state.json"
+    - config_path: "secrets/config_bulk.json"
+      configured_catalog_path: "integration_tests/configured_catalog_bulk.json"
+      future_state_path: "integration_tests/future_state.json"
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_rest.json"
+    - config_path: "secrets/config_bulk.json"
+      configured_catalog_path: "integration_tests/configured_catalog_bulk.json"

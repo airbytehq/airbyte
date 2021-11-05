@@ -10,6 +10,46 @@ import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 import { buildPathInitialState } from "core/form/uiWidget";
 import { ServiceFormValues } from "./types";
+import { ConnectorDefinitionSpecification } from "core/domain/connector";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { applyFuncAt, removeNestedPaths } from "core/jsonSchema";
+
+function useBuildInitialSchema(
+  connectorSpecification?: ConnectorDefinitionSpecification
+): JSONSchema7 | undefined {
+  const { hasFeature } = useFeatureService();
+
+  return useMemo(() => {
+    if (
+      hasFeature(FeatureItem.AllowOAuthConnector) &&
+      connectorSpecification?.authSpecification
+    ) {
+      const spec = connectorSpecification.authSpecification.oauth2Specification;
+      return applyFuncAt(
+        connectorSpecification.connectionSpecification,
+        spec.rootObject ?? [],
+        (schema) => {
+          // Very hacky way to allow placing button within section
+          (schema as any).is_auth = true;
+          const schemaWithoutPaths = removeNestedPaths(
+            schema,
+            spec.oauthFlowInitParameters ?? []
+          );
+
+          const schemaWithoutOutputPats = removeNestedPaths(
+            schemaWithoutPaths,
+            spec.oauthFlowOutputParameters ?? [],
+            false
+          );
+
+          return schemaWithoutOutputPats;
+        }
+      );
+    }
+
+    return connectorSpecification?.connectionSpecification;
+  }, [hasFeature, connectorSpecification]);
+}
 
 function useBuildForm(
   jsonSchema: JSONSchema7,
@@ -103,13 +143,13 @@ const usePatchFormik = (): void => {
   /* Fixes issue https://github.com/airbytehq/airbyte/issues/1978
      Problem described here https://github.com/formium/formik/issues/445
      The problem is next:
-     
+
      When we touch the field, it would be set as touched field correctly.
      If validation fails on submit - Formik detects touched object mapping based
      either on initialValues passed to Formik or on current value set.
-     So in case of creation, if we touch an input, don't change value and 
-     press submit - our touched map will be cleared. 
-     
+     So in case of creation, if we touch an input, don't change value and
+     press submit - our touched map will be cleared.
+
      This hack just touches all fields on submit.
    */
   useEffect(() => {
@@ -123,6 +163,7 @@ const usePatchFormik = (): void => {
 
 export {
   useBuildForm,
+  useBuildInitialSchema,
   useBuildUiWidgets,
   useConstructValidationSchema,
   usePatchFormik,

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.migration;
@@ -29,7 +9,6 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.stream.MoreStreams;
-import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -43,7 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,18 +81,13 @@ public class DatabaseArchiver {
         .resolve(String.format("%s.yaml", tableName.toUpperCase()));
   }
 
-  public void checkVersion(final String airbyteVersion) throws IOException {
-    final Optional<String> airbyteDatabaseVersion = persistence.getVersion();
-    airbyteDatabaseVersion.ifPresent(dbversion -> AirbyteVersion.assertIsCompatible(airbyteVersion, dbversion));
-  }
-
   /**
    * Reads a YAML configuration archive file and deserialize table into the Airbyte Database. The
    * objects will be validated against the current version of Airbyte server's JSON Schema.
    */
   public void importDatabaseFromArchive(final Path storageRoot, final String airbyteVersion) throws IOException {
     final Map<JobsDatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
-    for (JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
+    for (final JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
       final Path tablePath = buildTablePath(storageRoot, tableType.name());
       data.put(tableType, readTableFromArchive(tableType, tablePath));
     }
@@ -129,7 +102,7 @@ public class DatabaseArchiver {
           .peek(r -> {
             try {
               jsonSchemaValidator.ensure(schema, r);
-            } catch (JsonValidationException e) {
+            } catch (final JsonValidationException e) {
               throw new IllegalArgumentException("Archived Data Schema does not match current Airbyte Data Schemas", e);
             }
           });

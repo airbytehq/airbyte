@@ -1,4 +1,3 @@
-import React from "react";
 import userEvent from "@testing-library/user-event";
 import { findByText, screen, waitFor } from "@testing-library/react";
 
@@ -95,7 +94,11 @@ describe("Service Form", () => {
         <ServiceForm
           formType="source"
           onSubmit={handleSubmit}
-          specifications={schema}
+          selectedConnector={{
+            connectionSpecification: schema,
+            sourceDefinitionId: "1",
+            documentationUrl: "",
+          }}
           availableServices={[]}
         />
       );
@@ -187,7 +190,7 @@ describe("Service Form", () => {
     });
   });
 
-  describe("filling service form", () => {
+  describe.skip("filling service form", () => {
     let result: ServiceFormValues;
     let container: HTMLElement;
     beforeEach(() => {
@@ -196,7 +199,11 @@ describe("Service Form", () => {
           formType="source"
           formValues={{ name: "test-name", serviceType: "test-service-type" }}
           onSubmit={(values) => (result = values)}
-          specifications={schema}
+          specifications={{
+            connectionSpecification: schema,
+            sourceDefinitionId: "1",
+            documentationUrl: "",
+          }}
           availableServices={[]}
         />
       );
@@ -309,7 +316,7 @@ describe("Service Form", () => {
       expect(result.connectionConfiguration.workTime).toEqual(["day", "night"]);
     });
 
-    test.skip("change oneOf field value", async () => {
+    test("change oneOf field value", async () => {
       const credentials = screen.getByTestId(
         "connectionConfiguration.credentials"
       );
@@ -332,7 +339,7 @@ describe("Service Form", () => {
       expect(uri).toBeInTheDocument();
     });
 
-    test.skip("should fill right values oneOf field", async () => {
+    test("should fill right values oneOf field", async () => {
       const credentials = screen.getByTestId(
         "connectionConfiguration.credentials"
       );

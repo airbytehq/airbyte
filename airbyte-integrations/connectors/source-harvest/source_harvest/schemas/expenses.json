@@ -82,7 +82,7 @@
           "type": ["null", "boolean"]
         },
         "budget": {
-          "type": ["null", "string"]
+          "type": ["null", "number"]
         },
         "created_at": {
           "type": ["null", "string"],
@@ -94,6 +94,9 @@
         },
         "hourly_rate": {
           "type": ["null", "number"]
+        },
+        "use_default_rates": {
+          "type": ["null", "boolean"]
         }
       }
     },
@@ -121,7 +124,7 @@
           "type": ["null", "string"]
         },
         "unit_price": {
-          "type": ["null", "string"]
+          "type": ["null", "number"]
         },
         "unit_name": {
           "type": ["null", "string"]

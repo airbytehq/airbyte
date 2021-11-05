@@ -3,14 +3,14 @@ import { FormattedMessage } from "react-intl";
 
 import ContentCard from "components/ContentCard";
 import ServiceForm from "views/Connector/ServiceForm";
-import useRouter from "components/hooks/useRouterHook";
-import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/useSourceHook";
+import useRouter from "hooks/useRouter";
+import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
 import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceDefinition } from "core/resources/SourceDefinition";
-import { useAnalytics } from "components/hooks/useAnalytics";
+import { useAnalytics } from "hooks/useAnalytics";
 
 type IProps = {
   onSubmit: (values: {
@@ -40,10 +40,13 @@ const SourceForm: React.FC<IProps> = ({
   const [sourceDefinitionId, setSourceDefinitionId] = useState(
     location.state?.sourceDefinitionId || ""
   );
+
   const {
     sourceDefinitionSpecification,
+    sourceDefinitionError,
     isLoading,
   } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
     const connector = sourceDefinitions.find(
@@ -80,9 +83,9 @@ const SourceForm: React.FC<IProps> = ({
         onSubmit={onSubmitForm}
         formType="source"
         availableServices={sourceDefinitions}
-        specifications={sourceDefinitionSpecification?.connectionSpecification}
-        documentationUrl={sourceDefinitionSpecification?.documentationUrl}
+        selectedConnector={sourceDefinitionSpecification}
         hasSuccess={hasSuccess}
+        fetchingConnectorError={sourceDefinitionError}
         errorMessage={errorMessage}
         isLoading={isLoading}
         formValues={

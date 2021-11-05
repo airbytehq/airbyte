@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -31,6 +11,7 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
@@ -40,7 +21,7 @@ import org.slf4j.MDC;
 /**
  * Airbyte's logging layer entrypoint. Handles logs written to local disk as well as logs written to
  * cloud storages.
- *
+ * <p>
  * Although the configuration is passed in as {@link Configs}, it is transformed to
  * {@link LogConfigs} within this class. Beyond this class, all configuration consumption is via the
  * {@link LogConfigs} interface via the {@link CloudLogs} interface.
@@ -48,78 +29,86 @@ import org.slf4j.MDC;
 public class LogClientSingleton {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LogClientSingleton.class);
+  private static LogClientSingleton instance;
 
-  private static final int LOG_TAIL_SIZE = 1000000;
-  private static CloudLogs logClient;
+  @VisibleForTesting
+  final static int LOG_TAIL_SIZE = 1000000;
+  @VisibleForTesting
+  CloudLogs logClient;
 
   // Any changes to the following values must also be propagated to the log4j2.xml in main/resources.
-  public static String WORKSPACE_MDC_KEY = "workspace_app_root";
-  public static String JOB_LOG_PATH_MDC_KEY = "job_log_path";
+  public static final String WORKSPACE_MDC_KEY = "workspace_app_root";
+  public static final String CLOUD_WORKSPACE_MDC_KEY = "cloud_workspace_app_root";
+
+  public static final String JOB_LOG_PATH_MDC_KEY = "job_log_path";
+  public static final String CLOUD_JOB_LOG_PATH_MDC_KEY = "cloud_job_log_path";
 
   // S3/Minio
-  public static String S3_LOG_BUCKET = "S3_LOG_BUCKET";
-  public static String S3_LOG_BUCKET_REGION = "S3_LOG_BUCKET_REGION";
-  public static String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
-  public static String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
-  public static String S3_MINIO_ENDPOINT = "S3_MINIO_ENDPOINT";
+  public static final String S3_LOG_BUCKET = "S3_LOG_BUCKET";
+  public static final String S3_LOG_BUCKET_REGION = "S3_LOG_BUCKET_REGION";
+  public static final String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
+  public static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
+  public static final String S3_MINIO_ENDPOINT = "S3_MINIO_ENDPOINT";
 
   // GCS
-  public static String GCP_STORAGE_BUCKET = "GCP_STORAGE_BUCKET";
-  public static String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
+  public static final String GCP_STORAGE_BUCKET = "GCP_STORAGE_BUCKET";
+  public static final String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
 
-  public static int DEFAULT_PAGE_SIZE = 1000;
-  public static String LOG_FILENAME = "logs.log";
-  public static String APP_LOGGING_CLOUD_PREFIX = "app-logging";
-  public static String JOB_LOGGING_CLOUD_PREFIX = "job-logging";
+  public static final int DEFAULT_PAGE_SIZE = 1000;
+  public static final String LOG_FILENAME = "logs.log";
+  public static final String APP_LOGGING_CLOUD_PREFIX = "app-logging";
+  public static final String JOB_LOGGING_CLOUD_PREFIX = "job-logging";
 
-  public static Path getServerLogsRoot(Configs configs) {
-    return configs.getWorkspaceRoot().resolve("server/logs");
-  }
-
-  public static Path getSchedulerLogsRoot(Configs configs) {
-    return configs.getWorkspaceRoot().resolve("scheduler/logs");
-  }
-
-  public static File getServerLogFile(Configs configs) {
-    var logPathBase = getServerLogsRoot(configs);
-    if (shouldUseLocalLogs(configs)) {
-      return logPathBase.resolve(LOG_FILENAME).toFile();
+  public static synchronized LogClientSingleton getInstance() {
+    if (instance == null) {
+      instance = new LogClientSingleton();
     }
+    return instance;
+  }
 
-    var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
-    var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
+  public Path getServerLogsRoot(final Path workspaceRoot) {
+    return workspaceRoot.resolve("server/logs");
+  }
+
+  public Path getSchedulerLogsRoot(final Path workspaceRoot) {
+    return workspaceRoot.resolve("scheduler/logs");
+  }
+
+  public File getServerLogFile(final Path workspaceRoot, final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs) {
+    if (shouldUseLocalLogs(workerEnvironment)) {
+      return getServerLogsRoot(workspaceRoot).resolve(LOG_FILENAME).toFile();
+    }
+    final var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + getServerLogsRoot(workspaceRoot);
     try {
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
     }
   }
 
-  public static File getSchedulerLogFile(Configs configs) {
-    var logPathBase = getSchedulerLogsRoot(configs);
-    if (shouldUseLocalLogs(configs)) {
-      return logPathBase.resolve(LOG_FILENAME).toFile();
+  public File getSchedulerLogFile(final Path workspaceRoot, final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs) {
+    if (shouldUseLocalLogs(workerEnvironment)) {
+      return getSchedulerLogsRoot(workspaceRoot).resolve(LOG_FILENAME).toFile();
     }
 
-    var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
-    var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
+    final var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + getSchedulerLogsRoot(workspaceRoot);
     try {
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
     }
   }
 
-  public static List<String> getJobLogFile(Configs configs, Path logPath) throws IOException {
-    if (shouldUseLocalLogs(configs)) {
+  public List<String> getJobLogFile(final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs, final Path logPath) throws IOException {
+    if (logPath == null || logPath.equals(Path.of(""))) {
+      return Collections.emptyList();
+    }
+
+    if (shouldUseLocalLogs(workerEnvironment)) {
       return IOs.getTail(LOG_TAIL_SIZE, logPath);
     }
 
-    var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
-    var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
+    final var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
     return logClient.tailCloudLog(logConfigs, cloudLogPath, LOG_TAIL_SIZE);
   }
 
@@ -127,25 +116,47 @@ public class LogClientSingleton {
    * Primarily to clean up logs after testing. Only valid for Kube logs.
    */
   @VisibleForTesting
-  public static void deleteLogs(Configs configs, String logPath) {
-    if (shouldUseLocalLogs(configs)) {
+  public void deleteLogs(final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs, final String logPath) {
+    if (logPath == null || logPath.equals(Path.of(""))) {
+      return;
+    }
+
+    if (shouldUseLocalLogs(workerEnvironment)) {
       throw new NotImplementedException("Local log deletes not supported.");
     }
-    var logConfigs = new LogConfigDelegator(configs);
-    createCloudClientIfNull(logConfigs);
-    var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
+    final var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
     logClient.deleteLogs(logConfigs, cloudLogPath);
   }
 
-  public static void setJobMdc(Path path) {
-    MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+  public void setJobMdc(final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs, final Path path) {
+    if (shouldUseLocalLogs(workerEnvironment)) {
+      LOGGER.debug("Setting docker job mdc");
+      MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+    } else {
+      LOGGER.debug("Setting kube job mdc");
+      createCloudClientIfNull(logConfigs);
+      MDC.put(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+    }
   }
 
-  private static boolean shouldUseLocalLogs(Configs configs) {
-    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER) || CloudLogs.hasEmptyConfigs(new LogConfigDelegator(configs));
+  public void setWorkspaceMdc(final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs, final Path path) {
+    if (shouldUseLocalLogs(workerEnvironment)) {
+      LOGGER.debug("Setting docker workspace mdc");
+      MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, path.toString());
+    } else {
+      LOGGER.debug("Setting kube workspace mdc");
+      createCloudClientIfNull(logConfigs);
+      MDC.put(LogClientSingleton.CLOUD_WORKSPACE_MDC_KEY, path.toString());
+    }
   }
 
-  private static void createCloudClientIfNull(LogConfigs configs) {
+  // This method should cease to exist here and become a property on the enum instead
+  // TODO handle this as part of refactor https://github.com/airbytehq/airbyte/issues/7545
+  private static boolean shouldUseLocalLogs(final WorkerEnvironment workerEnvironment) {
+    return workerEnvironment.equals(WorkerEnvironment.DOCKER);
+  }
+
+  private void createCloudClientIfNull(final LogConfigs configs) {
     if (logClient == null) {
       logClient = CloudLogs.createCloudLogClient(configs);
     }

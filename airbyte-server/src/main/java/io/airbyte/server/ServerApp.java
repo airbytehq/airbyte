@@ -1,31 +1,13 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server;
 
 import io.airbyte.analytics.Deployment;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -33,26 +15,36 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
-import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.DatabaseMigrator;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
+import io.airbyte.scheduler.client.BucketSpecCacheSchedulerClient;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
-import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.version_mismatch.VersionMismatchServer;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient;
@@ -83,11 +75,11 @@ public class ServerApp implements ServerRunnable {
    * wouldn't run
    */
   private static final AirbyteVersion KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION = new AirbyteVersion("0.26.5-alpha");
-  private final String airbyteVersion;
+  private final AirbyteVersion airbyteVersion;
   private final Set<Class<?>> customComponentClasses;
   private final Set<Object> customComponents;
 
-  public ServerApp(final String airbyteVersion,
+  public ServerApp(final AirbyteVersion airbyteVersion,
                    final Set<Class<?>> customComponentClasses,
                    final Set<Object> customComponents) {
     this.airbyteVersion = airbyteVersion;
@@ -120,7 +112,7 @@ public class ServerApp implements ServerRunnable {
     customComponentClasses.forEach(rc::register);
     customComponents.forEach(rc::register);
 
-    ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
+    final ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
 
     handler.addServlet(configServlet, "/api/*");
 
@@ -128,7 +120,7 @@ public class ServerApp implements ServerRunnable {
 
     server.start();
     final String banner = MoreResources.readResource("banner/banner.txt");
-    LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion));
+    LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion.serialize()));
     server.join();
   }
 
@@ -162,14 +154,29 @@ public class ServerApp implements ServerRunnable {
     TrackingClientSingleton.get().identify(workspaceId);
   }
 
-  public static ServerRunnable getServer(ServerFactory apiFactory) throws Exception {
+  public static ServerRunnable getServer(final ServerFactory apiFactory, final ConfigPersistence seed) throws Exception {
     final Configs configs = new EnvConfigs();
 
-    MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
+    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
+        LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
+
+    LOGGER.info("Creating Staged Resource folder...");
+    ConfigDumpImporter.initStagedResourceFolder();
 
     LOGGER.info("Creating config repository...");
-    final ConfigPersistence configPersistence = ConfigPersistenceBuilder.getAndInitializeDbPersistence(configs);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
+    final Database configDatabase = new ConfigsDatabaseInstance(
+        configs.getConfigDatabaseUser(),
+        configs.getConfigDatabasePassword(),
+        configs.getConfigDatabaseUrl())
+            .getAndInitialize();
+    final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).migrateFileConfigs(configs);
+
+    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
+    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
+
+    final ConfigRepository configRepository =
+        new ConfigRepository(configPersistence.withValidation(), secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(
@@ -188,40 +195,45 @@ public class ServerApp implements ServerRunnable {
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
-
+    final TrackingClient trackingClient = TrackingClientSingleton.get();
     // must happen after the tracking client is initialized.
     // if no workspace exists, we create one so the user starts out with a place to add configuration.
     createWorkspaceIfNoneExists(configRepository);
 
-    final String airbyteVersion = configs.getAirbyteVersion();
+    final AirbyteVersion airbyteVersion = configs.getAirbyteVersion();
     if (jobPersistence.getVersion().isEmpty()) {
       LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
-      jobPersistence.setVersion(airbyteVersion);
+      jobPersistence.setVersion(airbyteVersion.serialize());
     }
 
-    Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
-      boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
-      boolean versionSupportsAutoMigrate =
-          new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
-      if (!isKubernetes || versionSupportsAutoMigrate) {
-        runAutomaticMigration(configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
-        // After migration, upgrade the DB version
-        airbyteDatabaseVersion = jobPersistence.getVersion();
-      } else {
-        LOGGER.info("Can not run automatic migration for Airbyte on KUBERNETES before version " + KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION.getVersion());
-      }
-    }
+    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
+    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
+    final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
+    final SchedulerJobClient schedulerJobClient =
+        new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence, configRepository));
+    final DefaultSynchronousSchedulerClient syncSchedulerClient =
+        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
+    final SynchronousSchedulerClient bucketSpecCacheSchedulerClient =
+        new BucketSpecCacheSchedulerClient(syncSchedulerClient, configs.getSpecCacheBucket());
+    final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
+    final SpecFetcher specFetcher = new SpecFetcher(cachingSchedulerClient);
+
+    // todo (cgardens) - this method is deprecated. new migrations are not run using this code path. it
+    // is scheduled to be removed.
+    final Optional<AirbyteVersion> airbyteDatabaseVersion = runFileMigration(
+        airbyteVersion,
+        configRepository,
+        seed,
+        specFetcher,
+        jobPersistence,
+        configs);
 
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
 
-      final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
-      final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
-      final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
-      final SchedulerJobClient schedulerJobClient = new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence));
-      final DefaultSynchronousSchedulerClient syncSchedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker);
-      final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(syncSchedulerClient);
+      runFlywayMigration(configs, configDatabase, jobDatabase);
+      configPersistence.loadData(seed);
 
       return apiFactory.create(
           schedulerJobClient,
@@ -229,52 +241,105 @@ public class ServerApp implements ServerRunnable {
           temporalService,
           configRepository,
           jobPersistence,
-          configs);
+          seed,
+          configDatabase,
+          jobDatabase,
+          trackingClient,
+          configs.getWorkerEnvironment(),
+          configs.getLogConfigs(),
+          configs.getWebappUrl(),
+          configs.getAirbyteVersion(),
+          configs.getWorkspaceRoot());
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);
     }
   }
 
-  public static void main(String[] args) throws Exception {
-    getServer(new ServerFactory.Api()).start();
+  @Deprecated
+  @SuppressWarnings({"DeprecatedIsStillUsed"})
+  private static Optional<AirbyteVersion> runFileMigration(final AirbyteVersion airbyteVersion,
+                                                           final ConfigRepository configRepository,
+                                                           final ConfigPersistence seed,
+                                                           final SpecFetcher specFetcher,
+                                                           final JobPersistence jobPersistence,
+                                                           final Configs configs)
+      throws IOException {
+    // required before migration
+    // TODO: remove this specFetcherFn logic once file migrations are deprecated
+    configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.getSpec(dockerImage)));
+
+    Optional<AirbyteVersion> airbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new);
+    if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
+      final boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
+      final boolean versionSupportsAutoMigrate = airbyteDatabaseVersion.get().greaterThanOrEqualTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION);
+      if (!isKubernetes || versionSupportsAutoMigrate) {
+        runAutomaticMigration(configRepository, jobPersistence, seed, specFetcher, airbyteVersion, airbyteDatabaseVersion.get());
+        // After migration, upgrade the DB version
+        airbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new);
+      } else {
+        LOGGER.info("Can not run automatic migration for Airbyte on KUBERNETES before version " + KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION.serialize());
+      }
+    }
+
+    return airbyteDatabaseVersion;
+  }
+
+  public static void main(final String[] args) throws Exception {
+    getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
   }
 
   /**
    * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
    * no other operation is allowed
    */
-  private static void runAutomaticMigration(ConfigRepository configRepository,
-                                            JobPersistence jobPersistence,
-                                            String airbyteVersion,
-                                            String airbyteDatabaseVersion) {
-    LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
-    LOGGER.info("Last seeds dir: {}", ArchiveHandler.SEEDS_PATH);
+  private static void runAutomaticMigration(final ConfigRepository configRepository,
+                                            final JobPersistence jobPersistence,
+                                            final ConfigPersistence seed,
+                                            final SpecFetcher specFetcher,
+                                            final AirbyteVersion airbyteVersion,
+                                            final AirbyteVersion airbyteDatabaseVersion) {
+    LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion.serialize() + " to version : " + airbyteVersion.serialize());
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
         configRepository,
         airbyteVersion,
-        ArchiveHandler.SEEDS_PATH)) {
+        seed,
+        specFetcher)) {
       runMigration.run();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Automatic Migration failed ", e);
     }
   }
 
-  public static boolean isDatabaseVersionBehindAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
-    boolean bothVersionsCompatible = AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion);
+  public static boolean isDatabaseVersionBehindAppVersion(final AirbyteVersion serverVersion, final AirbyteVersion databaseVersion) {
+    final boolean bothVersionsCompatible = AirbyteVersion.isCompatible(serverVersion, databaseVersion);
     if (bothVersionsCompatible) {
       return false;
     }
-
-    AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
-    AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
 
     if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) < 0) {
       return true;
     }
 
     return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
+  }
+
+  private static void runFlywayMigration(final Configs configs, final Database configDatabase, final Database jobDatabase) {
+    final DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, ServerApp.class.getSimpleName());
+    final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, ServerApp.class.getSimpleName());
+
+    configDbMigrator.createBaseline();
+    jobDbMigrator.createBaseline();
+
+    if (configs.runDatabaseMigrationOnStartup()) {
+      LOGGER.info("Migrating configs database");
+      configDbMigrator.migrate();
+      LOGGER.info("Migrating jobs database");
+      jobDbMigrator.migrate();
+    } else {
+      LOGGER.info("Auto database migration is skipped");
+    }
   }
 
 }

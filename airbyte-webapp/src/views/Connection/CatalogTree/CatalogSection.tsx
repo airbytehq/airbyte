@@ -97,11 +97,6 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     [config, updateStreamWithConfig]
   );
 
-  const pkPaths = useMemo(
-    () => new Set(config.primaryKey.map((pkPath) => pkPath.join("."))),
-    [config.primaryKey]
-  );
-
   const onPkSelect = useCallback(
     (pkPath: string[]) => {
       let newPrimaryKey: string[][];
@@ -163,18 +158,23 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
   const flattenedFields = useMemo(() => flatten(fields), [fields]);
 
-  const primitiveFieldNames = useMemo(
-    () =>
-      flattenedFields
-        .filter(SyncSchemaFieldObject.isPrimitive)
-        .map((field) => field.name),
+  const primitiveFields = useMemo<SyncSchemaField[]>(
+    () => flattenedFields.filter(SyncSchemaFieldObject.isPrimitive),
     [flattenedFields]
   );
 
-  const selectedCursorPath = config.cursorField.join(".");
   const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
   const hasError = configErrors && Object.keys(configErrors).length > 0;
   const hasChildren = fields && fields.length > 0;
+
+  const isCursor = (field: SyncSchemaField): boolean =>
+    equal(config.cursorField, field.path);
+
+  const isPrimaryKey = (field: SyncSchemaField): boolean => {
+    const existIndex = config.primaryKey.findIndex((p) => equal(p, field.path));
+
+    return existIndex !== -1;
+  };
 
   return (
     <Section error={hasError}>
@@ -187,7 +187,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           onSelectStream={onSelectStream}
           onSelectSyncMode={onSelectSyncMode}
           isRowExpanded={isRowExpanded}
-          primitiveFields={primitiveFieldNames}
+          primitiveFields={primitiveFields}
           pkType={
             pkRequired ? (shouldDefinePk ? "required" : "sourceDefined") : null
           }
@@ -211,14 +211,15 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           </TreeRowWrapper>
           <RowsContainer depth={1}>
             {flattenedFields.map((field) => (
-              <TreeRowWrapper depth={1} key={field.name}>
+              <TreeRowWrapper depth={1} key={field.key}>
                 <FieldRow
                   depth={1}
-                  name={field.name}
+                  path={field.path}
+                  name={field.path.join(".")}
                   type={field.type}
                   destinationName={field.cleanedName}
-                  isCursor={field.name === selectedCursorPath}
-                  isPrimaryKey={pkPaths.has(field.name)}
+                  isCursor={isCursor(field)}
+                  isPrimaryKey={isPrimaryKey(field)}
                   isPrimaryKeyEnabled={
                     shouldDefinePk && SyncSchemaFieldObject.isPrimitive(field)
                   }

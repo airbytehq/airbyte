@@ -1,30 +1,12 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import date
 
+import pendulum
 from source_google_ads.google_ads import GoogleAds
+from source_google_ads.streams import IncrementalGoogleAdsStream, chunk_date_range
 
 SAMPLE_SCHEMA = {
     "properties": {
@@ -116,9 +98,27 @@ def test_get_fields_from_schema():
     assert response == ["segment.date"]
 
 
+def test_interval_chunking():
+    mock_intervals = [{"segments.date": "2021-05-18"}, {"segments.date": "2021-06-18"}, {"segments.date": "2021-07-18"}]
+    intervals = chunk_date_range("2021-06-01", 14, "segments.date", "2021-08-15")
+
+    assert mock_intervals == intervals
+
+
+def test_get_date_params():
+    # Please note that this is equal to inputted stream_slice start date + 1 day
+    mock_start_date = "2021-05-19"
+    mock_end_date = "2021-06-18"
+    start_date, end_date = IncrementalGoogleAdsStream.get_date_params(
+        stream_slice={"segments.date": "2021-05-18"}, cursor_field="segments.date", end_date=pendulum.parse("2021-08-15")
+    )
+
+    assert mock_start_date == start_date and mock_end_date == end_date
+
+
 def test_convert_schema_into_query():
     report_name = "ad_group_ad_report"
-    query = "SELECT segment.date FROM ad_group_ad WHERE segments.date > '2020-01-01' AND segments.date < '2020-03-01' ORDER BY segments.date ASC"
+    query = "SELECT segment.date FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-03-01' ORDER BY segments.date ASC"
     response = GoogleAds.convert_schema_into_query(SAMPLE_SCHEMA, report_name, "2020-01-01", "2020-03-01", "segments.date")
     assert response == query
 
@@ -126,7 +126,7 @@ def test_convert_schema_into_query():
 def test_get_field_value():
     field = "segment.date"
     date = "2001-01-01"
-    response = GoogleAds.get_field_value(MockedDateSegment(date), field)
+    response = GoogleAds.get_field_value(MockedDateSegment(date), field, {})
     assert response == date
 
 

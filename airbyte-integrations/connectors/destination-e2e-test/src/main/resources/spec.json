@@ -22,6 +22,18 @@
         }
       },
       {
+        "title": "Silent",
+        "required": ["type"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "SILENT",
+            "default": "SILENT"
+          }
+        }
+      },
+      {
         "title": "Throttled",
         "required": ["type", "millis_per_record"],
         "additionalProperties": false,

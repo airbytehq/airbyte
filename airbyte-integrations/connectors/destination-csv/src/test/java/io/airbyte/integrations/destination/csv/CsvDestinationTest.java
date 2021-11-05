@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.csv;
@@ -112,7 +92,7 @@ class CsvDestinationTest {
   }
 
   private CsvDestination getDestination() {
-    CsvDestination result = spy(CsvDestination.class);
+    final CsvDestination result = spy(CsvDestination.class);
     doReturn(destinationPath).when(result).getDestinationPath(any());
     return result;
   }
@@ -137,7 +117,7 @@ class CsvDestinationTest {
   void testCheckFailure() throws IOException {
     final Path looksLikeADirectoryButIsAFile = destinationPath.resolve("file");
     FileUtils.touch(looksLikeADirectoryButIsAFile.toFile());
-    CsvDestination destination = spy(CsvDestination.class);
+    final CsvDestination destination = spy(CsvDestination.class);
     doReturn(looksLikeADirectoryButIsAFile).when(destination).getDestinationPath(any());
     final JsonNode config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString()));
     final AirbyteConnectionStatus actual = destination.check(config);
@@ -221,7 +201,7 @@ class CsvDestinationTest {
     assertEquals(Collections.emptySet(), actualFilenames);
   }
 
-  private List<JsonNode> csvToJson(Path csvPath) throws IOException {
+  private List<JsonNode> csvToJson(final Path csvPath) throws IOException {
     final Reader in = new FileReader(csvPath.toFile());
     final Iterable<CSVRecord> records = CSVFormat.DEFAULT
         .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)

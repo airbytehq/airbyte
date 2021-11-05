@@ -1,15 +1,20 @@
-import React, { useMemo } from "react";
+import React from "react";
 import styled from "styled-components";
 import { CellProps } from "react-table";
 import { FormattedMessage } from "react-intl";
-import { useQuery } from "react-query";
+import { useToggle } from "react-use";
 
-import { Button, H5 } from "components";
+import { Button, H5, LoadingButton } from "components";
 import Table from "components/Table";
-import { UserService } from "packages/cloud/lib/domain/users";
-import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
-import { api } from "packages/cloud/config/api";
-import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { InviteUsersModal } from "packages/cloud/views/users/InviteUsersModal";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import {
+  useListUsers,
+  useUserHook,
+} from "packages/cloud/services/users/UseUserHook";
+import { User } from "packages/cloud/lib/domain/users";
+import RoleToolTip from "./components/RoleToolTip";
 
 const Header = styled.div`
   display: flex;
@@ -17,22 +22,31 @@ const Header = styled.div`
   margin-bottom: 10px;
 `;
 
-function useGetUserService() {
-  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+const RemoveUserSection: React.FC<{ workspaceId: string; email: string }> = ({
+  workspaceId,
+  email,
+}) => {
+  const { removeUserLogic } = useUserHook();
+  const { isLoading, mutate: removeUser } = removeUserLogic;
 
-  return useMemo(() => new UserService(requestAuthMiddleware, api.cloud), [
-    requestAuthMiddleware,
-  ]);
-}
+  return (
+    <LoadingButton
+      secondary
+      onClick={() => removeUser({ email, workspaceId })}
+      isLoading={isLoading}
+    >
+      <FormattedMessage id="userSettings.user.remove" />
+    </LoadingButton>
+  );
+};
 
 export const UsersSettingsView: React.FC = () => {
-  const userService = useGetUserService();
+  const [modalIsOpen, toggleModal] = useToggle(false);
   const { workspaceId } = useCurrentWorkspace();
-  const { data } = useQuery(
-    ["users"],
-    () => userService.listByWorkspaceId(workspaceId),
-    { suspense: true }
-  );
+
+  const { data: users } = useListUsers();
+
+  const { user } = useAuthService();
 
   const columns = React.useMemo(
     () => [
@@ -40,40 +54,56 @@ export const UsersSettingsView: React.FC = () => {
         Header: <FormattedMessage id="userSettings.table.column.fullname" />,
         headerHighlighted: true,
         accessor: "name",
-        Cell: ({ cell }: CellProps<any>) => cell.value,
+        Cell: ({ cell }: CellProps<User>) => cell.value,
       },
       {
         Header: <FormattedMessage id="userSettings.table.column.email" />,
         headerHighlighted: true,
         accessor: "email",
-        Cell: ({ cell }: CellProps<any>) => cell.value,
+        Cell: ({ cell }: CellProps<User>) => cell.value,
       },
       {
-        Header: <FormattedMessage id="userSettings.table.column.role" />,
+        Header: (
+          <>
+            <FormattedMessage id="userSettings.table.column.role" />
+            <RoleToolTip />
+          </>
+        ),
         headerHighlighted: true,
         accessor: "userId",
-        Cell: (_: CellProps<any>) => "admin",
+        Cell: (_: CellProps<User>) => "admin",
       },
       {
         Header: <FormattedMessage id="userSettings.table.column.action" />,
         headerHighlighted: true,
         accessor: "status",
-        Cell: ({ cell }: CellProps<any>) =>
+        Cell: ({ row }: CellProps<User>) =>
           [
-            <Button secondary>remove</Button>,
-            cell.value === "invited" && <Button secondary>send again</Button>,
+            user?.userId !== row.original.userId ? (
+              <RemoveUserSection
+                workspaceId={workspaceId}
+                email={row.original.email}
+              />
+            ) : null,
+            // cell.value === "invited" && <Button secondary>send again</Button>,
           ].filter(Boolean),
       },
     ],
-    []
+    [workspaceId, user]
   );
+
   return (
     <>
       <Header>
-        <H5>Current users</H5>
-        <Button>+ New user</Button>
+        <H5>
+          <FormattedMessage id="userSettings.table.title" />
+        </H5>
+        <Button onClick={toggleModal}>
+          + <FormattedMessage id="userSettings.button.addNewUser" />
+        </Button>
       </Header>
-      <Table data={data ?? []} columns={columns} />
+      <Table data={users ?? []} columns={columns} />
+      {modalIsOpen && <InviteUsersModal onClose={toggleModal} />}
     </>
   );
 };

@@ -3,28 +3,31 @@ plugins {
 }
 
 dependencies {
-    implementation 'io.fabric8:kubernetes-client:5.5.0'
+    implementation 'io.fabric8:kubernetes-client:5.9.0'
     implementation 'io.kubernetes:client-java-api:10.0.0'
     implementation 'io.kubernetes:client-java:10.0.0'
     implementation 'io.kubernetes:client-java-extended:10.0.0'
     implementation 'io.temporal:temporal-sdk:1.0.4'
 
     implementation project(':airbyte-analytics')
+    implementation project(':airbyte-api')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
-    implementation project(':airbyte-db')
+    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-json-validation')
+    implementation project(':airbyte-metrics')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:models')
     implementation project(':airbyte-scheduler:persistence')
     implementation project(':airbyte-workers')
 
-    testImplementation "org.testcontainers:postgresql:1.15.1"
+    testImplementation "org.testcontainers:postgresql:1.15.3"
 }
 
 application {
     applicationName = "airbyte-scheduler"
     mainClass = 'io.airbyte.scheduler.app.SchedulerApp'
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
 Properties env = new Properties()
@@ -41,6 +44,8 @@ run {
     // we map the docker pg db to port 5433 so it does not conflict with other pg instances.
     environment "DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.DATABASE_DB}"
     environment "CONFIG_DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.CONFIG_DATABASE_DB}"
+
+    environment "RUN_DATABASE_MIGRATION_ON_STARTUP", env.RUN_DATABASE_MIGRATION_ON_STARTUP
 
     environment "WORKSPACE_ROOT", env.WORKSPACE_ROOT
     environment "WORKSPACE_DOCKER_MOUNT", env.WORKSPACE_DOCKER_MOUNT

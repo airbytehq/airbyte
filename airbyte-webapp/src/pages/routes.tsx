@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { useIntl } from "react-intl";
 
-import config from "config";
+import { useConfig } from "config";
 
 import SourcesPage from "./SourcesPage";
 import DestinationPage from "./DestinationPage";
@@ -16,14 +16,13 @@ import OnboardingPage from "./OnboardingPage";
 import ConnectionPage from "./ConnectionPage";
 import SettingsPage from "./SettingsPage";
 import LoadingPage from "components/LoadingPage";
-import MainView from "components/MainView";
-import SupportChat from "components/SupportChat";
+import MainView from "views/layout/MainView";
 
-import { useWorkspace } from "components/hooks/services/useWorkspace";
-import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
-import { useApiHealthPoll } from "components/hooks/services/Health";
+import { useWorkspace } from "hooks/services/useWorkspace";
+import { useNotificationService } from "hooks/services/Notification/NotificationService";
+import { useApiHealthPoll } from "hooks/services/Health";
 import { WithPageAnalytics } from "./withPageAnalytics";
-import { HealthService } from "core/health/HealthService";
+import { CompleteOauthRequest } from "./CompleteOauthRequest";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -41,33 +40,49 @@ export enum Routes {
   Notifications = "/notifications",
   Metrics = "/metrics",
   Account = "/account",
+  AuthFlow = "/auth_flow",
   Root = "/",
 }
 
-const MainViewRoutes = () => (
-  <MainView>
-    <Suspense fallback={<LoadingPage />}>
-      <Switch>
-        <Route path={Routes.Destination}>
-          <DestinationPage />
-        </Route>
-        <Route path={Routes.Source}>
-          <SourcesPage />
-        </Route>
-        <Route path={Routes.Connections}>
-          <ConnectionPage />
-        </Route>
-        <Route path={Routes.Settings}>
-          <SettingsPage />
-        </Route>
-        <Route exact path={Routes.Root}>
-          <SourcesPage />
-        </Route>
-        <Redirect to={Routes.Root} />
-      </Switch>
-    </Suspense>
-  </MainView>
-);
+const MainViewRoutes = () => {
+  const { workspace } = useWorkspace();
+  const mainRedirect = workspace.displaySetupWizard
+    ? Routes.Onboarding
+    : Routes.Connections;
+
+  return (
+    <MainView>
+      <Suspense fallback={<LoadingPage />}>
+        <Switch>
+          <Route path={Routes.AuthFlow}>
+            <CompleteOauthRequest />
+          </Route>
+          <Route path={Routes.Destination}>
+            <DestinationPage />
+          </Route>
+          <Route path={Routes.Source}>
+            <SourcesPage />
+          </Route>
+          <Route path={Routes.Connections}>
+            <ConnectionPage />
+          </Route>
+          <Route path={Routes.Settings}>
+            <SettingsPage />
+          </Route>
+          {workspace.displaySetupWizard && (
+            <Route path={Routes.Onboarding}>
+              <OnboardingPage />
+            </Route>
+          )}
+          <Route exact path={Routes.Source}>
+            <SourcesPage />
+          </Route>
+          <Redirect to={mainRedirect} />
+        </Switch>
+      </Suspense>
+    </MainView>
+  );
+};
 
 const PreferencesRoutes = () => (
   <Switch>
@@ -78,17 +93,9 @@ const PreferencesRoutes = () => (
   </Switch>
 );
 
-const OnboardingsRoutes = () => (
-  <Switch>
-    <Route path={Routes.Onboarding}>
-      <OnboardingPage />
-    </Route>
-    <Redirect to={Routes.Onboarding} />
-  </Switch>
-);
-
 function useDemo() {
   const { formatMessage } = useIntl();
+  const config = useConfig();
 
   const demoNotification = useMemo(
     () => ({
@@ -103,10 +110,8 @@ function useDemo() {
   useNotificationService(config.isDemo ? demoNotification : undefined);
 }
 
-const healthService = new HealthService();
-
 export const Routing: React.FC = () => {
-  useApiHealthPoll(config.healthCheckInterval, healthService);
+  useApiHealthPoll();
   useDemo();
 
   const { workspace } = useWorkspace();
@@ -116,19 +121,12 @@ export const Routing: React.FC = () => {
       <Suspense fallback={<LoadingPage />}>
         {!workspace.initialSetupComplete ? (
           <PreferencesRoutes />
-        ) : workspace.displaySetupWizard ? (
-          <OnboardingsRoutes />
         ) : (
           <>
             <WithPageAnalytics />
             <MainViewRoutes />
           </>
         )}
-        <SupportChat
-          papercupsConfig={config.papercups}
-          customerId={workspace.customerId}
-          onClick={() => window.open(config.ui.slackLink, "_blank")}
-        />
       </Suspense>
     </Router>
   );

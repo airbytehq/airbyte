@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -30,7 +10,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.avro.file.DataFileReader;
@@ -38,11 +20,8 @@ import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class GcsAvroDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
-
-  private final JsonAvroConverter converter = new JsonAvroConverter();
 
   protected GcsAvroDestinationAcceptanceTest() {
     super(S3Format.AVRO);
@@ -57,21 +36,25 @@ public class GcsAvroDestinationAcceptanceTest extends GcsDestinationAcceptanceTe
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace, JsonNode streamSchema) throws Exception {
-    JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
+      throws Exception {
+    final JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
-    List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
-    List<JsonNode> jsonRecords = new LinkedList<>();
+    final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
+    final List<JsonNode> jsonRecords = new LinkedList<>();
 
-    for (S3ObjectSummary objectSummary : objectSummaries) {
-      S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      try (DataFileReader<Record> dataFileReader = new DataFileReader<>(
+    for (final S3ObjectSummary objectSummary : objectSummaries) {
+      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      try (final DataFileReader<Record> dataFileReader = new DataFileReader<>(
           new SeekableByteArrayInput(object.getObjectContent().readAllBytes()),
           new GenericDatumReader<>())) {
-        ObjectReader jsonReader = MAPPER.reader();
+        final ObjectReader jsonReader = MAPPER.reader();
         while (dataFileReader.hasNext()) {
-          GenericData.Record record = dataFileReader.next();
-          byte[] jsonBytes = converter.convertToJson(record);
+          final GenericData.Record record = dataFileReader.next();
+          final byte[] jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record);
           JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
           jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
           jsonRecords.add(AvroRecordHelper.pruneAirbyteJson(jsonRecord));

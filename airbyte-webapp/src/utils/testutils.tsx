@@ -6,6 +6,7 @@ import { Router } from "react-router-dom";
 import { IntlProvider } from "react-intl";
 
 import en from "locales/en.json";
+import { FeatureService } from "../hooks/services/Feature";
 
 export type RenderOptions = {
   // optionally pass in a history object to control routes in the test
@@ -25,13 +26,16 @@ export function render(
     return (
       <ThemeProvider theme={{}}>
         <IntlProvider locale="en" messages={en}>
-          <Router
-            history={
-              (renderOptions && renderOptions.history) || createMemoryHistory()
-            }
-          >
-            {children}
-          </Router>
+          <FeatureService>
+            <Router
+              history={
+                (renderOptions && renderOptions.history) ||
+                createMemoryHistory()
+              }
+            >
+              {children}
+            </Router>
+          </FeatureService>
         </IntlProvider>
       </ThemeProvider>
     );

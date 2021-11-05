@@ -4,15 +4,19 @@ import * as yup from "yup";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
-import { Button, LabeledInput, Link } from "components";
+import { LoadingButton, LabeledInput, Link } from "components";
 import { FormTitle } from "../components/FormTitle";
 import { Routes } from "../../../routes";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { useNotificationService } from "hooks/services/Notification/NotificationService";
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
 });
 
 const ResetPasswordPage: React.FC = () => {
+  const { requirePasswordReset } = useAuthService();
+  const { registerNotification } = useNotificationService();
   const formatMessage = useIntl().formatMessage;
 
   return (
@@ -26,11 +30,18 @@ const ResetPasswordPage: React.FC = () => {
           email: "",
         }}
         validationSchema={ResetPasswordPageValidationSchema}
-        onSubmit={() => console.log("ok")}
+        onSubmit={async ({ email }) => {
+          await requirePasswordReset(email);
+          registerNotification({
+            id: "resetPassword.emailSent",
+            title: formatMessage({ id: "login.resetPassword.emailSent" }),
+            isError: false,
+          });
+        }}
         validateOnBlur={true}
         validateOnChange={false}
       >
-        {() => (
+        {({ isSubmitting }) => (
           <Form>
             <FieldItem>
               <Field name="email">
@@ -53,14 +64,12 @@ const ResetPasswordPage: React.FC = () => {
               </Field>
             </FieldItem>
             <BottomBlock>
-              <>
-                <Link to={Routes.Login} $light>
-                  <FormattedMessage id="login.backLogin" />
-                </Link>
-                <Button type="submit">
-                  <FormattedMessage id="login.resetPassword" />
-                </Button>
-              </>
+              <Link to={Routes.Login} $light>
+                <FormattedMessage id="login.backLogin" />
+              </Link>
+              <LoadingButton type="submit" isLoading={isSubmitting}>
+                <FormattedMessage id="login.resetPassword" />
+              </LoadingButton>
             </BottomBlock>
           </Form>
         )}

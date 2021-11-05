@@ -1,18 +1,20 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
   "properties": {
-    "description": {
-      "type": "string"
-    },
     "key": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
     }
   },
-  "type": "object"
+  "additionalProperties": false,
+  "description": "Details about permissions."
 }

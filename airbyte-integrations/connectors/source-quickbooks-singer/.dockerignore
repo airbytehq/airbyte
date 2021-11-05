@@ -1,6 +1,7 @@
 *
 !Dockerfile
 !Dockerfile.test
+!main.py
 !source_quickbooks_singer
 !setup.py
 !secrets

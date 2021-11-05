@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.converters;
@@ -38,8 +18,10 @@ import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.LogRead;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -65,6 +47,7 @@ class JobConverterTest {
   private static final Path LOG_PATH = Path.of("log_path");
   private static final long CREATED_AT = System.currentTimeMillis() / 1000;
 
+  private JobConverter jobConverter;
   private Job job;
 
   private static final JobInfoRead JOB_INFO =
@@ -91,8 +74,9 @@ class JobConverterTest {
 
   @BeforeEach
   public void setUp() {
+    jobConverter = new JobConverter(WorkerEnvironment.DOCKER, LogConfiguration.EMPTY);
     job = mock(Job.class);
-    Attempt attempt = mock(Attempt.class);
+    final Attempt attempt = mock(Attempt.class);
     when(job.getId()).thenReturn(JOB_ID);
     when(job.getConfigType()).thenReturn(JOB_CONFIG.getConfigType());
     when(job.getScope()).thenReturn(JOB_CONFIG_ID);
@@ -111,17 +95,17 @@ class JobConverterTest {
 
   @Test
   public void testGetJobInfoRead() {
-    assertEquals(JOB_INFO, JobConverter.getJobInfoRead(job));
+    assertEquals(JOB_INFO, jobConverter.getJobInfoRead(job));
   }
 
   @Test
   public void testGetJobWithAttemptsRead() {
-    assertEquals(JOB_WITH_ATTEMPTS_READ, JobConverter.getJobWithAttemptsRead(job));
+    assertEquals(JOB_WITH_ATTEMPTS_READ, jobConverter.getJobWithAttemptsRead(job));
   }
 
   @Test
   public void testGetJobRead() {
-    final JobWithAttemptsRead jobReadActual = JobConverter.getJobWithAttemptsRead(job);
+    final JobWithAttemptsRead jobReadActual = jobConverter.getJobWithAttemptsRead(job);
     assertEquals(JOB_WITH_ATTEMPTS_READ, jobReadActual);
   }
 

@@ -1,33 +1,11 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 import logging
 
-import requests
-from airbyte_cdk.sources.streams.http.auth import NoAuth, Oauth2Authenticator, TokenAuthenticator
-from requests import Response
+from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator, NoAuth, Oauth2Authenticator, TokenAuthenticator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,6 +19,16 @@ def test_token_authenticator():
     assert {"Authorization": "Bearer test-token"} == header
     header = token.get_auth_header()
     assert {"Authorization": "Bearer test-token"} == header
+
+
+def test_multiple_token_authenticator():
+    token = MultipleTokenAuthenticator(["token1", "token2"])
+    header1 = token.get_auth_header()
+    assert {"Authorization": "Bearer token1"} == header1
+    header2 = token.get_auth_header()
+    assert {"Authorization": "Bearer token2"} == header2
+    header3 = token.get_auth_header()
+    assert {"Authorization": "Bearer token1"} == header3
 
 
 def test_no_auth():
@@ -58,10 +46,11 @@ class TestOauth2Authenticator:
     Test class for OAuth2Authenticator.
     """
 
-    refresh_endpoint = "refresh_end"
+    refresh_endpoint = "https://some_url.com/v1"
     client_id = "client_id"
     client_secret = "client_secret"
     refresh_token = "refresh_token"
+    refresh_access_token_headers = {"Header_1": "value 1", "Header_2": "value 2"}
 
     def test_get_auth_header_fresh(self, mocker):
         """
@@ -120,18 +109,23 @@ class TestOauth2Authenticator:
         }
         assert body == expected
 
-    def test_refresh_access_token(self, mocker):
+    def test_refresh_access_token(self, requests_mock):
+        mock_refresh_token_call = requests_mock.post(
+            TestOauth2Authenticator.refresh_endpoint, json={"access_token": "token", "expires_in": 10}
+        )
+
         oauth = Oauth2Authenticator(
             TestOauth2Authenticator.refresh_endpoint,
             TestOauth2Authenticator.client_id,
             TestOauth2Authenticator.client_secret,
             TestOauth2Authenticator.refresh_token,
+            refresh_access_token_headers=TestOauth2Authenticator.refresh_access_token_headers,
         )
-        resp = Response()
-        resp.status_code = 200
 
-        mocker.patch.object(requests, "request", return_value=resp)
-        mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": 1000})
         token = oauth.refresh_access_token()
 
-        assert ("access_token", 1000) == token
+        assert ("token", 10) == token
+        for header in self.refresh_access_token_headers:
+            assert header in mock_refresh_token_call.last_request.headers
+            assert self.refresh_access_token_headers[header] == mock_refresh_token_call.last_request.headers[header]
+        assert mock_refresh_token_call.called

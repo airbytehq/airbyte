@@ -1,34 +1,42 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useLocalStorage } from "react-use";
+import { useResetter } from "rest-hooks";
 
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
-import { api } from "packages/cloud/config/api";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
 import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { useConfig } from "packages/cloud/services/config";
 
 type Context = {
-  currentWorkspaceId?: string;
-  selectWorkspace: (workspaceId: string) => void;
-  createWorkspace: (name: string) => Promise<void>;
+  currentWorkspaceId?: string | null;
+  selectWorkspace: (workspaceId: string | null) => void;
+  createWorkspace: (name: string) => Promise<CloudWorkspace>;
+  updateWorkspace: {
+    mutateAsync: (payload: {
+      workspaceId: string;
+      name: string;
+    }) => Promise<CloudWorkspace>;
+    isLoading: boolean;
+  };
   removeWorkspace: {
-    mutate: (workspaceId: string) => void;
+    mutateAsync: (workspaceId: string) => Promise<void>;
     isLoading: boolean;
   };
 };
 
-const defaultState: Context = {} as Context;
-
-export const WorkspaceServiceContext = React.createContext<Context>(
-  defaultState
+export const WorkspaceServiceContext = React.createContext<Context | null>(
+  null
 );
 
 function useGetWorkspaceService() {
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
+  const { cloudApiUrl } = useConfig();
 
   return useMemo(
-    () => new CloudWorkspacesService(requestAuthMiddleware, api.cloud),
-    [requestAuthMiddleware]
+    () => new CloudWorkspacesService(cloudApiUrl, requestAuthMiddleware),
+    [requestAuthMiddleware, cloudApiUrl]
   );
 }
 
@@ -56,7 +64,47 @@ export function useCreateWorkspace() {
         ]);
       },
     }
-  ).mutate;
+  ).mutateAsync;
+}
+
+export function useUpdateWorkspace() {
+  const service = useGetWorkspaceService();
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async (payload: { workspaceId: string; name: string }) =>
+      service.update(payload.workspaceId, { name: payload.name }),
+    {
+      onSuccess: (result) => {
+        queryClient.setQueryData<CloudWorkspace[]>("workspaces", (old) => {
+          const list = old ?? [];
+          if (list.length === 0) {
+            return [result];
+          }
+
+          const index = list.findIndex(
+            (item) => item.workspaceId === result.workspaceId
+          );
+
+          if (index === -1) {
+            return list;
+          }
+
+          return [...list.slice(0, index), result, ...list.slice(index + 1)];
+        });
+
+        queryClient.setQueryData<CloudWorkspace>(
+          ["workspace", result.workspaceId],
+          (old) => {
+            return {
+              ...old,
+              ...result,
+            };
+          }
+        );
+      },
+    }
+  );
 }
 
 export function useRemoveWorkspace() {
@@ -80,16 +128,45 @@ export function useRemoveWorkspace() {
 export function useGetWorkspace(workspaceId: string) {
   const service = useGetWorkspaceService();
 
-  return useQuery(["workspace", workspaceId], () => service.get(workspaceId), {
-    suspense: true,
-  });
+  return useQuery<CloudWorkspace>(
+    ["workspace", workspaceId],
+    () => service.get(workspaceId),
+    {
+      suspense: true,
+      initialData: {
+        workspaceId: "",
+        name: "",
+        billingUserId: "",
+        remainingCredits: 0,
+      },
+    }
+  ) as any;
+}
+
+export function useGetUsage(workspaceId: string) {
+  const service = useGetWorkspaceService();
+
+  return useQuery(
+    ["cloud_workspace", workspaceId, "usage"],
+    () => service.getUsage(workspaceId),
+    {
+      suspense: true,
+    }
+  );
 }
 
 export const WorkspaceServiceProvider: React.FC = ({ children }) => {
-  const [currentWorkspaceId, setCurrentWorkspaceId] = useState("");
+  const user = useCurrentUser();
+  const [currentWorkspaceId, setCurrentWorkspaceId] = useLocalStorage<
+    string | null
+  >(`${user.userId}/workspaceId`, null);
+
   const createWorkspace = useCreateWorkspace();
   const removeWorkspace = useRemoveWorkspace();
-  const user = useCurrentUser();
+  const updateWorkspace = useUpdateWorkspace();
+
+  const queryClient = useQueryClient();
+  const resetCache = useResetter();
 
   const ctx = useMemo<Context>(
     () => ({
@@ -100,9 +177,20 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
           userId: user.userId,
         }),
       removeWorkspace,
-      selectWorkspace: setCurrentWorkspaceId,
+      updateWorkspace,
+      selectWorkspace: async (workspaceId) => {
+        setCurrentWorkspaceId(workspaceId);
+        await queryClient.resetQueries();
+        resetCache();
+      },
     }),
-    [currentWorkspaceId, user, createWorkspace, removeWorkspace]
+    [
+      currentWorkspaceId,
+      user,
+      createWorkspace,
+      removeWorkspace,
+      updateWorkspace,
+    ]
   );
 
   return (

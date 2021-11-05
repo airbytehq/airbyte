@@ -5,7 +5,7 @@
     "title": "Google Ads Spec",
     "type": "object",
     "required": ["credentials", "start_date", "customer_id"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "credentials": {
         "type": "object",
@@ -32,6 +32,12 @@
             "type": "string",
             "title": "Client Secret",
             "description": "Google client secret. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
+            "airbyte_secret": true
+          },
+          "access_token": {
+            "type": "string",
+            "title": "Access Token",
+            "description": "Access token generated using developer_token, oauth_client_id, and oauth_client_secret. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
             "airbyte_secret": true
           },
           "refresh_token": {
@@ -67,7 +73,41 @@
         "maximum": 1095,
         "default": 14,
         "examples": [14]
+      },
+      "custom_queries": {
+        "type": "array",
+        "title": "Custom GAQL Queries",
+        "items": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "title": "Custom query",
+              "description": "A custom defined GAQL query for building the report. Should not contain segments.date expression as it used by incremental streams",
+              "examples": [
+                "SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type FROM campaign WHERE campaign.status = 'PAUSED'"
+              ]
+            },
+            "table_name": {
+              "type": "string",
+              "title": "Destination table name",
+              "description": "The table name in your destination database for choosen query."
+            }
+          }
+        }
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials"],
+      "oauthFlowInitParameters": [
+        ["client_id"],
+        ["client_secret"],
+        ["developer_token"]
+      ],
+      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
     }
   }
 }

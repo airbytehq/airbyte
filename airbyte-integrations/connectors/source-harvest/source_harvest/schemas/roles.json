@@ -17,7 +17,10 @@
       "format": "date-time"
     },
     "user_ids": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "integer"
+      }
     }
   }
 }

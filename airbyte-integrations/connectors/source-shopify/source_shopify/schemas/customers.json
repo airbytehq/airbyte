@@ -79,7 +79,7 @@
       "type": ["null", "boolean"]
     },
     "total_spent": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "last_order_id": {
       "type": ["null", "integer"]

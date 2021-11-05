@@ -1,29 +1,10 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.protocols.airbyte;
 
+import static io.airbyte.commons.logging.LoggingHelper.RESET;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -34,8 +15,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper.Color;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.WorkerConstants;
@@ -51,6 +37,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,6 +56,17 @@ class DefaultAirbyteDestinationTest {
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       AirbyteMessageUtils.createStateMessage("checkpoint", "1"),
       AirbyteMessageUtils.createStateMessage("checkpoint", "2"));
+
+  private static Path logJobRoot;
+
+  static {
+    try {
+      logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+      LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfiguration.EMPTY, logJobRoot);
+    } catch (final IOException e) {
+      e.printStackTrace();
+    }
+  }
 
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
@@ -99,6 +98,16 @@ class DefaultAirbyteDestinationTest {
     when(process.getInputStream()).thenReturn(inputStream);
 
     streamFactory = noop -> MESSAGES.stream();
+  }
+
+  @AfterEach
+  public void tearDown() throws IOException {
+    // The log file needs to be present and empty
+    final Path logFile = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
+    if (Files.exists(logFile)) {
+      Files.delete(logFile);
+    }
+    Files.createFile(logFile);
   }
 
   @SuppressWarnings("BusyWait")
@@ -138,6 +147,35 @@ class DefaultAirbyteDestinationTest {
     });
 
     verify(process).exitValue();
+  }
+
+  @Test
+  public void testTaggedLogs() throws Exception {
+
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory);
+    destination.start(DESTINATION_CONFIG, jobRoot);
+
+    final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
+    destination.accept(recordMessage);
+
+    final List<AirbyteMessage> messages = Lists.newArrayList();
+
+    messages.add(destination.attemptRead().get());
+    messages.add(destination.attemptRead().get());
+
+    when(process.isAlive()).thenReturn(false);
+
+    destination.notifyEndOfStream();
+
+    destination.close();
+
+    final Path logPath = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
+    final Stream<String> logs = IOs.readFile(logPath).lines();
+
+    logs.forEach(line -> {
+      org.assertj.core.api.Assertions.assertThat(line)
+          .startsWith(Color.MAGENTA.getCode() + "destination" + RESET);
+    });
   }
 
   @Test

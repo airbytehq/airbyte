@@ -1,6 +1,6 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
-export default class DeploymentService extends AirbyteRequestService {
+export class DeploymentService extends AirbyteRequestService {
   static path = "deployment";
 
   getPath(subpath: string): string {
@@ -28,5 +28,3 @@ export default class DeploymentService extends AirbyteRequestService {
     return;
   }
 }
-
-export const deploymentService = new DeploymentService();

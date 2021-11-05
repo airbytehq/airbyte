@@ -329,7 +329,6 @@
         },
         "email": {
           "type": ["string", "null"],
-          "format": "email",
           "maxLength": 70
         },
         "company": {
@@ -391,7 +390,6 @@
         },
         "email": {
           "type": ["string", "null"],
-          "format": "email",
           "maxLength": 70
         },
         "company": {

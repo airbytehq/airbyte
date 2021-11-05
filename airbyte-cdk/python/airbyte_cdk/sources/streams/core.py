@@ -1,36 +1,17 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 import inspect
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 def package_name_from_class(cls: object) -> str:
@@ -45,7 +26,12 @@ class Stream(ABC):
     """
 
     # Use self.logger in subclasses to log any messages
-    logger = AirbyteLogger()  # TODO use native "logging" loggers with custom handlers
+    @property
+    def logger(self):
+        return logging.getLogger(f"streams.{self.name}")
+
+    # TypeTransformer object to perform output data transformation
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
 
     @property
     def name(self) -> str:
@@ -120,7 +106,7 @@ class Stream(ABC):
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """
         :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
-        If the stream has no primary keys, return None.
+          If the stream has no primary keys, return None.
         """
 
     def stream_slices(

@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -41,6 +21,10 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.POSTGRES.value: 63,
     # https://dev.mysql.com/doc/refman/8.0/en/identifier-length.html
     DestinationType.MYSQL.value: 64,
+    # https://oracle-base.com/articles/12c/long-identifiers-12cr2
+    DestinationType.ORACLE.value: 128,
+    # https://docs.microsoft.com/en-us/sql/odbc/microsoft/column-name-limitations?view=sql-server-ver15
+    DestinationType.MSSQL.value: 64,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -74,6 +58,8 @@ class DestinationNameTransformer:
             return True
         if self.destination_type.value == DestinationType.BIGQUERY.value:
             return False
+        if self.destination_type.value == DestinationType.ORACLE.value and input_name.startswith("_"):
+            return True
         doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", input_name[0]) is not None
         contains_non_alphanumeric = match(".*[^A-Za-z0-9_].*", input_name) is not None
         return doesnt_start_with_alphaunderscore or contains_non_alphanumeric
@@ -85,30 +71,48 @@ class DestinationNameTransformer:
         @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
         control how the name would be normalized
         """
+        if self.destination_type == DestinationType.ORACLE and schema_name.startswith("_"):
+            schema_name = schema_name[1:]
         return self.__normalize_non_column_identifier_name(input_name=schema_name, in_jinja=in_jinja, truncate=truncate)
 
-    def normalize_table_name(self, table_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
+    def normalize_table_name(
+        self, table_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+    ) -> str:
         """
         @param table_name is the table to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
         @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
         control how the name would be normalized
+        @param conflict if there is a conflict between stream name and fields
+        @param conflict_level is the json_path level conflict happened
         """
-        return self.__normalize_non_column_identifier_name(input_name=table_name, in_jinja=in_jinja, truncate=truncate)
+        if self.destination_type == DestinationType.ORACLE and table_name.startswith("_"):
+            table_name = table_name[1:]
+        return self.__normalize_non_column_identifier_name(
+            input_name=table_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level
+        )
 
-    def normalize_column_name(self, column_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
+    def normalize_column_name(
+        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+    ) -> str:
         """
         @param column_name is the column to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
         @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
         control how the name would be normalized
+        @param conflict if there is a conflict between stream name and fields
+        @param conflict_level is the json_path level conflict happened
         """
-        return self.__normalize_identifier_name(column_name=column_name, in_jinja=in_jinja, truncate=truncate)
+        return self.__normalize_identifier_name(
+            column_name=column_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level
+        )
 
-    def truncate_identifier_name(self, input_name: str, custom_limit: int = -1) -> str:
+    def truncate_identifier_name(self, input_name: str, custom_limit: int = -1, conflict: bool = False, conflict_level: int = 0) -> str:
         """
         @param input_name is the identifier name to middle truncate
         @param custom_limit uses a custom length as the max instead of the destination max length
+        @param conflict if there is a conflict between stream name and fields
+        @param conflict_level is the json_path level conflict happened
         """
         limit = custom_limit - 1 if custom_limit > 0 else self.get_name_max_length()
 
@@ -118,8 +122,11 @@ class DestinationNameTransformer:
             prefix = input_name[: limit - middle - 1]
             suffix = input_name[1 - middle :]
             # Add extra characters '__', signaling a truncate in identifier
-            print(f"Truncating {input_name} (#{len(input_name)}) to {prefix}__{suffix} (#{2 + len(prefix) + len(suffix)})")
-            input_name = f"{prefix}__{suffix}"
+            print(f"Truncating {input_name} (#{len(input_name)}) to {prefix}_{suffix} (#{2 + len(prefix) + len(suffix)})")
+            mid = "__"
+            if conflict:
+                mid = f"_{conflict_level}"
+            input_name = f"{prefix}{mid}{suffix}"
 
         return input_name
 
@@ -132,27 +139,35 @@ class DestinationNameTransformer:
 
     # Private methods
 
-    def __normalize_non_column_identifier_name(self, input_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
+    def __normalize_non_column_identifier_name(
+        self, input_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+    ) -> str:
         # We force standard naming for non column names (see issue #1785)
         result = transform_standard_naming(input_name)
         result = self.__normalize_naming_conventions(result)
         if truncate:
-            result = self.truncate_identifier_name(result)
+            result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         result = self.__normalize_identifier_case(result, is_quoted=False)
         return result
 
-    def __normalize_identifier_name(self, column_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
+    def __normalize_identifier_name(
+        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+    ) -> str:
         result = self.__normalize_naming_conventions(column_name)
         if truncate:
-            result = self.truncate_identifier_name(result)
+            result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         if self.needs_quotes(result):
             if self.destination_type.value != DestinationType.MYSQL.value:
                 result = result.replace('"', '""')
             else:
                 result = result.replace("`", "_")
             result = result.replace("'", "\\'")
-            result = f"adapter.quote('{result}')"
             result = self.__normalize_identifier_case(result, is_quoted=True)
+            if self.destination_type == DestinationType.ORACLE:
+                # Oracle dbt lib doesn't implemented adapter quote yet.
+                result = f"quote('{result}')"
+            else:
+                result = f"adapter.quote('{result}')"
             if not in_jinja:
                 result = jinja_call(result)
             return result
@@ -165,7 +180,9 @@ class DestinationNameTransformer:
 
     def __normalize_naming_conventions(self, input_name: str) -> str:
         result = input_name
-        if self.destination_type.value == DestinationType.BIGQUERY.value:
+        if self.destination_type.value == DestinationType.ORACLE.value:
+            return transform_standard_naming(result)
+        elif self.destination_type.value == DestinationType.BIGQUERY.value:
             result = transform_standard_naming(result)
             doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", result[0]) is not None
             if doesnt_start_with_alphaunderscore:
@@ -188,6 +205,14 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.MYSQL.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
+        elif self.destination_type.value == DestinationType.MSSQL.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
+        elif self.destination_type.value == DestinationType.ORACLE.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
+            else:
+                result = input_name.upper()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result

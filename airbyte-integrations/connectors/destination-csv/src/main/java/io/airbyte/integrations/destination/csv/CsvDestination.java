@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.csv;
@@ -71,10 +51,10 @@ public class CsvDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       FileUtils.forceMkdir(getDestinationPath(config).toFile());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
@@ -87,9 +67,9 @@ public class CsvDestination extends BaseConnector implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
@@ -127,7 +107,7 @@ public class CsvDestination extends BaseConnector implements Destination {
    * @param config - csv config object
    * @return absolute path with the relative path appended to the local volume mount.
    */
-  protected Path getDestinationPath(JsonNode config) {
+  protected Path getDestinationPath(final JsonNode config) {
     Path destinationPath = Paths.get(config.get(DESTINATION_PATH_FIELD).asText());
     Preconditions.checkNotNull(destinationPath);
 
@@ -151,7 +131,9 @@ public class CsvDestination extends BaseConnector implements Destination {
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public CsvConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
+    public CsvConsumer(final Map<String, WriteConfig> writeConfigs,
+                       final ConfiguredAirbyteCatalog catalog,
+                       final Consumer<AirbyteMessage> outputRecordCollector) {
       super(outputRecordCollector);
       this.catalog = catalog;
       LOGGER.info("initializing consumer.");
@@ -165,7 +147,7 @@ public class CsvDestination extends BaseConnector implements Destination {
     }
 
     @Override
-    protected void acceptTracked(AirbyteMessage message) throws Exception {
+    protected void acceptTracked(final AirbyteMessage message) throws Exception {
       if (message.getType() != Type.RECORD) {
         return;
       }
@@ -186,7 +168,7 @@ public class CsvDestination extends BaseConnector implements Destination {
 
     @Override
     public void commit() throws Exception {
-      for (WriteConfig writeConfig : writeConfigs.values()) {
+      for (final WriteConfig writeConfig : writeConfigs.values()) {
         writeConfig.getWriter().flush();
       }
     }
@@ -199,7 +181,7 @@ public class CsvDestination extends BaseConnector implements Destination {
         try {
           entries.getValue().getWriter().flush();
           entries.getValue().getWriter().close();
-        } catch (Exception e) {
+        } catch (final Exception e) {
           hasFailed = true;
           LOGGER.error("failed to close writer for: {}.", entries.getKey());
         }
@@ -232,7 +214,7 @@ public class CsvDestination extends BaseConnector implements Destination {
     private final Path tmpPath;
     private final Path finalPath;
 
-    public WriteConfig(CSVPrinter writer, Path tmpPath, Path finalPath) {
+    public WriteConfig(final CSVPrinter writer, final Path tmpPath, final Path finalPath) {
       this.writer = writer;
       this.tmpPath = tmpPath;
       this.finalPath = finalPath;
@@ -252,7 +234,7 @@ public class CsvDestination extends BaseConnector implements Destination {
 
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new CsvDestination()).run(args);
   }
 

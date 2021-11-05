@@ -1,0 +1,7 @@
+{
+  "client_id": "fake_client_id",
+  "client_secret": "fake_client_secret",
+  "refresh_token": "fake_refresh_token",
+  "environment": "Sandbox",
+  "start_date": "2021-07-12T00:00:00Z"
+}

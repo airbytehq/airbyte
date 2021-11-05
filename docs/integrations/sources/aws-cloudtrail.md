@@ -33,8 +33,7 @@ Insight events are not supported right now. Only Management events are available
 
 ### Performance considerations
 
-The rate of lookup requests for `events` stream is limited to two per second, per account, per region.
-This connector gracefully retries when encountering a throttling error. However if the errors continue repeatedly after multiple retries (for example if you setup many instances of this connector using the same account and region), the connector sync will fail.
+The rate of lookup requests for `events` stream is limited to two per second, per account, per region. This connector gracefully retries when encountering a throttling error. However if the errors continue repeatedly after multiple retries \(for example if you setup many instances of this connector using the same account and region\), the connector sync will fail.
 
 ## Getting started
 
@@ -48,11 +47,11 @@ This connector gracefully retries when encountering a throttling error. However 
 
 Please, follow this [steps](https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html) to get your AWS access key and secret.
 
-
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.2   | 2021-08-04 | [5152](https://github.com/airbytehq/airbyte/pull/5152) | Fix connector spec.json |
-| 0.1.1   | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
-| 0.1.0   | 2021-06-23 | [4122](https://github.com/airbytehq/airbyte/pull/4122) | Initial release supporting the LookupEvent API |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.2 | 2021-08-04 | [5152](https://github.com/airbytehq/airbyte/pull/5152) | Fix connector spec.json |
+| 0.1.1 | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| 0.1.0 | 2021-06-23 | [4122](https://github.com/airbytehq/airbyte/pull/4122) | Initial release supporting the LookupEvent API |
+

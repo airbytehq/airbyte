@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -29,12 +9,11 @@ from typing import Iterable
 from urllib.parse import urlparse
 
 import google
-import numpy as np
 import pandas as pd
 import smart_open
-from airbyte_protocol import AirbyteStream
+from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import AirbyteStream, SyncMode
 from azure.storage.blob import BlobServiceClient
-from base_python.entrypoint import logger
 from botocore import UNSIGNED
 from botocore.config import Config
 from genson import SchemaBuilder
@@ -359,7 +338,7 @@ class Client:
                 fields = set(fields) if fields else None
                 for df in self.load_dataframes(fp):
                     columns = fields.intersection(set(df.columns)) if fields else df.columns
-                    df = df.replace(np.nan, "NaN", regex=True)
+                    df = df.where(pd.notnull(df), None)
                     yield from df[columns].to_dict(orient="records")
 
     def _stream_properties(self):
@@ -372,7 +351,7 @@ class Client:
             for df in df_list:
                 for col in df.columns:
                     fields[col] = self.dtype_to_json_type(df[col].dtype)
-            return {field: {"type": fields[field]} for field in fields}
+            return {field: {"type": [fields[field], "null"]} for field in fields}
 
     @property
     def streams(self) -> Iterable:
@@ -383,4 +362,4 @@ class Client:
             "type": "object",
             "properties": self._stream_properties(),
         }
-        yield AirbyteStream(name=self.stream_name, json_schema=json_schema)
+        yield AirbyteStream(name=self.stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh])

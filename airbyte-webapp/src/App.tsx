@@ -10,9 +10,23 @@ import { theme } from "./theme";
 import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
 import ApiErrorBoundary from "./components/ApiErrorBoundary";
-import NotificationService from "components/hooks/services/Notification";
+import NotificationService from "hooks/services/Notification";
 import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
+import {
+  useCurrentWorkspace,
+  usePickFirstWorkspace,
+} from "hooks/services/useWorkspace";
+import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
+import { OnboardingServiceProvider } from "hooks/services/Onboarding";
+import { ServicesProvider } from "core/servicesProvider";
+import { useApiServices } from "core/defaultServices";
+import { envConfigProvider, windowConfigProvider } from "./config";
+import {
+  Config,
+  ConfigServiceProvider,
+  defaultConfig,
+  ValueProvider,
+} from "./config";
 
 function useCustomerIdProvider() {
   const workspace = useCurrentWorkspace();
@@ -20,27 +34,85 @@ function useCustomerIdProvider() {
   return workspace.customerId;
 }
 
+const Features: Feature[] = [
+  {
+    id: FeatureItem.AllowUploadCustomImage,
+  },
+  {
+    id: FeatureItem.AllowCustomDBT,
+  },
+  {
+    id: FeatureItem.AllowUpdateConnectors,
+  },
+];
+
+const StyleProvider: React.FC = ({ children }) => (
+  <ThemeProvider theme={theme}>
+    <GlobalStyle />
+    {children}
+  </ThemeProvider>
+);
+
+const I18NProvider: React.FC = ({ children }) => (
+  <IntlProvider locale="en" messages={en}>
+    {children}
+  </IntlProvider>
+);
+
+const StoreProvider: React.FC = ({ children }) => (
+  <CacheProvider>{children}</CacheProvider>
+);
+
+const configProviders: ValueProvider<Config> = [
+  envConfigProvider,
+  windowConfigProvider,
+];
+
+const services = {
+  currentWorkspaceProvider: usePickFirstWorkspace,
+  useCustomerIdProvider: useCustomerIdProvider,
+};
+
+const AppServices: React.FC = ({ children }) => (
+  <ServicesProvider inject={services}>
+    <ConfigServiceProvider
+      defaultConfig={defaultConfig}
+      providers={configProviders}
+    >
+      <ServiceOverrides>{children}</ServiceOverrides>
+    </ConfigServiceProvider>
+  </ServicesProvider>
+);
+
+const ServiceOverrides: React.FC = React.memo(({ children }) => {
+  useApiServices();
+  return <>{children}</>;
+});
+
 const App: React.FC = () => {
   return (
     <React.StrictMode>
-      <ThemeProvider theme={theme}>
-        <GlobalStyle />
-        <IntlProvider locale="en" messages={en}>
-          <CacheProvider>
+      <StyleProvider>
+        <I18NProvider>
+          <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
               <ApiErrorBoundary>
-                <NotificationService>
-                  <AnalyticsInitializer
-                    customerIdProvider={useCustomerIdProvider}
-                  >
-                    <Routing />
-                  </AnalyticsInitializer>
-                </NotificationService>
+                <FeatureService features={Features}>
+                  <NotificationService>
+                    <AppServices>
+                      <AnalyticsInitializer>
+                        <OnboardingServiceProvider>
+                          <Routing />
+                        </OnboardingServiceProvider>
+                      </AnalyticsInitializer>
+                    </AppServices>
+                  </NotificationService>
+                </FeatureService>
               </ApiErrorBoundary>
             </Suspense>
-          </CacheProvider>
-        </IntlProvider>
-      </ThemeProvider>
+          </StoreProvider>
+        </I18NProvider>
+      </StyleProvider>
     </React.StrictMode>
   );
 };
