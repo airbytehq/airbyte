@@ -30,7 +30,7 @@ public class SurveymonkeyOAuthFlowIntegrationTest extends OAuthFlowIntegrationTe
   protected static final String REDIRECT_URL = "http://localhost:3000/auth_flow";
 
   @Override
-  protected Path get_credentials_path() {
+  protected Path getCredentialsPath() {
     return CREDENTIALS_PATH;
   }
 

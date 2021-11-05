@@ -14,7 +14,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
@@ -98,31 +97,6 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
-  }
-
-  protected String formatConsentUrl(String clientId,
-                                    String redirectUrl,
-                                    String host,
-                                    String path,
-                                    String scope,
-                                    String responseType)
-      throws IOException {
-    final URIBuilder builder = new URIBuilder()
-        .setScheme("https")
-        .setHost(host)
-        .setPath(path)
-        // required
-        .addParameter("client_id", clientId)
-        .addParameter("redirect_uri", redirectUrl)
-        .addParameter("state", getState())
-        // optional
-        .addParameter("response_type", responseType)
-        .addParameter("scope", scope);
-    try {
-      return builder.build().toString();
-    } catch (URISyntaxException e) {
-      throw new IOException("Failed to format Consent URL for OAuth flow", e);
-    }
   }
 
   /**
@@ -235,6 +209,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
     } else {
       LOGGER.info("Oauth flow failed. Data received from server: {}", data);
       throw new IOException(String.format("Missing 'refresh_token' in query params from %s. Response: %s", accessTokenUrl));
+
     }
     return Map.of("credentials", result);
 
