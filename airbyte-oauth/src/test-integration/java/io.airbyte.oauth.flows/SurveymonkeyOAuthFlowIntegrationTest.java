@@ -36,7 +36,7 @@ public class SurveymonkeyOAuthFlowIntegrationTest extends OAuthFlowIntegrationTe
 
   @Override
   protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new SurveymonkeyOAuthFlow(configRepository);
+    return new SurveymonkeyOAuthFlow(configRepository, httpClient);
   }
 
   @BeforeEach

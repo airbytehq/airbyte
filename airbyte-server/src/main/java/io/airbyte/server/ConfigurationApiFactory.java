@@ -17,6 +17,8 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+
+import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
 import org.glassfish.hk2.api.Factory;
@@ -40,6 +42,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static Path workspaceRoot;
   private static String webappUrl;
   private static AirbyteVersion airbyteVersion;
+  private static HttpClient httpClient;
 
   public static void setValues(
                                final WorkflowServiceStubs temporalService,
@@ -57,7 +60,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
                                final LogConfigs logConfigs,
                                final String webappUrl,
                                final AirbyteVersion airbyteVersion,
-                               final Path workspaceRoot) {
+                               final Path workspaceRoot,
+                               final HttpClient httpClient) {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
@@ -74,6 +78,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.workspaceRoot = workspaceRoot;
     ConfigurationApiFactory.webappUrl = webappUrl;
     ConfigurationApiFactory.airbyteVersion = airbyteVersion;
+    ConfigurationApiFactory.httpClient = httpClient;
   }
 
   @Override
@@ -95,7 +100,9 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.logConfigs,
         ConfigurationApiFactory.webappUrl,
         ConfigurationApiFactory.airbyteVersion,
-        ConfigurationApiFactory.workspaceRoot);
+        ConfigurationApiFactory.workspaceRoot,
+        ConfigurationApiFactory.httpClient
+    );
   }
 
   @Override

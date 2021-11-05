@@ -37,7 +37,7 @@ public class FacebookOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
   @Override
   protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new FacebookMarketingOAuthFlow(configRepository);
+    return new FacebookMarketingOAuthFlow(configRepository, httpClient);
   }
 
   @BeforeEach

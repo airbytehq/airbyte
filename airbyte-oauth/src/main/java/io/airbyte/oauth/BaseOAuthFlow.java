@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseOAuthFlow.class);
-
+  private final Object lock = new Object();
   /**
    * Simple enum of content type strings and their respective encoding functions used for POSTing the
    * access token request
@@ -55,12 +55,12 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   }
 
-  protected final HttpClient httpClient;
+  protected static HttpClient HTTP_CLIENT;
   private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
   private final Supplier<String> stateSupplier;
 
-  public BaseOAuthFlow(final ConfigRepository configRepository) {
-    this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build(), BaseOAuthFlow::generateRandomState);
+  public BaseOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    this(configRepository, httpClient, BaseOAuthFlow::generateRandomState);
   }
 
   public BaseOAuthFlow(ConfigRepository configRepository, TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
@@ -79,7 +79,6 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
                        Supplier<String> stateSupplier,
                        TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
     super(configRepository);
-    this.httpClient = httpClient;
     this.stateSupplier = stateSupplier;
     this.tokenReqContentType = tokenReqContentType;
   }
@@ -161,7 +160,10 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         .header("Accept", "application/json")
         .build();
     try {
-      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      HttpResponse<String> response;
+      synchronized (lock){
+        response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+      }
       return extractRefreshToken(Jsons.deserialize(response.body()), accessTokenUrl);
     } catch (final InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);

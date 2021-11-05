@@ -17,6 +17,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthConfig;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,8 +39,8 @@ public class TrelloOAuthFlow extends BaseOAuthConfig {
   private static final OAuthHmacSigner signer = new OAuthHmacSigner();
   private final HttpTransport transport;
 
-  public TrelloOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public TrelloOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
     transport = new NetHttpTransport();
   }
 

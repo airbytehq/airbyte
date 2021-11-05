@@ -25,6 +25,7 @@ import io.airbyte.oauth.OAuthImplementationFactory;
 import io.airbyte.scheduler.persistence.job_tracker.TrackingMetadata;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -36,11 +37,13 @@ public class OAuthHandler {
 
   private final ConfigRepository configRepository;
   private final OAuthImplementationFactory oAuthImplementationFactory;
+  private final HttpClient httpClient;
   private final TrackingClient trackingClient;
 
-  public OAuthHandler(final ConfigRepository configRepository, final TrackingClient trackingClient) {
+  public OAuthHandler(final ConfigRepository configRepository, final HttpClient httpClient, final TrackingClient trackingClient) {
     this.configRepository = configRepository;
     this.oAuthImplementationFactory = new OAuthImplementationFactory(configRepository);
+    this.httpClient = httpClient;
     this.trackingClient = trackingClient;
   }
 

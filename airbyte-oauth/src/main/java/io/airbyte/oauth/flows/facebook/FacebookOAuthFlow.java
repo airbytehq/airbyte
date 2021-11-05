@@ -30,8 +30,8 @@ public abstract class FacebookOAuthFlow extends BaseOAuthFlow {
   private static final String ACCESS_TOKEN_URL = "https://graph.facebook.com/v12.0/oauth/access_token";
   private static final String AUTH_CODE_TOKEN_URL = "https://www.facebook.com/v12.0/dialog/oauth";
 
-  public FacebookOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public FacebookOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
@@ -111,7 +111,7 @@ public abstract class FacebookOAuthFlow extends BaseOAuthFlow {
           .GET()
           .uri(uri)
           .build();
-      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      final HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
       final JsonNode responseJson = Jsons.deserialize(response.body());
       Preconditions.checkArgument(responseJson.hasNonNull("access_token"), "%s response should have access_token", responseJson);
       return responseJson.get("access_token").asText();

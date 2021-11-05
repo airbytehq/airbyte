@@ -37,7 +37,7 @@ public class GithubOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
   @Override
   protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new GithubOAuthFlow(configRepository);
+    return new GithubOAuthFlow(configRepository, httpClient);
   }
 
   @Override
