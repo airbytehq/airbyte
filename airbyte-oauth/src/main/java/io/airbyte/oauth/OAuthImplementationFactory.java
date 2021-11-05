@@ -14,6 +14,7 @@ import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSheetsOAuthFlow;
+import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,21 +22,21 @@ public class OAuthImplementationFactory {
 
   private final Map<String, OAuthFlowImplementation> OAUTH_FLOW_MAPPING;
 
-  public OAuthImplementationFactory(final ConfigRepository configRepository) {
+  public OAuthImplementationFactory(final ConfigRepository configRepository, final HttpClient httpClient) {
     OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
-        .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository))
-        .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository))
-        .put("airbyte/source-facebook-pages", new FacebookPagesOAuthFlow(configRepository))
-        .put("airbyte/source-github", new GithubOAuthFlow(configRepository))
-        .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository))
-        .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository))
-        .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository))
-        .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository))
-        .put("airbyte/source-instagram", new InstagramOAuthFlow(configRepository))
-        .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository))
-        .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository))
-        .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
-        .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository))
+        .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-facebook-pages", new FacebookPagesOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-github", new GithubOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-instagram", new InstagramOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository, httpClient))
         .build();
   }
 

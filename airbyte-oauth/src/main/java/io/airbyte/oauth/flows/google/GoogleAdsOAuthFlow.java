@@ -16,8 +16,8 @@ public class GoogleAdsOAuthFlow extends GoogleOAuthFlow {
   @VisibleForTesting
   static final String SCOPE_URL = "https://www.googleapis.com/auth/adwords";
 
-  public GoogleAdsOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public GoogleAdsOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting

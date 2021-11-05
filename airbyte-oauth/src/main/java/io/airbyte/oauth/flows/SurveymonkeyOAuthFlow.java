@@ -26,8 +26,8 @@ public class SurveymonkeyOAuthFlow extends BaseOAuthFlow {
   private static final String AUTHORIZE_URL = "https://api.surveymonkey.com/oauth/authorize";
   private static final String ACCESS_TOKEN_URL = "https://api.surveymonkey.com/oauth/token";
 
-  public SurveymonkeyOAuthFlow(ConfigRepository configRepository) {
-    super(configRepository);
+  public SurveymonkeyOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting

@@ -23,8 +23,8 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
 
   private static final String ACCESS_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
-  public GoogleOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public GoogleOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting

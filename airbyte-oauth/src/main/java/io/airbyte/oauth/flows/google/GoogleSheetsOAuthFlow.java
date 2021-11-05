@@ -18,8 +18,8 @@ public class GoogleSheetsOAuthFlow extends GoogleOAuthFlow {
   @VisibleForTesting
   static final String SCOPE_URL = "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly";
 
-  public GoogleSheetsOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public GoogleSheetsOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting

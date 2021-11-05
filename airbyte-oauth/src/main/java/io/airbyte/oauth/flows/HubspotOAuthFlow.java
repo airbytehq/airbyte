@@ -19,8 +19,8 @@ public class HubspotOAuthFlow extends BaseOAuthFlow {
 
   private final String AUTHORIZE_URL = "https://app.hubspot.com/oauth/authorize";
 
-  public HubspotOAuthFlow(ConfigRepository configRepository) {
-    super(configRepository);
+  public HubspotOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   public HubspotOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {

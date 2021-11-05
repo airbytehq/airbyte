@@ -30,8 +30,8 @@ public abstract class FacebookOAuthFlow extends BaseOAuthFlow {
   private static final String ACCESS_TOKEN_URL = "https://graph.facebook.com/v12.0/oauth/access_token";
   private static final String AUTH_CODE_TOKEN_URL = "https://www.facebook.com/v12.0/dialog/oauth";
 
-  public FacebookOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public FacebookOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting

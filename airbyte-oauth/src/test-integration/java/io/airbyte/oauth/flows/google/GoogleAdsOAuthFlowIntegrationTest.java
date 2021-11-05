@@ -21,6 +21,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ public class GoogleAdsOAuthFlowIntegrationTest {
   private GoogleAdsOAuthFlow googleAdsOAuthFlow;
   private HttpServer server;
   private ServerHandler serverHandler;
+  private HttpClient httpClient;
 
   @BeforeEach
   public void setup() throws IOException {
@@ -51,7 +53,8 @@ public class GoogleAdsOAuthFlowIntegrationTest {
           "Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
-    googleAdsOAuthFlow = new GoogleAdsOAuthFlow(configRepository);
+    httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+    googleAdsOAuthFlow = new GoogleAdsOAuthFlow(configRepository, httpClient);
 
     server = HttpServer.create(new InetSocketAddress(80), 0);
     server.setExecutor(null); // creates a default executor

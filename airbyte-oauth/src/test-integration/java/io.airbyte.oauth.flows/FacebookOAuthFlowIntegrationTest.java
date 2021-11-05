@@ -17,6 +17,7 @@ import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.oauth.flows.OAuthFlowIntegrationTest;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -36,8 +37,8 @@ public class FacebookOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
   }
 
   @Override
-  protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new FacebookMarketingOAuthFlow(configRepository);
+  protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
+    return new FacebookMarketingOAuthFlow(configRepository, httpClient);
   }
 
   @BeforeEach
