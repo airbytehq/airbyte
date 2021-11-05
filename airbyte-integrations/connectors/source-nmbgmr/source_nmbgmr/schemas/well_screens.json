@@ -1,0 +1,12 @@
+{"$schema": "http://json-schema.org/draft-07/schema#",
+                          "type": "object",
+                          "properties": {"WellID": {"type": "string"},
+                                         "WDBID": {"type": "number"},
+                                         "PointID": {"type": "string"},
+                                         "counter": {"type": "number"},
+                                         "ScreenTop": {"type": "number"},
+                                         "ScreenBottom": {"type": "number"},
+                                         "ScreenDescription": {"type": ["null","string"]},
+                                         "OBJECTID": {"type": "number"},
+                                         "GlobalID": {"type": "string"}
+                                         }}

@@ -1,0 +1,16 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Nmbgmr Spec",
+    "type": "object",
+    "required": [],
+    "additionalProperties": false,
+    "properties": {
+      "none": {
+        "type": "string",
+        "description": "describe me"
+      }
+    }
+  }
+}
