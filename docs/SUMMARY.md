@@ -197,6 +197,7 @@
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)
   * [Code of Conduct](contributing-to-airbyte/code-of-conduct.md)
   * [Developing Locally](contributing-to-airbyte/developing-locally.md)
+  * [Developing on Docker](contributing-to-airbyte/developing-on-docker.md)
   * [Developing on Kubernetes](contributing-to-airbyte/developing-on-kubernetes.md)
   * [Monorepo Python Development](contributing-to-airbyte/monorepo-python-development.md)
   * [Code Style](contributing-to-airbyte/code-style.md)
