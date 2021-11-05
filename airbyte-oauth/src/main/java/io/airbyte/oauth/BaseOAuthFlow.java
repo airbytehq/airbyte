@@ -16,7 +16,6 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
-import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -55,19 +54,12 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   }
 
-  protected final HttpClient httpClient;
   private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
+  protected HttpClient httpClient;
   private final Supplier<String> stateSupplier;
 
-  public BaseOAuthFlow(final ConfigRepository configRepository) {
-    this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build(), BaseOAuthFlow::generateRandomState);
-  }
-
-  public BaseOAuthFlow(ConfigRepository configRepository, TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
-    this(configRepository,
-        HttpClient.newBuilder().version(Version.HTTP_1_1).build(),
-        BaseOAuthFlow::generateRandomState,
-        tokenReqContentType);
+  public BaseOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    this(configRepository, httpClient, BaseOAuthFlow::generateRandomState);
   }
 
   public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
@@ -161,7 +153,8 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         .header("Accept", "application/json")
         .build();
     try {
-      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      HttpResponse<String> response;
+      response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       return extractRefreshToken(Jsons.deserialize(response.body()), accessTokenUrl);
     } catch (final InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
@@ -235,7 +228,9 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   protected static String toJson(final Map<String, String> body) {
     final Gson gson = new Gson();
-    Type gsonType = new TypeToken<Map<String, String>>() {}.getType();
+    Type gsonType = new TypeToken<Map<String, String>>() {
+
+    }.getType();
     return gson.toJson(body, gsonType);
   }
 

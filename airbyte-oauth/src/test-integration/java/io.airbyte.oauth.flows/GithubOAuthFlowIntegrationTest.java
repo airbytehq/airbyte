@@ -16,6 +16,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -36,8 +37,8 @@ public class GithubOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
   }
 
   @Override
-  protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new GithubOAuthFlow(configRepository);
+  protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
+    return new GithubOAuthFlow(configRepository, httpClient);
   }
 
   @Override
