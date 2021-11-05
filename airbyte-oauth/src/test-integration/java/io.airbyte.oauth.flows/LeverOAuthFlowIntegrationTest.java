@@ -38,7 +38,7 @@ public class LeverOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
 
   @Override
-  protected Path get_credentials_path() {
+  protected Path getCredentialsPath() {
     return CREDENTIALS_PATH;
   }
 
