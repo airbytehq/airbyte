@@ -63,7 +63,7 @@ class SalesforceStream(HttpStream, ABC):
             selected_properties = {
                 key: value
                 for key, value in selected_properties.items()
-                if not (("format" in value and value["format"] == "base64") or "object" in value["type"])
+                if not (("format" in value and value["format"] == "base64") or ("object" in value["type"] and len(value["type"]) < 3))
             }
 
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
@@ -179,13 +179,7 @@ class BulkSalesforceStream(SalesforceStream):
             """
             Convert Jsonschema data types to Python data types.
             """
-            convert_types_map = {
-                "boolean": bool,
-                "string": str,
-                "number": float,
-                "integer": int,
-                "object": dict,
-            }
+            convert_types_map = {"boolean": bool, "string": str, "number": float, "integer": int, "object": dict, "array": list}
             return [convert_types_map[field_type] for field_type in field_types if field_type != "null"]
 
         for key, value in record.items():
@@ -279,7 +273,7 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
             selected_properties = {
                 key: value
                 for key, value in selected_properties.items()
-                if not (("format" in value and value["format"] == "base64") or "object" in value["type"])
+                if not (("format" in value and value["format"] == "base64") or ("object" in value["type"] and len(value["type"]) < 3))
             }
 
         stream_date = stream_state.get(self.cursor_field)
