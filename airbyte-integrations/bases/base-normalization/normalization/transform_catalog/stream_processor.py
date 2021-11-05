@@ -263,7 +263,7 @@ class StreamProcessor(object):
                 is_intermediate=False,
             )
         else:
-            if DestinationType.POSTGRES.value == self.destination_type:
+            if DestinationType.POSTGRES.value == self.destination_type.value:
                 # because of https://github.com/dbt-labs/docs.getdbt.com/issues/335, we have to use tables for postgres
                 forced_materialization_type = TableMaterializationType.TABLE
             else:
