@@ -11,7 +11,6 @@ import com.google.gson.reflect.TypeToken;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -25,7 +24,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,10 +110,10 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   @Override
   public Map<String, Object> completeSourceOAuth(
-      final UUID workspaceId,
-      final UUID sourceDefinitionId,
-      final Map<String, Object> queryParams,
-      final String redirectUrl)
+                                                 final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return completeOAuthFlow(
