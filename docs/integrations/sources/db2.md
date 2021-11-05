@@ -55,7 +55,7 @@ Your database user should now be ready for use with Airbyte.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.2 | 2021-11-05 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Updated unique DB2 types transformation |
+| 0.1.2 | 2021-11-05 | [7670](https://github.com/airbytehq/airbyte/pull/7670) | Updated unique DB2 types transformation |
 | 0.1.1 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
 | 0.1.0 | 2021-06-22 | [4197](https://github.com/airbytehq/airbyte/pull/4197) | New Source: IBM DB2 |
 
