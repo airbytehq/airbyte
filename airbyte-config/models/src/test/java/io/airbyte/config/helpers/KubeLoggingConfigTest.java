@@ -31,7 +31,8 @@ public class KubeLoggingConfigTest {
   public void cleanUpLogs() {
     if (logPath != null) {
       try {
-        LogClientSingleton.deleteLogs(new EnvConfigs(), logPath);
+        final EnvConfigs envConfigs = new EnvConfigs();
+        LogClientSingleton.getInstance().deleteLogs(envConfigs.getWorkerEnvironment(), envConfigs.getLogConfigs(), logPath);
       } catch (final Exception e) {
         // Ignore Minio delete error.
       }
@@ -47,9 +48,10 @@ public class KubeLoggingConfigTest {
    */
   @Test
   public void testLoggingConfiguration() throws IOException, InterruptedException {
+    final EnvConfigs envConfigs = new EnvConfigs();
     final var randPath = Strings.addRandomSuffix("-", "", 5);
     // This mirrors our Log4j2 set up. See log4j2.xml.
-    LogClientSingleton.setJobMdc(Path.of(randPath));
+    LogClientSingleton.getInstance().setJobMdc(envConfigs.getWorkerEnvironment(), envConfigs.getLogConfigs(), Path.of(randPath));
 
     final var toLog = List.of("line 1", "line 2", "line 3");
     for (final String l : toLog) {
@@ -64,7 +66,7 @@ public class KubeLoggingConfigTest {
     logPath = randPath + "/logs.log/";
     // The same env vars that log4j2 uses to determine where to publish to determine how to retrieve the
     // log file.
-    final var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), Path.of(logPath));
+    final var logs = LogClientSingleton.getInstance().getJobLogFile(envConfigs.getWorkerEnvironment(), envConfigs.getLogConfigs(), Path.of(logPath));
     // Each log line is of the form <time-stamp> <log-level> <log-message>. Further, there might be
     // other log lines from the system running. Join all the lines to simplify assertions.
     final var logsLine = Strings.join(logs, " ");
