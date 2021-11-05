@@ -99,7 +99,7 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
       try {
         cassandraCqlProvider.dropTableIfExists(v.getKeyspace(), v.getTempTableName());
       } catch (Exception e) {
-        LOGGER.error("Error while deleting temp table {} with reason: : ", v.getTempTableName(), e);
+        LOGGER.error("Error while deleting temp table {} with reason: ", v.getTempTableName(), e);
       }
     });
     cassandraCqlProvider.close();

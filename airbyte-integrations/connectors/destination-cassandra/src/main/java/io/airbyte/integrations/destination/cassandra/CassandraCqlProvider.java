@@ -127,7 +127,6 @@ class CassandraCqlProvider implements Closeable {
         keyspace, destinationTable, columnId, columnData, columnTimestamp);
 
     var insertStatement = cqlSession.prepare(insert);
-    // insertStatement.setConsistencyLevel(ConsistencyLevel.ONE);
 
     // perform full table scan in parallel using token ranges
     // optimal for copying large amounts of data
@@ -137,9 +136,8 @@ class CassandraCqlProvider implements Closeable {
         .stream()
         .flatMap(range -> range.unwrap().stream())
         .map(range -> selectStatement.bind(range.getStart(), range.getEnd()))
-        .map(selectBoundStatement -> Tuple.of(selectBoundStatement, insertStatement))
         // explore datastax 4.x async api as an alternative for async processing
-        .map(statements -> executorService.submit(() -> batchInsert(statements.value1(), statements.value2())))
+        .map(selectBoundStatement -> executorService.submit(() -> batchInsert(selectBoundStatement, insertStatement)))
         .forEach(this::awaitThread);
 
   }
