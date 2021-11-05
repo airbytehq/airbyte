@@ -379,8 +379,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                     restart_job = self._create_insights_job(params)
                     self.running_jobs.append(restart_job)
                     self.times_job_restarted[time_range] += 1
-
-                if job["async_status"] == "Job Failed":
+                elif job["async_status"] == "Job Failed":
                     raise JobTimeoutException(f"AdReportRun {job} failed after {runtime.in_seconds()} seconds.")
                 elif job["async_status"] == "Job Skipped":
                     raise JobTimeoutException(f"AdReportRun {job} skipped after {runtime.in_seconds()} seconds.")
