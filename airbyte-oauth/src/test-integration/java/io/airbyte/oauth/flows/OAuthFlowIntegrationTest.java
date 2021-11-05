@@ -14,6 +14,7 @@ import io.airbyte.oauth.OAuthFlowImplementation;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ public abstract class OAuthFlowIntegrationTest {
   protected static final String REDIRECT_URL = "http://localhost/auth_flow";
   protected static final int SERVER_LISTENING_PORT = 80;
 
+  protected HttpClient httpClient;
   protected ConfigRepository configRepository;
   protected OAuthFlowImplementation flow;
   protected HttpServer server;
@@ -42,7 +44,7 @@ public abstract class OAuthFlowIntegrationTest {
     return Path.of("secrets/config.json");
   };
 
-  protected abstract OAuthFlowImplementation getFlowObject(ConfigRepository configRepository);
+  protected abstract OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient);
 
   @BeforeEach
   public void setup() throws IOException {
@@ -51,8 +53,8 @@ public abstract class OAuthFlowIntegrationTest {
           "Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
-
-    flow = this.getFlowObject(configRepository);
+    httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+    flow = this.getFlowImplementation(configRepository, httpClient);
 
     System.out.println(getServerListeningPort());
     server = HttpServer.create(new InetSocketAddress(getServerListeningPort()), 0);

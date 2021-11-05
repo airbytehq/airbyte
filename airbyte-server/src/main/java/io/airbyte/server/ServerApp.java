@@ -51,6 +51,7 @@ import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -229,6 +230,8 @@ public class ServerApp implements ServerRunnable {
         jobPersistence,
         configs);
 
+    final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
 
@@ -249,7 +252,8 @@ public class ServerApp implements ServerRunnable {
           configs.getLogConfigs(),
           configs.getWebappUrl(),
           configs.getAirbyteVersion(),
-          configs.getWorkspaceRoot());
+          configs.getWorkspaceRoot(),
+          httpClient);
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);
