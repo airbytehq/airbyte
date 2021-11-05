@@ -79,6 +79,7 @@ class TplcentralStream(HttpStream, ABC):
 
 
 class StockSummaries(TplcentralStream):
+    # https://api.3plcentral.com/rels/inventory/stocksummaries
     collection_field = "Summaries"
     primary_key = ["facility_id", "_item_identifier_id"]
     page_size = 500
@@ -97,6 +98,7 @@ class StockSummaries(TplcentralStream):
 
 
 class Customers(TplcentralStream):
+    # https://api.3plcentral.com/rels/customers/customers
     upstream_primary_key = "ReadOnly.CustomerId"
     collection_field = "ResourceList"
     page_size = 100
@@ -140,6 +142,7 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
 
 
 class Items(IncrementalTplcentralStream):
+    # https://api.3plcentral.com/rels/customers/items
     upstream_primary_key = "ItemId"
     upstream_cursor_field = "ReadOnly.LastModifiedDate"
     collection_field = "ResourceList"
@@ -166,6 +169,7 @@ class Items(IncrementalTplcentralStream):
 
 
 class StockDetails(IncrementalTplcentralStream):
+    # https://api.3plcentral.com/rels/inventory/stockdetails
     upstream_primary_key = "ReceiveItemId"
     upstream_cursor_field = "ReceivedDate"
     collection_field = "ResourceList"
@@ -198,6 +202,7 @@ class StockDetails(IncrementalTplcentralStream):
 
 
 class Inventory(IncrementalTplcentralStream):
+    # https://api.3plcentral.com/rels/inventory/inventory
     upstream_primary_key = "ReceiveItemId"
     upstream_cursor_field = "ReceivedDate"
     collection_field = "ResourceList"
@@ -243,6 +248,7 @@ class Inventory(IncrementalTplcentralStream):
 
 
 class Orders(IncrementalTplcentralStream):
+    # https://api.3plcentral.com/rels/orders/orders
     upstream_primary_key = "ReadOnly.OrderId"
     upstream_cursor_field = "ReadOnly.LastModifiedDate"
     collection_field = "ResourceList"
