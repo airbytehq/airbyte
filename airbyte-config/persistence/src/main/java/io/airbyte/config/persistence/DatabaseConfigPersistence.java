@@ -366,7 +366,14 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       final ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
       final JsonNode currentDefinition = connectorInfo.definition;
-      final Set<String> newFields = getNewFields(currentDefinition, latestDefinition);
+
+      // todo (lmossman) - this logic to remove the "spec" field is temporary; it is necessary to avoid
+      // breaking users who are actively using an old connector version, otherwise specs from the most
+      // recent connector versions may be inserted into the db which could be incompatible with the
+      // version they are actually using.
+      // Once the faux major version bump has been merged, this "new field" logic will be removed
+      // entirely.
+      final Set<String> newFields = Sets.difference(getNewFields(currentDefinition, latestDefinition), Set.of("spec"));
 
       // Process connector in use
       if (connectorRepositoriesInUse.contains(repository)) {
