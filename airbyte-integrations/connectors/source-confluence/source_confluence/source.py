@@ -82,6 +82,7 @@ class Pages(BaseContentStream):
     """
     API documentation: https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get
     """
+
     content_type = "page"
 
 
@@ -89,6 +90,7 @@ class BlogPosts(BaseContentStream):
     """
     API documentation: https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get
     """
+
     content_type = "blogpost"
 
 
@@ -96,6 +98,7 @@ class Space(ConfluenceStream):
     """
     API documentation: https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get
     """
+
     api_name = "space"
     expand = ["permissions", "icon", "description.plain", "description.view"]
 
@@ -104,6 +107,7 @@ class Group(ConfluenceStream):
     """
     API documentation: https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get
     """
+
     api_name = "group"
 
 
@@ -111,6 +115,7 @@ class Audit(ConfluenceStream):
     """
     API documentation: https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/#api-wiki-rest-api-audit-get
     """
+
     primary_key = "author"
     api_name = "audit"
     limit = 1000
