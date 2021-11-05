@@ -176,7 +176,7 @@ services:
       - OPENREPLAY=${OPENREPLAY:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
   airbyte-temporal:
-    image: airbyte/temporal-migration:${VERSION}
+    image: airbyte/temporal:${VERSION}
     logging: *default-logging
     container_name: airbyte-temporal
     restart: unless-stopped
