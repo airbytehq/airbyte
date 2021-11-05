@@ -12,7 +12,9 @@ from http import HTTPStatus
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
+from base_python.logger import AirbyteLogger
 import pendulum as pendulum
+from pydantic.fields import Schema
 import requests
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from base_python.entrypoint import logger
@@ -316,7 +318,7 @@ class Stream(ABC):
     def _filter_old_records(self, records: Iterable) -> Iterable:
         """Skip records that was updated before our start_date"""
         for record in records:
-            updated_at = record[self.updated_at_field]
+            updated_at = record.get(self.updated_at_field) or None
             if updated_at:
                 updated_at = self._field_to_datetime(updated_at)
                 if updated_at < self._start_date:
@@ -735,31 +737,36 @@ class PropertyHistoryStream(Stream):
 class FormSubmssionStream(Stream):
     url = "/form-integrations/v1/submissions/forms"
     limit = 50
-    updated_at_field = "updatedAt"
-    created_at_field = "createdAt"
+    updated_at_field = "submittedAt"
+    created_at_field = "submittedAt"
     page_field = "paging"
     page_filter = "after"
 
     ## TODO: Add Dynamic Properties
-    ## TODO: Form GUID as value
+    ## TODO: Test Get User ID into submit
+    
     def list(self, fields) -> Iterable:
         params = {
             "limit": 50,
         }
-        forms = self._api.get(url="/marketing/v3/forms")["results"]
+        forms = self.read(partial(self._api.get, url="/marketing/v3/forms"), params)
         for row in forms:
-            self.updated_at_field = "submittedAt"
-            self.created_at_field = "submittedAt"
-            yield from self.read(partial(self._api.get, url=f"{self.url}/{row['id']}"), params)
+            record = self.read(partial(self._api.get, url=f"{self.url}/{row['id']}"), params)
+            for entry in record:
+                entry["form_guid"] = row["id"]
+                yield entry
+
 
     def _transform(self, records: Iterable) -> Iterable:
         for record in records:
             values: dict = record.get("values") or None
+            record["values"] = {}
             if values:
+                record["submittedAt"] = self._field_to_datetime(record["submittedAt"]).to_datetime_string()
                 for value_dict in values:
                     _temp_form_entry = {value_dict["name"]: value_dict["value"]}
-                    record.update(_temp_form_entry)
-                record.pop("values")
+                    record["values"].update(_temp_form_entry)
+                
             yield record
 
 

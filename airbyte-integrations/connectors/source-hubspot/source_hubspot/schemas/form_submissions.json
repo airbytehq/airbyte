@@ -3,6 +3,13 @@
     "type": ["null", "object"],
     "properties": {
       "submittedAt": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "values": {
+        "type": ["null", "object"]
+      },
+      "form_guid":{
         "type": ["null", "string"]
       }
     }
