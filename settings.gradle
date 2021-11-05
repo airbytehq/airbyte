@@ -62,6 +62,8 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-scheduler:app'
     include ':airbyte-scheduler:client'
     include ':airbyte-server'
+    include 'airbyte-temporal'
+    include 'airbyte-temporal-migration'
     include ':airbyte-tests'
     include ':airbyte-webapp'
 }
