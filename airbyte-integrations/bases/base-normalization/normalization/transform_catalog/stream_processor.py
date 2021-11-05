@@ -1009,7 +1009,7 @@ where 1 = 1
             if partition_by == PartitionScheme.ACTIVE_ROW:
                 config["indexes"] = "[{'columns':['_airbyte_active_row','_airbyte_unique_key','_airbyte_emitted_at'],'type': 'btree'}]"
             elif partition_by == PartitionScheme.UNIQUE_KEY:
-                config["indexes"] = "[{'columns':['_airbyte_unique_key','_airbyte_emitted_at'],'type': 'btree'}]"
+                config["indexes"] = "[{'columns':['_airbyte_unique_key'],'unique':True}]"
             else:
                 config["indexes"] = "[{'columns':['_airbyte_emitted_at'],'type':'hash'}]"
         elif self.destination_type == DestinationType.REDSHIFT:
