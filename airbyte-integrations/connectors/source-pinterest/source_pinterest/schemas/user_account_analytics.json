@@ -3,76 +3,40 @@
   "type": "object",
   "properties": {
     "data_status": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "date": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "metrics": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "ENGAGEMENT": {
-          "type": [
-            "null",
-            "number"
-          ]
+          "type": ["null", "number"]
         },
         "CLICKTHROUGH_RATE": {
-          "type": [
-            "null",
-            "number"
-          ]
+          "type": ["null", "number"]
         },
         "CLICKTHROUGH": {
-          "type": [
-            "null",
-            "number"
-          ]
+          "type": ["null", "number"]
         },
         "CLOSEUP": {
-          "type": [
-            "null",
-            "number"
-          ]
+          "type": ["null", "number"]
         },
         "CLOSEUP_RATE": {
-          "type": [
-            "null",
-            "number"
-          ]
+          "type": ["null", "number"]
         },
         "ENGAGEMENT_RATE": {
-          "type": [
-            "null",
-            "number"
-          ]
+          "type": ["null", "number"]
         },
         "SAVE": {
-          "type": [
-            "null",
-            "number"
-          ]
+          "type": ["null", "number"]
         },
         "SAVE_RATE": {
-          "type": [
-            "null",
-            "number"
-          ]
+          "type": ["null", "number"]
         },
         "IMPRESSION": {
-          "type": [
-            "null",
-            "number"
-          ]
+          "type": ["null", "number"]
         }
       }
     }

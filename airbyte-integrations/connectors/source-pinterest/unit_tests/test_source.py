@@ -4,18 +4,35 @@
 
 from unittest.mock import MagicMock
 
+import responses
 from source_pinterest.source import SourcePinterest
 
 
-def test_check_connection(mocker):
-    source = SourcePinterest()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
+def setup_responses():
+    responses.add(
+        responses.POST,
+        "https://api.pinterest.com/v5/oauth/token",
+        json={"access_token": "fake_access_token", "expires_in": 3600},
+    )
+    responses.add(
+        responses.GET,
+        "https://api.pinterest.com/v5/user_account",
+        json={},
+    )
 
 
-def test_streams(mocker):
+@responses.activate
+def test_check_connection(test_config):
+    setup_responses()
     source = SourcePinterest()
-    config_mock = MagicMock()
-    streams = source.streams(config_mock)
+    logger_mock = MagicMock()
+    assert source.check_connection(logger_mock, test_config) == (True, None)
+
+
+@responses.activate
+def test_streams(test_config):
+    setup_responses()
+    source = SourcePinterest()
+    streams = source.streams(test_config)
     expected_streams_number = 13
     assert len(streams) == expected_streams_number

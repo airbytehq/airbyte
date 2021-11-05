@@ -5,11 +5,11 @@
 
 from abc import ABC
 from base64 import standard_b64encode
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
-from datetime import datetime
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -44,8 +44,7 @@ class PinterestStream(HttpStream, ABC):
             return {"bookmark": next_page}
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
@@ -76,7 +75,7 @@ class PinterestStream(HttpStream, ABC):
 
 class PinterestSubStream(HttpSubStream):
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
@@ -116,8 +115,7 @@ class BoardSectionPins(PinterestSubStream, PinterestStream):
 
 
 class IncrementalPinterestStream(PinterestStream, ABC):
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-            Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_state = latest_record.get(self.cursor_field, self.start_date)
         current_state = current_stream_state.get(self.cursor_field, self.start_date)
 
@@ -126,9 +124,9 @@ class IncrementalPinterestStream(PinterestStream, ABC):
 
         return {self.cursor_field: max(latest_state, current_state)}
 
-    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] = None,
-                      stream_state: Mapping[str, Any] = None) -> Iterable[
-        Optional[Mapping[str, any]]]:
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
         """
         Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
         Returns list of dict, example: [{
@@ -159,15 +157,15 @@ class IncrementalPinterestStream(PinterestStream, ABC):
         start_date = min(start_date, end_date)
         date_slices = []
 
-        while start_date <= end_date:
+        while start_date < end_date:
             # the amount of days for each data-chunk begining from start_date
             end_date_slice = start_date.add(days=self.window_in_days)
-            date_slice = {"start_date": to_datetime_str(start_date), "end_date": to_datetime_str(end_date_slice)}
-
-            yield date_slice
+            date_slices.append({"start_date": to_datetime_str(start_date), "end_date": to_datetime_str(end_date_slice)})
 
             # add 1 day for start next slice from next day and not duplicate data from previous slice end date.
             start_date = end_date_slice.add(days=1)
+
+        return date_slices
 
 
 class IncrementalPinterestSubStream(IncrementalPinterestStream):
@@ -179,7 +177,7 @@ class IncrementalPinterestSubStream(IncrementalPinterestStream):
         self.with_data_slices = with_data_slices
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         date_slices = super().stream_slices(sync_mode, cursor_field, stream_state) if self.with_data_slices else [{}]
         parents_slices = PinterestSubStream.stream_slices(self, sync_mode, cursor_field, stream_state) if self.parent else [{}]
@@ -187,6 +185,7 @@ class IncrementalPinterestSubStream(IncrementalPinterestStream):
         for parents_slice in parents_slices:
             for date_slice in date_slices:
                 parents_slice.update(date_slice)
+
                 yield parents_slice
 
 
@@ -200,22 +199,24 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 429:
             self.logger.error(f"For stream {self.name} rate limit exceeded.")
-            setattr(self, 'raise_on_http_errors', False)
+            setattr(self, "raise_on_http_errors", False)
         return 500 <= response.status_code < 600
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        params.update({"start_date": stream_slice["start_date"],
-                       "end_date": stream_slice["end_date"],
-                       "granularity": self.granularity,
-                       "columns": analytics_columns
-                       })
+        params.update(
+            {
+                "start_date": stream_slice["start_date"],
+                "end_date": stream_slice["end_date"],
+                "granularity": self.granularity,
+                "columns": analytics_columns,
+            }
+        )
 
         if self.analytics_target_ids:
-            params.update({self.analytics_target_ids: stream_slice['parent']['id']})
+            params.update({self.analytics_target_ids: stream_slice["parent"]["id"]})
 
         return params
 
@@ -288,15 +289,15 @@ class AdAnalytics(PinterestAnalyticsStream):
 class SourcePinterest(AbstractSource):
     @staticmethod
     def get_authenticator(config):
-        user_pass = (config.get("client_id") + ":" + config.get("client_secret")).encode('ascii')
-        auth = "Basic " + standard_b64encode(user_pass).decode('ascii')
+        user_pass = (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii")
+        auth = "Basic " + standard_b64encode(user_pass).decode("ascii")
 
         return Oauth2Authenticator(
             token_refresh_endpoint=f"{PinterestStream.url_base}oauth/token",
             client_secret=config.get("client_secret"),
             client_id=config.get("client_id"),
             refresh_access_token_headers={"Authorization": auth},
-            refresh_token=config.get("refresh_token")
+            refresh_token=config.get("refresh_token"),
         )
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -325,5 +326,5 @@ class SourcePinterest(AbstractSource):
             Boards(config),
             CampaignAnalytics(Campaigns(AdAccounts(config), with_data_slices=False, config=config), config=config),
             Campaigns(AdAccounts(config), config=config),
-            UserAccountAnalytics(None, config=config)
+            UserAccountAnalytics(None, config=config),
         ]
