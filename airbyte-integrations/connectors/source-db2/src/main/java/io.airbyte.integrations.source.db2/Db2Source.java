@@ -55,4 +55,5 @@ public class Db2Source extends AbstractJdbcSource implements Source {
   protected JdbcSourceOperations getSourceOperations() {
     return new Db2SourceOperations();
   }
+
 }

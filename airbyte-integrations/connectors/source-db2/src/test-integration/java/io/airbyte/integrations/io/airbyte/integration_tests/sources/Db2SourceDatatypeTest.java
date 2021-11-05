@@ -159,14 +159,14 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addInsertValues("null", "0", "DECFLOAT(10E+307, 34)", "DECFLOAT(10E-307, 34)")
             .addExpectedValues(null, "0", "1E+308", "1E-306")
             .build());
-     addDataTypeTestData(
-         TestDataHolder.builder()
-              .createTablePatternSql(CREATE_TABLE_SQL)
-              .sourceType("DECFLOAT")
-              .airbyteType(JsonSchemaPrimitive.NUMBER)
-              .addInsertValues("SNaN", "NaN", "Infinity", "-Infinity")
-              .addExpectedValues("NaN", "NaN", "Infinity", "-Infinity")
-              .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .sourceType("DECFLOAT")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("SNaN", "NaN", "Infinity", "-Infinity")
+            .addExpectedValues("NaN", "NaN", "Infinity", "-Infinity")
+            .build());
 
     // Boolean values
     addDataTypeTestData(
