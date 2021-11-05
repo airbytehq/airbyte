@@ -1,38 +1,18 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 from abc import ABC
+from base64 import b64encode
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-from base64 import b64encode
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+
 
 # Basic full refresh stream
 class CommercetoolsStream(HttpStream, ABC):
@@ -56,8 +36,8 @@ class CommercetoolsStream(HttpStream, ABC):
         json_response = response.json()
         total = json_response.get("total", 0)
         offset = json_response.get("offset", 0)
-        if offset+self.limit < total:
-            return dict(offset=offset+self.limit)
+        if offset + self.limit < total:
+            return dict(offset=offset + self.limit)
         else:
             return None
 
@@ -74,7 +54,7 @@ class CommercetoolsStream(HttpStream, ABC):
         params = {"offset": self.offset, "limit": self.limit}
         if next_page_token:
             params.update(**next_page_token)
-        params.update({"sort":"lastModifiedAt asc"})
+        params.update({"sort": "lastModifiedAt asc"})
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -85,7 +65,6 @@ class CommercetoolsStream(HttpStream, ABC):
 
 # Basic incremental stream
 class IncrementalCommercetoolsStream(CommercetoolsStream, ABC):
-
     @property
     def limit(self):
         return super().limit
@@ -112,12 +91,12 @@ class IncrementalCommercetoolsStream(CommercetoolsStream, ABC):
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
         # Getting records >= state
-       if stream_state:
-           for record in records_slice:
-               if record[self.cursor_field] >= stream_state.get(self.cursor_field):
-                   yield record
-       else:
-           yield from records_slice
+        if stream_state:
+            for record in records_slice:
+                if record[self.cursor_field] >= stream_state.get(self.cursor_field):
+                    yield record
+        else:
+            yield from records_slice
 
 
 class Customers(IncrementalCommercetoolsStream):
@@ -142,58 +121,58 @@ class Products(IncrementalCommercetoolsStream):
 
 # Source
 class SourceCommercetools(AbstractSource):
-
     def _convert_auth_to_token(self, username: str, password: str) -> str:
         username = username.encode("latin1")
         password = password.encode("latin1")
         token = b64encode(b":".join((username, password))).strip().decode("ascii")
         return token
 
-    def get_access_token(self, config)-> Tuple[str, any]:
+    def get_access_token(self, config) -> Tuple[str, any]:
         region = config["region"]
         project_key = config["project_key"]
-        url = f"https://auth.{region}.commercetools.com/oauth/token?grant_type=client_credentials&scope=manage_project:{project_key} manage_api_clients:{project_key} view_api_clients:{project_key} view_audit_log:{project_key}"
-        auth =  TokenAuthenticator(token=self._convert_auth_to_token(config["client_id"], config["client_secret"]), auth_method="Basic").get_auth_header()
+        url = f"https://auth.{region}.gcp.commercetools.com/oauth/token?grant_type=client_credentials&scope=manage_project:{project_key} manage_api_clients:{project_key} view_api_clients:{project_key} view_audit_log:{project_key}"
+        auth = TokenAuthenticator(
+            token=self._convert_auth_to_token(config["client_id"], config["client_secret"]), auth_method="Basic"
+        ).get_auth_header()
         try:
             response = requests.post(url, headers=auth)
             response.raise_for_status()
             json_response = response.json()
-            return json_response.get("access_token", None),None if json_response is not None else None,None
+            return json_response.get("access_token", None), None if json_response is not None else None, None
         except requests.exceptions.RequestException as e:
-            return None,e
+            return None, e
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         region = config["region"]
         project_key = config["project_key"]
-        url = f"https://api.{region}.commercetools.com/{project_key}"
+        url = f"https://api.{region}.gcp.commercetools.com/{project_key}"
         access_token = self.get_access_token(config)
         token_value = access_token[0]
         token_exception = access_token[1]
 
-        if token_exception :
-            return  False,token_exception
+        if token_exception:
+            return False, token_exception
 
-        if token_value :
+        if token_value:
             auth = TokenAuthenticator(token=token_value).get_auth_header()
             try:
                 response = requests.get(url, headers=auth)
                 response.raise_for_status()
                 return True, None
             except requests.exceptions.RequestException as e:
-                return False,e
+                return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
-        region = config["region"]
-        project_key = config["project_key"]
         access_token = self.get_access_token(config)
         auth = TokenAuthenticator(token=access_token[0])
-        args = {"authenticator": auth, "region": config["region"], "project_key": config["project_key"], "start_date": config["start_date"], "client_id": config["client_id"], "client_secret":config["client_secret"]}
+        args = {
+            "authenticator": auth,
+            "region": config["region"],
+            "project_key": config["project_key"],
+            "start_date": config["start_date"],
+            "client_id": config["client_id"],
+            "client_secret": config["client_secret"],
+        }
 
-        return [
-                    Customers(**args),
-                    Orders(**args),
-                    DiscountCodes(**args),
-                    Payments(**args),
-                    Products(**args)
-                ]
+        return [Customers(**args), Orders(**args), DiscountCodes(**args), Payments(**args), Products(**args)]
