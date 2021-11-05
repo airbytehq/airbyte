@@ -73,12 +73,15 @@ class TemporalAttemptExecutionTest {
 
     attemptExecution = new TemporalAttemptExecution<>(
         workspaceRoot,
+        configs.getWorkerEnvironment(), configs.getLogConfigs(),
         JOB_RUN_CONFIG, execution,
         () -> "",
         mdcSetter,
         mock(CancellationHandler.class),
-        () -> "workflow_id",
-        configs);
+        SOURCE_USERNAME,
+        SOURCE_PASSWORD,
+        container.getJdbcUrl(),
+        () -> "workflow_id", configs.getAirbyteVersionOrWarning());
   }
 
   @AfterAll

@@ -20,48 +20,63 @@
         "customerId": {
           "type": "string"
         }
-      },
-      "required": ["time", "uniqQualifier", "applicationName", "customerId"]
+      }
+    },
+    "etag": {
+      "type": ["string"]
     },
     "actor": {
       "type": "object",
       "properties": {
-        "callerType": {
-          "type": "string"
-        },
         "email": {
           "type": "string"
         },
         "profileId": {
           "type": "string"
-        },
-        "key": {
-          "type": "string"
         }
-      },
-      "required": ["callerType", "email", "profileId", "key"]
-    },
-    "ownerDomain": {
-      "type": "string"
+      }
     },
     "ipAddress": {
       "type": "string"
     },
     "events": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "parameters": {
-              "type": "array",
-              "items": [
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "intValue": {
+                      "type": "string"
+                    }
+                  }
+                },
                 {
                   "type": "object",
                   "properties": {
@@ -71,8 +86,7 @@
                     "boolValue": {
                       "type": "boolean"
                     }
-                  },
-                  "required": ["name", "boolValue"]
+                  }
                 },
                 {
                   "type": "object",
@@ -80,66 +94,22 @@
                     "name": {
                       "type": "string"
                     },
-                    "boolValue": {
-                      "type": "boolean"
+                    "multiValue": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
                     }
-                  },
-                  "required": ["name", "boolValue"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "value"]
+                  }
                 }
               ]
             }
-          },
-          "required": ["type", "name", "parameters"]
+          }
         }
-      ]
+      }
+    },
+    "time": {
+      "type": "string"
     }
   }
 }

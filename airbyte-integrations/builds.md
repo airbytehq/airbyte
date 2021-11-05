@@ -57,6 +57,7 @@
 | OneSignal   | [![source-onesignal](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-onesignal%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-onesignal) |
 | Oracle DB   | [![source-oracle](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-oracle%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-oracle) |
 | Paypal Transaction   | [![paypal-transaction](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-paypal-transaction%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-paypal-transaction) |
+| Paystack   | [![source-paystack](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-paystack%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-paystack) |
 | Pipedrive   | [![source-pipedrive](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-pipedrive%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-pipedrive) |
 | Plaid   | [![source-plaid](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-plaid%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-plaid) |
 | Postgres   | [![source-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-postgres%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-postgres) |
@@ -71,6 +72,7 @@
 | Salesforce   | [![source-salesforce](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-salesforce%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-salesforce) |
 | Salesloft   | [![source-salesloft](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-salesloft%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-salesloft) |
 | Sendgrid   | [![source-sendgrid](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-sendgrid%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-sendgrid) |
+| Sentry   | [![source-sentry](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-sentry%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-sentry) |
 | Shopify   | [![source-shopify](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-shopify%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-shopify) |
 | Slack   | [![source-slack](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-slack%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-slack) |
 | Smartsheets   | [![source-smartsheets](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-smartsheets%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-smartsheets) |
@@ -98,6 +100,7 @@
 | Azure Blob Storage | [![destination-azure-blob-storage](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-azure-blob-storage%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-azure-blob-storage) |
 | BigQuery   | [![destination-bigquery](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-bigquery%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-bigquery) |
 | Databricks | (Temporarily Not Available) |
+| Elasticsearch | (Temporarily Not Available) |
 | Google Cloud Storage (GCS) | [![destination-gcs](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-gcs%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-gcs) |
 | Google PubSub   | [![destination-pubsub](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-pubsub%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-pubsub) |
 | Kafka   | [![destination-kafka](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-kafka%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-kafka) |

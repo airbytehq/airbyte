@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "properties": {
+    "campaignId": { "type": "string" },
+    "trend": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "day": { "type": "string" },
+          "promoters": { "type": "number" },
+          "passives": { "type": "number" },
+          "detractors": { "type": "number" },
+          "total": { "type": "number" },
+          "score": { "type": "number" }
+        }
+      }
+    },
+    "last": {
+      "type": "object",
+      "properties": {
+        "promoters": { "type": "number" },
+        "passives": { "type": "number" },
+        "detractors": { "type": "number" },
+        "total": { "type": "number" },
+        "score": { "type": "number" }
+      }
+    },
+    "deliveryStats": {
+      "type": "object",
+      "properties": {
+        "totalCount": { "type": "number" },
+        "opened": { "type": "number" },
+        "responded": { "type": "number" },
+        "optedOut": { "type": "number" },
+        "isBounced": { "type": "number" }
+      }
+    }
+  }
+}

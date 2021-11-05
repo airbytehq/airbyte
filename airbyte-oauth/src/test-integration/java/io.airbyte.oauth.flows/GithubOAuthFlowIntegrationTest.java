@@ -31,7 +31,7 @@ public class GithubOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
   protected static final int SERVER_LISTENING_PORT = 8000;
 
   @Override
-  protected Path get_credentials_path() {
+  protected Path getCredentialsPath() {
     return CREDENTIALS_PATH;
   }
 
