@@ -109,7 +109,8 @@ class IscSevenRiversStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield response.json()
+
+        yield from response.json()['data']
 
 
 

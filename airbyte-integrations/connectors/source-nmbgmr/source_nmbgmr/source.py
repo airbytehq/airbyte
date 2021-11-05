@@ -109,7 +109,7 @@ class NmbgmrStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {'data': response.json()}
+        yield from response.json()
 
 # class Sites(NmbgmrStream):
 #     """
