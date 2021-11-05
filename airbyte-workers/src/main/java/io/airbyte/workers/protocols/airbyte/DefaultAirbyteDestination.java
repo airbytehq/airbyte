@@ -33,10 +33,9 @@ import org.slf4j.LoggerFactory;
 public class DefaultAirbyteDestination implements AirbyteDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteDestination.class);
-  private static final MdcScope CONTAINER_LOG_MDC = new Builder()
+  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("destination")
-      .setPrefixColor(Color.MAGENTA)
-      .build();
+      .setPrefixColor(Color.MAGENTA);
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
@@ -48,7 +47,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private Iterator<AirbyteMessage> messageIterator = null;
 
   public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC));
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER));
 
   }
 
@@ -70,7 +69,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
         Jsons.serialize(destinationConfig.getCatalog()));
     // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination", CONTAINER_LOG_MDC);
+    LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination", CONTAINER_LOG_MDC_BUILDER);
 
     writer = new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8));
 
