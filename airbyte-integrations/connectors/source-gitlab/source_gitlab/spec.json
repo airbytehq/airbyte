@@ -44,10 +44,7 @@
             "properties": {
               "credentials": {
                 "type": "string",
-                "const": "oauth2.0",
-                "enum": ["oauth2.0"],
-                "default": "oauth2.0",
-                "order": 0
+                "const": "oauth2.0"
               },
               "client_id": {
                 "type": "string",
@@ -78,10 +75,7 @@
             "properties": {
               "credentials": {
                 "type": "string",
-                "const": "access_token",
-                "enum": ["access_token"],
-                "default": "access_token",
-                "order": 0
+                "const": "access_token"
               },
               "access_token": {
                 "type": "string",
