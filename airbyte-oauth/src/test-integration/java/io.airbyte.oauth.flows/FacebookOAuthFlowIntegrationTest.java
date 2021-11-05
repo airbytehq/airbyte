@@ -31,7 +31,7 @@ public class FacebookOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
   protected static final String REDIRECT_URL = "http://localhost:9000/auth_flow";
 
   @Override
-  protected Path get_credentials_path() {
+  protected Path getCredentialsPath() {
     return CREDENTIALS_PATH;
   }
 
