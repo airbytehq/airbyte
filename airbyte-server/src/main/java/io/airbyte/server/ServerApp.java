@@ -15,10 +15,10 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
@@ -157,7 +157,8 @@ public class ServerApp implements ServerRunnable {
   public static ServerRunnable getServer(final ServerFactory apiFactory, final ConfigPersistence seed) throws Exception {
     final Configs configs = new EnvConfigs();
 
-    LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getServerLogsRoot(configs));
+    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
+        LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
 
     LOGGER.info("Creating Staged Resource folder...");
     ConfigDumpImporter.initStagedResourceFolder();
@@ -243,8 +244,12 @@ public class ServerApp implements ServerRunnable {
           seed,
           configDatabase,
           jobDatabase,
-          configs,
-          trackingClient);
+          trackingClient,
+          configs.getWorkerEnvironment(),
+          configs.getLogConfigs(),
+          configs.getWebappUrl(),
+          configs.getAirbyteVersion(),
+          configs.getWorkspaceRoot());
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);

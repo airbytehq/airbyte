@@ -20,24 +20,26 @@ import org.apache.http.client.utils.URIBuilder;
 
 /**
  * Following docs from
- * https://help.salesforce.com/s/articleView?language=en_US&id=sf.remoteaccess_oauth_web_server_flow.htm
+ * https://help.salesforce.com/s/articleView?language=en_US&amp;id=sf.remoteaccess_oauth_web_server_flow.htm
  */
 public class SalesforceOAuthFlow extends BaseOAuthFlow {
+  // Clickable link for IDE
+  // https://help.salesforce.com/s/articleView?language=en_US&id=sf.remoteaccess_oauth_web_server_flow.htm
 
   private static final String AUTHORIZE_URL = "https://login.salesforce.com/services/oauth2/authorize";
   private static final String ACCESS_TOKEN_URL = "https://login.salesforce.com/services/oauth2/token";
 
-  public SalesforceOAuthFlow(ConfigRepository configRepository) {
+  public SalesforceOAuthFlow(final ConfigRepository configRepository) {
     super(configRepository);
   }
 
   @VisibleForTesting
-  SalesforceOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+  SalesforceOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
     try {
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
@@ -45,7 +47,7 @@ public class SalesforceOAuthFlow extends BaseOAuthFlow {
           .addParameter("response_type", "code")
           .addParameter("state", getState())
           .build().toString();
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
@@ -56,7 +58,10 @@ public class SalesforceOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         .putAll(super.getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))
         .put("grant_type", "authorization_code")
@@ -64,7 +69,7 @@ public class SalesforceOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(JsonNode data, String accessTokenUrl) throws IOException {
+  protected Map<String, Object> extractRefreshToken(final JsonNode data, final String accessTokenUrl) throws IOException {
     System.out.println(Jsons.serialize(data));
     if (data.has("refresh_token")) {
       final String refreshToken = data.get("refresh_token").asText();
