@@ -45,14 +45,14 @@ public class LeverOAuthFlowTest {
     configRepository = mock(ConfigRepository.class);
     httpClient = mock(HttpClient.class);
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-            .withOauthParameterId(UUID.randomUUID())
-            .withSourceDefinitionId(definitionId)
-            .withWorkspaceId(workspaceId)
-            .withConfiguration(Jsons.jsonNode(
-                            ImmutableMap.builder()
-                                    .put("client_id", "test_client_id")
-                                    .put("client_secret", "test_client_secret")
-                                    .build()))));
+        .withOauthParameterId(UUID.randomUUID())
+        .withSourceDefinitionId(definitionId)
+        .withWorkspaceId(workspaceId)
+        .withConfiguration(Jsons.jsonNode(
+            ImmutableMap.builder()
+                .put("client_id", "test_client_id")
+                .put("client_secret", "test_client_secret")
+                .build()))));
     flow = new LeverOAuthFlow(configRepository, httpClient, LeverOAuthFlowTest::getConstantState);
 
   }
@@ -60,10 +60,10 @@ public class LeverOAuthFlowTest {
   @Test
   public void testGetSourceConsentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
     final String consentUrl =
-            flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+        flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     assertEquals(
-            "https://sandbox-lever.auth0.com/authorize?client_id=test_client_id&redirect_uri=https://airbyte.io&response_type=code&state=state&scope=applications:read:admin+contact:read:admin+interviews:read:admin+offers:read:admin+opportunities:read:admin+postings:read:admin+referrals:read:admin+requisitions:read:admin+resumes:read:admin+sources:read:admin+stages:read:admin+offline_access&prompt=consent&audience=https://api.sandbox.lever.co/v1/",
-            consentUrl);
+        "https://sandbox-lever.auth0.com/authorize?client_id=test_client_id&redirect_uri=https://airbyte.io&response_type=code&state=state&scope=applications:read:admin+contact:read:admin+interviews:read:admin+offers:read:admin+opportunities:read:admin+postings:read:admin+referrals:read:admin+requisitions:read:admin+resumes:read:admin+sources:read:admin+stages:read:admin+offline_access&prompt=consent&audience=https://api.sandbox.lever.co/v1/",
+        consentUrl);
   }
 
   @Test
@@ -75,7 +75,7 @@ public class LeverOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-            flow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        flow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
     assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
 
