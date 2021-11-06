@@ -14,8 +14,6 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import java.util.ArrayList;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,14 +23,14 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   public static final String DRIVER_CLASS = "ru.yandex.clickhouse.ClickHouseDriver";
 
+  private static final String PASSWORD = "password";
+
   public ClickhouseDestination() {
     super(DRIVER_CLASS, new ClickhouseSQLNameTransformer(), new ClickhouseSqlOperations());
   }
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final List<String> additionalParameters = new ArrayList<>();
-
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
@@ -42,8 +40,8 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl.toString());
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(PASSWORD)) {
+      configBuilder.put(PASSWORD, config.get(PASSWORD).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());

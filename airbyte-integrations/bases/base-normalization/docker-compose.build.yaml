@@ -29,3 +29,10 @@ services:
       context: .
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
+  normalization-clickhouse:
+    image: airbyte/normalization-clickhouse:${VERSION}
+    build:
+      dockerfile: clickhouse.Dockerfile
+      context: .
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}

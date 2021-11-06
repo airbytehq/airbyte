@@ -19,37 +19,39 @@ input_data as (
     -- pos_dedup_cdcx from test_normalization._airbyte_raw_pos_dedup_cdcx
 ),
 
+input_data_with_end_at as (
+    select *,
+      anyOrNull(_airbyte_emitted_at) over (
+        partition by id
+        order by
+            _airbyte_emitted_at is null asc,
+            _airbyte_emitted_at desc,
+            _airbyte_emitted_at desc, _ab_cdc_updated_at desc, _ab_cdc_log_pos desc
+        ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING
+      ) as _airbyte_end_at
+    from input_data
+),
 scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
-    select *,
-      multiIf( _airbyte_end_at is null and _ab_cdc_deleted_at is null  , 1 , 0 ) as _airbyte_active_row
-    from (
-      select
-        assumeNotNull(hex(MD5(
+    select
+      assumeNotNull(hex(MD5(
             
                 toString(id)
             
     ))) as _airbyte_unique_key,
-          id,
-          name,
-          _ab_cdc_lsn,
-          _ab_cdc_updated_at,
-          _ab_cdc_deleted_at,
-          _ab_cdc_log_pos,
-        _airbyte_emitted_at as _airbyte_start_at,
-        anyOrNull(_airbyte_emitted_at) over (
-          partition by id
-          order by
-              _airbyte_emitted_at is null asc,
-              _airbyte_emitted_at desc,
-              _airbyte_emitted_at desc, _ab_cdc_updated_at desc, _ab_cdc_log_pos desc
-          ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING
-        ) as _airbyte_end_at,
-        _airbyte_ab_id,
-        _airbyte_emitted_at,
-        _airbyte_pos_dedup_cdcx_hashid
-      from input_data
-    ) table_alias
+        id,
+        name,
+        _ab_cdc_lsn,
+        _ab_cdc_updated_at,
+        _ab_cdc_deleted_at,
+        _ab_cdc_log_pos,
+      _airbyte_emitted_at as _airbyte_start_at,
+      _airbyte_end_at,
+      multiIf( _airbyte_end_at is null and _ab_cdc_deleted_at is null  , 1 , 0 ) as _airbyte_active_row,
+      _airbyte_ab_id,
+      _airbyte_emitted_at,
+      _airbyte_pos_dedup_cdcx_hashid
+    from input_data_with_end_at
 ),
 dedup_data as (
     select

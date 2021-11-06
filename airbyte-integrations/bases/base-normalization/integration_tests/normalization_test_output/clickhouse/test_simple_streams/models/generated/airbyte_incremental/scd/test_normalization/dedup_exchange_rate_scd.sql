@@ -47,39 +47,41 @@ input_data as (
     -- dedup_exchange_rate from {{ source('test_normalization', '_airbyte_raw_dedup_exchange_rate') }}
 ),
 {% endif %}
+input_data_with_end_at as (
+    select *,
+      anyOrNull(date) over (
+        partition by id, currency, cast(NZD as {{ dbt_utils.type_string() }})
+        order by
+            date is null asc,
+            date desc,
+            _airbyte_emitted_at desc
+        ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING
+      ) as _airbyte_end_at
+    from input_data
+),
 scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
-    select *,
-      multiIf( _airbyte_end_at is null  , 1 , 0 ) as _airbyte_active_row
-    from (
-      select
-        {{ dbt_utils.surrogate_key([
-              'id',
-              'currency',
-              'NZD',
-        ]) }} as _airbyte_unique_key,
-          id,
-          currency,
-          date,
-          timestamp_col,
-          {{ quote('HKD@spéçiäl & characters') }},
-          HKD_special___characters,
-          NZD,
-          USD,
-        date as _airbyte_start_at,
-        anyOrNull(date) over (
-          partition by id, currency, cast(NZD as {{ dbt_utils.type_string() }})
-          order by
-              date is null asc,
-              date desc,
-              _airbyte_emitted_at desc
-          ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING
-        ) as _airbyte_end_at,
-        _airbyte_ab_id,
-        _airbyte_emitted_at,
-        _airbyte_dedup_exchange_rate_hashid
-      from input_data
-    ) table_alias
+    select
+      {{ dbt_utils.surrogate_key([
+            'id',
+            'currency',
+            'NZD',
+      ]) }} as _airbyte_unique_key,
+        id,
+        currency,
+        date,
+        timestamp_col,
+        {{ quote('HKD@spéçiäl & characters') }},
+        HKD_special___characters,
+        NZD,
+        USD,
+      date as _airbyte_start_at,
+      _airbyte_end_at,
+      multiIf( _airbyte_end_at is null  , 1 , 0 ) as _airbyte_active_row,
+      _airbyte_ab_id,
+      _airbyte_emitted_at,
+      _airbyte_dedup_exchange_rate_hashid
+    from input_data_with_end_at
 ),
 dedup_data as (
     select

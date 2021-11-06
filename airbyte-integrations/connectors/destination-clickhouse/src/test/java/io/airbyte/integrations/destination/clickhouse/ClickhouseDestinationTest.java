@@ -31,6 +31,7 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ClickHouseContainer;
 
 public class ClickhouseDestinationTest {
@@ -74,7 +75,7 @@ public class ClickhouseDestinationTest {
     db.close();
   }
 
-  // @Test
+  @Test
   void sanityTest() throws Exception {
     final Destination dest = new ClickhouseDestination();
     final AirbyteMessageConsumer consumer = dest.getConsumer(config, catalog,

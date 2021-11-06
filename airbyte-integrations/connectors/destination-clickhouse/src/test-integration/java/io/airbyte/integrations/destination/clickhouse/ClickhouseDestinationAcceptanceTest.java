@@ -12,32 +12,20 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.workers.process.ProcessFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.Disabled;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.ClickHouseContainer;
-import org.testcontainers.containers.Network;
 
 public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final String DB_NAME = "default";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseDestinationAcceptanceTest.class);
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
   private ClickHouseContainer db;
-  private Network network;
-
-  private ProcessFactory processFactory;
-  private TestDestinationEnv testEnv;
 
   private boolean useNativePort = false;
 
@@ -85,8 +73,6 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    String ipAddress = db.getContainerInfo().getNetworkSettings().getIpAddress();
-
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())

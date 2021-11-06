@@ -671,37 +671,39 @@ input_data as (
     {{ sql_table_comment }}
 ),
 {{ '{% endif %}' }}
+input_data_with_end_at as (
+    select *,
+      {{ lag_begin }}({{ cursor_field }}) over (
+        partition by {{ primary_key_partition | join(", ") }}
+        order by
+            {{ cursor_field }} {{ order_null }},
+            {{ cursor_field }} desc,
+            {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+        {{ lag_end }}
+      ) as {{ airbyte_end_at }}
+    from input_data
+),
 scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
-    select *,
-      {{ case_begin }} {{ airbyte_end_at }} is null {{ cdc_active_row }} {{ case_then }} 1 {{ case_else }} 0 {{ case_end }} as {{ active_row }}
-    from (
-      select
-        {%- if parent_hash_id %}
-          {{ parent_hash_id }},
-        {%- endif %}
-        {{ '{{' }} dbt_utils.surrogate_key([
-            {%- for primary_key in primary_keys %}
-              {{ primary_key }},
-            {%- endfor %}
-        ]) {{ '}}' }} as {{ unique_key }},
-        {%- for field in fields %}
-          {{ field }},
-        {%- endfor %}
-        {{ cursor_field }} as {{ airbyte_start_at }},
-        {{ lag_begin }}({{ cursor_field }}) over (
-          partition by {{ primary_key_partition | join(", ") }}
-          order by
-              {{ cursor_field }} {{ order_null }},
-              {{ cursor_field }} desc,
-              {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
-          {{ lag_end }}
-        ) as {{ airbyte_end_at }},
-        {{ col_ab_id }},
-        {{ col_emitted_at }},
-        {{ hash_id }}
-      from input_data
-    ) table_alias
+    select
+      {%- if parent_hash_id %}
+        {{ parent_hash_id }},
+      {%- endif %}
+      {{ '{{' }} dbt_utils.surrogate_key([
+          {%- for primary_key in primary_keys %}
+            {{ primary_key }},
+          {%- endfor %}
+      ]) {{ '}}' }} as {{ unique_key }},
+      {%- for field in fields %}
+        {{ field }},
+      {%- endfor %}
+      {{ cursor_field }} as {{ airbyte_start_at }},
+      {{ airbyte_end_at }},
+      {{ case_begin }} {{ airbyte_end_at }} is null {{ cdc_active_row }} {{ case_then }} 1 {{ case_else }} 0 {{ case_end }} as {{ active_row }},
+      {{ col_ab_id }},
+      {{ col_emitted_at }},
+      {{ hash_id }}
+    from input_data_with_end_at
 ),
 dedup_data as (
     select
