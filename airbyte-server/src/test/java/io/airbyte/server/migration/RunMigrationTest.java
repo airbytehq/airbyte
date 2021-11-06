@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.io.Resources;
 import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.OperatorNormalization.Option;
@@ -26,11 +27,11 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
@@ -353,7 +354,7 @@ public class RunMigrationTest {
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
         configRepository,
-        TARGET_VERSION,
+        new AirbyteVersion(TARGET_VERSION),
         YamlSeedConfigPersistence.getDefault(),
         mock(SpecFetcher.class))) {
       runMigration.run();

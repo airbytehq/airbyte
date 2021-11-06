@@ -456,14 +456,16 @@ public abstract class DestinationAcceptanceTest {
   public void specNormalizationValueShouldBeCorrect() throws Exception {
     final boolean normalizationFromSpec = normalizationFromSpec();
     assertEquals(normalizationFromSpec, supportsNormalization());
-    boolean normalizationRunnerFactorySupportsDestinationImage;
-    try {
-      NormalizationRunnerFactory.create(getImageName(), processFactory);
-      normalizationRunnerFactorySupportsDestinationImage = true;
-    } catch (final IllegalStateException e) {
-      normalizationRunnerFactorySupportsDestinationImage = false;
+    if (normalizationFromSpec) {
+      boolean normalizationRunnerFactorySupportsDestinationImage;
+      try {
+        NormalizationRunnerFactory.create(getImageName(), processFactory);
+        normalizationRunnerFactorySupportsDestinationImage = true;
+      } catch (final IllegalStateException e) {
+        normalizationRunnerFactorySupportsDestinationImage = false;
+      }
+      assertEquals(normalizationFromSpec, normalizationRunnerFactorySupportsDestinationImage);
     }
-    assertEquals(normalizationFromSpec, normalizationRunnerFactorySupportsDestinationImage);
   }
 
   @Test
@@ -494,7 +496,6 @@ public abstract class DestinationAcceptanceTest {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
-
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
             .withType(Type.RECORD)

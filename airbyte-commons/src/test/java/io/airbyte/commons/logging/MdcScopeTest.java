@@ -54,17 +54,14 @@ public class MdcScopeTest {
 
           });
 
-    } catch (final Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
   @DisplayName("The MDC context is properly restored")
   public void testMDCRestore() {
-    try (final MdcScope mdcScope = new MdcScope(modificationInMDC)) {} catch (final Exception e) {
-      e.printStackTrace();
-    }
+    try (final MdcScope mdcScope = new MdcScope(modificationInMDC)) {}
+
     final Map<String, String> mdcState = MDC.getCopyOfContextMap();
 
     Assertions.assertThat(mdcState).containsAllEntriesOf(originalMap);
