@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -142,14 +143,6 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinition.getSourceDefinitionId().toString(), sourceDefinition);
   }
 
-  public void deleteStandardSourceDefinition(final UUID sourceDefId) throws IOException {
-    try {
-      persistence.deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefId.toString());
-    } catch (final ConfigNotFoundException e) {
-      LOGGER.info("Attempted to delete source definition with id: {}, but it does not exist", sourceDefId);
-    }
-  }
-
   public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
@@ -184,14 +177,6 @@ public class ConfigRepository {
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         destinationDefinition.getDestinationDefinitionId().toString(),
         destinationDefinition);
-  }
-
-  public void deleteStandardDestinationDefinition(final UUID destDefId) throws IOException {
-    try {
-      persistence.deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destDefId.toString());
-    } catch (final ConfigNotFoundException e) {
-      LOGGER.info("Attempted to delete destination definition with id: {}, but it does not exist", destDefId);
-    }
   }
 
   public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
@@ -576,6 +561,49 @@ public class ConfigRepository {
 
   public void setSpecFetcher(final Function<String, ConnectorSpecification> specFetcherFn) {
     this.specFetcherFn = specFetcherFn;
+  }
+
+  public void deleteSourceDefinition(final UUID sourceDefinitionId) throws Exception {
+    deleteConnectorDefinition(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        ConfigSchema.SOURCE_CONNECTION,
+        SourceConnection.class,
+        SourceConnection::getSourceDefinitionId,
+        sourceDefinitionId);
+  }
+
+  public void deleteDestinationDefinition(final UUID destinationDefinitionId) throws Exception {
+    deleteConnectorDefinition(
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        ConfigSchema.DESTINATION_CONNECTION,
+        DestinationConnection.class,
+        DestinationConnection::getDestinationDefinitionId,
+        destinationDefinitionId);
+  }
+
+  private <T> void deleteConnectorDefinition(
+                                             final ConfigSchema definitionType,
+                                             final ConfigSchema connectorType,
+                                             final Class<T> connectorClass,
+                                             final Function<T, UUID> connectorDefinitionIdGetter,
+                                             final UUID definitionId)
+      throws Exception {
+    final Set<T> connectors = persistence.listConfigs(connectorType, connectorClass)
+        .stream()
+        .filter(connector -> connectorDefinitionIdGetter.apply(connector).equals(definitionId))
+        .collect(Collectors.toSet());
+    for (final T connector : connectors) {
+      final Set<StandardSync> syncs = persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class)
+          .stream()
+          .filter(sync -> sync.getDestinationId().equals(connectorDefinitionIdGetter.apply(connector)))
+          .collect(Collectors.toSet());
+
+      for (final StandardSync sync : syncs) {
+        persistence.deleteConfig(ConfigSchema.STANDARD_SYNC, sync.getConnectionId().toString());
+      }
+      persistence.deleteConfig(connectorType, connectorDefinitionIdGetter.apply(connector).toString());
+    }
+    persistence.deleteConfig(definitionType, definitionId.toString());
   }
 
 }

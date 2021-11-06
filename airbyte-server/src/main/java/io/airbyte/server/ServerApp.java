@@ -5,7 +5,6 @@
 package io.airbyte.server;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -266,9 +265,9 @@ public class ServerApp implements ServerRunnable {
       migrateAllDefinitionsToContainSpec(
           configRepository,
           cachingSchedulerClient,
-          trackingClient,
           configs.getWorkerEnvironment(),
-          configs.getLogConfigs());
+          configs.getLogConfigs(),
+          true);
 
       return apiFactory.create(
           schedulerJobClient,
@@ -304,103 +303,83 @@ public class ServerApp implements ServerRunnable {
    * track the failure in Segment. The goal is to try to end up in a state where all definitions in
    * the db contain specs, and to understand what is stopping us from getting there.
    *
+   * @param configPersistence - access to the (low-level) db
    * @param configRepository - access to the db
    * @param schedulerClient - scheduler client so that specs can be fetched as needed
-   * @param trackingClient
-   * @param workerEnvironment
-   * @param logConfigs
+   * @param workerEnvironment - worker env for fetching logs
+   * @param logConfigs - logging configuration for fetching logs
+   * @param deleteIfSpecCannotBeFetched - in the case where a spec is not present and cannot be
+   *        fetched, if true, delete the definition. if false, exit.
    */
   @VisibleForTesting
   static void migrateAllDefinitionsToContainSpec(final ConfigRepository configRepository,
                                                  final SynchronousSchedulerClient schedulerClient,
-                                                 final TrackingClient trackingClient,
                                                  final WorkerEnvironment workerEnvironment,
-                                                 final LogConfigs logConfigs)
-      throws JsonValidationException, IOException {
+                                                 final LogConfigs logConfigs,
+                                                 final boolean deleteIfSpecCannotBeFetched)
+      throws Exception {
     final JobConverter jobConverter = new JobConverter(workerEnvironment, logConfigs);
     for (final StandardSourceDefinition sourceDef : configRepository.listStandardSourceDefinitions()) {
-      try {
-        if (sourceDef.getSpec() == null) {
+      if (sourceDef.getSpec() == null) {
+        LOGGER.info(
+            "migrateAllDefinitionsToContainSpec - Source Definition {} does not have a spec. Attempting to retrieve spec...",
+            sourceDef.getName());
+        final SynchronousResponse<ConnectorSpecification> getSpecJob = schedulerClient
+            .createGetSpecJob(sourceDef.getDockerRepository() + ":" + sourceDef.getDockerImageTag());
+        if (getSpecJob.isSuccess()) {
           LOGGER.info(
-              "migrateAllDefinitionsToContainSpec - Source Definition {} does not have a spec. Attempting to retrieve spec...",
+              "migrateAllDefinitionsToContainSpec - Spec for Source Definition {} was successfully retrieved. Writing to the db...",
               sourceDef.getName());
-          final SynchronousResponse<ConnectorSpecification> getSpecJob = schedulerClient
-              .createGetSpecJob(sourceDef.getDockerRepository() + ":" + sourceDef.getDockerImageTag());
-          if (getSpecJob.isSuccess()) {
-            LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Spec for Source Definition {} was successfully retrieved. Writing to the db...",
-                sourceDef.getName());
-            final StandardSourceDefinition updatedDef = Jsons.clone(sourceDef).withSpec(getSpecJob.getOutput());
-            configRepository.writeStandardSourceDefinition(updatedDef);
-            LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Spec for Source Definition {} was successfully written to the db record.",
-                sourceDef.getName());
+          final StandardSourceDefinition updatedDef = Jsons.clone(sourceDef).withSpec(getSpecJob.getOutput());
+          configRepository.writeStandardSourceDefinition(updatedDef);
+          LOGGER.info(
+              "migrateAllDefinitionsToContainSpec - Spec for Source Definition {} was successfully written to the db record.",
+              sourceDef.getName());
+        } else {
+          final LogRead logRead = jobConverter.getLogRead(getSpecJob.getMetadata().getLogPath());
+          LOGGER.info("migrateAllDefinitionsToContainSpec - Failed to retrieve spec for Source Definition {}", sourceDef.getName());
+          if (deleteIfSpecCannotBeFetched) {
+            configRepository.deleteSourceDefinition(sourceDef.getSourceDefinitionId());
           } else {
-            final LogRead logRead = jobConverter.getLogRead(getSpecJob.getMetadata().getLogPath());
-            LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Failed to retrieve spec for Source Definition {}. Logs: {}",
-                sourceDef.getName(),
-                logRead.toString());
             throw new RuntimeException(String.format(
                 "Failed to retrieve spec for Source Definition %s. Logs: %s",
                 sourceDef.getName(),
                 logRead.toString()));
           }
         }
-      } catch (final Exception e) {
-        trackSpecBackfillFailure(trackingClient, configRepository, sourceDef.getDockerRepository(), sourceDef.getDockerImageTag(), e);
       }
     }
 
     for (final StandardDestinationDefinition destDef : configRepository.listStandardDestinationDefinitions()) {
-      try {
-        if (destDef.getSpec() == null) {
+      if (destDef.getSpec() == null) {
+        LOGGER.info(
+            "migrateAllDefinitionsToContainSpec - Destination Definition {} does not have a spec. Attempting to retrieve spec...",
+            destDef.getName());
+        final SynchronousResponse<ConnectorSpecification> getSpecJob = schedulerClient
+            .createGetSpecJob(destDef.getDockerRepository() + ":" + destDef.getDockerImageTag());
+        if (getSpecJob.isSuccess()) {
           LOGGER.info(
-              "migrateAllDefinitionsToContainSpec - Destination Definition {} does not have a spec. Attempting to retrieve spec...",
+              "migrateAllDefinitionsToContainSpec - Spec for Destination Definition {} was successfully retrieved. Writing to the db...",
               destDef.getName());
-          final SynchronousResponse<ConnectorSpecification> getSpecJob = schedulerClient
-              .createGetSpecJob(destDef.getDockerRepository() + ":" + destDef.getDockerImageTag());
-          if (getSpecJob.isSuccess()) {
-            LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Spec for Destination Definition {} was successfully retrieved. Writing to the db...",
-                destDef.getName());
-            final StandardDestinationDefinition updatedDef = Jsons.clone(destDef).withSpec(getSpecJob.getOutput());
-            configRepository.writeStandardDestinationDefinition(updatedDef);
-            LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Spec for Destination Definition {} was successfully written to the db record.",
-                destDef.getName());
+          final StandardDestinationDefinition updatedDef = Jsons.clone(destDef).withSpec(getSpecJob.getOutput());
+          configRepository.writeStandardDestinationDefinition(updatedDef);
+          LOGGER.info(
+              "migrateAllDefinitionsToContainSpec - Spec for Destination Definition {} was successfully written to the db record.",
+              destDef.getName());
+        } else {
+          final LogRead logRead = jobConverter.getLogRead(getSpecJob.getMetadata().getLogPath());
+          LOGGER.warn("migrateAllDefinitionsToContainSpec - Failed to retrieve spec for Destination Definition {}", destDef.getName());
+          if (deleteIfSpecCannotBeFetched) {
+            configRepository.deleteDestinationDefinition(destDef.getDestinationDefinitionId());
           } else {
-            final LogRead logRead = jobConverter.getLogRead(getSpecJob.getMetadata().getLogPath());
-            LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Failed to retrieve spec for Destination Definition {}. Logs: {}",
-                destDef.getName(),
-                logRead.toString());
             throw new RuntimeException(String.format(
                 "Failed to retrieve spec for Destination Definition %s. Logs: %s",
                 destDef.getName(),
                 logRead.toString()));
           }
         }
-      } catch (final Exception e) {
-        trackSpecBackfillFailure(trackingClient, configRepository, destDef.getDockerRepository(), destDef.getDockerImageTag(), e);
       }
     }
-  }
-
-  private static void trackSpecBackfillFailure(final TrackingClient trackingClient,
-                                               final ConfigRepository configRepository,
-                                               final String dockerRepo,
-                                               final String dockerImageTag,
-                                               final Exception exception)
-      throws JsonValidationException, IOException {
-    // There is guaranteed to be at least one workspace, because the getServer() function enforces that
-    final UUID workspaceId = configRepository.listStandardWorkspaces(true).get(0).getWorkspaceId();
-
-    final ImmutableMap<String, Object> metadata = ImmutableMap.of(
-        "docker_image_name", dockerRepo,
-        "docker_image_tag", dockerImageTag,
-        "exception", exception);
-    trackingClient.track(workspaceId, "failed_spec_backfill", metadata);
   }
 
   @Deprecated
