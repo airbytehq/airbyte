@@ -6,7 +6,7 @@ ENV APPLICATION airbyte-migration
 WORKDIR /app
 
 # Move and run scheduler
-COPY bin/${APPLICATION}-0.30.31-alpha.tar ${APPLICATION}.tar
+COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 

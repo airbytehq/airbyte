@@ -1,16 +1,3 @@
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:7.1.0'
-    }
-}
-
 plugins {
     id 'base'
     id 'pmd'
@@ -146,19 +133,26 @@ def Task getDockerBuildTask(String artifactName, String projectDir) {
 }
 
 allprojects {
-    apply plugin: 'com.bmuschko.docker-remote-api'
+    apply plugin: 'base'
 
-    task copyDocker(type: Copy) {
-        delete "build/docker"
+    afterEvaluate { project ->
+        def composeDeps = [
+                ":airbyte-config:init",
+                ":airbyte-db:lib",
+                ":airbyte-migration",
+                ":airbyte-scheduler:app",
+                ":airbyte-workers",
+                ":airbyte-server",
+                ":airbyte-webapp",
+        ].toSet().asImmutable()
 
-        from "${project.projectDir}/Dockerfile"
-        into "build/docker/"
+        if (project.getPath() in composeDeps) {
+            composeBuild.dependsOn(project.getPath() + ':assemble')
+        }
     }
 }
 
 allprojects {
-    apply plugin: 'base'
-
     // by default gradle uses directory as the project name. That works very well in a single project environment but
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.
     def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
@@ -260,7 +254,6 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
         testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
         testImplementation 'org.assertj:assertj-core:3.21.0'
-
     }
 
     tasks.withType(Tar) {
@@ -270,6 +263,28 @@ subprojects {
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
+}
+
+task composeBuild {
+    def buildTag = System.getenv('VERSION') ?: 'dev'
+    def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
+    def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
+    def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
+    def dockerComposeFile = buildArch == 'arm64' ? 'docker-compose.build-m1.yaml' : 'docker-compose.build.yaml'
+    doFirst {
+        exec {
+            workingDir rootDir
+            commandLine 'docker-compose', '-f', dockerComposeFile, 'build', '--parallel', '--quiet'
+            environment 'VERSION', buildTag
+            environment 'DOCKER_BUILD_PLATFORM', buildPlatform
+            environment 'DOCKER_BUILD_ARCH', buildArch
+            environment 'JDK_VERSION', jdkVersion
+        }
+    }
+}
+
+if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+    build.dependsOn(composeBuild)
 }
 
 task('generate') {
