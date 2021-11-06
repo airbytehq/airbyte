@@ -33,6 +33,26 @@ To compile and build just the platform \(not all the connectors\):
 SUB_BUILD=PLATFORM ./gradlew build
 ```
 
+{% hint style="info" %}
+If you're using Mac M1 \(Apple Silicon\) machines, it is possible to compile Airbyte by setting
+some additional environment variables:
+
+```bash
+export DOCKER_BUILD_PLATFORM=linux/arm64
+export DOCKER_BUILD_ARCH=arm64
+export ALPINE_IMAGE=arm64v8/alpine:3.14
+export POSTGRES_IMAGE=arm64v8/postgres:13-alpine
+export JDK_VERSION=17
+export NODE_VERSION=16.11.1
+SUB_BUILD=PLATFORM ./gradlew build
+```
+
+Please note that though the `JDK_VERSION` variable is set to `17`, you should still run the command with JDK 14 locally. Otherwise, `testconatiners` will run into a JNA related issue.
+
+There are some known issues (Temporal failing during runs, and some connectors not working). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
+
+{% endhint %}
+
 This will build all the code and run all the unit tests.
 
 `SUB_BUILD=PLATFORM ./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
@@ -71,7 +91,7 @@ In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
 
 ```bash
-SUB_BUILD=PLATFORM ./gradlew build
+SUB_BUILD=PLATFORM ./gradlew clean build
 VERSION=dev docker-compose up
 SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
 ```
@@ -146,7 +166,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 * Rebuild the project
 
   ```bash
-   SUB_BUILD=PLATFORM ./gradlew build
+   SUB_BUILD=PLATFORM ./gradlew clean build
    VERSION=dev docker-compose up -V
   ```
 

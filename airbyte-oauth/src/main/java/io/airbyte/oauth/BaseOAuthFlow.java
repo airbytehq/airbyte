@@ -5,6 +5,7 @@
 package io.airbyte.oauth;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.airbyte.commons.json.Jsons;
@@ -13,33 +14,26 @@ import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
-import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.http.client.utils.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * Class implementing generic oAuth 2.0 flow.
  */
 public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
-  public UUID getWorkspaceId() {
-    return workspaceId;
-  }
-
-  @Override
-  public void setWorkspaceId(UUID workspaceId) {
-    this.workspaceId = workspaceId;
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseOAuthFlow.class);
 
   /**
    * Simple enum of content type strings and their respective encoding functions used for POSTing the
@@ -60,20 +54,12 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   }
 
-  protected final HttpClient httpClient;
   private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
+  protected HttpClient httpClient;
   private final Supplier<String> stateSupplier;
-  private UUID workspaceId;
 
-  public BaseOAuthFlow(final ConfigRepository configRepository) {
-    this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build(), BaseOAuthFlow::generateRandomState);
-  }
-
-  public BaseOAuthFlow(ConfigRepository configRepository, TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
-    this(configRepository,
-        HttpClient.newBuilder().version(Version.HTTP_1_1).build(),
-        BaseOAuthFlow::generateRandomState,
-        tokenReqContentType);
+  public BaseOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    this(configRepository, httpClient, BaseOAuthFlow::generateRandomState);
   }
 
   public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
@@ -102,39 +88,6 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
-  }
-
-  protected String formatConsentUrl(String clientId,
-                                    String redirectUrl,
-                                    String host,
-                                    String path,
-                                    String scope,
-                                    String responseType)
-      throws IOException {
-    final URIBuilder builder = new URIBuilder()
-        .setScheme("https")
-        .setHost(host)
-        .setPath(path)
-        // required
-        .addParameter("client_id", clientId)
-        .addParameter("redirect_uri", redirectUrl)
-        .addParameter("state", getState())
-        // optional
-        .addParameter("response_type", responseType)
-        .addParameter("scope", scope);
-    try {
-      return builder.build().toString();
-    } catch (URISyntaxException e) {
-      throw new IOException("Failed to format Consent URL for OAuth flow", e);
-    }
-  }
-
-  protected String getSubdomainUnsafe(JsonNode oauthConfig) {
-    if (oauthConfig.get("subdomain") != null) {
-      return oauthConfig.get("subdomain").asText();
-    } else {
-      throw new IllegalArgumentException("Undefined parameter 'subdomain' necessary for the Zendesk OAuth Flow.");
-    }
   }
 
   /**
@@ -167,7 +120,8 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         getClientIdUnsafe(oAuthParamConfig),
         getClientSecretUnsafe(oAuthParamConfig),
         extractCodeParameter(queryParams),
-        redirectUrl);
+        redirectUrl,
+        oAuthParamConfig);
   }
 
   @Override
@@ -181,26 +135,50 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         getClientIdUnsafe(oAuthParamConfig),
         getClientSecretUnsafe(oAuthParamConfig),
         extractCodeParameter(queryParams),
-        redirectUrl);
+        redirectUrl, oAuthParamConfig);
   }
 
-  private Map<String, Object> completeOAuthFlow(final String clientId, final String clientSecret, final String authCode, final String redirectUrl)
+  protected Map<String, Object> completeOAuthFlow(final String clientId,
+                                                  final String clientSecret,
+                                                  final String authCode,
+                                                  final String redirectUrl,
+                                                  JsonNode oAuthParamConfig)
       throws IOException {
+    var accessTokenUrl = getAccessTokenUrl();
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers
             .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
-        .uri(URI.create(getAccessTokenUrl()))
+        .uri(URI.create(accessTokenUrl))
         .header("Content-Type", tokenReqContentType.contentType)
+        .header("Accept", "application/json")
         .build();
-    // TODO: Handle error response to report better messages
     try {
-      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      return extractRefreshToken(Jsons.deserialize(response.body()));
+      HttpResponse<String> response;
+      response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      return extractRefreshToken(Jsons.deserialize(response.body()), accessTokenUrl);
     } catch (final InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
   }
 
+  /**
+   * Query parameters to provide the access token url with.
+   */
+  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+    return ImmutableMap.<String, String>builder()
+        // required
+        .put("client_id", clientId)
+        .put("redirect_uri", redirectUrl)
+        .put("client_secret", clientSecret)
+        .put("code", authCode)
+        .build();
+  }
+
+  /**
+   * Once the user is redirected after getting their consent, the API should redirect them to a
+   * specific redirection URL along with query parameters. This function should parse and extract the
+   * code from these query parameters in order to continue the OAuth Flow.
+   */
   protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
     if (queryParams.containsKey("code")) {
       return (String) queryParams.get("code");
@@ -214,18 +192,22 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
    */
   protected abstract String getAccessTokenUrl();
 
-  /**
-   * Query parameters to provide the access token url with.
-   */
-  protected abstract Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl);
+  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
+    final Map<String, Object> result = new HashMap<>();
+    if (data.has("refresh_token")) {
+      result.put("refresh_token", data.get("refresh_token").asText());
+    } else if (data.has("access_token")) {
+      result.put("access_token", data.get("access_token").asText());
+    } else {
+      LOGGER.info("Oauth flow failed. Data received from server: {}", data);
+      throw new IOException(String.format("Missing 'refresh_token' in query params from %s. Response: %s", accessTokenUrl));
 
-  /**
-   * Once the auth code is exchange for a refresh token, the oauth flow implementation can extract and
-   * returns the values of fields to be used in the connector's configurations.
-   */
-  protected abstract Map<String, Object> extractRefreshToken(JsonNode data) throws IOException;
+    }
+    return Map.of("credentials", result);
 
-  private static String urlEncode(String s) {
+  }
+
+  private static String urlEncode(final String s) {
     try {
       return URLEncoder.encode(s, StandardCharsets.UTF_8);
     } catch (final Exception e) {
@@ -233,7 +215,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
     }
   }
 
-  protected static String toUrlEncodedString(final Map<String, String> body) {
+  private static String toUrlEncodedString(final Map<String, String> body) {
     final StringBuilder result = new StringBuilder();
     for (final var entry : body.entrySet()) {
       if (result.length() > 0) {
@@ -246,7 +228,9 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   protected static String toJson(final Map<String, String> body) {
     final Gson gson = new Gson();
-    Type gsonType = new TypeToken<Map<String, String>>() {}.getType();
+    Type gsonType = new TypeToken<Map<String, String>>() {
+
+    }.getType();
     return gson.toJson(body, gsonType);
   }
 

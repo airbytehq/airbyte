@@ -11,9 +11,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.common.io.Resources;
 import io.airbyte.commons.io.Archives;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
@@ -23,15 +27,18 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.FileSystemConfigPersistence;
-import io.airbyte.config.persistence.YamlSeedConfigPersistence;
+import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.migrate.Migrations;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.RunMigration;
@@ -49,10 +56,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 public class RunMigrationTest {
 
@@ -60,8 +69,34 @@ public class RunMigrationTest {
   private static final String TARGET_VERSION = Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1).getVersion();
   private static final String DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED = "d2147be5-fa36-4936-977e-f031affa5895";
   private static final String DEPRECATED_SOURCE_DEFINITION_BEING_USED = "4eb22946-2a79-4d20-a3e6-effd234613c3";
+  private static final ConnectorSpecification MOCK_CONNECTOR_SPEC = new ConnectorSpecification()
+      .withConnectionSpecification(Jsons.deserialize("{}"));
+
+  private static PostgreSQLContainer<?> container;
+  private static Database jobDatabase;
+  private static Database configDatabase;
+
   private List<File> resourceToBeCleanedUp;
   private SecretPersistence secretPersistence;
+
+  @BeforeAll
+  public static void prepareContainer() throws IOException {
+    container = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withDatabaseName("airbyte")
+        .withUsername("docker")
+        .withPassword("docker");
+    container.start();
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    jobDatabase = databaseProviders.createNewJobsDatabase();
+    configDatabase = databaseProviders.createNewConfigsDatabase();
+  }
+
+  @AfterAll
+  public static void closeContainer() {
+    if (container != null) {
+      container.close();
+    }
+  }
 
   @BeforeEach
   public void setup() {
@@ -84,35 +119,47 @@ public class RunMigrationTest {
 
   @SuppressWarnings("UnstableApiUsage")
   @Test
-  @Disabled
-  // TODO(#5857): Make migration tests compatible with writing new migrations.
   public void testRunMigration() throws Exception {
-    try (final StubAirbyteDB stubAirbyteDB = new StubAirbyteDB()) {
-      final File file = Path
-          .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
-          .toFile();
+    final Path configRoot = Files.createTempDirectory(Path.of("/tmp"), "dummy_data");
+    final ConfigPersistence configPersistence = getConfigPersistence(configRoot);
 
-      final Path dummyDataSource = Path.of(Resources.getResource("migration/dummy_data").toURI());
+    final File file = Path
+        .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
+        .toFile();
+    final JobPersistence jobPersistence = getJobPersistence(file, INITIAL_VERSION);
+    assertPreMigrationConfigs(configPersistence, jobPersistence);
 
-      final Path configRoot = Files.createTempDirectory(Path.of("/tmp"), "dummy_data");
-      FileUtils.copyDirectory(dummyDataSource.toFile(), configRoot.toFile());
-      resourceToBeCleanedUp.add(configRoot.toFile());
-      final JobPersistence jobPersistence = getJobPersistence(stubAirbyteDB.getDatabase(), file, INITIAL_VERSION);
-      assertPreMigrationConfigs(configRoot, jobPersistence);
+    runMigration(configPersistence, jobPersistence);
 
-      runMigration(jobPersistence, configRoot);
-
-      assertDatabaseVersion(jobPersistence, TARGET_VERSION);
-      assertPostMigrationConfigs(configRoot);
-      FileUtils.deleteDirectory(configRoot.toFile());
-    }
+    assertDatabaseVersion(jobPersistence, TARGET_VERSION);
+    assertPostMigrationConfigs(configPersistence);
+    FileUtils.deleteDirectory(configRoot.toFile());
   }
 
-  private void assertPreMigrationConfigs(final Path configRoot, final JobPersistence jobPersistence) throws Exception {
+  @SuppressWarnings("UnstableApiUsage")
+  private ConfigPersistence getConfigPersistence(final Path configRoot) throws Exception {
+    final Path dummyDataSource = Path.of(Resources.getResource("migration/dummy_data").toURI());
+
+    FileUtils.copyDirectory(dummyDataSource.toFile(), configRoot.toFile());
+    resourceToBeCleanedUp.add(configRoot.toFile());
+    final Configs configs = mock(Configs.class);
+    when(configs.getConfigRoot()).thenReturn(configRoot);
+    // The database provider creates a config database that is ready to use, which contains a mock
+    // config entry. However, the migrateFileConfigs method will only copy the file configs if the
+    // database is empty. So we need to purge the database first.
+    configDatabase.transaction(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs;"));
+    return new DatabaseConfigPersistence(configDatabase)
+        .migrateFileConfigs(configs);
+  }
+
+  private void assertPreMigrationConfigs(final ConfigPersistence configPersistence, final JobPersistence jobPersistence) throws Exception {
     assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
-    final ConfigRepository configRepository =
-        new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot), new NoOpSecretsHydrator(), Optional.of(secretPersistence),
-            Optional.of(secretPersistence));
+    final ConfigRepository configRepository = new ConfigRepository(
+        configPersistence,
+        new NoOpSecretsHydrator(),
+        Optional.of(secretPersistence),
+        Optional.of(secretPersistence));
+    configRepository.setSpecFetcher(s -> MOCK_CONNECTOR_SPEC);
     final Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSourceDefinitions().stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
     assertTrue(sourceDefinitionsBeforeMigration.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
@@ -125,10 +172,13 @@ public class RunMigrationTest {
     assertEquals(versionFromDb.get(), version);
   }
 
-  private void assertPostMigrationConfigs(final Path importRoot) throws Exception {
-    final ConfigRepository configRepository =
-        new ConfigRepository(FileSystemConfigPersistence.createWithValidation(importRoot), new NoOpSecretsHydrator(), Optional.of(secretPersistence),
-            Optional.of(secretPersistence));
+  private void assertPostMigrationConfigs(final ConfigPersistence configPersistence) throws Exception {
+    final ConfigRepository configRepository = new ConfigRepository(
+        configPersistence,
+        new NoOpSecretsHydrator(),
+        Optional.of(secretPersistence),
+        Optional.of(secretPersistence));
+    configRepository.setSpecFetcher(s -> MOCK_CONNECTOR_SPEC);
     final UUID workspaceId = configRepository.listStandardWorkspaces(true).get(0).getWorkspaceId();
     // originally the default workspace started with a hardcoded id. the migration in version 0.29.0
     // took that id and randomized it. we want to check that the id is now NOT that hardcoded id and
@@ -147,9 +197,9 @@ public class RunMigrationTest {
     final Map<String, StandardSourceDefinition> sourceDefinitions = configRepository.listStandardSourceDefinitions()
         .stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
-    assertTrue(sourceDefinitions.size() >= 59);
-    // the definition is not present in latest seeds so it should be deleted
-    assertFalse(sourceDefinitions.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
+    assertTrue(sourceDefinitions.size() >= 98);
+    // the definition is not present in latest seeds but we no longer purge unused deprecated definition
+    assertTrue(sourceDefinitions.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
     // the definition is not present in latest seeds but it was being used as a connection so it should
     // not be deleted
     assertTrue(sourceDefinitions.containsKey(DEPRECATED_SOURCE_DEFINITION_BEING_USED));
@@ -294,23 +344,26 @@ public class RunMigrationTest {
     }
   }
 
-  private void runMigration(final JobPersistence jobPersistence, final Path configRoot) throws Exception {
+  private void runMigration(final ConfigPersistence configPersistence, final JobPersistence jobPersistence) throws Exception {
+    final ConfigRepository configRepository = new ConfigRepository(
+        configPersistence,
+        new NoOpSecretsHydrator(),
+        Optional.of(secretPersistence),
+        Optional.of(secretPersistence));
+    configRepository.setSpecFetcher(s -> MOCK_CONNECTOR_SPEC);
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
-        new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot), new NoOpSecretsHydrator(), Optional.of(secretPersistence),
-            Optional.of(secretPersistence)),
-        TARGET_VERSION,
+        configRepository,
+        new AirbyteVersion(TARGET_VERSION),
         YamlSeedConfigPersistence.getDefault(),
-        mock(SpecFetcher.class) // this test was disabled/broken when this fetcher mock was added. apologies if you have to fix this
-                                // in the future.
-    )) {
+        mock(SpecFetcher.class))) {
       runMigration.run();
     }
   }
 
   @SuppressWarnings("SameParameterValue")
-  private JobPersistence getJobPersistence(final Database database, final File file, final String version) throws IOException {
-    final DefaultJobPersistence jobPersistence = new DefaultJobPersistence(database);
+  private JobPersistence getJobPersistence(final File file, final String version) throws IOException {
+    final DefaultJobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "db_init");
     resourceToBeCleanedUp.add(tempFolder.toFile());
 

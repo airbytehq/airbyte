@@ -7,8 +7,8 @@ from typing import Generator, List, Tuple
 
 import backoff
 import requests
-from airbyte_protocol import AirbyteStream
-from base_python import BaseClient
+from airbyte_cdk.models import AirbyteStream
+from airbyte_cdk.sources.deprecated.client import BaseClient
 from requests.exceptions import ConnectionError
 from requests.structures import CaseInsensitiveDict
 

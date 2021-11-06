@@ -9,6 +9,7 @@ from collections import deque
 from datetime import datetime
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence
 
+import airbyte_cdk.sources.utils.casing as casing
 import backoff
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -289,12 +290,37 @@ class AdsInsights(FBMarketingIncrementalStream):
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
 
+    running_jobs = deque()
+    times_job_restarted = {}
+
     breakdowns = []
 
-    def __init__(self, buffer_days, days_per_job, **kwargs):
+    def __init__(
+        self,
+        buffer_days,
+        days_per_job,
+        name: str = None,
+        fields: List[str] = None,
+        breakdowns: List[str] = None,
+        action_breakdowns: List[str] = None,
+        **kwargs,
+    ):
+
         super().__init__(**kwargs)
         self.lookback_window = pendulum.duration(days=buffer_days)
         self._days_per_job = days_per_job
+        self._fields = fields
+        self.action_breakdowns = action_breakdowns or self.action_breakdowns
+        self.breakdowns = breakdowns or self.breakdowns
+        self._new_class_name = name
+
+    @property
+    def name(self) -> str:
+        """
+        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+        """
+        name = self._new_class_name or self.__class__.__name__
+        return casing.camel_to_snake(name)
 
     def read_records(
         self,
@@ -304,7 +330,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
-        result = self.wait_for_job(stream_slice["job"])
+        result = self.wait_for_job(stream_slice["job"], stream_state=stream_state)
         # because we query `lookback_window` days before actual cursor we might get records older then cursor
 
         for obj in result.get_result():
@@ -318,20 +344,19 @@ class AdsInsights(FBMarketingIncrementalStream):
         3. we shouldn't proceed to consumption of the next job before previous succeed
         """
         stream_state = stream_state or {}
-        running_jobs = deque()
         date_ranges = list(self._date_ranges(stream_state=stream_state))
         for params in date_ranges:
             params = deep_merge(params, self.request_params(stream_state=stream_state))
             job = self._create_insights_job(params)
-            running_jobs.append(job)
-            if len(running_jobs) >= self.MAX_ASYNC_JOBS:
-                yield {"job": running_jobs.popleft()}
+            self.running_jobs.append(job)
+            if len(self.running_jobs) >= self.MAX_ASYNC_JOBS:
+                yield {"job": self.running_jobs.popleft()}
 
-        while running_jobs:
-            yield {"job": running_jobs.popleft()}
+        while self.running_jobs:
+            yield {"job": self.running_jobs.popleft()}
 
     @backoff_policy
-    def wait_for_job(self, job) -> AdReportRun:
+    def wait_for_job(self, job, stream_state: Mapping[str, Any] = None) -> AdReportRun:
         factor = 2
         start_time = pendulum.now()
         sleep_seconds = factor
@@ -344,10 +369,20 @@ class AdsInsights(FBMarketingIncrementalStream):
 
             if job["async_status"] == "Job Completed":
                 return job
-            elif job["async_status"] == "Job Failed":
-                raise JobTimeoutException(f"AdReportRun {job} failed after {runtime.in_seconds()} seconds.")
-            elif job["async_status"] == "Job Skipped":
-                raise JobTimeoutException(f"AdReportRun {job} skipped after {runtime.in_seconds()} seconds.")
+            elif job["async_status"] in ["Job Failed", "Job Skipped"]:
+                time_range = (job["date_start"], job["date_stop"])
+                if self.times_job_restarted.get(time_range, 0) < 6:
+                    params = deep_merge(
+                        {"time_range": {"since": job["date_start"], "until": job["date_stop"]}},
+                        self.request_params(stream_state=stream_state),
+                    )
+                    restart_job = self._create_insights_job(params)
+                    self.running_jobs.append(restart_job)
+                    self.times_job_restarted[time_range] += 1
+                elif job["async_status"] == "Job Failed":
+                    raise JobTimeoutException(f"AdReportRun {job} failed after {runtime.in_seconds()} seconds.")
+                elif job["async_status"] == "Job Skipped":
+                    raise JobTimeoutException(f"AdReportRun {job} skipped after {runtime.in_seconds()} seconds.")
 
             if runtime > self.MAX_WAIT_TO_START and job_progress_pct == 0:
                 raise JobTimeoutException(
@@ -389,12 +424,16 @@ class AdsInsights(FBMarketingIncrementalStream):
         :return: A dict of the JSON schema representing this stream.
         """
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        if self._fields:
+            schema["properties"] = {k: v for k, v in schema["properties"].items() if k in self._fields}
         schema["properties"].update(self._schema_for_breakdowns())
         return schema
 
     @cached_property
     def fields(self) -> List[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""
+        if self._fields:
+            return self._fields
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         return list(schema.get("properties", {}).keys())
 

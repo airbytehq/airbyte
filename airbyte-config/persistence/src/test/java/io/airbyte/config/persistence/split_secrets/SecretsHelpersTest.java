@@ -12,6 +12,7 @@ import io.airbyte.config.persistence.split_secrets.test_cases.NestedObjectTestCa
 import io.airbyte.config.persistence.split_secrets.test_cases.NestedOneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.OneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.OptionalPasswordTestCase;
+import io.airbyte.config.persistence.split_secrets.test_cases.PostgresSshKeyTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.SimpleTestCase;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -53,7 +54,8 @@ public class SecretsHelpersTest {
         new OneOfTestCase(),
         new ArrayTestCase(),
         new ArrayOneOfTestCase(),
-        new NestedOneOfTestCase()).map(Arguments::of);
+        new NestedOneOfTestCase(),
+        new PostgresSshKeyTestCase()).map(Arguments::of);
   }
 
   @ParameterizedTest
