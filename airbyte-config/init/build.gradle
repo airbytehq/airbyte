@@ -11,14 +11,3 @@ dependencies {
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-json-validation')
 }
-
-task copyScripts(type: Copy) {
-    dependsOn copyDocker
-
-    from('scripts')
-    into 'build/docker/bin/scripts'
-}
-
-Task dockerBuildTask = getDockerBuildTask("init",  "$project.projectDir")
-dockerBuildTask.dependsOn(copyScripts)
-assemble.dependsOn(dockerBuildTask)
