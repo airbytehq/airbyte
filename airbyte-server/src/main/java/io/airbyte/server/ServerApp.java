@@ -243,10 +243,11 @@ public class ServerApp implements ServerRunnable {
 
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
 
-    if(airbyteDatabaseVersion.isPresent()
+    if (airbyteDatabaseVersion.isPresent()
         && airbyteDatabaseVersion.get().lessThan(VERSION_BREAK)
         && airbyteVersion.greaterThan(VERSION_BREAK)) {
-      final String message = String.format("Cannot upgrade from version %s to version %s directly. First you must upgrade to version %s. After that upgrade is complete, you may upgrade to version %s",
+      final String message = String.format(
+          "Cannot upgrade from version %s to version %s directly. First you must upgrade to version %s. After that upgrade is complete, you may upgrade to version %s",
           airbyteDatabaseVersion.get(),
           airbyteVersion,
           VERSION_BREAK,
