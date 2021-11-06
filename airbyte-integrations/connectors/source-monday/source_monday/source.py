@@ -111,6 +111,9 @@ class Users(MondayStream):
     API Documentation: https://api.developer.monday.com/docs/users-queries-1
     """
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pass
+
 
 # Source
 class SourceMonday(AbstractSource):
