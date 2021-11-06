@@ -27,7 +27,7 @@ export type Config = {
   healthCheckInterval: number;
   isDemo: boolean;
   version?: string;
-  integrationUrl?: string;
+  integrationUrl: string;
 };
 
 export type DeepPartial<T> = {

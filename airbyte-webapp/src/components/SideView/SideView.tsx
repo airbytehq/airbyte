@@ -1,42 +1,36 @@
-import React, { useEffect } from "react";
+import React, { useRef } from "react";
 import { createPortal } from "react-dom";
+import { useClickAway, useKey } from "react-use";
+
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { Actions, Container, Content, Body, Close, Header } from "./styled";
-
-import ClickOutside from "../ClickOutside";
+import { Actions, Body, Close, Container, Content, Header } from "./styled";
 
 type Props = {
   headerLink?: React.ReactNode | string;
   onClose: () => void;
 };
 
-const SideView: React.FC<Props> = ({ children, onClose, headerLink }) => {
-  useEffect(() => {
-    const handleEsq = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
+const EXIT_KEY = "Escape";
 
-    document.addEventListener("keyup", handleEsq);
-    return () => document.removeEventListener("keyup", handleEsq);
-  });
+const SideView: React.FC<Props> = ({ children, onClose, headerLink }) => {
+  const ref = useRef(null);
+
+  useKey(EXIT_KEY, onClose);
+  useClickAway(ref, onClose);
 
   return createPortal(
     <Container>
-      <ClickOutside onClickOut={onClose}>
-        <Content>
-          <Header>
-            <Actions>{headerLink}</Actions>
-            <Close onClick={onClose}>
-              <FontAwesomeIcon icon={faTimes} size="xs" />
-            </Close>
-          </Header>
-          <Body>{children}</Body>
-        </Content>
-      </ClickOutside>
+      <Content ref={ref}>
+        <Header>
+          <Actions>{headerLink}</Actions>
+          <Close onClick={onClose}>
+            <FontAwesomeIcon icon={faTimes} size="xs" />
+          </Close>
+        </Header>
+        <Body>{children}</Body>
+      </Content>
     </Container>,
     document.body
   );

@@ -29,7 +29,6 @@ export const Close = styled.div`
   background-color: rgba(255, 255, 255, 0.1);
   width: 30px;
   height: 30px;
-  display: block;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -46,9 +45,9 @@ export const Header = styled.div`
   align-items: center;
   justify-content: space-between;
   height: 60px;
-  background-color: rgba(40, 39, 120, 1);
+  background-color: ${({ theme }) => theme.mediumPrimaryColor};
   padding: 0 20px;
-  color: #ffffff;
+  color: ${({ theme }) => theme.whiteColor};
   position: fixed;
   top: 0;
   width: 60vw;

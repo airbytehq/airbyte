@@ -3,7 +3,23 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import styled from "styled-components";
 
-const Container = styled.div`
+type Props = {
+  content?: string;
+  className?: string;
+};
+
+const Markdown: React.FC<Props> = ({ content, className }) => {
+  return (
+    <ReactMarkdown
+      linkTarget="_blank"
+      className={className}
+      remarkPlugins={[remarkGfm]}
+      children={content || ""}
+    />
+  );
+};
+
+const StyledMarkdown = styled(Markdown)`
   * {
     color: rgba(59, 69, 78, 1);
     line-height: 20px;
@@ -26,20 +42,4 @@ const Container = styled.div`
   }
 `;
 
-type Props = {
-  content?: string;
-};
-
-const Markdown: React.FC<Props> = ({ content }) => {
-  return (
-    <Container>
-      <ReactMarkdown
-        linkTarget="_blank"
-        remarkPlugins={[remarkGfm]}
-        children={content || ""}
-      />
-    </Container>
-  );
-};
-
-export default Markdown;
+export default StyledMarkdown;
