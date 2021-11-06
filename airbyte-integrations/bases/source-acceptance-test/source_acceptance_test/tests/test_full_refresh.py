@@ -45,5 +45,10 @@ class TestFullRefresh(BaseTest):
             if output_diff:
                 msg = f"{stream}: the two sequential reads should produce either equal set of records or one of them is a strict subset of the other"
                 detailed_logger.info(msg)
+                detailed_logger.info("First read")
+                detailed_logger.log_json_list(stream_records_1)
+                detailed_logger.info("Second read")
+                detailed_logger.log_json_list(stream_records_2)
+                detailed_logger.info("Difference")
                 detailed_logger.log_json_list(output_diff)
                 pytest.fail(msg)

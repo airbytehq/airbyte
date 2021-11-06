@@ -8,8 +8,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
@@ -35,6 +37,8 @@ public class JobSubmitter implements Runnable {
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
   private final JobTracker jobTracker;
   private final JobNotifier jobNotifier;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
 
   // See attemptJobSubmit() to understand the need for this Concurrent Set.
   private final Set<Long> runningJobs = Sets.newConcurrentHashSet();
@@ -43,12 +47,16 @@ public class JobSubmitter implements Runnable {
                       final JobPersistence persistence,
                       final TemporalWorkerRunFactory temporalWorkerRunFactory,
                       final JobTracker jobTracker,
-                      final JobNotifier jobNotifier) {
+                      final JobNotifier jobNotifier,
+                      final WorkerEnvironment workerEnvironment,
+                      final LogConfigs logConfigs) {
     this.threadPool = threadPool;
     this.persistence = persistence;
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
     this.jobTracker = jobTracker;
     this.jobNotifier = jobNotifier;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
   }
 
   @Override
@@ -101,6 +109,7 @@ public class JobSubmitter implements Runnable {
 
   @VisibleForTesting
   void submitJob(final Job job) {
+
     final WorkerRun workerRun = temporalWorkerRunFactory.create(job);
     // we need to know the attempt number before we begin the job lifecycle. thus we state what the
     // attempt number should be. if it is not, that the lifecycle will fail. this should not happen as
@@ -114,7 +123,7 @@ public class JobSubmitter implements Runnable {
           final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
           final long persistedAttemptId = persistence.createAttempt(job.getId(), logFilePath);
           assertSameIds(attemptNumber, persistedAttemptId);
-          LogClientSingleton.setJobMdc(workerRun.getJobRoot());
+          LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, workerRun.getJobRoot());
         })
         .setOnSuccess(output -> {
           LOGGER.debug("Job id {} succeeded", job.getId());
