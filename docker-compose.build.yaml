@@ -5,48 +5,48 @@ services:
     image: airbyte/init:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-config/init
+      context: airbyte-config/init/build/docker
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   db:
     image: airbyte/db:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-db/lib
+      context: airbyte-db/lib/build/docker
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   scheduler:
     image: airbyte/scheduler:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-scheduler/app
+      context: airbyte-scheduler/app/build/docker
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   worker:
     image: airbyte/worker:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-workers
+      context: airbyte-workers/build/docker
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   server:
     image: airbyte/server:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-server
+      context: airbyte-server/build/docker
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   webapp:
     image: airbyte/webapp:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-webapp
+      context: airbyte-webapp/build/docker
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   migration:
     image: airbyte/migration:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-migration
+      context: airbyte-migration/build/docker
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
