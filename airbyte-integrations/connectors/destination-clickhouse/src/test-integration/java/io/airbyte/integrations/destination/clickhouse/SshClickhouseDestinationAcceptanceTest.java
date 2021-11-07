@@ -6,27 +6,35 @@ package io.airbyte.integrations.destination.clickhouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
 
-public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTest {
+/**
+ * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
+ * or with a password.
+ */
+public abstract class SshClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTest {
+
+  public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   private static final String DB_NAME = "default";
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
   private ClickHouseContainer db;
+  private final SshBastionContainer bastion = new SshBastionContainer();
 
   @Override
   protected String getImageName() {
@@ -57,23 +65,13 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   }
 
   @Override
-  protected JsonNode getConfig() {
-    // Note: ClickHouse official JDBC driver uses HTTP protocol, its default port is 8123
-    // dbt clickhouse adapter uses native protocol, its default port is 9000
-    // Since we disabled normalization and dbt test, we only use the JDBC port here.
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("database", DB_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", DB_NAME)
-        .put("ssl", false)
-        .build());
+  protected JsonNode getConfig() throws Exception {
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, DB_NAME)
+        .put("schema", DB_NAME));
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() {
+  protected JsonNode getFailCheckConfig() throws Exception {
     final JsonNode clone = Jsons.clone(getConfig());
     ((ObjectNode) clone).put("password", "wrong password");
     return clone;
@@ -99,11 +97,15 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    final JdbcDatabase jdbcDB = getDatabase(getConfig());
-    return jdbcDB.query(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-        .collect(Collectors.toList());
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
+    return SshTunnel.sshWrap(
+        getConfig(),
+        ClickhouseDestination.HOST_KEY,
+        ClickhouseDestination.PORT_KEY,
+        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabase(mangledConfig)
+            .query(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+                JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .collect(Collectors.toList()));
   }
 
   @Override
@@ -132,14 +134,14 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    db = new ClickHouseContainer("yandex/clickhouse-server");
+    bastion.initAndStartBastion();
+    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server").withNetwork(bastion.getNetWork());
     db.start();
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    db.stop();
-    db.close();
+    bastion.stopAndCloseContainers(db);
   }
 
   /**

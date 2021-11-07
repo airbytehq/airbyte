@@ -69,6 +69,7 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
 
     database.execute(connection -> {
       File tmpFile = null;
+      Exception primaryException = null;
       try {
         tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
         writeBatchToFile(tmpFile, records);
@@ -81,6 +82,7 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
             .send();
 
       } catch (final Exception e) {
+        primaryException = e;
         throw new RuntimeException(e);
       } finally {
         try {
@@ -88,6 +90,8 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
             Files.delete(tmpFile.toPath());
           }
         } catch (final IOException e) {
+          if (primaryException != null)
+            e.addSuppressed(primaryException);
           throw new RuntimeException(e);
         }
       }

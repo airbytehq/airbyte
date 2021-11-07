@@ -66,6 +66,7 @@ public class ClickhouseDestinationTest {
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("schema", DB_NAME)
+        .put("ssl", false)
         .build());
   }
 
@@ -103,7 +104,7 @@ public class ClickhouseDestinationTest {
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
-        "ru.yandex.clickhouse.ClickHouseDriver");
+        ClickhouseDestination.DRIVER_CLASS);
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery(

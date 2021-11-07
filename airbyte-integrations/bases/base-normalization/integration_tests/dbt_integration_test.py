@@ -233,6 +233,7 @@ class DbtIntegrationTest(object):
             "database": self.target_schema,
             "username": "default",
             "password": "",
+            "ssl": False,
         }
         if start_db:
             self.db_names.append("clickhouse")
