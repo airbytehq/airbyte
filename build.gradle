@@ -58,24 +58,23 @@ def createJavaLicenseWith = { license ->
 // monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
 def createSpotlessTarget = { pattern ->
     def excludes = [
-            '.gradle',
-            'node_modules',
-            '.eggs',
-            '.mypy_cache',
-            '.venv',
-            '*.egg-info',
-            'build',
-            'dbt-project-template',
-            'dbt-project-template-mssql',
-            'dbt-project-template-mysql',
-            'dbt-project-template-oracle',
-            'dbt_data_tests',
-            'dbt_data_tests_tmp',
-            'dbt_schema_tests',
-            'normalization_test_output',
-            'tools',
-            'secrets',
-            'charts' // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+        '.gradle',
+        'node_modules',
+        '.eggs',
+        '.mypy_cache',
+        '.venv',
+        '*.egg-info',
+        'build',
+        'dbt-project-template',
+        'dbt-project-template-mssql',
+        'dbt-project-template-mysql',
+        'dbt-project-template-oracle',
+        'dbt_test_config',
+        'normalization_test_output',
+        'tools',
+        'secrets',
+        'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+        'resources/seed/*_specs.yaml'
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -112,6 +111,26 @@ spotless {
     }
 }
 check.dependsOn 'spotlessApply'
+
+@SuppressWarnings('GroovyAssignabilityCheck')
+def Task getDockerBuildTask(String artifactName, String projectDir) {
+    return task ("buildDockerImage-$artifactName" (type: DockerBuildImage) {
+        def buildTag = System.getenv('VERSION') ?: 'dev'
+        def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
+        def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
+        def postgresImage = System.getenv('POSTGRES_IMAGE') ?: 'postgres:13-alpine'
+        def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
+        def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
+
+        inputDir = file("$projectDir/build/docker")
+        platform = buildPlatform
+        images.add("airbyte/$artifactName:$buildTag")
+        buildArgs.put('JDK_VERSION', jdkVersion)
+        buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
+        buildArgs.put('ALPINE_IMAGE', alpineImage)
+        buildArgs.put('POSTGRES_IMAGE', postgresImage)
+    })
+}
 
 allprojects {
     apply plugin: 'base'
@@ -230,10 +249,10 @@ subprojects {
         implementation 'software.amazon.awssdk:s3:2.16.84'
 
 
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
-        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
-        testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
+        testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
         testImplementation 'org.assertj:assertj-core:3.21.0'
     }
 
@@ -248,11 +267,18 @@ subprojects {
 
 task composeBuild {
     def buildTag = System.getenv('VERSION') ?: 'dev'
+    def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
+    def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
+    def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
+    def dockerComposeFile = buildArch == 'arm64' ? 'docker-compose.build-m1.yaml' : 'docker-compose.build.yaml'
     doFirst {
         exec {
             workingDir rootDir
-            commandLine 'docker-compose', '-f', 'docker-compose.build.yaml', 'build', '--parallel', '--quiet'
+            commandLine 'docker-compose', '-f', dockerComposeFile, 'build', '--parallel', '--quiet'
             environment 'VERSION', buildTag
+            environment 'DOCKER_BUILD_PLATFORM', buildPlatform
+            environment 'DOCKER_BUILD_ARCH', buildArch
+            environment 'JDK_VERSION', jdkVersion
         }
     }
 }

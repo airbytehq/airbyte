@@ -59,6 +59,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     final ObjectNode data = (ObjectNode) formatData(schema.getFields(), recordMessage.getData());
     data.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt);
+
     return data;
   }
 
@@ -66,6 +67,10 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     // handles empty objects and arrays
     if (fields == null) {
       return root;
+    }
+    List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(fields);
+    if (!dateTimeFields.isEmpty()) {
+      BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) root);
     }
     if (root.isObject()) {
       final List<String> fieldNames = fields.stream().map(Field::getName).collect(Collectors.toList());
@@ -90,8 +95,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
           .collect(Collectors.toList()));
 
       // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
-      // is)
-      // Turn all "Array of" into "Array of Record of" instead
+      // is). Turn all "Array of" into "Array of Record of" instead
       return Jsons.jsonNode(ImmutableMap.of(BigQueryDenormalizedDestination.NESTED_ARRAY_FIELD, items));
     } else {
       return root;
