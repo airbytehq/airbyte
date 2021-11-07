@@ -14,10 +14,8 @@ import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
-import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -26,9 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,19 +54,12 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   }
 
-  protected final HttpClient httpClient;
   private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
+  protected HttpClient httpClient;
   private final Supplier<String> stateSupplier;
 
-  public BaseOAuthFlow(final ConfigRepository configRepository) {
-    this(configRepository, HttpClient.newBuilder().version(Version.HTTP_1_1).build(), BaseOAuthFlow::generateRandomState);
-  }
-
-  public BaseOAuthFlow(ConfigRepository configRepository, TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
-    this(configRepository,
-        HttpClient.newBuilder().version(Version.HTTP_1_1).build(),
-        BaseOAuthFlow::generateRandomState,
-        tokenReqContentType);
+  public BaseOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    this(configRepository, httpClient, BaseOAuthFlow::generateRandomState);
   }
 
   public BaseOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
@@ -101,31 +90,6 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
     return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl);
   }
 
-  protected String formatConsentUrl(String clientId,
-                                    String redirectUrl,
-                                    String host,
-                                    String path,
-                                    String scope,
-                                    String responseType)
-      throws IOException {
-    final URIBuilder builder = new URIBuilder()
-        .setScheme("https")
-        .setHost(host)
-        .setPath(path)
-        // required
-        .addParameter("client_id", clientId)
-        .addParameter("redirect_uri", redirectUrl)
-        .addParameter("state", getState())
-        // optional
-        .addParameter("response_type", responseType)
-        .addParameter("scope", scope);
-    try {
-      return builder.build().toString();
-    } catch (URISyntaxException e) {
-      throw new IOException("Failed to format Consent URL for OAuth flow", e);
-    }
-  }
-
   /**
    * Depending on the OAuth flow implementation, the URL to grant user's consent may differ,
    * especially in the query parameters to be provided. This function should generate such consent URL
@@ -146,10 +110,10 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   @Override
   public Map<String, Object> completeSourceOAuth(
-      final UUID workspaceId,
-      final UUID sourceDefinitionId,
-      final Map<String, Object> queryParams,
-      final String redirectUrl)
+                                                 final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return completeOAuthFlow(
@@ -189,7 +153,8 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         .header("Accept", "application/json")
         .build();
     try {
-      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      HttpResponse<String> response;
+      response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       return extractRefreshToken(Jsons.deserialize(response.body()), accessTokenUrl);
     } catch (final InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
@@ -236,6 +201,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
     } else {
       LOGGER.info("Oauth flow failed. Data received from server: {}", data);
       throw new IOException(String.format("Missing 'refresh_token' in query params from %s. Response: %s", accessTokenUrl));
+
     }
     return Map.of("credentials", result);
 
@@ -262,7 +228,9 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
 
   protected static String toJson(final Map<String, String> body) {
     final Gson gson = new Gson();
-    Type gsonType = new TypeToken<Map<String, String>>() {}.getType();
+    Type gsonType = new TypeToken<Map<String, String>>() {
+
+    }.getType();
     return gson.toJson(body, gsonType);
   }
 

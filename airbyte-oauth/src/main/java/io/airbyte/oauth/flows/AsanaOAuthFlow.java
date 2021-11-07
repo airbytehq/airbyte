@@ -24,8 +24,8 @@ public class AsanaOAuthFlow extends BaseOAuthFlow {
   private static final String AUTHORIZE_URL = "https://app.asana.com/-/oauth_authorize";
   private static final String ACCESS_TOKEN_URL = "https://app.asana.com/-/oauth_token";
 
-  public AsanaOAuthFlow(ConfigRepository configRepository) {
-    super(configRepository);
+  public AsanaOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
