@@ -309,6 +309,16 @@ subprojects {
     }
 }
 
+task('generate-docker') {
+    dependsOn(':airbyte-workers:build')
+    dependsOn(':airbyte-webapp:build')
+    dependsOn(':airbyte-server:build')
+    dependsOn(':airbyte-scheduler:app:build')
+    dependsOn(':airbyte-migration:build')
+    dependsOn(':airbyte-db:lib:build')
+    dependsOn(':airbyte-config:init:build')
+}
+
 // produce reproducible archives
 // (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
 tasks.withType(AbstractArchiveTask) {
