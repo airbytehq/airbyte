@@ -73,7 +73,7 @@ SUB_BUILD=CONNECTORS_BASE ./gradlew format
 This command just builds the docker images that are used as artifacts in the platform. It bypasses running tests.
 
 ```text
-SUB_BUILD=PLATFORM ./gradlew composeBuild
+SUB_BUILD=PLATFORM ./gradlew build
 ```
 
 #### Running Tests

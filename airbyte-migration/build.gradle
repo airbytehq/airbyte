@@ -15,3 +15,16 @@ application {
     mainClass = 'io.airbyte.migrate.MigrationRunner'
 }
 
+task copyGeneratedTar(type: Copy) {
+    dependsOn distTar
+    dependsOn copyDocker
+
+    from('build/distributions') {
+        include 'airbyte-migration-*.tar'
+    }
+    into 'build/docker/bin'
+}
+
+Task dockerBuildTask = getDockerBuildTask("migration",  "$project.projectDir")
+dockerBuildTask.dependsOn(copyGeneratedTar)
+assemble.dependsOn(dockerBuildTask)
