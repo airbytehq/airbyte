@@ -1,7 +1,6 @@
 {{ config(
     cluster_by = "_airbyte_emitted_at",
     partition_by = {"field": "_airbyte_emitted_at", "data_type": "timestamp", "granularity": "day"},
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
     schema = "_airbyte_test_normalization",
     tags = [ "nested-intermediate" ]
 ) }}
@@ -18,4 +17,5 @@ from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partit
 {{ cross_join_unnest('partition', 'DATA') }}
 where 1 = 1
 and DATA is not null
+{{ incremental_clause('_airbyte_emitted_at') }}
 

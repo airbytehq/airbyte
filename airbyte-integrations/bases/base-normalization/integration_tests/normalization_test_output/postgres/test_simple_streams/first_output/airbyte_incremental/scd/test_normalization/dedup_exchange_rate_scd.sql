@@ -1,7 +1,7 @@
 
       
 
-  create  table "postgres"."test_normalization"."dedup_exchange_rate_scd__dbt_tmp"
+  create  table "postgres".test_normalization."dedup_exchange_rate_scd"
   as (
     
 with
