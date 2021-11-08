@@ -69,6 +69,7 @@ function write_all_secrets() {
 
 
 function export_github_secrets(){
+  # We expect that all secrets injected from github are available in an env variable `SECRETS_JSON`
   local pairs=`echo ${GITHUB_PROVIDED_SECRETS_JSON} | jq -c 'keys[] as $k | {"name": $k, "value": .[$k]} | @base64'`
   while read row; do
     pair=$(echo "${row}" | tr -d '"' | base64 -d)
