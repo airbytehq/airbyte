@@ -2219,7 +2219,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-workspace-admin-reports:0.1.5"
+- dockerImage: "airbyte/source-google-workspace-admin-reports:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports"
     connectionSpecification:
@@ -5491,7 +5491,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-tempo:0.2.3"
+- dockerImage: "airbyte/source-tempo:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/"
     connectionSpecification:
