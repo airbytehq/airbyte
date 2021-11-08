@@ -7,8 +7,6 @@ from unittest.mock import MagicMock
 
 import pytest
 from source_zenloop.source import ZenloopStream
-import requests
-import json
 
 
 @pytest.fixture
@@ -21,8 +19,8 @@ def patch_base_class(mocker):
 
 def test_request_params(patch_base_class, config):
     stream = ZenloopStream(config["api_token"], config["date_from"], config["public_hash_id"])
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {'page': "1"}}
-    expected_params = {'page': "1"}
+    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"page": "1"}}
+    expected_params = {"page": "1"}
     assert stream.request_params(**inputs) == expected_params
 
 

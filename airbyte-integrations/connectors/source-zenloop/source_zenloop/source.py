@@ -3,7 +3,9 @@
 #
 
 
+import math
 from abc import ABC
+from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -11,9 +13,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-
-import math
-from datetime import datetime, timedelta
 
 
 class ZenloopStream(HttpStream, ABC):
@@ -24,26 +23,26 @@ class ZenloopStream(HttpStream, ABC):
 
     def __init__(self, api_token: str, date_from: Optional[str], public_hash_id: Optional[str], **kwargs):
         super().__init__(authenticator=api_token)
-        self.api_token=api_token
-        self.date_from = date_from or datetime.today().strftime('%Y-%m-%d')
+        self.api_token = api_token
+        self.date_from = date_from or datetime.today().strftime("%Y-%m-%d")
         self.public_hash_id = public_hash_id or None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
-        page = decoded_response['meta']['page']
-        per_page = decoded_response['meta']['per_page']
-        total = decoded_response['meta']['total']
+        page = decoded_response["meta"]["page"]
+        per_page = decoded_response["meta"]["per_page"]
+        total = decoded_response["meta"]["total"]
 
-        if page < math.ceil(total/per_page):
-            return {'page': page + 1}
+        if page < math.ceil(total / per_page):
+            return {"page": page + 1}
         else:
             return None
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         if self.has_date_param:
             params = {"date_from": self.date_from}
@@ -59,14 +58,17 @@ class ZenloopStream(HttpStream, ABC):
         response_json = response.json()
         yield response_json
 
+
 class ChildStreamMixin:
     parent_stream_class: Optional[ZenloopStream] = None
 
-    def stream_slices(self, sync_mode,  stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         # loop through all public_hash_id's if None was provided
         # return nothing otherwise
         if not self.public_hash_id:
-            for item in self.parent_stream_class(api_token=self.api_token, date_from = self.date_from, public_hash_id = self.public_hash_id).read_records(sync_mode=sync_mode):
+            for item in self.parent_stream_class(
+                api_token=self.api_token, date_from=self.date_from, public_hash_id=self.public_hash_id
+            ).read_records(sync_mode=sync_mode):
                 # set date_from to most current cursor_field or date_from if not incremental
                 if stream_state:
                     date_from = stream_state[self.cursor_field]
@@ -75,6 +77,7 @@ class ChildStreamMixin:
                 yield {"survey_id": item["public_hash_id"], "date_from": date_from}
         else:
             yield None
+
 
 class IncrementalZenloopStream(ZenloopStream, ABC):
     # checkpoint stream reads after 100 records.
@@ -85,7 +88,9 @@ class IncrementalZenloopStream(ZenloopStream, ABC):
         # latest_record has objects in answers
         if len(latest_record) > 0:
             # add 1 second to not pull latest_record again
-            latest_record_date = (datetime.strptime(latest_record[self.cursor_field], '%Y-%m-%dT%H:%M:%S.%fZ') + timedelta(seconds=1)).isoformat() + str('Z')
+            latest_record_date = (
+                datetime.strptime(latest_record[self.cursor_field], "%Y-%m-%dT%H:%M:%S.%fZ") + timedelta(seconds=1)
+            ).isoformat() + str("Z")
         else:
             latest_record_date = ""
         max_record = max(latest_record_date, current_stream_state.get(self.cursor_field, ""))
@@ -104,6 +109,7 @@ class IncrementalZenloopStream(ZenloopStream, ABC):
                 params["date_from"] = stream_state[self.cursor_field]
         return params
 
+
 class Surveys(ZenloopStream):
     # API Doc: https://docs.zenloop.com/reference#get-list-of-surveys
     primary_key = None
@@ -111,10 +117,7 @@ class Surveys(ZenloopStream):
     extra_params = {"page": "1"}
 
     def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "surveys"
 
@@ -122,18 +125,22 @@ class Surveys(ZenloopStream):
         response_json = response.json()
         yield from response_json.get("surveys", [])
 
+
 class Answers(ChildStreamMixin, IncrementalZenloopStream):
     # API Doc: https://docs.zenloop.com/reference#get-answers
     primary_key = "id"
     has_date_param = True
     parent_stream_class = Surveys
-    extra_params = {"page": "1", "order_type": "desc", "order_by": "inserted_at", "date_shortcut": "custom", "date_to": datetime.today().strftime('%Y-%m-%d')}
+    extra_params = {
+        "page": "1",
+        "order_type": "desc",
+        "order_by": "inserted_at",
+        "date_shortcut": "custom",
+        "date_to": datetime.today().strftime("%Y-%m-%d"),
+    }
 
     def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         # take optional public_hash_id if entered
         if self.public_hash_id:
@@ -147,6 +154,7 @@ class Answers(ChildStreamMixin, IncrementalZenloopStream):
         # select answers and surveys to be able to link answer to a survey
         yield from response_json.get("answers", [])
 
+
 class SurveyGroups(ZenloopStream):
     # API Doc: https://docs.zenloop.com/reference#get-list-of-survey-groups
     primary_key = None
@@ -154,10 +162,7 @@ class SurveyGroups(ZenloopStream):
     extra_params = {"page": "1"}
 
     def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "survey_groups"
 
@@ -165,18 +170,22 @@ class SurveyGroups(ZenloopStream):
         response_json = response.json()
         yield from response_json.get("survey_groups", [])
 
+
 class AnswersSurveyGroup(ChildStreamMixin, IncrementalZenloopStream):
     # API Doc: https://docs.zenloop.com/reference#get-answers-for-survey-group
     primary_key = "id"
     has_date_param = True
     parent_stream_class = SurveyGroups
-    extra_params = {"page": "1", "order_type": "desc", "order_by": "inserted_at", "date_shortcut": "custom", "date_to": datetime.today().strftime('%Y-%m-%d')}
+    extra_params = {
+        "page": "1",
+        "order_type": "desc",
+        "order_by": "inserted_at",
+        "date_shortcut": "custom",
+        "date_to": datetime.today().strftime("%Y-%m-%d"),
+    }
 
     def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         # take optional public_hash_id if entered
         if self.public_hash_id:
@@ -189,6 +198,7 @@ class AnswersSurveyGroup(ChildStreamMixin, IncrementalZenloopStream):
         response_json = response.json()
         # select answers and surveys to be able to link answer to a survey
         yield from response_json.get("answers", [])
+
 
 class SourceZenloop(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -203,5 +213,9 @@ class SourceZenloop(AbstractSource):
             return False, f"Unable to connect to Zenloop API with the provided credentials - {error}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        args = {"api_token": TokenAuthenticator(token=config["api_token"]), "date_from": config["date_from"], "public_hash_id": config.get("public_hash_id")}
+        args = {
+            "api_token": TokenAuthenticator(token=config["api_token"]),
+            "date_from": config["date_from"],
+            "public_hash_id": config.get("public_hash_id"),
+        }
         return [Surveys(**args), Answers(**args), SurveyGroups(**args), AnswersSurveyGroup(**args)]

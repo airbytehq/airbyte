@@ -39,7 +39,7 @@ def test_stream_slices(patch_incremental_base_class, config):
     inputs = {
         "sync_mode": SyncMode.incremental,
         "cursor_field": expected_cursor_field,
-        "stream_state": {expected_cursor_field: "2021-10-20T03:30:30Z"}
+        "stream_state": {expected_cursor_field: "2021-10-20T03:30:30Z"},
     }
     expected_stream_slice = [None]
     assert stream.stream_slices(**inputs) == expected_stream_slice
