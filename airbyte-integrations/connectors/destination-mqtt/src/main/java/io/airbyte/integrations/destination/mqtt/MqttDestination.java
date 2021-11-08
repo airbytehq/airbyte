@@ -18,7 +18,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.UUID;
 import java.util.function.Consumer;
-
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -40,15 +39,15 @@ public class MqttDestination extends BaseConnector implements Destination {
       final MqttDestinationConfig mqttConfig = MqttDestinationConfig.getMqttDestinationConfig(config);
       final String testTopic = mqttConfig.getTestTopic();
       if (!testTopic.isBlank()) {
-        try(final IMqttAsyncClient client = new MqttAsyncClient(mqttConfig.getServerUri(), mqttConfig.getClientId())) {
+        try (final IMqttAsyncClient client = new MqttAsyncClient(mqttConfig.getServerUri(), mqttConfig.getClientId())) {
           client.connect(mqttConfig.getMqttConnectOptions()).waitForCompletion();
 
           final String key = UUID.randomUUID().toString();
           final JsonNode payload = Jsons.jsonNode(ImmutableMap.of(
-                  COLUMN_NAME_AB_ID, key,
-                  COLUMN_NAME_STREAM, "test-topic-stream",
-                  COLUMN_NAME_EMITTED_AT, System.currentTimeMillis(),
-                  COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value"))));
+              COLUMN_NAME_AB_ID, key,
+              COLUMN_NAME_STREAM, "test-topic-stream",
+              COLUMN_NAME_EMITTED_AT, System.currentTimeMillis(),
+              COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value"))));
 
           final MqttMessage message = new MqttMessage(payload.toString().getBytes());
           message.setQos(mqttConfig.getQos());

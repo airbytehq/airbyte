@@ -53,12 +53,12 @@ public class MqttRecordConsumerTest {
   @ArgumentsSource(TopicMapArgumentsProvider.class)
   @SuppressWarnings("unchecked")
   public void testBuildTopicMap(final ConfiguredAirbyteCatalog catalog,
-                                   final String streamName,
-                                   final String namespace,
-                                   final String topicPattern,
-                                   final String expectedTopic) {
+                                final String streamName,
+                                final String namespace,
+                                final String topicPattern,
+                                final String expectedTopic) {
     final MqttDestinationConfig config = MqttDestinationConfig
-            .getMqttDestinationConfig(getConfig(extension.getHost(), extension.getMqttPort(), topicPattern));
+        .getMqttDestinationConfig(getConfig(extension.getHost(), extension.getMqttPort(), topicPattern));
 
     final MqttRecordConsumer recordConsumer = new MqttRecordConsumer(config, catalog, mock(Consumer.class));
     final Map<AirbyteStreamNameNamespacePair, String> topicMap = recordConsumer.buildTopicMap();
@@ -72,7 +72,7 @@ public class MqttRecordConsumerTest {
   @SuppressWarnings("unchecked")
   void testCannotConnectToBrokers() throws Exception {
     final MqttDestinationConfig config = MqttDestinationConfig
-            .getMqttDestinationConfig(getConfig(extension.getHost(), extension.getMqttPort() + 10, "test-topic"));
+        .getMqttDestinationConfig(getConfig(extension.getHost(), extension.getMqttPort() + 10, "test-topic"));
 
     final String streamName = "test-stream";
     final String namespace = "test-schema";
@@ -163,12 +163,13 @@ public class MqttRecordConsumerTest {
           Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{namespace}", stream.getNamespace()),
           Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{stream}", stream.getName()),
           Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{namespace}.{stream}." + TOPIC_NAME,
-                  stream.getNamespace() + "." + stream.getName() + "." + TOPIC_NAME),
+              stream.getNamespace() + "." + stream.getName() + "." + TOPIC_NAME),
           Arguments.of(catalog, stream.getName(), stream.getNamespace(), "{namespace}-{stream}-" + TOPIC_NAME,
-                  stream.getNamespace() + "-" + stream.getName() + "-" + TOPIC_NAME),
+              stream.getNamespace() + "-" + stream.getName() + "-" + TOPIC_NAME),
           Arguments.of(catalog, stream.getName(), stream.getNamespace(), "topic with spaces", "topic with spaces"),
           Arguments.of(catalog, stream.getName(), stream.getNamespace(), "UppercaseTopic/test", "UppercaseTopic/test"));
     }
+
   }
 
 }

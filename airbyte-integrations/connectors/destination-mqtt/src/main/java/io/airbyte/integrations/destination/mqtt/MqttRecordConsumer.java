@@ -44,8 +44,8 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   private AirbyteMessage lastStateMessage = null;
 
   public MqttRecordConsumer(final MqttDestinationConfig mqttDestinationConfig,
-                              final ConfiguredAirbyteCatalog catalog,
-                              final Consumer<AirbyteMessage> outputRecordCollector) {
+                            final ConfiguredAirbyteCatalog catalog,
+                            final Consumer<AirbyteMessage> outputRecordCollector) {
     this.config = mqttDestinationConfig;
     this.topicMap = new HashMap<>();
     this.catalog = catalog;
@@ -81,10 +81,10 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
       final String key = UUID.randomUUID().toString();
       final JsonNode payload = Jsons.jsonNode(ImmutableMap.of(
-              MqttDestination.COLUMN_NAME_AB_ID, key,
-              MqttDestination.COLUMN_NAME_STREAM, recordMessage.getStream(),
-              MqttDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
-              MqttDestination.COLUMN_NAME_DATA, recordMessage.getData()));
+          MqttDestination.COLUMN_NAME_AB_ID, key,
+          MqttDestination.COLUMN_NAME_STREAM, recordMessage.getStream(),
+          MqttDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
+          MqttDestination.COLUMN_NAME_DATA, recordMessage.getData()));
 
       final MqttMessage message = new MqttMessage(payload.toString().getBytes());
       message.setRetained(config.isRetainedMessage());
@@ -102,7 +102,7 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
         .collect(Collectors.toMap(Function.identity(), pair -> config.getTopicPattern()
             .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
             .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")),
-                (existing, newValue) -> existing));
+            (existing, newValue) -> existing));
   }
 
   private void sendRecord(final String topic, final MqttMessage message) {
@@ -148,6 +148,7 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
       throw new RuntimeException("Cannot deliver message with ID '" + asyncActionToken.getMessageId() + "'", exception);
     }
+
   }
 
 }

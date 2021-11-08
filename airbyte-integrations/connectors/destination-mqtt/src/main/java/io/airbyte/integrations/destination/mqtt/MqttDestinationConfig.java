@@ -5,9 +5,8 @@
 package io.airbyte.integrations.destination.mqtt;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-
 import java.util.UUID;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 public class MqttDestinationConfig {
 
@@ -68,7 +67,7 @@ public class MqttDestinationConfig {
   }
 
   private String buildClientId(final JsonNode config) {
-    if(config.has("client_id")) {
+    if (config.has("client_id")) {
       return config.get("client_id").asText();
     }
     return "airbyte-" + UUID.randomUUID();
@@ -93,8 +92,7 @@ public class MqttDestinationConfig {
     return String.format("%s://%s:%s",
         config.get("use_tls").asBoolean() ? "ssl" : "tcp",
         config.get("broker_host").asText(),
-        config.get("broker_port").intValue()
-    );
+        config.get("broker_port").intValue());
   }
 
   private String buildTestTopic(final JsonNode config) {
@@ -118,6 +116,7 @@ public class MqttDestinationConfig {
   }
 
   private enum MessageQoS {
+
     AT_MOST_ONCE(0),
     AT_LEAST_ONCE(1),
     EXACTLY_ONCE(2);
@@ -131,6 +130,7 @@ public class MqttDestinationConfig {
     public int getQos() {
       return qos;
     }
+
   }
 
 }
