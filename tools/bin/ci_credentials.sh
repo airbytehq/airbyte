@@ -29,7 +29,7 @@ function write_standard_creds() {
     return 0
   fi
   local key="${connector_name}#${cred_filename}"
-  [[ -z "${creds}" ]] && error "Don't find data for the connector '${key})"
+  [[ -z "${creds}" ]] && error "Empty credential for the connector '${key})"
   
   if [ -v SECRET_MAP[${key}] ]; then
     echo "The connector '${key}' was added before"
@@ -122,7 +122,7 @@ function export_gsm_secrets(){
       # all secrets without the "command" label will be added too
       [[ ${label_command} != ${COMMAND_NAME} ]] && continue
       # all secret file names should be finished with ".json"
-      # but '.' cant be used
+      # but '.' cant be used in google, so we append it
       local filename="${label_filename}.json"
       echo "found the Google secret of ${label_connectors}: ${secret_name} => ${filename} for the command '${label_command}'"
       local secret_uri="https://secretmanager.googleapis.com/v1/${secret_name}/versions/latest:access"
