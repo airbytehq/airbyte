@@ -118,7 +118,7 @@ function export_gsm_secrets(){
         echo "Not found ${CONNECTOR_NAME} info into the label 'connector' of the secret ${secret_name}"
         continue
       fi
-      # skip secrets for other comments
+      # skip secrets for other commands
       # all secrets without the "command" label will be added too
       [[ ${label_command} != ${COMMAND_NAME} ]] && continue
       # all secret file names should be finished with ".json"
