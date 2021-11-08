@@ -32,10 +32,7 @@
             "description": "Bin rack"
           },
           "IsWarehouseManaged": {
-            "type": [
-              "null",
-              "boolean"
-            ],
+            "type": ["null", "boolean"],
             "description": "If the location is warehosue managed."
           },
           "location": {
@@ -106,14 +103,8 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh"
-      ],
-      "source_defined_primary_key": [
-        [
-          "StockLocationIntId"
-        ]
-      ]
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["StockLocationIntId"]]
     },
     {
       "name": "stock_items",
@@ -233,10 +224,7 @@
                       "description": "Bin rack"
                     },
                     "IsWarehouseManaged": {
-                      "type": [
-                        "null",
-                        "boolean"
-                      ],
+                      "type": ["null", "boolean"],
                       "description": "If the location is warehosue managed."
                     }
                   }
@@ -430,10 +418,7 @@
                     "additionalProperties": false,
                     "properties": {
                       "pkRowId": {
-                        "type": [
-                          "null",
-                          "integer"
-                        ],
+                        "type": ["null", "integer"],
                         "description": "Record row ID (optional)"
                       },
                       "fkStockPricingId": {
@@ -564,10 +549,7 @@
             "description": "Default item purchase price"
           },
           "RetailPrice": {
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": ["null", "number"],
             "description": "Default item retail price"
           },
           "TaxRate": {
@@ -615,10 +597,7 @@
             "description": "Item weight"
           },
           "CreationDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "format": "date-time",
             "description": "Stock item creation date"
           },
@@ -644,14 +623,8 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh"
-      ],
-      "source_defined_primary_key": [
-        [
-          "StockItemIntId"
-        ]
-      ]
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["StockItemIntId"]]
     },
     {
       "name": "processed_orders",
@@ -913,19 +886,10 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": [
-        "dReceivedDate"
-      ],
-      "source_defined_primary_key": [
-        [
-          "nOrderId"
-        ]
-      ]
+      "default_cursor_field": ["dReceivedDate"],
+      "source_defined_primary_key": [["nOrderId"]]
     }
   ]
 }
