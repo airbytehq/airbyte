@@ -11,11 +11,11 @@ const WithAnalyticsContext: React.FC = ({ children }) => {
   const { workspaceId } = useCurrentWorkspace();
   const { user } = useAuthService();
 
-  ctx.setContext({ workspaceId, userId: user?.userId });
-
   useEffect(() => {
+    ctx.setContext({ workspaceId, userId: user?.userId });
+
     return () => ctx.removeContextProps(["workspaceId", "userId"]);
-  }, [ctx]);
+  }, [ctx, workspaceId, user?.userId]);
 
   return <>{children}</>;
 };
