@@ -20,15 +20,12 @@ import { useConfig } from "./config";
 import { UserService } from "packages/cloud/lib/domain/users";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { LoadingPage } from "components";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 function useCustomerIdProvider() {
   const { user } = useAuthService();
-  const { workspaceId } = useCurrentWorkspace();
 
   return {
     userId: user?.userId ?? "",
-    workspaceId: workspaceId ?? "",
   };
 }
 

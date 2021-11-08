@@ -24,15 +24,11 @@ const AnalyticsInitializer: React.FC<{
   const customerIdProvider = useGetService<
     () => { userId: string; worspaceId: string }
   >("useCustomerIdProvider");
-  const { worspaceId, userId } = customerIdProvider();
+  const { userId } = customerIdProvider();
   const config = useConfig();
 
   return (
-    <AnalyticsServiceProvider
-      userId={userId}
-      workspaceId={worspaceId}
-      version={config.version}
-    >
+    <AnalyticsServiceProvider version={config.version}>
       <WithAnalytics customerId={userId} />
       {children}
     </AnalyticsServiceProvider>

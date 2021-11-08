@@ -42,11 +42,14 @@ import { CreditsPage } from "packages/cloud/views/credits";
 import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 import useRouter from "hooks/useRouter";
 import { WithPageAnalytics } from "pages/withPageAnalytics";
-import useWorkspace from "../../hooks/services/useWorkspace";
+import useWorkspace, {
+  useCurrentWorkspace,
+} from "../../hooks/services/useWorkspace";
 import { CompleteOauthRequest } from "../../pages/CompleteOauthRequest";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useConfig } from "./services/config";
 import useFullStory from "./services/useFullStory";
+import { useAnalyticsCtx } from "hooks/useAnalytics";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -225,6 +228,16 @@ const FirebaseActionRoute: React.FC = () => {
   return <LoadingPage />;
 };
 
+const Provider: React.FC<any> = ({ children }) => {
+  const { workspaceId } = useCurrentWorkspace();
+
+  const aCtx = useAnalyticsCtx();
+
+  aCtx.setContext({ workspaceId });
+
+  return children;
+};
+
 export const Routing: React.FC = () => {
   const { user, inited, emailVerified } = useAuthService();
   const config = useConfig();
@@ -238,7 +251,9 @@ export const Routing: React.FC = () => {
           <>
             {user && emailVerified && (
               <WorkspaceServiceProvider>
-                <MainViewRoutes />
+                <Provider>
+                  <MainViewRoutes />
+                </Provider>
               </WorkspaceServiceProvider>
             )}
             {user && !emailVerified && (
