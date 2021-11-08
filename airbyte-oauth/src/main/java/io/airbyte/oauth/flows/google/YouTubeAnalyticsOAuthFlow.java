@@ -15,8 +15,8 @@ public class YouTubeAnalyticsOAuthFlow extends GoogleOAuthFlow {
 
   private static final String SCOPE_URL = "https://www.googleapis.com/auth/yt-analytics.readonly";
 
-  public YouTubeAnalyticsOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public YouTubeAnalyticsOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
