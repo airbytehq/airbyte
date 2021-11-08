@@ -176,9 +176,9 @@ public class JsonToAvroSchemaConverter {
         if (fieldDefinition.has("format")) {
           String format = fieldDefinition.get("format").asText();
           fieldSchema = switch (format) {
-            case "date-time" -> LogicalTypes.timestampMicros().addToSchema(Schema.create(Type.LONG));
-            case "date" -> LogicalTypes.date().addToSchema(Schema.create(Type.INT));
-            case "time" -> LogicalTypes.timeMicros().addToSchema(Schema.create(Type.LONG));
+            case "date-time" -> LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG));
+            case "date" -> LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT));
+            case "time" -> LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG));
             default -> Schema.create(fieldType.getAvroType());
           };
         } else {

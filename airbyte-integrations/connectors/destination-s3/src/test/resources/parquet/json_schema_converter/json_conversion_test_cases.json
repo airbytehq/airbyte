@@ -388,7 +388,12 @@
       "fields": [
         {
           "name": "created_at",
-          "type": ["null", {"type":"long","logicalType":"timestamp-micros"},"string", "int"],
+          "type": [
+            "null",
+            { "type": "long", "logicalType": "timestamp-micros" },
+            "string",
+            "int"
+          ],
           "default": null
         },
         {
@@ -451,7 +456,12 @@
               "fields": [
                 {
                   "name": "created_at",
-                  "type": ["null", {"type":"long","logicalType":"timestamp-micros"},"string", "int"],
+                  "type": [
+                    "null",
+                    { "type": "long", "logicalType": "timestamp-micros" },
+                    "string",
+                    "int"
+                  ],
                   "default": null
                 },
                 {

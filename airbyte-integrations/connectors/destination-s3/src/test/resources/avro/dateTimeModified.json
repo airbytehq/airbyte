@@ -19,11 +19,7 @@
           {
             "name": "Jordan",
             "modified_at": null,
-            "randomdates": [
-              18747,
-              18838,
-              18838
-            ]
+            "randomdates": [18747, 18838, 18838]
           }
         ]
       },
@@ -51,13 +47,7 @@
     "created_at": 1619803413187,
     "created_by": null
   },
-  "testField": [
-    "test1",
-    "test2",
-    "test3",
-    "test4",
-    "test5"
-  ],
+  "testField": ["test1", "test2", "test3", "test4", "test5"],
   "custom_fields": [],
   "default_view": "list",
   "due_on": 18900,
@@ -94,11 +84,7 @@
       "gid": "1200272792839106"
     }
   ],
-  "dateFieldInRoot": [
-    18747,
-    18838,
-    18838
-  ],
+  "dateFieldInRoot": [18747, 18838, 18838],
   "modified_at": 1635849385373,
   "name": "Product launch",
   "notes": "",
