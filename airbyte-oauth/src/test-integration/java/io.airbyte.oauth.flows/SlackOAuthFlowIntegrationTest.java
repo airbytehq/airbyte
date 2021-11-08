@@ -16,6 +16,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -26,13 +27,8 @@ import org.junit.jupiter.api.Test;
 public class SlackOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
   @Override
-  protected Path get_credentials_path() {
+  protected Path getCredentialsPath() {
     return Path.of("secrets/slack.json");
-  }
-
-  @Override
-  protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new SlackOAuthFlow(configRepository);
   }
 
   @Override
@@ -40,12 +36,17 @@ public class SlackOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
     return "https://27b0-2804-14d-2a76-9a9a-fdbb-adee-9e5d-6c.ngrok.io/auth_flow";
   }
 
+  @Override
+  protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
+    return new SlackOAuthFlow(configRepository, httpClient);
+  }
+
   @Test
   public void testFullSlackOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
-    final String fullConfigAsString = new String(Files.readAllBytes(get_credentials_path()));
+    final String fullConfigAsString = new String(Files.readAllBytes(getCredentialsPath()));
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get("credentials");
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
@@ -55,7 +56,7 @@ public class SlackOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = flow.getSourceConsentUrl(workspaceId, definitionId, getRedirectUrl());
+    final String url = getFlowImplementation(configRepository, httpClient).getSourceConsentUrl(workspaceId, definitionId, getRedirectUrl());
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...

@@ -44,15 +44,11 @@ public abstract class OAuthFlowIntegrationTest {
     return Path.of("secrets/config.json");
   };
 
-
   protected String getRedirectUrl() {
     return REDIRECT_URL;
   }
 
-  protected abstract OAuthFlowImplementation getFlowObject(ConfigRepository configRepository);
-
   protected abstract OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient);
-
 
   @BeforeEach
   public void setup() throws IOException {

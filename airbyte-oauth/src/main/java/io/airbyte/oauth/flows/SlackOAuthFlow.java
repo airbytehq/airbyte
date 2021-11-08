@@ -19,8 +19,8 @@ public class SlackOAuthFlow extends BaseOAuthFlow {
   final String SLACK_CONSENT_URL_BASE = "https://slack.com/oauth/authorize";
   final String SLACK_TOKEN_URL = "https://slack.com/api/oauth.access";
 
-  public SlackOAuthFlow(ConfigRepository configRepository) {
-    super(configRepository);
+  public SlackOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
