@@ -120,7 +120,7 @@ class StockItems(LinnworksStream):
     # https://apps.linnworks.net//Api/Method/Stock-GetStockItemsFull
     # Response: List<StockItemFull> https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Inventory-ClassBase-StockItemFull
     # Allows 250 calls per minute
-    primary_key = "stock_item_int_id"
+    primary_key = "StockItemIntId"
     page_size = 200
 
     raise_on_http_errors = False

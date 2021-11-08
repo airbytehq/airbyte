@@ -3,172 +3,172 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "suppliers": {
+    "Suppliers": {
       "type": "array",
       "description": "Suppliers",
       "items": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "is_default": {
+          "IsDefault": {
             "type": "boolean",
             "description": "If supplier information is default"
           },
-          "supplier": {
+          "Supplier": {
             "type": "string",
             "description": "Supplier name"
           },
-          "supplier_id": {
+          "SupplierID": {
             "type": "string",
             "description": "Supplier ID"
           },
-          "code": {
+          "Code": {
             "type": "string",
             "description": "Supplier code"
           },
-          "supplier_barcode": {
+          "SupplierBarcode": {
             "type": "string",
             "description": "Supplier barcode"
           },
-          "lead_time": {
+          "LeadTime": {
             "type": "integer",
             "description": "Supplier lead time"
           },
-          "purchase_price": {
+          "PurchasePrice": {
             "type": "number",
             "description": "Supplier purchase price"
           },
-          "min_price": {
+          "MinPrice": {
             "type": "number",
             "description": "Minimum price"
           },
-          "max_price": {
+          "MaxPrice": {
             "type": "number",
             "description": "Maximum price"
           },
-          "average_price": {
+          "AveragePrice": {
             "type": "number",
             "description": "Average price"
           },
-          "average_lead_time": {
+          "AverageLeadTime": {
             "type": "number",
             "description": "Average lead time"
           },
-          "supplier_min_order_qty": {
+          "SupplierMinOrderQty": {
             "type": "integer",
             "description": "Minimum order quantity from this supplier"
           },
-          "supplier_pack_size": {
+          "SupplierPackSize": {
             "type": "integer",
             "description": "Supplier pack size"
           },
-          "supplier_currency": {
+          "SupplierCurrency": {
             "type": "string",
             "description": "Supplier's default currency"
           },
-          "stock_item_id": {
+          "StockItemId": {
             "type": "string",
             "description": "Stock Item Id"
           },
-          "stock_item_int_id": {
+          "StockItemIntId": {
             "type": "integer",
             "description": "Stock Item interger Id"
           }
         }
       }
     },
-    "stock_levels": {
+    "StockLevels": {
       "type": "array",
       "description": "Stock Levels",
       "items": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "location": {
+          "Location": {
             "type": "object",
             "additionalProperties": false,
             "description": "Location ID",
             "properties": {
-              "stock_location_id": {
+              "StockLocationId": {
                 "type": "string",
                 "description": "Location ID"
               },
-              "stock_location_int_id": {
+              "StockLocationIntId": {
                 "type": "integer",
                 "description": "Stock location integet id"
               },
-              "location_name": {
+              "LocationName": {
                 "type": "string",
                 "description": "Location name"
               },
-              "is_fulfillment_center": {
+              "IsFulfillmentCenter": {
                 "type": "boolean",
                 "description": "If location is a fulfilment center"
               },
-              "location_tag": {
+              "LocationTag": {
                 "type": "string",
                 "description": "Location tag"
               },
-              "bin_rack": {
+              "BinRack": {
                 "type": "string",
                 "description": "Bin rack"
               },
-              "is_warehouse_managed": {
+              "IsWarehouseManaged": {
                 "type": ["null", "boolean"],
                 "description": "If the location is warehosue managed."
               }
             }
           },
-          "stock_level": {
+          "StockLevel": {
             "type": "integer",
             "description": "Stock level"
           },
-          "stock_value": {
+          "StockValue": {
             "type": "number",
             "description": "Stock value"
           },
-          "minimum_level": {
+          "MinimumLevel": {
             "type": "integer",
             "description": "Minimum level"
           },
-          "in_order_book": {
+          "InOrderBook": {
             "type": "integer",
             "description": "Currently in open orders"
           },
-          "due": {
+          "Due": {
             "type": "integer",
             "description": "Due to come in purchase orders"
           },
-          "jit": {
+          "JIT": {
             "type": "boolean",
             "description": "Stock Item Just In Time (JIT) status"
           },
-          "in_orders": {
+          "InOrders": {
             "type": "integer",
             "description": "Currently in open orders"
           },
-          "available": {
+          "Available": {
             "type": "integer",
             "description": "StockLevel - InOrders"
           },
-          "unit_cost": {
+          "UnitCost": {
             "type": "number",
             "description": "if( Quantity == 0 ) dbo.StockItem.PurchasePrice Else CurrentStockValue / Quantity"
           },
-          "sku": {
+          "SKU": {
             "type": "string",
             "description": "Product SKU"
           },
-          "auto_adjust": {
+          "AutoAdjust": {
             "type": "boolean",
             "description": "If level is auto adjusted"
           },
-          "last_update_date": {
+          "LastUpdateDate": {
             "type": "string",
             "format": "date-time",
             "description": "Last time stock level was adjusted"
           },
-          "last_update_operation": {
+          "LastUpdateOperation": {
             "type": "string",
             "description": "Name of last update operation"
           },
@@ -176,338 +176,338 @@
             "type": "string",
             "description": "dbo.StockLevel.rowid"
           },
-          "pending_update": {
+          "PendingUpdate": {
             "type": "boolean",
             "description": "dbo.StockLevel.PendingUpdate"
           },
-          "stock_item_purchase_price": {
+          "StockItemPurchasePrice": {
             "type": "number",
             "description": "Stock item purchase price. It's used to calculate UnitCost"
           },
-          "stock_item_id": {
+          "StockItemId": {
             "type": "string",
             "description": "Stock Item Id"
           },
-          "stock_item_int_id": {
+          "StockItemIntId": {
             "type": "integer",
             "description": "Stock Item interger Id"
           }
         }
       }
     },
-    "item_channel_descriptions": {
+    "ItemChannelDescriptions": {
       "type": "array",
       "description": "List of item descriptions",
       "items": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "pk_row_id": {
+          "pkRowId": {
             "type": "string",
             "description": "Record row ID (generate random GUID)"
           },
-          "source": {
+          "Source": {
             "type": "string",
             "description": "ChannelName/Source (e.g. EBAY)"
           },
-          "sub_source": {
+          "SubSource": {
             "type": "string",
             "description": "Channel subsource (e.g EBAY1)"
           },
-          "description": {
+          "Description": {
             "type": "string",
             "description": "Product description"
           },
-          "stock_item_id": {
+          "StockItemId": {
             "type": "string",
             "description": "Stock Item Id"
           },
-          "stock_item_int_id": {
+          "StockItemIntId": {
             "type": "integer",
             "description": "Stock Item interger Id"
           }
         }
       }
     },
-    "item_extended_properties": {
+    "ItemExtendedProperties": {
       "type": "array",
       "description": "List of extended properties",
       "items": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "pk_row_id": {
+          "pkRowId": {
             "type": "string",
             "description": "Record row ID (generate random)"
           },
-          "fk_stock_item_id": {
+          "fkStockItemId": {
             "type": "string",
             "description": "Stock Item ID"
           },
-          "propery_name": {
+          "ProperyName": {
             "type": "string",
             "description": "Property name"
           },
-          "property_value": {
+          "PropertyValue": {
             "type": "string",
             "description": "Property value"
           },
-          "property_type": {
+          "PropertyType": {
             "type": "string",
             "description": "Property type"
           }
         }
       }
     },
-    "item_channel_titles": {
+    "ItemChannelTitles": {
       "type": "array",
       "description": "List item titles",
       "items": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "pk_row_id": {
+          "pkRowId": {
             "type": "string",
             "description": "Record row id (generate random)"
           },
-          "source": {
+          "Source": {
             "type": "string",
             "description": "ChannelName/Source (e.g. EBAY)"
           },
-          "sub_source": {
+          "SubSource": {
             "type": "string",
             "description": "SubSource (EBAY1)"
           },
-          "title": {
+          "Title": {
             "type": "string",
             "description": "Item title"
           },
-          "stock_item_id": {
+          "StockItemId": {
             "type": "string",
             "description": "Stock Item Id"
           },
-          "stock_item_int_id": {
+          "StockItemIntId": {
             "type": "integer",
             "description": "Stock Item interger Id"
           }
         }
       }
     },
-    "item_channel_prices": {
+    "ItemChannelPrices": {
       "type": "array",
       "description": "List of item prices",
       "items": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "rules": {
+          "Rules": {
             "type": "array",
             "description": "Pricing rule",
             "items": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "pk_row_id": {
+                "pkRowId": {
                   "type": ["null", "integer"],
                   "description": "Record row ID (optional)"
                 },
-                "fk_stock_pricing_id": {
+                "fkStockPricingId": {
                   "type": "string",
                   "description": "Stock pricing ID"
                 },
-                "type": {
+                "Type": {
                   "type": "string",
                   "description": "Type"
                 },
-                "lower_bound": {
+                "LowerBound": {
                   "type": "integer",
                   "description": "Lower level"
                 },
-                "value": {
+                "Value": {
                   "type": "number",
                   "description": "Value/Price level"
                 }
               }
             }
           },
-          "pk_row_id": {
+          "pkRowId": {
             "type": "string",
             "description": "Record row ID (generate random)"
           },
-          "source": {
+          "Source": {
             "type": "string",
             "description": "ChannelName/Source (e.g. EBAY)"
           },
-          "sub_source": {
+          "SubSource": {
             "type": "string",
             "description": "SubSource (e.g. EBAY1)"
           },
-          "price": {
+          "Price": {
             "type": "number",
             "description": "Channel price"
           },
-          "tag": {
+          "Tag": {
             "type": "string",
             "description": "Product price tag"
           },
-          "update_status": {
+          "UpdateStatus": {
             "type": "string"
           },
-          "stock_item_id": {
+          "StockItemId": {
             "type": "string",
             "description": "Stock Item Id"
           },
-          "stock_item_int_id": {
+          "StockItemIntId": {
             "type": "integer",
             "description": "Stock Item interger Id"
           }
         }
       }
     },
-    "images": {
+    "Images": {
       "type": "array",
       "description": "Image urls",
       "items": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "source": {
+          "Source": {
             "type": "string",
             "description": "URL to thumnail image"
           },
-          "full_source": {
+          "FullSource": {
             "type": "string",
             "description": "Url to full size image"
           },
-          "check_sum_value": {
+          "CheckSumValue": {
             "type": "string",
             "description": "Image check sum"
           },
-          "pk_row_id": {
+          "pkRowId": {
             "type": "string",
             "description": "Unique id of image"
           },
-          "is_main": {
+          "IsMain": {
             "type": "boolean",
             "description": "Is the image the main image"
           },
-          "sort_order": {
+          "SortOrder": {
             "type": "integer",
             "description": "Sort order for the image"
           },
-          "checksum_value": {
+          "ChecksumValue": {
             "type": "string",
             "description": "Internal checksum value"
           },
-          "raw_checksum": {
+          "RawChecksum": {
             "type": "string",
             "description": "Raw file checksum (Used for UI to determine if the image file is the same before submitting for upload)"
           },
-          "stock_item_id": {
+          "StockItemId": {
             "type": "string",
             "description": "Stock Item Id"
           },
-          "stock_item_int_id": {
+          "StockItemIntId": {
             "type": "integer",
             "description": "Stock Item interger Id"
           }
         }
       }
     },
-    "item_number": {
+    "ItemNumber": {
       "type": "string",
       "description": "SKU"
     },
-    "item_title": {
+    "ItemTitle": {
       "type": "string",
       "description": "Item title"
     },
-    "barcode_number": {
+    "BarcodeNumber": {
       "type": "string",
       "description": "Barcode number"
     },
-    "meta_data": {
+    "MetaData": {
       "type": "string",
       "description": "Item description"
     },
-    "is_batched_stock_type": {
+    "isBatchedStockType": {
       "type": "boolean",
       "description": "Returns true is the stock item is tracked by batch"
     },
-    "purchase_price": {
+    "PurchasePrice": {
       "type": "number",
       "description": "Default item purchase price"
     },
-    "retail_price": {
+    "RetailPrice": {
       "type": ["null", "number"],
       "description": "Default item retail price"
     },
-    "tax_rate": {
+    "TaxRate": {
       "type": "number",
       "description": "Default item tax rate. Set -1 to use country tax rate"
     },
-    "postal_service_id": {
+    "PostalServiceId": {
       "type": "string",
       "description": "Default postal service id"
     },
-    "postal_service_name": {
+    "PostalServiceName": {
       "type": "string",
       "description": "Default postal service name"
     },
-    "category_id": {
+    "CategoryId": {
       "type": "string",
       "description": "Default category id"
     },
-    "category_name": {
+    "CategoryName": {
       "type": "string",
       "description": "Default category name"
     },
-    "package_group_id": {
+    "PackageGroupId": {
       "type": "string",
       "description": "Default package group id"
     },
-    "package_group_name": {
+    "PackageGroupName": {
       "type": "string",
       "description": "Default package group name"
     },
-    "height": {
+    "Height": {
       "type": "number",
       "description": "Item height"
     },
-    "width": {
+    "Width": {
       "type": "number",
       "description": "Item width"
     },
-    "depth": {
+    "Depth": {
       "type": "number",
       "description": "Item depth"
     },
-    "weight": {
+    "Weight": {
       "type": "number",
       "description": "Item weight"
     },
-    "creation_date": {
+    "CreationDate": {
       "type": ["null", "string"],
       "format": "date-time",
       "description": "Stock item creation date"
     },
-    "inventory_tracking_type": {
+    "InventoryTrackingType": {
       "type": "integer",
       "description": "Stock item tracking type. 0 = none. 1 = Ordered by Sell by Date. 2 = Ordered by Priority Sequence"
     },
-    "batch_number_scan_required": {
+    "BatchNumberScanRequired": {
       "type": "boolean",
       "description": "User must scan batch number when procesing orders"
     },
-    "serial_number_scan_required": {
+    "SerialNumberScanRequired": {
       "type": "boolean",
       "description": "User must scan item serial number when processing ordesr"
     },
-    "stock_item_id": {
+    "StockItemId": {
       "type": "string",
       "description": "Stock Item Id"
     },
-    "stock_item_int_id": {
+    "StockItemIntId": {
       "type": "integer",
       "description": "Stock Item interger Id"
     }
