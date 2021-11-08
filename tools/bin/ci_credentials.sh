@@ -29,7 +29,7 @@ function write_standard_creds() {
     return 0
   fi
   local key="${connector_name}#${cred_filename}"
-  [[ -z "${creds}" ]] && error "Don't find data for the connector '${key})"
+  [[ -z "${creds}" ]] && error "Empty credential for the connector '${key})"
   
   if [ -v SECRET_MAP[${key}] ]; then
     echo "The connector '${key}' was added before"
