@@ -39,7 +39,7 @@
       },
       "window_in_days": {
         "type": "integer",
-        "title": "Window in days",
+        "title": "Data fetch window size in days",
         "description": "The amount of days for each data-chunk begining from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=185, as for a Year).",
         "examples": [30, 60, 90, 185],
         "default": 185,
