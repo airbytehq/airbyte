@@ -1,6 +1,6 @@
 {{ config(
     indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
+    unique_key = '_airbyte_ab_id',
     schema = "_airbyte_test_normalization",
     tags = [ "top-level-intermediate" ]
 ) }}
@@ -15,10 +15,10 @@ select
         'hkd_special___characters',
         'nzd',
         'usd',
+        adapter.quote('column`_\'with""_quotes'),
     ]) }} as _airbyte_exchange_rate_hashid,
     tmp.*
 from {{ ref('exchange_rate_ab2') }} tmp
 -- exchange_rate
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
 

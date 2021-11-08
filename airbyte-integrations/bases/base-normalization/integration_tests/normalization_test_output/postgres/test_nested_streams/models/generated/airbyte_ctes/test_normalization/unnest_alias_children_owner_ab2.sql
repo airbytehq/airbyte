@@ -1,6 +1,6 @@
 {{ config(
     indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
+    unique_key = '_airbyte_ab_id',
     schema = "_airbyte_test_normalization",
     tags = [ "nested-intermediate" ]
 ) }}
@@ -8,6 +8,7 @@
 select
     _airbyte_children_hashid,
     cast(owner_id as {{ dbt_utils.type_bigint() }}) as owner_id,
+    {{ adapter.quote('column`_\'with""_quotes') }},
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at

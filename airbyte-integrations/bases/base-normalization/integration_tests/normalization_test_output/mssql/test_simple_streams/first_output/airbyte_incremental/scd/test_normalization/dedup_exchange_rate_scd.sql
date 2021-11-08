@@ -57,14 +57,14 @@ scd_data as (
             "date" desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
-      case when lag("date") over (
+      case when row_number() over (
         partition by id, currency, cast(nzd as 
     VARCHAR(max))
         order by
             "date" desc,
             "date" desc,
             _airbyte_emitted_at desc
-      ) is null  then 1 else 0 end as _airbyte_active_row,
+      ) = 1 then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_dedup_exchange_rate_hashid

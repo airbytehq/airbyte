@@ -1,6 +1,5 @@
 {{ config(
     cluster_by = ["_AIRBYTE_EMITTED_AT"],
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_AIRBYTE_AB_ID'),
     schema = "_AIRBYTE_TEST_NORMALIZATION",
     tags = [ "nested-intermediate" ]
 ) }}
@@ -17,4 +16,5 @@ from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTIT
 {{ cross_join_unnest('PARTITION', 'DATA') }}
 where 1 = 1
 and DATA is not null
+{{ incremental_clause('_AIRBYTE_EMITTED_AT') }}
 

@@ -1,6 +1,6 @@
 {{ config(
     sort = "_airbyte_emitted_at",
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
+    unique_key = '_airbyte_ab_id',
     schema = "_airbyte_test_normalization",
     tags = [ "top-level-intermediate" ]
 ) }}

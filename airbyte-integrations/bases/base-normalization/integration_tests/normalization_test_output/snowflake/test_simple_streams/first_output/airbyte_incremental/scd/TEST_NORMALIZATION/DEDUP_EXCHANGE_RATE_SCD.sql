@@ -41,7 +41,7 @@ scd_data as (
             DATE desc,
             _AIRBYTE_EMITTED_AT desc
       ) as _AIRBYTE_END_AT,
-      case when lag(DATE) over (
+      case when row_number() over (
         partition by ID, CURRENCY, cast(NZD as 
     varchar
 )
@@ -49,7 +49,7 @@ scd_data as (
             DATE is null asc,
             DATE desc,
             _AIRBYTE_EMITTED_AT desc
-      ) is null  then 1 else 0 end as _AIRBYTE_ACTIVE_ROW,
+      ) = 1 then 1 else 0 end as _AIRBYTE_ACTIVE_ROW,
       _AIRBYTE_AB_ID,
       _AIRBYTE_EMITTED_AT,
       _AIRBYTE_DEDUP_EXCHANGE_RATE_HASHID
@@ -94,6 +94,6 @@ select
     convert_timezone('UTC', current_timestamp()) as _AIRBYTE_NORMALIZED_AT,
     _AIRBYTE_DEDUP_EXCHANGE_RATE_HASHID
 from dedup_data where _AIRBYTE_ROW_NUM = 1
-            ) order by (_AIRBYTE_ACTIVE_ROW, _AIRBYTE_UNIQUE_KEY, _AIRBYTE_EMITTED_AT)
+            ) order by (_AIRBYTE_ACTIVE_ROW, _AIRBYTE_UNIQUE_KEY_SCD, _AIRBYTE_EMITTED_AT)
       );
-    alter table "AIRBYTE_DATABASE".TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_SCD" cluster by (_AIRBYTE_ACTIVE_ROW, _AIRBYTE_UNIQUE_KEY, _AIRBYTE_EMITTED_AT);
+    alter table "AIRBYTE_DATABASE".TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_SCD" cluster by (_AIRBYTE_ACTIVE_ROW, _AIRBYTE_UNIQUE_KEY_SCD, _AIRBYTE_EMITTED_AT);

@@ -1,6 +1,6 @@
 {{ config(
     indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
+    unique_key = '_airbyte_ab_id',
     schema = "_airbyte_test_normalization",
     tags = [ "top-level-intermediate" ]
 ) }}
@@ -14,11 +14,11 @@ select
     cast(hkd_special___characters as {{ dbt_utils.type_string() }}) as hkd_special___characters,
     cast(nzd as {{ dbt_utils.type_float() }}) as nzd,
     cast(usd as {{ dbt_utils.type_float() }}) as usd,
+    cast({{ adapter.quote('column`_\'with""_quotes') }} as {{ dbt_utils.type_string() }}) as {{ adapter.quote('column`_\'with""_quotes') }},
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at
 from {{ ref('exchange_rate_ab1') }}
 -- exchange_rate
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
 

@@ -1,6 +1,5 @@
 {{ config(
     indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
     schema = "_airbyte_test_normalization",
     tags = [ "nested-intermediate" ]
 ) }}
@@ -17,4 +16,5 @@ from {{ ref('nested_stream_with_c___long_names_partition') }} as table_alias
 {{ cross_join_unnest('partition', adapter.quote('DATA')) }}
 where 1 = 1
 and {{ adapter.quote('DATA') }} is not null
+{{ incremental_clause('_airbyte_emitted_at') }}
 
