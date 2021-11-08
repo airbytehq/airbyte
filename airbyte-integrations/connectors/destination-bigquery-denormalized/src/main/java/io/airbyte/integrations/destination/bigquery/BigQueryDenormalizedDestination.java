@@ -89,7 +89,9 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
 
     /**
    * @param properties - JSON schema with properties
-   * @return Predicate if object contains $ref key as definition the value is false, else true
+   *
+   * The method is responsible for population of fieldsContainRefDefinitionValue set with keys
+   * contain $ref definition
    *
    * Currently, AirByte doesn't support parsing value by $ref key definition.
    * The issue to track this <a href="https://github.com/airbytehq/airbyte/issues/7725">7725</a>
