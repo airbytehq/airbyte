@@ -12,9 +12,7 @@ from http import HTTPStatus
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
-from base_python.logger import AirbyteLogger
 import pendulum as pendulum
-from pydantic.fields import Schema
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
@@ -701,7 +699,7 @@ class FormStream(Stream):
     created_at_field = "createdAt"
 
 
-class PropertyHistoryStream(Stream):
+class PropertyHistoryStream(IncrementalStream):
     more_key = "has-more"
     url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
@@ -741,9 +739,6 @@ class FormSubmssionStream(Stream):
     created_at_field = "submittedAt"
     page_field = "paging"
     page_filter = "after"
-
-    ## TODO: Add Dynamic Properties
-    ## TODO: Test Get User ID into submit
     
     def list(self, fields) -> Iterable:
         params = {
@@ -760,13 +755,8 @@ class FormSubmssionStream(Stream):
     def _transform(self, records: Iterable) -> Iterable:
         for record in records:
             values: dict = record.get("values") or None
-            record["values"] = {}
             if values:
                 record["submittedAt"] = self._field_to_datetime(record["submittedAt"]).to_datetime_string()
-                for value_dict in values:
-                    _temp_form_entry = {value_dict["name"]: value_dict["value"]}
-                    record["values"].update(_temp_form_entry)
-                
             yield record
 
 
