@@ -1122,7 +1122,9 @@ public abstract class DestinationAcceptanceTest {
           "EMITTED_AT",
           "AB_ID",
           "NORMALIZED_AT",
-          "HASHID");
+          "HASHID",
+          "unique_key",
+          "UNIQUE_KEY");
       if (airbyteInternalFields.stream().anyMatch(internalField -> key.toLowerCase().contains(internalField.toLowerCase()))
           || json.get(key).isNull()) {
         ((ObjectNode) json).remove(key);
