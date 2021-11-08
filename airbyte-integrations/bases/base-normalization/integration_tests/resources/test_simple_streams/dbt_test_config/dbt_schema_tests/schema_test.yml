@@ -7,22 +7,8 @@ models:
           # description: check no column collisions
           #  Two columns having similar names especially after removing special characters should remain distincts
           expression: cast("HKD@spéçiäl & characters" as {{ dbt_utils.type_string() }}) != HKD_special___characters
-      - dbt_utils.equality:
-          # description: check_streams_are_equal
-          #  In this integration test, we are sending the same records to both streams
-          #  exchange_rate and dedup_exchange_rate.
-          #  The SCD table of dedup_exchange_rate in append_dedup mode should therefore mirror
-          #  the final table with append or overwrite mode from exchange_rate.
-          compare_model: ref('dedup_exchange_rate_scd')
-          compare_columns:
-            - id
-            - currency
-            - date
-            - timestamp_col
-            - '"HKD@spéçiäl & characters"'
-            - HKD_special___characters
-            - NZD
-            - USD
+      - dbt_utils.expression_is_true:
+          expression: "\"column`_'with\"\"_quotes\" is not null"
     columns:
       - name: '"HKD@spéçiäl & characters"'
         # description: check special charactesrs

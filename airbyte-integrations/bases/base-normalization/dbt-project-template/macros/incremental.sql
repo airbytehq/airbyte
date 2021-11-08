@@ -10,14 +10,14 @@
 
 {%- macro default__incremental_clause(col_emitted_at) -%}
 {% if is_incremental() %}
-and {{ col_emitted_at }} >= (select max({{ col_emitted_at }}) from {{ this }})
+and cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >= (select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }})) from {{ this }})
 {% endif %}
 {%- endmacro -%}
 
 {# -- see https://on-systems.tech/113-beware-dbt-incremental-updates-against-snowflake-external-tables/ #}
 {%- macro snowflake__incremental_clause(col_emitted_at) -%}
 {% if is_incremental() %}
-and {{ col_emitted_at }} >= cast('{{ get_max_normalized_cursor(col_emitted_at) }}' as {{ type_timestamp_with_timezone() }})
+and cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >= cast('{{ get_max_normalized_cursor(col_emitted_at) }}' as {{ type_timestamp_with_timezone() }})
 {% endif %}
 {%- endmacro -%}
 

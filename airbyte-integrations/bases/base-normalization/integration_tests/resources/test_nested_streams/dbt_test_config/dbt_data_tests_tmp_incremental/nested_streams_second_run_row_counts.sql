@@ -5,9 +5,6 @@ union all
     select distinct 'nested_stream_with_complex_columns_resulting_into_long_names' as label, count(*) as row_count, 3 as expected_count
     from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names') }}
 union all
-    select distinct 'nested_stream_with_complex_columns_resulting_into_long_names_partition' as label, count(*) as row_count, 3 as expected_count
-    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition') }}
-union all
     select 'nested_stream_with_complex_columns_resulting_into_long_names_partition_DATA' as label, count(distinct currency) as row_count, 1 as expected_count
     from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_DATA') }}
 -- union all
