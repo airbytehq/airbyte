@@ -16,6 +16,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -31,8 +32,8 @@ public class HubspotOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
   }
 
   @Override
-  protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new HubspotOAuthFlow(configRepository);
+  protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
+    return new HubspotOAuthFlow(configRepository, httpClient);
   }
 
   @Test
@@ -50,7 +51,7 @@ public class HubspotOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("credentials").get("client_id").asText())
             .put("client_secret", credentialsJson.get("credentials").get("client_secret").asText())
             .build()))));
-    var flowObject = getFlowObject(configRepository);
+    var flowObject = getFlowImplementation(configRepository, httpClient);
     final String url = flowObject.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing

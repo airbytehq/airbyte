@@ -29,8 +29,8 @@ public class SalesforceOAuthFlow extends BaseOAuthFlow {
   private static final String AUTHORIZE_URL = "https://login.salesforce.com/services/oauth2/authorize";
   private static final String ACCESS_TOKEN_URL = "https://login.salesforce.com/services/oauth2/token";
 
-  public SalesforceOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public SalesforceOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
