@@ -25,7 +25,7 @@ class LinnworksStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return self.authenticator.get_server()
+        return self._authenticator.get_server()
 
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, start_date: str = None):
         super().__init__(authenticator=authenticator)
