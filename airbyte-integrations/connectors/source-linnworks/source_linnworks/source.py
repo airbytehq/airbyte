@@ -3,10 +3,10 @@
 #
 
 
+import json
 from abc import ABC, abstractmethod
 from datetime import date
-from typing import (Any, Iterable, List, Mapping, MutableMapping, Optional,
-                    Tuple, Union)
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
@@ -16,12 +16,10 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
-from airbyte_cdk.sources.streams.http.requests_native_auth import \
-    Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from requests.auth import AuthBase
 
 from .util import normalize
-import json
 
 
 class LinnworksStream(HttpStream, ABC):
@@ -104,15 +102,13 @@ class StockLocations(LinnworksStream):
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
         for record in records:
             location = Location(authenticator=self.authenticator)
-            srecords = location.read_records(
-                sync_mode, cursor_field, stream_slice, {"pkStockLocationId": record["stock_location_id"]}
-            )
+            srecords = location.read_records(sync_mode, cursor_field, stream_slice, {"pkStockLocationId": record["stock_location_id"]})
             record.update(next(srecords))
             yield record
 
@@ -175,9 +171,11 @@ class IncrementalLinnworksStream(LinnworksStream, ABC):
         if not stream_state:
             stream_state = {}
 
-        return [{
-            self.cursor_field: stream_state.get(self.cursor_field, self.start_date),
-        }]
+        return [
+            {
+                self.cursor_field: stream_state.get(self.cursor_field, self.start_date),
+            }
+        ]
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current = current_stream_state.get(self.cursor_field, "")
@@ -203,17 +201,14 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         from_date = stream_slice[self.cursor_field]
-        to_date = pendulum.tomorrow('UTC').isoformat()
+        to_date = pendulum.tomorrow("UTC").isoformat()
         request = {
             "DateField": "received",
             "FromDate": from_date,
             "ToDate": max(from_date, to_date),
             "PageNumber": 1,
             "ResultsPerPage": self.page_size,
-            "SearchSorting": {
-                "SortField": "dReceivedDate",
-                "SortDirection": "ASC"
-            }
+            "SearchSorting": {"SortField": "dReceivedDate", "SortDirection": "ASC"},
         }
 
         if next_page_token:
@@ -289,8 +284,7 @@ class LinnworksAuthenticator(Oauth2Authenticator):
 
     def refresh_access_token(self) -> Tuple[str, int]:
         try:
-            response = requests.request(
-                method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
+            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
             response.raise_for_status()
             response_json = response.json()
             return response_json[self.access_token_name], response_json[self.server_name]
@@ -320,5 +314,5 @@ class SourceLinnworks(AbstractSource):
         return [
             StockLocations(authenticator=auth),
             StockItems(authenticator=auth),
-            ProcessedOrders(authenticator=auth, start_date=config["start_date"])
+            ProcessedOrders(authenticator=auth, start_date=config["start_date"]),
         ]

@@ -4,12 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Linnworks Spec",
     "type": "object",
-    "required": [
-      "application_id",
-      "application_secret",
-      "token",
-      "start_date"
-    ],
+    "required": ["application_id", "application_secret", "token", "start_date"],
     "additionalProperties": false,
     "properties": {
       "application_id": {

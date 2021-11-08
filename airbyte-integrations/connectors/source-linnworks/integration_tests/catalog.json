@@ -3,43 +3,22 @@
     {
       "name": "stock_locations",
       "json_schema": {},
-      "supported_sync_modes": [
-        "full_refresh"
-      ],
-      "source_defined_primary_key": [
-        [
-          "stock_location_int_id"
-        ]
-      ]
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["stock_location_int_id"]]
     },
     {
       "name": "stock_items",
       "json_schema": {},
-      "supported_sync_modes": [
-        "full_refresh"
-      ],
-      "source_defined_primary_key": [
-        [
-          "stock_item_int_id"
-        ]
-      ]
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["stock_item_int_id"]]
     },
     {
       "name": "processed_orders",
       "json_schema": {},
-      "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-      ],
+      "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
-      "default_cursor_field": [
-        "d_received_date"
-      ],
-      "source_defined_primary_key": [
-        [
-          "n_order_id"
-        ]
-      ]
+      "default_cursor_field": ["d_received_date"],
+      "source_defined_primary_key": [["n_order_id"]]
     }
   ]
 }

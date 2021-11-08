@@ -34,12 +34,15 @@ def test_next_page_token(patch_base_class):
 
 def test_parse_response(patch_base_class, requests_mock):
     stream = LinnworksStream()
-    requests_mock.get("https://dummy", json={
-        "Foo": "foo",
-        "Bar": {
-            "Baz": "baz",
+    requests_mock.get(
+        "https://dummy",
+        json={
+            "Foo": "foo",
+            "Bar": {
+                "Baz": "baz",
+            },
         },
-    })
+    )
     resp = requests.get("https://dummy")
     inputs = {"response": resp}
     expected_parsed_object = {"bar": {"baz": "baz"}, "foo": "foo"}

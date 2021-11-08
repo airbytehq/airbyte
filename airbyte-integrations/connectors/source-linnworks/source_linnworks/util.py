@@ -1,4 +1,9 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from airbyte_cdk.sources.utils.casing import camel_to_snake
+
 
 def deep_map(function, d):
     if isinstance(d, list):

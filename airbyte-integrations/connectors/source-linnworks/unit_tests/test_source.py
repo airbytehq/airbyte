@@ -10,14 +10,7 @@ from source_linnworks.source import SourceLinnworks
 
 @fixture
 def config():
-    return {
-        "config": {
-            "application_id": "xxx",
-            "application_secret": "yyy",
-            "token": "zzz",
-            "start_date": "2021-11-01"
-        }
-    }
+    return {"config": {"application_id": "xxx", "application_secret": "yyy", "token": "zzz", "start_date": "2021-11-01"}}
 
 
 def test_check_connection(mocker, requests_mock, config):
@@ -31,6 +24,7 @@ def test_check_connection(mocker, requests_mock, config):
         },
     )
     assert source.check_connection(logger_mock, **config) == (True, None)
+
 
 def test_streams(mocker):
     source = SourceLinnworks()

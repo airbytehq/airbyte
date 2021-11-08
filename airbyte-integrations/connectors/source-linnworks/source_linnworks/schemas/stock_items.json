@@ -114,10 +114,7 @@
                 "description": "Bin rack"
               },
               "is_warehouse_managed": {
-                "type": [
-                  "null",
-                  "boolean"
-                ],
+                "type": ["null", "boolean"],
                 "description": "If the location is warehosue managed."
               }
             }
@@ -311,10 +308,7 @@
               "additionalProperties": false,
               "properties": {
                 "pk_row_id": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ],
+                  "type": ["null", "integer"],
                   "description": "Record row ID (optional)"
                 },
                 "fk_stock_pricing_id": {
@@ -445,10 +439,7 @@
       "description": "Default item purchase price"
     },
     "retail_price": {
-      "type": [
-        "null",
-        "number"
-      ],
+      "type": ["null", "number"],
       "description": "Default item retail price"
     },
     "tax_rate": {
@@ -496,10 +487,7 @@
       "description": "Item weight"
     },
     "creation_date": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time",
       "description": "Stock item creation date"
     },
