@@ -11,7 +11,7 @@ import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
 import io.airbyte.integrations.destination.gcs.jsonl.GcsJsonlWriter;
 import io.airbyte.integrations.destination.gcs.parquet.GcsParquetWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -35,20 +35,17 @@ public class ProductionWriterFactory implements GcsWriterFactory {
 
     if (format == S3Format.AVRO || format == S3Format.PARQUET) {
       final AirbyteStream stream = configuredStream.getStream();
+      LOGGER.info("Json schema for stream {}: {}", stream.getName(), stream.getJsonSchema());
 
       final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
       final Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
-      final JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
 
-      LOGGER.info("Paquet schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
-      if (nameUpdater.hasNameUpdate()) {
-        LOGGER.info("The following field names will be standardized: {}", nameUpdater);
-      }
+      LOGGER.info("Avro schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
 
       if (format == S3Format.AVRO) {
-        return new GcsAvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+        return new GcsAvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, AvroConstants.JSON_CONVERTER);
       } else {
-        return new GcsParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+        return new GcsParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, AvroConstants.JSON_CONVERTER);
       }
     }
 

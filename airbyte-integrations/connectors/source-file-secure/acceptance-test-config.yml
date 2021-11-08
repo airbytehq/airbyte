@@ -1,7 +1,7 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 
-# Here we tries to test a basic tests only. 
+# Here we tries to test a basic tests only.
 # The main part of tests should be executed for the source-file connector
 connector_image: airbyte/source-file-secure:dev
 tests:
@@ -11,19 +11,17 @@ tests:
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
     # for https
-    - config_path: "integration_tests/https_config.json"
-      status: "succeed"   
+    - config_path: "integration_tests/config.json"
+      status: "succeed"
     # for local should be failed
     - config_path: "integration_tests/local_config.json"
-      status: "exception"  
+      status: "exception"
 
   discovery:
     # for https
-    - config_path: "integration_tests/https_config.json"
+    - config_path: "integration_tests/config.json"
 
   basic_read:
     # for https
-    - config_path: "integration_tests/https_config.json"
-      configured_catalog_path: "integration_tests/configured_https_catalog.json"
-
-
+    - config_path: "integration_tests/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
