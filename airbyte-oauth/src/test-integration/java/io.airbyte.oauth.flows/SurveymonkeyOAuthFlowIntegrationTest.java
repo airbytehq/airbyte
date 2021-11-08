@@ -16,6 +16,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -30,13 +31,13 @@ public class SurveymonkeyOAuthFlowIntegrationTest extends OAuthFlowIntegrationTe
   protected static final String REDIRECT_URL = "http://localhost:3000/auth_flow";
 
   @Override
-  protected Path get_credentials_path() {
+  protected Path getCredentialsPath() {
     return CREDENTIALS_PATH;
   }
 
   @Override
-  protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new SurveymonkeyOAuthFlow(configRepository);
+  protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
+    return new SurveymonkeyOAuthFlow(configRepository, httpClient);
   }
 
   @BeforeEach

@@ -1,4 +1,5 @@
-FROM alpine:3.4 AS seed
+ARG ALPINE_IMAGE=alpine:3.4
+FROM ${ALPINE_IMAGE} AS seed
 
 WORKDIR /app
 
