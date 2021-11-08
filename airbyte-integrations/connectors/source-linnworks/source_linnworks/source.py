@@ -5,7 +5,6 @@
 
 import json
 from abc import ABC, abstractmethod
-from datetime import date
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
 
