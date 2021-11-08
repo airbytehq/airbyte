@@ -33,13 +33,13 @@ scd_data as (
             _airbyte_emitted_at desc,
             _airbyte_emitted_at desc, _ab_cdc_updated_at desc
       ) as _airbyte_end_at,
-      case when lag(_airbyte_emitted_at) over (
+      case when row_number() over (
         partition by "id"
         order by
             _airbyte_emitted_at is null asc,
             _airbyte_emitted_at desc,
             _airbyte_emitted_at desc, _ab_cdc_updated_at desc
-      ) is null and _ab_cdc_deleted_at is null  then 1 else 0 end as _airbyte_active_row,
+      ) = 1 and _ab_cdc_deleted_at is null then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_dedup_cdc_excluded_hashid
