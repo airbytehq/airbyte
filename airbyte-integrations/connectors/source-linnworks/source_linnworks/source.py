@@ -305,8 +305,8 @@ class SourceLinnworks(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             self._auth(config).get_auth_header()
-        except Exception as e:
-            return None, e
+        except Exception as error:
+            return False, f"Unable to connect to Linnworks API with the provided credentials - {error}"
 
         return True, None
 
