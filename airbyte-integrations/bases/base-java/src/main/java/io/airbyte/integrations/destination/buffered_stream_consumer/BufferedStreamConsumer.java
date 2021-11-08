@@ -83,7 +83,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final long queueBatchSizeBytes;
+  private final long maxQueueSizeInBytes;
   private long bufferSizeInBytes;
 
   private boolean hasStarted;
@@ -100,7 +100,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                                 final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                                 final long maxQueueSizeInBytes) {
     this.outputRecordCollector = outputRecordCollector;
-    this.queueBatchSizeBytes = maxQueueSizeInBytes;
+    this.maxQueueSizeInBytes = maxQueueSizeInBytes;
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
@@ -142,8 +142,11 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
+      // TODO use a more efficient way to compute bytes that doesn't require double serialization (records are serialized again when writing to
+      //  the destination
+      // TODO use a smarter way of estimating byte size rather than always multiply by two
       long messageSizeInBytes = Jsons.serialize(recordMessage.getData()).length() * 2; // Strings serialize to UTF-8 by default
-      if (bufferSizeInBytes + messageSizeInBytes >= queueBatchSizeBytes) {
+      if (bufferSizeInBytes + messageSizeInBytes >= maxQueueSizeInBytes) {
         flushQueueToDestination();
         bufferSizeInBytes = 0;
       }
