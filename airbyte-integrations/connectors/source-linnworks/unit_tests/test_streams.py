@@ -12,7 +12,6 @@ from source_linnworks.streams import LinnworksStream
 
 @pytest.fixture
 def patch_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(LinnworksStream, "path", "v0/example_endpoint")
     mocker.patch.object(LinnworksStream, "primary_key", "test_primary_key")
     mocker.patch.object(LinnworksStream, "__abstractmethods__", set())
@@ -78,8 +77,15 @@ def test_should_retry(patch_base_class, http_status, should_retry):
     assert stream.should_retry(response_mock) == should_retry
 
 
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
+@pytest.mark.parametrize(
+    "header_name,header_value,expected",
+    [
+        ("Retry-After", "123", 123),
+        ("Retry-After", "-123", -123),
+    ],
+)
+def test_backoff_time(patch_base_class, requests_mock, header_name, header_value, expected):
     stream = LinnworksStream()
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    requests_mock.get("https://dummy", headers={header_name: header_value}, status_code=429)
+    result = stream.backoff_time(requests.get("https://dummy"))
+    assert result == expected

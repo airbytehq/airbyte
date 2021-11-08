@@ -46,6 +46,11 @@ class LinnworksStream(HttpStream, ABC):
         for record in json:
             yield record
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        delay_time = response.headers.get("Retry-After")
+        if delay_time:
+            return int(delay_time)
+
 
 class LinnworksGenericPagedResult(ABC):
     # https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Generic-GenericPagedResult
