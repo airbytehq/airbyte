@@ -177,32 +177,4 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   private  JsonNode parseConfig(final String path) throws IOException {
     return Jsons.deserialize(MoreResources.readResource(path));
   }
-
-  @Test
-  public void testIt() throws Exception {
-    final JsonNode config = parseConfig("destination_config.json");
-    final ConfiguredAirbyteCatalog catalog = parseConfig("destination_catalog.json", ConfiguredAirbyteCatalog.class);
-    SnowflakeInsertDestination snowflakeInsertDestination = new SnowflakeInsertDestination();
-    final AirbyteMessageConsumer consumer = snowflakeInsertDestination.getConsumer(config, catalog, (x) -> {});
-    consumeWriteStream(consumer);
-  }
-
-  @VisibleForTesting
-  static void consumeWriteStream(final AirbyteMessageConsumer consumer) throws Exception {
-    // use a Scanner that only processes new line characters to strictly abide with the
-    // https://jsonlines.org/ standard
-    final Scanner input = new Scanner(new File("/Users/sherifnada/code/airbyte/airbyte-integrations/connectors/destination-snowflake/src/test-integration/resources/output.json")).useDelimiter("[\r\n]+");
-    try (consumer) {
-      consumer.start();
-      while (input.hasNext()) {
-        final String inputString = input.next();
-        final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
-        if (messageOptional.isPresent()) {
-          consumer.accept(messageOptional.get());
-        } else {
-          System.out.println("Received invalid message: " + inputString);
-        }
-      }
-    }
-  }
 }
