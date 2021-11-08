@@ -78,7 +78,7 @@ def test_should_retry(patch_base_class, http_status, should_retry):
 
 
 @pytest.mark.parametrize(
-    "header_name,header_value,expected",
+    ("header_name", "header_value", "expected"),
     [
         ("Retry-After", "123", 123),
         ("Retry-After", "-123", -123),
