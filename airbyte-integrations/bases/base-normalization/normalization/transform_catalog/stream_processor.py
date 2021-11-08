@@ -946,9 +946,17 @@ where 1 = 1
             config["schema"] = f'"{self.default_schema}"'
         else:
             config["schema"] = f'"{schema}"'
-        if self.is_incremental_mode(self.destination_sync_mode) and suffix != "scd":
-            # incremental is handled in the SCD SQL already
-            sql = self.add_incremental_clause(sql)
+        if self.is_incremental_mode(self.destination_sync_mode):
+            if suffix == "scd":
+                if self.destination_type == DestinationType.POSTGRES:
+                    # because of https://github.com/dbt-labs/docs.getdbt.com/issues/335, we avoid VIEW for postgres
+                    # so we need to clean up temporary table materialization...
+                    ab3_schema = self.get_schema(True)
+                    ab3_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "ab3", truncate_name)
+                    config["post_hook"] = f"['drop table if exists {ab3_schema}.{ab3_table}']"
+            else:
+                # incremental is handled in the SCD SQL already
+                sql = self.add_incremental_clause(sql)
         template = Template(
             """
 {{ '{{' }} config(
