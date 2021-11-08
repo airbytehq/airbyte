@@ -25,9 +25,11 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @Tag("logger-client")
 public class S3LogsTest {
 
+  private static final LogConfigs logConfigs = (new EnvConfigs()).getLogConfigs();
+
   @Test
   public void testMissingCredentials() {
-    var configs = mock(LogConfigs.class);
+    final var configs = mock(LogConfigs.class);
     when(configs.getAwsAccessKey()).thenReturn("");
     when(configs.getAwsSecretAccessKey()).thenReturn("");
 
@@ -41,13 +43,12 @@ public class S3LogsTest {
    */
   @Test
   public void testRetrieveAllLogs() throws IOException {
-    var configs = new LogConfigDelegator(new EnvConfigs());
-    var data = S3Logs.getFile(configs, "paginate", 6);
+    final var data = S3Logs.getFile(logConfigs, "paginate", 6);
 
-    var retrieved = new ArrayList<String>();
+    final var retrieved = new ArrayList<String>();
     Files.lines(data.toPath()).forEach(retrieved::add);
 
-    var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
+    final var expected = List.of("Line 0", "Line 1", "Line 2", "Line 3", "Line 4", "Line 5", "Line 6", "Line 7", "Line 8");
 
     assertEquals(expected, retrieved);
   }
@@ -61,24 +62,22 @@ public class S3LogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    var configs = new LogConfigDelegator(new EnvConfigs());
-    var data = new S3Logs().tailCloudLog(configs, "tail", 6);
-
-    var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
+    final var data = new S3Logs().tailCloudLog(logConfigs, "tail", 6);
+    final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
     assertEquals(data, expected);
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     generatePaginateTestFiles();
   }
 
   private static void generatePaginateTestFiles() {
-    var s3 = S3Client.builder().region(Region.of("us-west-2")).build();
+    final var s3 = S3Client.builder().region(Region.of("us-west-2")).build();
 
     for (int i = 0; i < 9; i++) {
-      var fileName = i + "-file";
-      var line = "Line " + i + "\n";
-      PutObjectRequest objectRequest = PutObjectRequest.builder()
+      final var fileName = i + "-file";
+      final var line = "Line " + i + "\n";
+      final PutObjectRequest objectRequest = PutObjectRequest.builder()
           .bucket("airbyte-kube-integration-logging-test")
           .key("paginate/" + fileName)
           .build();

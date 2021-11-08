@@ -13,7 +13,6 @@ This connector outputs the following streams:
 * Worklogs
 * Workload Schemes
 
-
 ### Features
 
 | Feature | Supported? |
@@ -34,9 +33,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Setup guide
 
-Source Tempo is designed to interact with the data your permissions give you access to. To do so, you will need to generate a Tempo OAuth 2.0 token for  an individual user.
+Source Tempo is designed to interact with the data your permissions give you access to. To do so, you will need to generate a Tempo OAuth 2.0 token for an individual user.
 
-Go to **Tempo > Settings**, scroll down to **Data Access** and select **API integration**.
-
-
+Go to **Tempo &gt; Settings**, scroll down to **Data Access** and select **API integration**.
 

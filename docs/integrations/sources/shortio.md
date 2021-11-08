@@ -1,4 +1,4 @@
-# Short.io
+# Shortio
 
 ## Sync overview
 
@@ -41,6 +41,7 @@ This Source is capable of syncing the following Streams:
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-08-16 | [3787](https://github.com/airbytehq/airbyte/pull/5418) | Add Native Shortio Source Connector |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2021-08-16 | [3787](https://github.com/airbytehq/airbyte/pull/5418) | Add Native Shortio Source Connector |
+

@@ -78,7 +78,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * @throws WorkerException
    */
   @Override
-  public ReplicationOutput run(StandardSyncInput syncInput, Path jobRoot) throws WorkerException {
+  public ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
 
     // todo (cgardens) - this should not be happening in the worker. this is configuration information
@@ -86,7 +86,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
     destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
-    long startTime = System.currentTimeMillis();
+    final long startTime = System.currentTimeMillis();
     try {
       LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
           .stream()
@@ -123,7 +123,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         destinationOutputThreadFuture.get();
         LOGGER.info("Destination thread complete.");
 
-      } catch (Exception e) {
+      } catch (final Exception e) {
         hasFailed.set(true);
         LOGGER.error("Sync worker failed.", e);
       } finally {
@@ -173,18 +173,18 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       }
 
       return output;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new WorkerException("Sync failed", e);
     }
 
   }
 
-  private static Runnable getReplicationRunnable(Source<AirbyteMessage> source,
-                                                 Destination<AirbyteMessage> destination,
-                                                 AtomicBoolean cancelled,
-                                                 Mapper<AirbyteMessage> mapper,
-                                                 MessageTracker<AirbyteMessage> sourceMessageTracker,
-                                                 Map<String, String> mdc) {
+  private static Runnable getReplicationRunnable(final Source<AirbyteMessage> source,
+                                                 final Destination<AirbyteMessage> destination,
+                                                 final AtomicBoolean cancelled,
+                                                 final Mapper<AirbyteMessage> mapper,
+                                                 final MessageTracker<AirbyteMessage> sourceMessageTracker,
+                                                 final Map<String, String> mdc) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -205,7 +205,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           }
         }
         destination.notifyEndOfStream();
-      } catch (Exception e) {
+      } catch (final Exception e) {
         if (!cancelled.get()) {
           // Although this thread is closed first, it races with the source's closure and can attempt one
           // final read after the source is closed before it's terminated.
@@ -217,10 +217,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private static Runnable getDestinationOutputRunnable(Destination<AirbyteMessage> destination,
-                                                       AtomicBoolean cancelled,
-                                                       MessageTracker<AirbyteMessage> destinationMessageTracker,
-                                                       Map<String, String> mdc) {
+  private static Runnable getDestinationOutputRunnable(final Destination<AirbyteMessage> destination,
+                                                       final AtomicBoolean cancelled,
+                                                       final MessageTracker<AirbyteMessage> destinationMessageTracker,
+                                                       final Map<String, String> mdc) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Destination output thread started.");
@@ -232,7 +232,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             destinationMessageTracker.accept(messageOptional.get());
           }
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         if (!cancelled.get()) {
           // Although this thread is closed first, it races with the destination's closure and can attempt one
           // final read after the destination is closed before it's terminated.
@@ -250,7 +250,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     LOGGER.info("Cancelling replication worker...");
     try {
       executors.awaitTermination(10, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       e.printStackTrace();
     }
     cancelled.set(true);
@@ -258,14 +258,14 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     LOGGER.info("Cancelling destination...");
     try {
       destination.cancel();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.info("Error cancelling destination: ", e);
     }
 
     LOGGER.info("Cancelling source...");
     try {
       source.cancel();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.info("Error cancelling source: ", e);
     }
 

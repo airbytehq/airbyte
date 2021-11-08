@@ -24,8 +24,10 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
@@ -91,7 +93,7 @@ public class JobSubmitterTest {
         persistence,
         workerRunFactory,
         jobTracker,
-        jobNotifier));
+        jobNotifier, WorkerEnvironment.DOCKER, LogConfiguration.EMPTY));
   }
 
   @Test
@@ -120,7 +122,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.submitJob(job);
 
-    InOrder inOrder = inOrder(persistence, jobSubmitter);
+    final InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).writeOutput(JOB_ID, ATTEMPT_NUMBER, new JobOutput());
     inOrder.verify(persistence).succeedAttempt(JOB_ID, ATTEMPT_NUMBER);
@@ -134,7 +136,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobSubmitter);
+    final InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     verify(jobTracker).trackSync(job, JobState.FAILED);
@@ -147,7 +149,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobTracker);
+    final InOrder inOrder = inOrder(persistence, jobTracker);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     inOrder.verify(jobTracker).trackSync(job, JobState.FAILED);
@@ -160,7 +162,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobTracker);
+    final InOrder inOrder = inOrder(persistence, jobTracker);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     inOrder.verify(jobTracker).trackSync(job, JobState.FAILED);
@@ -173,7 +175,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobTracker);
+    final InOrder inOrder = inOrder(persistence, jobTracker);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     inOrder.verify(jobTracker).trackSync(job, JobState.FAILED);
@@ -187,7 +189,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobTracker);
+    final InOrder inOrder = inOrder(persistence, jobTracker);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     inOrder.verify(jobTracker).trackSync(job, JobState.FAILED);
@@ -223,7 +225,7 @@ public class JobSubmitterTest {
      */
     @Test
     public void testOnlyOneJobCanBeSubmittedAtOnce() throws Exception {
-      var jobDone = new AtomicReference<>(false);
+      final var jobDone = new AtomicReference<>(false);
       when(workerRun.call()).thenAnswer((a) -> {
         Thread.sleep(5000);
         jobDone.set(true);
@@ -231,7 +233,7 @@ public class JobSubmitterTest {
       });
 
       // Simulate the same job being submitted over and over again.
-      var simulatedJobSubmitterPool = Executors.newFixedThreadPool(10);
+      final var simulatedJobSubmitterPool = Executors.newFixedThreadPool(10);
       while (!jobDone.get()) {
         // This sleep mimics our SchedulerApp loop.
         Thread.sleep(1000);

@@ -37,7 +37,7 @@ public class KeenTimestampService {
   private final Parser parser;
   private final boolean timestampInferenceEnabled;
 
-  public KeenTimestampService(ConfiguredAirbyteCatalog catalog, boolean timestampInferenceEnabled) {
+  public KeenTimestampService(final ConfiguredAirbyteCatalog catalog, final boolean timestampInferenceEnabled) {
     this.streamCursorFields = new HashMap<>();
     this.parser = new Parser();
     this.timestampInferenceEnabled = timestampInferenceEnabled;
@@ -62,15 +62,15 @@ public class KeenTimestampService {
    * @param message AirbyteRecordMessage containing record data
    * @return Record data together with keen.timestamp field
    */
-  public JsonNode injectTimestamp(AirbyteRecordMessage message) {
-    String streamName = message.getStream();
-    List<String> cursorField = streamCursorFields.get(streamName);
-    JsonNode data = message.getData();
+  public JsonNode injectTimestamp(final AirbyteRecordMessage message) {
+    final String streamName = message.getStream();
+    final List<String> cursorField = streamCursorFields.get(streamName);
+    final JsonNode data = message.getData();
     if (timestampInferenceEnabled && cursorField != null) {
       try {
-        String timestamp = parseTimestamp(cursorField, data);
+        final String timestamp = parseTimestamp(cursorField, data);
         injectTimestamp(data, timestamp);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         // If parsing of timestamp has failed, remove stream from timestamp-parsable stream map,
         // so it won't be parsed for future messages.
         LOGGER.info("Unable to parse cursor field: {} into a keen.timestamp", cursorField);
@@ -83,14 +83,14 @@ public class KeenTimestampService {
     return data;
   }
 
-  private void injectTimestamp(JsonNode data, String timestamp) {
-    ObjectNode root = ((ObjectNode) data);
+  private void injectTimestamp(final JsonNode data, final String timestamp) {
+    final ObjectNode root = ((ObjectNode) data);
     root.set("keen", JsonNodeFactory.instance.objectNode().put("timestamp", timestamp));
   }
 
-  private String parseTimestamp(List<String> cursorField, JsonNode data) {
-    JsonNode timestamp = getNestedNode(data, cursorField);
-    long numberTimestamp = timestamp.asLong();
+  private String parseTimestamp(final List<String> cursorField, final JsonNode data) {
+    final JsonNode timestamp = getNestedNode(data, cursorField);
+    final long numberTimestamp = timestamp.asLong();
     // if cursor value is below given threshold, assume that it's not epoch timestamp but ordered id
     if (numberTimestamp >= SECONDS_FROM_EPOCH_THRESHOLD) {
       return dateFromNumber(numberTimestamp);
@@ -107,7 +107,7 @@ public class KeenTimestampService {
     throw new IllegalStateException();
   }
 
-  private String dateFromNumber(Long timestamp) {
+  private String dateFromNumber(final Long timestamp) {
     // if cursor value is above given threshold, then assume that it's Unix timestamp in milliseconds
     if (timestamp > MILLIS_FROM_EPOCH_THRESHOLD) {
       return Instant.ofEpochMilli(timestamp).toString();
@@ -115,7 +115,7 @@ public class KeenTimestampService {
     return Instant.ofEpochSecond(timestamp).toString();
   }
 
-  private static JsonNode getNestedNode(JsonNode data, List<String> fieldNames) {
+  private static JsonNode getNestedNode(final JsonNode data, final List<String> fieldNames) {
     return fieldNames.stream().reduce(data, JsonNode::get, (first, second) -> second);
   }
 

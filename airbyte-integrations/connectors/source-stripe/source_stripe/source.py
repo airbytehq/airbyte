@@ -5,6 +5,7 @@
 
 from typing import Any, List, Mapping, Tuple
 
+import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
@@ -14,6 +15,8 @@ from source_stripe.streams import (
     BalanceTransactions,
     BankAccounts,
     Charges,
+    CheckoutSessions,
+    CheckoutSessionsLineItems,
     Coupons,
     CustomerBalanceTransactions,
     Customers,
@@ -26,6 +29,7 @@ from source_stripe.streams import (
     Payouts,
     Plans,
     Products,
+    PromotionCodes,
     Refunds,
     SubscriptionItems,
     Subscriptions,
@@ -44,12 +48,15 @@ class SourceStripe(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["client_secret"])
-        args = {"authenticator": authenticator, "account_id": config["account_id"]}
-        incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days"), "start_date": config["start_date"]}
+        start_date = pendulum.parse(config["start_date"]).int_timestamp
+        args = {"authenticator": authenticator, "account_id": config["account_id"], "start_date": start_date}
+        incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
         return [
             BalanceTransactions(**incremental_args),
             BankAccounts(**args),
             Charges(**incremental_args),
+            CheckoutSessions(**args),
+            CheckoutSessionsLineItems(**args),
             Coupons(**incremental_args),
             CustomerBalanceTransactions(**args),
             Customers(**incremental_args),
@@ -62,6 +69,7 @@ class SourceStripe(AbstractSource):
             Payouts(**incremental_args),
             Plans(**incremental_args),
             Products(**incremental_args),
+            PromotionCodes(**incremental_args),
             Refunds(**incremental_args),
             SubscriptionItems(**args),
             Subscriptions(**incremental_args),

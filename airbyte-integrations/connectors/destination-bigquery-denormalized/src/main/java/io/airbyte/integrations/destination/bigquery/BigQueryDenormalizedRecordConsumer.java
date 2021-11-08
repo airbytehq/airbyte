@@ -39,33 +39,38 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
   private final StandardNameTransformer namingResolver;
   private final Set<String> invalidKeys;
 
-  public BigQueryDenormalizedRecordConsumer(BigQuery bigquery,
-                                            Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector,
-                                            StandardNameTransformer namingResolver) {
+  public BigQueryDenormalizedRecordConsumer(final BigQuery bigquery,
+                                            final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector,
+                                            final StandardNameTransformer namingResolver) {
     super(bigquery, writeConfigs, catalog, outputRecordCollector, false, false);
     this.namingResolver = namingResolver;
     invalidKeys = new HashSet<>();
   }
 
   @Override
-  protected JsonNode formatRecord(Schema schema, AirbyteRecordMessage recordMessage) {
+  protected JsonNode formatRecord(final Schema schema, final AirbyteRecordMessage recordMessage) {
     // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
     // use BQ helpers to string-format correctly.
-    long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+    final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
     final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
     Preconditions.checkArgument(recordMessage.getData().isObject());
     final ObjectNode data = (ObjectNode) formatData(schema.getFields(), recordMessage.getData());
     data.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt);
+
     return data;
   }
 
-  protected JsonNode formatData(FieldList fields, JsonNode root) {
+  protected JsonNode formatData(final FieldList fields, final JsonNode root) {
     // handles empty objects and arrays
     if (fields == null) {
       return root;
+    }
+    List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(fields);
+    if (!dateTimeFields.isEmpty()) {
+      BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) root);
     }
     if (root.isObject()) {
       final List<String> fieldNames = fields.stream().map(Field::getName).collect(Collectors.toList());
@@ -82,16 +87,15 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
               key -> formatData(fields.get(namingResolver.getIdentifier(key)).getSubFields(), root.get(key)))));
     } else if (root.isArray()) {
       // Arrays can have only one field
-      Field arrayField = fields.get(0);
+      final Field arrayField = fields.get(0);
       // If an array of records, we should use subfields
-      FieldList subFields = (arrayField.getSubFields() == null || arrayField.getSubFields().isEmpty() ? fields : arrayField.getSubFields());
+      final FieldList subFields = (arrayField.getSubFields() == null || arrayField.getSubFields().isEmpty() ? fields : arrayField.getSubFields());
       final JsonNode items = Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
           .map(p -> formatData(subFields, p))
           .collect(Collectors.toList()));
 
       // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
-      // is)
-      // Turn all "Array of" into "Array of Record of" instead
+      // is). Turn all "Array of" into "Array of Record of" instead
       return Jsons.jsonNode(ImmutableMap.of(BigQueryDenormalizedDestination.NESTED_ARRAY_FIELD, items));
     } else {
       return root;

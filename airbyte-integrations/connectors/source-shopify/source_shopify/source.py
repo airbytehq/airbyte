@@ -12,8 +12,8 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
+from .auth import ShopifyAuthenticator
 from .transform import DataTypeEnforcer
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
@@ -325,14 +325,73 @@ class DiscountCodes(ChildSubstream):
         return f"price_rules/{price_rule_id}/{self.data_field}.json"
 
 
-class ShopifyAuthenticator(TokenAuthenticator):
+class Locations(ShopifyStream):
 
     """
-    Making Authenticator to be able to accept Header-Based authentication.
+    The location API does not support any form of filtering.
+    https://shopify.dev/api/admin-rest/2021-07/resources/location
+
+    Therefore, only FULL_REFRESH mode is supported.
     """
 
-    def get_auth_header(self) -> Mapping[str, Any]:
-        return {"X-Shopify-Access-Token": f"{self._token}"}
+    data_field = "locations"
+
+    def path(self, **kwargs):
+        return f"{self.data_field}.json"
+
+
+class InventoryLevels(ChildSubstream):
+    parent_stream_class: object = Locations
+    slice_key = "location_id"
+    cursor_field = "updated_at"
+
+    data_field = "inventory_levels"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        location_id = stream_slice["location_id"]
+        return f"locations/{location_id}/{self.data_field}.json"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records_stream = super().parse_response(response, **kwargs)
+
+        def generate_key(record):
+            record.update({"id": "|".join((str(record.get("location_id", "")), str(record.get("inventory_item_id", ""))))})
+            return record
+
+        # associate the surrogate key
+        yield from map(
+            generate_key,
+            records_stream,
+        )
+
+
+class FulfillmentOrders(ChildSubstream):
+
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
+    data_field = "fulfillment_orders"
+
+    cursor_field = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice[self.slice_key]
+        return f"orders/{order_id}/{self.data_field}.json"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
+
+
+class Fulfillments(ChildSubstream):
+
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
+    data_field = "fulfillments"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice[self.slice_key]
+        return f"orders/{order_id}/{self.data_field}.json"
 
 
 class SourceShopify(AbstractSource):
@@ -341,9 +400,8 @@ class SourceShopify(AbstractSource):
         """
         Testing connection availability for the connector.
         """
-        auth = ShopifyAuthenticator(token=config["api_password"]).get_auth_header()
+        auth = ShopifyAuthenticator(config).get_auth_header()
         api_version = "2021-07"  # Latest Stable Release
-
         url = f"https://{config['shop']}.myshopify.com/admin/api/{api_version}/shop.json"
 
         try:
@@ -359,8 +417,7 @@ class SourceShopify(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
-        # config["ex_state"] = super().exposed_state
-        config["authenticator"] = ShopifyAuthenticator(token=config["api_password"])
+        config["authenticator"] = ShopifyAuthenticator(config)
 
         return [
             Customers(config),
@@ -377,4 +434,8 @@ class SourceShopify(AbstractSource):
             Pages(config),
             PriceRules(config),
             DiscountCodes(config),
+            Locations(config),
+            InventoryLevels(config),
+            FulfillmentOrders(config),
+            Fulfillments(config),
         ]

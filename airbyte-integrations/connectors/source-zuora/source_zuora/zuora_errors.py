@@ -4,9 +4,10 @@
 
 
 import sys
+from typing import Any
 
 import requests
-from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.logger import AirbyteLogger
 
 
 class Error(Exception):
@@ -14,6 +15,14 @@ class Error(Exception):
 
     # Define the instance of the Native Airbyte Logger
     logger = AirbyteLogger()
+
+
+class QueryWindowError(Error):
+    def __init__(self, value: Any):
+        self.message = f"`Query Window` is set to '{value}', please make sure you use float or integer, not string."
+        super().__init__(self.logger.info(self.message))
+        # Exit with non-zero status
+        sys.exit(1)
 
 
 class ZOQLQueryError(Error):
@@ -33,13 +42,23 @@ class ZOQLQueryFailed(ZOQLQueryError):
     """ Failed to execute query on the server side """
 
 
-class ZOQLQueryFieldCannotResolve(Error):
+class ZOQLQueryFieldCannotResolveCursor(Error):
     """
     Failed to execute query on the server side because of the certain field could not be resolved
     This exception is used to switch the default cursor_field inside the query.
     """
 
     def __init__(self, message: str = "Cursor 'UpdatedDate' is not available. Switching cursor to 'CreatedDate'"):
+        super().__init__(self.logger.info(message))
+
+
+class ZOQLQueryFieldCannotResolveAltCursor(Error):
+    """
+    Failed to execute query on the server side because of the certain field could not be resolved
+    This exception is used to switch the default cursor_field inside the query.
+    """
+
+    def __init__(self, message: str = "Cursor 'CreatedDate' is not available. Fetching whole object"):
         super().__init__(self.logger.info(message))
 
 
@@ -52,6 +71,7 @@ class ZOQLQueryCannotProcessObject(Error):
 
     def __init__(
         self,
-        message: str = "The stream cannot be processed, check Zuora Object's Permissions / Subscription Plan. This warning is not critical, and could be ignored.",
+        message: str = "The stream cannot be processed, check Zuora Object's Permissions / Subscription Plan / API User Permissions, etc. This warning is not critical, and could be ignored.",
     ):
         super().__init__(self.logger.warn(message))
+        pass

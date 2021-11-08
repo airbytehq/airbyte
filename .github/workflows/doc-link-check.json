@@ -48,6 +48,10 @@
     {
       "reason": "Returns a 403 for many valid pages",
       "pattern": "https://mvnrepository.com/artifact/"
+    },
+    {
+      "reason": "Archived articles aren't actively maintained.",
+      "pattern": "archive/"
     }
   ],
   "retryOn429": false,

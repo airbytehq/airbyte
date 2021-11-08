@@ -14,7 +14,7 @@ public class MoreLists {
   /**
    * @return returns empty optional if the list is empty or if the last element in the list is null.
    */
-  public static <T> Optional<T> last(List<T> list) {
+  public static <T> Optional<T> last(final List<T> list) {
     if (list.isEmpty()) {
       return Optional.empty();
     }
@@ -29,7 +29,7 @@ public class MoreLists {
    * @param <T> type
    * @return new list with elements of original reversed.
    */
-  public static <T> List<T> reversed(List<T> list) {
+  public static <T> List<T> reversed(final List<T> list) {
     final ArrayList<T> reversed = new ArrayList<>(list);
     Collections.reverse(reversed);
     return reversed;

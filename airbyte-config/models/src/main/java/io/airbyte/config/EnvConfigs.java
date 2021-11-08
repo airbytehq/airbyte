@@ -7,7 +7,10 @@ package io.airbyte.config;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.helpers.LogConfiguration;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -48,6 +51,7 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
   public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
+  public static final String JOB_IMAGE_PULL_POLICY = "JOB_IMAGE_PULL_POLICY";
   public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
   public static final String WORKER_POD_NODE_SELECTORS = "WORKER_POD_NODE_SELECTORS";
   public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
@@ -76,6 +80,7 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
   private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
+  private static final String DEFAULT_JOB_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
@@ -90,6 +95,7 @@ public class EnvConfigs implements Configs {
   public static final String DEFAULT_NETWORK = "host";
 
   private final Function<String, String> getEnv;
+  private LogConfiguration logConfiguration;
 
   public EnvConfigs() {
     this(System::getenv);
@@ -97,6 +103,14 @@ public class EnvConfigs implements Configs {
 
   EnvConfigs(final Function<String, String> getEnv) {
     this.getEnv = getEnv;
+    this.logConfiguration = new LogConfiguration(
+        getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET, ""),
+        getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET_REGION, ""),
+        getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
+        getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
+        getEnvOrDefault(LogClientSingleton.S3_MINIO_ENDPOINT, ""),
+        getEnvOrDefault(LogClientSingleton.GCP_STORAGE_BUCKET, ""),
+        getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, ""));
   }
 
   @Override
@@ -115,8 +129,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getAirbyteVersion() {
-    return getEnsureEnv(AIRBYTE_VERSION);
+  public AirbyteVersion getAirbyteVersion() {
+    return new AirbyteVersion(getEnsureEnv(AIRBYTE_VERSION));
   }
 
   @Override
@@ -278,12 +292,19 @@ public class EnvConfigs implements Configs {
     }
   }
 
+  @Override
+  public String getJobImagePullPolicy() {
+    return getEnvOrDefault(JOB_IMAGE_PULL_POLICY, DEFAULT_JOB_IMAGE_PULL_POLICY);
+  }
+
   /**
    * Returns worker pod tolerations parsed from its own environment variable. The value of the env is
    * a string that represents one or more tolerations.
+   * <ul>
    * <li>Tolerations are separated by a `;`
    * <li>Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and
    * separated by `,`
+   * </ul>
    * <p>
    * For example:- The following represents two tolerations, one checking existence and another
    * matching a value
@@ -391,37 +412,41 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getS3LogBucket() {
-    return getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET, "");
+    return logConfiguration.getS3LogBucket();
   }
 
   @Override
   public String getS3LogBucketRegion() {
-    return getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET_REGION, "");
+    return logConfiguration.getS3LogBucketRegion();
   }
 
   @Override
   public String getAwsAccessKey() {
-    return getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, "");
+    return logConfiguration.getAwsAccessKey();
   }
 
   @Override
   public String getAwsSecretAccessKey() {
-    return getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, "");
+    return logConfiguration.getAwsSecretAccessKey();
   }
 
   @Override
   public String getS3MinioEndpoint() {
-    return getEnvOrDefault(LogClientSingleton.S3_MINIO_ENDPOINT, "");
+    return logConfiguration.getS3MinioEndpoint();
   }
 
   @Override
   public String getGcpStorageBucket() {
-    return getEnvOrDefault(LogClientSingleton.GCP_STORAGE_BUCKET, "");
+    return logConfiguration.getGcpStorageBucket();
   }
 
   @Override
   public String getGoogleApplicationCredentials() {
-    return getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, "");
+    return logConfiguration.getGoogleApplicationCredentials();
+  }
+
+  public LogConfigs getLogConfigs() {
+    return logConfiguration;
   }
 
   @Override
@@ -435,7 +460,7 @@ public class EnvConfigs implements Configs {
     return SecretPersistenceType.valueOf(secretPersistenceStr);
   }
 
-  private String getEnvOrDefault(final String key, final String defaultValue) {
+  protected String getEnvOrDefault(final String key, final String defaultValue) {
     return getEnvOrDefault(key, defaultValue, Function.identity(), false);
   }
 

@@ -36,7 +36,7 @@ class LifecycledCallableTest {
 
   @Test
   void testSuccess() throws Exception {
-    LifecycledCallable<Integer> lc = new LifecycledCallable.Builder<>(callable)
+    final LifecycledCallable<Integer> lc = new LifecycledCallable.Builder<>(callable)
         .setOnStart(onStart)
         .setOnException(onException)
         .setOnSuccess(onSuccess)
@@ -47,7 +47,7 @@ class LifecycledCallableTest {
 
     assertEquals(1, lc.call());
 
-    InOrder inOrder = inOrder(callable, onStart, onException, onSuccess, onFinish);
+    final InOrder inOrder = inOrder(callable, onStart, onException, onSuccess, onFinish);
     inOrder.verify(onStart).call();
     inOrder.verify(callable).call();
     inOrder.verify(onSuccess).accept(1);
@@ -56,19 +56,19 @@ class LifecycledCallableTest {
 
   @Test
   void testException() throws Exception {
-    LifecycledCallable<Integer> lc = new LifecycledCallable.Builder<>(callable)
+    final LifecycledCallable<Integer> lc = new LifecycledCallable.Builder<>(callable)
         .setOnStart(onStart)
         .setOnException(onException)
         .setOnSuccess(onSuccess)
         .setOnFinish(onFinish)
         .build();
 
-    RuntimeException re = new RuntimeException();
+    final RuntimeException re = new RuntimeException();
     when(callable.call()).thenThrow(re);
 
     assertThrows(RuntimeException.class, lc::call);
 
-    InOrder inOrder = inOrder(callable, onStart, onException, onSuccess, onFinish);
+    final InOrder inOrder = inOrder(callable, onStart, onException, onSuccess, onFinish);
     inOrder.verify(onStart).call();
     inOrder.verify(callable).call();
     inOrder.verify(onException).accept(re);

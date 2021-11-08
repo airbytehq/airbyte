@@ -10,6 +10,9 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper.Color;
+import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -27,25 +30,30 @@ import org.slf4j.LoggerFactory;
 public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
-
-  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.48";
+  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
+      .setLogPrefix("normalization")
+      .setPrefixColor(Color.GREEN);
 
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
+  private final String normalizationImageName;
 
   private Process process = null;
 
   public enum DestinationType {
     BIGQUERY,
+    MSSQL,
+    MYSQL,
+    ORACLE,
     POSTGRES,
     REDSHIFT,
-    SNOWFLAKE,
-    MYSQL
+    SNOWFLAKE
   }
 
-  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory) {
+  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory, final String normalizationImageName) {
     this.destinationType = destinationType;
     this.processFactory = processFactory;
+    this.normalizationImageName = normalizationImageName;
   }
 
   @Override
@@ -103,12 +111,12 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
                              final String... args)
       throws Exception {
     try {
-      LOGGER.info("Running with normalization version: {}", NORMALIZATION_IMAGE_NAME);
-      process = processFactory.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, false, files, null, resourceRequirements,
+      LOGGER.info("Running with normalization version: {}", normalizationImageName);
+      process = processFactory.create(jobId, attempt, jobRoot, normalizationImageName, false, files, null, resourceRequirements,
           Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP), args);
 
-      LineGobbler.gobble(process.getInputStream(), LOGGER::info);
-      LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
+      LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
+      LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);
 
       WorkerUtils.wait(process);
 

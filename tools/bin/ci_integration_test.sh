@@ -17,6 +17,8 @@ else
     selected_integration_test="base-normalization"
     integrationTestCommand="$(_to_gradle_path "airbyte-integrations/bases/base-normalization" integrationTest)"
     export SUB_BUILD="CONNECTORS_BASE"
+    # avoid schema conflicts when multiple tests for normalization are run concurrently
+    export RANDOM_TEST_SCHEMA="true"
     ./gradlew --no-daemon --scan airbyteDocker
   elif [[ "$connector" == *"bases"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
@@ -49,7 +51,7 @@ run_status=${PIPESTATUS[0]}
 
 test $run_status == "0" || {
    # Build failed
-   link=$(cat build.out | grep -A1 "Publishing build scan..." | tail -n1 | tr -d "\n")
+   link=$(cat build.out | grep -a -A1 "Publishing build scan..." | tail -n1 | tr -d "\n")
    # Save gradle scan link to github GRADLE_SCAN_LINK variable for next job.
    # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
    echo "GRADLE_SCAN_LINK=$link" >> $GITHUB_ENV

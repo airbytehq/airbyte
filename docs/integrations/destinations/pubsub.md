@@ -1,5 +1,7 @@
 ---
-description: 'Pub/Sub is an asynchronous messaging service provided by Google Cloud Provider.'
+description: >-
+  Pub/Sub is an asynchronous messaging service provided by Google Cloud
+  Provider.
 ---
 
 # Google PubSub
@@ -9,7 +11,7 @@ description: 'Pub/Sub is an asynchronous messaging service provided by Google Cl
 The Airbyte Google PubSub destination allows you to send/stream data into PubSub. Pub/Sub is an asynchronous messaging service provided by Google Cloud Provider.
 
 ### Sync overview
-    
+
 #### Output schema
 
 Each stream will be output a PubSubMessage with attributes. The message attributes will be
@@ -17,9 +19,10 @@ Each stream will be output a PubSubMessage with attributes. The message attribut
 * `_stream`: the name of stream where the data is coming from
 * `_namespace`: namespace if available from the stream
 
-The data will be a serialized JSON, containing the following fields  
+The data will be a serialized JSON, containing the following fields
+
 * `_airbyte_ab_id`: a uuid string assigned by Airbyte to each event that is processed.
-* `_airbyte_emitted_at`: a long timestamp(ms) representing when the event was pulled from the data source.
+* `_airbyte_emitted_at`: a long timestamp\(ms\) representing when the event was pulled from the data source.
 * `_airbyte_data`: a json string representing source data.
 
 #### Features
@@ -50,8 +53,7 @@ See the setup guide for more information about how to create the required resour
 
 If you have a Google Cloud Project with PubSub enabled, skip to the "Create a Topic" section.
 
-First, follow along the Google Cloud instructions to [Create a Project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin).
-PubSub is enabled automatically in new projects. If this is not the case for your project, find it in [Marketplace](https://console.cloud.google.com/marketplace/product/google/pubsub.googleapis.com) and enable.
+First, follow along the Google Cloud instructions to [Create a Project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin). PubSub is enabled automatically in new projects. If this is not the case for your project, find it in [Marketplace](https://console.cloud.google.com/marketplace/product/google/pubsub.googleapis.com) and enable.
 
 #### PubSub topic for Airbyte syncs
 
@@ -86,6 +88,7 @@ Once you've configured PubSub as a destination, delete the Service Account Key f
 ## CHANGELOG
 
 | Version | Date | Pull Request | Subject |
-| :--- | :---  | :--- | :--- |
-| 0.1.1 | August 13, 2021 | [#4699](https://github.com/airbytehq/airbyte/pull/4699)| Added json config validator | 
-| 0.1.0 | June 24, 2021 | [#4339](https://github.com/airbytehq/airbyte/pull/4339)| Initial release | 
+| :--- | :--- | :--- | :--- |
+| 0.1.1 | August 13, 2021 | [\#4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
+| 0.1.0 | June 24, 2021 | [\#4339](https://github.com/airbytehq/airbyte/pull/4339) | Initial release |
+

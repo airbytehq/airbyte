@@ -6,7 +6,7 @@ import { useResource, useSubscription } from "rest-hooks";
 import VideoItem from "./VideoItem";
 import ProgressBlock from "./ProgressBlock";
 import HighlightedText from "./HighlightedText";
-import { H1, Button } from "components/base";
+import { H1 } from "components/base";
 import UseCaseBlock from "./UseCaseBlock";
 import ConnectionResource from "core/resources/Connection";
 import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
@@ -17,7 +17,6 @@ import useWorkspace from "hooks/services/useWorkspace";
 type FinalStepProps = {
   connectionId: string;
   onSync: () => void;
-  onFinishOnboarding: () => void;
 };
 
 const Title = styled(H1)`
@@ -35,15 +34,7 @@ const Videos = styled.div`
   padding: 0 27px;
 `;
 
-const CloseButton = styled(Button)`
-  margin-top: 30px;
-`;
-
-const FinalStep: React.FC<FinalStepProps> = ({
-  connectionId,
-  onSync,
-  onFinishOnboarding,
-}) => {
+const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
   const { sendFeedback } = useWorkspace();
   const {
     feedbackPassed,
@@ -118,10 +109,6 @@ const FinalStep: React.FC<FinalStepProps> = ({
             id={item}
           />
         ))}
-
-      <CloseButton secondary onClick={onFinishOnboarding}>
-        <FormattedMessage id="onboarding.closeOnboarding" />
-      </CloseButton>
 
       {isOpen ? (
         <SyncCompletedModal

@@ -30,7 +30,10 @@ spec:
         imagePullPolicy: "{{ .Values.scheduler.image.pullPolicy }}"
         env:
         - name: AIRBYTE_VERSION
-          value: {{ .Chart.AppVersion }}
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: AIRBYTE_VERSION
         - name: CONFIG_ROOT
           valueFrom:
             configMapKeyRef:
@@ -46,11 +49,19 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: DATABASE_PORT
+        {{- if .Values.postgresql.enabled }}
         - name: DATABASE_PASSWORD
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
               key: DATABASE_PASSWORD
+        {{- else }}
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "airbyte.postgresql.secretName" . }}
+              key: {{ include "airbyte.database.existingsecret.key" . }}
+        {{- end }}
         - name: DATABASE_URL
           valueFrom:
             configMapKeyRef:
@@ -168,6 +179,9 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: INTERNAL_API_HOST
+        {{- if .Values.scheduler.extraEnv }}
+        {{ .Values.scheduler.extraEnv | toYaml | nindent 8 }}
+        {{- end }}
         {{- if .Values.scheduler.resources }}
         resources: {{- toYaml .Values.scheduler.resources | nindent 10 }}
         {{- end }}

@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
 import math
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
@@ -17,9 +16,10 @@ class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
     primary_key = "id"
 
-    def __init__(self, account_id: str, **kwargs):
+    def __init__(self, start_date: int, account_id: str, **kwargs):
         super().__init__(**kwargs)
         self.account_id = account_id
+        self.start_date = start_date
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -58,9 +58,8 @@ class IncrementalStripeStream(StripeStream, ABC):
     # Stripe returns most recently created objects first, so we don't want to persist state until the entire stream has been read
     state_checkpoint_interval = math.inf
 
-    def __init__(self, start_date: str, lookback_window_days: int = 0, **kwargs):
+    def __init__(self, lookback_window_days: int = 0, **kwargs):
         super().__init__(**kwargs)
-        self.start_date = pendulum.parse(start_date).int_timestamp
         self.lookback_window_days = lookback_window_days
 
     @property
@@ -146,7 +145,7 @@ class CustomerBalanceTransactions(StripeStream):
         return f"customers/{customer_id}/balance_transactions"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        customers_stream = Customers(authenticator=self.authenticator, account_id=self.account_id)
+        customers_stream = Customers(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"customer_id": customer["id"]}, **kwargs)
 
@@ -206,7 +205,7 @@ class InvoiceLineItems(StripeStream):
         return f"invoices/{stream_slice['invoice_id']}/lines"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        invoices_stream = Invoices(authenticator=self.authenticator, account_id=self.account_id)
+        invoices_stream = Invoices(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         for invoice in invoices_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"invoice_id": invoice["id"]}, **kwargs)
 
@@ -290,7 +289,7 @@ class SubscriptionItems(StripeStream):
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        subscriptions_stream = Subscriptions(authenticator=self.authenticator, account_id=self.account_id)
+        subscriptions_stream = Subscriptions(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         for subscriptions in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"subscription_id": subscriptions["id"]}, **kwargs)
 
@@ -345,6 +344,59 @@ class BankAccounts(StripeStream):
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        customers_stream = Customers(authenticator=self.authenticator, account_id=self.account_id)
+        customers_stream = Customers(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"customer_id": customer["id"]}, **kwargs)
+
+
+class CheckoutSessions(StripeStream):
+    """
+    API docs: https://stripe.com/docs/api/checkout/sessions/list
+    """
+
+    name = "checkout_sessions"
+
+    def path(self, **kwargs):
+        return "checkout/sessions"
+
+
+class CheckoutSessionsLineItems(StripeStream):
+    """
+    API docs: https://stripe.com/docs/api/checkout/sessions/line_items
+    """
+
+    name = "checkout_sessions_line_items"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"checkout/sessions/{stream_slice['checkout_session_id']}/line_items"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        checkout_session_stream = CheckoutSessions(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+        for checkout_session in checkout_session_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"checkout_session_id": checkout_session["id"]}, **kwargs)
+
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
+        params["expand[]"] = "data.discounts"
+        return params
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+
+        response_json = response.json()
+        data = response_json.get("data", [])
+        if data and stream_slice:
+            cs_id = stream_slice.get("checkout_session_id", None)
+            for e in data:
+                e["checkout_session_id"] = cs_id
+        yield from data
+
+
+class PromotionCodes(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/promotion_codes/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "promotion_codes"

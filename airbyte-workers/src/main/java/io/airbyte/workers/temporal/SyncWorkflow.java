@@ -9,6 +9,7 @@ import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.OperatorDbtInput;
@@ -19,6 +20,9 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.State;
+import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -42,11 +46,14 @@ import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
+import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Workflow;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.UUID;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,11 +65,14 @@ public interface SyncWorkflow {
   StandardSyncOutput run(JobRunConfig jobRunConfig,
                          IntegrationLauncherConfig sourceLauncherConfig,
                          IntegrationLauncherConfig destinationLauncherConfig,
-                         StandardSyncInput syncInput);
+                         StandardSyncInput syncInput,
+                         UUID connectionId);
 
   class WorkflowImpl implements SyncWorkflow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowImpl.class);
+    private static final String VERSION_LABEL = "sync-workflow";
+    private static final int CURRENT_VERSION = 1;
 
     private static final int MAX_SYNC_TIMEOUT_DAYS = new EnvConfigs().getMaxSyncTimeoutDays();
 
@@ -72,19 +82,36 @@ public interface SyncWorkflow {
         .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
 
+    private static final ActivityOptions persistOptions = options.toBuilder()
+        .setRetryOptions(RetryOptions.newBuilder()
+            .setMaximumAttempts(10)
+            .build())
+        .build();
+
     private final ReplicationActivity replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, options);
     private final NormalizationActivity normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, options);
     private final DbtTransformationActivity dbtTransformationActivity = Workflow.newActivityStub(DbtTransformationActivity.class, options);
+    private final PersistStateActivity persistActivity = Workflow.newActivityStub(PersistStateActivity.class, persistOptions);
 
     @Override
-    public StandardSyncOutput run(JobRunConfig jobRunConfig,
-                                  IntegrationLauncherConfig sourceLauncherConfig,
-                                  IntegrationLauncherConfig destinationLauncherConfig,
-                                  StandardSyncInput syncInput) {
+    public StandardSyncOutput run(final JobRunConfig jobRunConfig,
+                                  final IntegrationLauncherConfig sourceLauncherConfig,
+                                  final IntegrationLauncherConfig destinationLauncherConfig,
+                                  final StandardSyncInput syncInput,
+                                  final UUID connectionId) {
       final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
+      final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
+
+      if (version > Workflow.DEFAULT_VERSION) {
+        // the state is persisted immediately after the replication succeeded, because the
+        // state is a checkpoint of the raw data that has been copied to the destination;
+        // normalization & dbt does not depend on it
+        persistActivity.persist(connectionId, run);
+      }
+
       if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {
-        for (StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
+        for (final StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
           if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
             final NormalizationInput normalizationInput = new NormalizationInput()
                 .withDestinationConfiguration(syncInput.getDestinationConfiguration())
@@ -130,27 +157,56 @@ public interface SyncWorkflow {
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
+    private final WorkerEnvironment workerEnvironment;
+    private final LogConfigs logConfigs;
 
-    public ReplicationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
+    private final String databaseUser;
+    private final String databasePassword;
+    private final String databaseUrl;
+    private final String airbyteVersion;
+
+    public ReplicationActivityImpl(
+                                   final ProcessFactory processFactory,
+                                   final SecretsHydrator secretsHydrator,
+                                   final Path workspaceRoot,
+                                   final WorkerEnvironment workerEnvironment,
+                                   final LogConfigs logConfigs,
+                                   final String databaseUser,
+                                   final String databasePassword,
+                                   final String databaseUrl,
+                                   final String airbyteVersion) {
+      this(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, new AirbyteConfigValidator(), databaseUser,
+          databasePassword, databaseUrl, airbyteVersion);
     }
 
     @VisibleForTesting
-    ReplicationActivityImpl(ProcessFactory processFactory,
-                            SecretsHydrator secretsHydrator,
-                            Path workspaceRoot,
-                            AirbyteConfigValidator validator) {
+    ReplicationActivityImpl(final ProcessFactory processFactory,
+                            final SecretsHydrator secretsHydrator,
+                            final Path workspaceRoot,
+                            final WorkerEnvironment workerEnvironment,
+                            final LogConfigs logConfigs,
+                            final AirbyteConfigValidator validator,
+                            final String databaseUser,
+                            final String databasePassword,
+                            final String databaseUrl,
+                            final String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
+      this.workerEnvironment = workerEnvironment;
+      this.logConfigs = logConfigs;
+      this.databaseUser = databaseUser;
+      this.databasePassword = databasePassword;
+      this.databaseUrl = databaseUrl;
+      this.airbyteVersion = airbyteVersion;
     }
 
     @Override
-    public StandardSyncOutput replicate(JobRunConfig jobRunConfig,
-                                        IntegrationLauncherConfig sourceLauncherConfig,
-                                        IntegrationLauncherConfig destinationLauncherConfig,
-                                        StandardSyncInput syncInput) {
+    public StandardSyncOutput replicate(final JobRunConfig jobRunConfig,
+                                        final IntegrationLauncherConfig sourceLauncherConfig,
+                                        final IntegrationLauncherConfig destinationLauncherConfig,
+                                        final StandardSyncInput syncInput) {
 
       final var fullSourceConfig = secretsHydrator.hydrate(syncInput.getSourceConfiguration());
       final var fullDestinationConfig = secretsHydrator.hydrate(syncInput.getDestinationConfiguration());
@@ -165,11 +221,11 @@ public interface SyncWorkflow {
       };
 
       final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
-          workspaceRoot,
+          workspaceRoot, workerEnvironment, logConfigs,
           jobRunConfig,
           getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
           inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler());
+          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
       final ReplicationOutput attemptOutput = temporalAttempt.get();
       final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
@@ -179,7 +235,7 @@ public interface SyncWorkflow {
       return standardSyncOutput;
     }
 
-    private static StandardSyncOutput reduceReplicationOutput(ReplicationOutput output) {
+    private static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output) {
       final long totalBytesReplicated = output.getReplicationAttemptSummary().getBytesSynced();
       final long totalRecordsReplicated = output.getReplicationAttemptSummary().getRecordsSynced();
 
@@ -199,10 +255,10 @@ public interface SyncWorkflow {
     }
 
     private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getWorkerFactory(
-                                                                                                      IntegrationLauncherConfig sourceLauncherConfig,
-                                                                                                      IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                      JobRunConfig jobRunConfig,
-                                                                                                      StandardSyncInput syncInput) {
+                                                                                                      final IntegrationLauncherConfig sourceLauncherConfig,
+                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                      final JobRunConfig jobRunConfig,
+                                                                                                      final StandardSyncInput syncInput) {
       return () -> {
         final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
             sourceLauncherConfig.getJobId(),
@@ -253,26 +309,53 @@ public interface SyncWorkflow {
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
+    private final WorkerEnvironment workerEnvironment;
+    private final LogConfigs logConfigs;
+    private final String databaseUser;
+    private final String databasePassword;
+    private final String databaseUrl;
+    private final String airbyteVersion;
 
-    public NormalizationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
+    public NormalizationActivityImpl(final ProcessFactory processFactory,
+                                     final SecretsHydrator secretsHydrator,
+                                     final Path workspaceRoot,
+                                     final WorkerEnvironment workerEnvironment,
+                                     final LogConfigs logConfig,
+                                     final String databaseUser,
+                                     final String databasePassword,
+                                     final String databaseUrl,
+                                     final String airbyteVersion) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfig, databaseUser, databasePassword,
+          databaseUrl, airbyteVersion);
     }
 
     @VisibleForTesting
-    NormalizationActivityImpl(ProcessFactory processFactory,
-                              SecretsHydrator secretsHydrator,
-                              Path workspaceRoot,
-                              AirbyteConfigValidator validator) {
+    NormalizationActivityImpl(final ProcessFactory processFactory,
+                              final SecretsHydrator secretsHydrator,
+                              final Path workspaceRoot,
+                              final AirbyteConfigValidator validator,
+                              final WorkerEnvironment workerEnvironment,
+                              final LogConfigs logConfigs,
+                              final String databaseUser,
+                              final String databasePassword,
+                              final String databaseUrl,
+                              final String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
+      this.workerEnvironment = workerEnvironment;
+      this.logConfigs = logConfigs;
+      this.databaseUser = databaseUser;
+      this.databasePassword = databasePassword;
+      this.databaseUrl = databaseUrl;
+      this.airbyteVersion = airbyteVersion;
     }
 
     @Override
-    public Void normalize(JobRunConfig jobRunConfig,
-                          IntegrationLauncherConfig destinationLauncherConfig,
-                          NormalizationInput input) {
+    public Void normalize(final JobRunConfig jobRunConfig,
+                          final IntegrationLauncherConfig destinationLauncherConfig,
+                          final NormalizationInput input) {
 
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
@@ -283,23 +366,24 @@ public interface SyncWorkflow {
       };
 
       final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
-          workspaceRoot,
+          workspaceRoot, workerEnvironment, logConfigs,
           jobRunConfig,
           getWorkerFactory(destinationLauncherConfig, jobRunConfig),
           inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler());
+          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
       return temporalAttemptExecution.get();
     }
 
-    private CheckedSupplier<Worker<NormalizationInput, Void>, Exception> getWorkerFactory(IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                          JobRunConfig jobRunConfig) {
+    private CheckedSupplier<Worker<NormalizationInput, Void>, Exception> getWorkerFactory(final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                          final JobRunConfig jobRunConfig) {
       return () -> new DefaultNormalizationWorker(
           jobRunConfig.getJobId(),
           Math.toIntExact(jobRunConfig.getAttemptId()),
           NormalizationRunnerFactory.create(
               destinationLauncherConfig.getDockerImage(),
-              processFactory));
+              processFactory),
+          workerEnvironment);
     }
 
   }
@@ -323,27 +407,54 @@ public interface SyncWorkflow {
     private final SecretsHydrator secretsHydrator;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
+    private final WorkerEnvironment workerEnvironment;
+    private final LogConfigs logConfigs;
+    private final String databaseUser;
+    private final String databasePassword;
+    private final String databaseUrl;
+    private final String airbyteVersion;
 
-    public DbtTransformationActivityImpl(ProcessFactory processFactory, SecretsHydrator secretsHydrator, Path workspaceRoot) {
-      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator());
+    public DbtTransformationActivityImpl(final ProcessFactory processFactory,
+                                         final SecretsHydrator secretsHydrator,
+                                         final Path workspaceRoot,
+                                         final WorkerEnvironment workerEnvironment,
+                                         final LogConfigs logConfigs,
+                                         final String databaseUser,
+                                         final String databasePassword,
+                                         final String databaseUrl,
+                                         final String airbyteVersion) {
+      this(processFactory, secretsHydrator, workspaceRoot, new AirbyteConfigValidator(), workerEnvironment, logConfigs, databaseUser,
+          databasePassword, databaseUrl, airbyteVersion);
     }
 
     @VisibleForTesting
-    DbtTransformationActivityImpl(ProcessFactory processFactory,
-                                  SecretsHydrator secretsHydrator,
-                                  Path workspaceRoot,
-                                  AirbyteConfigValidator validator) {
+    DbtTransformationActivityImpl(final ProcessFactory processFactory,
+                                  final SecretsHydrator secretsHydrator,
+                                  final Path workspaceRoot,
+                                  final AirbyteConfigValidator validator,
+                                  final WorkerEnvironment workerEnvironment,
+                                  final LogConfigs logConfigs,
+                                  final String databaseUser,
+                                  final String databasePassword,
+                                  final String databaseUrl,
+                                  final String airbyteVersion) {
       this.processFactory = processFactory;
       this.secretsHydrator = secretsHydrator;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
+      this.workerEnvironment = workerEnvironment;
+      this.logConfigs = logConfigs;
+      this.databaseUser = databaseUser;
+      this.databasePassword = databasePassword;
+      this.databaseUrl = databaseUrl;
+      this.airbyteVersion = airbyteVersion;
     }
 
     @Override
-    public Void run(JobRunConfig jobRunConfig,
-                    IntegrationLauncherConfig destinationLauncherConfig,
-                    ResourceRequirements resourceRequirements,
-                    OperatorDbtInput input) {
+    public Void run(final JobRunConfig jobRunConfig,
+                    final IntegrationLauncherConfig destinationLauncherConfig,
+                    final ResourceRequirements resourceRequirements,
+                    final OperatorDbtInput input) {
 
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
@@ -354,18 +465,18 @@ public interface SyncWorkflow {
       };
 
       final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
-          workspaceRoot,
+          workspaceRoot, workerEnvironment, logConfigs,
           jobRunConfig,
           getWorkerFactory(destinationLauncherConfig, jobRunConfig, resourceRequirements),
           inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler());
+          new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
       return temporalAttemptExecution.get();
     }
 
-    private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getWorkerFactory(IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                        JobRunConfig jobRunConfig,
-                                                                                        ResourceRequirements resourceRequirements) {
+    private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getWorkerFactory(final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                        final JobRunConfig jobRunConfig,
+                                                                                        final ResourceRequirements resourceRequirements) {
       return () -> new DbtTransformationWorker(
           jobRunConfig.getJobId(),
           Math.toIntExact(jobRunConfig.getAttemptId()),
@@ -374,6 +485,42 @@ public interface SyncWorkflow {
               processFactory, NormalizationRunnerFactory.create(
                   destinationLauncherConfig.getDockerImage(),
                   processFactory)));
+    }
+
+  }
+
+  @ActivityInterface
+  interface PersistStateActivity {
+
+    @ActivityMethod
+    boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput);
+
+  }
+
+  class PersistStateActivityImpl implements PersistStateActivity {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PersistStateActivityImpl.class);
+    private final Path workspaceRoot;
+    private final ConfigRepository configRepository;
+
+    public PersistStateActivityImpl(final Path workspaceRoot, final ConfigRepository configRepository) {
+      this.workspaceRoot = workspaceRoot;
+      this.configRepository = configRepository;
+    }
+
+    @Override
+    public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput) {
+      final State state = syncOutput.getState();
+      if (state != null) {
+        try {
+          configRepository.updateConnectionState(connectionId, state);
+        } catch (final IOException e) {
+          throw new RuntimeException(e);
+        }
+        return true;
+      } else {
+        return false;
+      }
     }
 
   }
