@@ -22,15 +22,15 @@ from requests.auth import AuthBase
 class LinnworksStream(HttpStream, ABC):
     http_method = "POST"
 
-    @property
-    def url_base(self) -> str:
-        return self._authenticator.get_server()
-
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, start_date: str = None):
         super().__init__(authenticator=authenticator)
 
         self._authenticator = authenticator
         self.start_date = start_date
+
+    @property
+    def url_base(self) -> str:
+        return self._authenticator.get_server()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
