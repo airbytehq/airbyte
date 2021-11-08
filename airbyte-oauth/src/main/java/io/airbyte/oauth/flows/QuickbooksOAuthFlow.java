@@ -1,13 +1,13 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.message.BasicNameValuePair;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -18,8 +18,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.message.BasicNameValuePair;
 
-public class QuickbooksOAuthFlow  extends BaseOAuthFlow {
+public class QuickbooksOAuthFlow extends BaseOAuthFlow {
 
   final String CONSENT_URL = "https://appcenter.intuit.com/app/connect/oauth2";
   final String TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer";
@@ -44,16 +47,16 @@ public class QuickbooksOAuthFlow  extends BaseOAuthFlow {
   @Override
   protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
     try {
-      return  URLDecoder.decode(
-              new URIBuilder(CONSENT_URL)
+      return URLDecoder.decode(
+          new URIBuilder(CONSENT_URL)
               .addParameter("client_id", clientId)
               .addParameter("scope", getScopes())
               .addParameter("redirect_uri", redirectUrl)
               .addParameter("response_type", "code")
               .addParameter("state", getState())
 
-
-              .build().toString(), StandardCharsets.UTF_8.toString());
+              .build().toString(),
+          StandardCharsets.UTF_8.toString());
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
@@ -64,21 +67,21 @@ public class QuickbooksOAuthFlow  extends BaseOAuthFlow {
                                                   final String authCode,
                                                   final String redirectUrl,
                                                   JsonNode oAuthParamConfig)
-          throws IOException {
+      throws IOException {
     var accessTokenUrl = getAccessTokenUrl();
     try {
       var parametersMap = getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl);
       var queryParameters = new ArrayList<NameValuePair>(parametersMap.size());
-      for (var entry: parametersMap.entrySet()) {
+      for (var entry : parametersMap.entrySet()) {
         queryParameters.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
       }
       final HttpRequest request = HttpRequest.newBuilder()
-            .POST(HttpRequest.BodyPublishers
-                    .ofString(getTokenReqContentType().getConverter().apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
-            .uri(new URIBuilder(getAccessTokenUrl()).addParameters(queryParameters).build())
-            .header("Content-Type", getTokenReqContentType().getContentType())
-            .header("Accept", "application/json")
-            .build();
+          .POST(HttpRequest.BodyPublishers
+              .ofString(getTokenReqContentType().getConverter().apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
+          .uri(new URIBuilder(getAccessTokenUrl()).addParameters(queryParameters).build())
+          .header("Content-Type", getTokenReqContentType().getContentType())
+          .header("Accept", "application/json")
+          .build();
 
       HttpResponse<String> response;
       response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -88,8 +91,6 @@ public class QuickbooksOAuthFlow  extends BaseOAuthFlow {
     }
   }
 
-
-
   /**
    * Returns the URL where to retrieve the access token from.
    */
@@ -97,4 +98,5 @@ public class QuickbooksOAuthFlow  extends BaseOAuthFlow {
   protected String getAccessTokenUrl() {
     return TOKEN_URL;
   }
+
 }
