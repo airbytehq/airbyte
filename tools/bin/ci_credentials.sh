@@ -5,10 +5,8 @@
 
 set -e
 
-COMMAND_NAME=$1
-
 # all secrets will be loaded if the second argument is not present
-CONNECTOR_FULLNAME=${2:-all}
+CONNECTOR_FULLNAME=${1:-all}
 CONNECTOR_NAME=`echo ${CONNECTOR_FULLNAME} | rev | cut -d'/' -f1 | rev`
 
 GSM_SCOPES="https://www.googleapis.com/auth/cloud-platform"
@@ -29,7 +27,7 @@ function write_standard_creds() {
     return 0
   fi
   local key="${connector_name}#${cred_filename}"
-  [[ -z "${creds}" ]] && error "Empty credential for the connector '${key})"
+  [[ -z "${creds}" ]] && error "Empty credential for the connector '${key} from ${source_name}"
   
   if [ -v SECRET_MAP[${key}] ]; then
     echo "The connector '${key}' was added before"
@@ -40,7 +38,7 @@ function write_standard_creds() {
   return 0
 }
 
-function _write_standard_creds() {
+function write_secret_to_disk() {
   local connector_name=$1
   local cred_filename=$2
   local creds=$3
@@ -58,12 +56,12 @@ function _write_standard_creds() {
   echo "$creds" > "${secrets_dir}/${cred_filename}"
 }
 
-function save_all() {
+function write_all_secrets() {
   for key in "${!SECRET_MAP[@]}"; do
     local connector_name=$(echo ${key} | cut -d'#' -f1)
     local cred_filename=$(echo ${key} | cut -d'#' -f2)
     local creds=${SECRET_MAP[${key}]}
-    _write_standard_creds ${connector_name} ${cred_filename} "${creds}" 
+    write_secret_to_disk ${connector_name} ${cred_filename} "${creds}" 
     
   done
   return 0
@@ -102,7 +100,9 @@ function export_gsm_secrets(){
       --header "authorization: Bearer ${access_token}" \
       --header "content-type: application/json" \
       --header "x-goog-user-project: ${project_id}")
-    [[ -z ${data} ]] && error "Can't load secrets' list"
+    [[ -z ${data} ]] && error "Can't load secret for connector ${CONNECTOR_NAME}"
+    # GSM returns an empty JSON object if secrets are not found.
+    # It breaks JSON parsing by the 'jq' utility. The simplest fix is response normalization 
     [[ ${data} == "{}" ]] && data='{"secrets": []}'
 
     for row in $(echo "${data}" | jq -r '.secrets[] | @base64'); do
@@ -110,7 +110,6 @@ function export_gsm_secrets(){
       local secret_name=$(echo ${secret_info}| jq -r .name)
       local label_filename=$(echo ${secret_info}| jq -r '.labels.filename // "config"')
       local label_connectors=$(echo ${secret_info}| jq -r '.labels.connector // ""')
-      local label_command=$(echo ${secret_info}| jq -r ".labels.command // \"${COMMAND_NAME}\"")
 
       # skip secrets without the label "connector"
       [[ -z ${label_connectors} ]] && continue
@@ -118,13 +117,11 @@ function export_gsm_secrets(){
         echo "Not found ${CONNECTOR_NAME} info into the label 'connector' of the secret ${secret_name}"
         continue
       fi
-      # skip secrets for other commands
-      # all secrets without the "command" label will be added too
-      [[ ${label_command} != ${COMMAND_NAME} ]] && continue
+
       # all secret file names should be finished with ".json"
       # but '.' cant be used in google, so we append it
       local filename="${label_filename}.json"
-      echo "found the Google secret of ${label_connectors}: ${secret_name} => ${filename} for the command '${label_command}'"
+      echo "found the Google secret of ${label_connectors}: ${secret_name} => ${filename}"
       local secret_uri="https://secretmanager.googleapis.com/v1/${secret_name}/versions/latest:access"
       local secret_data=$(curl -s --get --fail "${secret_uri}" \
         --header "authorization: Bearer ${access_token}" \
@@ -199,7 +196,7 @@ write_standard_creds source-file "$AZURE_STORAGE_INTEGRATION_TEST_CREDS" "azblob
 write_standard_creds source-file "$FILE_SECURE_HTTPS_TEST_CREDS"
 write_standard_creds source-file-secure "$FILE_SECURE_HTTPS_TEST_CREDS"
 write_standard_creds source-freshdesk "$FRESHDESK_TEST_CREDS"
-write_standard_creds source-freshsales "$SOURCE_FRESHSALES_TEST_CREDS" 
+write_standard_creds source-freshsales "$SOURCE_FRESHSALES_TEST_CREDS"
 write_standard_creds source-freshservice "$SOURCE_FRESHSERVICE_TEST_CREDS"
 write_standard_creds source-facebook-marketing "$FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS"
 write_standard_creds source-facebook-pages "$FACEBOOK_PAGES_INTEGRATION_TEST_CREDS"
@@ -290,6 +287,6 @@ write_standard_creds source-zendesk-talk "$ZENDESK_TALK_TEST_CREDS"
 write_standard_creds source-zoom-singer "$ZOOM_INTEGRATION_TEST_CREDS"
 write_standard_creds source-zuora "$SOURCE_ZUORA_TEST_CREDS"
 
-save_all
+write_all_secrets
 exit $?
 
