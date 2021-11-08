@@ -1,5 +1,5 @@
 plugins {
-    id 'base'
+    id 'base' 
     id 'pmd'
     id 'com.diffplug.spotless' version '5.7.0'
     id 'com.github.hierynomus.license' version '0.16.1'
