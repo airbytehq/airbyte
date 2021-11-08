@@ -195,7 +195,7 @@
             "boleto": {
               "type": ["null", "object"],
               "properties": {
-                "tax_id\n": {
+                "tax_id": {
                   "type": ["null", "string"]
                 }
               }
