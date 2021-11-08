@@ -365,6 +365,35 @@ class InventoryLevels(ChildSubstream):
         )
 
 
+class FulfillmentOrders(ChildSubstream):
+
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
+    data_field = "fulfillment_orders"
+
+    cursor_field = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice[self.slice_key]
+        return f"orders/{order_id}/{self.data_field}.json"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
+
+
+class Fulfillments(ChildSubstream):
+
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
+    data_field = "fulfillments"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice[self.slice_key]
+        return f"orders/{order_id}/{self.data_field}.json"
+
+
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
@@ -407,4 +436,6 @@ class SourceShopify(AbstractSource):
             DiscountCodes(config),
             Locations(config),
             InventoryLevels(config),
+            FulfillmentOrders(config),
+            Fulfillments(config),
         ]

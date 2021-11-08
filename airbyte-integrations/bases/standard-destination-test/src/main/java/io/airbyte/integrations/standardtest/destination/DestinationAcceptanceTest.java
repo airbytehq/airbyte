@@ -496,7 +496,6 @@ public abstract class DestinationAcceptanceTest {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
-
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
             .withType(Type.RECORD)
@@ -1122,7 +1121,9 @@ public abstract class DestinationAcceptanceTest {
           "EMITTED_AT",
           "AB_ID",
           "NORMALIZED_AT",
-          "HASHID");
+          "HASHID",
+          "unique_key",
+          "UNIQUE_KEY");
       if (airbyteInternalFields.stream().anyMatch(internalField -> key.toLowerCase().contains(internalField.toLowerCase()))
           || json.get(key).isNull()) {
         ((ObjectNode) json).remove(key);

@@ -19,8 +19,8 @@ public class GoogleSearchConsoleOAuthFlow extends GoogleOAuthFlow {
   @VisibleForTesting
   static final String SCOPE_URL = "https://www.googleapis.com/auth/webmasters.readonly";
 
-  public GoogleSearchConsoleOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public GoogleSearchConsoleOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
