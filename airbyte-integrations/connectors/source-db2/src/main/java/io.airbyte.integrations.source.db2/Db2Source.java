@@ -20,9 +20,10 @@ public class Db2Source extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Db2Source.class);
   public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
+  private static Db2SourceOperations operations;
 
   public Db2Source() {
-    super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration(), new Db2SourceOperations());
+    super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration(), sourceOperations());
   }
 
   public static void main(final String[] args) throws Exception {
@@ -53,7 +54,16 @@ public class Db2Source extends AbstractJdbcSource implements Source {
 
   @Override
   protected JdbcSourceOperations getSourceOperations() {
-    return new Db2SourceOperations();
+    return sourceOperations();
+  }
+
+  /* Helpers */
+
+  private static JdbcSourceOperations sourceOperations() {
+    if (operations == null) {
+      operations = new Db2SourceOperations();
+    }
+    return operations;
   }
 
 }
