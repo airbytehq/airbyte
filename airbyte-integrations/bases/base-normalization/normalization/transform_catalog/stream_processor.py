@@ -992,8 +992,10 @@ where 1 = 1
         config = {}
         if self.destination_type == DestinationType.BIGQUERY:
             # see https://docs.getdbt.com/reference/resource-configs/bigquery-configs
-            if partition_by in [PartitionScheme.UNIQUE_KEY, PartitionScheme.ACTIVE_ROW]:
+            if partition_by == PartitionScheme.UNIQUE_KEY:
                 config["cluster_by"] = '["_airbyte_unique_key","_airbyte_emitted_at"]'
+            elif partition_by == PartitionScheme.ACTIVE_ROW:
+                config["cluster_by"] = '["_airbyte_unique_key_scd","_airbyte_emitted_at"]'
             else:
                 config["cluster_by"] = '"_airbyte_emitted_at"'
             if partition_by == PartitionScheme.ACTIVE_ROW:
@@ -1007,7 +1009,7 @@ where 1 = 1
         elif self.destination_type == DestinationType.POSTGRES:
             # see https://docs.getdbt.com/reference/resource-configs/postgres-configs
             if partition_by == PartitionScheme.ACTIVE_ROW:
-                config["indexes"] = "[{'columns':['_airbyte_active_row','_airbyte_unique_key','_airbyte_emitted_at'],'type': 'btree'}]"
+                config["indexes"] = "[{'columns':['_airbyte_active_row','_airbyte_unique_key_scd','_airbyte_emitted_at'],'type': 'btree'}]"
             elif partition_by == PartitionScheme.UNIQUE_KEY:
                 config["indexes"] = "[{'columns':['_airbyte_unique_key'],'unique':True}]"
             else:
@@ -1015,7 +1017,7 @@ where 1 = 1
         elif self.destination_type == DestinationType.REDSHIFT:
             # see https://docs.getdbt.com/reference/resource-configs/redshift-configs
             if partition_by == PartitionScheme.ACTIVE_ROW:
-                config["sort"] = '["_airbyte_active_row", "_airbyte_unique_key", "_airbyte_emitted_at"]'
+                config["sort"] = '["_airbyte_active_row", "_airbyte_unique_key_scd", "_airbyte_emitted_at"]'
             elif partition_by == PartitionScheme.UNIQUE_KEY:
                 config["sort"] = '["_airbyte_unique_key", "_airbyte_emitted_at"]'
             elif partition_by == PartitionScheme.NOTHING:
@@ -1025,7 +1027,7 @@ where 1 = 1
         elif self.destination_type == DestinationType.SNOWFLAKE:
             # see https://docs.getdbt.com/reference/resource-configs/snowflake-configs
             if partition_by == PartitionScheme.ACTIVE_ROW:
-                config["cluster_by"] = '["_AIRBYTE_ACTIVE_ROW", "_AIRBYTE_UNIQUE_KEY", "_AIRBYTE_EMITTED_AT"]'
+                config["cluster_by"] = '["_AIRBYTE_ACTIVE_ROW", "_AIRBYTE_UNIQUE_KEY_SCD", "_AIRBYTE_EMITTED_AT"]'
             elif partition_by == PartitionScheme.UNIQUE_KEY:
                 config["cluster_by"] = '["_AIRBYTE_UNIQUE_KEY", "_AIRBYTE_EMITTED_AT"]'
             elif partition_by == PartitionScheme.NOTHING:
