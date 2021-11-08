@@ -35,7 +35,7 @@ class PinterestStream(HttpStream, ABC):
 
     @property
     def window_in_days(self):
-        return self.config["window_in_days"]
+        return 185  # Set window_in_days to maximum available date range
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("bookmark", {}) if self.data_fields else {}
@@ -312,6 +312,10 @@ class SourcePinterest(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        start_date = config.get("start_date")
+        if not start_date:
+            config["start_date"] = "2020-07-28"  # Set default start_date if user didn't set it
+
         config["authenticator"] = self.get_authenticator(config)
         return [
             AdAccountAnalytics(AdAccounts(config), config=config),

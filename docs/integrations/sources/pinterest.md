@@ -38,7 +38,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Performance considerations
 
-The connector is restricted by normal Pinterest [requests limitation](https://developer.atlassian.com/cloud/trello/guides/rest-api/rate-limits/).
+The connector is restricted by normal Pinterest [requests limitation](https://developers.pinterest.com/docs/api/v5/#tag/Rate-limits).
 
 #####  Rate Limits
 

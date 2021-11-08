@@ -6,7 +6,8 @@
       "type": ["null", "string"]
     },
     "date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "metrics": {
       "type": ["null", "object"],

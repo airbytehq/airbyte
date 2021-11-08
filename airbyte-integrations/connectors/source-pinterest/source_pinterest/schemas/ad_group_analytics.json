@@ -3,7 +3,8 @@
   "type": "object",
   "properties": {
     "DATE": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "AD_ACCOUNT_IDAD_ID": {
       "type": ["null", "string"]

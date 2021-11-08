@@ -4,8 +4,8 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Pinterest Spec",
     "type": "object",
-    "required": ["client_id", "client_secret", "refresh_token", "start_date"],
-    "additionalProperties": false,
+    "required": ["client_id", "client_secret", "refresh_token"],
+    "additionalProperties": true,
     "properties": {
       "client_id": {
         "type": "string",
@@ -34,16 +34,8 @@
       "start_date": {
         "type": "string",
         "title": "Start date",
-        "description": "A date in the format YYYY-MM-DD.",
-        "examples": ["2020-06-01"]
-      },
-      "window_in_days": {
-        "type": "integer",
-        "title": "Data fetch window size in days",
-        "description": "How many days to fetch data for at once, beginning from the Start Date. The bigger the value - the faster the fetch. Minimum value is 1, Maximum is 185.",
-        "examples": [30, 60, 90, 185],
-        "default": 185,
-        "maximum": 185
+        "description": "A date in the format YYYY-MM-DD. If you have not set a date, it will be 2020-07-28 by default.",
+        "examples": ["2020-07-28"]
       }
     }
   }
