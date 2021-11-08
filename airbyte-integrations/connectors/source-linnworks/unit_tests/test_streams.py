@@ -45,7 +45,7 @@ def test_parse_response(patch_base_class, requests_mock):
     )
     resp = requests.get("https://dummy")
     inputs = {"response": resp}
-    expected_parsed_object = {"bar": {"baz": "baz"}, "foo": "foo"}
+    expected_parsed_object = {"Bar": {"Baz": "baz"}, "Foo": "foo"}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
