@@ -3,12 +3,12 @@
 #
 
 
+import pytest
 from airbyte_cdk.models import SyncMode
-from pytest import fixture
 from source_linnworks.source import IncrementalLinnworksStream
 
 
-@fixture
+@pytest.fixture
 def patch_incremental_base_class(mocker):
     mocker.patch.object(IncrementalLinnworksStream, "path", "v0/example_endpoint")
     mocker.patch.object(IncrementalLinnworksStream, "primary_key", "test_primary_key")
@@ -22,35 +22,42 @@ def test_cursor_field(patch_incremental_base_class):
     assert stream.cursor_field == expected_cursor_field
 
 
-def test_get_updated_state(patch_incremental_base_class):
+@pytest.mark.parametrize(
+    ("inputs", "expected_state"),
+    [
+        (
+            {
+                "current_stream_state": {
+                    "test_cursor_field": "2021-01-01T01:02:34+01:56",
+                },
+                "latest_record": {},
+            },
+            {"test_cursor_field": "2021-01-01T01:02:34+01:56"},
+        ),
+        (
+            {
+                "current_stream_state": {},
+                "latest_record": {
+                    "test_cursor_field": "2021-01-01T01:02:34+01:56",
+                },
+            },
+            {"test_cursor_field": "2021-01-01T01:02:34+01:56"},
+        ),
+        (
+            {
+                "current_stream_state": {
+                    "test_cursor_field": "2021-01-01T01:02:34+01:56",
+                },
+                "latest_record": {
+                    "test_cursor_field": "2021-01-01T01:02:34+01:57",
+                },
+            },
+            {"test_cursor_field": "2021-01-01T01:02:34+01:57"},
+        ),
+    ],
+)
+def test_get_updated_state(patch_incremental_base_class, inputs, expected_state):
     stream = IncrementalLinnworksStream()
-    inputs = {
-        "current_stream_state": {
-            "test_cursor_field": "2021-01-01T01:02:34+01:56",
-        },
-        "latest_record": {},
-    }
-    expected_state = {"test_cursor_field": "2021-01-01T01:02:34+01:56"}
-    assert stream.get_updated_state(**inputs) == expected_state
-
-    inputs = {
-        "current_stream_state": {},
-        "latest_record": {
-            "test_cursor_field": "2021-01-01T01:02:34+01:56",
-        },
-    }
-    expected_state = {"test_cursor_field": "2021-01-01T01:02:34+01:56"}
-    assert stream.get_updated_state(**inputs) == expected_state
-
-    inputs = {
-        "current_stream_state": {
-            "test_cursor_field": "2021-01-01T01:02:34+01:56",
-        },
-        "latest_record": {
-            "test_cursor_field": "2021-01-01T01:02:34+01:57",
-        },
-    }
-    expected_state = {"test_cursor_field": "2021-01-01T01:02:34+01:57"}
     assert stream.get_updated_state(**inputs) == expected_state
 
 
