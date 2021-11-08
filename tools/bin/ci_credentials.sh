@@ -21,7 +21,7 @@ function write_standard_creds() {
   local source_name=${4:-github}
 
   [ -z "$connector_name" ] && error "Empty connector name"
-  [ -z "$creds" ] && error "!!!!!Creds not set for $connector_name"
+  [ -z "$creds" ] && error "!!!!!Creds not set for the connector $connector_name from ${source_name}"
 
   if [[ $CONNECTOR_NAME != "all" && ${connector_name} != ${CONNECTOR_NAME} ]]; then
     return 0
@@ -69,7 +69,7 @@ function write_all_secrets() {
 
 
 function export_github_secrets(){
-  local pairs=`echo ${SECRETS_JSON} | jq -c 'keys[] as $k | {"name": $k, "value": .[$k]} | @base64'`
+  local pairs=`echo ${GITHUB_PROVIDED_SECRETS_JSON} | jq -c 'keys[] as $k | {"name": $k, "value": .[$k]} | @base64'`
   while read row; do
     pair=$(echo "${row}" | tr -d '"' | base64 -d)
     local key=$(echo ${pair} | jq -r .name)  
@@ -78,7 +78,7 @@ function export_github_secrets(){
       declare -gxr "${key}"="$(echo ${value})"
     fi
   done <<< ${pairs}
-  unset SECRETS_JSON
+  unset GITHUB_PROVIDED_SECRETS_JSON
 }
 
 function export_gsm_secrets(){
