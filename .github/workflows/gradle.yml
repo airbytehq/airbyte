@@ -81,7 +81,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
+          node-version: '16.13.0'
 
       - uses: actions/setup-python@v2
         with:
@@ -208,7 +208,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
+          node-version: '16.13.0'
 
       - name: Set up CI Gradle Properties
         run: |
@@ -324,7 +324,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
+          node-version: '16.13.0'
 
       - name: Install Cypress Test Dependencies
         run: sudo apt-get update && sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
@@ -405,7 +405,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
+          node-version: '16.13.0'
 
       - name: Fix EC-2 Runner
         run: |
