@@ -47,9 +47,10 @@ The Mixpanel connector should not run into Mixpanel API limitations under normal
 * Project region `US` or `EU`
 
 ### Setup guide
-
+<!-- markdown-link-check-disable-next-line -->
 Please read [Find API Secret](https://help.mixpanel.com/hc/en-us/articles/115004502806-Find-Project-Token-).
 
+<!-- markdown-link-check-disable-next-line -->
 Select the correct region \(EU or US\) for your Mixpanel project. See detail [here](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU)
 
 ## CHANGELOG

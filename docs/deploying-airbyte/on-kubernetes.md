@@ -10,8 +10,8 @@ Airbyte allows scaling sync workloads horizontally using Kubernetes. The core co
 
 For local testing we recommend following one of the following setup guides:
 
-* [Docker Desktop \(Mac\)](https://docs.docker.com/desktop/kubernetes/)
-* [Minikube](https://minikube.sigs.k8s.io/docs/start/)
+* [Docker Desktop \(Mac\)](https://docs.docker.com/desktop/kubernetes)
+* [Minikube](https://minikube.sigs.k8s.io/docs/start)
   * NOTE: Start Minikube with at least 4gb RAM with `minikube start --memory=4000`
 * [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
 

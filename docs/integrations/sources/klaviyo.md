@@ -44,6 +44,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 ### Setup guide
 
+<!-- markdown-link-check-disable-next-line -->
 Please follow these [steps](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3) to obtain Private API Key for your account.
 
 ## CHANGELOG

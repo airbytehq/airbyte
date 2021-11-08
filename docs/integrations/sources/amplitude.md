@@ -38,7 +38,7 @@ The Amplitude connector should gracefully handle Amplitude API limitations under
 * Amplitude Secret Key
 
 ### Setup guide
-
+<!-- markdown-link-check-disable-next-line -->
 Please read [How to get your API key and Secret key](https://help.amplitude.com/hc/en-us/articles/360058073772-Create-and-manage-organizations-and-projects#view-and-edit-your-project-information).
 
 ## Changelog
