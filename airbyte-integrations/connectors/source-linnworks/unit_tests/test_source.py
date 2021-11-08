@@ -2,15 +2,16 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import ANY, MagicMock
+from unittest.mock import MagicMock
 
 import pytest
-from source_linnworks.source import SourceLinnworks, LinnworksAuthenticator
+from source_linnworks.source import LinnworksAuthenticator, SourceLinnworks
 
 
 @pytest.fixture
 def config():
     return {"config": {"application_id": "xxx", "application_secret": "yyy", "token": "zzz", "start_date": "2021-11-01"}}
+
 
 @pytest.mark.parametrize(
     ("response", "expected"),
@@ -29,7 +30,7 @@ def config():
             },
             (False, "Unable to connect to Linnworks API with the provided credentials - Error while refreshing access token: 'Token'"),
         ),
-    ]
+    ],
 )
 def test_check_connection(mocker, config, requests_mock, response, expected):
     source = SourceLinnworks()
