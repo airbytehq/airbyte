@@ -55,18 +55,21 @@ class LinnworksStream(HttpStream, ABC):
 
 
 class LinnworksGenericPagedResult(ABC):
+    # https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Generic-GenericPagedResult
     @abstractmethod
     def paged_result(self, response: requests.Response) -> Mapping[str, Any]:
         pass
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         result = self.paged_result(response)
-        del result["Data"]
-        result = normalize(result)
 
-        if result["page_number"] < result["total_pages"]:
-            result["page_number"] += 1
-            return result
+        if result["PageNumber"] < result["TotalPages"]:
+            return {
+                "PageNumber": result["PageNumber"] + 1,
+                "EntriesPerPage": result["EntriesPerPage"],
+                "TotalEntries": result["TotalEntries"],
+                "TotalPages": result["TotalPages"],
+            }
 
 
 class Location(LinnworksStream):
@@ -212,7 +215,7 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
         }
 
         if next_page_token:
-            request["PageNumber"] = next_page_token["page_number"]
+            request["PageNumber"] = next_page_token["PageNumber"]
 
         return {
             "request": json.dumps(request, separators=(",", ":")),
