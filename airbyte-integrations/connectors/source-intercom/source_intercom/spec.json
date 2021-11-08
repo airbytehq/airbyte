@@ -16,7 +16,7 @@
       "access_token": {
         "title": "Access Token",
         "type": "string",
-        "description": "Access token generated using the above client ID and secret",
+        "description": "Access token generated either from an oauth flow or from the Intercom Developer dashboard. See the <a href=\"https://docs.airbyte.io/integrations/sources/intercom\">docs</a> for more information on how to obtain this key manually.",
         "airbyte_secret": true
       }
     }

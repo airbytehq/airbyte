@@ -51,8 +51,8 @@ public class IntercomOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
-    // Facebook does not have refresh token but calls it "long lived access token" instead:
-    // see https://developers.facebook.com/docs/facebook-login/access-tokens/refreshing
+    // Intercom does not have refresh token but calls it "long lived access token" instead:
+    // see https://developers.intercom.com/building-apps/docs/setting-up-oauth
     if (data.has("access_token")) {
       return Map.of("access_token", data.get("access_token").asText());
     } else {
