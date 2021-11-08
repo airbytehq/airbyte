@@ -67,7 +67,7 @@ jobs:
       - name: Write Integration Test Credentials
         run: ./tools/bin/ci_credentials.sh ${{ github.event.inputs.connector }}
         env:
-          SECRETS_JSON: ${{ toJson(secrets) }}
+          GITHUB_PROVIDED_SECRETS_JSON: ${{ toJson(secrets) }}
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}

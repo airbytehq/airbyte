@@ -72,7 +72,7 @@ jobs:
       - name: Write Integration Test Credentials # TODO DRY this with test-command.yml
         run: ./tools/bin/ci_credentials.sh ${{ github.event.inputs.connector }}
         env:
-          SECRETS_JSON: ${{ toJson(secrets) }}
+          GITHUB_PROVIDED_SECRETS_JSON: ${{ toJson(secrets) }}
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
