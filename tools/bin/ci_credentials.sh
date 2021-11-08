@@ -18,22 +18,22 @@ function write_standard_creds() {
   local connector_name=$1
   local creds=$2
   local cred_filename=${3:-config.json}
-  local source_name=${4:-github}
+  local secrets_provider_name=${4:-github}
 
   [ -z "$connector_name" ] && error "Empty connector name"
-  [ -z "$creds" ] && error "!!!!!Creds not set for the connector $connector_name from ${source_name}"
+  [ -z "$creds" ] && echo "!!!!!Creds not set for the connector $connector_name from ${secrets_provider_name}"
 
   if [[ $CONNECTOR_NAME != "all" && ${connector_name} != ${CONNECTOR_NAME} ]]; then
     return 0
   fi
   local key="${connector_name}#${cred_filename}"
-  [[ -z "${creds}" ]] && error "Empty credential for the connector '${key} from ${source_name}"
+  [[ -z "${creds}" ]] && error "Empty credential for the connector '${key} from ${secrets_provider_name}"
   
   if [ -v SECRET_MAP[${key}] ]; then
     echo "The connector '${key}' was added before"
     return 0
   fi
-  echo "register the secret ${key} from ${source_name}"
+  echo "register the secret ${key} from ${secrets_provider_name}"
   SECRET_MAP[${key}]="${creds}"
   return 0
 }
@@ -42,8 +42,10 @@ function write_secret_to_disk() {
   local connector_name=$1
   local cred_filename=$2
   local creds=$3
-  if jq -e . >/dev/null 2>&1 <<<${creds}; then
-      error "Failed to parse JSON for '${connector_name}' => ${cred_filename}"
+  if jq -e . >/dev/null 2>&1 <<< "${creds}"; then
+    echo "Parsed JSON for '${connector_name}' => ${cred_filename} successfully"
+  else
+    error "Failed to parse JSON for '${connector_name}' => ${cred_filename}"
   fi
 
   if [ "$connector_name" = "base-normalization" ]; then
@@ -141,6 +143,7 @@ function export_gsm_secrets(){
 
 export_gsm_secrets
 export_github_secrets
+
 
 
 # Please maintain this organisation and alphabetise.
