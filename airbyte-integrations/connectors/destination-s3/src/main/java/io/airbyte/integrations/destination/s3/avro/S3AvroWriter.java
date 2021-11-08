@@ -8,9 +8,9 @@ import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
@@ -26,12 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.UUID;
 
 public class S3AvroWriter extends BaseS3Writer implements S3Writer {
@@ -76,36 +70,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
     public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
         JsonNode jsonSchema = getStream().getJsonSchema();
         JsonNode recordMessageData = recordMessage.getData();
-
-        DateTimeFormatter formatter = new DateTimeFormatterBuilder()
-                .parseCaseInsensitive()
-                .append(DateTimeFormatter.ISO_LOCAL_DATE)
-                .optionalStart()
-                .optionalStart()
-                .appendLiteral(' ')
-                .optionalEnd()
-                .optionalStart()
-                .appendLiteral('T')
-                .optionalEnd()
-                .appendOptional(DateTimeFormatter.ISO_TIME)
-                .toFormatter();
-
-        for (Iterator<Map.Entry<String, JsonNode>> it = jsonSchema.get("properties").fields(); it.hasNext(); ) {
-            Map.Entry<String, JsonNode> elt = it.next();
-            String key = elt.getKey();
-            JsonNode value = elt.getValue();
-            if (value.get("format") != null) {
-                boolean format = value.get("format").asText().equals("date-time") || value.get("format").asText().equals("date-time");
-                if (format) {
-                    String datetime = recordMessageData.get(key).asText();
-                    ZonedDateTime dt = ZonedDateTime.parse(datetime, formatter);
-                    Instant instant = dt.toInstant();
-                    long epochMilli = instant.toEpochMilli();
-                    ((ObjectNode) recordMessageData).put(key, epochMilli);
-
-                }
-            }
-        }
+        AvroRecordHelper.transformDateTimeInJson(jsonSchema, recordMessageData);
         recordMessage.setData(recordMessageData);
 
         dataFileWriter.append(avroRecordFactory.getAvroRecord(id, recordMessage));

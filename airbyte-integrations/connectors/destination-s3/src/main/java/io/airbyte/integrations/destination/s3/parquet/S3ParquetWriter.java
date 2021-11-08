@@ -5,10 +5,12 @@
 package io.airbyte.integrations.destination.s3.parquet;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -105,6 +107,10 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
   @Override
   public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
+    JsonNode jsonSchema = getStream().getJsonSchema();
+    JsonNode recordMessageData = recordMessage.getData();
+    AvroRecordHelper.transformDateTimeInJson(jsonSchema, recordMessageData);
+    recordMessage.setData(recordMessageData);
     parquetWriter.write(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 

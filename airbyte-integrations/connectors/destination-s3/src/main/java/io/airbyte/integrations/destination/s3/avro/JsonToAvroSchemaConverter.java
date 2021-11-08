@@ -150,17 +150,18 @@ public class JsonToAvroSchemaConverter {
     Preconditions
         .checkState(fieldType != JsonSchemaType.NULL, "Null types should have been filtered out");
 
-    Schema fieldSchema = null;
+    Schema fieldSchema;
     switch (fieldType) {
       case NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case STRING -> {
         if(fieldDefinition.has("format")){
           String format = fieldDefinition.get("format").asText();
-          if(format.equals("date-time")){
-            fieldSchema = LogicalTypes.timestampMillis().addToSchema(Schema.create(Type.LONG));
-          }else if(format.equals("date")){
-            fieldSchema = LogicalTypes.date().addToSchema(Schema.create(Type.INT));
-          }
+          fieldSchema = switch (format) {
+            case "date-time" -> LogicalTypes.timestampMicros().addToSchema(Schema.create(Type.LONG));
+            case "date" -> LogicalTypes.date().addToSchema(Schema.create(Type.INT));
+            case "time" -> LogicalTypes.timeMicros().addToSchema(Schema.create(Type.LONG));
+            default -> Schema.create(fieldType.getAvroType());
+          };
         }else {
           fieldSchema =Schema.create(fieldType.getAvroType());
         }
