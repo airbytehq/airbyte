@@ -193,8 +193,8 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
     # https://apps.linnworks.net/Api/Method/ProcessedOrders-SearchProcessedOrders
     # Response: SearchProcessedOrdersResponse https://apps.linnworks.net/Api/Class/API_Linnworks-Controllers-ProcessedOrders-Responses-SearchProcessedOrdersResponse
     # Allows 150 calls per minute
-    primary_key = "n_order_id"
-    cursor_field = "d_received_date"
+    primary_key = "nOrderId"
+    cursor_field = "dReceivedDate"
     page_size = 500
 
     def path(self, **kwargs) -> str:
@@ -226,7 +226,7 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in self.paged_result(response)["Data"]:
-            yield normalize(record)
+            yield record
 
 
 class LinnworksAuthenticator(Oauth2Authenticator):
