@@ -254,9 +254,4 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     CDC
   }
 
-  @Override
-  protected JdbcSourceOperations getSourceOperations() {
-    return new MySqlSourceOperations();
-  }
-
 }

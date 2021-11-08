@@ -53,9 +53,4 @@ public class SnowflakeSource extends AbstractJdbcSource implements Source {
         "INFORMATION_SCHEMA");
   }
 
-  @Override
-  protected JdbcSourceOperations getSourceOperations() {
-    return new SnowflakeSourceOperations();
-  }
-
 }

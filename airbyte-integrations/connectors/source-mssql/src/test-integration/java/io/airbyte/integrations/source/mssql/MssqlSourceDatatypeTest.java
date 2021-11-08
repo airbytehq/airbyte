@@ -119,10 +119,8 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("bit")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "0", "1", "'true'", "'false'")
-            .addExpectedValues(null, "false", "true", "true", "false")
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("null", "'0'", "1", "'false'", "'true'")
+            .addExpectedValues(null, "0", "1", "0", "1")
             .build());
 
     addDataTypeTestData(
@@ -174,16 +172,12 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("123.0", "1.23456794E9", null)
             .build());
 
-    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so dates would be
-    // always represented as a datetime with 00:00:00 time
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'",
-                "null")
-            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z",
-                "1999-01-08T00:00:00Z", null)
+            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'", "null")
+            .addExpectedValues("0001-01-01", "9999-12-31", "1999-01-08", null)
             .build());
 
     addDataTypeTestData(
@@ -210,14 +204,12 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
             .build());
 
-    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
-    // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("null", "'23:59:59.123456'", "'15:59:59'", "'00:00:00'")
+            .addExpectedValues(null, "23:59:59.123456", "15:59:59", "00:00:00")
             .build());
 
     addDataTypeTestData(
@@ -285,27 +277,21 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
-    // TODO BUG Returns binary value instead of actual value
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("binary")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            // .addInsertValues("CAST( 'A' AS VARBINARY)", "null")
-            // .addExpectedValues("A")
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("CAST( 'A' AS BINARY(1))", "null")
+            .addExpectedValues("A", null)
             .build());
 
-    // TODO BUG Returns binary value instead of actual value
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varbinary")
-            .fullSourceDataType("varbinary(30)")
+            .fullSourceDataType("varbinary(3)")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            // .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
-            // .addExpectedValues("A")
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
+            .addExpectedValues("ABC", null)
             .build());
 
     // TODO BUG: airbyte returns binary representation instead of readable one
