@@ -154,7 +154,7 @@ public class JsonToAvroSchemaConverter {
     switch (fieldType) {
       case NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case STRING -> {
-        if(fieldDefinition.has("format")){
+        if (fieldDefinition.has("format")) {
           String format = fieldDefinition.get("format").asText();
           fieldSchema = switch (format) {
             case "date-time" -> LogicalTypes.timestampMicros().addToSchema(Schema.create(Type.LONG));
@@ -162,10 +162,10 @@ public class JsonToAvroSchemaConverter {
             case "time" -> LogicalTypes.timeMicros().addToSchema(Schema.create(Type.LONG));
             default -> Schema.create(fieldType.getAvroType());
           };
-        }else {
-          fieldSchema =Schema.create(fieldType.getAvroType());
+        } else {
+          fieldSchema = Schema.create(fieldType.getAvroType());
         }
-    }
+      }
       case COMBINED -> {
         final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
         final List<Schema> unionTypes = getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get());
