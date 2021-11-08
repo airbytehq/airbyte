@@ -3,5 +3,5 @@
   "name": "Apps Flyer",
   "dockerRepository": "blotout/source-appsflyer-singer",
   "dockerImageTag": "0.1.6",
-  "documentationUrl": "https://github.com/blotouta2/tap-appsflyer"
+  "documentationUrl": "https://github.com/blotoutio/tap-appsflyer"
 }
