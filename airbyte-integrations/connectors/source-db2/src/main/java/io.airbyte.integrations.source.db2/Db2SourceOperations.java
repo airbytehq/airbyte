@@ -33,29 +33,6 @@ public class Db2SourceOperations extends JdbcSourceOperations {
     return jsonNode;
   }
 
-  @Override
-  protected void setJsonField(ResultSet queryContext, int index, ObjectNode jsonNode) throws SQLException {
-    final int columnTypeInt = queryContext.getMetaData().getColumnType(index);
-    final String columnName = queryContext.getMetaData().getColumnName(index);
-    final JDBCType columnType = safeGetJdbcType(columnTypeInt);
-
-    switch (columnType) {
-      case BIT, BOOLEAN -> putBoolean(jsonNode, columnName, queryContext, index);
-      case TINYINT, SMALLINT -> putShortInt(jsonNode, columnName, queryContext, index);
-      case INTEGER -> putInteger(jsonNode, columnName, queryContext, index);
-      case BIGINT -> putBigInt(jsonNode, columnName, queryContext, index);
-      case FLOAT, DOUBLE -> putDouble(jsonNode, columnName, queryContext, index);
-      case REAL -> putReal(jsonNode, columnName, queryContext, index);
-      case NUMERIC, DECIMAL -> putNumber(jsonNode, columnName, queryContext, index);
-      case CHAR, VARCHAR, LONGVARCHAR -> putString(jsonNode, columnName, queryContext, index);
-      case DATE -> putDate(jsonNode, columnName, queryContext, index);
-      case TIME -> putTime(jsonNode, columnName, queryContext, index);
-      case TIMESTAMP -> putTimestamp(jsonNode, columnName, queryContext, index);
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(jsonNode, columnName, queryContext, index);
-      default -> putDefault(jsonNode, columnName, queryContext, index);
-    }
-  }
-
   /* Helpers */
 
   private void setFields(ResultSet queryContext, int index, ObjectNode jsonNode) throws SQLException {
