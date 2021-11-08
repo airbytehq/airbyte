@@ -21,6 +21,8 @@ class TestFullRefresh(BaseTest):
 
         output_diff = set(map(serialize, records_1)) - set(map(serialize, records_2))
         if output_diff:
+            detailed_logger.info(f"record_1: {records_1}")
+            detailed_logger.info(f"record_2: {records_2}")
             msg = "The two sequential reads should produce either equal set of records or one of them is a strict subset of the other"
             detailed_logger.info(msg)
             detailed_logger.log_json_list(output_diff)
