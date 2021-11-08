@@ -44,6 +44,14 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
     URL_ENCODED("application/x-www-form-urlencoded", BaseOAuthFlow::toUrlEncodedString),
     JSON("application/json", BaseOAuthFlow::toJson);
 
+    public String getContentType() {
+      return contentType;
+    }
+
+    public Function<Map<String, String>, String> getConverter() {
+      return converter;
+    }
+
     String contentType;
     Function<Map<String, String>, String> converter;
 
@@ -57,6 +65,10 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
   private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
   protected HttpClient httpClient;
   private final Supplier<String> stateSupplier;
+
+  protected TOKEN_REQUEST_CONTENT_TYPE getTokenReqContentType() {
+    return tokenReqContentType;
+  }
 
   public BaseOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
     this(configRepository, httpClient, BaseOAuthFlow::generateRandomState);

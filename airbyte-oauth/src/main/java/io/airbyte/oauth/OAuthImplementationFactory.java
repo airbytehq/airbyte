@@ -7,6 +7,7 @@ package io.airbyte.oauth;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.flows.*;
+import io.airbyte.oauth.flows.QuickbooksOAuthFlow;
 import io.airbyte.oauth.flows.facebook.FacebookMarketingOAuthFlow;
 import io.airbyte.oauth.flows.facebook.FacebookPagesOAuthFlow;
 import io.airbyte.oauth.flows.facebook.InstagramOAuthFlow;
@@ -37,6 +38,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-quickbooks", new QuickbooksOAuthFlow(configRepository, httpClient))
         .build();
   }
 
