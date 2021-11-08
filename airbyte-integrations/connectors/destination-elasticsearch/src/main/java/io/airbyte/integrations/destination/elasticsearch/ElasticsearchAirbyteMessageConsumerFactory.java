@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public class ElasticsearchAirbyteMessageConsumerFactory {
 
   private static final Logger log = LoggerFactory.getLogger(ElasticsearchAirbyteMessageConsumerFactory.class);
-  private static final int MAX_BATCH_SIZE = 10000;
+  private static final int MAX_BATCH_SIZE = 1024 * 1024 * 1024;
   private static final ObjectMapper mapper = new ObjectMapper();
 
   private static AtomicLong recordsWritten = new AtomicLong(0);
