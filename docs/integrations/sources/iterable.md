@@ -51,9 +51,8 @@ The Iterable connector should not run into Iterable API limitations under normal
 * Iterable API Key
 
 ### Setup guide
-<!-- markdown-link-check-disable -->
+<!-- markdown-link-check-disable-next-line -->
 Please read [How to find your API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-#creating-api-keys).
-<!-- markdown-link-check-enable -->
 
 ## CHANGELOG
 
