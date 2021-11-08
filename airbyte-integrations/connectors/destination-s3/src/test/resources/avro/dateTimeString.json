@@ -1,0 +1,104 @@
+{
+  "gid": "1200272791740051",
+  "archived": false,
+  "color": null,
+  "created_at": "2021-04-30T17:23:33.187Z",
+  "current_status": {
+    "gid": null,
+    "resource_type": "new",
+    "title": [
+      {
+        "gid": "1200272844321082",
+        "modified_at": "2021-04-30T17:23:33.187Z",
+        "authors": [
+          {
+            "name": "James",
+            "modified_at": "2021-04-30T17:23:33.187Z",
+            "randomdates": null
+          },
+          {
+            "name": "Jordan",
+            "modified_at": null,
+            "randomdates": ["2021-04-30","2021 Jul 30","2021.07.30"]
+          }
+        ]
+      },
+      {
+        "gid": "1200272792717222",
+        "modified_at": "2021-04-30T17:23:33.187Z",
+        "authors":null
+      },
+      {
+        "gid": "1200272792839106",
+        "modified_at": "2021-04-30T17:23:33.187Z",
+        "authors":[]
+      },
+      {
+        "gid": "1200272792962884",
+        "modified_at": "2021-04-30T17:23:33.187Z",
+        "authors":[]
+      }
+    ],
+    "author": null,
+    "color": null,
+    "html_text": "dljshvsd",
+    "modified_at": "2021-04-30T17:23:33.187Z",
+    "text": "stringr",
+    "created_at": "2021-04-30T17:23:33.187Z",
+    "created_by": null
+  },
+  "testField": ["test1","test2","test3","test4","test5"],
+  "custom_fields": [],
+  "default_view": "list",
+  "due_on": "2021-09-30",
+  "due_date": "2021-09-30",
+  "randomTime": "17:23:33.213564",
+  "followers": [
+    {
+      "gid": "1200272844321082"
+    },
+    {
+      "gid": "1200272792717222"
+    },
+    {
+      "gid": "1200272792839106"
+    },
+    {
+      "gid": "1200272792962884"
+    }
+  ],
+  "html_notes": "<body></body>",
+  "icon": "list",
+  "is_template": false,
+  "members": [
+    {
+      "gid": "1200272844321082"
+    },
+    {
+      "gid": "1200272792962884"
+    },
+    {
+      "gid": "1200272792717222"
+    },
+    {
+      "gid": "1200272792839106"
+    }
+  ],
+  "dateFieldInRoot":["2021-04-30","2021 Jul 30","2021.07.30"],
+  "modified_at": "2021-11-02T10:36:25.373Z",
+  "name": "Product launch",
+  "notes": "",
+  "owner": {
+    "gid": "1200272844321082"
+  },
+  "permalink_url": "https://app.asana.com/0/1200272791740051/1200272791740051",
+  "public": true,
+  "resource_type": "project",
+  "start_on": null,
+  "team": {
+    "gid": "1200272750255814"
+  },
+  "workspace": {
+    "gid": "1200272750255812"
+  }
+}
