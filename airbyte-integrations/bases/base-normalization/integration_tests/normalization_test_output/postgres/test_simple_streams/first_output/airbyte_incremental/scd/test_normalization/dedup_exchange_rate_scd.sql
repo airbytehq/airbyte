@@ -1,7 +1,7 @@
 
       
 
-  create  table "postgres".test_normalization."dedup_exchange_rate_scd"
+  create  table "postgres"."test_normalization"."dedup_exchange_rate_scd__dbt_tmp"
   as (
     
 with
@@ -42,7 +42,7 @@ scd_data as (
             "date" desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
-      case when lag("date") over (
+      case when row_number() over (
         partition by "id", currency, cast(nzd as 
     varchar
 )
@@ -50,7 +50,7 @@ scd_data as (
             "date" is null asc,
             "date" desc,
             _airbyte_emitted_at desc
-      ) is null  then 1 else 0 end as _airbyte_active_row,
+      ) = 1 then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_dedup_exchange_rate_hashid
