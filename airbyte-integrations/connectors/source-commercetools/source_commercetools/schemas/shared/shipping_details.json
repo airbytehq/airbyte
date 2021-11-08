@@ -1,22 +1,22 @@
 {
-  "type": ["null","object"],
+  "type": ["null", "object"],
   "properties": {
     "targets": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
-        "type": ["null","object"],
+        "type": ["null", "object"],
         "properties": {
           "addressKey": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           },
           "quantity": {
-            "type": ["null","number"]
+            "type": ["null", "number"]
           }
         }
       }
     },
     "valid": {
-      "type": ["null","boolean"]
+      "type": ["null", "boolean"]
     }
   }
 }

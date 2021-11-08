@@ -3,5 +3,5 @@
   "start_date": "3000-01-01",
   "project_key": "project_key",
   "client_id": "client_id",
-  "client_secret":"client_secret"
+  "client_secret": "client_secret"
 }

@@ -2,10 +2,10 @@
   "type": ["null", "object"],
   "properties": {
     "typeId": {
-      "type":["null", "string"]
+      "type": ["null", "string"]
     },
     "key": {
-      "type":["null", "string"]
+      "type": ["null", "string"]
     }
   }
 }

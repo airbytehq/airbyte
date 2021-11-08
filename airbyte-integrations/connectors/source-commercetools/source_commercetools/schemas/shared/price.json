@@ -1,14 +1,14 @@
 {
-  "type": ["null","object"],
+  "type": ["null", "object"],
   "properties": {
     "id": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "value": {
       "$ref": "money.json"
     },
     "country": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "customerGroup": {
       "$ref": "reference.json"
@@ -17,20 +17,20 @@
       "$ref": "reference.json"
     },
     "validFrom": {
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "validUntil": {
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "tiers": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
-        "type": ["null","object"],
+        "type": ["null", "object"],
         "properties": {
           "minimumQuantity": {
-            "type": ["null","integer"]
+            "type": ["null", "integer"]
           },
           "value": {
             "$ref": "money.json"
@@ -39,7 +39,7 @@
       }
     },
     "discounted": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "value": {
           "$ref": "money.json"

@@ -3,23 +3,23 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "key": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "version": {
-      "type": ["null","number"]
+      "type": ["null", "number"]
     },
     "createdAt": {
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "createdBy": {
       "$ref": "created_by.json"
     },
     "lastModifiedAt": {
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModifiedBy": {
@@ -29,10 +29,10 @@
       "$ref": "reference.json"
     },
     "masterData": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "published": {
-          "type": ["null","boolean"]
+          "type": ["null", "boolean"]
         },
         "current": {
           "$ref": "product_data.json"
@@ -41,7 +41,7 @@
           "$ref": "product_data.json"
         },
         "hasStagedChanges": {
-          "type": ["null","boolean"]
+          "type": ["null", "boolean"]
         }
       }
     },
@@ -52,22 +52,22 @@
       "$ref": "reference.json"
     },
     "reviewRatingStatistics": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "averageRating": {
-          "type": ["null","number"]
+          "type": ["null", "number"]
         },
         "highestRating": {
-          "type": ["null","number"]
+          "type": ["null", "number"]
         },
         "lowestRating": {
-          "type": ["null","number"]
+          "type": ["null", "number"]
         },
         "count": {
-          "type": ["null","number"]
+          "type": ["null", "number"]
         },
         "ratingsDistribution": {
-          "type": ["null","object"]
+          "type": ["null", "object"]
         }
       }
     }

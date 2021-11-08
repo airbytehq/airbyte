@@ -32,7 +32,7 @@
       "type": ["null", "string"]
     },
     "cartDiscounts": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "$ref": "reference.json"
       }
@@ -52,7 +52,7 @@
       "format": "date-time"
     },
     "references": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "$ref": "reference.json"
       }

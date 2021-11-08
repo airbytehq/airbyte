@@ -1,8 +1,8 @@
 {
-  "type": ["null","object"],
+  "type": ["null", "object"],
   "properties": {
     "name": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     }
   }
 }

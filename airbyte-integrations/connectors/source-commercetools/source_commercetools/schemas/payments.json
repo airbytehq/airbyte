@@ -3,23 +3,23 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "key": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "version": {
-      "type": ["null","number"]
+      "type": ["null", "number"]
     },
     "createdAt": {
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "createdBy": {
       "$ref": "created_by.json"
     },
     "lastModifiedAt": {
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModifiedBy": {
@@ -29,22 +29,22 @@
       "$ref": "reference.json"
     },
     "anonymousId": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "interfaceId": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "amountPlanned": {
       "$ref": "money.json"
     },
     "paymentMethodInfo": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "paymentInterface": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "method": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "name": {
           "$ref": "localized_string.json"
@@ -52,13 +52,13 @@
       }
     },
     "paymentStatus": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "interfaceCode": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "interfaceText": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "state": {
           "$ref": "reference.json"
@@ -66,33 +66,33 @@
       }
     },
     "transactions": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
-        "type": ["null","object"],
+        "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           },
           "timestamp": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           },
           "type": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           },
           "amount": {
             "$ref": "money.json"
           },
           "interactionId": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           },
           "state": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           }
         }
       }
     },
     "interfaceInteractions": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "$ref": "custom.json"
       }

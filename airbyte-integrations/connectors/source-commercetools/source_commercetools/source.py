@@ -43,7 +43,7 @@ class CommercetoolsStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return f"https://api.{self.region}.commercetools.com/{self.project_key}/"
+        return f"https://api.{self.region}.gcp.commercetools.com/{self.project_key}/"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}"
@@ -130,12 +130,10 @@ class SourceCommercetools(AbstractSource):
     def get_access_token(self, config) -> Tuple[str, any]:
         region = config["region"]
         project_key = config["project_key"]
-        url = f"https://auth.{region}.gcp.commercetools.com/oauth/token?grant_type=client_credentials&scope=manage_project:{project_key} manage_api_clients:{project_key} view_api_clients:{project_key} view_audit_log:{project_key}"
-        auth = TokenAuthenticator(
-            token=self._convert_auth_to_token(config["client_id"], config["client_secret"]), auth_method="Basic"
-        ).get_auth_header()
+        url = f"https://auth.{region}.gcp.commercetools.com/oauth/token?grant_type=client_credentials&scope=manage_project:{project_key}"
+
         try:
-            response = requests.post(url, headers=auth)
+            response = requests.post(url, auth=(config["client_id"], config["client_secret"]))
             response.raise_for_status()
             json_response = response.json()
             return json_response.get("access_token", None), None if json_response is not None else None, None
@@ -161,6 +159,7 @@ class SourceCommercetools(AbstractSource):
                 return True, None
             except requests.exceptions.RequestException as e:
                 return False, e
+        return False, "Token not found"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 

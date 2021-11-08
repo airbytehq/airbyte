@@ -1,17 +1,17 @@
 {
-  "type": ["null","object"],
+  "type": ["null", "object"],
   "properties": {
     "name": {
       "$ref": "localized_string.json"
     },
     "categories": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "$ref": "reference.json"
       }
     },
     "categoryOrderHints": {
-      "type": ["null","object"]
+      "type": ["null", "object"]
     },
     "description": {
       "$ref": "localized_string.json"
@@ -32,19 +32,19 @@
       "$ref": "product_variant.json"
     },
     "variants": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "$ref": "product_variant.json"
       }
     },
     "searchKeywords": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "text": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "suggestTokenizer": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         }
       }
     }

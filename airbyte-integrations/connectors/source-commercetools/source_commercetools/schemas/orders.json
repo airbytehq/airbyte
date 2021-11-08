@@ -74,14 +74,14 @@
             "$ref": "money.json"
           },
           "quantity": {
-            "type": ["null","number"]
+            "type": ["null", "number"]
           },
           "addedAt": {
-            "type": ["null","string"],
+            "type": ["null", "string"],
             "format": "date-time"
           },
           "state": {
-            "type": ["null","array"],
+            "type": ["null", "array"],
             "items": {
               "$ref": "state.json"
             }
@@ -99,10 +99,10 @@
             "$ref": "discounted_price_per_quantity.json"
           },
           "priceMode": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           },
           "lineItemMode": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           },
           "custom": {
             "$ref": "custom.json"
@@ -111,7 +111,7 @@
             "$ref": "shipping_details.json"
           },
           "lastModifiedAt": {
-            "type": ["null","string"],
+            "type": ["null", "string"],
             "format": "date-time"
           }
         }
@@ -144,7 +144,7 @@
             "type": ["null", "number"]
           },
           "state": {
-            "type": ["null","array"],
+            "type": ["null", "array"],
             "items": {
               "$ref": "state.json"
             }
@@ -156,7 +156,7 @@
             "$ref": "taxrate.json"
           },
           "discountedPricePerQuantity": {
-            "type": ["null","array"],
+            "type": ["null", "array"],
             "items": {
               "$ref": "discounted_price_per_quantity.json"
             }
@@ -279,7 +279,7 @@
               "parcels": {
                 "type": ["null", "array"],
                 "items": {
-                  "type": ["null","object"],
+                  "type": ["null", "object"],
                   "properties": {
                     "id": {
                       "type": ["null", "string"]
@@ -292,7 +292,7 @@
                       "type": ["null", "string"]
                     },
                     "trackingData": {
-                      "type": ["null","object"],
+                      "type": ["null", "object"],
                       "properties": {
                         "trackingId": {
                           "type": ["null", "string"]
@@ -335,15 +335,15 @@
           }
         },
         "discountedPrice": {
-          "type": ["null","object"],
+          "type": ["null", "object"],
           "properties": {
             "value": {
               "$ref": "money.json"
             },
             "includedDiscounts": {
-              "type": ["null","array"],
+              "type": ["null", "array"],
               "items": {
-                "type": ["null","object"],
+                "type": ["null", "object"],
                 "properties": {
                   "discount": {
                     "$ref": "reference.json"
@@ -380,52 +380,52 @@
       }
     },
     "returnInfo": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
-        "type": ["null","object"],
+        "type": ["null", "object"],
         "properties": {
           "items": {
-            "type": ["null","array"],
+            "type": ["null", "array"],
             "items": {
-              "type": ["null","object"],
+              "type": ["null", "object"],
               "properties": {
                 "id": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "type": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "quantity": {
-                  "type": ["null","number"]
+                  "type": ["null", "number"]
                 },
                 "lineItemId": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "comment": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "shipmentState": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "paymentState": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "lastModifiedAt": {
-                  "type": ["null","string"],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "createdAt": {
-                  "type": ["null","string"],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 }
               }
             }
           },
           "returnTrackingId": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           },
           "returnDate": {
-            "type": ["null","string"],
+            "type": ["null", "string"],
             "format": "date-time"
           }
         }

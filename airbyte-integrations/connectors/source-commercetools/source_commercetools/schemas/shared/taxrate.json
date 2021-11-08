@@ -1,34 +1,34 @@
 {
-  "type": ["null","object"],
+  "type": ["null", "object"],
   "properties": {
     "id": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "name": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "amount": {
-      "type": ["null","number"]
+      "type": ["null", "number"]
     },
     "includedInPrice": {
-      "type": ["null","boolean"]
+      "type": ["null", "boolean"]
     },
     "country": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "state": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "subRates": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
-        "type": ["null","object"],
+        "type": ["null", "object"],
         "properties": {
           "name": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           },
           "amount": {
-            "type": ["null","number"]
+            "type": ["null", "number"]
           }
         }
       }

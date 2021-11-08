@@ -1,17 +1,17 @@
 {
-  "type": ["null","object"],
+  "type": ["null", "object"],
   "properties": {
     "id": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "value": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "currentValue": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "country": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "customerGroup": {
       "$ref": "reference.json"
@@ -20,15 +20,15 @@
       "$ref": "reference.json"
     },
     "validFrom": {
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "validUntil": {
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "discounted": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "value": {
           "$ref": "money.json"
