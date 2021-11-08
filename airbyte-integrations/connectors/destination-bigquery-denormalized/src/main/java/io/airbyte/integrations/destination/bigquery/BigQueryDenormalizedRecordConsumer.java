@@ -73,6 +73,12 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     return data;
   }
 
+  @Override
+  public void close(boolean hasFailed) {
+    fieldsWithRefDefinition.clear();
+    super.close(hasFailed);
+  }
+
   protected JsonNode formatData(final FieldList fields, final JsonNode root) {
     // handles empty objects and arrays
     if (fields == null) {
