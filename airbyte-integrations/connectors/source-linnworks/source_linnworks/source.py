@@ -19,8 +19,6 @@ from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from requests.auth import AuthBase
 
-from .util import normalize
-
 
 class LinnworksStream(HttpStream, ABC):
     http_method = "POST"
