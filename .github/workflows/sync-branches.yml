@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - sherifnada-patch-1
       
 jobs:
   repo-sync:
