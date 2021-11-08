@@ -24,39 +24,39 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-public class HubspotOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
+public class SlackOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
 
   @Override
   protected Path getCredentialsPath() {
-    return Path.of("secrets/hubspot.json");
+    return Path.of("secrets/slack.json");
   }
 
-  protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new HubspotOAuthFlow(configRepository, httpClient);
+  @Override
+  protected String getRedirectUrl() {
+    return "https://27b0-2804-14d-2a76-9a9a-fdbb-adee-9e5d-6c.ngrok.io/auth_flow";
   }
 
   @Override
   protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
-    return new HubspotOAuthFlow(configRepository, httpClient);
+    return new SlackOAuthFlow(configRepository, httpClient);
   }
 
   @Test
-  public void testFullOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
-    int limit = 100;
+  public void testFullSlackOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
+    int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
     final String fullConfigAsString = new String(Files.readAllBytes(getCredentialsPath()));
-    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
+    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get("credentials");
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", credentialsJson.get("credentials").get("client_id").asText())
-            .put("client_secret", credentialsJson.get("credentials").get("client_secret").asText())
+            .put("client_id", credentialsJson.get("client_id").asText())
+            .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    var flowObject = getFlowImplementation(configRepository, httpClient);
-    final String url = flowObject.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = getFlowImplementation(configRepository, httpClient).getSourceConsentUrl(workspaceId, definitionId, getRedirectUrl());
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -65,15 +65,12 @@ public class HubspotOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
       limit -= 1;
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
-    final Map<String, Object> params = flowObject.completeSourceOAuth(workspaceId, definitionId,
-        Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
+    final Map<String, Object> params = flow.completeSourceOAuth(workspaceId, definitionId,
+        Map.of("code", serverHandler.getParamValue()), getRedirectUrl());
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("credentials"));
-    final Map<String, Object> credentials = (Map<String, Object>) params.get("credentials");
-    assertTrue(credentials.containsKey("refresh_token"));
-    assertTrue(credentials.get("refresh_token").toString().length() > 0);
-    assertTrue(credentials.containsKey("access_token"));
-    assertTrue(credentials.get("access_token").toString().length() > 0);
+    assertTrue(((Map<String, Object>) params.get("credentials")).containsKey("access_token"));
+    assertTrue(((Map<String, Object>) params.get("credentials")).get("access_token").toString().length() > 0);
   }
 
 }
