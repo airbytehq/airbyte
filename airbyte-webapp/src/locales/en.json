@@ -95,6 +95,7 @@
   "form.noteStartSync": "Note that it will delete all the data in your destination and start syncing from scratch. ",
   "form.pkSelected": "{count, plural, =0 { } one {{items}} other {# keys selected}}",
   "form.url.error": "field must be a valid URL",
+  "form.setupGuide": "Setup Guide",
 
   "connectionForm.validation.error": "The form is invalid. Please make sure that all fields are correct.",
   "connectionForm.normalization.title": "Normalization",
@@ -170,7 +171,7 @@
   "onboarding.destinationSetUp.buttonText": "Set up destination",
   "onboarding.setUpConnection": "Set up connection",
   "onboarding.setConnection": "Set up the connection",
-  "onboarding.instructionsLink": "See instructions how to connect {name}",
+  "onboarding.instructionsLink": "See full instructions how to connect {name}",
   "onboarding.fetchingSchema": "We are fetching the schema of your data source. \nThis should take less than a minute, but may take a few minutes on slow internet connections or data sources with a large amount of tables.",
   "onboarding.tutorial": "Check how you can sync PostgreSQL databases in minutes",
   "onboarding.skipOnboarding": "Skip Onboarding",
