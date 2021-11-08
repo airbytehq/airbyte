@@ -4,7 +4,9 @@
 
 package io.airbyte.oauth.flows;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
@@ -58,6 +60,20 @@ public class AsanaOAuthFlow extends BaseOAuthFlow {
         .putAll(super.getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))
         .put("grant_type", "authorization_code")
         .build();
+  }
+
+  @Override
+  protected String getClientIdUnsafe(final JsonNode config) {
+    // the config object containing client ID and secret is nested inside the "credentials" object
+    Preconditions.checkArgument(config.hasNonNull("credentials"));
+    return super.getClientIdUnsafe(config.get("credentials"));
+  }
+
+  @Override
+  protected String getClientSecretUnsafe(final JsonNode config) {
+    // the config object containing client ID and secret is nested inside the "credentials" object
+    Preconditions.checkArgument(config.hasNonNull("credentials"));
+    return super.getClientSecretUnsafe(config.get("credentials"));
   }
 
 }
