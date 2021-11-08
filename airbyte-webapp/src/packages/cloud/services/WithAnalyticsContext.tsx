@@ -16,7 +16,7 @@ const WithAnalyticsContext: React.FC = ({ children }) => {
 
     return () =>
       ctx.removeContextProps(["workspaceId", "userId", "customerId"]);
-  }, [ctx, workspaceId, user?.userId]);
+  }, [ctx, workspaceId, user?.userId, customerId]);
 
   return <>{children}</>;
 };
