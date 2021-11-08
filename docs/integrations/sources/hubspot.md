@@ -96,6 +96,7 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.23 | 2021-11-08 | [7730](https://github.com/airbytehq/airbyte/pull/7730) | Fix oAuth flow schema|
 | 0.1.22 | 2021-11-03 | [7562](https://github.com/airbytehq/airbyte/pull/7562) | Migrate Hubspot source to CDK structure |
 | 0.1.21 | 2021-10-27 | [7405](https://github.com/airbytehq/airbyte/pull/7405) | Change of package `import` from `urllib` to `urllib.parse` |
 | 0.1.20 | 2021-10-26 | [7393](https://github.com/airbytehq/airbyte/pull/7393) | Hotfix for `split_properties` function, add the length of separator symbol `,`(`%2C` in HTTP format) to the checking of the summary URL length |

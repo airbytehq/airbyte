@@ -48,10 +48,10 @@ public class AsanaOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", "test_client_id")
             .put("client_secret", "test_client_secret")
-            .build()))));
+            .build())))));
     asanaoAuthFlow = new AsanaOAuthFlow(configRepository, httpClient, AsanaOAuthFlowTest::getConstantState);
 
   }
