@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_linnworks.source import LinnworksStream
+from source_linnworks.streams import LinnworksStream
 
 
 @pytest.fixture

@@ -5,7 +5,7 @@
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from source_linnworks.source import IncrementalLinnworksStream
+from source_linnworks.streams import IncrementalLinnworksStream
 
 
 @pytest.fixture
