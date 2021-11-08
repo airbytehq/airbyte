@@ -231,7 +231,7 @@ public class ConfigDumpExporter {
   }
 
   /**
-   * List all configurations of type @param <T> that already exists
+   * List all configurations of type @param &lt;T&gt; that already exists
    */
   public interface ListConfigCall<T> {
 
