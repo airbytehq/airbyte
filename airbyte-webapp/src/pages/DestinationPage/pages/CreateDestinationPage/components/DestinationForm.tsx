@@ -46,8 +46,6 @@ const DestinationForm: React.FC<IProps> = ({
     sourceDefinitionError,
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
 
-  console.log(sourceDefinitionError);
-
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
     const connector = destinationDefinitions.find(
