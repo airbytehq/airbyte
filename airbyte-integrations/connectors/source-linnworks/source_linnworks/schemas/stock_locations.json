@@ -3,68 +3,99 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "address1": {
-      "type": "string",
-      "description": "1st line of address"
-    },
-    "address2": {
-      "type": "string",
-      "description": "2nd line of address"
-    },
-    "city": {
-      "type": "string",
-      "description": "City"
-    },
-    "county": {
-      "type": "string",
-      "description": "County / Region"
-    },
-    "country": {
-      "type": "string",
-      "description": "Country"
-    },
-    "zip_code": {
-      "type": "string",
-      "description": "Postal code"
-    },
-    "is_not_trackable": {
-      "type": "boolean",
-      "description": "Not trackable"
-    },
-    "location_tag": {
-      "type": "string",
-      "description": "Location tag"
-    },
-    "count_in_order_until_acknowledgement": {
-      "type": "boolean",
-      "description": "Count in order"
-    },
-    "fulfilment_center_deduct_stock_when_processed": {
-      "type": "boolean",
-      "description": "Fulfilment center and stock will be deducted when order processed"
-    },
-    "is_warehouse_managed": {
-      "type": "boolean",
-      "description": "Indicates if the location is warehosue managed"
-    },
-    "stock_location_id": {
+    "StockLocationId": {
       "type": "string",
       "description": "Location ID"
     },
-    "location_name": {
+    "StockLocationIntId": {
+      "type": "integer",
+      "description": "Stock location integet id"
+    },
+    "LocationName": {
       "type": "string",
       "description": "Location name"
     },
-    "is_fulfillment_center": {
+    "IsFulfillmentCenter": {
       "type": "boolean",
       "description": "If location is a fulfilment center"
     },
-    "stock_location_int_id": {
-      "type": "integer",
-      "description": "Stock location integer id"
+    "LocationTag": {
+      "type": "string",
+      "description": "Location tag"
     },
-    "bin_rack": {
-      "type": "string"
+    "BinRack": {
+      "type": "string",
+      "description": "Bin rack"
+    },
+    "IsWarehouseManaged": {
+      "type": ["null", "boolean"],
+      "description": "If the location is warehosue managed."
+    },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Address1": {
+          "type": "string",
+          "description": "1st line of address"
+        },
+        "Address2": {
+          "type": "string",
+          "description": "2nd line of address"
+        },
+        "City": {
+          "type": "string",
+          "description": "City"
+        },
+        "County": {
+          "type": "string",
+          "description": "County / Region"
+        },
+        "Country": {
+          "type": "string",
+          "description": "Country"
+        },
+        "ZipCode": {
+          "type": "string",
+          "description": "Postal code"
+        },
+        "IsNotTrackable": {
+          "type": "boolean",
+          "description": "Not trackable"
+        },
+        "LocationTag": {
+          "type": "string",
+          "description": "Location tag"
+        },
+        "CountInOrderUntilAcknowledgement": {
+          "type": "boolean",
+          "description": "Count in order"
+        },
+        "FulfilmentCenterDeductStockWhenProcessed": {
+          "type": "boolean",
+          "description": "Fulfilment center and stock will be deducted when order processed"
+        },
+        "IsWarehouseManaged": {
+          "type": "boolean",
+          "description": "Indicates if the location is warehosue managed."
+        },
+        "StockLocationId": {
+          "type": "string",
+          "description": "Location ID"
+        },
+        "LocationName": {
+          "type": "string",
+          "description": "Location name"
+        },
+        "IsFulfillmentCenter": {
+          "type": "boolean",
+          "description": "If location is a fulfilment center"
+        },
+        "StockLocationIntId": {
+          "type": "integer",
+          "description": "Stock location integer id."
+        }
+      }
     }
   }
 }

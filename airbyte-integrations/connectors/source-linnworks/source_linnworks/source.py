@@ -51,7 +51,7 @@ class LinnworksStream(HttpStream, ABC):
         if not isinstance(json, list):
             json = [json]
         for record in json:
-            yield normalize(record)
+            yield record
 
 
 class LinnworksGenericPagedResult(ABC):
@@ -76,7 +76,7 @@ class Location(LinnworksStream):
     # https://apps.linnworks.net/Api/Method/Locations-GetLocation
     # Response: StockLocation https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Locations-ClassBase-StockLocation
     # Allows 150 calls per minute
-    primary_key = "stock_location_int_id"
+    primary_key = "StockLocationIntId"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -93,7 +93,7 @@ class StockLocations(LinnworksStream):
     # https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations
     # Response: List<StockLocation> https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Inventory-ClassBase-StockLocation
     # Allows 150 calls per minute
-    primary_key = "stock_location_int_id"
+    primary_key = "StockLocationIntId"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -111,8 +111,8 @@ class StockLocations(LinnworksStream):
 
         for record in records:
             location = Location(authenticator=self.authenticator)
-            srecords = location.read_records(sync_mode, cursor_field, stream_slice, {"pkStockLocationId": record["stock_location_id"]})
-            record.update(next(srecords))
+            srecords = location.read_records(sync_mode, cursor_field, stream_slice, {"pkStockLocationId": record["StockLocationId"]})
+            record["location"] = next(srecords)
             yield record
 
 
