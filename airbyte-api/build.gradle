@@ -22,6 +22,7 @@ task generateApiServer(type: GenerateTask) {
     modelPackage = "io.airbyte.api.model"
 
     importMappings = [
+            'AuthConfiguration'               : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceDefinitionSpecification'     : 'com.fasterxml.jackson.databind.JsonNode',
             'SourceConfiguration'               : 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
