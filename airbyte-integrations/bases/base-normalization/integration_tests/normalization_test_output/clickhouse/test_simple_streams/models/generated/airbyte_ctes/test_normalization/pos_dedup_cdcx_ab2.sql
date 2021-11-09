@@ -1,5 +1,5 @@
 {{ config(
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
+    unique_key = '_airbyte_ab_id',
     schema = "_airbyte_test_normalization",
     tags = [ "top-level-intermediate" ]
 ) }}
@@ -17,4 +17,5 @@ select
 from {{ ref('pos_dedup_cdcx_ab1') }}
 -- pos_dedup_cdcx
 where 1 = 1
+{{ incremental_clause('_airbyte_emitted_at') }}
 

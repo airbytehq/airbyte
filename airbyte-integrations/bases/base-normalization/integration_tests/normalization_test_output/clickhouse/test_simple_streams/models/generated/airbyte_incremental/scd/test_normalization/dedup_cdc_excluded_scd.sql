@@ -45,16 +45,15 @@ input_data as (
     -- dedup_cdc_excluded from {{ source('test_normalization', '_airbyte_raw_dedup_cdc_excluded') }}
 ),
 {% endif %}
-input_data_with_end_at as (
+input_data_with_active_row_num as (
     select *,
-      anyOrNull(_airbyte_emitted_at) over (
+      row_number() over (
         partition by id
         order by
             _airbyte_emitted_at is null asc,
             _airbyte_emitted_at desc,
             _airbyte_emitted_at desc, _ab_cdc_updated_at desc
-        ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING
-      ) as _airbyte_end_at
+      ) as _airbyte_active_row_num
     from input_data
 ),
 scd_data as (
@@ -69,12 +68,19 @@ scd_data as (
         _ab_cdc_updated_at,
         _ab_cdc_deleted_at,
       _airbyte_emitted_at as _airbyte_start_at,
-      _airbyte_end_at,
-      multiIf( _airbyte_end_at is null and _ab_cdc_deleted_at is null  , 1 , 0 ) as _airbyte_active_row,
+      anyOrNull(_airbyte_emitted_at) over (
+        partition by id
+        order by
+            _airbyte_emitted_at is null asc,
+            _airbyte_emitted_at desc,
+            _airbyte_emitted_at desc, _ab_cdc_updated_at desc
+        ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING
+      ) as _airbyte_end_at,
+      case when _airbyte_active_row_num = 1 and _ab_cdc_deleted_at is null then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_dedup_cdc_excluded_hashid
-    from input_data_with_end_at
+    from input_data_with_active_row_num
 ),
 dedup_data as (
     select

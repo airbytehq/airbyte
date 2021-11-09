@@ -47,16 +47,15 @@ input_data as (
     -- dedup_exchange_rate from {{ source('test_normalization', '_airbyte_raw_dedup_exchange_rate') }}
 ),
 {% endif %}
-input_data_with_end_at as (
+input_data_with_active_row_num as (
     select *,
-      anyOrNull(date) over (
+      row_number() over (
         partition by id, currency, cast(NZD as {{ dbt_utils.type_string() }})
         order by
             date is null asc,
             date desc,
             _airbyte_emitted_at desc
-        ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING
-      ) as _airbyte_end_at
+      ) as _airbyte_active_row_num
     from input_data
 ),
 scd_data as (
@@ -76,12 +75,19 @@ scd_data as (
         NZD,
         USD,
       date as _airbyte_start_at,
-      _airbyte_end_at,
-      multiIf( _airbyte_end_at is null  , 1 , 0 ) as _airbyte_active_row,
+      anyOrNull(date) over (
+        partition by id, currency, cast(NZD as {{ dbt_utils.type_string() }})
+        order by
+            date is null asc,
+            date desc,
+            _airbyte_emitted_at desc
+        ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING
+      ) as _airbyte_end_at,
+      case when _airbyte_active_row_num = 1 then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_dedup_exchange_rate_hashid
-    from input_data_with_end_at
+    from input_data_with_active_row_num
 ),
 dedup_data as (
     select
