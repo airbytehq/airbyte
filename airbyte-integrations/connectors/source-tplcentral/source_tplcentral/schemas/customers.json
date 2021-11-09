@@ -16,7 +16,10 @@
           "type": "integer"
         },
         "CreationDate": {
-          "type": ["null", "string"],
+          "type": [
+            "null",
+            "string"
+          ],
           "format": "date-time"
         },
         "Deactivated": {
@@ -31,7 +34,10 @@
       "additionalProperties": false,
       "properties": {
         "ContactId": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "CompanyName": {
           "type": "string"
@@ -79,7 +85,11 @@
         "AddressStatus": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
-          "enum": [0, 1, 2],
+          "enum": [
+            0,
+            1,
+            2
+          ],
           "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
         }
       }
@@ -91,7 +101,10 @@
       "additionalProperties": false,
       "properties": {
         "ContactId": {
-          "type": ["null", "integer"]
+          "type": [
+            "null",
+            "integer"
+          ]
         },
         "CompanyName": {
           "type": "string"
@@ -139,7 +152,11 @@
         "AddressStatus": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
-          "enum": [0, 1, 2],
+          "enum": [
+            0,
+            1,
+            2
+          ],
           "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
         }
       }
@@ -155,11 +172,19 @@
           "Type": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "integer",
-            "enum": [2, 3, 4, 5],
+            "enum": [
+              2,
+              3,
+              4,
+              5
+            ],
             "description": "2: invoicing; 3: additional; 4: for753; 5: small_parcel_return_label"
           },
           "ContactId": {
-            "type": ["null", "integer"]
+            "type": [
+              "null",
+              "integer"
+            ]
           },
           "CompanyName": {
             "type": "string"
@@ -207,7 +232,11 @@
           "AddressStatus": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "integer",
-            "enum": [0, 1, 2],
+            "enum": [
+              0,
+              1,
+              2
+            ],
             "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
           }
         }
@@ -347,7 +376,11 @@
             "ReceiveAgainstAsns": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [0, 1, 2],
+              "enum": [
+                0,
+                1,
+                2
+              ],
               "description": "0: disabled; 1: enabled; 2: blind"
             },
             "SuggestedPutAwayEnabled": {
@@ -360,19 +393,31 @@
             "TrackLocation": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [0, 1, 2],
+              "enum": [
+                0,
+                1,
+                2
+              ],
               "description": "0: disallow; 1: allow; 2: require"
             },
             "TrackPallets": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [0, 1, 2],
+              "enum": [
+                0,
+                1,
+                2
+              ],
               "description": "0: disallow; 1: allow; 2: require"
             },
             "TrackSupplier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [0, 1, 2],
+              "enum": [
+                0,
+                1,
+                2
+              ],
               "description": "0: disallow; 1: allow; 2: require"
             },
             "InheritOriginalReceiptDateOnTransfer": {
@@ -392,7 +437,10 @@
             },
             "NextMasterBolIdOverride": {
               "description": "To override the system-generated NextMasterBolId",
-              "type": ["null", "integer"]
+              "type": [
+                "null",
+                "integer"
+              ]
             },
             "BolNumAsTransNum": {
               "type": "boolean"
@@ -403,7 +451,11 @@
             "FulfillmentInvoicing": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [0, 1, 2],
+              "enum": [
+                0,
+                1,
+                2
+              ],
               "description": "0: disabled; 1: enabled; 2: prepopulated"
             },
             "OrderQueue": {
@@ -431,7 +483,12 @@
             "PrepopulateCarrierInfo": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [0, 1, 2, 3],
+              "enum": [
+                0,
+                1,
+                2,
+                3
+              ],
               "description": "0: off; 1: on; 2: prepaid_only; 3: third_party_only"
             },
             "PackingListLogoUrl": {
@@ -556,7 +613,7 @@
             "FlexFields": {
               "type": "boolean"
             },
-            "AllowDuplicateUpCs": {
+            "AllowDuplicateUPCs": {
               "description": "if AllowDuplicateUPCs is true, Unit-of-measure-based UPCs are disabled",
               "type": "boolean"
             }
@@ -579,7 +636,12 @@
             "TransactionConfirmInvoiceCreateDefault": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [0, 1, 2, 3],
+              "enum": [
+                0,
+                1,
+                2,
+                3
+              ],
               "description": "0: off; 1: on; 2: receivers_only; 3: orders_only"
             },
             "MobileReceiptQuantityOneDefault": {

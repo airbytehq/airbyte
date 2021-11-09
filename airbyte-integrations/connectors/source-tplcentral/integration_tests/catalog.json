@@ -2,47 +2,3744 @@
   "streams": [
     {
       "name": "stock_summaries",
-      "json_schema": {},
-      "supported_sync_modes": ["full_refresh"],
-      "source_defined_primary_key": [["facility_id"], ["_item_identifier_id"]]
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "_item_identifier_id": {
+            "type": "integer"
+          },
+          "ItemIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Sku": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "Qualifier": {
+            "type": "string"
+          },
+          "TotalReceived": {
+            "type": "number"
+          },
+          "Allocated": {
+            "type": "number"
+          },
+          "Available": {
+            "type": "number"
+          },
+          "OnHold": {
+            "type": "number"
+          },
+          "OnHand": {
+            "type": "number"
+          },
+          "FacilityId": {
+            "type": "integer"
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_primary_key": [
+        [
+          "facility_id"
+        ],
+        [
+          "_item_identifier_id"
+        ]
+      ]
     },
     {
       "name": "customers",
-      "json_schema": {},
-      "supported_sync_modes": ["full_refresh"],
-      "source_defined_primary_key": [["_id"]]
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "_id": {
+            "type": "integer"
+          },
+          "ReadOnly": {
+            "description": "these fields are not updatable by the API client",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "CustomerId": {
+                "type": "integer"
+              },
+              "CreationDate": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "Deactivated": {
+                "type": "boolean"
+              }
+            }
+          },
+          "CompanyInfo": {
+            "description": "customer.contact1",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ContactId": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "CompanyName": {
+                "type": "string"
+              },
+              "Name": {
+                "type": "string"
+              },
+              "Title": {
+                "type": "string"
+              },
+              "Address1": {
+                "type": "string"
+              },
+              "Address2": {
+                "type": "string"
+              },
+              "City": {
+                "type": "string"
+              },
+              "State": {
+                "type": "string"
+              },
+              "Zip": {
+                "type": "string"
+              },
+              "Country": {
+                "type": "string"
+              },
+              "PhoneNumber": {
+                "type": "string"
+              },
+              "Fax": {
+                "type": "string"
+              },
+              "EmailAddress": {
+                "type": "string"
+              },
+              "Dept": {
+                "type": "string"
+              },
+              "Code": {
+                "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
+                "type": "string"
+              },
+              "AddressStatus": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "integer",
+                "enum": [
+                  0,
+                  1,
+                  2
+                ],
+                "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
+              }
+            }
+          },
+          "PrimaryContact": {
+            "description": "customer.customercontacts where contact type is primary",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ContactId": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "CompanyName": {
+                "type": "string"
+              },
+              "Name": {
+                "type": "string"
+              },
+              "Title": {
+                "type": "string"
+              },
+              "Address1": {
+                "type": "string"
+              },
+              "Address2": {
+                "type": "string"
+              },
+              "City": {
+                "type": "string"
+              },
+              "State": {
+                "type": "string"
+              },
+              "Zip": {
+                "type": "string"
+              },
+              "Country": {
+                "type": "string"
+              },
+              "PhoneNumber": {
+                "type": "string"
+              },
+              "Fax": {
+                "type": "string"
+              },
+              "EmailAddress": {
+                "type": "string"
+              },
+              "Dept": {
+                "type": "string"
+              },
+              "Code": {
+                "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
+                "type": "string"
+              },
+              "AddressStatus": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "integer",
+                "enum": [
+                  0,
+                  1,
+                  2
+                ],
+                "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
+              }
+            }
+          },
+          "OtherContacts": {
+            "description": "customer.customercontacts where contact type is other than primary",
+            "type": "array",
+            "items": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "Type": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "integer",
+                  "enum": [
+                    2,
+                    3,
+                    4,
+                    5
+                  ],
+                  "description": "2: invoicing; 3: additional; 4: for753; 5: small_parcel_return_label"
+                },
+                "ContactId": {
+                  "type": [
+                    "null",
+                    "integer"
+                  ]
+                },
+                "CompanyName": {
+                  "type": "string"
+                },
+                "Name": {
+                  "type": "string"
+                },
+                "Title": {
+                  "type": "string"
+                },
+                "Address1": {
+                  "type": "string"
+                },
+                "Address2": {
+                  "type": "string"
+                },
+                "City": {
+                  "type": "string"
+                },
+                "State": {
+                  "type": "string"
+                },
+                "Zip": {
+                  "type": "string"
+                },
+                "Country": {
+                  "type": "string"
+                },
+                "PhoneNumber": {
+                  "type": "string"
+                },
+                "Fax": {
+                  "type": "string"
+                },
+                "EmailAddress": {
+                  "type": "string"
+                },
+                "Dept": {
+                  "type": "string"
+                },
+                "Code": {
+                  "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
+                  "type": "string"
+                },
+                "AddressStatus": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "integer",
+                  "enum": [
+                    0,
+                    1,
+                    2
+                  ],
+                  "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
+                }
+              }
+            }
+          },
+          "WebSite": {
+            "description": "information only, in case you want to see more about the customer's business",
+            "type": "string"
+          },
+          "ExternalId": {
+            "description": "connection of this customer to the same customer on some other system",
+            "type": "string"
+          },
+          "Groups": {
+            "description": "list of groups this customer belongs to",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "Facilities": {
+            "description": "list of facilities this customer's items are stored in, the first is the primary facility",
+            "type": "array",
+            "items": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "Name": {
+                  "type": "string"
+                },
+                "Id": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "PrimaryFacilityIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            },
+            "description": "same as the first in Facilities; populated by GET, ignored by POST and PUT"
+          },
+          "Options": {
+            "description": "assemblage of all manner of capabilities the system allows for this customer, scraped together from multiple database sources",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Alerts": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "ExpirationNotificationThreshold": {
+                    "description": "number of days???",
+                    "type": "integer"
+                  },
+                  "NotifyShipTo": {
+                    "type": "boolean"
+                  },
+                  "FromEmailAddress": {
+                    "type": "string"
+                  },
+                  "SenderName": {
+                    "type": "string"
+                  },
+                  "ReplyToAddress": {
+                    "type": "string"
+                  }
+                }
+              },
+              "Storage": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "FuelSurcharge": {
+                    "description": "positive int percentage 0-100",
+                    "type": "number"
+                  },
+                  "SetInvoiceDateToXactionConfirmDate": {
+                    "type": "boolean"
+                  },
+                  "AccountingCustomerName": {
+                    "type": "string"
+                  },
+                  "AutoFillChargesOnConfirm": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "Edi": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "CustInterchangeId": {
+                    "type": "string"
+                  },
+                  "CustInterchangeIdQual": {
+                    "type": "string"
+                  },
+                  "ThreeplInterchangeId": {
+                    "type": "string"
+                  },
+                  "ThreeplInterchangeIdQual": {
+                    "type": "string"
+                  },
+                  "TradingPartnerId": {
+                    "type": "string"
+                  }
+                }
+              },
+              "Receiving": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "PurchaseOrders": {
+                    "type": "boolean"
+                  },
+                  "CreateMultipleMus": {
+                    "type": "boolean"
+                  },
+                  "DisplayWeightFieldForReceipt": {
+                    "type": "boolean"
+                  },
+                  "ReceiveAgainstAsns": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "description": "0: disabled; 1: enabled; 2: blind"
+                  },
+                  "SuggestedPutAwayEnabled": {
+                    "type": "boolean"
+                  },
+                  "AutoFillTrackBys": {
+                    "description": "Should be in Shipping - direct Smart Pack whether to auto fill trackbys",
+                    "type": "boolean"
+                  },
+                  "TrackLocation": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "description": "0: disallow; 1: allow; 2: require"
+                  },
+                  "TrackPallets": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "description": "0: disallow; 1: allow; 2: require"
+                  },
+                  "TrackSupplier": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "description": "0: disallow; 1: allow; 2: require"
+                  },
+                  "InheritOriginalReceiptDateOnTransfer": {
+                    "description": "false: set receipt date to transfer date when receiving inventory via customer-to-customer transfer; true: inherit original receipt date",
+                    "type": "boolean"
+                  }
+                }
+              },
+              "Shipping": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "NextMasterBolId": {
+                    "description": "Readonly value; see NextMasterBolIdOverride",
+                    "type": "integer"
+                  },
+                  "NextMasterBolIdOverride": {
+                    "description": "To override the system-generated NextMasterBolId",
+                    "type": [
+                      "null",
+                      "integer"
+                    ]
+                  },
+                  "BolNumAsTransNum": {
+                    "type": "boolean"
+                  },
+                  "AutoConfirmOrderOnTrackingUpdate": {
+                    "type": "boolean"
+                  },
+                  "FulfillmentInvoicing": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "description": "0: disabled; 1: enabled; 2: prepopulated"
+                  },
+                  "OrderQueue": {
+                    "type": "boolean"
+                  },
+                  "AutoPrintCartonLabelDefault": {
+                    "description": "Sets default on or off for Smart Pack's Auto-print labels checkbox",
+                    "type": "boolean"
+                  },
+                  "SmartPackScaleEnabled": {
+                    "type": "boolean"
+                  },
+                  "RequireTrackingNumber": {
+                    "type": "boolean"
+                  },
+                  "UpsAccountNumber": {
+                    "type": "string"
+                  },
+                  "UpsAccountZip": {
+                    "type": "string"
+                  },
+                  "FedExAccountNumber": {
+                    "type": "string"
+                  },
+                  "PrepopulateCarrierInfo": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2,
+                      3
+                    ],
+                    "description": "0: off; 1: on; 2: prepaid_only; 3: third_party_only"
+                  },
+                  "PackingListLogoUrl": {
+                    "description": "on GET: url of image; on POST or PUT: url of image -or- {fileExtension}:{base64-encoded image}",
+                    "type": "string"
+                  },
+                  "PackingListFooterUrl": {
+                    "description": "on GET: url of image; on POST or PUT: url of image -or- {fileExtension}:{base64-encoded image}",
+                    "type": "string"
+                  },
+                  "RounduptoFullMu": {
+                    "type": "boolean"
+                  },
+                  "QuickBooksPaymentTerms": {
+                    "type": "string"
+                  },
+                  "AsnPreCheck": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "RequireScacForAsn": {
+                        "description": "Prevents sending an ASN when SCAC is not specified",
+                        "type": "boolean"
+                      },
+                      "RequireAttachedDocuments": {
+                        "description": "Prevents sending an ASN when the order has no attached docs",
+                        "type": "boolean"
+                      },
+                      "AsnPreCheckOptions": {
+                        "description": "Prevents sending an ASN when any of the checks associated with the options in this bit flag fail",
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "integer"
+                      },
+                      "OrderLevelFlexFields": {
+                        "description": "Prevents sending an ASN when the listed Flex Fields are not all specified at the order level",
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "OrderItemLevelFlexFields": {
+                        "description": "Prevents sending an ASN when the listed Flex Fields are not all specified at the order item level",
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "Packaging": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "SmallParcelUsps3rdParty": {
+                    "type": "string"
+                  },
+                  "Ucc128ManufacturersId": {
+                    "type": "integer"
+                  },
+                  "UseVendorIdOnBol": {
+                    "type": "boolean"
+                  },
+                  "SpsCloseOnUpdate": {
+                    "type": "boolean"
+                  },
+                  "SmallParcelReturnShippingCost": {
+                    "type": "boolean"
+                  },
+                  "SmallParcelReturnFedExService": {
+                    "type": "string"
+                  },
+                  "SmallParcelUspsReturnType": {
+                    "type": "string"
+                  },
+                  "SmallParcelReturnUpsService": {
+                    "type": "string"
+                  },
+                  "SmallParcelReturnDefaultChecked": {
+                    "type": "boolean"
+                  },
+                  "SmallParcelHighVolumeDefaultChecked": {
+                    "type": "boolean"
+                  },
+                  "SmallParcelHighVolumeZplBatched": {
+                    "type": "boolean"
+                  },
+                  "SmallParcelReferences": {
+                    "type": "string"
+                  },
+                  "SmallParcelIntlDutyBillType": {
+                    "type": "string"
+                  },
+                  "SmallParcelCustomizeDuties": {
+                    "type": "boolean"
+                  },
+                  "SmallParcelDutiesAndTaxes": {
+                    "type": "string"
+                  },
+                  "SmallParcelCreatePackagesOnFind": {
+                    "type": "boolean"
+                  },
+                  "SmallParcelRateShoppingCarrierIds": {
+                    "type": "string"
+                  },
+                  "SmallParcelRateShoppingLogic": {
+                    "type": "string"
+                  },
+                  "SmallParcelZplPrintDefault": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "OtherSystemBehaviors": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "FlexFields": {
+                    "type": "boolean"
+                  },
+                  "AllowDuplicateUPCs": {
+                    "description": "if AllowDuplicateUPCs is true, Unit-of-measure-based UPCs are disabled",
+                    "type": "boolean"
+                  }
+                }
+              },
+              "UserInterface": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "HideLocationSelectedList": {
+                    "type": "boolean"
+                  },
+                  "ExcludeLocationsWithZeroInventory": {
+                    "type": "boolean"
+                  },
+                  "AutoCheckAutoReallocateOnReceive": {
+                    "type": "boolean"
+                  },
+                  "TransactionConfirmInvoiceCreateDefault": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2,
+                      3
+                    ],
+                    "description": "0: off; 1: on; 2: receivers_only; 3: orders_only"
+                  },
+                  "MobileReceiptQuantityOneDefault": {
+                    "type": "boolean"
+                  },
+                  "ReallocateAtPickTime": {
+                    "type": "boolean"
+                  },
+                  "BrandingImageId": {
+                    "type": "integer"
+                  },
+                  "Dashboard": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "SavedElements": {
+                "description": "UI assistance for adding saved elements to a transaction and its line items. Since it is merely a UI assistance, it is up to a UI to decide if, how and when it will verify requiredness. In other words, business logic doesn't care.",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Orders": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Defs": {
+                        "description": "for the transaction itself, listed in customer's preferred display order",
+                        "type": "array",
+                        "items": {
+                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "description": "a suggested saved element",
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "Name": {
+                              "description": "a suggested name",
+                              "type": "string"
+                            },
+                            "Required": {
+                              "description": "whether a UI might want to strongly suggest the user enter this one at some point in a transaction's lifetime",
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      },
+                      "ItemDefs": {
+                        "description": "for the transaction's line items, listed in customer's preferred display order",
+                        "type": "array",
+                        "items": {
+                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "description": "a suggested saved element",
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "Name": {
+                              "description": "a suggested name",
+                              "type": "string"
+                            },
+                            "Required": {
+                              "description": "whether a UI might want to strongly suggest the user enter this one at some point in a transaction's lifetime",
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "Receivers": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Defs": {
+                        "description": "for the transaction itself, listed in customer's preferred display order",
+                        "type": "array",
+                        "items": {
+                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "description": "a suggested saved element",
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "Name": {
+                              "description": "a suggested name",
+                              "type": "string"
+                            },
+                            "Required": {
+                              "description": "whether a UI might want to strongly suggest the user enter this one at some point in a transaction's lifetime",
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      },
+                      "ItemDefs": {
+                        "description": "for the transaction's line items, listed in customer's preferred display order",
+                        "type": "array",
+                        "items": {
+                          "$schema": "http://json-schema.org/draft-07/schema#",
+                          "description": "a suggested saved element",
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "Name": {
+                              "description": "a suggested name",
+                              "type": "string"
+                            },
+                            "Required": {
+                              "description": "whether a UI might want to strongly suggest the user enter this one at some point in a transaction's lifetime",
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ],
+      "source_defined_primary_key": [
+        [
+          "_id"
+        ]
+      ]
     },
     {
       "name": "items",
-      "json_schema": {},
-      "supported_sync_modes": ["full_refresh", "incremental"],
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "_id": {
+            "type": "integer"
+          },
+          "_cursor": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ReadOnly": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "CustomerIdentifier": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "ExternalId": {
+                    "type": "string"
+                  },
+                  "Name": {
+                    "type": "string"
+                  },
+                  "Id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "ItemId": {
+                "type": "integer"
+              },
+              "CreationDate": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "LastModifiedDate": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "Deactivated": {
+                "type": "boolean"
+              },
+              "LastPriceChange": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "HasStorageRates": {
+                "type": "boolean"
+              },
+              "RowVersion": {
+                "type": "string"
+              }
+            }
+          },
+          "ItemId": {
+            "type": "integer"
+          },
+          "Sku": {
+            "type": "string"
+          },
+          "Upc": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Description2": {
+            "type": "string"
+          },
+          "InventoryCategory": {
+            "type": "string"
+          },
+          "ClassificationIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "Nmfc": {
+            "type": "string"
+          },
+          "Cost": {
+            "type": "number"
+          },
+          "Price": {
+            "type": "number"
+          },
+          "Temperature": {
+            "type": "number"
+          },
+          "AccountRef": {
+            "type": "string"
+          },
+          "CountryOfManufacture": {
+            "type": "string"
+          },
+          "HarmonizedCode": {
+            "type": "string"
+          },
+          "Qualifiers": {
+            "type": "array",
+            "items": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "Qualifier": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "QualifierRenamers": {
+            "type": "array",
+            "items": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "Qualifier": {
+                  "type": "string"
+                },
+                "Renames": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "Kit": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "MaterialNotes": {
+                "type": "string"
+              },
+              "Components": {
+                "type": "array",
+                "items": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "ItemIdentifier": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "Sku": {
+                          "type": "string"
+                        },
+                        "Id": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "Qualifier": {
+                      "type": "string"
+                    },
+                    "Qty": {
+                      "type": "integer"
+                    },
+                    "NonSkuMaterial": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "Options": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "InventoryUnit": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "UnitIdentifier": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Name": {
+                        "type": "string"
+                      },
+                      "Id": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "MinimumStock": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "MaximumStock": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "ReorderQuantity": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "InventoryMethod": {
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2,
+                      3
+                    ],
+                    "description": "1: FIFO; 2: LIFO; 3: FEFO"
+                  }
+                }
+              },
+              "SecondaryUnit": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "InventoryAlso": {
+                    "type": "boolean"
+                  },
+                  "Upc": {
+                    "type": "string"
+                  },
+                  "UnitIdentifier": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Name": {
+                        "type": "string"
+                      },
+                      "Id": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "InventoryUnitsPerUnit": {
+                    "type": "number"
+                  }
+                }
+              },
+              "PackageUnit": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Imperial": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "NetWeight": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Length": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Width": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Height": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Weight": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      }
+                    }
+                  },
+                  "Metric": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "NetWeight": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Length": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Width": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Height": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Weight": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      }
+                    }
+                  },
+                  "Upc": {
+                    "type": "string"
+                  },
+                  "UnitIdentifier": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Name": {
+                        "type": "string"
+                      },
+                      "Id": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "InventoryUnitsPerUnit": {
+                    "type": "number"
+                  }
+                }
+              },
+              "TrackBys": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "TrackLotNumber": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "description": "0: disallow; 1: allow; 2: require"
+                  },
+                  "TrackSerialNumber": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "description": "0: disallow; 1: allow; 2: allow_unique; 3: require; 4: require_unique"
+                  },
+                  "TrackExpirationDate": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "description": "0: disallow; 1: allow; 2: require"
+                  },
+                  "TrackCost": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "description": "0: disallow; 1: allow; 2: require"
+                  },
+                  "OutboundMobileSerialization": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "description": "0: disable; 1: ignore_quantity_mismatches; 2: disallow_quantity_mismatches"
+                  },
+                  "AutoHoldExpirationDaysThreshold": {
+                    "type": [
+                      "null",
+                      "integer"
+                    ]
+                  },
+                  "IsPickLotNumberRequired": {
+                    "type": "boolean"
+                  },
+                  "IsPickSerialNumberRequired": {
+                    "type": "boolean"
+                  },
+                  "IsPickExpirationDateRequired": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "Pallets": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "TypeIdentifier": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Name": {
+                        "type": "string"
+                      },
+                      "Id": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "Tie": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "High": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "Qty": {
+                    "type": [
+                      "null",
+                      "number"
+                    ]
+                  },
+                  "Imperial": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Length": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Width": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Height": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Weight": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      }
+                    }
+                  },
+                  "Metric": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Length": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Width": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Height": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      },
+                      "Weight": {
+                        "type": [
+                          "null",
+                          "number"
+                        ]
+                      }
+                    }
+                  },
+                  "Upc": {
+                    "type": "string"
+                  }
+                }
+              },
+              "HazMat": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "IsHazMat": {
+                    "type": "boolean"
+                  },
+                  "Id": {
+                    "type": "string"
+                  },
+                  "ShippingName": {
+                    "type": "string"
+                  },
+                  "HazardClass": {
+                    "type": "string"
+                  },
+                  "PackingGroup": {
+                    "type": "string"
+                  },
+                  "FlashPoint": {
+                    "type": "string"
+                  },
+                  "LabelCode": {
+                    "type": "string"
+                  },
+                  "Flag": {
+                    "type": "string"
+                  }
+                }
+              },
+              "DirectedPutAway": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "LocationZones": {
+                    "type": "string"
+                  },
+                  "PalletLocationZones": {
+                    "type": "string"
+                  },
+                  "OverAllocLocationZones": {
+                    "type": "string"
+                  },
+                  "PreferredLocationIdentifier": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "NameKey": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "FacilityIdentifier": {
+                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "Name": {
+                                "type": "string"
+                              },
+                              "Id": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "Name": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "Id": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "ForceIntoPreferredLocation": {
+                    "type": "boolean"
+                  },
+                  "AllowMixedItemStorage": {
+                    "type": "boolean"
+                  },
+                  "AllowMixedLotStorage": {
+                    "type": "boolean"
+                  },
+                  "MixedExpirationDaysThreshold": {
+                    "type": [
+                      "null",
+                      "integer"
+                    ]
+                  }
+                }
+              },
+              "DaysBetweenCounts": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "AutoHoldOnReceive": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
       "source_defined_cursor": true,
-      "default_cursor_field": ["_cursor"],
-      "source_defined_primary_key": [["_id"]]
+      "default_cursor_field": [
+        "_cursor"
+      ],
+      "source_defined_primary_key": [
+        [
+          "_id"
+        ]
+      ]
     },
     {
       "name": "stock_details",
-      "json_schema": {},
-      "supported_sync_modes": ["full_refresh", "incremental"],
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "_id": {
+            "type": "integer"
+          },
+          "_cursor": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ReceiveItemId": {
+            "type": "integer"
+          },
+          "ItemIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Sku": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Description2": {
+            "type": "string"
+          },
+          "Upc": {
+            "type": "string"
+          },
+          "Qualifier": {
+            "type": "string"
+          },
+          "Received": {
+            "type": "number"
+          },
+          "Available": {
+            "description": "unallocated; see IsOnHold for whether it's allocatable",
+            "type": "number"
+          },
+          "IsOnHold": {
+            "description": "true if receive item explicitly held",
+            "type": "boolean"
+          },
+          "Quarantined": {
+            "description": "true if implicitly held because of located in quarantine",
+            "type": "boolean"
+          },
+          "OnHand": {
+            "type": "number"
+          },
+          "SecondaryReceived": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "SecondaryAvailable": {
+            "description": "unallocated; see IsOnHold for whether it's allocatable",
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "LotNumber": {
+            "type": "string"
+          },
+          "SerialNumber": {
+            "type": "string"
+          },
+          "ExpirationDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "Cost": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "SupplierIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "LocationIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "NameKey": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "FacilityIdentifier": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Name": {
+                        "type": "string"
+                      },
+                      "Id": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "Name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "PalletIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "NameKey": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "FacilityIdentifier": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Name": {
+                        "type": "string"
+                      },
+                      "Id": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "Name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "InventoryUnitOfMeasureIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "SecondaryUnitOfMeasureIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "InventoryUnitsPerSecondaryUnit": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "ReceiverId": {
+            "type": "integer"
+          },
+          "ReceivedDate": {
+            "type": "string",
+            "format": "date-ime"
+          },
+          "ReferenceNum": {
+            "type": "string"
+          },
+          "PoNum": {
+            "type": "string"
+          },
+          "TrailerNumber": {
+            "type": "string"
+          },
+          "SavedElements": {
+            "type": "array",
+            "items": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "Name": {
+                  "type": "string"
+                },
+                "Value": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "WeightImperial": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "WeightMetric": {
+            "type": [
+              "null",
+              "number"
+            ]
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
       "source_defined_cursor": true,
-      "default_cursor_field": ["_cursor"],
-      "source_defined_primary_key": [["_id"]]
+      "default_cursor_field": [
+        "_cursor"
+      ],
+      "source_defined_primary_key": [
+        [
+          "_id"
+        ]
+      ]
     },
     {
       "name": "inventory",
-      "json_schema": {},
-      "supported_sync_modes": ["full_refresh", "incremental"],
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "_id": {
+            "type": "integer"
+          },
+          "_cursor": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ReceiverId": {
+            "type": "integer"
+          },
+          "ReceivedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ReceiveItemId": {
+            "type": "integer"
+          },
+          "CustomerIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ExternalId": {
+                "type": "string"
+              },
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "FacilityIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "ItemIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Sku": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "ItemDescription": {
+            "type": "string"
+          },
+          "Description2": {
+            "description": "item's Description2 propert",
+            "type": "string"
+          },
+          "Upc": {
+            "type": "string"
+          },
+          "Qualifier": {
+            "type": "string"
+          },
+          "InventoryUnitOfMeasureIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "SecondaryUnitOfMeasureIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "InventoryUnitsPerSecondaryUnit": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "ReceivedQty": {
+            "type": "number"
+          },
+          "OnHandQty": {
+            "type": "number"
+          },
+          "AvailableQty": {
+            "type": "number"
+          },
+          "OnHoldQty": {
+            "type": "number"
+          },
+          "SecondaryReceivedQty": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "SecondaryOnHandQty": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "SecondaryAvailableQty": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "SecondaryOnHoldQty": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "WeightImperial": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "WeightImperialOnHand": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "WeightImperialAvailable": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "WeightMetric": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "WeightMetricOnHand": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "WeightMetricAvailable": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "SavedElements": {
+            "type": "array",
+            "items": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "Name": {
+                  "type": "string"
+                },
+                "Value": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "LotNumber": {
+            "type": "string"
+          },
+          "SerialNumber": {
+            "type": "string"
+          },
+          "ExpirationDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "Cost": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "SupplierIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "LocationIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "NameKey": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "FacilityIdentifier": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Name": {
+                        "type": "string"
+                      },
+                      "Id": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "Name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "PalletIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "NameKey": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "FacilityIdentifier": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Name": {
+                        "type": "string"
+                      },
+                      "Id": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "Name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "OnHold": {
+            "type": "boolean"
+          },
+          "OnHoldReason": {
+            "type": "string"
+          },
+          "OnHoldDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "OnHoldUserIdentifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "Quarantined": {
+            "type": "boolean"
+          },
+          "RowVersion": {
+            "type": "string"
+          },
+          "StockRowVersion": {
+            "type": "string"
+          },
+          "ReferenceNum": {
+            "type": "string"
+          },
+          "PoNum": {
+            "type": "string"
+          },
+          "TrailerNumber": {
+            "type": "string"
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
       "source_defined_cursor": true,
-      "default_cursor_field": ["_cursor"],
-      "source_defined_primary_key": [["_id"]]
+      "default_cursor_field": [
+        "_cursor"
+      ],
+      "source_defined_primary_key": [
+        [
+          "_id"
+        ]
+      ]
     },
     {
       "name": "orders",
-      "json_schema": {},
-      "supported_sync_modes": ["full_refresh", "incremental"],
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "_id": {
+            "type": "integer"
+          },
+          "_cursor": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ReadOnly": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "OrderId": {
+                "type": "integer"
+              },
+              "AsnCandidate": {
+                "type": "integer"
+              },
+              "RouteCandidate": {
+                "type": "integer"
+              },
+              "FullyAllocated": {
+                "type": "boolean"
+              },
+              "ImportModuleId": {
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "ExportModuleIds": {
+                "type": "string"
+              },
+              "DeferNotification": {
+                "type": "boolean"
+              },
+              "IsClosed": {
+                "type": "boolean"
+              },
+              "ProcessDate": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "PickDoneDate": {
+                "description": "Stored and displayed in warehouse time",
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "PickTicketPrintDate": {
+                "description": "Stored and displayed in warehouse time",
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "PackDoneDate": {
+                "description": "Stored in server time, displayed in warehouse time",
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "LabelsExported": {
+                "type": [
+                  "null",
+                  "boolean"
+                ]
+              },
+              "InvoiceExportedDate": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "InvoiceDeliveredDate": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "LoadedState": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "integer",
+                "enum": [
+                  0,
+                  1,
+                  2
+                ],
+                "description": "0: not_loaded; 1: loaded; 2: loaded_incomplete"
+              },
+              "LoadOutDoneDate": {
+                "description": "Stored and displayed in warehouse time",
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "ReallocatedAfterPickTicketDate": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "RouteSent": {
+                "type": "boolean"
+              },
+              "AsnSentDate": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "AsnSent": {
+                "type": [
+                  "null",
+                  "boolean"
+                ]
+              },
+              "PkgsExported": {
+                "type": [
+                  "null",
+                  "boolean"
+                ]
+              },
+              "BatchIdentifier": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "NameKey": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "CustomerIdentifier": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "ExternalId": {
+                            "type": "string"
+                          },
+                          "Name": {
+                            "type": "string"
+                          },
+                          "Id": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "Name": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "Id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "Packages": {
+                "type": "array",
+                "items": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "PackageId": {
+                      "type": "integer"
+                    },
+                    "PackageTypeId": {
+                      "type": "integer"
+                    },
+                    "PackageDefIdentifier": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "type": "string"
+                        },
+                        "Id": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "Length": {
+                      "type": [
+                        "null",
+                        "number"
+                      ]
+                    },
+                    "Width": {
+                      "type": [
+                        "null",
+                        "number"
+                      ]
+                    },
+                    "Height": {
+                      "type": [
+                        "null",
+                        "number"
+                      ]
+                    },
+                    "Weight": {
+                      "type": [
+                        "null",
+                        "number"
+                      ]
+                    },
+                    "CodAmount": {
+                      "type": [
+                        "null",
+                        "number"
+                      ]
+                    },
+                    "InsuredAmount": {
+                      "type": [
+                        "null",
+                        "number"
+                      ]
+                    },
+                    "TrackingNumber": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "CreateDate": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "Oversize": {
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    "Cod": {
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    "Ucc128": {
+                      "type": [
+                        "null",
+                        "integer"
+                      ]
+                    },
+                    "CartonId": {
+                      "type": "string"
+                    },
+                    "Label": {
+                      "type": "string"
+                    },
+                    "PackageContents": {
+                      "type": "array",
+                      "items": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "PackageContentId": {
+                            "type": "integer"
+                          },
+                          "PackageId": {
+                            "type": "integer"
+                          },
+                          "OrderItemId": {
+                            "type": "integer"
+                          },
+                          "ReceiveItemId": {
+                            "type": "integer"
+                          },
+                          "OrderItemPickExceptionId": {
+                            "type": [
+                              "null",
+                              "integer"
+                            ]
+                          },
+                          "Qty": {
+                            "type": "number"
+                          },
+                          "LotNumber": {
+                            "type": "string"
+                          },
+                          "SerialNumber": {
+                            "type": "string"
+                          },
+                          "ExpirationDate": {
+                            "type": [
+                              "null",
+                              "string"
+                            ],
+                            "format": "date-time"
+                          },
+                          "CreateDate": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "SerialNumbers": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "OutboundSerialNumbers": {
+                "type": "array",
+                "items": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "ItemIdentifier": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "Sku": {
+                          "type": "string"
+                        },
+                        "Id": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "Qualifier": {
+                      "type": "string"
+                    },
+                    "SerialNumbers": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "ParcelLabelType": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "integer",
+                "enum": [
+                  0,
+                  1,
+                  2
+                ],
+                "description": "0: none; 1: pdf; 2: zpl"
+              },
+              "CustomerIdentifier": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "ExternalId": {
+                    "type": "string"
+                  },
+                  "Name": {
+                    "type": "string"
+                  },
+                  "Id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "FacilityIdentifier": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Name": {
+                    "type": "string"
+                  },
+                  "Id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "WarehouseTransactionSourceType": {
+                "description": "how the transaction entered the system",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4,
+                      5,
+                      6,
+                      7
+                    ],
+                    "description": "0: unknown; 1: ui_manual; 2: ui_import; 3: automated_import; 4: external_soap_api; 5: quick_books_soap_api; 6: automated_system_charge; 7: rest_api"
+                  }
+                ]
+              },
+              "TransactionEntryType": {
+                "description": "the agent creating the transaction",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2,
+                      3,
+                      4
+                    ],
+                    "description": "0: doang_hair (unknown); 1: manual_warehouse_user; 2: manual_customer_user; 3: ftp; 4: api"
+                  }
+                ]
+              },
+              "ImportChannelIdentifier": {
+                "description": "reference to the channel trhough which this order was imported",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Name": {
+                    "type": "string"
+                  },
+                  "Id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "CreationDate": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "CreatedByIdentifier": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Name": {
+                    "type": "string"
+                  },
+                  "Id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "LastModifiedDate": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              },
+              "LastModifiedByIdentifier": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Name": {
+                    "type": "string"
+                  },
+                  "Id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "Status": {
+                "description": "For GET of orders and receivers, the value is reliable. For rql for orders, this property is reliable only for \"Canceled\" status; otherwise use the IsClosed property.",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "integer",
+                "enum": [
+                  0,
+                  1,
+                  2
+                ]
+              }
+            }
+          },
+          "OrderItems": {
+            "type": "array",
+            "items": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "ReadOnly": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "OrderItemId": {
+                      "type": "integer"
+                    },
+                    "FullyAllocated": {
+                      "type": "boolean"
+                    },
+                    "UnitIdentifier": {
+                      "description": "for convenience, referenced item's primary inventory unit",
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "type": "string"
+                        },
+                        "Id": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "SecondaryUnitIdentifier": {
+                      "description": "for convenience, referenced item's secondary inventory unit if defined",
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "type": "string"
+                        },
+                        "Id": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "EstimatedQty": {
+                      "description": "if present, calculated from SecondaryQty and cannot confirm until Qty entered",
+                      "type": [
+                        "null",
+                        "number"
+                      ]
+                    },
+                    "EstimatedSecondaryQty": {
+                      "description": "if present, calculated from Qty and cannot confirm until SecondaryQty entered",
+                      "type": [
+                        "null",
+                        "number"
+                      ]
+                    },
+                    "OriginalPrimaryQty": {
+                      "description": "on a shorted order, specifies original quantity ordered; otherwise same as Qty",
+                      "type": [
+                        "null",
+                        "number"
+                      ]
+                    },
+                    "IsOrderQtySecondary": {
+                      "description": "if both Qty and SecondaryQty present, indicates whether at some point prior to shipping only SecondaryQty was present",
+                      "type": "boolean"
+                    },
+                    "Allocations": {
+                      "description": "supplied on GET {get;set;} ignored on PUT, POST",
+                      "type": "array",
+                      "items": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "ReceiveItemId": {
+                            "type": "integer"
+                          },
+                          "Qty": {
+                            "type": "number"
+                          },
+                          "ProperlyPickedPrimary": {
+                            "type": "number"
+                          },
+                          "ProperlyPickedSecondary": {
+                            "type": "number"
+                          },
+                          "LoadedOut": {
+                            "type": "boolean"
+                          },
+                          "Detail": {
+                            "description": "null unless requested by including AllocationsWithDetail in OrderItemChildren",
+                            "$schema": "http://json-schema.org/draft-07/schema#",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "ItemTraits": {
+                                "description": "unique identifying characteristics of an item in a location",
+                                "$schema": "http://json-schema.org/draft-07/schema#",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "ItemIdentifier": {
+                                    "$schema": "http://json-schema.org/draft-07/schema#",
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "Sku": {
+                                        "type": "string"
+                                      },
+                                      "Id": {
+                                        "type": "integer"
+                                      }
+                                    }
+                                  },
+                                  "Qualifier": {
+                                    "type": "string"
+                                  },
+                                  "LotNumber": {
+                                    "type": "string"
+                                  },
+                                  "SerialNumber": {
+                                    "type": "string"
+                                  },
+                                  "ExpirationDate": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  },
+                                  "PalletIdentifier": {
+                                    "$schema": "http://json-schema.org/draft-07/schema#",
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "NameKey": {
+                                        "$schema": "http://json-schema.org/draft-07/schema#",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "FacilityIdentifier": {
+                                            "$schema": "http://json-schema.org/draft-07/schema#",
+                                            "type": "object",
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "Name": {
+                                                "type": "string"
+                                              },
+                                              "Id": {
+                                                "type": "integer"
+                                              }
+                                            }
+                                          },
+                                          "Name": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      },
+                                      "Id": {
+                                        "type": "integer"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "LocationIdentifier": {
+                                "$schema": "http://json-schema.org/draft-07/schema#",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "NameKey": {
+                                    "$schema": "http://json-schema.org/draft-07/schema#",
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "FacilityIdentifier": {
+                                        "$schema": "http://json-schema.org/draft-07/schema#",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "Name": {
+                                            "type": "string"
+                                          },
+                                          "Id": {
+                                            "type": "integer"
+                                          }
+                                        }
+                                      },
+                                      "Name": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "Id": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "SavedElements": {
+                                "type": "array",
+                                "items": {
+                                  "$schema": "http://json-schema.org/draft-07/schema#",
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "Name": {
+                                      "type": "string"
+                                    },
+                                    "Value": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "Bin": {
+                      "description": "supplied on GET, ignored on PUT, POST; use pick operations to set; cleared when shipped or packaged",
+                      "type": "string"
+                    }
+                  }
+                },
+                "ItemIdentifier": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "Sku": {
+                      "type": "string"
+                    },
+                    "Id": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "Qualifier": {
+                  "type": "string"
+                },
+                "ExternalId": {
+                  "description": "connection of this order item to the same order item on some other system",
+                  "type": "string"
+                },
+                "Qty": {
+                  "description": "primary inventory quantity ordered; if not specified, must specify SecondaryQty",
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "SecondaryQty": {
+                  "description": "optional secondary quantity ordered; if not specified, must specify Qty",
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "LotNumber": {
+                  "description": "if present, used to allocate matching inventory",
+                  "type": "string"
+                },
+                "SerialNumber": {
+                  "description": "if present, used to allocate matching inventory",
+                  "type": "string"
+                },
+                "ExpirationDate": {
+                  "description": "if present, used to allocate matching inventory",
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "format": "date-time"
+                },
+                "WeightImperial": {
+                  "description": "ship weight of order item, imperial; if specified and metric not specified, business logic computes metric",
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "WeightMetric": {
+                  "description": "ship weight of order item, metric; if specified and imperial not specified, business logic computes imperial; see WeightImperial for further explanation",
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "Notes": {
+                  "type": "string"
+                },
+                "FulfillInvSalePrice": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "FulfillInvDiscountPct": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "FulfillInvDiscountAmt": {
+                  "type": [
+                    "null",
+                    "number"
+                  ]
+                },
+                "FulfillInvNote": {
+                  "type": "string"
+                },
+                "SavedElements": {
+                  "type": "array",
+                  "items": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "Name": {
+                        "type": "string"
+                      },
+                      "Value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "ProposedAllocations": {
+                  "description": "empty on GET; may be supplied on PUT, POST",
+                  "type": "array",
+                  "items": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "description": "A manual allocation.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "ReceiveItemId": {
+                        "type": "integer"
+                      },
+                      "Qty": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "OrderItemInPackages": {
+                  "description": "declares the package arrangement, which gets translated into real packages, during order creation; empty on GET; ignored on PUT; may be supplied on POST",
+                  "type": "array",
+                  "items": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "PackageNumber": {
+                        "description": "use the same number on multiple OrderItemInPackages to add package content to the same package",
+                        "type": "integer"
+                      },
+                      "Quantity": {
+                        "description": "how much of the orderitem to pack into this package content; must be a positive number",
+                        "type": "number"
+                      },
+                      "PackageDefIdentifier": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "Name": {
+                            "type": "string"
+                          },
+                          "Id": {
+                            "type": "integer"
+                          }
+                        },
+                        "description": "the package definition to apply to any package created as a result of this OrderItemInPackage"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ReferenceNum": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "PoNum": {
+            "type": "string"
+          },
+          "ExternalId": {
+            "description": "connection of this order to the same order on some other system",
+            "type": "string"
+          },
+          "EarliestShipDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "ShipCancelDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "Notes": {
+            "type": "string"
+          },
+          "NumUnits1": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "Unit1Identifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "NumUnits2": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "Unit2Identifier": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "TotalWeight": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "TotalVolume": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "BillingCode": {
+            "type": "string"
+          },
+          "AsnNumber": {
+            "type": "string"
+          },
+          "UpsServiceOptionCharge": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "UpsTransportationCharge": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "AddFreightToCod": {
+            "type": "boolean"
+          },
+          "UpsIsResidential": {
+            "type": "boolean"
+          },
+          "ExportChannelIdentifier": {
+            "description": "A reference to the channel used to export an Advance Shipping Notice or RoutingRequest; must specify Id (Name alone will fail)",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "Name": {
+                "type": "string"
+              },
+              "Id": {
+                "type": "integer"
+              }
+            }
+          },
+          "RoutePickupDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "ShippingNotes": {
+            "type": "string"
+          },
+          "MasterBillOfLadingId": {
+            "type": "string"
+          },
+          "InvoiceNumber": {
+            "type": "string"
+          },
+          "FulfillInvInfo": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "FulfillInvShippingAndHandling": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "FulfillInvTax": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "FulfillInvDiscountCode": {
+                "type": "string"
+              },
+              "FulfillInvDiscountAmount": {
+                "type": [
+                  "null",
+                  "number"
+                ]
+              },
+              "FulfillInvGiftMessage": {
+                "type": "string"
+              }
+            }
+          },
+          "RoutingInfo": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "IsCod": {
+                "type": "boolean"
+              },
+              "IsInsurance": {
+                "type": "boolean"
+              },
+              "RequiresDeliveryConf": {
+                "type": "boolean"
+              },
+              "RequiresReturnReceipt": {
+                "type": "boolean"
+              },
+              "ScacCode": {
+                "type": "string"
+              },
+              "Carrier": {
+                "type": "string"
+              },
+              "Mode": {
+                "type": "string"
+              },
+              "Account": {
+                "type": "string"
+              },
+              "ShipPointZip": {
+                "type": "string"
+              },
+              "CapacityTypeIdentifier": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Name": {
+                    "type": "string"
+                  },
+                  "Id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "LoadNumber": {
+                "type": "string"
+              },
+              "BillOfLading": {
+                "type": "string"
+              },
+              "TrackingNumber": {
+                "type": "string"
+              },
+              "TrailerNumber": {
+                "type": "string"
+              },
+              "SealNumber": {
+                "type": "string"
+              },
+              "DoorNumber": {
+                "type": "string"
+              },
+              "PickupDate": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "format": "date-time"
+              }
+            }
+          },
+          "Billing": {
+            "description": "PUT: set to null to make no changes to billing",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "BillingCharges": {
+                "description": "PUT: set to NULL or empty to delete all charges",
+                "type": "array",
+                "items": {
+                  "$schema": "http://json-schema.org/draft-07/schema#",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "ChargeType": {
+                      "description": "charge type",
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8
+                      ]
+                    },
+                    "Subtotal": {
+                      "type": "number"
+                    },
+                    "Details": {
+                      "type": "array",
+                      "items": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "WarehouseTransactionPriceCalcId": {
+                            "type": "integer"
+                          },
+                          "NumUnits": {
+                            "type": "number"
+                          },
+                          "ChargeLabel": {
+                            "type": "string"
+                          },
+                          "UnitDescription": {
+                            "type": "string"
+                          },
+                          "ChargePerUnit": {
+                            "type": "number"
+                          },
+                          "GlAcctNum": {
+                            "type": "string"
+                          },
+                          "Sku": {
+                            "type": "string"
+                          },
+                          "PtItem": {
+                            "type": "string"
+                          },
+                          "PtItemDescription": {
+                            "type": "string"
+                          },
+                          "PtArAcct": {
+                            "type": "string"
+                          },
+                          "SystemGenerated": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ShipTo": {
+            "description": "if not found, creates new shipto contact",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "RetailerInfo": {
+                "description": "in GETs: the retailer; in POSTs or PUTs: identifies existing retailer or properties of new retailer",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "NameKey": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "CustomerIdentifier": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "ExternalId": {
+                            "type": "string"
+                          },
+                          "Name": {
+                            "type": "string"
+                          },
+                          "Id": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "Name": {
+                        "type": "string"
+                      },
+                      "Number": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "Id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "SameAs": {
+                "description": "PUT or POST: to use same Contact as another contact on the same order; GET: always null",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "description": "0: ship_to; 1: sold_to; 2: bill_to"
+                  }
+                ]
+              },
+              "RetailerId": {
+                "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "IsQuickLookup": {
+                "type": "boolean"
+              },
+              "ContactId": {
+                "description": "for identifying: if known specify only this; other fields are ignored",
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "CompanyName": {
+                "type": "string"
+              },
+              "Name": {
+                "type": "string"
+              },
+              "Title": {
+                "type": "string"
+              },
+              "Address1": {
+                "type": "string"
+              },
+              "Address2": {
+                "type": "string"
+              },
+              "City": {
+                "type": "string"
+              },
+              "State": {
+                "type": "string"
+              },
+              "Zip": {
+                "type": "string"
+              },
+              "Country": {
+                "type": "string"
+              },
+              "PhoneNumber": {
+                "type": "string"
+              },
+              "Fax": {
+                "type": "string"
+              },
+              "EmailAddress": {
+                "type": "string"
+              },
+              "Dept": {
+                "type": "string"
+              },
+              "Code": {
+                "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
+                "type": "string"
+              },
+              "AddressStatus": {
+                "description": "confirmation status",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "integer",
+                "enum": [
+                  0,
+                  1,
+                  2
+                ]
+              }
+            }
+          },
+          "SoldTo": {
+            "description": "if not found, creates new soldto contact",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "SameAs": {
+                "description": "PUT or POST: to use same Contact as another contact on the same order; GET: always null",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "description": "0: ship_to; 1: sold_to; 2: bill_to"
+                  }
+                ]
+              },
+              "RetailerId": {
+                "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "IsQuickLookup": {
+                "type": "boolean"
+              },
+              "ContactId": {
+                "description": "for identifying: if known specify only this; other fields are ignored",
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "CompanyName": {
+                "type": "string"
+              },
+              "Name": {
+                "type": "string"
+              },
+              "Title": {
+                "type": "string"
+              },
+              "Address1": {
+                "type": "string"
+              },
+              "Address2": {
+                "type": "string"
+              },
+              "City": {
+                "type": "string"
+              },
+              "State": {
+                "type": "string"
+              },
+              "Zip": {
+                "type": "string"
+              },
+              "Country": {
+                "type": "string"
+              },
+              "PhoneNumber": {
+                "type": "string"
+              },
+              "Fax": {
+                "type": "string"
+              },
+              "EmailAddress": {
+                "type": "string"
+              },
+              "Dept": {
+                "type": "string"
+              },
+              "Code": {
+                "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
+                "type": "string"
+              },
+              "AddressStatus": {
+                "description": "confirmation status",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "integer",
+                "enum": [
+                  0,
+                  1,
+                  2
+                ]
+              }
+            }
+          },
+          "BillTo": {
+            "description": "if not found, creates new billto contact",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "SameAs": {
+                "description": "PUT or POST: to use same Contact as another contact on the same order; GET: always null",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ],
+                    "description": "0: ship_to; 1: sold_to; 2: bill_to"
+                  }
+                ]
+              },
+              "RetailerId": {
+                "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "IsQuickLookup": {
+                "type": "boolean"
+              },
+              "ContactId": {
+                "description": "for identifying: if known specify only this; other fields are ignored",
+                "type": [
+                  "null",
+                  "integer"
+                ]
+              },
+              "CompanyName": {
+                "type": "string"
+              },
+              "Name": {
+                "type": "string"
+              },
+              "Title": {
+                "type": "string"
+              },
+              "Address1": {
+                "type": "string"
+              },
+              "Address2": {
+                "type": "string"
+              },
+              "City": {
+                "type": "string"
+              },
+              "State": {
+                "type": "string"
+              },
+              "Zip": {
+                "type": "string"
+              },
+              "Country": {
+                "type": "string"
+              },
+              "PhoneNumber": {
+                "type": "string"
+              },
+              "Fax": {
+                "type": "string"
+              },
+              "EmailAddress": {
+                "type": "string"
+              },
+              "Dept": {
+                "type": "string"
+              },
+              "Code": {
+                "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
+                "type": "string"
+              },
+              "AddressStatus": {
+                "description": "confirmation status",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "integer",
+                "enum": [
+                  0,
+                  1,
+                  2
+                ]
+              }
+            }
+          },
+          "SavedElements": {
+            "type": "array",
+            "items": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "Name": {
+                  "type": "string"
+                },
+                "Value": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "ParcelOption": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "OrderId": {
+                "type": "integer"
+              },
+              "DeliveryConfirmationType": {
+                "type": "string"
+              },
+              "DeliveredDutyPaid": {
+                "type": "integer"
+              },
+              "DryIceWeight": {
+                "type": "number"
+              },
+              "InsuranceAmount": {
+                "type": "number"
+              },
+              "InsuranceType": {
+                "type": "integer"
+              },
+              "InternationalContentsType": {
+                "type": "string"
+              },
+              "InternationalNonDelivery": {
+                "type": "string"
+              },
+              "ResidentialFlag": {
+                "type": "boolean"
+              },
+              "SaturdayDeliveryFlag": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh",
+        "incremental"
+      ],
       "source_defined_cursor": true,
-      "default_cursor_field": ["_cursor"],
-      "source_defined_primary_key": [["_id"]]
+      "default_cursor_field": [
+        "_cursor"
+      ],
+      "source_defined_primary_key": [
+        [
+          "_id"
+        ]
+      ]
     }
   ]
 }
