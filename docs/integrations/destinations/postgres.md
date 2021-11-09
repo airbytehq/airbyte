@@ -9,10 +9,6 @@
 | Incremental - Deduped History | Yes |  |
 | Namespaces | Yes |  |
 
-## Overview
-
-This Postgres destination is based on the [Singer Postgres Target](https://github.com/datamill-co/target-postgres).
-
 #### Output Schema
 
 Each stream will be output into its own table in Postgres. Each table will contain 3 columns:
@@ -39,7 +35,19 @@ Make sure your Postgres database can be accessed by Airbyte. If your database is
 
 #### **Permissions**
 
-You need a Postgres user that can create tables and write rows. We highly recommend creating an Airbyte-specific user for this purpose.
+You need a Postgres user with the following permissions: 
+
+* can create tables and write rows. 
+* can create schemas e.g: 
+
+You can create such a user by runnig: 
+
+```
+CREATE USER airbyte_user PASSWORD <password>;
+GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
+```
+
+You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
 
 #### Target Database
 
@@ -55,7 +63,6 @@ You should now have all the requirements needed to configure Postgres as a desti
 * **Password**
 * **Default Schema Name**
 * **Database**
-* This database needs to exist within the schema provided.
 
 ## Naming Conventions
 
@@ -77,6 +84,7 @@ Therefore, Airbyte Postgres destination will create tables and schemas using the
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.3.10 | 2021-08-11 | [\#5336](https://github.com/airbytehq/airbyte/pull/5336) | 🐛 Destination Postgres: fix \u0000\(NULL\) value processing |
+| 0.3.12 | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |  
 | 0.3.11 | 2021-09-07 | [\#5743](https://github.com/airbytehq/airbyte/pull/5743) | Add SSH Tunnel support |
+| 0.3.10 | 2021-08-11 | [\#5336](https://github.com/airbytehq/airbyte/pull/5336) | 🐛 Destination Postgres: fix \u0000\(NULL\) value processing |
 

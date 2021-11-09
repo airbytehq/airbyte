@@ -41,7 +41,7 @@ services:
     build:
       dockerfile: Dockerfile
       args:
-        ARCH: ${DOCKER_BUILD_ARCH}
+        DOCKER_BUILD_ARCH: ${DOCKER_BUILD_ARCH}
         JDK_VERSION: ${JDK_VERSION}
       context: airbyte-workers
       labels:

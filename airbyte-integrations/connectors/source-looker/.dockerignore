@@ -1,7 +1,6 @@
 *
 !Dockerfile
-!Dockerfile.test
+!main.py
 !source_looker
 !setup.py
-!integration_tests
 !secrets
