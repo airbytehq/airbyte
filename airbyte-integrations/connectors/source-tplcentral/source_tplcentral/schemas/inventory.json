@@ -10,289 +10,289 @@
       "type": "string",
       "format": "date-time"
     },
-    "receiver_id": {
+    "ReceiverId": {
       "type": "integer"
     },
-    "received_date": {
+    "ReceivedDate": {
       "type": "string",
       "format": "date-time"
     },
-    "receive_item_id": {
+    "ReceiveItemId": {
       "type": "integer"
     },
-    "customer_identifier": {
+    "CustomerIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "external_id": {
+        "ExternalId": {
           "type": "string"
         },
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "facility_identifier": {
+    "FacilityIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "item_identifier": {
+    "ItemIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "sku": {
+        "Sku": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "item_description": {
+    "ItemDescription": {
       "type": "string"
     },
-    "description2": {
+    "Description2": {
       "description": "item's Description2 propert",
       "type": "string"
     },
-    "upc": {
+    "Upc": {
       "type": "string"
     },
-    "qualifier": {
+    "Qualifier": {
       "type": "string"
     },
-    "inventory_unit_of_measure_identifier": {
+    "InventoryUnitOfMeasureIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "secondary_unit_of_measure_identifier": {
+    "SecondaryUnitOfMeasureIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "inventory_units_per_secondary_unit": {
+    "InventoryUnitsPerSecondaryUnit": {
       "type": ["null", "number"]
     },
-    "received_qty": {
+    "ReceivedQty": {
       "type": "number"
     },
-    "on_hand_qty": {
+    "OnHandQty": {
       "type": "number"
     },
-    "available_qty": {
+    "AvailableQty": {
       "type": "number"
     },
-    "on_hold_qty": {
+    "OnHoldQty": {
       "type": "number"
     },
-    "secondary_received_qty": {
+    "SecondaryReceivedQty": {
       "type": ["null", "number"]
     },
-    "secondary_on_hand_qty": {
+    "SecondaryOnHandQty": {
       "type": ["null", "number"]
     },
-    "secondary_available_qty": {
+    "SecondaryAvailableQty": {
       "type": ["null", "number"]
     },
-    "secondary_on_hold_qty": {
+    "SecondaryOnHoldQty": {
       "type": ["null", "number"]
     },
-    "weight_imperial": {
+    "WeightImperial": {
       "type": ["null", "number"]
     },
-    "weight_imperial_on_hand": {
+    "WeightImperialOnHand": {
       "type": ["null", "number"]
     },
-    "weight_imperial_available": {
+    "WeightImperialAvailable": {
       "type": ["null", "number"]
     },
-    "weight_metric": {
+    "WeightMetric": {
       "type": ["null", "number"]
     },
-    "weight_metric_on_hand": {
+    "WeightMetricOnHand": {
       "type": ["null", "number"]
     },
-    "weight_metric_available": {
+    "WeightMetricAvailable": {
       "type": ["null", "number"]
     },
-    "saved_elements": {
+    "SavedElements": {
       "type": "array",
       "items": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "name": {
+          "Name": {
             "type": "string"
           },
-          "value": {
+          "Value": {
             "type": "string"
           }
         }
       }
     },
-    "lot_number": {
+    "LotNumber": {
       "type": "string"
     },
-    "serial_number": {
+    "SerialNumber": {
       "type": "string"
     },
-    "expiration_date": {
+    "ExpirationDate": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "cost": {
+    "Cost": {
       "type": ["null", "number"]
     },
-    "supplier_identifier": {
+    "SupplierIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "location_identifier": {
+    "LocationIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name_key": {
+        "NameKey": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "facility_identifier": {
+            "FacilityIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "name": {
+                "Name": {
                   "type": "string"
                 },
-                "id": {
+                "Id": {
                   "type": "integer"
                 }
               }
             },
-            "name": {
+            "Name": {
               "type": "string"
             }
           }
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "pallet_identifier": {
+    "PalletIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name_key": {
+        "NameKey": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "facility_identifier": {
+            "FacilityIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "name": {
+                "Name": {
                   "type": "string"
                 },
-                "id": {
+                "Id": {
                   "type": "integer"
                 }
               }
             },
-            "name": {
+            "Name": {
               "type": "string"
             }
           }
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "on_hold": {
+    "OnHold": {
       "type": "boolean"
     },
-    "on_hold_reason": {
+    "OnHoldReason": {
       "type": "string"
     },
-    "on_hold_date": {
+    "OnHoldDate": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "on_hold_user_identifier": {
+    "OnHoldUserIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "quarantined": {
+    "Quarantined": {
       "type": "boolean"
     },
-    "row_version": {
+    "RowVersion": {
       "type": "string"
     },
-    "stock_row_version": {
+    "StockRowVersion": {
       "type": "string"
     },
-    "reference_num": {
+    "ReferenceNum": {
       "type": "string"
     },
-    "po_num": {
+    "PoNum": {
       "type": "string"
     },
-    "trailer_number": {
+    "TrailerNumber": {
       "type": "string"
     }
   }

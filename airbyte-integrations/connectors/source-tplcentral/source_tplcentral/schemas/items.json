@@ -10,169 +10,169 @@
       "type": "string",
       "format": "date-time"
     },
-    "read_only": {
+    "ReadOnly": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "customer_identifier": {
+        "CustomerIdentifier": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "external_id": {
+            "ExternalId": {
               "type": "string"
             },
-            "name": {
+            "Name": {
               "type": "string"
             },
-            "id": {
+            "Id": {
               "type": "integer"
             }
           }
         },
-        "item_id": {
+        "ItemId": {
           "type": "integer"
         },
-        "creation_date": {
+        "CreationDate": {
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "last_modified_date": {
+        "LastModifiedDate": {
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "deactivated": {
+        "Deactivated": {
           "type": "boolean"
         },
-        "last_price_change": {
+        "LastPriceChange": {
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "has_storage_rates": {
+        "HasStorageRates": {
           "type": "boolean"
         },
-        "row_version": {
+        "RowVersion": {
           "type": "string"
         }
       }
     },
-    "item_id": {
+    "ItemId": {
       "type": "integer"
     },
-    "sku": {
+    "Sku": {
       "type": "string"
     },
-    "upc": {
+    "Upc": {
       "type": "string"
     },
-    "description": {
+    "Description": {
       "type": "string"
     },
-    "description2": {
+    "Description2": {
       "type": "string"
     },
-    "inventory_category": {
+    "InventoryCategory": {
       "type": "string"
     },
-    "classification_identifier": {
+    "ClassificationIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "nmfc": {
+    "Nmfc": {
       "type": "string"
     },
-    "cost": {
+    "Cost": {
       "type": "number"
     },
-    "price": {
+    "Price": {
       "type": "number"
     },
-    "temperature": {
+    "Temperature": {
       "type": "number"
     },
-    "account_ref": {
+    "AccountRef": {
       "type": "string"
     },
-    "country_of_manufacture": {
+    "CountryOfManufacture": {
       "type": "string"
     },
-    "harmonized_code": {
+    "HarmonizedCode": {
       "type": "string"
     },
-    "qualifiers": {
+    "Qualifiers": {
       "type": "array",
       "items": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "qualifier": {
+          "Qualifier": {
             "type": "string"
           }
         }
       }
     },
-    "qualifier_renamers": {
+    "QualifierRenamers": {
       "type": "array",
       "items": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "qualifier": {
+          "Qualifier": {
             "type": "string"
           },
-          "renames": {
+          "Renames": {
             "type": "string"
           }
         }
       }
     },
-    "kit": {
+    "Kit": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "material_notes": {
+        "MaterialNotes": {
           "type": "string"
         },
-        "components": {
+        "Components": {
           "type": "array",
           "items": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "item_identifier": {
+              "ItemIdentifier": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                  "sku": {
+                  "Sku": {
                     "type": "string"
                   },
-                  "id": {
+                  "Id": {
                     "type": "integer"
                   }
                 }
               },
-              "qualifier": {
+              "Qualifier": {
                 "type": "string"
               },
-              "qty": {
+              "Qty": {
                 "type": "integer"
               },
-              "non_sku_material": {
+              "NonSkuMaterial": {
                 "type": "string"
               }
             }
@@ -180,359 +180,359 @@
         }
       }
     },
-    "options": {
+    "Options": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "inventory_unit": {
+        "InventoryUnit": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "unit_identifier": {
+            "UnitIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "name": {
+                "Name": {
                   "type": "string"
                 },
-                "id": {
+                "Id": {
                   "type": "integer"
                 }
               }
             },
-            "minimum_stock": {
+            "MinimumStock": {
               "type": ["null", "number"]
             },
-            "maximum_stock": {
+            "MaximumStock": {
               "type": ["null", "number"]
             },
-            "reorder_quantity": {
+            "ReorderQuantity": {
               "type": ["null", "number"]
             },
-            "inventory_method": {
+            "InventoryMethod": {
               "type": "integer",
               "enum": [1, 2, 3],
               "description": "1: FIFO; 2: LIFO; 3: FEFO"
             }
           }
         },
-        "secondary_unit": {
+        "SecondaryUnit": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "inventory_also": {
+            "InventoryAlso": {
               "type": "boolean"
             },
-            "upc": {
+            "Upc": {
               "type": "string"
             },
-            "unit_identifier": {
+            "UnitIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "name": {
+                "Name": {
                   "type": "string"
                 },
-                "id": {
+                "Id": {
                   "type": "integer"
                 }
               }
             },
-            "inventory_units_per_unit": {
+            "InventoryUnitsPerUnit": {
               "type": "number"
             }
           }
         },
-        "package_unit": {
+        "PackageUnit": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "imperial": {
+            "Imperial": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "net_weight": {
+                "NetWeight": {
                   "type": ["null", "number"]
                 },
-                "length": {
+                "Length": {
                   "type": ["null", "number"]
                 },
-                "width": {
+                "Width": {
                   "type": ["null", "number"]
                 },
-                "height": {
+                "Height": {
                   "type": ["null", "number"]
                 },
-                "weight": {
+                "Weight": {
                   "type": ["null", "number"]
                 }
               }
             },
-            "metric": {
+            "Metric": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "net_weight": {
+                "NetWeight": {
                   "type": ["null", "number"]
                 },
-                "length": {
+                "Length": {
                   "type": ["null", "number"]
                 },
-                "width": {
+                "Width": {
                   "type": ["null", "number"]
                 },
-                "height": {
+                "Height": {
                   "type": ["null", "number"]
                 },
-                "weight": {
+                "Weight": {
                   "type": ["null", "number"]
                 }
               }
             },
-            "upc": {
+            "Upc": {
               "type": "string"
             },
-            "unit_identifier": {
+            "UnitIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "name": {
+                "Name": {
                   "type": "string"
                 },
-                "id": {
+                "Id": {
                   "type": "integer"
                 }
               }
             },
-            "inventory_units_per_unit": {
+            "InventoryUnitsPerUnit": {
               "type": "number"
             }
           }
         },
-        "track_bys": {
+        "TrackBys": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "track_lot_number": {
+            "TrackLotNumber": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
               "enum": [0, 1, 2],
               "description": "0: disallow; 1: allow; 2: require"
             },
-            "track_serial_number": {
+            "TrackSerialNumber": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
               "enum": [0, 1, 2, 3, 4],
               "description": "0: disallow; 1: allow; 2: allow_unique; 3: require; 4: require_unique"
             },
-            "track_expiration_date": {
+            "TrackExpirationDate": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
               "enum": [0, 1, 2],
               "description": "0: disallow; 1: allow; 2: require"
             },
-            "track_cost": {
+            "TrackCost": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
               "enum": [0, 1, 2],
               "description": "0: disallow; 1: allow; 2: require"
             },
-            "outbound_mobile_serialization": {
+            "OutboundMobileSerialization": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
               "enum": [0, 1, 2],
               "description": "0: disable; 1: ignore_quantity_mismatches; 2: disallow_quantity_mismatches"
             },
-            "auto_hold_expiration_days_threshold": {
+            "AutoHoldExpirationDaysThreshold": {
               "type": ["null", "integer"]
             },
-            "is_pick_lot_number_required": {
+            "IsPickLotNumberRequired": {
               "type": "boolean"
             },
-            "is_pick_serial_number_required": {
+            "IsPickSerialNumberRequired": {
               "type": "boolean"
             },
-            "is_pick_expiration_date_required": {
+            "IsPickExpirationDateRequired": {
               "type": "boolean"
             }
           }
         },
-        "pallets": {
+        "Pallets": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "type_identifier": {
+            "TypeIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "name": {
+                "Name": {
                   "type": "string"
                 },
-                "id": {
+                "Id": {
                   "type": "integer"
                 }
               }
             },
-            "tie": {
+            "Tie": {
               "type": ["null", "number"]
             },
-            "high": {
+            "High": {
               "type": ["null", "number"]
             },
-            "qty": {
+            "Qty": {
               "type": ["null", "number"]
             },
-            "imperial": {
+            "Imperial": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "length": {
+                "Length": {
                   "type": ["null", "number"]
                 },
-                "width": {
+                "Width": {
                   "type": ["null", "number"]
                 },
-                "height": {
+                "Height": {
                   "type": ["null", "number"]
                 },
-                "weight": {
+                "Weight": {
                   "type": ["null", "number"]
                 }
               }
             },
-            "metric": {
+            "Metric": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "length": {
+                "Length": {
                   "type": ["null", "number"]
                 },
-                "width": {
+                "Width": {
                   "type": ["null", "number"]
                 },
-                "height": {
+                "Height": {
                   "type": ["null", "number"]
                 },
-                "weight": {
+                "Weight": {
                   "type": ["null", "number"]
                 }
               }
             },
-            "upc": {
+            "Upc": {
               "type": "string"
             }
           }
         },
-        "haz_mat": {
+        "HazMat": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "is_haz_mat": {
+            "IsHazMat": {
               "type": "boolean"
             },
-            "id": {
+            "Id": {
               "type": "string"
             },
-            "shipping_name": {
+            "ShippingName": {
               "type": "string"
             },
-            "hazard_class": {
+            "HazardClass": {
               "type": "string"
             },
-            "packing_group": {
+            "PackingGroup": {
               "type": "string"
             },
-            "flash_point": {
+            "FlashPoint": {
               "type": "string"
             },
-            "label_code": {
+            "LabelCode": {
               "type": "string"
             },
-            "flag": {
+            "Flag": {
               "type": "string"
             }
           }
         },
-        "directed_put_away": {
+        "DirectedPutAway": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "location_zones": {
+            "LocationZones": {
               "type": "string"
             },
-            "pallet_location_zones": {
+            "PalletLocationZones": {
               "type": "string"
             },
-            "over_alloc_location_zones": {
+            "OverAllocLocationZones": {
               "type": "string"
             },
-            "preferred_location_identifier": {
+            "PreferredLocationIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "name_key": {
+                "NameKey": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
-                    "facility_identifier": {
+                    "FacilityIdentifier": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "additionalProperties": false,
                       "properties": {
-                        "name": {
+                        "Name": {
                           "type": "string"
                         },
-                        "id": {
+                        "Id": {
                           "type": "integer"
                         }
                       }
                     },
-                    "name": {
+                    "Name": {
                       "type": "string"
                     }
                   }
                 },
-                "id": {
+                "Id": {
                   "type": "integer"
                 }
               }
             },
-            "force_into_preferred_location": {
+            "ForceIntoPreferredLocation": {
               "type": "boolean"
             },
-            "allow_mixed_item_storage": {
+            "AllowMixedItemStorage": {
               "type": "boolean"
             },
-            "allow_mixed_lot_storage": {
+            "AllowMixedLotStorage": {
               "type": "boolean"
             },
-            "mixed_expiration_days_threshold": {
+            "MixedExpirationDaysThreshold": {
               "type": ["null", "integer"]
             }
           }
         },
-        "days_between_counts": {
+        "DaysBetweenCounts": {
           "type": ["null", "integer"]
         },
-        "auto_hold_on_receive": {
+        "AutoHoldOnReceive": {
           "type": "boolean"
         }
       }

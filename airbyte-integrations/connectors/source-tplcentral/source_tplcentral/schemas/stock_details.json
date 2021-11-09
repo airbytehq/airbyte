@@ -10,216 +10,216 @@
       "type": "string",
       "format": "date-time"
     },
-    "receive_item_id": {
+    "ReceiveItemId": {
       "type": "integer"
     },
-    "item_identifier": {
+    "ItemIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "sku": {
+        "Sku": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "description": {
+    "Description": {
       "type": "string"
     },
-    "description2": {
+    "Description2": {
       "type": "string"
     },
-    "upc": {
+    "Upc": {
       "type": "string"
     },
-    "qualifier": {
+    "Qualifier": {
       "type": "string"
     },
-    "received": {
+    "Received": {
       "type": "number"
     },
-    "available": {
+    "Available": {
       "description": "unallocated; see IsOnHold for whether it's allocatable",
       "type": "number"
     },
-    "is_on_hold": {
+    "IsOnHold": {
       "description": "true if receive item explicitly held",
       "type": "boolean"
     },
-    "quarantined": {
+    "Quarantined": {
       "description": "true if implicitly held because of located in quarantine",
       "type": "boolean"
     },
-    "on_hand": {
+    "OnHand": {
       "type": "number"
     },
-    "secondary_received": {
+    "SecondaryReceived": {
       "type": ["null", "number"]
     },
-    "secondary_available": {
+    "SecondaryAvailable": {
       "description": "unallocated; see IsOnHold for whether it's allocatable",
       "type": ["null", "number"]
     },
-    "lot_number": {
+    "LotNumber": {
       "type": "string"
     },
-    "serial_number": {
+    "SerialNumber": {
       "type": "string"
     },
-    "expiration_date": {
+    "ExpirationDate": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "cost": {
+    "Cost": {
       "type": ["null", "number"]
     },
-    "supplier_identifier": {
+    "SupplierIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "location_identifier": {
+    "LocationIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name_key": {
+        "NameKey": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "facility_identifier": {
+            "FacilityIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "name": {
+                "Name": {
                   "type": "string"
                 },
-                "id": {
+                "Id": {
                   "type": "integer"
                 }
               }
             },
-            "name": {
+            "Name": {
               "type": "string"
             }
           }
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "pallet_identifier": {
+    "PalletIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name_key": {
+        "NameKey": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "facility_identifier": {
+            "FacilityIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "name": {
+                "Name": {
                   "type": "string"
                 },
-                "id": {
+                "Id": {
                   "type": "integer"
                 }
               }
             },
-            "name": {
+            "Name": {
               "type": "string"
             }
           }
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "inventory_unit_of_measure_identifier": {
+    "InventoryUnitOfMeasureIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "secondary_unit_of_measure_identifier": {
+    "SecondaryUnitOfMeasureIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "inventory_units_per_secondary_unit": {
+    "InventoryUnitsPerSecondaryUnit": {
       "type": ["null", "number"]
     },
-    "receiver_id": {
+    "ReceiverId": {
       "type": "integer"
     },
-    "received_date": {
+    "ReceivedDate": {
       "type": "string",
       "format": "date-ime"
     },
-    "reference_num": {
+    "ReferenceNum": {
       "type": "string"
     },
-    "po_num": {
+    "PoNum": {
       "type": "string"
     },
-    "trailer_number": {
+    "TrailerNumber": {
       "type": "string"
     },
-    "saved_elements": {
+    "SavedElements": {
       "type": "array",
       "items": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "name": {
+          "Name": {
             "type": "string"
           },
-          "value": {
+          "Value": {
             "type": "string"
           }
         }
       }
     },
-    "weight_imperial": {
+    "WeightImperial": {
       "type": ["null", "number"]
     },
-    "weight_metric": {
+    "WeightMetric": {
       "type": ["null", "number"]
     }
   }

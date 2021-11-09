@@ -4,38 +4,36 @@
 
 from typing import Any, Mapping
 
-from airbyte_cdk.sources.utils.casing import camel_to_snake
 
+def deep_map(function, collection):
+    if isinstance(collection, list):
+        return list(map(lambda val: deep_map(function, val), collection))
 
-def deep_map(function, d):
-    if isinstance(d, list):
-        return list(map(lambda v: deep_map(function, v), d))
-
-    d = function(d)
-    for key, val in d.items():
+    collection = function(collection)
+    for key, val in collection.items():
         if isinstance(val, dict):
-            d[key] = deep_map(function, val)
+            collection[key] = deep_map(function, val)
         elif isinstance(val, list):
-            d[key] = deep_map(function, val)
+            collection[key] = deep_map(function, val)
         else:
-            d[key] = val
-    return d
+            collection[key] = val
+    return collection
 
 
-def normalize(d):
-    return deep_map(_normalizer, d)
+def normalize(collection):
+    return deep_map(_normalizer, collection)
 
 
-def _normalizer(d):
+def _normalizer(dictionary):
     out = {}
-    for k, v in d.items():
-        if not k == "_links":
-            out[camel_to_snake(k)] = v
+    for key, val in dictionary.items():
+        if not key == "_links":
+            out[key] = val
     return out
 
 
 def deep_get(mapping: Mapping[str, Any], key: str) -> Any:
     key = key.split(".")
     while len(key):
-        mapping = mapping[camel_to_snake(key.pop(0))]
+        mapping = mapping[key.pop(0)]
     return mapping

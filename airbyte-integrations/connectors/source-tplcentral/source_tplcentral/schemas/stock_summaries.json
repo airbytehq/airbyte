@@ -6,38 +6,38 @@
     "_item_identifier_id": {
       "type": "integer"
     },
-    "item_identifier": {
+    "ItemIdentifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "sku": {
+        "Sku": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "qualifier": {
+    "Qualifier": {
       "type": "string"
     },
-    "total_received": {
+    "TotalReceived": {
       "type": "number"
     },
-    "allocated": {
+    "Allocated": {
       "type": "number"
     },
-    "available": {
+    "Available": {
       "type": "number"
     },
-    "on_hold": {
+    "OnHold": {
       "type": "number"
     },
-    "on_hand": {
+    "OnHand": {
       "type": "number"
     },
-    "facility_id": {
+    "FacilityId": {
       "type": "integer"
     }
   }

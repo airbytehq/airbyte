@@ -10,238 +10,238 @@
       "type": "string",
       "format": "date-time"
     },
-    "read_only": {
+    "ReadOnly": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "order_id": {
+        "OrderId": {
           "type": "integer"
         },
-        "asn_candidate": {
+        "AsnCandidate": {
           "type": "integer"
         },
-        "route_candidate": {
+        "RouteCandidate": {
           "type": "integer"
         },
-        "fully_allocated": {
+        "FullyAllocated": {
           "type": "boolean"
         },
-        "import_module_id": {
+        "ImportModuleId": {
           "type": ["null", "integer"]
         },
-        "export_module_ids": {
+        "ExportModuleIds": {
           "type": "string"
         },
-        "defer_notification": {
+        "DeferNotification": {
           "type": "boolean"
         },
-        "is_closed": {
+        "IsClosed": {
           "type": "boolean"
         },
-        "process_date": {
+        "ProcessDate": {
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "pick_done_date": {
+        "PickDoneDate": {
           "description": "Stored and displayed in warehouse time",
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "pick_ticket_print_date": {
+        "PickTicketPrintDate": {
           "description": "Stored and displayed in warehouse time",
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "pack_done_date": {
+        "PackDoneDate": {
           "description": "Stored in server time, displayed in warehouse time",
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "labels_exported": {
+        "LabelsExported": {
           "type": ["null", "boolean"]
         },
-        "invoice_exported_date": {
+        "InvoiceExportedDate": {
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "invoice_delivered_date": {
+        "InvoiceDeliveredDate": {
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "loaded_state": {
+        "LoadedState": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
           "enum": [0, 1, 2],
           "description": "0: not_loaded; 1: loaded; 2: loaded_incomplete"
         },
-        "load_out_done_date": {
+        "LoadOutDoneDate": {
           "description": "Stored and displayed in warehouse time",
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "reallocated_after_pick_ticket_date": {
+        "ReallocatedAfterPickTicketDate": {
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "route_sent": {
+        "RouteSent": {
           "type": "boolean"
         },
-        "asn_sent_date": {
+        "AsnSentDate": {
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "asn_sent": {
+        "AsnSent": {
           "type": ["null", "boolean"]
         },
-        "pkgs_exported": {
+        "PkgsExported": {
           "type": ["null", "boolean"]
         },
-        "batch_identifier": {
+        "BatchIdentifier": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "name_key": {
+            "NameKey": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "customer_identifier": {
+                "CustomerIdentifier": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
-                    "external_id": {
+                    "ExternalId": {
                       "type": "string"
                     },
-                    "name": {
+                    "Name": {
                       "type": "string"
                     },
-                    "id": {
+                    "Id": {
                       "type": "integer"
                     }
                   }
                 },
-                "name": {
+                "Name": {
                   "type": "string"
                 }
               }
             },
-            "id": {
+            "Id": {
               "type": "integer"
             }
           }
         },
-        "packages": {
+        "Packages": {
           "type": "array",
           "items": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "package_id": {
+              "PackageId": {
                 "type": "integer"
               },
-              "package_type_id": {
+              "PackageTypeId": {
                 "type": "integer"
               },
-              "package_def_identifier": {
+              "PackageDefIdentifier": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                  "name": {
+                  "Name": {
                     "type": "string"
                   },
-                  "id": {
+                  "Id": {
                     "type": "integer"
                   }
                 }
               },
-              "length": {
+              "Length": {
                 "type": ["null", "number"]
               },
-              "width": {
+              "Width": {
                 "type": ["null", "number"]
               },
-              "height": {
+              "Height": {
                 "type": ["null", "number"]
               },
-              "weight": {
+              "Weight": {
                 "type": ["null", "number"]
               },
-              "cod_amount": {
+              "CodAmount": {
                 "type": ["null", "number"]
               },
-              "insured_amount": {
+              "InsuredAmount": {
                 "type": ["null", "number"]
               },
-              "tracking_number": {
+              "TrackingNumber": {
                 "type": "string"
               },
-              "description": {
+              "Description": {
                 "type": "string"
               },
-              "create_date": {
+              "CreateDate": {
                 "type": "string",
                 "format": "date-time"
               },
-              "oversize": {
+              "Oversize": {
                 "type": ["null", "boolean"]
               },
-              "cod": {
+              "Cod": {
                 "type": ["null", "boolean"]
               },
-              "ucc128": {
+              "Ucc128": {
                 "type": ["null", "integer"]
               },
-              "carton_id": {
+              "CartonId": {
                 "type": "string"
               },
-              "label": {
+              "Label": {
                 "type": "string"
               },
-              "package_contents": {
+              "PackageContents": {
                 "type": "array",
                 "items": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
-                    "package_content_id": {
+                    "PackageContentId": {
                       "type": "integer"
                     },
-                    "package_id": {
+                    "PackageId": {
                       "type": "integer"
                     },
-                    "order_item_id": {
+                    "OrderItemId": {
                       "type": "integer"
                     },
-                    "receive_item_id": {
+                    "ReceiveItemId": {
                       "type": "integer"
                     },
-                    "order_item_pick_exception_id": {
+                    "OrderItemPickExceptionId": {
                       "type": ["null", "integer"]
                     },
-                    "qty": {
+                    "Qty": {
                       "type": "number"
                     },
-                    "lot_number": {
+                    "LotNumber": {
                       "type": "string"
                     },
-                    "serial_number": {
+                    "SerialNumber": {
                       "type": "string"
                     },
-                    "expiration_date": {
+                    "ExpirationDate": {
                       "type": ["null", "string"],
                       "format": "date-time"
                     },
-                    "create_date": {
+                    "CreateDate": {
                       "type": "string",
                       "format": "date-time"
                     },
-                    "serial_numbers": {
+                    "SerialNumbers": {
                       "type": "array",
                       "items": {
                         "type": "string"
@@ -253,30 +253,30 @@
             }
           }
         },
-        "outbound_serial_numbers": {
+        "OutboundSerialNumbers": {
           "type": "array",
           "items": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "item_identifier": {
+              "ItemIdentifier": {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                  "sku": {
+                  "Sku": {
                     "type": "string"
                   },
-                  "id": {
+                  "Id": {
                     "type": "integer"
                   }
                 }
               },
-              "qualifier": {
+              "Qualifier": {
                 "type": "string"
               },
-              "serial_numbers": {
+              "SerialNumbers": {
                 "type": "array",
                 "items": {
                   "type": "string"
@@ -285,42 +285,42 @@
             }
           }
         },
-        "parcel_label_type": {
+        "ParcelLabelType": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
           "enum": [0, 1, 2],
           "description": "0: none; 1: pdf; 2: zpl"
         },
-        "customer_identifier": {
+        "CustomerIdentifier": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "external_id": {
+            "ExternalId": {
               "type": "string"
             },
-            "name": {
+            "Name": {
               "type": "string"
             },
-            "id": {
+            "Id": {
               "type": "integer"
             }
           }
         },
-        "facility_identifier": {
+        "FacilityIdentifier": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "name": {
+            "Name": {
               "type": "string"
             },
-            "id": {
+            "Id": {
               "type": "integer"
             }
           }
         },
-        "warehouse_transaction_source_type": {
+        "WarehouseTransactionSourceType": {
           "description": "how the transaction entered the system",
           "oneOf": [
             {
@@ -334,7 +334,7 @@
             }
           ]
         },
-        "transaction_entry_type": {
+        "TransactionEntryType": {
           "description": "the agent creating the transaction",
           "oneOf": [
             {
@@ -348,55 +348,55 @@
             }
           ]
         },
-        "import_channel_identifier": {
+        "ImportChannelIdentifier": {
           "description": "reference to the channel trhough which this order was imported",
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "name": {
+            "Name": {
               "type": "string"
             },
-            "id": {
+            "Id": {
               "type": "integer"
             }
           }
         },
-        "creation_date": {
+        "CreationDate": {
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "created_by_identifier": {
+        "CreatedByIdentifier": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "name": {
+            "Name": {
               "type": "string"
             },
-            "id": {
+            "Id": {
               "type": "integer"
             }
           }
         },
-        "last_modified_date": {
+        "LastModifiedDate": {
           "type": ["null", "string"],
           "format": "date-time"
         },
-        "last_modified_by_identifier": {
+        "LastModifiedByIdentifier": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "name": {
+            "Name": {
               "type": "string"
             },
-            "id": {
+            "Id": {
               "type": "integer"
             }
           }
         },
-        "status": {
+        "Status": {
           "description": "For GET of orders and receivers, the value is reliable. For rql for orders, this property is reliable only for \"Canceled\" status; otherwise use the IsClosed property.",
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
@@ -404,69 +404,69 @@
         }
       }
     },
-    "order_items": {
+    "OrderItems": {
       "type": "array",
       "items": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "read_only": {
+          "ReadOnly": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "order_item_id": {
+              "OrderItemId": {
                 "type": "integer"
               },
-              "fully_allocated": {
+              "FullyAllocated": {
                 "type": "boolean"
               },
-              "unit_identifier": {
+              "UnitIdentifier": {
                 "description": "for convenience, referenced item's primary inventory unit",
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                  "name": {
+                  "Name": {
                     "type": "string"
                   },
-                  "id": {
+                  "Id": {
                     "type": "integer"
                   }
                 }
               },
-              "secondary_unit_identifier": {
+              "SecondaryUnitIdentifier": {
                 "description": "for convenience, referenced item's secondary inventory unit if defined",
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                  "name": {
+                  "Name": {
                     "type": "string"
                   },
-                  "id": {
+                  "Id": {
                     "type": "integer"
                   }
                 }
               },
-              "estimated_qty": {
+              "EstimatedQty": {
                 "description": "if present, calculated from SecondaryQty and cannot confirm until Qty entered",
                 "type": ["null", "number"]
               },
-              "estimated_secondary_qty": {
+              "EstimatedSecondaryQty": {
                 "description": "if present, calculated from Qty and cannot confirm until SecondaryQty entered",
                 "type": ["null", "number"]
               },
-              "original_primary_qty": {
+              "OriginalPrimaryQty": {
                 "description": "on a shorted order, specifies original quantity ordered; otherwise same as Qty",
                 "type": ["null", "number"]
               },
-              "is_order_qty_secondary": {
+              "IsOrderQtySecondary": {
                 "description": "if both Qty and SecondaryQty present, indicates whether at some point prior to shipping only SecondaryQty was present",
                 "type": "boolean"
               },
-              "allocations": {
+              "Allocations": {
                 "description": "supplied on GET {get;set;} ignored on PUT, POST",
                 "type": "array",
                 "items": {
@@ -474,138 +474,138 @@
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
-                    "receive_item_id": {
+                    "ReceiveItemId": {
                       "type": "integer"
                     },
-                    "qty": {
+                    "Qty": {
                       "type": "number"
                     },
-                    "properly_picked_primary": {
+                    "ProperlyPickedPrimary": {
                       "type": "number"
                     },
-                    "properly_picked_secondary": {
+                    "ProperlyPickedSecondary": {
                       "type": "number"
                     },
-                    "loaded_out": {
+                    "LoadedOut": {
                       "type": "boolean"
                     },
-                    "detail": {
+                    "Detail": {
                       "description": "null unless requested by including AllocationsWithDetail in OrderItemChildren",
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "additionalProperties": false,
                       "properties": {
-                        "item_traits": {
+                        "ItemTraits": {
                           "description": "unique identifying characteristics of an item in a location",
                           "$schema": "http://json-schema.org/draft-07/schema#",
                           "type": "object",
                           "additionalProperties": false,
                           "properties": {
-                            "item_identifier": {
+                            "ItemIdentifier": {
                               "$schema": "http://json-schema.org/draft-07/schema#",
                               "type": "object",
                               "additionalProperties": false,
                               "properties": {
-                                "sku": {
+                                "Sku": {
                                   "type": "string"
                                 },
-                                "id": {
+                                "Id": {
                                   "type": "integer"
                                 }
                               }
                             },
-                            "qualifier": {
+                            "Qualifier": {
                               "type": "string"
                             },
-                            "lot_number": {
+                            "LotNumber": {
                               "type": "string"
                             },
-                            "serial_number": {
+                            "SerialNumber": {
                               "type": "string"
                             },
-                            "expiration_date": {
+                            "ExpirationDate": {
                               "type": "string",
                               "format": "date-time"
                             },
-                            "pallet_identifier": {
+                            "PalletIdentifier": {
                               "$schema": "http://json-schema.org/draft-07/schema#",
                               "type": "object",
                               "additionalProperties": false,
                               "properties": {
-                                "name_key": {
+                                "NameKey": {
                                   "$schema": "http://json-schema.org/draft-07/schema#",
                                   "type": "object",
                                   "additionalProperties": false,
                                   "properties": {
-                                    "facility_identifier": {
+                                    "FacilityIdentifier": {
                                       "$schema": "http://json-schema.org/draft-07/schema#",
                                       "type": "object",
                                       "additionalProperties": false,
                                       "properties": {
-                                        "name": {
+                                        "Name": {
                                           "type": "string"
                                         },
-                                        "id": {
+                                        "Id": {
                                           "type": "integer"
                                         }
                                       }
                                     },
-                                    "name": {
+                                    "Name": {
                                       "type": "string"
                                     }
                                   }
                                 },
-                                "id": {
+                                "Id": {
                                   "type": "integer"
                                 }
                               }
                             }
                           }
                         },
-                        "location_identifier": {
+                        "LocationIdentifier": {
                           "$schema": "http://json-schema.org/draft-07/schema#",
                           "type": "object",
                           "additionalProperties": false,
                           "properties": {
-                            "name_key": {
+                            "NameKey": {
                               "$schema": "http://json-schema.org/draft-07/schema#",
                               "type": "object",
                               "additionalProperties": false,
                               "properties": {
-                                "facility_identifier": {
+                                "FacilityIdentifier": {
                                   "$schema": "http://json-schema.org/draft-07/schema#",
                                   "type": "object",
                                   "additionalProperties": false,
                                   "properties": {
-                                    "name": {
+                                    "Name": {
                                       "type": "string"
                                     },
-                                    "id": {
+                                    "Id": {
                                       "type": "integer"
                                     }
                                   }
                                 },
-                                "name": {
+                                "Name": {
                                   "type": "string"
                                 }
                               }
                             },
-                            "id": {
+                            "Id": {
                               "type": "integer"
                             }
                           }
                         },
-                        "saved_elements": {
+                        "SavedElements": {
                           "type": "array",
                           "items": {
                             "$schema": "http://json-schema.org/draft-07/schema#",
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
-                              "name": {
+                              "Name": {
                                 "type": "string"
                               },
-                              "value": {
+                              "Value": {
                                 "type": "string"
                               }
                             }
@@ -616,93 +616,93 @@
                   }
                 }
               },
-              "bin": {
+              "Bin": {
                 "description": "supplied on GET, ignored on PUT, POST; use pick operations to set; cleared when shipped or packaged",
                 "type": "string"
               }
             }
           },
-          "item_identifier": {
+          "ItemIdentifier": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "sku": {
+              "Sku": {
                 "type": "string"
               },
-              "id": {
+              "Id": {
                 "type": "integer"
               }
             }
           },
-          "qualifier": {
+          "Qualifier": {
             "type": "string"
           },
-          "external_id": {
+          "ExternalId": {
             "description": "connection of this order item to the same order item on some other system",
             "type": "string"
           },
-          "qty": {
+          "Qty": {
             "description": "primary inventory quantity ordered; if not specified, must specify SecondaryQty",
             "type": ["null", "number"]
           },
-          "secondary_qty": {
+          "SecondaryQty": {
             "description": "optional secondary quantity ordered; if not specified, must specify Qty",
             "type": ["null", "number"]
           },
-          "lot_number": {
+          "LotNumber": {
             "description": "if present, used to allocate matching inventory",
             "type": "string"
           },
-          "serial_number": {
+          "SerialNumber": {
             "description": "if present, used to allocate matching inventory",
             "type": "string"
           },
-          "expiration_date": {
+          "ExpirationDate": {
             "description": "if present, used to allocate matching inventory",
             "type": ["null", "string"],
             "format": "date-time"
           },
-          "weight_imperial": {
+          "WeightImperial": {
             "description": "ship weight of order item, imperial; if specified and metric not specified, business logic computes metric",
             "type": ["null", "number"]
           },
-          "weight_metric": {
+          "WeightMetric": {
             "description": "ship weight of order item, metric; if specified and imperial not specified, business logic computes imperial; see WeightImperial for further explanation",
             "type": ["null", "number"]
           },
-          "notes": {
+          "Notes": {
             "type": "string"
           },
-          "fulfill_inv_sale_price": {
+          "FulfillInvSalePrice": {
             "type": ["null", "number"]
           },
-          "fulfill_inv_discount_pct": {
+          "FulfillInvDiscountPct": {
             "type": ["null", "number"]
           },
-          "fulfill_inv_discount_amt": {
+          "FulfillInvDiscountAmt": {
             "type": ["null", "number"]
           },
-          "fulfill_inv_note": {
+          "FulfillInvNote": {
             "type": "string"
           },
-          "saved_elements": {
+          "SavedElements": {
             "type": "array",
             "items": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "name": {
+                "Name": {
                   "type": "string"
                 },
-                "value": {
+                "Value": {
                   "type": "string"
                 }
               }
             }
           },
-          "proposed_allocations": {
+          "ProposedAllocations": {
             "description": "empty on GET; may be supplied on PUT, POST",
             "type": "array",
             "items": {
@@ -711,16 +711,16 @@
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "receive_item_id": {
+                "ReceiveItemId": {
                   "type": "integer"
                 },
-                "qty": {
+                "Qty": {
                   "type": "number"
                 }
               }
             }
           },
-          "order_item_in_packages": {
+          "OrderItemInPackages": {
             "description": "declares the package arrangement, which gets translated into real packages, during order creation; empty on GET; ignored on PUT; may be supplied on POST",
             "type": "array",
             "items": {
@@ -728,23 +728,23 @@
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "package_number": {
+                "PackageNumber": {
                   "description": "use the same number on multiple OrderItemInPackages to add package content to the same package",
                   "type": "integer"
                 },
-                "quantity": {
+                "Quantity": {
                   "description": "how much of the orderitem to pack into this package content; must be a positive number",
                   "type": "number"
                 },
-                "package_def_identifier": {
+                "PackageDefIdentifier": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
-                    "name": {
+                    "Name": {
                       "type": "string"
                     },
-                    "id": {
+                    "Id": {
                       "type": "integer"
                     }
                   },
@@ -756,211 +756,211 @@
         }
       }
     },
-    "reference_num": {
+    "ReferenceNum": {
       "type": "string"
     },
-    "description": {
+    "Description": {
       "type": "string"
     },
-    "po_num": {
+    "PoNum": {
       "type": "string"
     },
-    "external_id": {
+    "ExternalId": {
       "description": "connection of this order to the same order on some other system",
       "type": "string"
     },
-    "earliest_ship_date": {
+    "EarliestShipDate": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "ship_cancel_date": {
+    "ShipCancelDate": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "notes": {
+    "Notes": {
       "type": "string"
     },
-    "num_units1": {
+    "NumUnits1": {
       "type": ["null", "number"]
     },
-    "unit1_identifier": {
+    "Unit1Identifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "num_units2": {
+    "NumUnits2": {
       "type": ["null", "number"]
     },
-    "unit2_identifier": {
+    "Unit2Identifier": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "total_weight": {
+    "TotalWeight": {
       "type": ["null", "number"]
     },
-    "total_volume": {
+    "TotalVolume": {
       "type": ["null", "number"]
     },
-    "billing_code": {
+    "BillingCode": {
       "type": "string"
     },
-    "asn_number": {
+    "AsnNumber": {
       "type": "string"
     },
-    "ups_service_option_charge": {
+    "UpsServiceOptionCharge": {
       "type": ["null", "number"]
     },
-    "ups_transportation_charge": {
+    "UpsTransportationCharge": {
       "type": ["null", "number"]
     },
-    "add_freight_to_cod": {
+    "AddFreightToCod": {
       "type": "boolean"
     },
-    "ups_is_residential": {
+    "UpsIsResidential": {
       "type": "boolean"
     },
-    "export_channel_identifier": {
+    "ExportChannelIdentifier": {
       "description": "A reference to the channel used to export an Advance Shipping Notice or RoutingRequest; must specify Id (Name alone will fail)",
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "id": {
+        "Id": {
           "type": "integer"
         }
       }
     },
-    "route_pickup_date": {
+    "RoutePickupDate": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "shipping_notes": {
+    "ShippingNotes": {
       "type": "string"
     },
-    "master_bill_of_lading_id": {
+    "MasterBillOfLadingId": {
       "type": "string"
     },
-    "invoice_number": {
+    "InvoiceNumber": {
       "type": "string"
     },
-    "fulfill_inv_info": {
+    "FulfillInvInfo": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "fulfill_inv_shipping_and_handling": {
+        "FulfillInvShippingAndHandling": {
           "type": ["null", "number"]
         },
-        "fulfill_inv_tax": {
+        "FulfillInvTax": {
           "type": ["null", "number"]
         },
-        "fulfill_inv_discount_code": {
+        "FulfillInvDiscountCode": {
           "type": "string"
         },
-        "fulfill_inv_discount_amount": {
+        "FulfillInvDiscountAmount": {
           "type": ["null", "number"]
         },
-        "fulfill_inv_gift_message": {
+        "FulfillInvGiftMessage": {
           "type": "string"
         }
       }
     },
-    "routing_info": {
+    "RoutingInfo": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "is_cod": {
+        "IsCod": {
           "type": "boolean"
         },
-        "is_insurance": {
+        "IsInsurance": {
           "type": "boolean"
         },
-        "requires_delivery_conf": {
+        "RequiresDeliveryConf": {
           "type": "boolean"
         },
-        "requires_return_receipt": {
+        "RequiresReturnReceipt": {
           "type": "boolean"
         },
-        "scac_code": {
+        "ScacCode": {
           "type": "string"
         },
-        "carrier": {
+        "Carrier": {
           "type": "string"
         },
-        "mode": {
+        "Mode": {
           "type": "string"
         },
-        "account": {
+        "Account": {
           "type": "string"
         },
-        "ship_point_zip": {
+        "ShipPointZip": {
           "type": "string"
         },
-        "capacity_type_identifier": {
+        "CapacityTypeIdentifier": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "name": {
+            "Name": {
               "type": "string"
             },
-            "id": {
+            "Id": {
               "type": "integer"
             }
           }
         },
-        "load_number": {
+        "LoadNumber": {
           "type": "string"
         },
-        "bill_of_lading": {
+        "BillOfLading": {
           "type": "string"
         },
-        "tracking_number": {
+        "TrackingNumber": {
           "type": "string"
         },
-        "trailer_number": {
+        "TrailerNumber": {
           "type": "string"
         },
-        "seal_number": {
+        "SealNumber": {
           "type": "string"
         },
-        "door_number": {
+        "DoorNumber": {
           "type": "string"
         },
-        "pickup_date": {
+        "PickupDate": {
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
-    "billing": {
+    "Billing": {
       "description": "PUT: set to null to make no changes to billing",
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "billing_charges": {
+        "BillingCharges": {
           "description": "PUT: set to NULL or empty to delete all charges",
           "type": "array",
           "items": {
@@ -968,53 +968,53 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "charge_type": {
+              "ChargeType": {
                 "description": "charge type",
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "integer",
                 "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8]
               },
-              "subtotal": {
+              "Subtotal": {
                 "type": "number"
               },
-              "details": {
+              "Details": {
                 "type": "array",
                 "items": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
-                    "warehouse_transaction_price_calc_id": {
+                    "WarehouseTransactionPriceCalcId": {
                       "type": "integer"
                     },
-                    "num_units": {
+                    "NumUnits": {
                       "type": "number"
                     },
-                    "charge_label": {
+                    "ChargeLabel": {
                       "type": "string"
                     },
-                    "unit_description": {
+                    "UnitDescription": {
                       "type": "string"
                     },
-                    "charge_per_unit": {
+                    "ChargePerUnit": {
                       "type": "number"
                     },
-                    "gl_acct_num": {
+                    "GlAcctNum": {
                       "type": "string"
                     },
-                    "sku": {
+                    "Sku": {
                       "type": "string"
                     },
-                    "pt_item": {
+                    "PtItem": {
                       "type": "string"
                     },
-                    "pt_item_description": {
+                    "PtItemDescription": {
                       "type": "string"
                     },
-                    "pt_ar_acct": {
+                    "PtArAcct": {
                       "type": "string"
                     },
-                    "system_generated": {
+                    "SystemGenerated": {
                       "type": "boolean"
                     }
                   }
@@ -1025,53 +1025,53 @@
         }
       }
     },
-    "ship_to": {
+    "ShipTo": {
       "description": "if not found, creates new shipto contact",
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "retailer_info": {
+        "RetailerInfo": {
           "description": "in GETs: the retailer; in POSTs or PUTs: identifies existing retailer or properties of new retailer",
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "name_key": {
+            "NameKey": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "customer_identifier": {
+                "CustomerIdentifier": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
-                    "external_id": {
+                    "ExternalId": {
                       "type": "string"
                     },
-                    "name": {
+                    "Name": {
                       "type": "string"
                     },
-                    "id": {
+                    "Id": {
                       "type": "integer"
                     }
                   }
                 },
-                "name": {
+                "Name": {
                   "type": "string"
                 },
-                "number": {
+                "Number": {
                   "type": "string"
                 }
               }
             },
-            "id": {
+            "Id": {
               "type": "integer"
             }
           }
         },
-        "same_as": {
+        "SameAs": {
           "description": "PUT or POST: to use same Contact as another contact on the same order; GET: always null",
           "oneOf": [
             {
@@ -1085,61 +1085,61 @@
             }
           ]
         },
-        "retailer_id": {
+        "RetailerId": {
           "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
           "type": ["null", "integer"]
         },
-        "is_quick_lookup": {
+        "IsQuickLookup": {
           "type": "boolean"
         },
-        "contact_id": {
+        "ContactId": {
           "description": "for identifying: if known specify only this; other fields are ignored",
           "type": ["null", "integer"]
         },
-        "company_name": {
+        "CompanyName": {
           "type": "string"
         },
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "title": {
+        "Title": {
           "type": "string"
         },
-        "address1": {
+        "Address1": {
           "type": "string"
         },
-        "address2": {
+        "Address2": {
           "type": "string"
         },
-        "city": {
+        "City": {
           "type": "string"
         },
-        "state": {
+        "State": {
           "type": "string"
         },
-        "zip": {
+        "Zip": {
           "type": "string"
         },
-        "country": {
+        "Country": {
           "type": "string"
         },
-        "phone_number": {
+        "PhoneNumber": {
           "type": "string"
         },
-        "fax": {
+        "Fax": {
           "type": "string"
         },
-        "email_address": {
+        "EmailAddress": {
           "type": "string"
         },
-        "dept": {
+        "Dept": {
           "type": "string"
         },
-        "code": {
+        "Code": {
           "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
           "type": "string"
         },
-        "address_status": {
+        "AddressStatus": {
           "description": "confirmation status",
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
@@ -1147,13 +1147,13 @@
         }
       }
     },
-    "sold_to": {
+    "SoldTo": {
       "description": "if not found, creates new soldto contact",
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "same_as": {
+        "SameAs": {
           "description": "PUT or POST: to use same Contact as another contact on the same order; GET: always null",
           "oneOf": [
             {
@@ -1167,61 +1167,61 @@
             }
           ]
         },
-        "retailer_id": {
+        "RetailerId": {
           "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
           "type": ["null", "integer"]
         },
-        "is_quick_lookup": {
+        "IsQuickLookup": {
           "type": "boolean"
         },
-        "contact_id": {
+        "ContactId": {
           "description": "for identifying: if known specify only this; other fields are ignored",
           "type": ["null", "integer"]
         },
-        "company_name": {
+        "CompanyName": {
           "type": "string"
         },
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "title": {
+        "Title": {
           "type": "string"
         },
-        "address1": {
+        "Address1": {
           "type": "string"
         },
-        "address2": {
+        "Address2": {
           "type": "string"
         },
-        "city": {
+        "City": {
           "type": "string"
         },
-        "state": {
+        "State": {
           "type": "string"
         },
-        "zip": {
+        "Zip": {
           "type": "string"
         },
-        "country": {
+        "Country": {
           "type": "string"
         },
-        "phone_number": {
+        "PhoneNumber": {
           "type": "string"
         },
-        "fax": {
+        "Fax": {
           "type": "string"
         },
-        "email_address": {
+        "EmailAddress": {
           "type": "string"
         },
-        "dept": {
+        "Dept": {
           "type": "string"
         },
-        "code": {
+        "Code": {
           "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
           "type": "string"
         },
-        "address_status": {
+        "AddressStatus": {
           "description": "confirmation status",
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
@@ -1229,13 +1229,13 @@
         }
       }
     },
-    "bill_to": {
+    "BillTo": {
       "description": "if not found, creates new billto contact",
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "same_as": {
+        "SameAs": {
           "description": "PUT or POST: to use same Contact as another contact on the same order; GET: always null",
           "oneOf": [
             {
@@ -1249,61 +1249,61 @@
             }
           ]
         },
-        "retailer_id": {
+        "RetailerId": {
           "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
           "type": ["null", "integer"]
         },
-        "is_quick_lookup": {
+        "IsQuickLookup": {
           "type": "boolean"
         },
-        "contact_id": {
+        "ContactId": {
           "description": "for identifying: if known specify only this; other fields are ignored",
           "type": ["null", "integer"]
         },
-        "company_name": {
+        "CompanyName": {
           "type": "string"
         },
-        "name": {
+        "Name": {
           "type": "string"
         },
-        "title": {
+        "Title": {
           "type": "string"
         },
-        "address1": {
+        "Address1": {
           "type": "string"
         },
-        "address2": {
+        "Address2": {
           "type": "string"
         },
-        "city": {
+        "City": {
           "type": "string"
         },
-        "state": {
+        "State": {
           "type": "string"
         },
-        "zip": {
+        "Zip": {
           "type": "string"
         },
-        "country": {
+        "Country": {
           "type": "string"
         },
-        "phone_number": {
+        "PhoneNumber": {
           "type": "string"
         },
-        "fax": {
+        "Fax": {
           "type": "string"
         },
-        "email_address": {
+        "EmailAddress": {
           "type": "string"
         },
-        "dept": {
+        "Dept": {
           "type": "string"
         },
-        "code": {
+        "Code": {
           "description": "for identifying: if known specify only this; if other fields also specified it is not used to identify",
           "type": "string"
         },
-        "address_status": {
+        "AddressStatus": {
           "description": "confirmation status",
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
@@ -1311,55 +1311,55 @@
         }
       }
     },
-    "saved_elements": {
+    "SavedElements": {
       "type": "array",
       "items": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "name": {
+          "Name": {
             "type": "string"
           },
-          "value": {
+          "Value": {
             "type": "string"
           }
         }
       }
     },
-    "parcel_option": {
+    "ParcelOption": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "order_id": {
+        "OrderId": {
           "type": "integer"
         },
-        "delivery_confirmation_type": {
+        "DeliveryConfirmationType": {
           "type": "string"
         },
-        "delivered_duty_paid": {
+        "DeliveredDutyPaid": {
           "type": "integer"
         },
-        "dry_ice_weight": {
+        "DryIceWeight": {
           "type": "number"
         },
-        "insurance_amount": {
+        "InsuranceAmount": {
           "type": "number"
         },
-        "insurance_type": {
+        "InsuranceType": {
           "type": "integer"
         },
-        "international_contents_type": {
+        "InternationalContentsType": {
           "type": "string"
         },
-        "international_non_delivery": {
+        "InternationalNonDelivery": {
           "type": "string"
         },
-        "residential_flag": {
+        "ResidentialFlag": {
           "type": "boolean"
         },
-        "saturday_delivery_flag": {
+        "SaturdayDeliveryFlag": {
           "type": "boolean"
         }
       }
