@@ -198,6 +198,7 @@ jobs:
           SOURCE_SENTRY_TEST_CREDS: ${{ secrets.SOURCE_SENTRY_TEST_CREDS }}
           SOURCE_FRESHSALES_TEST_CREDS: ${{ secrets.SOURCE_FRESHSALES_TEST_CREDS }}
           SOURCE_MONDAY_TEST_CREDS: ${{ secrets.SOURCE_MONDAY_TEST_CREDS }}
+          SOURCE_COMMERCETOOLS_TEST_CREDS: ${{ secrets.SOURCE_COMMERCETOOLS_TEST_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}
