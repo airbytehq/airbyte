@@ -29,11 +29,7 @@ import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
-import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
-import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
-import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
-import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
-import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
+import io.airbyte.workers.temporal.sync.*;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -142,7 +138,9 @@ public class WorkerApp {
             databasePassword, databaseUrl, airbyteVersion),
         new DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
             databasePassword, databaseUrl, airbyteVersion),
-        new PersistStateActivityImpl(workspaceRoot, configRepository));
+        new PersistStateActivityImpl(workspaceRoot, configRepository),
+        new LaunchSyncAttemptActivityImpl(processFactory));
+
     factory.start();
   }
 
