@@ -65,6 +65,7 @@ class SourceVtex(AbstractSource):
         start_date = config["start_date"]
 
         authenticator = VtexAuthenticator(client_name, app_key, app_token)
+
         orders_stream = Orders(
             authenticator=authenticator, start_date=start_date
         )

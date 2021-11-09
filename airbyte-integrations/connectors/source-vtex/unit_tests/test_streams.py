@@ -3,27 +3,26 @@
 #
 
 from http import HTTPStatus
-from types import BuiltinFunctionType
 from unittest.mock import MagicMock
 
 import pytest
-from source_vtex.source import VtexStream
+from source_vtex.base_streams import VtexStream
 from source_vtex.source import VtexAuthenticator
 import datetime
 
 START_DATE = "2021-10-27T00:00:00.000Z"
-END_DATE = (datetime.datetime.now() + datetime.timedelta(hours=3)) \
-            .strftime('%Y-%m-%dT%H:%M:%S.000Z')
- 
+END_DATE = (datetime.datetime.now() + datetime.timedelta(hours=3)).strftime(
+    "%Y-%m-%dT%H:%M:%S.000Z"
+)
+
+
 def fake_authenticator():
-    return VtexAuthenticator(
-        'not', 'real', 'auth'
-    )
+    return VtexAuthenticator("not", "real", "auth")
+
 
 def build_stream():
     stream = VtexStream(
-        start_date=START_DATE,
-        authenticator=fake_authenticator()
+        start_date=START_DATE, authenticator=fake_authenticator()
     )
     return stream
 
@@ -38,26 +37,23 @@ def patch_base_class(mocker):
 
 def test_request_params(patch_base_class):
     stream = build_stream()
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
+    inputs = {
+        "stream_slice": None,
+        "stream_state": None,
+        "next_page_token": None,
+    }
     expected_params = {
-        'f_creationDate': f'creationDate:[{START_DATE} TO {END_DATE}]',
-        'page': 1
-
+        "f_creationDate": f"creationDate:[{START_DATE} TO {END_DATE}]",
+        "page": 1,
     }
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
     metadata_only_response = {
-        "list": [
-        ],
+        "list": [],
         "facets": [],
-        "paging": {
-            "total": 220,
-            "pages": 15,
-            "currentPage": 1,
-            "perPage": 15
-        },
+        "paging": {"total": 220, "pages": 15, "currentPage": 1, "perPage": 15},
         "stats": {
             "stats": {
                 "totalValue": {
@@ -69,7 +65,7 @@ def test_next_page_token(patch_base_class):
                     "StdDev": 0.0,
                     "Sum": 0.0,
                     "SumOfSquares": 0.0,
-                    "Facets": {}
+                    "Facets": {},
                 },
                 "totalItems": {
                     "Count": 220,
@@ -80,21 +76,20 @@ def test_next_page_token(patch_base_class):
                     "StdDev": 0.0,
                     "Sum": 0.0,
                     "SumOfSquares": 0.0,
-                    "Facets": {}
-                }
+                    "Facets": {},
+                },
             }
         },
-        "reportRecordsLimit": 50000
+        "reportRecordsLimit": 50000,
     }
     stream = build_stream()
-    
-    
+
     response_mock = {}
-    response_mock = MagicMock(status_code=201, json=lambda : metadata_only_response)
-    inputs = {
-        'response': response_mock
-    }
-    expected_token = {'page': 2}
+    response_mock = MagicMock(
+        status_code=201, json=lambda: metadata_only_response
+    )
+    inputs = {"response": response_mock}
+    expected_token = {"page": 2}
     assert stream.next_page_token(**inputs) == expected_token
 
 

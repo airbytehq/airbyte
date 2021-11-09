@@ -9,20 +9,20 @@ from source_vtex.base_streams import IncrementalVtexStream
 from source_vtex.source import VtexAuthenticator
 
 
-CURSOR_FIELD = 'creationDate'
+CURSOR_FIELD = "creationDate"
+
 
 def fake_authenticator():
-    return VtexAuthenticator(
-        'not', 'real', 'auth'
-    )
+    return VtexAuthenticator("not", "real", "auth")
+
 
 def build_stream():
-    start_date =  "2021-10-27T00:00:00.000Z"
+    start_date = "2021-10-27T00:00:00.000Z"
     stream = IncrementalVtexStream(
-        start_date=start_date,
-        authenticator=fake_authenticator()
+        start_date=start_date, authenticator=fake_authenticator()
     )
     return stream
+
 
 @fixture
 def patch_incremental_base_class(mocker):
@@ -36,24 +36,19 @@ def patch_incremental_base_class(mocker):
 
 def test_cursor_field(patch_incremental_base_class):
     stream = build_stream()
-    
+
     expected_cursor_field = CURSOR_FIELD
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_get_updated_state(patch_incremental_base_class):
     stream = build_stream()
-    latest_date = {
-        CURSOR_FIELD: '2021-10-28T23:33:05.0000000+00:00'
-    }
+    latest_date = {CURSOR_FIELD: "2021-10-28T23:33:05.0000000+00:00"}
+    earliest_date = {CURSOR_FIELD: "2021-10-28T20:33:05.0000000+00:00"}
 
-    earliest_date = {
-        CURSOR_FIELD: '2021-10-28T20:33:05.0000000+00:00'
-    }
-    
     inputs = {
-        "current_stream_state": latest_date, 
-        "latest_record": earliest_date
+        "current_stream_state": latest_date,
+        "latest_record": earliest_date,
     }
 
     expected_state = latest_date
@@ -63,8 +58,12 @@ def test_get_updated_state(patch_incremental_base_class):
 
 def test_stream_slices(patch_incremental_base_class):
     stream = build_stream()
-    
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": CURSOR_FIELD, "stream_state": {}}
+
+    inputs = {
+        "sync_mode": SyncMode.incremental,
+        "cursor_field": CURSOR_FIELD,
+        "stream_state": {},
+    }
     expected_stream_slice = [None]
     assert stream.stream_slices(**inputs) == expected_stream_slice
 
