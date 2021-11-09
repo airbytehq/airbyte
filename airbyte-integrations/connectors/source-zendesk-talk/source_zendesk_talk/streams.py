@@ -6,7 +6,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 import pendulum as pendulum
 import requests
@@ -52,11 +52,16 @@ class ZendeskTalkStream(HttpStream, ABC):
             next_params = parse_qs(next_url.query)
             return next_params
 
+        return None
+
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         """Usually contains common params e.g. pagination size etc."""
-        return next_page_token or {}
+        return dict(next_page_token or {})
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """ Simply parse json and iterates over root object"""
@@ -141,6 +146,7 @@ class IVRs(ZendeskTalkStream):
     path = "/ivr.json"
     data_field = "ivrs"
     use_cache = True
+
 
 class IVRMenus(IVRs):
     """IVR Menus
