@@ -84,7 +84,6 @@ public class TrelloOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  @Deprecated
   public Map<String, Object> completeSourceOAuth(final UUID workspaceId,
                                                  final UUID sourceDefinitionId,
                                                  final Map<String, Object> queryParams,
@@ -95,7 +94,6 @@ public class TrelloOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  @Deprecated
   public Map<String, Object> completeDestinationOAuth(final UUID workspaceId,
                                                       final UUID destinationDefinitionId,
                                                       final Map<String, Object> queryParams,
