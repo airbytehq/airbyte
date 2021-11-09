@@ -21,6 +21,13 @@ tests:
       future_state_path: "integration_tests/future_state.json"
   full_refresh:
     - config_path: "secrets/config.json"
-      # TODO Change below `configured_catalog_without_insights.json` to `configured_catalog.json` after October 7 2021
-      #  because all running campaigns should be finished by that time.
-      configured_catalog_path: "integration_tests/configured_catalog_without_insights.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      # Ad Insights API has estimated metrics in response, which is calculated based on another metrics.
+      # Sometimes API doesn't return estimated metrics. E.g, cost_per_estimated_ad_recallers is calculated
+      # as total amount spent divided by estimated ad recall lift rate. When second metric is equal to zero
+      # API may or may not return value. Such behavior causes sequential reads test failing.
+      # Because one read response contains this metric, and other doesn't.
+      # Therefore, it's needed to ignore fields like this in API responses.
+      ignored_fields:
+        "ads_insights_age_and_gender": ["cost_per_estimated_ad_recallers"]
+        "ad_creatives": ["thumbnail_url"]

@@ -51,6 +51,13 @@ GRANT ROLE 'AIRBYTE_ROLE' TO USER 'AIRBYTE_USER'
 
 Your database user should now be ready for use with Airbyte.
 
+#### 3. Create SSL connection.
+
+To set up an SSL connection, you need to use a client certificate. Add it to the "SSL PEM file" field and the connector will automatically add it to the secret keystore. 
+You can also enter your own password for the keystore, but if you don't, the password will be generated automatically.
+
+**Note.** Unfortunately SSL and SSH are incompatible because SSH changes the visible name of the target.
+
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
