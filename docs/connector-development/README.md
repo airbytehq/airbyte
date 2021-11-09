@@ -130,11 +130,19 @@ Once you've finished iterating on the changes to a connector as specified in its
 ## Using credentials in CI
 
 In order to run integration tests in CI, you'll often need to inject credentials into CI. There are a few steps for doing this:
-1. **Place the credentials into Google Secret Manager(GSM)**: Airbyte uses a project 'Google Secret Manager' service as the source of truth for all secrets. Place the credentials **exactly as they should be used by the connector** into a GSM secret i.e.: it should basically be a copy paste of the `config.json` passed into a connector via the `--config` flag. We use the following naming pattern: `SECRET_<capital source OR destination name>_CREDS` e.g: `SECRET_SOURCE-S3_CREDS` or `SECRET_DESTINATION-SNOWFLAKE_CREDS`. Access to the GSM storage is limited. Each developer should have the role `Development_CI_Secrets` of the project `dataline-integration-testing`.
+1. **Place the credentials into Google Secret Manager(GSM)**: Airbyte uses a project 'Google Secret Manager' service as the source of truth for all CI secrets. Place the credentials **exactly as they should be used by the connector** into a GSM secret [here](https://console.cloud.google.com/security/secret-manager?referrer=search&orgonly=true&project=dataline-integration-testing&supportedpurview=organizationId) i.e.: it should basically be a copy paste of the `config.json` passed into a connector via the `--config` flag. We use the following naming pattern: `SECRET_<capital source OR destination name>_CREDS` e.g: `SECRET_SOURCE-S3_CREDS` or `SECRET_DESTINATION-SNOWFLAKE_CREDS`.
 2. **Add the GSM secret's labels**:
     * `connector` (required) -- unique connector's name or set of connectors' names with '_' as delimiter i.e.: `connector=source-s3`, `connector=destination-snowflake`
     * `filename` (optional) -- custom target secret file. Unfortunately Google doesn't use '.' into labels' values and so Airbyte CI scripts will add '.json' to the end automatically. By default secrets will be saved to `./secrets/config.json` i.e: `filename=config_auth` => `secrets/config_auth.json`
 3. That should be it.
+
+#### Access of developers to GSM
+Access to the GSM storage is limited. Only admins of the GCP project `dataline-integration-testing` can provide it:
+1. Go to the permissions' [page](https://console.cloud.google.com/iam-admin/iam?project=dataline-integration-testing)
+2. Add a new principal to `dataline-integration-testing`:
+- input a nessosary Google account/group value.
+- select the role `Development_CI_Secrets`
+3. Save
 
 #### How to migrate to the new secrets' logic:
 1. Create all necessary secrets how it is explained above.

@@ -11,6 +11,8 @@ CONNECTOR_NAME=`echo ${CONNECTOR_FULLNAME} | rev | cut -d'/' -f1 | rev`
 
 GSM_SCOPES="https://www.googleapis.com/auth/cloud-platform"
 
+# If a secret is available in both Github and GSM, then the GSM secret is used, otherwise Github.
+
 declare -A SECRET_MAP
 
 
