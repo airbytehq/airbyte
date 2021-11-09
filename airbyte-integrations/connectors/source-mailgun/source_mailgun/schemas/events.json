@@ -1,0 +1,77 @@
+{
+  "type": "object",
+  "properties": {
+    "campaigns": {
+      "type": ["null", "array"]
+    },
+    "client-info": {
+      "type": ["null", "object"]
+    },
+    "delivery-status": {
+      "type": ["null", "object"]
+    },
+    "envelop": {
+      "type": ["null", "object"]
+    },
+    "event": {
+      "type": "string"
+    },
+    "flags": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": "boolean"
+      }
+    },
+    "geolocation": {
+      "type": ["null", "object"]
+    },
+    "id": {
+      "type": "string"
+    },
+    "ip": {
+      "type": "string"
+    },
+    "log-level": {
+      "type": ["null", "string"]
+    },
+    "message": {
+      "type": ["null", "object"]
+    },
+    "method": {
+      "type": ["null", "string"]
+    },
+    "routes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "storage": {
+      "type": ["null", "object"]
+    },
+    "reason": {
+      "type": ["null", "string"]
+    },
+    "recipient": {
+      "type": ["null", "string"]
+    },
+    "recipient-domain": {
+      "type": ["null", "string"]
+    },
+    "severity": {
+      "type": ["null", "string"]
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "timestamp": {
+      "type":  "number"
+    },
+    "user-variables": {
+      "type":  "array"
+    }
+  }
+}
