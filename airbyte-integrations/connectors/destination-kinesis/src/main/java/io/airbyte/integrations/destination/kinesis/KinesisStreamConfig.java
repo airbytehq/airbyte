@@ -1,31 +1,36 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.kinesis;
 
 import io.airbyte.protocol.models.DestinationSyncMode;
 
 public class KinesisStreamConfig {
 
-    private final String streamName;
+  private final String streamName;
 
-    private final DestinationSyncMode destinationSyncMode;
+  private final DestinationSyncMode destinationSyncMode;
 
-    public KinesisStreamConfig(String streamName, DestinationSyncMode destinationSyncMode) {
-        this.streamName = streamName;
-        this.destinationSyncMode = destinationSyncMode;
-    }
+  public KinesisStreamConfig(String streamName, DestinationSyncMode destinationSyncMode) {
+    this.streamName = streamName;
+    this.destinationSyncMode = destinationSyncMode;
+  }
 
-    public String getStreamName() {
-        return streamName;
-    }
+  public String getStreamName() {
+    return streamName;
+  }
 
-    public DestinationSyncMode getDestinationSyncMode() {
-        return destinationSyncMode;
-    }
+  public DestinationSyncMode getDestinationSyncMode() {
+    return destinationSyncMode;
+  }
 
-    @Override
-    public String toString() {
-        return "KinesisStreamConfig{" +
-            "streamName='" + streamName + '\'' +
-            ", destinationSyncMode=" + destinationSyncMode +
-            '}';
-    }
+  @Override
+  public String toString() {
+    return "KinesisStreamConfig{" +
+        "streamName='" + streamName + '\'' +
+        ", destinationSyncMode=" + destinationSyncMode +
+        '}';
+  }
+
 }

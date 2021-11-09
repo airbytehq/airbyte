@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.kinesis;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,108 +19,107 @@ import software.amazon.awssdk.services.kinesis.model.ResourceNotFoundException;
 
 class KinesisStreamTest {
 
-    private static KinesisContainerInitializr.KinesisContainer kinesisContainer;
+  private static KinesisContainerInitializr.KinesisContainer kinesisContainer;
 
-    private KinesisStream kinesisStream;
+  private KinesisStream kinesisStream;
 
-    @BeforeAll
-    static void setup() {
-        kinesisContainer = KinesisContainerInitializr.initContainer();
-    }
+  @BeforeAll
+  static void setup() {
+    kinesisContainer = KinesisContainerInitializr.initContainer();
+  }
 
-    @BeforeEach
-    void init() {
-        var jsonConfig = KinesisDataFactory.jsonConfig(
-            kinesisContainer.getEndpointOverride().toString(),
-            kinesisContainer.getRegion(),
-            kinesisContainer.getAccessKey(),
-            kinesisContainer.getSecretKey()
-        );
-        this.kinesisStream = new KinesisStream(new KinesisConfig(jsonConfig));
-    }
+  @BeforeEach
+  void init() {
+    var jsonConfig = KinesisDataFactory.jsonConfig(
+        kinesisContainer.getEndpointOverride().toString(),
+        kinesisContainer.getRegion(),
+        kinesisContainer.getAccessKey(),
+        kinesisContainer.getSecretKey());
+    this.kinesisStream = new KinesisStream(new KinesisConfig(jsonConfig));
+  }
 
-    @AfterEach
-    void cleanup() {
-        kinesisStream.deleteAllStreams();
-    }
+  @AfterEach
+  void cleanup() {
+    kinesisStream.deleteAllStreams();
+  }
 
-    @Test
-    void testCreateStream() {
-        String streamName = "test_create_stream";
-        // given
-        kinesisStream.createStream(streamName);
-        kinesisStream.flush();
-        // when
-        var records = kinesisStream.getRecords(streamName);
+  @Test
+  void testCreateStream() {
+    String streamName = "test_create_stream";
+    // given
+    kinesisStream.createStream(streamName);
+    kinesisStream.flush();
+    // when
+    var records = kinesisStream.getRecords(streamName);
 
-        //then
-        assertThat(records)
-            .isNotNull()
-            .hasSize(0);
+    // then
+    assertThat(records)
+        .isNotNull()
+        .hasSize(0);
 
-    }
+  }
 
-    @Test
-    void testDeleteStream() {
-        String streamName = "test_delete_stream";
-        // given
-        kinesisStream.createStream(streamName);
+  @Test
+  void testDeleteStream() {
+    String streamName = "test_delete_stream";
+    // given
+    kinesisStream.createStream(streamName);
 
-        // when
-        kinesisStream.deleteStream(streamName);
+    // when
+    kinesisStream.deleteStream(streamName);
 
-        // then
-        assertThrows(ResourceNotFoundException.class, () -> kinesisStream.getRecords(streamName));
-    }
+    // then
+    assertThrows(ResourceNotFoundException.class, () -> kinesisStream.getRecords(streamName));
+  }
 
-    @Test
-    void testDeleteAllStreams() {
-        var streamName1 = "test_delete_all_stream1";
-        var streamName2 = "test_delete_all_stream2";
-        // given
-        kinesisStream.createStream(streamName1);
-        kinesisStream.createStream(streamName2);
+  @Test
+  void testDeleteAllStreams() {
+    var streamName1 = "test_delete_all_stream1";
+    var streamName2 = "test_delete_all_stream2";
+    // given
+    kinesisStream.createStream(streamName1);
+    kinesisStream.createStream(streamName2);
 
-        // when
-        kinesisStream.deleteAllStreams();
+    // when
+    kinesisStream.deleteAllStreams();
 
-        // then
-        assertThrows(ResourceNotFoundException.class, () -> kinesisStream.getRecords(streamName1));
-        assertThrows(ResourceNotFoundException.class, () -> kinesisStream.getRecords(streamName2));
+    // then
+    assertThrows(ResourceNotFoundException.class, () -> kinesisStream.getRecords(streamName1));
+    assertThrows(ResourceNotFoundException.class, () -> kinesisStream.getRecords(streamName2));
 
-    }
+  }
 
-    @Test
-    void testPutRecordAndFlush() {
-        // given
-        String streamName = "test_put_record_stream";
-        kinesisStream.createStream(streamName);
+  @Test
+  void testPutRecordAndFlush() {
+    // given
+    String streamName = "test_put_record_stream";
+    kinesisStream.createStream(streamName);
 
-        var partitionKey1 = KinesisUtils.buildPartitionKey();
-        kinesisStream.putRecord(streamName, partitionKey1, createData(partitionKey1, "{\"property\":\"data1\"}"));
+    var partitionKey1 = KinesisUtils.buildPartitionKey();
+    kinesisStream.putRecord(streamName, partitionKey1, createData(partitionKey1, "{\"property\":\"data1\"}"));
 
-        var partitionKey2 = KinesisUtils.buildPartitionKey();
-        kinesisStream.putRecord(streamName, partitionKey2, createData(partitionKey2, "{\"property\":\"data2\"}"));
+    var partitionKey2 = KinesisUtils.buildPartitionKey();
+    kinesisStream.putRecord(streamName, partitionKey2, createData(partitionKey2, "{\"property\":\"data2\"}"));
 
-        kinesisStream.flush();
+    kinesisStream.flush();
 
-        // when
-        var records = kinesisStream.getRecords(streamName);
+    // when
+    var records = kinesisStream.getRecords(streamName);
 
-        // then
-        assertThat(records)
-            .isNotNull()
-            .hasSize(2)
-            .anyMatch(r -> r.getData().equals("{\"property\":\"data1\"}"))
-            .anyMatch(r -> r.getData().equals("{\"property\":\"data2\"}"));
-    }
+    // then
+    assertThat(records)
+        .isNotNull()
+        .hasSize(2)
+        .anyMatch(r -> r.getData().equals("{\"property\":\"data1\"}"))
+        .anyMatch(r -> r.getData().equals("{\"property\":\"data2\"}"));
+  }
 
-    private String createData(String partitionKey, String data) {
-        var record = Jsons.jsonNode(Map.of(
-            JavaBaseConstants.COLUMN_NAME_AB_ID, partitionKey,
-            JavaBaseConstants.COLUMN_NAME_DATA, data,
-            JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Instant.now()));
-        return Jsons.serialize(record);
-    }
+  private String createData(String partitionKey, String data) {
+    var record = Jsons.jsonNode(Map.of(
+        JavaBaseConstants.COLUMN_NAME_AB_ID, partitionKey,
+        JavaBaseConstants.COLUMN_NAME_DATA, data,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Instant.now()));
+    return Jsons.serialize(record);
+  }
 
 }

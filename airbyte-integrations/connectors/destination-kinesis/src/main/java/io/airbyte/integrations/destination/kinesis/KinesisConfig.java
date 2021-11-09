@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.kinesis;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -6,75 +10,79 @@ import java.net.URISyntaxException;
 
 /*
  * Immutable configuration for kinesis.
- * */
+ */
 public class KinesisConfig {
 
-    private final URI endpoint;
+  private final URI endpoint;
 
-    private final String region;
+  private final String region;
 
-    private final int shardCount;
+  private final int shardCount;
 
-    private final String accessKey;
+  private final String accessKey;
 
-    private final String privateKey;
+  private final String privateKey;
 
-    private final int bufferSize;
+  private final int bufferSize;
 
-    public KinesisConfig(URI endpoint, String region, int shardCount, String accessKey, String privateKey,
-                         int bufferSize) {
-        this.endpoint = endpoint;
-        this.region = region;
-        this.shardCount = shardCount;
-        this.accessKey = accessKey;
-        this.privateKey = privateKey;
-        this.bufferSize = bufferSize;
+  public KinesisConfig(URI endpoint,
+                       String region,
+                       int shardCount,
+                       String accessKey,
+                       String privateKey,
+                       int bufferSize) {
+    this.endpoint = endpoint;
+    this.region = region;
+    this.shardCount = shardCount;
+    this.accessKey = accessKey;
+    this.privateKey = privateKey;
+    this.bufferSize = bufferSize;
+  }
+
+  public KinesisConfig(JsonNode jsonNode) {
+    String strend = jsonNode.get("endpoint").asText();
+    try {
+      this.endpoint = strend != null && !strend.isBlank() ? new URI(strend) : null;
+    } catch (URISyntaxException e) {
+      throw new UncheckedURISyntaxException(e);
+    }
+    this.region = jsonNode.get("region").asText();
+    this.shardCount = jsonNode.get("shardCount").asInt(5);
+    this.accessKey = jsonNode.get("accessKey").asText();
+    this.privateKey = jsonNode.get("privateKey").asText();
+    this.bufferSize = jsonNode.get("bufferSize").asInt(100);
+  }
+
+  public URI getEndpoint() {
+    return endpoint;
+  }
+
+  public String getRegion() {
+    return region;
+  }
+
+  public int getShardCount() {
+    return shardCount;
+  }
+
+  public String getAccessKey() {
+    return accessKey;
+  }
+
+  public String getPrivateKey() {
+    return privateKey;
+  }
+
+  public int getBufferSize() {
+    return bufferSize;
+  }
+
+  static class UncheckedURISyntaxException extends RuntimeException {
+
+    public UncheckedURISyntaxException(Throwable cause) {
+      super(cause);
     }
 
-    public KinesisConfig(JsonNode jsonNode) {
-        String strend = jsonNode.get("endpoint").asText();
-        try {
-            this.endpoint = strend != null && !strend.isBlank() ? new URI(strend) : null;
-        } catch (URISyntaxException e) {
-            throw new UncheckedURISyntaxException(e);
-        }
-        this.region = jsonNode.get("region").asText();
-        this.shardCount = jsonNode.get("shardCount").asInt(5);
-        this.accessKey = jsonNode.get("accessKey").asText();
-        this.privateKey = jsonNode.get("privateKey").asText();
-        this.bufferSize = jsonNode.get("bufferSize").asInt(100);
-    }
-
-    public URI getEndpoint() {
-        return endpoint;
-    }
-
-    public String getRegion() {
-        return region;
-    }
-
-    public int getShardCount() {
-        return shardCount;
-    }
-
-    public String getAccessKey() {
-        return accessKey;
-    }
-
-    public String getPrivateKey() {
-        return privateKey;
-    }
-
-    public int getBufferSize() {
-        return bufferSize;
-    }
-
-    static class UncheckedURISyntaxException extends RuntimeException {
-
-        public UncheckedURISyntaxException(Throwable cause) {
-            super(cause);
-        }
-
-    }
+  }
 
 }

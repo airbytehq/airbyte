@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.kinesis;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -7,29 +11,29 @@ import org.junit.jupiter.api.Test;
 
 class KinesisNameTransformerTest {
 
-    private KinesisNameTransformer kinesisNameTransformer;
+  private KinesisNameTransformer kinesisNameTransformer;
 
-    @BeforeEach
-    void setup() {
-        this.kinesisNameTransformer = new KinesisNameTransformer();
-    }
+  @BeforeEach
+  void setup() {
+    this.kinesisNameTransformer = new KinesisNameTransformer();
+  }
 
-    @Test
-    void outputStream() {
+  @Test
+  void outputStream() {
 
-        var column = kinesisNameTransformer.streamName("namespace", "stream");
+    var column = kinesisNameTransformer.streamName("namespace", "stream");
 
-        assertThat(column).matches("namespace_stream");
+    assertThat(column).matches("namespace_stream");
 
-    }
+  }
 
-    @Test
-    void outputStreamConvert() {
+  @Test
+  void outputStreamConvert() {
 
-        var keyspace = kinesisNameTransformer.streamName("**namespace^h", "##stream");
+    var keyspace = kinesisNameTransformer.streamName("**namespace^h", "##stream");
 
-        assertThat(keyspace).matches("__namespace_h___stream");
+    assertThat(keyspace).matches("__namespace_h___stream");
 
-    }
+  }
 
 }

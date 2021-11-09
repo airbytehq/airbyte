@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.kinesis;
 
 import java.util.UUID;
@@ -9,39 +13,39 @@ import software.amazon.awssdk.services.kinesis.model.KinesisException;
 
 public class KinesisUtils {
 
-    private KinesisUtils() {
+  private KinesisUtils() {
 
+  }
+
+  static KinesisClient buildKinesisClient(KinesisConfig kinesisConfig) {
+    var kinesisClientBuilder = KinesisClient.builder();
+
+    // configure access credentials
+    kinesisClientBuilder.credentialsProvider(StaticCredentialsProvider.create(
+        AwsBasicCredentials.create(kinesisConfig.getAccessKey(), kinesisConfig.getPrivateKey())));
+
+    if (kinesisConfig.getRegion() != null && !kinesisConfig.getRegion().isBlank()) {
+      // configure access region
+      kinesisClientBuilder.region(Region.of(kinesisConfig.getRegion()));
     }
 
-    static KinesisClient buildKinesisClient(KinesisConfig kinesisConfig) {
-        var kinesisClientBuilder = KinesisClient.builder();
-
-        // configure access credentials
-        kinesisClientBuilder.credentialsProvider(StaticCredentialsProvider.create(
-            AwsBasicCredentials.create(kinesisConfig.getAccessKey(), kinesisConfig.getPrivateKey())));
-
-        if (kinesisConfig.getRegion() != null && !kinesisConfig.getRegion().isBlank()) {
-            //configure access region
-            kinesisClientBuilder.region(Region.of(kinesisConfig.getRegion()));
-        }
-
-        if (kinesisConfig.getEndpoint() != null) {
-            // configure access endpoint
-            kinesisClientBuilder.endpointOverride(kinesisConfig.getEndpoint());
-        }
-
-        return kinesisClientBuilder.build();
+    if (kinesisConfig.getEndpoint() != null) {
+      // configure access endpoint
+      kinesisClientBuilder.endpointOverride(kinesisConfig.getEndpoint());
     }
 
-    static KinesisException buildKinesisException(String message, Throwable cause) {
-        return (KinesisException) KinesisException.builder()
-            .message(message)
-            .cause(cause)
-            .build();
-    }
+    return kinesisClientBuilder.build();
+  }
 
-    static String buildPartitionKey() {
-        return UUID.randomUUID().toString();
-    }
+  static KinesisException buildKinesisException(String message, Throwable cause) {
+    return (KinesisException) KinesisException.builder()
+        .message(message)
+        .cause(cause)
+        .build();
+  }
+
+  static String buildPartitionKey() {
+    return UUID.randomUUID().toString();
+  }
 
 }

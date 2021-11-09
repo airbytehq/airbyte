@@ -16,72 +16,72 @@ import org.slf4j.LoggerFactory;
 
 public class KinesisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KinesisDestinationAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(KinesisDestinationAcceptanceTest.class);
 
-    private JsonNode configJson;
+  private JsonNode configJson;
 
-    private KinesisStream kinesisStream;
+  private KinesisStream kinesisStream;
 
-    private KinesisNameTransformer kinesisNameTransformer;
+  private KinesisNameTransformer kinesisNameTransformer;
 
-    private static KinesisContainerInitializr.KinesisContainer kinesisContainer;
+  private static KinesisContainerInitializr.KinesisContainer kinesisContainer;
 
-    @BeforeAll
-    static void initContainer() {
-        kinesisContainer = KinesisContainerInitializr.initContainer();
-    }
+  @BeforeAll
+  static void initContainer() {
+    kinesisContainer = KinesisContainerInitializr.initContainer();
+  }
 
-    @Override
-    protected void setup(TestDestinationEnv testEnv) {
-        configJson = KinesisDataFactory.jsonConfig(
-            kinesisContainer.getEndpointOverride().toString(),
-            kinesisContainer.getRegion(),
-            kinesisContainer.getAccessKey(),
-            kinesisContainer.getSecretKey());
-        kinesisStream = new KinesisStream(new KinesisConfig(configJson));
-        kinesisNameTransformer = new KinesisNameTransformer();
-    }
+  @Override
+  protected void setup(TestDestinationEnv testEnv) {
+    configJson = KinesisDataFactory.jsonConfig(
+        kinesisContainer.getEndpointOverride().toString(),
+        kinesisContainer.getRegion(),
+        kinesisContainer.getAccessKey(),
+        kinesisContainer.getSecretKey());
+    kinesisStream = new KinesisStream(new KinesisConfig(configJson));
+    kinesisNameTransformer = new KinesisNameTransformer();
+  }
 
-    @Override
-    protected void tearDown(TestDestinationEnv testEnv) {
-        kinesisStream.deleteAllStreams();
-    }
+  @Override
+  protected void tearDown(TestDestinationEnv testEnv) {
+    kinesisStream.deleteAllStreams();
+  }
 
-    @Override
-    protected String getImageName() {
-        return "airbyte/destination-kinesis:dev";
-    }
+  @Override
+  protected String getImageName() {
+    return "airbyte/destination-kinesis:dev";
+  }
 
-    @Override
-    protected boolean implementsNamespaces() {
-        return true;
-    }
+  @Override
+  protected boolean implementsNamespaces() {
+    return true;
+  }
 
-    @Override
-    protected JsonNode getConfig() {
-        return configJson;
-    }
+  @Override
+  protected JsonNode getConfig() {
+    return configJson;
+  }
 
-    @Override
-    protected JsonNode getFailCheckConfig() {
-        return KinesisDataFactory.jsonConfig(
-            "127.0.0.9",
-            "eu-west-1",
-            "random_access_key",
-            "random_secret_key");
-    }
+  @Override
+  protected JsonNode getFailCheckConfig() {
+    return KinesisDataFactory.jsonConfig(
+        "127.0.0.9",
+        "eu-west-1",
+        "random_access_key",
+        "random_secret_key");
+  }
 
-    @Override
-    protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                             String streamName,
-                                             String namespace,
-                                             JsonNode streamSchema) {
-        var stream = kinesisNameTransformer.streamName(namespace, streamName);
-        return kinesisStream.getRecords(stream).stream()
-            .sorted(Comparator.comparing(KinesisRecord::getTimestamp))
-            .map(KinesisRecord::getData)
-            .map(Jsons::deserialize)
-            .collect(Collectors.toList());
-    }
+  @Override
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
+                                           String streamName,
+                                           String namespace,
+                                           JsonNode streamSchema) {
+    var stream = kinesisNameTransformer.streamName(namespace, streamName);
+    return kinesisStream.getRecords(stream).stream()
+        .sorted(Comparator.comparing(KinesisRecord::getTimestamp))
+        .map(KinesisRecord::getData)
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList());
+  }
 
 }
