@@ -239,10 +239,10 @@
   dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/harvest
   sourceType: api
-- name: Hubspot
+- name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.24
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
