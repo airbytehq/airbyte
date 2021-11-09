@@ -13,7 +13,7 @@ public class GoogleAnalyticsOAuthFlow extends GoogleOAuthFlow {
 
   public static final String SCOPE_URL = "https://www.googleapis.com/auth/analytics.readonly";
 
-  public GoogleAnalyticsOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+  public GoogleAnalyticsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
