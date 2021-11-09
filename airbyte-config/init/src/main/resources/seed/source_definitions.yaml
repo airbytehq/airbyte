@@ -395,6 +395,12 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/paystack
   icon: paystack.svg
   sourceType: api
+- name: Pinterest
+  sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
+  dockerRepository: airbyte/source-pinterest
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/pinterest
+  sourceType: api
 - name: Pipedrive
   sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerRepository: airbyte/source-pipedrive
