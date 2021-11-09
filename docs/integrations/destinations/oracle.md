@@ -113,6 +113,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.12 | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count | 
 | 0.1.10 | 2021-10-08 | [\#6893](https://github.com/airbytehq/airbyte/pull/6893)| 🎉 Destination Oracle: implemented connection encryption |
 | 0.1.9 | 2021-10-06 | [\#6611](https://github.com/airbytehq/airbyte/pull/6611) | 🐛 Destination Oracle: maxStringLength should be 128 |
 | 0.1.8 | 2021-09-28 | [\#6370](https://github.com/airbytehq/airbyte/pull/6370) | Add SSH Support for Oracle Destination |
@@ -122,4 +123,10 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 | 0.1.4 | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
 | 0.1.3 | 2021-07-21 | [\#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
 | 0.1.2 | 2021-07-20 | [4874](https://github.com/airbytehq/airbyte/pull/4874) | Require `sid` instead of `database` in connector specification |
+
+
+### Changelog (Strict Encrypt)
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count | 
 

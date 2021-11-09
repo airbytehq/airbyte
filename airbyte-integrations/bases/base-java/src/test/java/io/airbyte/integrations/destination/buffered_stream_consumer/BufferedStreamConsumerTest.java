@@ -84,7 +84,7 @@ public class BufferedStreamConsumerTest {
         onClose,
         CATALOG,
         isValidRecord,
-        10);
+        10000);
 
     when(isValidRecord.apply(any())).thenReturn(true);
   }
@@ -167,7 +167,7 @@ public class BufferedStreamConsumerTest {
         onClose,
         CATALOG,
         isValidRecord,
-        20);
+        10000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecordsBatch1);
