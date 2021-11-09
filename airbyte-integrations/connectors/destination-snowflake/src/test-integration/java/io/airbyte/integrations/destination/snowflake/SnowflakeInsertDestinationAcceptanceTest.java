@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -160,6 +161,14 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
+  }
+
+  private <T> T parseConfig(final String path, Class<T> clazz) throws IOException {
+    return Jsons.deserialize(MoreResources.readResource(path), clazz);
+  }
+
+  private JsonNode parseConfig(final String path) throws IOException {
+    return Jsons.deserialize(MoreResources.readResource(path));
   }
 
 }
