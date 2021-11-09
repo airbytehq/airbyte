@@ -12,6 +12,7 @@ from source_vtex.streams.orders import Orders
 from source_vtex.streams.order_details import OrderDetails
 from source_vtex.streams.products_id_and_sku import ProductsIdAndSku
 from source_vtex.streams.products import Products
+from source_vtex.streams.products_detailed import ProductsDetailed
 
 
 class VtexAuthenticator(requests.auth.AuthBase):
@@ -86,9 +87,16 @@ class SourceVtex(AbstractSource):
             parent=products_id_sku_stream,
         )
 
+        product_details_stream = ProductsDetailed(
+            authenticator=authenticator,
+            start_date=start_date,
+            parent=products_id_sku_stream,
+        )
+
         return [
             orders_stream,
             order_details_stream,
             products_id_sku_stream,
             products_stream,
+            product_details_stream,
         ]

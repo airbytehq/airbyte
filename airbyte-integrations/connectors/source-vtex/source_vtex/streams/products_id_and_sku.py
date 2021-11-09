@@ -33,6 +33,8 @@ class ProductsIdAndSku(VtexStream):
         _to = response_json["range"]["to"]
         total = response_json["range"]["total"]
 
+        self.logger.info(f"{_to} products of {total} loaded")
+
         if _to <= total:
             return {"_from": _to + 1, "_to": _to + batch_size}
 

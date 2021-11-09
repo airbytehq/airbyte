@@ -2,20 +2,20 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
-      "orderId": {
-        "type": "integer"
-      },
-      "skuIds": {
-        "items": {
-          "type": [
-            "integer",
-            "null"
-          ]
+        "productId": {
+            "type": "integer"
         },
-        "type": [
-          "array",
-          "null"
-        ]
-      }
+        "skuIds": {
+            "items": {
+                "type": [
+                    "integer",
+                    "null"
+                ]
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        }
     }
-  }
+}
