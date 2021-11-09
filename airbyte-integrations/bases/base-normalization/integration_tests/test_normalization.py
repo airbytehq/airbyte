@@ -182,17 +182,7 @@ def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -
     elif destination_type.value == DestinationType.ORACLE.value:
         copy_tree("../dbt-project-template-oracle", test_root_dir)
         dbt_project_yaml = "../dbt-project-template-oracle/dbt_project.yml"
-    if destination_type.value not in (DestinationType.REDSHIFT.value, DestinationType.ORACLE.value):
-        # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
-        dbt_test_utils.copy_replace(
-            dbt_project_yaml,
-            os.path.join(test_root_dir, "dbt_project.yml"),
-            pattern="ephemeral",
-            replace_value="view",
-        )
-    else:
-        # keep ephemeral tables
-        dbt_test_utils.copy_replace(dbt_project_yaml, os.path.join(test_root_dir, "dbt_project.yml"))
+    dbt_test_utils.copy_replace(dbt_project_yaml, os.path.join(test_root_dir, "dbt_project.yml"))
     return test_root_dir
 
 
