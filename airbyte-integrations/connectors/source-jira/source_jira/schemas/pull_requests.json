@@ -45,6 +45,10 @@
           "type": ["null", "boolean"]
         }
       }
+    },
+    "updated": {
+      "type": "string",
+      "format": "date-time"
     }
   }
 }

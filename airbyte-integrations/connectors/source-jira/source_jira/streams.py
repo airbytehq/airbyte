@@ -115,7 +115,7 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         cursor_field = self.cursor_field
         if isinstance(cursor_field, str):
-            latest_record.get(self.cursor_field)
+            latest_record = latest_record.get(self.cursor_field)
         elif isinstance(cursor_field, list):
             for cursor_part in cursor_field:
                 latest_record = latest_record.get(cursor_part, {})
@@ -876,7 +876,7 @@ class PullRequests(IncrementalJiraStream):
         return f"issue/detail"
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        params = super().request_params(**kwargs)
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
         params["issueId"] = stream_slice["id"]
         params["applicationType"] = "GitHub"
         params["dataType"] = "branch"
@@ -904,8 +904,7 @@ class PullRequests(IncrementalJiraStream):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["id"] = stream_slice["id"]
-        record["fields"] = record.get("fields", {})
-        record["fields"][self.cursor_field] = stream_slice[self.cursor_field]
+        record[self.cursor_field] = stream_slice[self.cursor_field]
         return record
 
 
