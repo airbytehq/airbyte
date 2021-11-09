@@ -1311,7 +1311,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CompleteOauthResponse"
+                $ref: "#/components/schemas/CompleteSourceOauthResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -1357,7 +1357,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CompleteOauthResponse"
+                $ref: "#/components/schemas/CompleteDestinationOauthResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -3227,6 +3227,8 @@ components:
           items:
             $ref: "#/components/schemas/DbMigrationRead"
     # OAuth
+    AuthConfiguration:
+      description: The values required to configure OAuth flows. The schema for this must match the authSpecification schema.
     SourceOauthConsentRequest:
       type: object
       required:
@@ -3241,6 +3243,8 @@ components:
         redirectUrl:
           description: The url to redirect to after getting the user consent
           type: string
+        authConfiguration:
+          $ref: "#/components/schemas/AuthConfiguration"
     DestinationOauthConsentRequest:
       type: object
       required:
@@ -3255,6 +3259,8 @@ components:
         redirectUrl:
           description: The url to redirect to after getting the user consent
           type: string
+        authConfiguration:
+          $ref: "#/components/schemas/AuthConfiguration"
     OAuthConsentRead:
       type: object
       required:
@@ -3279,6 +3285,8 @@ components:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
+        authConfiguration:
+          $ref: "#/components/schemas/AuthConfiguration"
     CompleteDestinationOAuthRequest:
       type: object
       required:
@@ -3296,9 +3304,24 @@ components:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
-    CompleteOauthResponse:
+        authConfiguration:
+          $ref: "#/components/schemas/AuthConfiguration"
+    CompleteSourceOauthResponse:
       type: object
-      additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance
+      properties:
+        oauthOutput:
+          type: object
+          additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance
+        authConfiguration:
+          $ref: "#/components/schemas/AuthConfiguration"
+    CompleteDestinationOauthResponse:
+      type: object
+      properties:
+        oauthOutput:
+          type: object
+          additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance
+        authConfiguration:
+          $ref: "#/components/schemas/AuthConfiguration"
     SetInstancewideSourceOauthParamsRequestBody:
       type: object
       required:
