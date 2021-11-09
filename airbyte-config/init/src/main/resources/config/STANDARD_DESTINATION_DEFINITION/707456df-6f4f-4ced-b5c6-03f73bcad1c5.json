@@ -1,0 +1,7 @@
+{
+  "destinationDefinitionId": "707456df-6f4f-4ced-b5c6-03f73bcad1c5",
+  "name": "Cassandra",
+  "dockerRepository": "airbyte/destination-cassandra",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/cassandra"
+}

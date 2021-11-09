@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "80a54ea2-9959-4040-aac1-eee42423ec9b",
+  "name": "Monday",
+  "dockerRepository": "airbyte/source-zendesk-monday",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/monday"
+}
