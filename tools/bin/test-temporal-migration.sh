@@ -14,6 +14,6 @@ done
 
 mkdir /tmp/old-docker-compose
 
-"$SCRIPT_DIR../../ ./gradlew "
+"SUB_BUILD=PLATFORM $SCRIPT_DIR/../../gradlew assemble"
 
 curl https://raw.githubusercontent.com/airbytehq/airbyte/master/docker-compose.debug.yaml > /tmp/old-docker-compose.yaml
