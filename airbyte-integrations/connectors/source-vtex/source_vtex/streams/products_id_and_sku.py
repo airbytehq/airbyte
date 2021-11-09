@@ -14,7 +14,7 @@ class ProductsIdAndSku(VtexStream):
 
     @property
     def cursor_field(self) -> str:
-        return "orderId"
+        return "productId"
 
     def path(
         self,
