@@ -5,30 +5,43 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
+import com.google.cloud.bigquery.TimePartitioning;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.JavaBaseConstants;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BigQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
+  private static final String BIG_QUERY_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSSS";
 
   static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
@@ -69,7 +82,7 @@ public class BigQueryUtils {
       createSchemaTable(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
     }
-    BigQueryUtils.createTable(bigquery, schemaName, tmpTableName, schema);
+    BigQueryUtils.createPartitionedTable(bigquery, schemaName, tmpTableName, schema);
   }
 
   static void createSchemaTable(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
@@ -80,18 +93,32 @@ public class BigQueryUtils {
     }
   }
 
-  // https://cloud.google.com/bigquery/docs/tables#create-table
-  static void createTable(final BigQuery bigquery, final String datasetName, final String tableName, final Schema schema) {
+  // https://cloud.google.com/bigquery/docs/creating-partitioned-tables#java
+  static void createPartitionedTable(final BigQuery bigquery, final String datasetName, final String tableName, final Schema schema) {
     try {
 
       final TableId tableId = TableId.of(datasetName, tableName);
-      final TableDefinition tableDefinition = StandardTableDefinition.of(schema);
+
+      final TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
+          .setField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+          .build();
+
+      final Clustering clustering = Clustering.newBuilder()
+          .setFields(ImmutableList.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+          .build();
+
+      final StandardTableDefinition tableDefinition =
+          StandardTableDefinition.newBuilder()
+              .setSchema(schema)
+              .setTimePartitioning(partitioning)
+              .setClustering(clustering)
+              .build();
       final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
       bigquery.create(tableInfo);
-      LOGGER.info("Table: {} created successfully", tableId);
-    } catch (final BigQueryException e) {
-      LOGGER.info("Table was not created. \n", e);
+      LOGGER.info("Partitioned Table: {} created successfully", tableId);
+    } catch (BigQueryException e) {
+      LOGGER.info("Partitioned table was not created. \n" + e);
     }
   }
 
@@ -123,6 +150,44 @@ public class BigQueryUtils {
   static TableDefinition getTableDefinition(final BigQuery bigquery, final String datasetName, final String tableName) {
     final TableId tableId = TableId.of(datasetName, tableName);
     return bigquery.getTable(tableId).getDefinition();
+  }
+
+  /**
+   * @param fieldList - the list to be checked
+   * @return The list of fields with datetime format.
+   *
+   */
+  public static List<String> getDateTimeFieldsFromSchema(FieldList fieldList) {
+    List<String> dateTimeFields = new ArrayList<>();
+    for (Field field : fieldList) {
+      if (field.getType().getStandardType().equals(StandardSQLTypeName.DATETIME)) {
+        dateTimeFields.add(field.getName());
+      }
+    }
+    return dateTimeFields;
+  }
+
+  /**
+   * @param dateTimeFields - list contains fields of DATETIME format
+   * @param data - Json will be sent to Google BigData service
+   *
+   *        The special DATETIME format is required to save this type to BigQuery.
+   * @see <a href=
+   *      "https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#details_of_loading_json_data">Supported
+   *      Google bigquery datatype</a> This method is responsible to adapt JSON DATETIME to Bigquery
+   */
+  public static void transformJsonDateTimeToBigDataFormat(List<String> dateTimeFields, ObjectNode data) {
+    dateTimeFields.forEach(e -> {
+      if (data.findValue(e) != null && !data.get(e).isNull()) {
+        String googleBigQueryDateFormat = QueryParameterValue
+            .dateTime(new DateTime(data
+                .findValue(e)
+                .asText())
+                    .toString(BIG_QUERY_DATETIME_FORMAT))
+            .getValue();
+        data.put(e, googleBigQueryDateFormat);
+      }
+    });
   }
 
 }

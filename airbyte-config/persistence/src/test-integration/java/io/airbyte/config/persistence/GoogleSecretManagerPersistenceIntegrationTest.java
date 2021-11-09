@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1.SecretName;
+import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
@@ -26,10 +27,10 @@ public class GoogleSecretManagerPersistenceIntegrationTest {
 
   private GoogleSecretManagerPersistence persistence;
   private String baseCoordinate;
+  private final Configs configs = new EnvConfigs();
 
   @BeforeEach
   void setUp() {
-    final var configs = new EnvConfigs();
     persistence = GoogleSecretManagerPersistence.getEphemeral(
         configs.getSecretStoreGcpProjectId(),
         configs.getSecretStoreGcpCredentials());
@@ -38,7 +39,6 @@ public class GoogleSecretManagerPersistenceIntegrationTest {
 
   @AfterEach
   void tearDown() throws IOException {
-    final var configs = new EnvConfigs();
     try (final var client = GoogleSecretManagerPersistence.getSecretManagerServiceClient(configs.getSecretStoreGcpCredentials())) {
       // try to delete this so we aren't charged for the secret
       // if this is missed due to some sort of failure the secret will be deleted after the ttl

@@ -1,0 +1,11 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "typeId": {
+      "type": ["null", "string"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    }
+  }
+}

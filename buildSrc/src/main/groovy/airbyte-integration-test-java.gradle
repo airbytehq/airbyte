@@ -38,6 +38,8 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 dependsOn project.airbyteDocker
             }
 
+            maxHeapSize = '3g'
+
             mustRunAfter project.test
         }
 

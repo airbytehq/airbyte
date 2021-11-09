@@ -19,6 +19,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigSchemaMigrationSupport;
+import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.Configs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -61,7 +62,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    * If this is a migration deployment from an old version that relies on file system config
    * persistence, copy the existing configs from local files.
    */
-  public void migrateFileConfigs(final Configs serverConfigs) throws IOException {
+  public DatabaseConfigPersistence migrateFileConfigs(final Configs serverConfigs) throws IOException {
     database.transaction(ctx -> {
       final boolean isInitialized = ctx.fetchExists(AIRBYTE_CONFIGS);
       if (isInitialized) {
@@ -77,6 +78,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       return null;
     });
+
+    return this;
   }
 
   @Override
@@ -117,6 +120,22 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .fetch());
     return results.stream()
         .map(record -> Jsons.deserialize(record.get(AIRBYTE_CONFIGS.CONFIG_BLOB).data(), clazz))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz) throws IOException {
+    final Result<Record> results = database.query(ctx -> ctx.select(asterisk())
+        .from(AIRBYTE_CONFIGS)
+        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()))
+        .orderBy(AIRBYTE_CONFIGS.CONFIG_TYPE, AIRBYTE_CONFIGS.CONFIG_ID)
+        .fetch());
+    return results.stream()
+        .map(record -> new ConfigWithMetadata<>(record.get(AIRBYTE_CONFIGS.CONFIG_ID),
+            record.get(AIRBYTE_CONFIGS.CONFIG_TYPE),
+            record.get(AIRBYTE_CONFIGS.CREATED_AT).toInstant(),
+            record.get(AIRBYTE_CONFIGS.UPDATED_AT).toInstant(),
+            Jsons.deserialize(record.get(AIRBYTE_CONFIGS.CONFIG_BLOB).data(), clazz)))
         .collect(Collectors.toList());
   }
 
@@ -364,7 +383,14 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       final ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
       final JsonNode currentDefinition = connectorInfo.definition;
-      final Set<String> newFields = getNewFields(currentDefinition, latestDefinition);
+
+      // todo (lmossman) - this logic to remove the "spec" field is temporary; it is necessary to avoid
+      // breaking users who are actively using an old connector version, otherwise specs from the most
+      // recent connector versions may be inserted into the db which could be incompatible with the
+      // version they are actually using.
+      // Once the faux major version bump has been merged, this "new field" logic will be removed
+      // entirely.
+      final Set<String> newFields = Sets.difference(getNewFields(currentDefinition, latestDefinition), Set.of("spec"));
 
       // Process connector in use
       if (connectorRepositoriesInUse.contains(repository)) {

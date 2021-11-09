@@ -40,5 +40,17 @@
   },
   "discount_codes": {
     "updated_at": "2024-07-08T05:40:38-07:00"
+  },
+  "locations": {
+    "updated_at": "2024-07-08T05:40:38-07:00"
+  },
+  "inventory_levels": {
+    "updated_at": "2024-07-08T05:40:38-07:00"
+  },
+  "fulfillment_orders": {
+    "id": 9991307599038
+  },
+  "fulfillments": {
+    "updated_at": "2024-07-08T05:40:38-07:00"
   }
 }
