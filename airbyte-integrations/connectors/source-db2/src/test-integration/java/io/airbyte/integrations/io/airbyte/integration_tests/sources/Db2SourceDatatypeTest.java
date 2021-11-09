@@ -51,6 +51,9 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("db", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "unencrypted")
+            .build()))
         .build());
 
     final Database database = Databases.createDatabase(

@@ -22,16 +22,23 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.testcontainers.containers.Db2Container;
 
-public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
+public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "SOURCE_INTEGRATION_TEST";
   private static final String STREAM_NAME1 = "ID_AND_NAME1";
   private static final String STREAM_NAME2 = "ID_AND_NAME2";
+
+  private static final String TEST_KEY_STORE_PASS = "Passw0rd";
+  private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
 
   private Db2Container db;
   private JsonNode config;
@@ -53,7 +60,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
@@ -77,38 +84,51 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected JsonNode getState() throws Exception {
+  protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
 
   @Override
-  protected List<String> getRegexTests() throws Exception {
+  protected List<String> getRegexTests() {
     return Collections.emptyList();
   }
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    db = new Db2Container("ibmcom/db2:11.5.5.0").acceptLicense();
+  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+    db = new Db2Container("ibmcom/db2:11.5.5.0").withCommand().acceptLicense()
+        .withExposedPorts(50000);
     db.start();
+
+    var certificate = getCertificate();
+    try {
+      convertAndImportCertificate(certificate);
+    } catch (IOException | InterruptedException e) {
+      throw new RuntimeException("Failed to import certificate into Java Keystore");
+    }
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put("port", db.getMappedPort(50000))
         .put("db", db.getDatabaseName())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-            .put("encryption_method", "unencrypted")
+            .put("encryption_method", "encrypted_verify_certificate")
+            .put("ssl_certificate", certificate)
+            .put("key_store_password", TEST_KEY_STORE_PASS)
             .build()))
         .build());
+
+    String jdbcUrl = String.format("jdbc:db2://%s:%s/%s",
+        config.get("host").asText(),
+        db.getMappedPort(50000),
+        config.get("db").asText()) + ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
+        ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
 
     database = Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:db2://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("db").asText()),
+        jdbcUrl,
         Db2Source.DRIVER_CLASS);
 
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
@@ -133,8 +153,50 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
+  protected void tearDown(TestDestinationEnv testEnv) {
+    new File("certificate.pem").delete();
+    new File("certificate.der").delete();
+    new File(KEY_STORE_FILE_PATH).delete();
     db.close();
+  }
+
+  /* Helpers */
+
+  private String getCertificate() throws IOException, InterruptedException {
+    db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -keydb -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS + "\" -stash");
+    db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -cert -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS
+        + "\" -label \"mylabel\" -dn \"CN=testcompany\" -size 2048 -sigalg SHA256_WITH_RSA");
+    db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -cert -extract -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS
+        + "\" -label \"mylabel\" -target \"server.arm\" -format ascii -fips");
+
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_KEYDB /database/config/db2inst1/server.kdb");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_STASH /database/config/db2inst1/server.sth");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_LABEL mylabel");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVCENAME 50000");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2set -i db2inst1 DB2COMM=SSL");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2stop force");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2start");
+    return db.execInContainer("su", "-", "db2inst1", "-c", "cat server.arm").getStdout();
+  }
+
+  private static void convertAndImportCertificate(String certificate) throws IOException, InterruptedException {
+    Runtime run = Runtime.getRuntime();
+    try (PrintWriter out = new PrintWriter("certificate.pem")) {
+      out.print(certificate);
+    }
+    runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
+    runProcess(
+        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + TEST_KEY_STORE_PASS
+            + " -noprompt",
+        run);
+  }
+
+  private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
+    Process pr = run.exec(cmd);
+    if (!pr.waitFor(30, TimeUnit.SECONDS)) {
+      pr.destroy();
+      throw new RuntimeException("Timeout while executing: " + cmd);
+    }
   }
 
 }
