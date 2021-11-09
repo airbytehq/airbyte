@@ -13,7 +13,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 public class NormalizationRunnerFactory {
 
   public static final String BASE_NORMALIZATION_IMAGE_NAME = "airbyte/normalization";
-  public static final String NORMALIZATION_VERSION = "0.1.58";
+  public static final String NORMALIZATION_VERSION = "0.1.59";
 
   static final Map<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>> NORMALIZATION_MAPPING =
       ImmutableMap.<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>>builder()
@@ -30,17 +30,21 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-snowflake", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.SNOWFLAKE))
           .build();
 
-  public static NormalizationRunner create(final String imageName, final ProcessFactory processFactory) {
-    final String imageNameWithoutTag = imageName.split(":")[0];
+  public static NormalizationRunner create(final String connectorImageName, final ProcessFactory processFactory) {
+    final var valuePair = getNormalizationInfoForConnector(connectorImageName);
+    return new DefaultNormalizationRunner(
+        valuePair.getRight(),
+        processFactory,
+        String.format("%s:%s", valuePair.getLeft(), NORMALIZATION_VERSION));
+  }
+
+  public static ImmutablePair<String, DestinationType> getNormalizationInfoForConnector(final String connectorImageName) {
+    final String imageNameWithoutTag = connectorImageName.contains(":") ? connectorImageName.split(":")[0] : connectorImageName;
     if (NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
-      final var valuePair = NORMALIZATION_MAPPING.get(imageNameWithoutTag);
-      return new DefaultNormalizationRunner(
-          valuePair.getRight(),
-          processFactory,
-          String.format("%s:%s", valuePair.getLeft(), NORMALIZATION_VERSION));
+      return NORMALIZATION_MAPPING.get(imageNameWithoutTag);
     } else {
       throw new IllegalStateException(
-          String.format("Requested normalization for %s, but it is not included in the normalization mappings.", imageName));
+          String.format("Requested normalization for %s, but it is not included in the normalization mappings.", connectorImageName));
     }
   }
 

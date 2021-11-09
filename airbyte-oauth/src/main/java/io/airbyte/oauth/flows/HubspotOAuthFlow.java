@@ -4,6 +4,8 @@
 
 package io.airbyte.oauth.flows;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
@@ -88,6 +90,20 @@ public class HubspotOAuthFlow extends BaseOAuthFlow {
   @Override
   protected String getAccessTokenUrl() {
     return "https://api.hubapi.com/oauth/v1/token";
+  }
+
+  @Override
+  protected String getClientIdUnsafe(final JsonNode config) {
+    // the config object containing client ID and secret is nested inside the "credentials" object
+    Preconditions.checkArgument(config.hasNonNull("credentials"));
+    return super.getClientIdUnsafe(config.get("credentials"));
+  }
+
+  @Override
+  protected String getClientSecretUnsafe(final JsonNode config) {
+    // the config object containing client ID and secret is nested inside the "credentials" object
+    Preconditions.checkArgument(config.hasNonNull("credentials"));
+    return super.getClientSecretUnsafe(config.get("credentials"));
   }
 
 }
