@@ -29,7 +29,7 @@ public class GithubOAuthFlowTest {
   private UUID workspaceId;
   private UUID definitionId;
   private ConfigRepository configRepository;
-  private GithubOAuthFlow githuboAuthFlow;
+  private GithubOAuthFlow githubOAuthFlow;
   private HttpClient httpClient;
 
   private static final String REDIRECT_URL = "https://airbyte.io";
@@ -54,16 +54,15 @@ public class GithubOAuthFlowTest {
                     .put("client_id", "test_client_id")
                     .put("client_secret", "test_client_secret")
                     .build())))));
-    githuboAuthFlow = new GithubOAuthFlow(configRepository, httpClient, GithubOAuthFlowTest::getConstantState);
+    githubOAuthFlow = new GithubOAuthFlow(configRepository, httpClient, GithubOAuthFlowTest::getConstantState);
 
   }
 
   @Test
-  public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
-    final String concentUrl =
-        githuboAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    assertEquals(concentUrl,
-        "https://github.com/login/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&state=state");
+  public void testGetSourceConsentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
+    final String consentUrl = githubOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    assertEquals("https://github.com/login/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&state=state",
+        consentUrl);
   }
 
   @Test
@@ -75,7 +74,7 @@ public class GithubOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        githuboAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        githubOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
     assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
 

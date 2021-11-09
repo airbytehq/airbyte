@@ -12,7 +12,7 @@ public class InstagramOAuthFlow extends FacebookMarketingOAuthFlow {
 
   private static final String SCOPES = "ads_management,instagram_basic,instagram_manage_insights,read_insights";
 
-  public InstagramOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+  public InstagramOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 

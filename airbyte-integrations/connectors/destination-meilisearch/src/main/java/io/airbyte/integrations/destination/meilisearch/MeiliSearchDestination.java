@@ -64,7 +64,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MeiliSearchDestination.class);
 
-  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4 ; //256mib
+  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256mib
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS");
 
   public static final String AB_PK_COLUMN = "_ab_pk";

@@ -29,7 +29,7 @@ public class AsanaOAuthFlowTest {
   private UUID workspaceId;
   private UUID definitionId;
   private ConfigRepository configRepository;
-  private AsanaOAuthFlow asanaoAuthFlow;
+  private AsanaOAuthFlow asanaOAuthFlow;
   private HttpClient httpClient;
 
   private static final String REDIRECT_URL = "https://airbyte.io";
@@ -52,28 +52,28 @@ public class AsanaOAuthFlowTest {
             .put("client_id", "test_client_id")
             .put("client_secret", "test_client_secret")
             .build())))));
-    asanaoAuthFlow = new AsanaOAuthFlow(configRepository, httpClient, AsanaOAuthFlowTest::getConstantState);
-
+    asanaOAuthFlow = new AsanaOAuthFlow(configRepository, httpClient, AsanaOAuthFlowTest::getConstantState);
   }
 
   @Test
-  public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
-    final String concentUrl =
-        asanaoAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    assertEquals(concentUrl,
-        "https://app.asana.com/-/oauth_authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state");
+  public void testGetSourceConsentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
+    final String consentUrl =
+        asanaOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    assertEquals(
+        "https://app.asana.com/-/oauth_authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state",
+        consentUrl);
   }
 
   @Test
   public void testCompleteSourceOAuth() throws IOException, JsonValidationException, InterruptedException, ConfigNotFoundException {
 
-    Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        asanaoAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        asanaOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
     assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
 

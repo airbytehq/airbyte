@@ -73,10 +73,10 @@ public class TrelloOAuthFlowTest {
   }
 
   @Test
-  public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
-    final String concentUrl =
+  public void testGetSourceConsentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
+    final String consentUrl =
         trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    assertEquals(concentUrl, "https://trello.com/1/OAuthAuthorizeToken?oauth_token=test_token");
+    assertEquals("https://trello.com/1/OAuthAuthorizeToken?oauth_token=test_token", consentUrl);
   }
 
   @Test

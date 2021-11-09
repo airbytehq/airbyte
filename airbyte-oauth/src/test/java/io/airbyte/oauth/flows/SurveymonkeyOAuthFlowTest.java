@@ -67,12 +67,11 @@ public class SurveymonkeyOAuthFlowTest {
   }
 
   @Test
-  public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
-    final String concentUrl =
-        surveymonkeyOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+  public void testGetSourceConsentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
+    final String consentUrl = surveymonkeyOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     assertEquals(
         "https://api.surveymonkey.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state",
-        concentUrl);
+        consentUrl);
   }
 
   @Test
@@ -95,7 +94,7 @@ public class SurveymonkeyOAuthFlowTest {
     final Map<String, Object> actualQueryParams =
         surveymonkeyOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(returnedCredentials, actualQueryParams);
+    assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
 
   @Test
@@ -109,7 +108,7 @@ public class SurveymonkeyOAuthFlowTest {
     final Map<String, Object> actualQueryParams =
         surveymonkeyOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(returnedCredentials, actualQueryParams);
+    assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
 
 }
