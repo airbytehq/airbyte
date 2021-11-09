@@ -113,7 +113,7 @@ In this case custom transformation will be applied after default type transforma
 
 ### Performance consideration
 
-Transofrming each object on the fly would add some time for each object processing. This time is depends on object/schema complexitiy and hardware configuration.
+Transforming each object on the fly would add some time for each object processing. This time is depends on object/schema complexitiy and hardware configuration.
 
 There is some performance benchmark we've done with ads\_insights facebook schema \(it is complex schema with objects nested inside arrays ob object and a lot of references\) and example object. Here is average transform time per single object, seconds:
 
