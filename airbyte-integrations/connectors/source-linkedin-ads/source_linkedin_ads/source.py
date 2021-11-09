@@ -303,6 +303,19 @@ class SourceLinkedinAds(AbstractSource):
     - implementation to call each stream with it's input parameters.
     """
 
+    @classmethod
+    def get_authenticator(cls, config: Mapping[str, Any])-> TokenAuthenticator:
+        """Validate input parameters and generate a necessary Authentication object"""
+        auth_method = config.get("credentials", {}).get("credentials")
+        if not auth_method or auth_method == "access_token":
+            # support of backward compatibility with old exists configs
+            access_token = config["credentials"]["access_token"] if auth_method else config["access_token"]
+            return TokenAuthenticator(token=access_token)
+        elif auth_method == "oAuth2.0":
+            raise Exception("aaaaaaaa %s" % config)
+
+        raise Exception("incorrect input parameters")
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
@@ -310,7 +323,7 @@ class SourceLinkedinAds(AbstractSource):
         :: more info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin
         """
 
-        header = TokenAuthenticator(token=config["access_token"]).get_auth_header()
+        header = self.get_authenticator(config).get_auth_header()
         profile_url = "https://api.linkedin.com/v2/me"
 
         try:
@@ -326,7 +339,7 @@ class SourceLinkedinAds(AbstractSource):
         Passing config to the streams.
         """
 
-        config["authenticator"] = TokenAuthenticator(token=config["access_token"])
+        config["authenticator"] = self.get_authenticator(config)
 
         return [
             Accounts(config),
