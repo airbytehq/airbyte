@@ -16,10 +16,7 @@
           "type": "integer"
         },
         "CreationDate": {
-          "type": [
-            "null",
-            "string"
-          ],
+          "type": ["null", "string"],
           "format": "date-time"
         },
         "Deactivated": {
@@ -34,10 +31,7 @@
       "additionalProperties": false,
       "properties": {
         "ContactId": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "CompanyName": {
           "type": "string"
@@ -85,11 +79,7 @@
         "AddressStatus": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
-          "enum": [
-            0,
-            1,
-            2
-          ],
+          "enum": [0, 1, 2],
           "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
         }
       }
@@ -101,10 +91,7 @@
       "additionalProperties": false,
       "properties": {
         "ContactId": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "CompanyName": {
           "type": "string"
@@ -152,11 +139,7 @@
         "AddressStatus": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "integer",
-          "enum": [
-            0,
-            1,
-            2
-          ],
+          "enum": [0, 1, 2],
           "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
         }
       }
@@ -172,19 +155,11 @@
           "Type": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "integer",
-            "enum": [
-              2,
-              3,
-              4,
-              5
-            ],
+            "enum": [2, 3, 4, 5],
             "description": "2: invoicing; 3: additional; 4: for753; 5: small_parcel_return_label"
           },
           "ContactId": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "CompanyName": {
             "type": "string"
@@ -232,11 +207,7 @@
           "AddressStatus": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "integer",
-            "enum": [
-              0,
-              1,
-              2
-            ],
+            "enum": [0, 1, 2],
             "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
           }
         }
@@ -314,6 +285,31 @@
             },
             "ReplyToAddress": {
               "type": "string"
+            },
+            "WebHookParameters": {
+              "description": "Web Hook configuration at the Customer (C2) level",
+              "type": "array",
+              "items": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "EventTypes": {
+                    "description": "a comma-delimited list of supported event types",
+                    "type": "string"
+                  },
+                  "Url": {
+                    "type": "string"
+                  },
+                  "IncludeResource": {
+                    "type": "boolean"
+                  },
+                  "ResourceApiParameters": {
+                    "description": "as defined in the REL documentation for the subject resource",
+                    "type": "string"
+                  }
+                }
+              }
             }
           }
         },
@@ -376,11 +372,7 @@
             "ReceiveAgainstAsns": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2
-              ],
+              "enum": [0, 1, 2],
               "description": "0: disabled; 1: enabled; 2: blind"
             },
             "SuggestedPutAwayEnabled": {
@@ -393,31 +385,19 @@
             "TrackLocation": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2
-              ],
+              "enum": [0, 1, 2],
               "description": "0: disallow; 1: allow; 2: require"
             },
             "TrackPallets": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2
-              ],
+              "enum": [0, 1, 2],
               "description": "0: disallow; 1: allow; 2: require"
             },
             "TrackSupplier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2
-              ],
+              "enum": [0, 1, 2],
               "description": "0: disallow; 1: allow; 2: require"
             },
             "InheritOriginalReceiptDateOnTransfer": {
@@ -437,10 +417,7 @@
             },
             "NextMasterBolIdOverride": {
               "description": "To override the system-generated NextMasterBolId",
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "BolNumAsTransNum": {
               "type": "boolean"
@@ -451,11 +428,7 @@
             "FulfillmentInvoicing": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2
-              ],
+              "enum": [0, 1, 2],
               "description": "0: disabled; 1: enabled; 2: prepopulated"
             },
             "OrderQueue": {
@@ -483,12 +456,7 @@
             "PrepopulateCarrierInfo": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2,
-                3
-              ],
+              "enum": [0, 1, 2, 3],
               "description": "0: off; 1: on; 2: prepaid_only; 3: third_party_only"
             },
             "PackingListLogoUrl": {
@@ -499,7 +467,7 @@
               "description": "on GET: url of image; on POST or PUT: url of image -or- {fileExtension}:{base64-encoded image}",
               "type": "string"
             },
-            "RounduptoFullMu": {
+            "RounduptoFullMU": {
               "type": "boolean"
             },
             "QuickBooksPaymentTerms": {
@@ -636,12 +604,7 @@
             "TransactionConfirmInvoiceCreateDefault": {
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "integer",
-              "enum": [
-                0,
-                1,
-                2,
-                3
-              ],
+              "enum": [0, 1, 2, 3],
               "description": "0: off; 1: on; 2: receivers_only; 3: orders_only"
             },
             "MobileReceiptQuantityOneDefault": {

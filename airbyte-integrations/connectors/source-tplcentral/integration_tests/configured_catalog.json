@@ -47,17 +47,8 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "FacilityId"
-          ],
-          [
-            "_item_identifier_id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["FacilityId"], ["_item_identifier_id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
@@ -83,10 +74,7 @@
                   "type": "integer"
                 },
                 "CreationDate": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "Deactivated": {
@@ -101,10 +89,7 @@
               "additionalProperties": false,
               "properties": {
                 "ContactId": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "CompanyName": {
                   "type": "string"
@@ -152,11 +137,7 @@
                 "AddressStatus": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "integer",
-                  "enum": [
-                    0,
-                    1,
-                    2
-                  ],
+                  "enum": [0, 1, 2],
                   "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
                 }
               }
@@ -168,10 +149,7 @@
               "additionalProperties": false,
               "properties": {
                 "ContactId": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "CompanyName": {
                   "type": "string"
@@ -219,11 +197,7 @@
                 "AddressStatus": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "integer",
-                  "enum": [
-                    0,
-                    1,
-                    2
-                  ],
+                  "enum": [0, 1, 2],
                   "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
                 }
               }
@@ -239,19 +213,11 @@
                   "Type": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "integer",
-                    "enum": [
-                      2,
-                      3,
-                      4,
-                      5
-                    ],
+                    "enum": [2, 3, 4, 5],
                     "description": "2: invoicing; 3: additional; 4: for753; 5: small_parcel_return_label"
                   },
                   "ContactId": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "CompanyName": {
                     "type": "string"
@@ -299,11 +265,7 @@
                   "AddressStatus": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "integer",
-                    "enum": [
-                      0,
-                      1,
-                      2
-                    ],
+                    "enum": [0, 1, 2],
                     "description": "0: unconfirmed; 1: confirmed; 2: user_accepted"
                   }
                 }
@@ -381,6 +343,31 @@
                     },
                     "ReplyToAddress": {
                       "type": "string"
+                    },
+                    "WebHookParameters": {
+                      "description": "Web Hook configuration at the Customer (C2) level",
+                      "type": "array",
+                      "items": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "EventTypes": {
+                            "description": "a comma-delimited list of supported event types",
+                            "type": "string"
+                          },
+                          "Url": {
+                            "type": "string"
+                          },
+                          "IncludeResource": {
+                            "type": "boolean"
+                          },
+                          "ResourceApiParameters": {
+                            "description": "as defined in the REL documentation for the subject resource",
+                            "type": "string"
+                          }
+                        }
+                      }
                     }
                   }
                 },
@@ -443,11 +430,7 @@
                     "ReceiveAgainstAsns": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2
-                      ],
+                      "enum": [0, 1, 2],
                       "description": "0: disabled; 1: enabled; 2: blind"
                     },
                     "SuggestedPutAwayEnabled": {
@@ -460,31 +443,19 @@
                     "TrackLocation": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2
-                      ],
+                      "enum": [0, 1, 2],
                       "description": "0: disallow; 1: allow; 2: require"
                     },
                     "TrackPallets": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2
-                      ],
+                      "enum": [0, 1, 2],
                       "description": "0: disallow; 1: allow; 2: require"
                     },
                     "TrackSupplier": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2
-                      ],
+                      "enum": [0, 1, 2],
                       "description": "0: disallow; 1: allow; 2: require"
                     },
                     "InheritOriginalReceiptDateOnTransfer": {
@@ -504,10 +475,7 @@
                     },
                     "NextMasterBolIdOverride": {
                       "description": "To override the system-generated NextMasterBolId",
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": ["null", "integer"]
                     },
                     "BolNumAsTransNum": {
                       "type": "boolean"
@@ -518,11 +486,7 @@
                     "FulfillmentInvoicing": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2
-                      ],
+                      "enum": [0, 1, 2],
                       "description": "0: disabled; 1: enabled; 2: prepopulated"
                     },
                     "OrderQueue": {
@@ -550,12 +514,7 @@
                     "PrepopulateCarrierInfo": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2,
-                        3
-                      ],
+                      "enum": [0, 1, 2, 3],
                       "description": "0: off; 1: on; 2: prepaid_only; 3: third_party_only"
                     },
                     "PackingListLogoUrl": {
@@ -566,7 +525,7 @@
                       "description": "on GET: url of image; on POST or PUT: url of image -or- {fileExtension}:{base64-encoded image}",
                       "type": "string"
                     },
-                    "RounduptoFullMu": {
+                    "RounduptoFullMU": {
                       "type": "boolean"
                     },
                     "QuickBooksPaymentTerms": {
@@ -703,12 +662,7 @@
                     "TransactionConfirmInvoiceCreateDefault": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2,
-                        3
-                      ],
+                      "enum": [0, 1, 2, 3],
                       "description": "0: off; 1: on; 2: receivers_only; 3: orders_only"
                     },
                     "MobileReceiptQuantityOneDefault": {
@@ -831,14 +785,8 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "_id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["_id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
@@ -883,27 +831,18 @@
                   "type": "integer"
                 },
                 "CreationDate": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "LastModifiedDate": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "Deactivated": {
                   "type": "boolean"
                 },
                 "LastPriceChange": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "HasStorageRates": {
@@ -1061,30 +1000,17 @@
                       }
                     },
                     "MinimumStock": {
-                      "type": [
-                        "null",
-                        "number"
-                      ]
+                      "type": ["null", "number"]
                     },
                     "MaximumStock": {
-                      "type": [
-                        "null",
-                        "number"
-                      ]
+                      "type": ["null", "number"]
                     },
                     "ReorderQuantity": {
-                      "type": [
-                        "null",
-                        "number"
-                      ]
+                      "type": ["null", "number"]
                     },
                     "InventoryMethod": {
                       "type": "integer",
-                      "enum": [
-                        1,
-                        2,
-                        3
-                      ],
+                      "enum": [1, 2, 3],
                       "description": "1: FIFO; 2: LIFO; 3: FEFO"
                     }
                   }
@@ -1129,34 +1055,19 @@
                       "additionalProperties": false,
                       "properties": {
                         "NetWeight": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Length": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Width": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Height": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Weight": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         }
                       }
                     },
@@ -1166,34 +1077,19 @@
                       "additionalProperties": false,
                       "properties": {
                         "NetWeight": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Length": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Width": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Height": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Weight": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         }
                       }
                     },
@@ -1226,60 +1122,35 @@
                     "TrackLotNumber": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2
-                      ],
+                      "enum": [0, 1, 2],
                       "description": "0: disallow; 1: allow; 2: require"
                     },
                     "TrackSerialNumber": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4
-                      ],
+                      "enum": [0, 1, 2, 3, 4],
                       "description": "0: disallow; 1: allow; 2: allow_unique; 3: require; 4: require_unique"
                     },
                     "TrackExpirationDate": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2
-                      ],
+                      "enum": [0, 1, 2],
                       "description": "0: disallow; 1: allow; 2: require"
                     },
                     "TrackCost": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2
-                      ],
+                      "enum": [0, 1, 2],
                       "description": "0: disallow; 1: allow; 2: require"
                     },
                     "OutboundMobileSerialization": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2
-                      ],
+                      "enum": [0, 1, 2],
                       "description": "0: disable; 1: ignore_quantity_mismatches; 2: disallow_quantity_mismatches"
                     },
                     "AutoHoldExpirationDaysThreshold": {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": ["null", "integer"]
                     },
                     "IsPickLotNumberRequired": {
                       "type": "boolean"
@@ -1311,22 +1182,13 @@
                       }
                     },
                     "Tie": {
-                      "type": [
-                        "null",
-                        "number"
-                      ]
+                      "type": ["null", "number"]
                     },
                     "High": {
-                      "type": [
-                        "null",
-                        "number"
-                      ]
+                      "type": ["null", "number"]
                     },
                     "Qty": {
-                      "type": [
-                        "null",
-                        "number"
-                      ]
+                      "type": ["null", "number"]
                     },
                     "Imperial": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1334,28 +1196,16 @@
                       "additionalProperties": false,
                       "properties": {
                         "Length": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Width": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Height": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Weight": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         }
                       }
                     },
@@ -1365,28 +1215,16 @@
                       "additionalProperties": false,
                       "properties": {
                         "Length": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Width": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Height": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         },
                         "Weight": {
-                          "type": [
-                            "null",
-                            "number"
-                          ]
+                          "type": ["null", "number"]
                         }
                       }
                     },
@@ -1483,18 +1321,12 @@
                       "type": "boolean"
                     },
                     "MixedExpirationDaysThreshold": {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": ["null", "integer"]
                     }
                   }
                 },
                 "DaysBetweenCounts": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "AutoHoldOnReceive": {
                   "type": "boolean"
@@ -1503,24 +1335,13 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "_cursor"
-        ],
-        "source_defined_primary_key": [
-          [
-            "_id"
-          ]
-        ]
+        "default_cursor_field": ["_cursor"],
+        "source_defined_primary_key": [["_id"]]
       },
       "sync_mode": "incremental",
-      "cursor_field": [
-        "_cursor"
-      ],
+      "cursor_field": ["_cursor"],
       "destination_sync_mode": "append_dedup"
     },
     {
@@ -1585,17 +1406,11 @@
               "type": "number"
             },
             "SecondaryReceived": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "SecondaryAvailable": {
               "description": "unallocated; see IsOnHold for whether it's allocatable",
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "LotNumber": {
               "type": "string"
@@ -1604,17 +1419,11 @@
               "type": "string"
             },
             "ExpirationDate": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "Cost": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "SupplierIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1722,10 +1531,7 @@
               }
             },
             "InventoryUnitsPerSecondaryUnit": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "ReceiverId": {
               "type": "integer"
@@ -1760,37 +1566,20 @@
               }
             },
             "WeightImperial": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "WeightMetric": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "_cursor"
-        ],
-        "source_defined_primary_key": [
-          [
-            "_id"
-          ]
-        ]
+        "default_cursor_field": ["_cursor"],
+        "source_defined_primary_key": [["_id"]]
       },
       "sync_mode": "incremental",
-      "cursor_field": [
-        "_cursor"
-      ],
+      "cursor_field": ["_cursor"],
       "destination_sync_mode": "append_dedup"
     },
     {
@@ -1900,10 +1689,7 @@
               }
             },
             "InventoryUnitsPerSecondaryUnit": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "ReceivedQty": {
               "type": "number"
@@ -1918,64 +1704,34 @@
               "type": "number"
             },
             "SecondaryReceivedQty": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "SecondaryOnHandQty": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "SecondaryAvailableQty": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "SecondaryOnHoldQty": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "WeightImperial": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "WeightImperialOnHand": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "WeightImperialAvailable": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "WeightMetric": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "WeightMetricOnHand": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "WeightMetricAvailable": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "SavedElements": {
               "type": "array",
@@ -2000,17 +1756,11 @@
               "type": "string"
             },
             "ExpirationDate": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "Cost": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "SupplierIdentifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -2098,10 +1848,7 @@
               "type": "string"
             },
             "OnHoldDate": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "OnHoldUserIdentifier": {
@@ -2137,24 +1884,13 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "_cursor"
-        ],
-        "source_defined_primary_key": [
-          [
-            "_id"
-          ]
-        ]
+        "default_cursor_field": ["_cursor"],
+        "source_defined_primary_key": [["_id"]]
       },
       "sync_mode": "incremental",
-      "cursor_field": [
-        "_cursor"
-      ],
+      "cursor_field": ["_cursor"],
       "destination_sync_mode": "append_dedup"
     },
     {
@@ -2190,10 +1926,7 @@
                   "type": "boolean"
                 },
                 "ImportModuleId": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "ExportModuleIds": {
                   "type": "string"
@@ -2205,102 +1938,62 @@
                   "type": "boolean"
                 },
                 "ProcessDate": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "PickDoneDate": {
                   "description": "Stored and displayed in warehouse time",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "PickTicketPrintDate": {
                   "description": "Stored and displayed in warehouse time",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "PackDoneDate": {
                   "description": "Stored in server time, displayed in warehouse time",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "LabelsExported": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "InvoiceExportedDate": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "InvoiceDeliveredDate": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "LoadedState": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "integer",
-                  "enum": [
-                    0,
-                    1,
-                    2
-                  ],
+                  "enum": [0, 1, 2],
                   "description": "0: not_loaded; 1: loaded; 2: loaded_incomplete"
                 },
                 "LoadOutDoneDate": {
                   "description": "Stored and displayed in warehouse time",
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "ReallocatedAfterPickTicketDate": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "RouteSent": {
                   "type": "boolean"
                 },
                 "AsnSentDate": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "AsnSent": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "PkgsExported": {
-                  "type": [
-                    "null",
-                    "boolean"
-                  ]
+                  "type": ["null", "boolean"]
                 },
                 "BatchIdentifier": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -2365,40 +2058,22 @@
                         }
                       },
                       "Length": {
-                        "type": [
-                          "null",
-                          "number"
-                        ]
+                        "type": ["null", "number"]
                       },
                       "Width": {
-                        "type": [
-                          "null",
-                          "number"
-                        ]
+                        "type": ["null", "number"]
                       },
                       "Height": {
-                        "type": [
-                          "null",
-                          "number"
-                        ]
+                        "type": ["null", "number"]
                       },
                       "Weight": {
-                        "type": [
-                          "null",
-                          "number"
-                        ]
+                        "type": ["null", "number"]
                       },
                       "CodAmount": {
-                        "type": [
-                          "null",
-                          "number"
-                        ]
+                        "type": ["null", "number"]
                       },
                       "InsuredAmount": {
-                        "type": [
-                          "null",
-                          "number"
-                        ]
+                        "type": ["null", "number"]
                       },
                       "TrackingNumber": {
                         "type": "string"
@@ -2411,22 +2086,13 @@
                         "format": "date-time"
                       },
                       "Oversize": {
-                        "type": [
-                          "null",
-                          "boolean"
-                        ]
+                        "type": ["null", "boolean"]
                       },
                       "Cod": {
-                        "type": [
-                          "null",
-                          "boolean"
-                        ]
+                        "type": ["null", "boolean"]
                       },
                       "Ucc128": {
-                        "type": [
-                          "null",
-                          "integer"
-                        ]
+                        "type": ["null", "integer"]
                       },
                       "CartonId": {
                         "type": "string"
@@ -2454,10 +2120,7 @@
                               "type": "integer"
                             },
                             "OrderItemPickExceptionId": {
-                              "type": [
-                                "null",
-                                "integer"
-                              ]
+                              "type": ["null", "integer"]
                             },
                             "Qty": {
                               "type": "number"
@@ -2469,10 +2132,7 @@
                               "type": "string"
                             },
                             "ExpirationDate": {
-                              "type": [
-                                "null",
-                                "string"
-                              ],
+                              "type": ["null", "string"],
                               "format": "date-time"
                             },
                             "CreateDate": {
@@ -2526,11 +2186,7 @@
                 "ParcelLabelType": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "integer",
-                  "enum": [
-                    0,
-                    1,
-                    2
-                  ],
+                  "enum": [0, 1, 2],
                   "description": "0: none; 1: pdf; 2: zpl"
                 },
                 "CustomerIdentifier": {
@@ -2571,16 +2227,7 @@
                     {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7
-                      ],
+                      "enum": [0, 1, 2, 3, 4, 5, 6, 7],
                       "description": "0: unknown; 1: ui_manual; 2: ui_import; 3: automated_import; 4: external_soap_api; 5: quick_books_soap_api; 6: automated_system_charge; 7: rest_api"
                     }
                   ]
@@ -2594,13 +2241,7 @@
                     {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4
-                      ],
+                      "enum": [0, 1, 2, 3, 4],
                       "description": "0: doang_hair (unknown); 1: manual_warehouse_user; 2: manual_customer_user; 3: ftp; 4: api"
                     }
                   ]
@@ -2620,10 +2261,7 @@
                   }
                 },
                 "CreationDate": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "CreatedByIdentifier": {
@@ -2640,10 +2278,7 @@
                   }
                 },
                 "LastModifiedDate": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 },
                 "LastModifiedByIdentifier": {
@@ -2663,11 +2298,7 @@
                   "description": "For GET of orders and receivers, the value is reliable. For rql for orders, this property is reliable only for \"Canceled\" status; otherwise use the IsClosed property.",
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "integer",
-                  "enum": [
-                    0,
-                    1,
-                    2
-                  ]
+                  "enum": [0, 1, 2]
                 }
               }
             },
@@ -2719,24 +2350,15 @@
                       },
                       "EstimatedQty": {
                         "description": "if present, calculated from SecondaryQty and cannot confirm until Qty entered",
-                        "type": [
-                          "null",
-                          "number"
-                        ]
+                        "type": ["null", "number"]
                       },
                       "EstimatedSecondaryQty": {
                         "description": "if present, calculated from Qty and cannot confirm until SecondaryQty entered",
-                        "type": [
-                          "null",
-                          "number"
-                        ]
+                        "type": ["null", "number"]
                       },
                       "OriginalPrimaryQty": {
                         "description": "on a shorted order, specifies original quantity ordered; otherwise same as Qty",
-                        "type": [
-                          "null",
-                          "number"
-                        ]
+                        "type": ["null", "number"]
                       },
                       "IsOrderQtySecondary": {
                         "description": "if both Qty and SecondaryQty present, indicates whether at some point prior to shipping only SecondaryQty was present",
@@ -2920,17 +2542,11 @@
                   },
                   "Qty": {
                     "description": "primary inventory quantity ordered; if not specified, must specify SecondaryQty",
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   },
                   "SecondaryQty": {
                     "description": "optional secondary quantity ordered; if not specified, must specify Qty",
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   },
                   "LotNumber": {
                     "description": "if present, used to allocate matching inventory",
@@ -2942,46 +2558,28 @@
                   },
                   "ExpirationDate": {
                     "description": "if present, used to allocate matching inventory",
-                    "type": [
-                      "null",
-                      "string"
-                    ],
+                    "type": ["null", "string"],
                     "format": "date-time"
                   },
                   "WeightImperial": {
                     "description": "ship weight of order item, imperial; if specified and metric not specified, business logic computes metric",
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   },
                   "WeightMetric": {
                     "description": "ship weight of order item, metric; if specified and imperial not specified, business logic computes imperial; see WeightImperial for further explanation",
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   },
                   "Notes": {
                     "type": "string"
                   },
                   "FulfillInvSalePrice": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   },
                   "FulfillInvDiscountPct": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   },
                   "FulfillInvDiscountAmt": {
-                    "type": [
-                      "null",
-                      "number"
-                    ]
+                    "type": ["null", "number"]
                   },
                   "FulfillInvNote": {
                     "type": "string"
@@ -3070,27 +2668,18 @@
               "type": "string"
             },
             "EarliestShipDate": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "ShipCancelDate": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "Notes": {
               "type": "string"
             },
             "NumUnits1": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "Unit1Identifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -3106,10 +2695,7 @@
               }
             },
             "NumUnits2": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "Unit2Identifier": {
               "$schema": "http://json-schema.org/draft-07/schema#",
@@ -3125,16 +2711,10 @@
               }
             },
             "TotalWeight": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "TotalVolume": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "BillingCode": {
               "type": "string"
@@ -3143,16 +2723,10 @@
               "type": "string"
             },
             "UpsServiceOptionCharge": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "UpsTransportationCharge": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "AddFreightToCod": {
               "type": "boolean"
@@ -3175,10 +2749,7 @@
               }
             },
             "RoutePickupDate": {
-              "type": [
-                "null",
-                "string"
-              ],
+              "type": ["null", "string"],
               "format": "date-time"
             },
             "ShippingNotes": {
@@ -3196,25 +2767,16 @@
               "additionalProperties": false,
               "properties": {
                 "FulfillInvShippingAndHandling": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "FulfillInvTax": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "FulfillInvDiscountCode": {
                   "type": "string"
                 },
                 "FulfillInvDiscountAmount": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "FulfillInvGiftMessage": {
                   "type": "string"
@@ -3285,10 +2847,7 @@
                   "type": "string"
                 },
                 "PickupDate": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
+                  "type": ["null", "string"],
                   "format": "date-time"
                 }
               }
@@ -3311,17 +2870,7 @@
                         "description": "charge type",
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "integer",
-                        "enum": [
-                          0,
-                          1,
-                          2,
-                          3,
-                          4,
-                          5,
-                          6,
-                          7,
-                          8
-                        ]
+                        "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8]
                       },
                       "Subtotal": {
                         "type": "number"
@@ -3429,31 +2978,21 @@
                     {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2
-                      ],
+                      "enum": [0, 1, 2],
                       "description": "0: ship_to; 1: sold_to; 2: bill_to"
                     }
                   ]
                 },
                 "RetailerId": {
                   "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "IsQuickLookup": {
                   "type": "boolean"
                 },
                 "ContactId": {
                   "description": "for identifying: if known specify only this; other fields are ignored",
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "CompanyName": {
                   "type": "string"
@@ -3502,11 +3041,7 @@
                   "description": "confirmation status",
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "integer",
-                  "enum": [
-                    0,
-                    1,
-                    2
-                  ]
+                  "enum": [0, 1, 2]
                 }
               }
             },
@@ -3525,31 +3060,21 @@
                     {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2
-                      ],
+                      "enum": [0, 1, 2],
                       "description": "0: ship_to; 1: sold_to; 2: bill_to"
                     }
                   ]
                 },
                 "RetailerId": {
                   "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "IsQuickLookup": {
                   "type": "boolean"
                 },
                 "ContactId": {
                   "description": "for identifying: if known specify only this; other fields are ignored",
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "CompanyName": {
                   "type": "string"
@@ -3598,11 +3123,7 @@
                   "description": "confirmation status",
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "integer",
-                  "enum": [
-                    0,
-                    1,
-                    2
-                  ]
+                  "enum": [0, 1, 2]
                 }
               }
             },
@@ -3621,31 +3142,21 @@
                     {
                       "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "integer",
-                      "enum": [
-                        0,
-                        1,
-                        2
-                      ],
+                      "enum": [0, 1, 2],
                       "description": "0: ship_to; 1: sold_to; 2: bill_to"
                     }
                   ]
                 },
                 "RetailerId": {
                   "description": "DEPRECATED, will be removed from model: for ShipTo, use RetailerInfo; for SoldTo and BillTo, ignored",
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "IsQuickLookup": {
                   "type": "boolean"
                 },
                 "ContactId": {
                   "description": "for identifying: if known specify only this; other fields are ignored",
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "CompanyName": {
                   "type": "string"
@@ -3694,11 +3205,7 @@
                   "description": "confirmation status",
                   "$schema": "http://json-schema.org/draft-07/schema#",
                   "type": "integer",
-                  "enum": [
-                    0,
-                    1,
-                    2
-                  ]
+                  "enum": [0, 1, 2]
                 }
               }
             },
@@ -3757,24 +3264,13 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "_cursor"
-        ],
-        "source_defined_primary_key": [
-          [
-            "_id"
-          ]
-        ]
+        "default_cursor_field": ["_cursor"],
+        "source_defined_primary_key": [["_id"]]
       },
       "sync_mode": "incremental",
-      "cursor_field": [
-        "_cursor"
-      ],
+      "cursor_field": ["_cursor"],
       "destination_sync_mode": "append_dedup"
     }
   ]
