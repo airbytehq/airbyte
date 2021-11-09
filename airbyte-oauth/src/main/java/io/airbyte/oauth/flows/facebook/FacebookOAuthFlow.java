@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -118,6 +119,11 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
     } catch (final InterruptedException | URISyntaxException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
+  }
+
+  @Override
+  protected List<String> getDefaultOAuthOutputPath() {
+    return List.of();
   }
 
 }
