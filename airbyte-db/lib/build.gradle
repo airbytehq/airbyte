@@ -10,6 +10,7 @@ dependencies {
 
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-json-validation')
+    implementation project(':airbyte-config:models')
     implementation "org.flywaydb:flyway-core:7.14.0"
     implementation "org.testcontainers:postgresql:1.15.3"
     // These are required because gradle might be using lower version of Jna from other
@@ -68,3 +69,16 @@ task(dumpJobsSchema, dependsOn: 'classes', type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     args 'jobs', 'dump_schema'
 }
+
+task copyInitSql(type: Copy) {
+    dependsOn copyDocker
+
+    from('src/main/resources') {
+        include 'init.sql'
+    }
+    into 'build/docker/bin'
+}
+
+Task dockerBuildTask = getDockerBuildTask("db",  "$project.projectDir")
+dockerBuildTask.dependsOn(copyInitSql)
+assemble.dependsOn(dockerBuildTask)

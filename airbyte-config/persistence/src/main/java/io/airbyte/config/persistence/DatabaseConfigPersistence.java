@@ -61,7 +61,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    * If this is a migration deployment from an old version that relies on file system config
    * persistence, copy the existing configs from local files.
    */
-  public void migrateFileConfigs(final Configs serverConfigs) throws IOException {
+  public DatabaseConfigPersistence migrateFileConfigs(final Configs serverConfigs) throws IOException {
     database.transaction(ctx -> {
       final boolean isInitialized = ctx.fetchExists(AIRBYTE_CONFIGS);
       if (isInitialized) {
@@ -77,6 +77,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       return null;
     });
+
+    return this;
   }
 
   @Override
@@ -364,7 +366,14 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       final ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
       final JsonNode currentDefinition = connectorInfo.definition;
-      final Set<String> newFields = getNewFields(currentDefinition, latestDefinition);
+
+      // todo (lmossman) - this logic to remove the "spec" field is temporary; it is necessary to avoid
+      // breaking users who are actively using an old connector version, otherwise specs from the most
+      // recent connector versions may be inserted into the db which could be incompatible with the
+      // version they are actually using.
+      // Once the faux major version bump has been merged, this "new field" logic will be removed
+      // entirely.
+      final Set<String> newFields = Sets.difference(getNewFields(currentDefinition, latestDefinition), Set.of("spec"));
 
       // Process connector in use
       if (connectorRepositoriesInUse.contains(repository)) {

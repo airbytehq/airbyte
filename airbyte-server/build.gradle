@@ -66,6 +66,7 @@ dependencies {
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-config:specs')
     implementation project(':airbyte-db:lib')
     implementation project(":airbyte-json-validation")
     implementation project(':airbyte-migration')
@@ -126,3 +127,17 @@ run {
     environment "AIRBYTE_ROLE", System.getenv('AIRBYTE_ROLE')
     environment "TEMPORAL_HOST", "localhost:7233"
 }
+
+task copyGeneratedTar(type: Copy) {
+    dependsOn copyDocker
+    dependsOn distTar
+
+    from('build/distributions') {
+        include 'airbyte-server-*.tar'
+    }
+    into 'build/docker/bin'
+}
+
+Task dockerBuildTask = getDockerBuildTask("server",  "$project.projectDir")
+dockerBuildTask.dependsOn(copyGeneratedTar)
+assemble.dependsOn(dockerBuildTask)

@@ -10,6 +10,9 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper.Color;
+import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -27,6 +30,9 @@ import org.slf4j.LoggerFactory;
 public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
+  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
+      .setLogPrefix("normalization")
+      .setPrefixColor(Color.GREEN);
 
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
@@ -109,8 +115,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       process = processFactory.create(jobId, attempt, jobRoot, normalizationImageName, false, files, null, resourceRequirements,
           Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP), args);
 
-      LineGobbler.gobble(process.getInputStream(), LOGGER::info);
-      LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
+      LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
+      LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);
 
       WorkerUtils.wait(process);
 

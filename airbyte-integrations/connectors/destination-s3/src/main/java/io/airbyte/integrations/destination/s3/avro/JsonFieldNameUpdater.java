@@ -10,8 +10,9 @@ import io.airbyte.commons.json.Jsons;
 import java.util.Map;
 
 /**
- * This helper class tracks whether a Json has special field name that needs to be replaced with a
- * standardized one, and can perform the replacement when necessary.
+ * This helper class is for testing only. It tracks the original and standardized names, and revert
+ * them when necessary, so that the tests can correctly compare the generated json with the original
+ * input.
  */
 public class JsonFieldNameUpdater {
 
@@ -22,23 +23,8 @@ public class JsonFieldNameUpdater {
     this.standardizedNames = ImmutableMap.copyOf(standardizedNames);
   }
 
-  public boolean hasNameUpdate() {
-    return standardizedNames.size() > 0;
-  }
-
-  public JsonNode getJsonWithStandardizedFieldNames(final JsonNode input) {
-    if (!hasNameUpdate()) {
-      return input;
-    }
-    String jsonString = Jsons.serialize(input);
-    for (final Map.Entry<String, String> entry : standardizedNames.entrySet()) {
-      jsonString = jsonString.replaceAll(quote(entry.getKey()), quote(entry.getValue()));
-    }
-    return Jsons.deserialize(jsonString);
-  }
-
   public JsonNode getJsonWithOriginalFieldNames(final JsonNode input) {
-    if (!hasNameUpdate()) {
+    if (standardizedNames.size() == 0) {
       return input;
     }
     String jsonString = Jsons.serialize(input);

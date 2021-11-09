@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.32
+- Added Sphinx docs `airbyte-cdk/python/reference_docs` module. 
+- Added module documents at `airbyte-cdk/python/sphinx-docs.md`.
+- Added Read the Docs publishing configuration at `.readthedocs.yaml`.
+
+## 0.1.31
+Transforming Python log levels to Airbyte protocol log levels
+
 ## 0.1.30
 Updated OAuth2Specification.rootObject type in airbyte_protocol to allow string or int
 
