@@ -77,55 +77,6 @@
         "marketing_opt_in_level": {
           "type": ["null", "string"]
         },
-        "tax_exemptions": {
-          "type": ["null", "array"],
-          "tax_exemptions": {
-            "type": ["null", "array"],
-            "items": {
-              "oneOf": [
-                {
-                  "type": ["null", "string"]
-                },
-                {
-                  "type": ["null", "object"],
-                  "additionaProperties": true
-                },
-                {
-                  "type": ["null", "integer"]
-                },
-                {
-                  "type": ["null", "number"]
-                },
-                {
-                  "type": ["null", "boolean"]
-                },
-                {
-                  "type": ["null", "array"],
-                  "items": {
-                    "oneOf": [
-                      {
-                        "type": ["null", "string"]
-                      },
-                      {
-                        "type": ["null", "object"],
-                        "additionaProperties": true
-                      },
-                      {
-                        "type": ["null", "integer"]
-                      },
-                      {
-                        "type": ["null", "number"]
-                      },
-                      {
-                        "type": ["null", "boolean"]
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        },
         "admin_graphql_api_id": {
           "type": ["null", "string"]
         },
