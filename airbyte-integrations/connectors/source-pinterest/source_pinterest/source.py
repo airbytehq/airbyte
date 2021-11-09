@@ -35,7 +35,7 @@ class PinterestStream(HttpStream, ABC):
 
     @property
     def window_in_days(self):
-        return 185  # Set window_in_days to maximum available date range
+        return 30  # Set window_in_days to 30 days date range
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("bookmark", {}) if self.data_fields else {}
