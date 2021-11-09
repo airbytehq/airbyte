@@ -37,5 +37,5 @@
       "format": "date-time"
     }
   },
-  "type": "object"
+  "type": ["null", "object"]
 }

@@ -653,10 +653,28 @@
       }
     },
     "applied_discounts": {
-      "items": {
-        "type": ["null", "object"]
-      },
-      "type": ["null", "array"]
+      "oneOf": [
+        {
+          "type": ["null", "object"],
+          "additionalProperties": true
+        },
+        {
+          "type": ["null", "string"]
+        },
+        {
+          "type": ["null", "number"]
+        },
+        {
+          "type": ["null", "integer"]
+        },
+        {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "additionalProperties": true
+          }
+        }
+      ]
     },
     "taxes_included": {
       "type": ["null", "boolean"]
@@ -680,5 +698,5 @@
       "type": ["null", "string"]
     }
   },
-  "type": "object"
+  "type": ["null", "object"]
 }

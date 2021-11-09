@@ -96,5 +96,5 @@
       "type": ["null", "integer"]
     }
   },
-  "type": "object"
+  "type": ["null", "object"]
 }
