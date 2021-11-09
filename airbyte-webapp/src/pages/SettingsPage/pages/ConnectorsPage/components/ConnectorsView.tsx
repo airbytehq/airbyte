@@ -59,6 +59,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
             connectorName={cell.value}
             img={row.original.icon}
             hasUpdate={Connector.hasNewerVersion(row.original)}
+            isDeprecated={Connector.isDeprecated(row.original)}
           />
         ),
       },
@@ -90,7 +91,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
               collapse: true,
               Cell: ({ cell, row }: CellProps<ConnectorDefinition>) => (
                 <VersionCell
-                  version={cell.value}
+                  version={cell.value || row.original.dockerImageTag}
                   id={Connector.id(row.original)}
                   onChange={onUpdateVersion}
                   feedback={feedbackList[Connector.id(row.original)]}
