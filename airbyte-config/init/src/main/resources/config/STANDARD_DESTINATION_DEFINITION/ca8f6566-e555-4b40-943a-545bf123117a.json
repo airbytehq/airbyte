@@ -2,6 +2,6 @@
   "destinationDefinitionId": "ca8f6566-e555-4b40-943a-545bf123117a",
   "name": "Google Cloud Storage (GCS)",
   "dockerRepository": "airbyte/destination-gcs",
-  "dockerImageTag": "0.1.2",
+  "dockerImageTag": "0.1.3",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/gcs"
 }

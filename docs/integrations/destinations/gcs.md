@@ -98,157 +98,7 @@ Here is the available compression codecs:
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is converted to an Avro schema, and then the Json object is converted to an Avro record based on the Avro schema. Because the data stream can come from any data source, the Avro S3 destination connector has the following arbitrary rules.
-
-1. Json schema types are mapped to Avro typea as follows:
-
-| Json Data Type | Avro Data Type |
-| :---: | :---: |
-| string | string |
-| number | double |
-| integer | int |
-| boolean | boolean |
-| null | null |
-| object | record |
-| array | array |
-
-1. Built-in Json schema formats are not mapped to Avro logical types at this moment.
-2. Combined restrictions \("allOf", "anyOf", and "oneOf"\) will be converted to type unions. The corresponding Avro schema can be less stringent. For example, the following Json schema
-
-   ```javascript
-   {
-    "oneOf": [
-      { "type": "string" },
-      { "type": "integer" }
-    ]
-   }
-   ```
-
-   will become this in Avro schema:
-
-   ```javascript
-   {
-    "type": ["null", "string", "int"]
-   }
-   ```
-
-3. Keyword `not` is not supported, as there is no equivalent validation mechanism in Avro schema.
-4. Only alphanumeric characters and underscores \(`/a-zA-Z0-9_/`\) are allowed in a stream or field name. Any special character will be converted to an alphabet or underscore. For example, `spécial:character_names` will become `special_character_names`. The original names will be stored in the `doc` property in this format: `_airbyte_original_name:<original-name>`.
-5. All field will be nullable. For example, a `string` Json field will be typed as `["null", "string"]` in Avro. This is necessary because the incoming data stream may have optional fields.
-6. For array fields in Json schema, when the `items` property is an array, it means that each element in the array should follow its own schema sequentially. For example, the following specification means the first item in the array should be a string, and the second a number.
-
-   ```javascript
-   {
-    "array_field": {
-      "type": "array",
-      "items": [
-        { "type": "string" },
-        { "type": "number" }
-      ]
-    }
-   }
-   ```
-
-This is not supported in Avro schema. As a compromise, the converter creates a union, \["string", "number"\], which is less stringent:
-
-```javascript
-  {
-    "name": "array_field",
-    "type": [
-      "null",
-      {
-        "type": "array",
-        "items": ["null", "string"]
-      }
-    ],
-    "default": null
-  }
-```
-
-1. Two Airbyte specific fields will be added to each Avro record:
-
-| Field | Schema | Document |
-| :--- | :--- | :---: |
-| `_airbyte_ab_id` | `uuid` | [link](http://avro.apache.org/docs/current/spec.html#UUID) |
-| `_airbyte_emitted_at` | `timestamp-millis` | [link](http://avro.apache.org/docs/current/spec.html#Timestamp+%28millisecond+precision%29) |
-
-1. Currently `additionalProperties` is not supported. This means if the source is schemaless \(e.g. Mongo\), or has flexible fields, they will be ignored. We will have a solution soon. Feel free to submit a new issue if this is blocking for you.
-
-For example, given the following Json schema:
-
-```javascript
-{
-  "type": "object",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "user": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "field_with_spécial_character": {
-          "type": "integer"
-        }
-      }
-    },
-    "created_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    }
-  }
-}
-```
-
-Its corresponding Avro schema will be:
-
-```javascript
-{
-  "name" : "stream_name",
-  "type" : "record",
-  "fields" : [ {
-    "name" : "_airbyte_ab_id",
-    "type" : {
-      "type" : "string",
-      "logicalType" : "uuid"
-    }
-  }, {
-    "name" : "_airbyte_emitted_at",
-    "type" : {
-      "type" : "long",
-      "logicalType" : "timestamp-millis"
-    }
-  }, {
-    "name" : "id",
-    "type" : [ "null", "int" ],
-    "default" : null
-  }, {
-    "name" : "user",
-    "type" : [ "null", {
-      "type" : "record",
-      "name" : "user",
-      "fields" : [ {
-        "name" : "id",
-        "type" : [ "null", "int" ],
-        "default" : null
-      }, {
-        "name" : "field_with_special_character",
-        "type" : [ "null", "int" ],
-        "doc" : "_airbyte_original_name:field_with_spécial_character",
-        "default" : null
-      } ]
-    } ],
-    "default" : null
-  }, {
-    "name" : "created_at",
-    "type" : [ "null", "string" ],
-    "default" : null
-  } ]
-}
-```
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
 
 ### CSV
 
@@ -263,7 +113,7 @@ Like most of the other Airbyte destination connectors, usually the output has th
 
 For example, given the following json object from a source:
 
-```javascript
+```json
 {
   "user_id": 123,
   "name": {
@@ -289,7 +139,7 @@ With root level normalization, the output CSV is:
 
 [Json Lines](https://jsonlines.org/) is a text format with one JSON per line. Each line has a structure as follows:
 
-```javascript
+```json
 {
   "_airbyte_ab_id": "<uuid>",
   "_airbyte_emitted_at": "<timestamp-in-millis>",
@@ -299,7 +149,7 @@ With root level normalization, the output CSV is:
 
 For example, given the following two json objects from a source:
 
-```javascript
+```json
 [
   {
     "user_id": 123,
@@ -344,7 +194,7 @@ These parameters are related to the `ParquetOutputFormat`. See the [Java doc](ht
 
 #### Data schema
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. See the `Data schema` section from the [Avro output](gcs.md#avro) for rules and limitations.
+Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
 
 ## Getting started
 
@@ -372,7 +222,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.13 | 2021-11-03 | [\#7288](https://github.com/airbytehq/airbyte/issues/7288) | Support Json `additionalProperties`. |
 | 0.1.2 | 2021-09-12 | [\#5720](https://github.com/airbytehq/airbyte/issues/5720) | Added configurable block size for stream. Each stream is limited to 10,000 by GCS |
 | 0.1.1 | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added storing gcsCsvFileLocation property for CSV format. This is used by destination-bigquery \(GCS Staging upload type\) |
 | 0.1.0 | 2021-07-16 | [\#4329](https://github.com/airbytehq/airbyte/pull/4784) | Initial release. |
-

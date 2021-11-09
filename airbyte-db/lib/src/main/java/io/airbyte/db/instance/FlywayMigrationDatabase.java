@@ -17,10 +17,13 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
  * Custom database for jOOQ code generation. It performs the following operations:
+ * <ul>
  * <li>Run Flyway migration.</li>
  * <li>Dump the database schema.</li>
  * <li>Create a connection for jOOQ code generation.</li>
- * <p/>
+ * </ul>
+ * <p>
+ * </p>
  * Reference: https://github.com/sabomichal/jooq-meta-postgres-flyway
  */
 public abstract class FlywayMigrationDatabase extends PostgresDatabase {
