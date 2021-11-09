@@ -24,6 +24,7 @@ import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class S3AvroWriter extends BaseS3Writer implements S3Writer {
 
@@ -34,28 +35,28 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
   private final MultiPartOutputStream outputStream;
   private final DataFileWriter<GenericData.Record> dataFileWriter;
 
-  public S3AvroWriter(S3DestinationConfig config,
-                      AmazonS3 s3Client,
-                      ConfiguredAirbyteStream configuredStream,
-                      Timestamp uploadTimestamp,
-                      Schema schema,
-                      JsonFieldNameUpdater nameUpdater)
+  public S3AvroWriter(final S3DestinationConfig config,
+                      final AmazonS3 s3Client,
+                      final ConfiguredAirbyteStream configuredStream,
+                      final Timestamp uploadTimestamp,
+                      final Schema schema,
+                      final JsonAvroConverter converter)
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.AVRO);
-    String objectKey = String.join("/", outputPrefix, outputFilename);
+    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.AVRO);
+    final String objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
-    this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
+    this.avroRecordFactory = new AvroRecordFactory(schema, converter);
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(
         config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
 
-    S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.getFormatConfig();
+    final S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.getFormatConfig();
     // The DataFileWriter always uses binary encoding.
     // If json encoding is needed in the future, use the GenericDatumWriter directly.
     this.dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())
@@ -64,7 +65,7 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
     dataFileWriter.append(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 

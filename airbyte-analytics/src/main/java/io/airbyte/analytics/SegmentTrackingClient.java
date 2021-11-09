@@ -47,12 +47,12 @@ public class SegmentTrackingClient implements TrackingClient {
   }
 
   @Override
-  public void identify(UUID workspaceId) {
+  public void identify(final UUID workspaceId) {
     final TrackingIdentity trackingIdentity = identityFetcher.apply(workspaceId);
     final Map<String, Object> identityMetadata = new HashMap<>();
 
     // deployment
-    identityMetadata.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
+    identityMetadata.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion().serialize());
     identityMetadata.put("deployment_mode", deployment.getDeploymentMode());
     identityMetadata.put("deployment_env", deployment.getDeploymentEnv());
     identityMetadata.put("deployment_id", deployment.getDeploymentId());
@@ -75,20 +75,20 @@ public class SegmentTrackingClient implements TrackingClient {
   }
 
   @Override
-  public void alias(UUID workspaceId, String previousCustomerId) {
+  public void alias(final UUID workspaceId, final String previousCustomerId) {
     analytics.enqueue(AliasMessage.builder(previousCustomerId).userId(identityFetcher.apply(workspaceId).getCustomerId().toString()));
   }
 
   @Override
-  public void track(UUID workspaceId, String action) {
+  public void track(final UUID workspaceId, final String action) {
     track(workspaceId, action, Collections.emptyMap());
   }
 
   @Override
-  public void track(UUID workspaceId, String action, Map<String, Object> metadata) {
+  public void track(final UUID workspaceId, final String action, final Map<String, Object> metadata) {
     final Map<String, Object> mapCopy = new HashMap<>(metadata);
     final TrackingIdentity trackingIdentity = identityFetcher.apply(workspaceId);
-    mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
+    mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion().serialize());
     if (!metadata.isEmpty()) {
       trackingIdentity.getEmail().ifPresent(email -> mapCopy.put("email", email));
     }

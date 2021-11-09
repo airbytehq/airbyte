@@ -83,7 +83,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final int queueBatchSize;
+  private final long maxQueueSizeInBytes;
+  private long bufferSizeInBytes;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -91,15 +92,15 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private AirbyteMessage lastFlushedState;
   private AirbyteMessage pendingState;
 
-  public BufferedStreamConsumer(Consumer<AirbyteMessage> outputRecordCollector,
-                                VoidCallable onStart,
-                                RecordWriter recordWriter,
-                                CheckedConsumer<Boolean, Exception> onClose,
-                                ConfiguredAirbyteCatalog catalog,
-                                CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
-                                int queueBatchSize) {
+  public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
+                                final VoidCallable onStart,
+                                final RecordWriter recordWriter,
+                                final CheckedConsumer<Boolean, Exception> onClose,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                                final long maxQueueSizeInBytes) {
     this.outputRecordCollector = outputRecordCollector;
-    this.queueBatchSize = queueBatchSize;
+    this.maxQueueSizeInBytes = maxQueueSizeInBytes;
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
@@ -108,8 +109,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.catalog = catalog;
     this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     this.isValidRecord = isValidRecord;
-    this.buffer = new ArrayList<>(queueBatchSize);
-
+    this.buffer = new ArrayList<>(10_000);
+    this.bufferSizeInBytes = 0;
     this.pairToIgnoredRecordCount = new HashMap<>();
   }
 
@@ -126,9 +127,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage message) throws Exception {
+  protected void acceptTracked(final AirbyteMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
-
     if (message.getType() == Type.RECORD) {
       final AirbyteRecordMessage recordMessage = message.getRecord();
       final AirbyteStreamNameNamespacePair stream = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
@@ -142,11 +142,19 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      buffer.add(message);
-
-      if (buffer.size() == queueBatchSize) {
+      // TODO use a more efficient way to compute bytes that doesn't require double serialization (records
+      // are serialized again when writing to
+      // the destination
+      // TODO use a smarter way of estimating byte size rather than always multiply by two
+      long messageSizeInBytes = Jsons.serialize(recordMessage.getData()).length() * 2; // Strings serialize to UTF-8 by default
+      if (bufferSizeInBytes + messageSizeInBytes >= maxQueueSizeInBytes) {
         flushQueueToDestination();
+        bufferSizeInBytes = 0;
       }
+
+      buffer.add(message);
+      bufferSizeInBytes += messageSizeInBytes;
+
     } else if (message.getType() == Type.STATE) {
       pendingState = message;
     } else {
@@ -162,7 +170,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
     buffer.clear();
 
-    for (Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : recordsByStream.entrySet()) {
+    for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : recordsByStream.entrySet()) {
       recordWriter.accept(entry.getKey(), entry.getValue());
     }
 
@@ -179,7 +187,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  protected void close(boolean hasFailed) throws Exception {
+  protected void close(final boolean hasFailed) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot close; has not started.");
     Preconditions.checkState(!hasClosed, "Has already closed.");
     hasClosed = true;
@@ -208,7 +216,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       if (lastFlushedState != null) {
         outputRecordCollector.accept(lastFlushedState);
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Close failed.", e);
       throw e;
     }

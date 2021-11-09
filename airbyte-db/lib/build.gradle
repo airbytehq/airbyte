@@ -10,8 +10,15 @@ dependencies {
 
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-json-validation')
+    implementation project(':airbyte-config:models')
     implementation "org.flywaydb:flyway-core:7.14.0"
-    implementation "org.testcontainers:postgresql:1.15.1"
+    implementation "org.testcontainers:postgresql:1.15.3"
+    // These are required because gradle might be using lower version of Jna from other
+    // library transitive dependency. Can be removed if we can figure out which library is the cause.
+    // Refer: https://github.com/testcontainers/testcontainers-java/issues/3834#issuecomment-825409079
+    implementation 'net.java.dev.jna:jna:5.8.0'
+    implementation 'net.java.dev.jna:jna-platform:5.8.0'
+
 
     testImplementation project(':airbyte-test-utils')
     testImplementation 'org.apache.commons:commons-lang3:3.11'
@@ -24,7 +31,7 @@ dependencies {
     annotationProcessor('org.projectlombok:lombok:1.18.20')
 
     // MongoDB
-    compile 'org.mongodb:mongodb-driver-sync:4.3.0'
+    implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
 }
 
 task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {
@@ -62,3 +69,16 @@ task(dumpJobsSchema, dependsOn: 'classes', type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     args 'jobs', 'dump_schema'
 }
+
+task copyInitSql(type: Copy) {
+    dependsOn copyDocker
+
+    from('src/main/resources') {
+        include 'init.sql'
+    }
+    into 'build/docker/bin'
+}
+
+Task dockerBuildTask = getDockerBuildTask("db",  "$project.projectDir")
+dockerBuildTask.dependsOn(copyInitSql)
+assemble.dependsOn(dockerBuildTask)

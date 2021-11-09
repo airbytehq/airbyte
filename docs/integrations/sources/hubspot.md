@@ -27,12 +27,15 @@ This source is capable of syncing the following tables and their data:
 * [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements)
 * [Forms](https://developers.hubspot.com/docs/api/marketing/forms)
 * [Line Items](https://developers.hubspot.com/docs/api/crm/line-items)
+* [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
 * [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners)
 * [Products](https://developers.hubspot.com/docs/api/crm/products)
 * [Quotes](https://developers.hubspot.com/docs/api/crm/quotes)
 * [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline) \(Incremental\)
 * [Tickets](https://developers.hubspot.com/docs/api/crm/tickets)
 * [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows)
+
+**Note**: Hubspot API currently only supports `quotes` endpoint using API Key, using Oauth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)). 
 
 ## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
 
@@ -93,6 +96,13 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.23 | 2021-11-08 | [7730](https://github.com/airbytehq/airbyte/pull/7730) | Fix oAuth flow schema|
+| 0.1.22 | 2021-11-03 | [7562](https://github.com/airbytehq/airbyte/pull/7562) | Migrate Hubspot source to CDK structure |
+| 0.1.21 | 2021-10-27 | [7405](https://github.com/airbytehq/airbyte/pull/7405) | Change of package `import` from `urllib` to `urllib.parse` |
+| 0.1.20 | 2021-10-26 | [7393](https://github.com/airbytehq/airbyte/pull/7393) | Hotfix for `split_properties` function, add the length of separator symbol `,`(`%2C` in HTTP format) to the checking of the summary URL length |
+| 0.1.19 | 2021-10-26 | [6954](https://github.com/airbytehq/airbyte/pull/6954) | Fix issue with getting `414` HTTP error for streams |
+| 0.1.18 | 2021-10-18 | [5840](https://github.com/airbytehq/airbyte/pull/5840) | Add new marketing emails (with statistics) stream |
+| 0.1.17 | 2021-10-14 | [6995](https://github.com/airbytehq/airbyte/pull/6995) | Update `discover` method: disable `quotes` stream when using OAuth config  |
 | 0.1.16 | 2021-09-27 | [6465](https://github.com/airbytehq/airbyte/pull/6465) | Implement OAuth support. Use CDK authenticator instead of connector specific authenticator |
 | 0.1.15 | 2021-09-23 | [6374](https://github.com/airbytehq/airbyte/pull/6374) | Use correct schema for `owners` stream |
 | 0.1.14 | 2021-09-08 | [5693](https://github.com/airbytehq/airbyte/pull/5693) | Include deal\_to\_contact association when pulling deal stream and include contact ID in contact stream |

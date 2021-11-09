@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import ContentCard from "components/ContentCard";
@@ -16,22 +16,36 @@ export const ChartWrapper = styled.div`
 const LegendLabels = ["value"];
 
 const CreditsUsagePage: React.FC = () => {
+  const { formatMessage, formatDate } = useIntl();
+
   const { workspaceId } = useCurrentWorkspace();
   const { data } = useGetUsage(workspaceId);
 
   const chartData = useMemo(
     () =>
-      data?.creditConsumptionByDay?.map((item) => ({
-        name: item.date?.[2],
-        value: item.creditsConsumed,
+      data?.creditConsumptionByDay?.map(({ creditsConsumed, date }) => ({
+        name: formatDate(new Date(...date), {
+          month: "short",
+          day: "numeric",
+        }),
+        value: creditsConsumed,
       })),
-    [data]
+    [data, formatDate]
   );
 
   return (
     <ContentCard title={<FormattedMessage id="credits.totalUsage" />} $light>
       <ChartWrapper>
-        <BarChart data={chartData} legendLabels={LegendLabels} />
+        <BarChart
+          data={chartData}
+          legendLabels={LegendLabels}
+          xLabel={formatMessage({
+            id: "credits.date",
+          })}
+          yLabel={formatMessage({
+            id: "credits.amount",
+          })}
+        />
       </ChartWrapper>
     </ContentCard>
   );

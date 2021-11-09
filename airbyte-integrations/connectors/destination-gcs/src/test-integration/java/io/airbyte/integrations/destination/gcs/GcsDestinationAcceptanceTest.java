@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.gcs;
 
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.NAME_TRANSFORMER;
-
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
@@ -15,6 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
@@ -51,7 +50,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   protected GcsDestinationConfig config;
   protected AmazonS3 s3Client;
 
-  protected GcsDestinationAcceptanceTest(S3Format outputFormat) {
+  protected GcsDestinationAcceptanceTest(final S3Format outputFormat) {
     this.outputFormat = outputFormat;
   }
 
@@ -71,8 +70,8 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    JsonNode baseJson = getBaseConfigJson();
-    JsonNode failCheckJson = Jsons.clone(baseJson);
+    final JsonNode baseJson = getBaseConfigJson();
+    final JsonNode failCheckJson = Jsons.clone(baseJson);
     // invalid credential
     ((ObjectNode) failCheckJson).put("access_key_id", "fake-key");
     ((ObjectNode) failCheckJson).put("secret_access_key", "fake-secret");
@@ -82,14 +81,14 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   /**
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
-  protected List<S3ObjectSummary> getAllSyncedObjects(String streamName, String namespace) {
-    String outputPrefix = S3OutputPathHelper
+  protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
+    final String outputPrefix = S3OutputPathHelper
         .getOutputPrefix(config.getBucketPath(), namespace, streamName);
-    List<S3ObjectSummary> objectSummaries = s3Client
+    final List<S3ObjectSummary> objectSummaries = s3Client
         .listObjects(config.getBucketName(), outputPrefix)
         .getObjectSummaries()
         .stream()
-        .filter(o -> o.getKey().contains(NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
+        .filter(o -> o.getKey().contains(S3DestinationConstants.NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
         .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
         .collect(Collectors.toList());
     LOGGER.info(
@@ -106,11 +105,11 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
    * <li>Construct the GCS client.</li>
    */
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    JsonNode baseConfigJson = getBaseConfigJson();
+  protected void setup(final TestDestinationEnv testEnv) {
+    final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random GCS bucket path for each integration test
-    JsonNode configJson = Jsons.clone(baseConfigJson);
-    String testBucketPath = String.format(
+    final JsonNode configJson = Jsons.clone(baseConfigJson);
+    final String testBucketPath = String.format(
         "%s_test_%s",
         outputFormat.name().toLowerCase(Locale.ROOT),
         RandomStringUtils.randomAlphanumeric(5));
@@ -128,12 +127,12 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
    * Remove all the S3 output from the tests.
    */
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    List<KeyVersion> keysToDelete = new LinkedList<>();
-    List<S3ObjectSummary> objects = s3Client
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    final List<KeyVersion> keysToDelete = new LinkedList<>();
+    final List<S3ObjectSummary> objects = s3Client
         .listObjects(config.getBucketName(), config.getBucketPath())
         .getObjectSummaries();
-    for (S3ObjectSummary object : objects) {
+    for (final S3ObjectSummary object : objects) {
       keysToDelete.add(new KeyVersion(object.getKey()));
     }
 
@@ -141,7 +140,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
       LOGGER.info("Tearing down test bucket path: {}/{}", config.getBucketName(),
           config.getBucketPath());
       // Google Cloud Storage doesn't accept request to delete multiple objects
-      for (KeyVersion keyToDelete : keysToDelete) {
+      for (final KeyVersion keyToDelete : keysToDelete) {
         s3Client.deleteObject(config.getBucketName(), keyToDelete.getKey());
       }
       LOGGER.info("Deleted {} file(s).", keysToDelete.size());

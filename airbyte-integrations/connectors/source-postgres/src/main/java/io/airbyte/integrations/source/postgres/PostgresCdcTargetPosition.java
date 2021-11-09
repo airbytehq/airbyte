@@ -21,14 +21,14 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcTargetPosition.class);
   private final PgLsn targetLsn;
 
-  public PostgresCdcTargetPosition(PgLsn targetLsn) {
+  public PostgresCdcTargetPosition(final PgLsn targetLsn) {
     this.targetLsn = targetLsn;
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (obj instanceof PostgresCdcTargetPosition) {
-      PostgresCdcTargetPosition cdcTargetPosition = (PostgresCdcTargetPosition) obj;
+      final PostgresCdcTargetPosition cdcTargetPosition = (PostgresCdcTargetPosition) obj;
       return cdcTargetPosition.targetLsn.compareTo(targetLsn) == 0;
     }
     return false;
@@ -39,30 +39,30 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
     return Objects.hash(targetLsn.asLong());
   }
 
-  static PostgresCdcTargetPosition targetPosition(JdbcDatabase database) {
+  static PostgresCdcTargetPosition targetPosition(final JdbcDatabase database) {
     try {
-      PgLsn lsn = PostgresUtils.getLsn(database);
+      final PgLsn lsn = PostgresUtils.getLsn(database);
       LOGGER.info("identified target lsn: " + lsn);
       return new PostgresCdcTargetPosition(lsn);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public boolean reachedTargetPosition(JsonNode valueAsJson) {
+  public boolean reachedTargetPosition(final JsonNode valueAsJson) {
     final PgLsn eventLsn = extractLsn(valueAsJson);
 
     if (targetLsn.compareTo(eventLsn) > 0) {
       return false;
     } else {
-      SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
+      final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
       // if not snapshot or is snapshot but last record in snapshot.
       return SnapshotMetadata.TRUE != snapshotMetadata;
     }
   }
 
-  private PgLsn extractLsn(JsonNode valueAsJson) {
+  private PgLsn extractLsn(final JsonNode valueAsJson) {
     return Optional.ofNullable(valueAsJson.get("source"))
         .flatMap(source -> Optional.ofNullable(source.get("lsn").asText()))
         .map(Long::parseLong)

@@ -18,7 +18,7 @@ public class Consumers {
    * @param <T> type of the consumer.
    * @return consumer that will run the function and then the original consumer on accept.
    */
-  public static <T> Consumer<T> wrapConsumer(Function<T, T> beforeFunction, Consumer<T> consumer) {
+  public static <T> Consumer<T> wrapConsumer(final Function<T, T> beforeFunction, final Consumer<T> consumer) {
     return (json) -> {
       consumer.accept(beforeFunction.apply(json));
     };

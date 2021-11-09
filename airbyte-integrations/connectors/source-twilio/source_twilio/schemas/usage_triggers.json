@@ -30,7 +30,7 @@
       "type": ["null", "string"]
     },
     "current_value": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "date_created": {
       "format": "date-time",
@@ -46,7 +46,6 @@
       "type": ["null", "string"]
     },
     "trigger_value": {
-      "multipleOf": 1e-8,
       "type": ["null", "number"]
     },
     "api_version": {

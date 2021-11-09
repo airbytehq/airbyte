@@ -11,7 +11,7 @@ public class CommonField<T> {
   private final String name;
   private final T type;
 
-  public CommonField(String name, T type) {
+  public CommonField(final String name, final T type) {
     this.name = name;
     this.type = type;
   }
@@ -25,7 +25,7 @@ public class CommonField<T> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -33,7 +33,7 @@ public class CommonField<T> {
       return false;
     }
 
-    CommonField<T> field = (CommonField<T>) o;
+    final CommonField<T> field = (CommonField<T>) o;
     return name.equals(field.name) &&
         type == field.type;
   }

@@ -11,12 +11,12 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 public class MongodbNameTransformer extends ExtendedNameTransformer {
 
   @Override
-  protected String applyDefaultCase(String input) {
+  protected String applyDefaultCase(final String input) {
     return input.toLowerCase();
   }
 
   @Override
-  public String convertStreamName(String input) {
+  public String convertStreamName(final String input) {
     String result = super.convertStreamName(input);
     if (!result.isEmpty() && result.charAt(0) == '_') {
       result = result.substring(1);
@@ -26,7 +26,7 @@ public class MongodbNameTransformer extends ExtendedNameTransformer {
 
   /* Helpers */
 
-  private String maxStringLength(String value, Integer length) {
+  private String maxStringLength(final String value, final Integer length) {
     if (value.length() <= length) {
       return value;
     }

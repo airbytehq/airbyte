@@ -69,7 +69,7 @@ class IterableExportStream(IterableStream, ABC):
         self.stream_params = {"dataTypeName": self.data_field}
 
     def path(self, **kwargs) -> str:
-        return "/export/data.json"
+        return "export/data.json"
 
     @staticmethod
     def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
@@ -88,12 +88,8 @@ class IterableExportStream(IterableStream, ABC):
         """
         latest_benchmark = latest_record[self.cursor_field]
         if current_stream_state.get(self.cursor_field):
-            return {
-                self.cursor_field: max(
-                    latest_benchmark, self._field_to_datetime(current_stream_state[self.cursor_field])
-                ).to_datetime_string()
-            }
-        return {self.cursor_field: latest_benchmark.to_datetime_string()}
+            return {self.cursor_field: str(max(latest_benchmark, self._field_to_datetime(current_stream_state[self.cursor_field])))}
+        return {self.cursor_field: str(latest_benchmark)}
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
@@ -113,6 +109,21 @@ class IterableExportStream(IterableStream, ABC):
             record = json.loads(obj)
             record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
             yield record
+
+    def request_kwargs(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        """
+        https://api.iterable.com/api/docs#export_exportDataJson
+        Sending those type of requests could download large piece of json
+        objects splitted with newline character.
+        Passing stream=True argument to requests.session.send method to avoid
+        loading whole analytics report content into memory.
+        """
+        return {"stream": True}
 
 
 class Lists(IterableStream):
@@ -157,6 +168,7 @@ class Campaigns(IterableStream):
 
 
 class CampaignsMetrics(IterableStream):
+    name = "campaigns_metrics"
     primary_key = None
     data_field = None
 
@@ -346,6 +358,7 @@ class Templates(IterableExportStream):
         records = response_json.get(self.data_field, [])
 
         for record in records:
+            record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
             yield record
 
 

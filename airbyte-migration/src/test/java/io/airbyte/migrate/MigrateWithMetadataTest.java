@@ -66,7 +66,7 @@ class MigrateWithMetadataTest {
     assertOutput(INPUT_RECORDS, outputAsList);
   }
 
-  private void assertOutput(Map<ResourceId, List<JsonNode>> expectedRecords, Map<ResourceId, List<JsonNode>> actualRecords) {
+  private void assertOutput(final Map<ResourceId, List<JsonNode>> expectedRecords, final Map<ResourceId, List<JsonNode>> actualRecords) {
     // we inject records with timestamp to migrate version changes. filter it out here so that we can
     // test everything else.
     final Map<Boolean, List<JsonNode>> partitionedRecords = actualRecords.get(AIRBYTE_METADATA_RESOURCE_ID)

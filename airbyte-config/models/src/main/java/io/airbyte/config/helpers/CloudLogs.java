@@ -38,11 +38,11 @@ public interface CloudLogs {
   /**
    * @return true if no cloud logging configuration is set;
    */
-  static boolean hasEmptyConfigs(LogConfigs configs) {
+  static boolean hasEmptyConfigs(final LogConfigs configs) {
     return !hasMinioConfiguration(configs) && !hasS3Configuration(configs) && !hasGcpConfiguration(configs);
   }
 
-  static CloudLogs createCloudLogClient(LogConfigs configs) {
+  static CloudLogs createCloudLogClient(final LogConfigs configs) {
     // check if the configs exists, and pick a client.
     if (hasMinioConfiguration(configs)) {
       LOGGER.info("Creating Minio Log Client");
@@ -62,19 +62,19 @@ public interface CloudLogs {
     throw new RuntimeException("Error no cloud credentials configured..");
   }
 
-  private static boolean hasMinioConfiguration(LogConfigs configs) {
+  private static boolean hasMinioConfiguration(final LogConfigs configs) {
     return !configs.getS3LogBucket().isBlank() && !configs.getAwsAccessKey().isBlank()
         && !configs.getAwsSecretAccessKey().isBlank() && !configs.getS3MinioEndpoint().isBlank();
   }
 
-  private static boolean hasS3Configuration(LogConfigs configs) {
+  private static boolean hasS3Configuration(final LogConfigs configs) {
     return !configs.getAwsAccessKey().isBlank() &&
         !configs.getAwsSecretAccessKey().isBlank() &&
         !configs.getS3LogBucketRegion().isBlank() &&
         !configs.getS3LogBucket().isBlank();
   }
 
-  private static boolean hasGcpConfiguration(LogConfigs configs) {
+  private static boolean hasGcpConfiguration(final LogConfigs configs) {
     return !configs.getGcpStorageBucket().isBlank() &&
         !configs.getGoogleApplicationCredentials().isBlank();
   }
