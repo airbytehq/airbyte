@@ -11,6 +11,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.flows.AsanaOAuthFlow;
 import io.airbyte.oauth.flows.GithubOAuthFlow;
 import io.airbyte.oauth.flows.HubspotOAuthFlow;
+import io.airbyte.oauth.flows.IntercomOAuthFlow;
 import io.airbyte.oauth.flows.SalesforceOAuthFlow;
 import io.airbyte.oauth.flows.SlackOAuthFlow;
 import io.airbyte.oauth.flows.SurveymonkeyOAuthFlow;
