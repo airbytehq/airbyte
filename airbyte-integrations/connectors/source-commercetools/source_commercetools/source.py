@@ -24,13 +24,14 @@ class CommercetoolsStream(HttpStream, ABC):
     filter_field = "lastModifiedAt"
     offset = 0
 
-    def __init__(self, region: str, project_key: str, start_date: str, client_id: str, client_secret: str, **kwargs):
+    def __init__(self, region: str, project_key: str, start_date: str, client_id: str, client_secret: str, host: str, **kwargs):
         super().__init__(**kwargs)
         self.start_date = start_date
         self.project_key = project_key
         self.region = region
         self.client_id = client_id
         self.client_secret = client_secret
+        self.host = host
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json_response = response.json()
@@ -43,7 +44,7 @@ class CommercetoolsStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return f"https://api.{self.region}.gcp.commercetools.com/{self.project_key}/"
+        return f"https://api.{self.region}.{self.host}.commercetools.com/{self.project_key}/"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}"
@@ -130,7 +131,8 @@ class SourceCommercetools(AbstractSource):
     def get_access_token(self, config) -> Tuple[str, any]:
         region = config["region"]
         project_key = config["project_key"]
-        url = f"https://auth.{region}.gcp.commercetools.com/oauth/token?grant_type=client_credentials&scope=manage_project:{project_key}"
+        host = config["host"]
+        url = f"https://auth.{region}.{host}.commercetools.com/oauth/token?grant_type=client_credentials&scope=manage_project:{project_key}"
 
         try:
             response = requests.post(url, auth=(config["client_id"], config["client_secret"]))
@@ -143,7 +145,8 @@ class SourceCommercetools(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         region = config["region"]
         project_key = config["project_key"]
-        url = f"https://api.{region}.gcp.commercetools.com/{project_key}"
+        host = config["host"]
+        url = f"https://api.{region}.{host}.commercetools.com/{project_key}"
         access_token = self.get_access_token(config)
         token_value = access_token[0]
         token_exception = access_token[1]
@@ -168,6 +171,7 @@ class SourceCommercetools(AbstractSource):
         args = {
             "authenticator": auth,
             "region": config["region"],
+            "host": config["host"],
             "project_key": config["project_key"],
             "start_date": config["start_date"],
             "client_id": config["client_id"],

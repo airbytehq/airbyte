@@ -7,6 +7,7 @@
     "required": [
       "region",
       "start_date",
+      "host",
       "project_key",
       "client_id",
       "client_secret"
@@ -15,10 +16,12 @@
     "properties": {
       "region": {
         "type": "string",
-        "description": "The region of the platform. For https://api.EXAMPLE.commercetools.com, the shop name is 'EXAMPLE'."
+        "description": "The region of the platform.",
+        "examples": ["us-central1", "australia-southeast1"]
       },
       "host": {
-        "type": "enum",
+        "type": "string",
+        "enum": ["gcp", "aws"],
         "description": "The cloud provider your shop is hosted. See: https://docs.commercetools.com/api/authorization"
       },
       "start_date": {
