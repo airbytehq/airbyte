@@ -310,13 +310,13 @@ subprojects {
 }
 
 task('generate-docker') {
-    dependsOn(':airbyte-workers:build')
-    dependsOn(':airbyte-webapp:build')
-    dependsOn(':airbyte-server:build')
-    dependsOn(':airbyte-scheduler:app:build')
-    dependsOn(':airbyte-migration:build')
-    dependsOn(':airbyte-db:lib:build')
-    dependsOn(':airbyte-config:init:build')
+    dependsOn(':airbyte-workers:assemble')
+    dependsOn(':airbyte-webapp:assemble')
+    dependsOn(':airbyte-server:assemble')
+    dependsOn(':airbyte-scheduler:app:assemble')
+    dependsOn(':airbyte-migration:assemble')
+    dependsOn(':airbyte-db:lib:assemble')
+    dependsOn(':airbyte-config:init:assemble')
 }
 
 // produce reproducible archives
