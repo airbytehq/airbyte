@@ -14,6 +14,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.validation.json.JsonValidationException;
@@ -116,6 +117,12 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
       throw new UnsupportedOperationException("There is no seed for " + configType.name());
     }
     return configs.values().stream().map(json -> Jsons.object(json, clazz)).collect(Collectors.toList());
+  }
+
+  @Override
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(AirbyteConfig configType, Class<T> clazz)
+      throws JsonValidationException, IOException {
+    throw new UnsupportedOperationException("Yaml Seed Config doesn't support metadata");
   }
 
   @Override
