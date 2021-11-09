@@ -25,7 +25,6 @@ SOFTWARE.
 import json
 from datetime import datetime
 from typing import Dict, Generator
-from genson import SchemaBuilder
 from airbyte_protocol import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -37,9 +36,11 @@ from airbyte_protocol import (
     Type,
 )
 from base_python import AirbyteLogger, Source
-import sys,re
-sys.path.insert(0, '/home/charity/airbyte/airbyte-integrations/connectors/source-corebos/')
 from source_corebos.libs.WSClient import *
+
+DATASET_ITEMS_STREAM_NAME = "DatasetItems"
+
+BATCH_SIZE = 50000
 
 
 class SourceCorebos(Source):
@@ -64,26 +65,18 @@ class SourceCorebos(Source):
         url = config["url"]
         username = config["username"]
         key = config["access_token"]
-        # skip
-        structure = open('catalog.json',)
-        dataschema = json.load(structure)
-        # goon
+        stream_name = DATASET_ITEMS_STREAM_NAME
+        json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+        }
         client = WSClient(url)
         login = client.do_login(username,key,withpassword=False)
         if login:
             result = client.do_listtypes
-        streams = []
-        for stream_name in result["types"]:
-            builder = SchemaBuilder()
-            builder.add_schema({"type": "object", "properties": {}})
-            for one in dataschema["streams"]:
-                if one["name"] == stream_name:
-                    object_schema = one
-            builder.add_object(object_schema)
-            json_schema = builder.to_json(indent=2)
-            streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
-        structure.close()
-        return AirbyteCatalog(streams=streams)
+        return AirbyteCatalog(
+            streams=[AirbyteStream(name=stream_name, json_schema=json_schema)]
+        )
 
     
 
@@ -95,9 +88,6 @@ class SourceCorebos(Source):
         url = config["url"]
         username = config["username"]
         key = config["access_token"]
-        retrieve_stream = config["query"]
-        retrieve_stream = re.search('(?<=from )(\w+)',retrieve_stream).group(1)
-
         client = WSClient(url)
         login = client.do_login(username,key,withpassword=False)
         query = config["query"]
@@ -112,9 +102,9 @@ class SourceCorebos(Source):
             for single_dict in data:    
                 yield AirbyteMessage(
                     type=Type.RECORD,
-                    record=AirbyteRecordMessage(stream=retrieve_stream, data=single_dict, emitted_at=int(datetime.now().timestamp()) * 1000),
+                    record=AirbyteRecordMessage(stream=DATASET_ITEMS_STREAM_NAME, data=single_dict, emitted_at=int(datetime.now().timestamp()) * 1000),
                 )
         except Exception as err:
-            reason = f"Failed to read data of {retrieve_stream} at {url}"
+            reason = f"Failed to read data of {DATASET_ITEMS_STREAM_NAME} at {url}"
             logger.error(reason)
             raise err
