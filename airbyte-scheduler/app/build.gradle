@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation 'io.fabric8:kubernetes-client:5.5.0'
+    implementation 'io.fabric8:kubernetes-client:5.9.0'
     implementation 'io.kubernetes:client-java-api:10.0.0'
     implementation 'io.kubernetes:client-java:10.0.0'
     implementation 'io.kubernetes:client-java-extended:10.0.0'
@@ -57,3 +57,17 @@ run {
     environment "TEMPORAL_HOST", "localhost:7233"
 
 }
+
+task copyGeneratedTar(type: Copy) {
+    dependsOn copyDocker
+    dependsOn distTar
+
+    from('build/distributions') {
+        include 'airbyte-scheduler-*.tar'
+    }
+    into 'build/docker/bin'
+}
+
+Task dockerBuildTask = getDockerBuildTask("scheduler",  "$project.projectDir")
+dockerBuildTask.dependsOn(copyGeneratedTar)
+assemble.dependsOn(dockerBuildTask)
