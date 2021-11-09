@@ -202,6 +202,32 @@ public class BigQueryDenormalizedTestDataUtils {
             + "}");
   }
 
+  public static JsonNode getDataWithJSONWithReference() {
+    return Jsons.deserialize(
+        "{\n"
+            + "  \"users\" :{\n"
+            + "    \"name\": \"John\",\n"
+            + "    \"surname\": \"Adams"
+            +"\"\n"
+            + "  }\n"
+            + "}");
+  }
+
+  public static JsonNode getSchemaWithReferenceDefinition() {
+    return Jsons.deserialize(
+        "{ \n"
+            + "  \"type\" : [ \"null\", \"object\" ],\n"
+            + "  \"properties\" : {\n"
+            +"    \"users\": {\n"
+            + "      \"$ref\": \"#/definitions/users_\"\n"
+            +
+            "    }\n"
+            + "  }\n"
+            +
+            "}\n"
+            + "  ");
+  }
+
   public static JsonNode getDataWithEmptyObjectAndArray() {
     return Jsons.deserialize(
         "{\n"

@@ -79,6 +79,11 @@ class BigQueryDenormalizedDestinationTest {
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(getDataWithJSONDateTimeFormats())
           .withEmittedAt(NOW.toEpochMilli()));
+  private static final AirbyteMessage MESSAGE_USERS5 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+          .withData(getDataWithJSONWithReference())
+          .withEmittedAt(NOW.toEpochMilli()));
+
 
   private JsonNode config;
 
@@ -116,6 +121,7 @@ class BigQueryDenormalizedDestinationTest {
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);
     MESSAGE_USERS3.getRecord().setNamespace(datasetId);
     MESSAGE_USERS4.getRecord().setNamespace(datasetId);
+    MESSAGE_USERS5.getRecord().setNamespace(datasetId);
 
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
     dataset = bigquery.create(datasetInfo);
@@ -240,6 +246,24 @@ class BigQueryDenormalizedDestinationTest {
     // check nested datetime
     assertEquals(Set.of(new DateTime("2021-11-11T06:36:53+00:00").toString("yyyy-MM-dd'T'HH:mm:ss")),
         extractJsonValues(resultJson.get("items"), "nested_datetime"));
+  }
+
+  @Test
+  void testJsonReferenceDefinition() throws Exception {
+    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
+        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchemaWithReferenceDefinition()))
+        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+
+    final BigQueryDestination destination = new BigQueryDenormalizedDestination();
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+
+    consumer.accept(MESSAGE_USERS5);
+    consumer.close();
+
+    final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
+    final JsonNode resultJson = usersActual.get(0);
+    assertEquals(usersActual.size(), 1);
+    assertEquals(extractJsonValues(resultJson, "users"), Set.of("{\"name\":\"John\",\"surname\":\"Adams\"}"));
   }
 
   private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
