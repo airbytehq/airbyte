@@ -23,7 +23,7 @@ public class Db2Source extends AbstractJdbcSource implements Source {
   private static Db2SourceOperations operations;
 
   public Db2Source() {
-    super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration(), sourceOperations());
+    super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration(), new Db2SourceOperations());
   }
 
   public static void main(final String[] args) throws Exception {
@@ -50,20 +50,6 @@ public class Db2Source extends AbstractJdbcSource implements Source {
     return Set.of(
         "NULLID", "SYSCAT", "SQLJ", "SYSFUN", "SYSIBM", "SYSIBMADM", "SYSIBMINTERNAL", "SYSIBMTS",
         "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS");
-  }
-
-  @Override
-  protected JdbcSourceOperations getSourceOperations() {
-    return sourceOperations();
-  }
-
-  /* Helpers */
-
-  private static JdbcSourceOperations sourceOperations() {
-    if (operations == null) {
-      operations = new Db2SourceOperations();
-    }
-    return operations;
   }
 
 }
