@@ -309,9 +309,8 @@ class SourceIntercom(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
-
         config["start_date"] = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
+        AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
 
         auth = TokenAuthenticator(token=config["access_token"])
         return [
