@@ -120,6 +120,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -162,7 +163,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final LogConfigs logConfigs,
                           final String webappUrl,
                           final AirbyteVersion airbyteVersion,
-                          final Path workspaceRoot) {
+                          final Path workspaceRoot,
+                          HttpClient httpClient) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;
@@ -191,7 +193,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs);
-    oAuthHandler = new OAuthHandler(configRepository, trackingClient);
+    oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(
         connectionsHandler,
         sourceHandler,

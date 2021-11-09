@@ -9,6 +9,7 @@ import com.google.api.client.util.Preconditions;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
+import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -76,6 +77,12 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     synchronized (lock) {
       return listConfigsInternal(configType, clazz);
     }
+  }
+
+  @Override
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(AirbyteConfig configType, Class<T> clazz)
+      throws JsonValidationException, IOException {
+    throw new UnsupportedOperationException("File Persistence doesn't support metadata");
   }
 
   @Override
