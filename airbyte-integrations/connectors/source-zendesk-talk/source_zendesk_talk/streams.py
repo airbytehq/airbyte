@@ -68,6 +68,10 @@ class ZendeskTalkStream(HttpStream, ABC):
         response_json = response.json()
         if self.data_field:
             response_json = response_json[self.data_field]
+
+        if not isinstance(response_json, list):
+            response_json = [response_json]
+
         yield from response_json
 
 
@@ -107,8 +111,10 @@ class PhoneNumbers(ZendeskTalkStream):
     Docs: https://developer.zendesk.com/api-reference/voice/talk-api/phone_numbers/#list-phone-numbers
     """
 
-    path = "/phone_numbers"
     data_field = "phone_numbers"
+
+    def path(self, **kwargs) -> str:
+        return "/phone_numbers"
 
 
 class Addresses(ZendeskTalkStream):
@@ -116,8 +122,10 @@ class Addresses(ZendeskTalkStream):
     Docs: https://developer.zendesk.com/api-reference/voice/talk-api/addresses/#list-addresses
     """
 
-    path = "/addresses"
     data_field = "addresses"
+
+    def path(self, **kwargs) -> str:
+        return "/addresses"
 
 
 class GreetingCategories(ZendeskTalkStream):
@@ -125,8 +133,10 @@ class GreetingCategories(ZendeskTalkStream):
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/greetings#list-greeting-categories
     """
 
-    path = "/greeting_categories"
     data_field = "greeting_categories"
+
+    def path(self, **kwargs) -> str:
+        return "/greeting_categories"
 
 
 class Greetings(ZendeskTalkStream):
@@ -134,8 +144,10 @@ class Greetings(ZendeskTalkStream):
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/greetings#list-greetings
     """
 
-    path = "/greetings"
     data_field = "greetings"
+
+    def path(self, **kwargs) -> str:
+        return "/greetings"
 
 
 class IVRs(ZendeskTalkStream):
@@ -143,9 +155,11 @@ class IVRs(ZendeskTalkStream):
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/ivrs#list-ivrs
     """
 
-    path = "/ivr.json"
     data_field = "ivrs"
     use_cache = True
+
+    def path(self, **kwargs) -> str:
+        return "/ivr.json"
 
 
 class IVRMenus(IVRs):
@@ -180,8 +194,10 @@ class AccountOverview(ZendeskTalkStream):
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/stats#show-account-overview
     """
 
-    path = "/stats/account_overview"
     data_field = "account_overview"
+
+    def path(self, **kwargs) -> str:
+        return "/stats/account_overview"
 
 
 class AgentsActivity(ZendeskTalkStream):
@@ -189,8 +205,10 @@ class AgentsActivity(ZendeskTalkStream):
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/stats#list-agents-activity
     """
 
-    path = "/stats/agents_activity"
     data_field = "agents_activity"
+
+    def path(self, **kwargs) -> str:
+        return "/stats/agents_activity"
 
 
 class AgentsOverview(ZendeskTalkStream):
@@ -198,8 +216,10 @@ class AgentsOverview(ZendeskTalkStream):
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/stats#show-agents-overview
     """
 
-    path = "/stats/agents_overview"
     data_field = "agents_overview"
+
+    def path(self, **kwargs) -> str:
+        return "/stats/agents_overview"
 
 
 class CurrentQueueActivity(ZendeskTalkStream):
@@ -207,8 +227,10 @@ class CurrentQueueActivity(ZendeskTalkStream):
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/stats#show-current-queue-activity
     """
 
-    path = "/stats/current_queue_activity"
     data_field = "current_queue_activity"
+
+    def path(self, **kwargs) -> str:
+        return "/stats/current_queue_activity"
 
 
 class Calls(ZendeskTalkIncrementalStream):
@@ -216,9 +238,11 @@ class Calls(ZendeskTalkIncrementalStream):
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/incremental_exports#incremental-calls-export
     """
 
-    path = "/stats/incremental/calls"
     data_field = "calls"
     cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "/phone_numbers"
 
 
 class CallLegs(ZendeskTalkIncrementalStream):
@@ -226,6 +250,9 @@ class CallLegs(ZendeskTalkIncrementalStream):
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/incremental_exports#incremental-call-legs-export
     """
 
-    path = "/stats/incremental/legs"
     data_field = "legs"
     cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "/stats/incremental/calls"
+

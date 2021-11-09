@@ -1,10 +1,11 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+from datetime import datetime
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode
+from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel, Field
@@ -38,7 +39,7 @@ class ConnectorConfig(BaseModel):
         airbyte_secret=True,
     )
     email: str = Field(description="The user email for your Zendesk account.")
-    start_date: str = Field(
+    start_date: datetime = Field(
         description="The date from which you'd like to replicate data for Zendesk Talk API, in the format YYYY-MM-DDT00:00:00Z.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
@@ -51,7 +52,7 @@ class SourceZendeskTalk(AbstractSource):
         authenticator = HTTPBasicAuth(username=f"{parsed_config.email}/token", password=parsed_config.access_token)
         stream = AccountOverview(authenticator=authenticator, subdomain=parsed_config.subdomain)
 
-        account_info = next(stream.read_records(), default=None)
+        account_info = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
         if not account_info:
             raise RuntimeError("Unable to read account information, please check the permissions of your token")
 
