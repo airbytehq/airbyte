@@ -17,6 +17,10 @@
         "type": "string",
         "description": "The region of the platform. For https://api.EXAMPLE.commercetools.com, the shop name is 'EXAMPLE'."
       },
+      "host": {
+        "type": "enum",
+        "description": "The cloud provider your shop is hosted. See: https://docs.commercetools.com/api/authorization"
+      },
       "start_date": {
         "type": "string",
         "description": "The date you would like to replicate data. Format: YYYY-MM-DD.",
