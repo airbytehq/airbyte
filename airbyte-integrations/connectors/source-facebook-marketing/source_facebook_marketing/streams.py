@@ -5,7 +5,7 @@
 import time
 import urllib.parse as urlparse
 from abc import ABC
-from collections import deque
+from collections import defaultdict, deque
 from datetime import datetime
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence
 
@@ -23,9 +23,10 @@ from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, Facebook
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
 
-from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge, retry_pattern
+from .common import FacebookAPIException, JobException, JobTimeoutException, batch, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+MAX_JOB_RESTART_TIMES = 6
 
 
 def remove_params_from_url(url: str, params: List[str]) -> str:
@@ -291,7 +292,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     time_increment = 1
 
     running_jobs = deque()
-    times_job_restarted = {}
+    times_job_restarted = defaultdict(int)
 
     breakdowns = []
 
@@ -369,9 +370,9 @@ class AdsInsights(FBMarketingIncrementalStream):
 
             if job["async_status"] == "Job Completed":
                 return job
-            elif job["async_status"] in ["Job Failed", "Job Skipped"]:
+            else:
                 time_range = (job["date_start"], job["date_stop"])
-                if self.times_job_restarted.get(time_range, 0) < 6:
+                if self.times_job_restarted[time_range] < MAX_JOB_RESTART_TIMES:
                     params = deep_merge(
                         {"time_range": {"since": job["date_start"], "until": job["date_stop"]}},
                         self.request_params(stream_state=stream_state),
@@ -379,21 +380,41 @@ class AdsInsights(FBMarketingIncrementalStream):
                     restart_job = self._create_insights_job(params)
                     self.running_jobs.append(restart_job)
                     self.times_job_restarted[time_range] += 1
-                elif job["async_status"] == "Job Failed":
-                    raise JobTimeoutException(f"AdReportRun {job} failed after {runtime.in_seconds()} seconds.")
-                elif job["async_status"] == "Job Skipped":
-                    raise JobTimeoutException(f"AdReportRun {job} skipped after {runtime.in_seconds()} seconds.")
+                else:
+                    error_msg = """
+                        AdReportRun job with id={id} {error_type}.
+                        Details: report_run_id={report_run_id},
+                        date_start={date_start}, date_stop={date_stop}
+                    """
+                    if job["async_status"] == "Job Failed":
+                        raise JobException(
+                            error_msg.format(
+                                error_type="failed",
+                                report_run_id=job["report_run_id"],
+                                date_start=job["date_start"],
+                                date_stop=job["date_stop"],
+                            )
+                        )
+                    elif job["async_status"] == "Job Skipped":
+                        raise JobException(
+                            error_msg.format(
+                                error_type="failed",
+                                report_run_id=job["report_run_id"],
+                                date_start=job["date_start"],
+                                date_stop=job["date_stop"],
+                            )
+                        )
 
-            if runtime > self.MAX_WAIT_TO_START and job_progress_pct == 0:
-                raise JobTimeoutException(
-                    f"AdReportRun {job} did not start after {runtime.in_seconds()} seconds."
-                    f" This is an intermittent error which may be fixed by retrying the job. Aborting."
-                )
-            elif runtime > self.MAX_WAIT_TO_FINISH:
-                raise JobTimeoutException(
-                    f"AdReportRun {job} did not finish after {runtime.in_seconds()} seconds."
-                    f" This is an intermittent error which may be fixed by retrying the job. Aborting."
-                )
+                    if runtime > self.MAX_WAIT_TO_START and job_progress_pct == 0:
+                        raise JobTimeoutException(
+                            f"AdReportRun {job} did not start after {runtime.in_seconds()} seconds."
+                            f" This is an intermittent error which may be fixed by retrying the job. Aborting."
+                        )
+                    elif runtime > self.MAX_WAIT_TO_FINISH:
+                        raise JobTimeoutException(
+                            f"AdReportRun {job} did not finish after {runtime.in_seconds()} seconds."
+                            f" This is an intermittent error which may be fixed by retrying the job. Aborting."
+                        )
             self.logger.info(f"Sleeping {sleep_seconds} seconds while waiting for AdReportRun: {job_id} to complete")
             time.sleep(sleep_seconds)
             if sleep_seconds < self.MAX_ASYNC_SLEEP.in_seconds():
