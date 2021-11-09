@@ -28,7 +28,7 @@ TEST_REQUIREMENTS = ["boto3==1.16.57", "pytest==6.1.2", "pytest-docker==0.10.1"]
 setup(
     name="source_file",
     description="Source implementation for File",
-    author="Madhup Sukoon",
+    author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
