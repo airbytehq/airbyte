@@ -2,7 +2,10 @@
     "type": "object",
     "properties": {
         "emailTracked": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "approvedBy": {
             "type": [
@@ -26,13 +29,22 @@
             "type": "string"
         },
         "sequence": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "marketplaceOrderId": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "marketplaceServicesEndpoint": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "sellerOrderId": {
             "type": [
@@ -41,13 +53,22 @@
             ]
         },
         "origin": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "affiliateId": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "salesChannel": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "merchantName": {
             "type": [
@@ -56,10 +77,16 @@
             ]
         },
         "status": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "statusDescription": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "value": {
             "type": "number"
@@ -68,7 +95,10 @@
             "type": "string"
         },
         "lastChange": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "orderGroup": {
             "type": [
@@ -83,10 +113,16 @@
                 "type": "object",
                 "properties": {
                     "id": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "name": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "value": {
                         "type": "number"
@@ -108,13 +144,22 @@
                 "type": "object",
                 "properties": {
                     "uniqueId": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "id": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "productId": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "ean": {
                         "type": [
@@ -123,7 +168,10 @@
                         ]
                     },
                     "lockId": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "itemAttachment": {
                         "title": "ItemAttachment",
@@ -148,7 +196,10 @@
                     "attachments": {
                         "type": "array",
                         "items": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "description": ""
                     },
@@ -156,10 +207,16 @@
                         "type": "number"
                     },
                     "seller": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "name": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "refId": {
                         "type": [
@@ -197,7 +254,10 @@
                                     "description": "Indicates whether price tag value is applied through a percentage."
                                 },
                                 "name": {
-                                    "type": ["string", "null"],
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
                                     "description": "Name."
                                 },
                                 "rawValue": {
@@ -236,7 +296,10 @@
                         }
                     },
                     "imageUrl": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "detailUrl": {
                         "type": [
@@ -247,33 +310,318 @@
                     "components": {
                         "type": "array",
                         "items": {
-                            "type": ["string", "null"]
-                        },
-                        "description": ""
+                            "type": [
+                                "object",
+                                "null"
+                            ],
+                            "properties": {
+                                "additionalInfo": {
+                                    "type": "object",
+                                    "properties": {
+                                        "brandId": {
+                                            "type": "null"
+                                        },
+                                        "brandName": {
+                                            "type": "null"
+                                        },
+                                        "categories": {
+                                            "type": "null"
+                                        },
+                                        "categoriesIds": {
+                                            "type": "null"
+                                        },
+                                        "commercialConditionId": {
+                                            "type": "null"
+                                        },
+                                        "dimension": {
+                                            "type": "object",
+                                            "properties": {
+                                                "cubicweight": {
+                                                    "type": "number"
+                                                },
+                                                "height": {
+                                                    "type": "number"
+                                                },
+                                                "length": {
+                                                    "type": "number"
+                                                },
+                                                "weight": {
+                                                    "type": "number"
+                                                },
+                                                "width": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        },
+                                        "offeringInfo": {
+                                            "type": "null"
+                                        },
+                                        "offeringType": {
+                                            "type": "null"
+                                        },
+                                        "offeringTypeId": {
+                                            "type": "null"
+                                        },
+                                        "productClusterId": {
+                                            "type": "null"
+                                        }
+                                    }
+                                },
+                                "assemblies": {
+                                    "type": "array",
+                                    "items": {
+                                        "items": {},
+                                        "additionalItems": false
+                                    },
+                                    "additionalItems": false
+                                },
+                                "attachments": {
+                                    "type": "array",
+                                    "items": {
+                                        "items": {},
+                                        "additionalItems": false
+                                    },
+                                    "additionalItems": false
+                                },
+                                "bundleItems": {
+                                    "type": "array",
+                                    "items": {
+                                        "items": {},
+                                        "additionalItems": false
+                                    },
+                                    "additionalItems": false
+                                },
+                                "callCenterOperator": {
+                                    "type": "null"
+                                },
+                                "commission": {
+                                    "type": "integer"
+                                },
+                                "components": {
+                                    "type": "array",
+                                    "items": {
+                                        "items": {},
+                                        "additionalItems": false
+                                    },
+                                    "additionalItems": false
+                                },
+                                "costPrice": {
+                                    "type": "null"
+                                },
+                                "detailUrl": {
+                                    "type": "null"
+                                },
+                                "ean": {
+                                    "type": "string"
+                                },
+                                "freightCommission": {
+                                    "type": "integer"
+                                },
+                                "id": {
+                                    "type": "string"
+                                },
+                                "imageUrl": {
+                                    "type": "null"
+                                },
+                                "isGift": {
+                                    "type": "boolean"
+                                },
+                                "itemAttachment": {
+                                    "type": "object",
+                                    "properties": {
+                                        "content": {
+                                            "type": "object"
+                                        },
+                                        "name": {
+                                            "type": "null"
+                                        }
+                                    }
+                                },
+                                "listPrice": {
+                                    "type": "null"
+                                },
+                                "lockId": {
+                                    "type": "null"
+                                },
+                                "manualPrice": {
+                                    "type": "null"
+                                },
+                                "measurementUnit": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "offerings": {
+                                    "type": "array",
+                                    "items": {
+                                        "items": {},
+                                        "additionalItems": false
+                                    },
+                                    "additionalItems": false
+                                },
+                                "params": {
+                                    "type": "array",
+                                    "items": {
+                                        "items": {},
+                                        "additionalItems": false
+                                    },
+                                    "additionalItems": false
+                                },
+                                "parentAssemblyBinding": {
+                                    "type": "null"
+                                },
+                                "parentItemIndex": {
+                                    "type": "null"
+                                },
+                                "preSaleDate": {
+                                    "type": "null"
+                                },
+                                "price": {
+                                    "type": "integer"
+                                },
+                                "priceDefinition": {
+                                    "type": "object",
+                                    "properties": {
+                                        "calculatedSellingPrice": {
+                                            "type": "integer"
+                                        },
+                                        "sellingPrices": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "quantity": {
+                                                        "type": "integer"
+                                                    },
+                                                    "value": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            },
+                                            "additionalItems": false
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "priceTags": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "identifier": {
+                                                "type": "string"
+                                            },
+                                            "isPercentual": {
+                                                "type": "boolean"
+                                            },
+                                            "jurisCode": {
+                                                "type": "null"
+                                            },
+                                            "jurisName": {
+                                                "type": "null"
+                                            },
+                                            "jurisType": {
+                                                "type": "null"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "rate": {
+                                                "type": "null"
+                                            },
+                                            "rawValue": {
+                                                "type": "number"
+                                            },
+                                            "value": {
+                                                "type": "integer"
+                                            }
+                                        }
+                                    },
+                                    "additionalItems": false
+                                },
+                                "priceValidUntil": {
+                                    "type": "null"
+                                },
+                                "productId": {
+                                    "type": "null"
+                                },
+                                "quantity": {
+                                    "type": "integer"
+                                },
+                                "refId": {
+                                    "type": "string"
+                                },
+                                "rewardValue": {
+                                    "type": "integer"
+                                },
+                                "seller": {
+                                    "type": "null"
+                                },
+                                "sellerSku": {
+                                    "type": "string"
+                                },
+                                "sellingPrice": {
+                                    "type": "integer"
+                                },
+                                "serialNumbers": {
+                                    "type": "null"
+                                },
+                                "shippingPrice": {
+                                    "type": "null"
+                                },
+                                "tax": {
+                                    "type": "integer"
+                                },
+                                "taxCode": {
+                                    "type": "null"
+                                },
+                                "uniqueId": {
+                                    "type": "string"
+                                },
+                                "unitMultiplier": {
+                                    "type": "number"
+                                }
+                            }
+                        }
                     },
                     "bundleItems": {
                         "type": "array",
                         "items": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "description": ""
                     },
                     "params": {
                         "type": "array",
                         "items": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "description": ""
                     },
                     "offerings": {
                         "type": "array",
                         "items": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "description": ""
                     },
                     "sellerSku": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "priceValidUntil": {
                         "type": [
@@ -298,19 +646,34 @@
                         "type": "object",
                         "properties": {
                             "brandName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "brandId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "categoriesIds": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "productClusterId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "commercialConditionId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "dimension": {
                                 "title": "Dimension",
@@ -380,7 +743,10 @@
                         "$schema": "http://json-schema.org/schema#"
                     },
                     "measurementUnit": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "unitMultiplier": {
                         "type": "number"
@@ -494,7 +860,10 @@
         "marketplaceItems": {
             "type": "array",
             "items": {
-                "type": ["string", "null"]
+                "type": [
+                    "string",
+                    "null"
+                ]
             },
             "description": ""
         },
@@ -503,25 +872,46 @@
             "type": "object",
             "properties": {
                 "id": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "email": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "firstName": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "lastName": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "documentType": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "document": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "phone": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "corporateName": {
                     "type": [
@@ -615,7 +1005,10 @@
                 "marketingTags": {
                     "type": "array",
                     "items": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 },
                 "utmCampaign": {
@@ -667,7 +1060,10 @@
             "type": "object",
             "properties": {
                 "id": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "rateAndBenefitsIdentifiers": {
                     "type": "array",
@@ -737,14 +1133,20 @@
             "type": "object",
             "properties": {
                 "id": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "address": {
                     "title": "Address",
                     "type": "object",
                     "properties": {
                         "addressType": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "receiverName": {
                             "type": [
@@ -753,28 +1155,52 @@
                             ]
                         },
                         "addressId": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "postalCode": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "city": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "state": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "country": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "street": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "number": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "neighborhood": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "complement": {
                             "type": [
@@ -823,10 +1249,16 @@
                                 "type": "number"
                             },
                             "selectedSla": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lockTTL": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "price": {
                                 "type": "number"
@@ -844,10 +1276,16 @@
                                 ]
                             },
                             "deliveryCompany": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "shippingEstimate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "shippingEstimateDate": {
                                 "type": [
@@ -865,13 +1303,22 @@
                                     "type": "object",
                                     "properties": {
                                         "id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "shippingEstimate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "deliveryWindow": {
                                             "type": [
@@ -883,7 +1330,10 @@
                                             "type": "number"
                                         },
                                         "deliveryChannel": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "pickupStoreInfo": {
                                             "title": "PickupStoreInfo",
@@ -903,7 +1353,10 @@
                                                     ],
                                                     "properties": {
                                                         "addressType": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "receiverName": {
                                                             "type": [
@@ -912,28 +1365,52 @@
                                                             ]
                                                         },
                                                         "addressId": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "postalCode": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "city": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "state": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "country": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "street": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "number": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "neighborhood": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "complement": {
                                                             "type": [
@@ -1015,7 +1492,10 @@
                                     "null"
                                 ],
                                 "items": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "description": ""
                             },
@@ -1026,19 +1506,31 @@
                                     "type": "object",
                                     "properties": {
                                         "courierId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "courierName": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "dockId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "quantity": {
                                             "type": "number"
                                         },
                                         "warehouseId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "example": {
@@ -1053,7 +1545,10 @@
                                 "description": ""
                             },
                             "deliveryChannel": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "pickupStoreInfo": {
                                 "title": "PickupStoreInfo",
@@ -1073,7 +1568,10 @@
                                         ],
                                         "properties": {
                                             "addressType": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "receiverName": {
                                                 "type": [
@@ -1082,28 +1580,52 @@
                                                 ]
                                             },
                                             "addressId": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "postalCode": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "city": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "state": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "country": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "street": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "number": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "neighborhood": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "complement": {
                                                 "type": [
@@ -1168,7 +1690,10 @@
                                 "$schema": "http://json-schema.org/schema#"
                             },
                             "addressId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "polygonName": {
                                 "type": [
@@ -1326,10 +1851,16 @@
                         "type": "object",
                         "properties": {
                             "addressId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "addressType": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "receiverName": {
                                 "type": [
@@ -1338,10 +1869,16 @@
                                 ]
                             },
                             "street": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "complement": {
                                 "type": [
@@ -1350,19 +1887,34 @@
                                 ]
                             },
                             "neighborhood": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "postalCode": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "city": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "country": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "reference": {
                                 "type": [
@@ -1576,10 +2128,16 @@
                                             ]
                                         },
                                         "paymentSystem": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "paymentSystemName": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "value": {
                                             "type": "number"
@@ -2001,10 +2559,16 @@
                 "type": "object",
                 "properties": {
                     "id": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "name": {
-                        "type": ["string", "null"]
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "logo": {
                         "type": [
@@ -2029,7 +2593,10 @@
             ]
         },
         "followUpEmail": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "lastMessage": {
             "type": [
@@ -2038,7 +2605,10 @@
             ]
         },
         "hostname": {
-            "type": ["string", "null"]
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "invoiceData": {
             "type": [
@@ -2054,7 +2624,10 @@
             ],
             "properties": {
                 "id": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "changesData": {
                     "type": "array",
@@ -2063,7 +2636,10 @@
                         "type": "object",
                         "properties": {
                             "reason": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "discountValue": {
                                 "type": "number"
@@ -2074,7 +2650,10 @@
                             "itemsAdded": {
                                 "type": "array",
                                 "items": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "description": ""
                             },
@@ -2085,10 +2664,16 @@
                                     "type": "object",
                                     "properties": {
                                         "id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "quantity": {
                                             "type": "number"
@@ -2119,13 +2704,21 @@
                                 "type": "object",
                                 "properties": {
                                     "date": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "orderId": {
-                                        "type": ["string"]
+                                        "type": [
+                                            "string"
+                                        ]
                                     },
                                     "receipt": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "example": {
@@ -2264,10 +2857,16 @@
             "type": "object",
             "properties": {
                 "countryCode": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "currencyCode": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "currencyFormatInfo": {
                     "title": "CurrencyFormatInfo",
@@ -2277,10 +2876,16 @@
                             "type": "number"
                         },
                         "CurrencyDecimalSeparator": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "CurrencyGroupSeparator": {
-                            "type": ["string", "null"]
+                            "type": [
+                                "string",
+                                "null"
+                            ]
                         },
                         "CurrencyGroupSize": {
                             "type": "number"
@@ -2302,10 +2907,16 @@
                     "type": "number"
                 },
                 "currencySymbol": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "timeZone": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 }
             },
             "example": {
@@ -2338,7 +2949,10 @@
             "type": "object",
             "properties": {
                 "baseURL": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "isCertified": {
                     "type": [
@@ -2347,7 +2961,10 @@
                     ]
                 },
                 "name": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 }
             },
             "example": {
