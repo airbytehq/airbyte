@@ -30,13 +30,11 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
@@ -312,11 +310,11 @@ public class BufferedStreamConsumerTest {
       }
     });
   }
-  
+
   private static List<AirbyteMessage> generateRecords(final long targetSizeInBytes) {
     List<AirbyteMessage> output = Lists.newArrayList();
     long bytesCounter = 0;
-    for (int i = 0; ; i++) {
+    for (int i = 0;; i++) {
       JsonNode payload = Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAscii(7), "name", "human " + i));
       long sizeInBytes = ByteUtils.getSizeInBytes(Jsons.serialize(payload));
       bytesCounter += sizeInBytes;
