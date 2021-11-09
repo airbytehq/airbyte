@@ -47,7 +47,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     ORACLE,
     POSTGRES,
     REDSHIFT,
-    SNOWFLAKE
+    SNOWFLAKE,
+    CLICKHOUSE
   }
 
   public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory, final String normalizationImageName) {

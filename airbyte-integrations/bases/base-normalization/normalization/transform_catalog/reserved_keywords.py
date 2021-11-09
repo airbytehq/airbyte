@@ -2533,6 +2533,8 @@ MSSQL = {
     "REGR_SYY",
 }
 
+CLICKHOUSE = {}
+
 RESERVED_KEYWORDS = {
     DestinationType.BIGQUERY.value: BIGQUERY,
     DestinationType.POSTGRES.value: POSTGRES,
@@ -2541,6 +2543,7 @@ RESERVED_KEYWORDS = {
     DestinationType.MYSQL.value: MYSQL,
     DestinationType.ORACLE.value: ORACLE,
     DestinationType.MSSQL.value: MSSQL,
+    DestinationType.CLICKHOUSE.value: CLICKHOUSE,
 }
 
 
