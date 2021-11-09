@@ -7,9 +7,7 @@ package io.airbyte.workers.normalization;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
 import io.airbyte.workers.process.ProcessFactory;
-
 import java.util.Map;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class NormalizationRunnerFactory {
@@ -33,11 +31,11 @@ public class NormalizationRunnerFactory {
           .build();
 
   public static NormalizationRunner create(final String connectorImageName, final ProcessFactory processFactory) {
-      final var valuePair = getNormalizationInfoForConnector(connectorImageName);
-      return new DefaultNormalizationRunner(
-          valuePair.getRight(),
-          processFactory,
-          String.format("%s:%s", valuePair.getLeft(), NORMALIZATION_VERSION));
+    final var valuePair = getNormalizationInfoForConnector(connectorImageName);
+    return new DefaultNormalizationRunner(
+        valuePair.getRight(),
+        processFactory,
+        String.format("%s:%s", valuePair.getLeft(), NORMALIZATION_VERSION));
   }
 
   public static ImmutablePair<String, DestinationType> getNormalizationInfoForConnector(final String connectorImageName) {
