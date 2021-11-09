@@ -3,78 +3,14 @@
 #
 
 
-import sys
 from abc import ABC, abstractmethod
 from datetime import datetime
-from functools import partial
-from http import HTTPStatus
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import urlparse, parse_qs
 
-import backoff
 import pendulum as pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from base_python.entrypoint import logger
-
-from .errors import ZendeskAccessDenied, ZendeskInvalidAuth, ZendeskRateLimited, ZendeskTimeout
-
-
-def retry_pattern(backoff_type, **wait_gen_kwargs):
-    def sleep_on_ratelimit(details):
-        _, exc, _ = sys.exc_info()
-        logger.info(str(exc))
-        logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
-
-    def log_giveup(_details):
-        logger.error("Max retry limit reached")
-
-    return backoff.on_exception(
-        backoff_type,
-        (ZendeskRateLimited, ZendeskTimeout),
-        jitter=None,
-        on_backoff=sleep_on_ratelimit,
-        on_giveup=log_giveup,
-        **wait_gen_kwargs,
-    )
-
-
-class API:
-    """Zendesk Talk API interface, authorize, retrieve and post, supports backoff logic"""
-
-    def __init__(self, subdomain: str, access_token: str, email: str):
-        self.BASE_URL = f"https://{subdomain}.zendesk.com/api/v2/channels/voice"
-        self._session = requests.Session()
-        self._session.headers = {"Content-Type": "application/json"}
-        self._session.auth = (f"{email}/token", access_token)
-
-    @staticmethod
-    def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
-        """Handle response"""
-        message = "Unknown error"
-        if response.headers.get("content-type") == "application/json;charset=utf-8" and response.status_code != HTTPStatus.OK:
-            message = response.json().get("message")
-
-        if response.status_code == HTTPStatus.FORBIDDEN:
-            raise ZendeskAccessDenied(response.text, response=response)
-        elif response.status_code == HTTPStatus.UNAUTHORIZED:
-            raise ZendeskInvalidAuth(response.text, response=response)
-        elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-            raise ZendeskRateLimited(
-                "429 Rate Limit Exceeded: API rate-limit. See https://developer.zendesk.com/rest_api/docs/support/usage_limits",
-                response=response,
-            )
-        elif response.status_code in (HTTPStatus.BAD_GATEWAY, HTTPStatus.SERVICE_UNAVAILABLE):
-            raise ZendeskTimeout(message, response=response)
-        else:
-            response.raise_for_status()
-
-        return response
-
-    @retry_pattern(backoff.expo, max_tries=4, factor=5)
-    def get(self, url: str, domain_inclusion=False, params=None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
-        response = self._session.get(url if domain_inclusion else self.BASE_URL + url, params=params or {})
-        return self._parse_and_handle_errors(response)
 
 
 class ZendeskTalkStream(HttpStream, ABC):
