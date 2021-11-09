@@ -146,7 +146,7 @@ class EmailBounce(IterableExportStream):
     data_field = "emailBounce"
 
 
-class EmailClick(IterableExportStream):
+class EmailClick(IterableExportStreamRanged):
     name = "email_click"
     data_field = "emailClick"
 
@@ -156,7 +156,7 @@ class EmailComplaint(IterableExportStream):
     data_field = "emailComplaint"
 
 
-class EmailOpen(IterableExportStream):
+class EmailOpen(IterableExportStreamRanged):
     name = "email_open"
     data_field = "emailOpen"
 
@@ -166,7 +166,7 @@ class EmailSend(IterableExportStreamRanged):
     data_field = "emailSend"
 
 
-class EmailSendSkip(IterableExportStream):
+class EmailSendSkip(IterableExportStreamRanged):
     name = "email_send_skip"
     data_field = "emailSendSkip"
 

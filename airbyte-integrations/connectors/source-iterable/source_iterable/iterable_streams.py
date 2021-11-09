@@ -76,7 +76,7 @@ class IterableExportStream(IterableStream, ABC):
         # Use default exponential backoff
         return None
 
-    # For pythob backoff package expo backoff delays calculated with formula:
+    # For python backoff package expo backoff delays calculated according to formula:
     # delay = factor * base ** n where base is 2
     # With default factor equal to 5 and 5 retries delays would be 5, 10, 20, 40 and 80 seconds.
     # For exports stream there is a limit of 4 requests per minute.
