@@ -143,8 +143,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      // TODO use a more efficient way to compute bytes that doesn't require double serialization (records are serialized again when writing to
-      //  the destination
+      // TODO use a more efficient way to compute bytes that doesn't require double serialization (records
+      // are serialized again when writing to
+      // the destination
       // TODO use a smarter way of estimating byte size rather than always multiply by two
       long messageSizeInBytes = ByteUtils.getSizeInBytes(Jsons.serialize(recordMessage.getData()));
       if (bufferSizeInBytes + messageSizeInBytes >= maxQueueSizeInBytes) {
