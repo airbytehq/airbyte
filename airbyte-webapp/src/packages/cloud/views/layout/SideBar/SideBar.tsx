@@ -8,10 +8,8 @@ import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { Routes } from "packages/cloud/routes";
 import { useConfig } from "config";
 
-import useConnector from "hooks/services/useConnector";
 import useWorkspace from "hooks/services/useWorkspace";
 import { Link } from "components";
-import Indicator from "components/Indicator";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
@@ -21,6 +19,7 @@ import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
 import { useGetWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
+import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 
 const CreditsIcon = styled(FontAwesomeIcon)`
   font-size: 21px;
@@ -90,12 +89,6 @@ const Text = styled.div`
   margin-top: 7px;
 `;
 
-const Notification = styled(Indicator)`
-  position: absolute;
-  top: 11px;
-  right: 23px;
-`;
-
 const WorkspaceButton = styled.div`
   font-size: 9px;
   line-height: 21px;
@@ -115,7 +108,6 @@ const WorkspaceButton = styled.div`
 `;
 
 const SideBar: React.FC = () => {
-  const { hasNewVersions } = useConnector();
   const config = useConfig();
   const { workspace } = useWorkspace();
   const { data: cloudWorkspace } = useGetWorkspace(workspace.workspaceId);
@@ -202,7 +194,7 @@ const SideBar: React.FC = () => {
               location.pathname.startsWith(Routes.Settings)
             }
           >
-            {hasNewVersions ? <Notification /> : null}
+            <NotificationIndicator />
             <SettingsIcon />
             <Text>
               <FormattedMessage id="sidebar.settings" />

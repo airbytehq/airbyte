@@ -369,6 +369,7 @@
   "admin.downloadSchedulerLogs": "Download Scheduler Logs",
   "admin.upgradeAll": "Upgrade all",
   "admin.upgraded": "Upgraded!",
+  "admin.customImage": "custom",
 
   "settings.accountSettings": "Account Settings",
   "settings.changeSaved": "change saved!",
