@@ -9,13 +9,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -25,12 +26,12 @@ import org.apache.http.client.utils.URIBuilder;
  * Following docs from
  * https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow
  */
-public abstract class FacebookOAuthFlow extends BaseOAuthFlow {
+public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
 
   private static final String ACCESS_TOKEN_URL = "https://graph.facebook.com/v12.0/oauth/access_token";
   private static final String AUTH_CODE_TOKEN_URL = "https://www.facebook.com/v12.0/dialog/oauth";
 
-  public FacebookOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+  public FacebookOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
@@ -61,7 +62,7 @@ public abstract class FacebookOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) {
     // Facebook does not have refresh token but calls it "long lived access token" instead:
     // see https://developers.facebook.com/docs/facebook-login/access-tokens/refreshing
     Preconditions.checkArgument(data.has("access_token"), "Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL);
@@ -73,7 +74,7 @@ public abstract class FacebookOAuthFlow extends BaseOAuthFlow {
                                                   final String clientSecret,
                                                   final String authCode,
                                                   final String redirectUrl,
-                                                  JsonNode oAuthParamConfig)
+                                                  final JsonNode oAuthParamConfig)
       throws IOException {
     // Access tokens generated via web login are short-lived tokens
     // they arre valid for 1 hour and need to be exchanged for long-lived access token
@@ -118,6 +119,11 @@ public abstract class FacebookOAuthFlow extends BaseOAuthFlow {
     } catch (final InterruptedException | URISyntaxException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
+  }
+
+  @Override
+  protected List<String> getDefaultOAuthOutputPath() {
+    return List.of();
   }
 
 }

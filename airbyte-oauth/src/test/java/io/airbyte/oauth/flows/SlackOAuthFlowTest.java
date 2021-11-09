@@ -24,12 +24,12 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class HubspotOAuthFlowTest {
+public class SlackOAuthFlowTest {
 
   private UUID workspaceId;
   private UUID definitionId;
   private ConfigRepository configRepository;
-  private HubspotOAuthFlow hubspotOAuthFlow;
+  private SlackOAuthFlow slackOAuthFlow;
   private HttpClient httpClient;
 
   private static final String REDIRECT_URL = "https://airbyte.io";
@@ -52,28 +52,28 @@ public class HubspotOAuthFlowTest {
             .put("client_id", "test_client_id")
             .put("client_secret", "test_client_secret")
             .build())))));
-    hubspotOAuthFlow = new HubspotOAuthFlow(configRepository, httpClient, HubspotOAuthFlowTest::getConstantState);
+    slackOAuthFlow = new SlackOAuthFlow(configRepository, httpClient, SlackOAuthFlowTest::getConstantState);
 
   }
 
   @Test
   public void testGetSourceConsentUrl() throws IOException, ConfigNotFoundException {
-    final String consentUrl = hubspotOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    assertEquals(
-        "https://app.hubspot.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&state=state&scopes=content+crm.schemas.deals.read+crm.objects.owners.read+forms+tickets+e-commerce+crm.objects.companies.read+crm.lists.read+crm.objects.deals.read+crm.schemas.contacts.read+crm.objects.contacts.read+crm.schemas.companies.read+files+forms-uploaded-files+files.ui_hidden.read",
+    final String consentUrl = slackOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    assertEquals("https://slack.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&state=state&scope=read",
         consentUrl);
   }
 
   @Test
-  public void testCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
-    final var response = mock(HttpResponse.class);
-    var returnedCredentials = "{\"refresh_token\":\"refresh_token_response\"}";
-    when(response.body()).thenReturn(returnedCredentials);
+  public void testCompleteSourceOAuth() throws IOException, JsonValidationException, InterruptedException, ConfigNotFoundException {
+
+    final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    final HttpResponse response = mock(HttpResponse.class);
+    when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        hubspotOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    assertEquals(Jsons.serialize(Map.of("credentials", Jsons.deserialize(returnedCredentials))), Jsons.serialize(actualQueryParams));
+        slackOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
 
 }
