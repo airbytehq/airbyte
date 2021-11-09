@@ -1,5 +1,5 @@
 {{ config(
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', quote('_AIRBYTE_AB_ID')),
+    unique_key = quote('_AIRBYTE_AB_ID'),
     schema = "test_normalization",
     tags = [ "top-level-intermediate" ]
 ) }}

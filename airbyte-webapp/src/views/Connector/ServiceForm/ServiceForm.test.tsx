@@ -1,3 +1,4 @@
+import React from "react";
 import userEvent from "@testing-library/user-event";
 import { findByText, screen, waitFor } from "@testing-library/react";
 
@@ -5,6 +6,15 @@ import ServiceForm from "views/Connector/ServiceForm";
 import { render } from "utils/testutils";
 import { ServiceFormValues } from "./types";
 import { AirbyteJSONSchema } from "core/jsonSchema";
+
+// hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
+jest.mock(
+  "components/Markdown",
+  () =>
+    function ReactMarkdown({ children }: React.PropsWithChildren<unknown>) {
+      return <>{children}</>;
+    }
+);
 
 const schema: AirbyteJSONSchema = {
   type: "object",
