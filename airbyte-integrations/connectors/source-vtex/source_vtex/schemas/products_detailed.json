@@ -1,0 +1,225 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "productId": {
+            "type": "string"
+        },
+        "productName": {
+            "type": "string"
+        },
+        "brand": {
+            "type": "string"
+        },
+        "brandId": {
+            "type": "number"
+        },
+        "brandImageUrl": {
+            "type": "string"
+        },
+        "linkText": {
+            "type": "string"
+        },
+        "productReference": {
+            "type": "string"
+        },
+        "productReferenceCode": {
+            "type": "string"
+        },
+        "categoryId": {
+            "type": "string"
+        },
+        "productTitle": {
+            "type": "string"
+        },
+        "metaTagDescription": {
+            "type": "string"
+        },
+        "releaseDate": {
+            "type": "string"
+        },
+        "clusterHighlights": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "required": [],
+            "items": {
+                "type": "object",
+                "required": [],
+                "properties": {
+                    "clusterId": {
+                        "type": "integer"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "productClusters": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "required": [],
+            "items": {
+                "type": "object",
+                "required": [],
+                "properties": {
+                    "clusterId": {
+                        "type": "integer"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "searchableClusters": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "required": [],
+            "items": {
+                "type": "object",
+                "required": [],
+                "properties": {
+                    "clusterId": {
+                        "type": "integer"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "categories": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "categoriesIds": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "link": {
+            "type": "string"
+        },
+        "Detalhes do Produto": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "Informações Completas": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "Descrição do Produto": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "Vídeo do Produto": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "Informações Técnicas": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "Informações do Fornecedor": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "Modelo": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "Especificações": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "allSpecifications": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "allSpecificationsGroups": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "description": {
+            "type": "string"
+        },
+        "skuSpecifications": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [],
+                "properties": {
+                    "field": {
+                        "type": "object",
+                        "required": [],
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "isActive": {
+                                "type": "boolean"
+                            },
+                            "position": {
+                                "type": "number"
+                            },
+                            "type": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "values": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "position": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
