@@ -99,6 +99,7 @@ This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applica
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.23 | 2021-11-09 | [7783](https://github.com/airbytehq/airbyte/pull/7783) | Fix schemas for missing `properties` and `items` |
 | 0.1.22 | 2021-10-18 | [7101](https://github.com/airbytehq/airbyte/pull/7107) | Added FulfillmentOrders, Fulfillments streams |
 | 0.1.21 | 2021-10-14 | [7382](https://github.com/airbytehq/airbyte/pull/7382) | Fixed `InventoryLevels` primary key |
 | 0.1.20 | 2021-10-14 | [7063](https://github.com/airbytehq/airbyte/pull/7063) | Added `Location` and `InventoryLevels` as streams |
