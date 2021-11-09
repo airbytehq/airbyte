@@ -48,18 +48,18 @@ public class SurveymonkeyOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
             .put("client_id", "test_client_id")
             .put("client_secret", "test_client_secret")
-            .build())))));
+            .build()))));
     when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
             .put("client_id", "test_client_id")
             .put("client_secret", "test_client_secret")
-            .build())))));
+            .build()))));
   }
 
   private static String getConstantState() {
@@ -94,7 +94,7 @@ public class SurveymonkeyOAuthFlowTest {
     final Map<String, Object> actualQueryParams =
         surveymonkeyOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
 
   @Test
@@ -108,7 +108,7 @@ public class SurveymonkeyOAuthFlowTest {
     final Map<String, Object> actualQueryParams =
         surveymonkeyOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
 
 }

@@ -11,6 +11,7 @@ import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -64,6 +65,11 @@ public class SalesforceOAuthFlow extends BaseOAuth2Flow {
         .putAll(super.getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))
         .put("grant_type", "authorization_code")
         .build();
+  }
+
+  @Override
+  protected List<String> getDefaultOAuthOutputPath() {
+    return List.of();
   }
 
 }

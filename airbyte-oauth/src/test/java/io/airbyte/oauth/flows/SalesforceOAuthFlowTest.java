@@ -48,10 +48,10 @@ public class SalesforceOAuthFlowTest {
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
             .put("client_id", "test_client_id")
             .put("client_secret", "test_client_secret")
-            .build())))));
+            .build()))));
     salesforceOAuthFlow = new SalesforceOAuthFlow(configRepository, httpClient, SalesforceOAuthFlowTest::getConstantState);
 
   }
@@ -74,7 +74,7 @@ public class SalesforceOAuthFlowTest {
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
         salesforceOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
+    assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
 
 }

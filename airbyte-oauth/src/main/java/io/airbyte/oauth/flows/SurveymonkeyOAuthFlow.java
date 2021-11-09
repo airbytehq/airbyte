@@ -13,6 +13,7 @@ import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -71,4 +72,8 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
     return Map.of("access_token", data.get("access_token").asText());
   }
 
+  @Override
+  protected List<String> getDefaultOAuthOutputPath() {
+    return List.of();
+  }
 }
