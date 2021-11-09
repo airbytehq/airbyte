@@ -98,6 +98,7 @@
     * [Paypal Transaction](integrations/sources/paypal-transaction.md)
     * [Paystack](integrations/sources/paystack.md)
     * [Plaid](integrations/sources/plaid.md)
+    * [Pinterest](integrations/sources/pinterest.md)
     * [Pipedrive](integrations/sources/pipedrive.md)
     * [PokéAPI](integrations/sources/pokeapi.md)
     * [Postgres](integrations/sources/postgres.md)
