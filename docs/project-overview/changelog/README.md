@@ -29,8 +29,8 @@ We're going over the changes from 0.29.17 and before... and there's a lot of big
 * 🐛 Slack source: Sync operations no longer hang indefinitely.
 * 🐛 Jira source: Now uses updated time as the cursor field for incremental sync instead of the created time.
 * 🐛 Intercom source: Fixed inconsistency between schema and output data.
-* 🐛 Hubspot source: Streams with the items property now have their schemas fixed.
-* 🐛 Hubspot source: Empty strings are no longer handled as dates, fixing the deals, companies, and contacts streams.
+* 🐛 HubSpot source: Streams with the items property now have their schemas fixed.
+* 🐛 HubSpot source: Empty strings are no longer handled as dates, fixing the deals, companies, and contacts streams.
 * 🐛 Typeform source: Allows for multiple choices in responses now.
 * 🐛 Shopify source: The type for the amount field is now fixed in the schema.
 * 🐛 Postgres destination: \u0000\(NULL\) value processing is now fixed.
@@ -83,7 +83,7 @@ New Destination: Keen
 * ✨ Shopify source: The `status` property is now in the `Products` stream.
 * ✨ Amazon Seller Partner source: Added support for `GET_MERCHANT_LISTINGS_ALL_DATA` and `GET_FBA_INVENTORY_AGED_DATA` stream endpoints.
 * ✨ GitHub source: Existing streams now don't minify the user property.
-* ✨ Hubspot source: Updated user-defined custom field schema generation.
+* ✨ HubSpot source: Updated user-defined custom field schema generation.
 * ✨ Zendesk source: Migrated from Singer to the Airbyte CDK.
 * ✨ Amazon Seller Partner source: Migrated to the Airbyte CDK.
 * 🐛 Shopify source: Fixed the `products` schema to be in accordance with the API.

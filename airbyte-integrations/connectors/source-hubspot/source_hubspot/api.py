@@ -18,7 +18,7 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
-# The value is obtained experimentally, Hubspot allows the URL length up to ~16300 symbols,
+# The value is obtained experimentally, HubSpot allows the URL length up to ~16300 symbols,
 # so it was decided to limit the length of the `properties` parameter to 15000 characters.
 PROPERTIES_PARAM_MAX_LENGTH = 15000
 
@@ -99,7 +99,7 @@ def retry_after_handler(**kwargs):
     def sleep_on_ratelimit(_details):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, HubspotRateLimited):
-            # Hubspot API does not always return Retry-After value for 429 HTTP error
+            # HubSpot API does not always return Retry-After value for 429 HTTP error
             retry_after = int(exc.response.headers.get("Retry-After", 3))
             logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
@@ -119,7 +119,7 @@ def retry_after_handler(**kwargs):
 
 
 class API:
-    """Hubspot API interface, authorize, retrieve and post, supports backoff logic"""
+    """HubSpot API interface, authorize, retrieve and post, supports backoff logic"""
 
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
@@ -332,8 +332,8 @@ class Stream(ABC):
             properties_list = list(self.properties.keys())
             if properties_list:
                 # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
-                #  We will need to fix this code when the Hubspot developers add the ability to use a special parameter to get all properties for an entity.
-                #  According to Hubspot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
+                #  We will need to fix this code when the HubSpot developers add the ability to use a special parameter to get all properties for an entity.
+                #  According to HubSpot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
                 #  and the official documentation, this does not exist at the moment.
                 stream_records = {}
 

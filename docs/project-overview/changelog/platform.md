@@ -331,7 +331,7 @@ This is the changelog for Airbyte Platform. For our connector changelog, please 
 ## [0.10.0](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - delivered on 01/04/2021
 
 * You can now **deploy Airbyte on** [**Kuberbetes**](https://docs.airbyte.io/deploying-airbyte/on-kubernetes) _\*\*_\(alpha version\)
-* **Support incremental sync** for Mixpanel and Hubspot sources
+* **Support incremental sync** for Mixpanel and HubSpot sources
 * **Fixes on connectors:**
   * Fixed a bug in the GitHub connector where the connector didn’t verify the provided API token was granted the correct permissions
   * Fixed a bug in the Google Sheets connector where rate limits were not always respected
@@ -387,7 +387,7 @@ Here is what we are working on right now:
 
 ## [0.3.0](https://github.com/airbytehq/airbyte/milestone/3?closed=1) - delivered on 10/30/2020
 
-* **New sources:** Salesforce, GitHub, Google Sheets, Google Analytics, Hubspot, Rest APIs, and MySQL
+* **New sources:** Salesforce, GitHub, Google Sheets, Google Analytics, HubSpot, Rest APIs, and MySQL
 * Integration test suite for sources
 * Improve build speed
 
