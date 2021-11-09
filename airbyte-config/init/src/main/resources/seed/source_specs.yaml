@@ -2354,12 +2354,12 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/source-hubspot:0.1.23"
+- dockerImage: "airbyte/source-hubspot:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Hubspot Source Spec"
+      title: "HubSpot Source Spec"
       type: "object"
       required:
       - "start_date"
@@ -2380,7 +2380,7 @@
           type: "object"
           oneOf:
           - type: "object"
-            title: "Authenticate via Hubspot (Oauth)"
+            title: "Authenticate via HubSpot (Oauth)"
             required:
             - "client_id"
             - "client_secret"
@@ -2398,14 +2398,14 @@
                 order: 0
               client_id:
                 title: "Client ID"
-                description: "Hubspot client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\"\
+                description: "HubSpot client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\"\
                   >docs</a> if you need help finding this id."
                 type: "string"
                 examples:
                 - "123456789000"
               client_secret:
                 title: "Client Secret"
-                description: "Hubspot client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\"\
+                description: "HubSpot client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\"\
                   >docs</a> if you need help finding this secret."
                 type: "string"
                 examples:
@@ -2413,7 +2413,7 @@
                 airbyte_secret: true
               refresh_token:
                 title: "Refresh token"
-                description: "Hubspot refresh_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\"\
+                description: "HubSpot refresh_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\"\
                   >docs</a> if you need help generating the token."
                 type: "string"
                 examples:
@@ -2436,7 +2436,7 @@
                 order: 0
               api_key:
                 title: "API key"
-                description: "Hubspot API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\"\
+                description: "HubSpot API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\"\
                   >docs</a> if you need help finding this key."
                 type: "string"
                 airbyte_secret: true
@@ -2454,7 +2454,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-db2:0.1.1"
+- dockerImage: "airbyte/source-db2:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
     connectionSpecification:
@@ -2467,11 +2467,13 @@
       - "db"
       - "username"
       - "password"
+      - "encryption"
       additionalProperties: false
       properties:
         host:
           description: "Host of the Db2."
           type: "string"
+          order: 0
         port:
           description: "Port of the database."
           type: "integer"
@@ -2480,18 +2482,66 @@
           default: 8123
           examples:
           - "8123"
+          order: 1
         db:
           description: "Name of the database."
           type: "string"
           examples:
           - "default"
+          order: 2
         username:
           description: "Username to use to access the database."
           type: "string"
+          order: 3
         password:
           description: "Password associated with the username."
           type: "string"
           airbyte_secret: true
+          order: 4
+        encryption:
+          title: "Encryption"
+          type: "object"
+          description: "Encryption method to use when communicating with the database"
+          order: 5
+          oneOf:
+          - title: "Unencrypted"
+            additionalProperties: false
+            description: "Data transfer will not be encrypted."
+            required:
+            - "encryption_method"
+            properties:
+              encryption_method:
+                type: "string"
+                const: "unencrypted"
+                enum:
+                - "unencrypted"
+                default: "unencrypted"
+          - title: "TLS Encrypted (verify certificate)"
+            additionalProperties: false
+            description: "Verify and use the cert provided by the server."
+            required:
+            - "encryption_method"
+            - "ssl_certificate"
+            properties:
+              encryption_method:
+                type: "string"
+                const: "encrypted_verify_certificate"
+                enum:
+                - "encrypted_verify_certificate"
+                default: "encrypted_verify_certificate"
+              ssl_certificate:
+                title: "SSL PEM file"
+                description: "Privacy Enhanced Mail (PEM) files are concatenated certificate\
+                  \ containers frequently used in certificate installations"
+                type: "string"
+                airbyte_secret: true
+                multiline: true
+              key_store_password:
+                title: "Key Store Password. This field is optional. If you do not\
+                  \ fill in this field, the password will be randomly generated."
+                description: "Key Store Password"
+                type: "string"
+                airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
