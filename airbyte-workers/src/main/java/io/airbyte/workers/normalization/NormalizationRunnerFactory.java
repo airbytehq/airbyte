@@ -7,7 +7,9 @@ package io.airbyte.workers.normalization;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
 import io.airbyte.workers.process.ProcessFactory;
+
 import java.util.Map;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class NormalizationRunnerFactory {
@@ -30,17 +32,21 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-snowflake", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.SNOWFLAKE))
           .build();
 
-  public static NormalizationRunner create(final String imageName, final ProcessFactory processFactory) {
-    final String imageNameWithoutTag = imageName.split(":")[0];
-    if (NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
-      final var valuePair = NORMALIZATION_MAPPING.get(imageNameWithoutTag);
+  public static NormalizationRunner create(final String connectorImageName, final ProcessFactory processFactory) {
+      final var valuePair = getNormalizationInfoForConnector(connectorImageName);
       return new DefaultNormalizationRunner(
           valuePair.getRight(),
           processFactory,
           String.format("%s:%s", valuePair.getLeft(), NORMALIZATION_VERSION));
+  }
+
+  public static ImmutablePair<String, DestinationType> getNormalizationInfoForConnector(final String connectorImageName) {
+    final String imageNameWithoutTag = connectorImageName.contains(":") ? connectorImageName.split(":")[0] : connectorImageName;
+    if (NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
+      return NORMALIZATION_MAPPING.get(imageNameWithoutTag);
     } else {
       throw new IllegalStateException(
-          String.format("Requested normalization for %s, but it is not included in the normalization mappings.", imageName));
+          String.format("Requested normalization for %s, but it is not included in the normalization mappings.", connectorImageName));
     }
   }
 

@@ -731,7 +731,7 @@ public abstract class DestinationAcceptanceTest {
     final OperatorDbt dbtConfig = new OperatorDbt()
         .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
         .withGitRepoBranch("main")
-        .withDockerImage("airbyte/normalization:dev");
+        .withDockerImage(NormalizationRunnerFactory.getNormalizationInfoForConnector(getImageName()).getLeft());
     //
     // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
     //
