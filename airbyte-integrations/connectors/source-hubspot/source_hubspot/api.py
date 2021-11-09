@@ -700,6 +700,12 @@ class FormStream(Stream):
 
 
 class PropertyHistoryStream(IncrementalStream):
+    """Contacts Endpoint, API v1
+    Is used to get all Contacts and the history of their respective
+    Properties. Whenever a property is changed it is added here.
+    Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
+
+    """
     more_key = "has-more"
     url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
@@ -733,6 +739,10 @@ class PropertyHistoryStream(IncrementalStream):
 
 
 class FormSubmssionStream(Stream):
+    """Submissions for forms, v1
+    Get the Submissions for a form and the field values.
+    Docs: https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form
+    """
     url = "/form-integrations/v1/submissions/forms"
     limit = 50
     updated_at_field = "submittedAt"

@@ -84,9 +84,11 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 | `email_events` | `content` |
 | `engagements` | `contacts` |
 | `forms` | `forms` |
+| `form_submissions`| `forms` |
 | `line_items` | `e-commerce` |
 | `owners` | `contacts` |
 | `products` | `e-commerce` |
+| `property_history` | `contacts` |
 | `quotes` | no scope required |
 | `subscription_changes` | `content` |
 | `tickets` | `tickets` |
