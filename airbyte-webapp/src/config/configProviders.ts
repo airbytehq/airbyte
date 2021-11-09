@@ -4,7 +4,6 @@ import { isDefined } from "utils/common";
 
 const windowConfigProvider: ConfigProvider = async () => {
   return {
-    fullstory: { devMode: window.FULLSTORY === "disabled" },
     segment: {
       enabled: isDefined(window.TRACKING_STRATEGY)
         ? window.TRACKING_STRATEGY === "segment"
@@ -14,11 +13,7 @@ const windowConfigProvider: ConfigProvider = async () => {
     version: window.AIRBYTE_VERSION,
     isDemo: window.IS_DEMO === "true",
     // cloud only start
-    firebase: {
-      apiKey: window.FIREBASE_API_KEY,
-      authDomain: window.FIREBASE_AUTH_DOMAIN,
-    },
-    cloudApiUrl: window.CLOUD_API_URL,
+    // TODO: remove when infra team supports proper webapp building
     cloud: window.CLOUD === "true",
     // cloud only end
   };
@@ -27,11 +22,9 @@ const windowConfigProvider: ConfigProvider = async () => {
 const envConfigProvider: ConfigProvider = async () => {
   return {
     apiUrl: process.env.REACT_APP_API_URL,
+    integrationUrl: process.env.REACT_APP_INTEGRATION_DOCS_URLS,
     segment: {
       token: process.env.REACT_APP_SEGMENT_TOKEN,
-    },
-    fullstory: {
-      orgId: process.env.REACT_APP_FULL_STORY_ORG,
     },
   };
 };

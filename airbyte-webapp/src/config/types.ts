@@ -1,24 +1,20 @@
-import * as Fullstory from "@fullstory/browser";
-
 import { SegmentAnalytics } from "core/analytics/types";
 import { UiConfig } from "./uiConfig";
 
 declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
-    FULLSTORY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
     CLOUD?: string;
-    FIREBASE_API_KEY?: string;
-    FIREBASE_AUTH_DOMAIN?: string;
-    CLOUD_API_URL?: string;
     REACT_APP_SENTRY_DSN?: string;
     REACT_APP_WEBAPP_TAG?: string;
     REACT_APP_INTERCOM_APP_ID?: string;
-
+    REACT_APP_INTEGRATION_DOCS_URLS?: string;
     analytics: SegmentAnalytics;
+
+    // API_URL to hack rest-hooks resources
     _API_URL: string;
   }
 }
@@ -26,12 +22,12 @@ declare global {
 export type Config = {
   ui: UiConfig;
   segment: { token: string; enabled: boolean };
-  fullstory: Fullstory.SnippetOptions;
   apiUrl: string;
   oauthRedirectUrl: string;
   healthCheckInterval: number;
   isDemo: boolean;
   version?: string;
+  integrationUrl: string;
 };
 
 export type DeepPartial<T> = {

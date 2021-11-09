@@ -10,6 +10,7 @@ import io.airbyte.api.model.ImportRequestBody;
 import io.airbyte.api.model.UploadRead;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -30,13 +31,13 @@ public class ArchiveHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHandler.class);
 
-  private final String version;
+  private final AirbyteVersion version;
   private final ConfigDumpExporter configDumpExporter;
   private final ConfigDumpImporter configDumpImporter;
   private final ConfigPersistence seed;
   private final FileTtlManager fileTtlManager;
 
-  public ArchiveHandler(final String version,
+  public ArchiveHandler(final AirbyteVersion version,
                         final ConfigRepository configRepository,
                         final JobPersistence jobPersistence,
                         final ConfigPersistence seed,
@@ -52,7 +53,7 @@ public class ArchiveHandler {
         seed);
   }
 
-  public ArchiveHandler(final String version,
+  public ArchiveHandler(final AirbyteVersion version,
                         final FileTtlManager fileTtlManager,
                         final ConfigDumpExporter configDumpExporter,
                         final ConfigDumpImporter configDumpImporter,

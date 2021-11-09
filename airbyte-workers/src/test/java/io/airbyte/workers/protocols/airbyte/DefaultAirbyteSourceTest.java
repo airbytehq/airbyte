@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
+import static io.airbyte.commons.logging.LoggingHelper.RESET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,9 +17,14 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.logging.LoggingHelper.Color;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -36,6 +42,8 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,6 +73,17 @@ class DefaultAirbyteSourceTest {
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow"));
 
+  private static Path logJobRoot;
+
+  static {
+    try {
+      logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+      LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfiguration.EMPTY, logJobRoot);
+    } catch (final IOException e) {
+      e.printStackTrace();
+    }
+  }
+
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
   private Process process;
@@ -92,11 +111,25 @@ class DefaultAirbyteSourceTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
 
     streamFactory = noop -> MESSAGES.stream();
+
+    LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfiguration.EMPTY, logJobRoot);
+  }
+
+  @AfterEach
+  public void tearDown() throws IOException {
+    // The log file needs to be present and empty
+    final Path logFile = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
+    if (Files.exists(logFile)) {
+      Files.delete(logFile);
+    }
+    Files.createFile(logFile);
   }
 
   @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
   @Test
   public void testSuccessfulLifecycle() throws Exception {
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
+
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
     final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
@@ -125,6 +158,37 @@ class DefaultAirbyteSourceTest {
     });
 
     verify(process).exitValue();
+  }
+
+  @Test
+  public void testTaggedLogs() throws Exception {
+
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(("rewq").getBytes(StandardCharsets.UTF_8)));
+
+    when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
+
+    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory,
+        heartbeatMonitor);
+    source.start(SOURCE_CONFIG, jobRoot);
+
+    final List<AirbyteMessage> messages = Lists.newArrayList();
+
+    messages.add(source.attemptRead().get());
+    messages.add(source.attemptRead().get());
+
+    when(process.isAlive()).thenReturn(false);
+
+    source.close();
+
+    final Path logPath = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
+    final Stream<String> logs = IOs.readFile(logPath).lines();
+
+    logs
+        .filter(line -> !line.contains("EnvConfigs(getEnvOrDefault)"))
+        .forEach(line -> {
+          org.assertj.core.api.Assertions.assertThat(line)
+              .startsWith(Color.BLUE.getCode() + "source" + RESET);
+        });
   }
 
   @Test

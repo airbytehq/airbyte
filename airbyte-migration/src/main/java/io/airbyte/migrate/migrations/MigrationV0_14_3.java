@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This migration fixes a mistake. We should have done a minor version bump from 0.14.2 => 0.14.3
+ * This migration fixes a mistake. We should have done a minor version bump from 0.14.2 to 0.14.3
  * but we did not. This migration cleans up any problems that might have arisen from that. Then we
  * will do another migration to 0.15 forcing everyone to migrate (guaranteeing they hit this one)
  * and getting into a good state. The only change here is that instead of using StandardDataSchema

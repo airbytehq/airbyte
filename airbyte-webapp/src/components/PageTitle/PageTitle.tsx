@@ -14,7 +14,6 @@ export const MainContainer = styled.div<{ withLine?: boolean }>`
   padding: 20px 32px 18px;
   border-bottom: ${({ theme, withLine }) =>
     withLine ? `1px solid ${theme.greyColor20}` : "none"};
-  margin-bottom: ${({ withLine }) => (withLine ? "17px" : 0)};
   position: relative;
   z-index: 2;
   color: ${({ theme }) => theme.darkPrimaryColor};

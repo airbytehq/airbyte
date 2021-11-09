@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
+import { QueryClientProvider, QueryClient } from "react-query";
 
 import en from "./locales/en.json";
 import GlobalStyle from "./global-styles";
@@ -44,9 +45,6 @@ const Features: Feature[] = [
   {
     id: FeatureItem.AllowUpdateConnectors,
   },
-  {
-    id: FeatureItem.AllowOAuthConnector,
-  },
 ];
 
 const StyleProvider: React.FC = ({ children }) => (
@@ -62,8 +60,12 @@ const I18NProvider: React.FC = ({ children }) => (
   </IntlProvider>
 );
 
+const queryClient = new QueryClient();
+
 const StoreProvider: React.FC = ({ children }) => (
-  <CacheProvider>{children}</CacheProvider>
+  <CacheProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  </CacheProvider>
 );
 
 const configProviders: ValueProvider<Config> = [

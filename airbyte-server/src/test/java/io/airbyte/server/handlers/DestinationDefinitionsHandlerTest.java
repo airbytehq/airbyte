@@ -11,18 +11,24 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
+import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SynchronousJobMetadata;
+import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.server.services.AirbyteGithubStore;
-import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
@@ -37,7 +43,6 @@ import org.junit.jupiter.api.Test;
 
 class DestinationDefinitionsHandlerTest {
 
-  private DockerImageValidator dockerImageValidator;
   private ConfigRepository configRepository;
   private StandardDestinationDefinition destination;
   private DestinationDefinitionsHandler destinationHandler;
@@ -50,23 +55,26 @@ class DestinationDefinitionsHandlerTest {
   void setUp() {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
-    dockerImageValidator = mock(DockerImageValidator.class);
     destination = generateDestination();
     schedulerSynchronousClient = spy(CachingSynchronousSchedulerClient.class);
     githubStore = mock(AirbyteGithubStore.class);
 
     destinationHandler =
-        new DestinationDefinitionsHandler(configRepository, dockerImageValidator, uuidSupplier, schedulerSynchronousClient, githubStore);
+        new DestinationDefinitionsHandler(configRepository, uuidSupplier, schedulerSynchronousClient, githubStore);
   }
 
   private StandardDestinationDefinition generateDestination() {
+    final ConnectorSpecification spec = new ConnectorSpecification().withConnectionSpecification(
+        Jsons.jsonNode(ImmutableMap.of("foo", "bar")));
+
     return new StandardDestinationDefinition()
         .withDestinationDefinitionId(UUID.randomUUID())
         .withName("presto")
         .withDockerImageTag("12.3")
         .withDockerRepository("repo")
         .withDocumentationUrl("https://hulu.com")
-        .withIcon("http.svg");
+        .withIcon("http.svg")
+        .withSpec(spec);
   }
 
   @Test
@@ -125,7 +133,13 @@ class DestinationDefinitionsHandlerTest {
   @DisplayName("createDestinationDefinition should correctly create a destinationDefinition")
   void testCreateDestinationDefinition() throws URISyntaxException, IOException, JsonValidationException {
     final StandardDestinationDefinition destination = generateDestination();
+    final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
+
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
+    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+        destination.getSpec(),
+        SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
+
     final DestinationDefinitionCreate create = new DestinationDefinitionCreate()
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
@@ -144,7 +158,8 @@ class DestinationDefinitionsHandlerTest {
     final DestinationDefinitionRead actualRead = destinationHandler.createDestinationDefinition(create);
 
     assertEquals(expectedRead, actualRead);
-    verify(dockerImageValidator).assertValidIntegrationImage(destination.getDockerRepository(), destination.getDockerImageTag());
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(configRepository).writeStandardDestinationDefinition(destination);
   }
 
   @Test
@@ -158,11 +173,21 @@ class DestinationDefinitionsHandlerTest {
     final String newDockerImageTag = "averydifferenttag";
     assertNotEquals(newDockerImageTag, currentTag);
 
-    final DestinationDefinitionRead sourceRead = destinationHandler.updateDestinationDefinition(
+    final String newImageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), newDockerImageTag);
+    final ConnectorSpecification newSpec = new ConnectorSpecification().withConnectionSpecification(
+        Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")));
+    when(schedulerSynchronousClient.createGetSpecJob(newImageName)).thenReturn(new SynchronousResponse<>(
+        newSpec,
+        SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
+
+    final StandardDestinationDefinition updatedDestination = Jsons.clone(destination).withDockerImageTag(newDockerImageTag).withSpec(newSpec);
+
+    final DestinationDefinitionRead destinationRead = destinationHandler.updateDestinationDefinition(
         new DestinationDefinitionUpdate().destinationDefinitionId(this.destination.getDestinationDefinitionId()).dockerImageTag(newDockerImageTag));
 
-    assertEquals(newDockerImageTag, sourceRead.getDockerImageTag());
-    verify(dockerImageValidator).assertValidIntegrationImage(dockerRepository, newDockerImageTag);
+    assertEquals(newDockerImageTag, destinationRead.getDockerImageTag());
+    verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
+    verify(configRepository).writeStandardDestinationDefinition(updatedDestination);
     verify(schedulerSynchronousClient).resetCache();
   }
 
