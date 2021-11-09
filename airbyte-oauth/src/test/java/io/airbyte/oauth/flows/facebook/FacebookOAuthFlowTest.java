@@ -37,13 +37,29 @@ public class FacebookOAuthFlowTest {
   private UUID definitionId;
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws JsonValidationException, IOException {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
     facebookOAuthFlow = new FacebookMarketingOAuthFlow(configRepository, httpClient, FacebookOAuthFlowTest::getConstantState);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
+    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
+        .withOauthParameterId(UUID.randomUUID())
+        .withSourceDefinitionId(definitionId)
+        .withWorkspaceId(workspaceId)
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
+            .put("client_id", "test_client_id")
+            .put("client_secret", "test_client_secret")
+            .build())))));
+    when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
+        .withOauthParameterId(UUID.randomUUID())
+        .withDestinationDefinitionId(definitionId)
+        .withWorkspaceId(workspaceId)
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
+            .put("client_id", "test_client_id")
+            .put("client_secret", "test_client_secret")
+            .build())))));
   }
 
   private static String getConstantState() {
@@ -51,16 +67,7 @@ public class FacebookOAuthFlowTest {
   }
 
   @Test
-  public void testCompleteSourceOAuth() throws IOException, JsonValidationException, InterruptedException, ConfigNotFoundException {
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build()))));
-
+  public void testCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
     final Map<String, String> returnedCredentials = Map.of("access_token", "access_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
@@ -69,20 +76,11 @@ public class FacebookOAuthFlowTest {
     final Map<String, Object> actualQueryParams =
         facebookOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
+    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
 
   @Test
   public void testCompleteDestinationOAuth() throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
-    when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withDestinationDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build()))));
-
     final Map<String, String> returnedCredentials = Map.of("access_token", "access_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
@@ -91,7 +89,7 @@ public class FacebookOAuthFlowTest {
     final Map<String, Object> actualQueryParams =
         facebookOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
-    assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
+    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
   }
 
 }

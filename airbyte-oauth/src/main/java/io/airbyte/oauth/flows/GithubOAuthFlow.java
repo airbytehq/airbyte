@@ -6,7 +6,6 @@ package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
@@ -26,7 +25,7 @@ public class GithubOAuthFlow extends BaseOAuth2Flow {
   private static final String AUTHORIZE_URL = "https://github.com/login/oauth/authorize";
   private static final String ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
 
-  public GithubOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+  public GithubOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
@@ -45,7 +44,7 @@ public class GithubOAuthFlow extends BaseOAuth2Flow {
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("state", getState())
           .build().toString();
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
@@ -56,27 +55,12 @@ public class GithubOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
-    System.out.println(data);
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
     if (data.has("access_token")) {
-      return Map.of("credentials", Map.of("access_token", data.get("access_token").asText()));
+      return Map.of("access_token", data.get("access_token").asText());
     } else {
       throw new IOException(String.format("Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL));
     }
-  }
-
-  @Override
-  protected String getClientIdUnsafe(final JsonNode config) {
-    // the config object containing client ID and secret is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientIdUnsafe(config.get("credentials"));
-  }
-
-  @Override
-  protected String getClientSecretUnsafe(final JsonNode config) {
-    // the config object containing client ID and secret is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientSecretUnsafe(config.get("credentials"));
   }
 
 }

@@ -4,6 +4,7 @@
 
 package io.airbyte.oauth.flows.google;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -78,6 +79,16 @@ public abstract class GoogleOAuthFlow extends BaseOAuth2Flow {
         .put("grant_type", "authorization_code")
         .put("redirect_uri", redirectUrl)
         .build();
+  }
+
+  @Override
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
+    final Map<String, Object> result = super.extractOAuthOutput(data, accessTokenUrl);
+    if (data.has("access_token")) {
+      // google also returns an access token the first time you complete oauth flow
+      result.put("access_token", data.get("access_token").asText());
+    }
+    return result;
   }
 
 }

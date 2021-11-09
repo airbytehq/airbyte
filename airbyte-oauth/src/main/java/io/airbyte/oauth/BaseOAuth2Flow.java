@@ -20,6 +20,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -63,9 +64,9 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   }
 
   public BaseOAuth2Flow(final ConfigRepository configRepository,
-                       final HttpClient httpClient,
-                       final Supplier<String> stateSupplier,
-                       final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
+                        final HttpClient httpClient,
+                        final Supplier<String> stateSupplier,
+                        final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType) {
     super(configRepository);
     this.httpClient = httpClient;
     this.stateSupplier = stateSupplier;
@@ -111,12 +112,15 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
                                                  final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
-    return completeOAuthFlow(
-        getClientIdUnsafe(oAuthParamConfig),
-        getClientSecretUnsafe(oAuthParamConfig),
-        extractCodeParameter(queryParams),
-        redirectUrl,
-        oAuthParamConfig);
+    return formatOAuthOutput(
+        oAuthParamConfig,
+        completeOAuthFlow(
+            getClientIdUnsafe(oAuthParamConfig),
+            getClientSecretUnsafe(oAuthParamConfig),
+            extractCodeParameter(queryParams),
+            redirectUrl,
+            oAuthParamConfig),
+        getDefaultOAuthOutputPath());
   }
 
   @Override
@@ -126,11 +130,15 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
                                                       final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
-    return completeOAuthFlow(
-        getClientIdUnsafe(oAuthParamConfig),
-        getClientSecretUnsafe(oAuthParamConfig),
-        extractCodeParameter(queryParams),
-        redirectUrl, oAuthParamConfig);
+    return formatOAuthOutput(
+        oAuthParamConfig,
+        completeOAuthFlow(
+            getClientIdUnsafe(oAuthParamConfig),
+            getClientSecretUnsafe(oAuthParamConfig),
+            extractCodeParameter(queryParams),
+            redirectUrl,
+            oAuthParamConfig),
+        getDefaultOAuthOutputPath());
   }
 
   protected Map<String, Object> completeOAuthFlow(final String clientId,
@@ -150,7 +158,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     // TODO: Handle error response to report better messages
     try {
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      return extractRefreshToken(Jsons.deserialize(response.body()), accessTokenUrl);
+      return extractOAuthOutput(Jsons.deserialize(response.body()), accessTokenUrl);
     } catch (final InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
@@ -190,21 +198,22 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
    */
   protected abstract String getAccessTokenUrl();
 
+  /**
+   * Extract all OAuth outputs from distant API response and store them in a flat map.
+   */
   protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
     final Map<String, Object> result = new HashMap<>();
     if (data.has("refresh_token")) {
       result.put("refresh_token", data.get("refresh_token").asText());
-    } else if (data.has("access_token")) {
-      result.put("access_token", data.get("access_token").asText());
     } else {
       throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
     }
     return result;
   }
 
-  @Deprecated
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, final String accessTokenUrl) throws IOException {
-    return Map.of("credentials", extractOAuthOutput(data,accessTokenUrl));
+  @Override
+  protected List<String> getDefaultOAuthOutputPath() {
+    return List.of("credentials");
   }
 
   private static String urlEncode(final String s) {

@@ -12,13 +12,15 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Abstract Class implementing common base methods for managing:
- * - oAuth config (instance-wide) parameters
- * - oAuth specifications
+ * Abstract Class implementing common base methods for managing: - oAuth config (instance-wide)
+ * parameters - oAuth specifications
  */
 public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
 
@@ -64,11 +66,17 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
    * @return The configured Client ID used for this oauth flow
    */
   protected String getClientIdUnsafe(final JsonNode oauthConfig) {
-    if (oauthConfig.get("client_id") != null) {
-      return oauthConfig.get("client_id").asText();
-    } else {
-      throw new IllegalArgumentException("Undefined parameter 'client_id' necessary for the OAuth Flow.");
+    final List<String> path = new ArrayList<>(getDefaultOAuthOutputPath());
+    path.add("client_id");
+    JsonNode result = oauthConfig;
+    for (final String node : path) {
+      if (result.get(node) != null) {
+        result = result.get(node);
+      } else {
+        throw new IllegalArgumentException(String.format("Undefined parameter '%s' necessary for the OAuth Flow.", String.join(".", path)));
+      }
     }
+    return result.asText();
   }
 
   /**
@@ -78,10 +86,39 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
    * @return The configured client secret for this OAuthFlow
    */
   protected String getClientSecretUnsafe(final JsonNode oauthConfig) {
-    if (oauthConfig.get("client_secret") != null) {
-      return oauthConfig.get("client_secret").asText();
-    } else {
-      throw new IllegalArgumentException("Undefined parameter 'client_secret' necessary for the OAuth Flow.");
+    final List<String> path = new ArrayList<>(getDefaultOAuthOutputPath());
+    path.add("client_secret");
+    JsonNode result = oauthConfig;
+    for (final String node : path) {
+      if (result.get(node) != null) {
+        result = result.get(node);
+      } else {
+        throw new IllegalArgumentException(String.format("Undefined parameter '%s' necessary for the OAuth Flow.", String.join(".", path)));
+      }
     }
+    return result.asText();
   }
+
+  /**
+   * completeOAuth calls should output a flat map of fields produced by the oauth flow to be forwarded
+   * back to the connector config. This function is in charge of formatting such flat map of fields
+   * into nested Map accordingly to follow the expected @param outputPath.
+   *
+   */
+  protected Map<String, Object> formatOAuthOutput(final JsonNode oAuthParamConfig,
+                                                  final Map<String, Object> oauthOutput,
+                                                  final List<String> outputPath) {
+    Map<String, Object> result = oauthOutput;
+    for (final String node : outputPath) {
+      result = Map.of(node, result);
+    }
+    // TODO chris to implement injection of oAuthParamConfig in outputs
+    return result;
+  }
+
+  /**
+   * This function should be redefined in each OAuthFlow implementation to isolate such "hardcoded" values.
+   */
+  protected abstract List<String> getDefaultOAuthOutputPath();
+
 }

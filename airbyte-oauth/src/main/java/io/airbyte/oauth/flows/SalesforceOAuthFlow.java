@@ -4,10 +4,8 @@
 
 package io.airbyte.oauth.flows;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
@@ -29,7 +27,7 @@ public class SalesforceOAuthFlow extends BaseOAuth2Flow {
   private static final String AUTHORIZE_URL = "https://login.salesforce.com/services/oauth2/authorize";
   private static final String ACCESS_TOKEN_URL = "https://login.salesforce.com/services/oauth2/token";
 
-  public SalesforceOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+  public SalesforceOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
@@ -66,17 +64,6 @@ public class SalesforceOAuthFlow extends BaseOAuth2Flow {
         .putAll(super.getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))
         .put("grant_type", "authorization_code")
         .build();
-  }
-
-  @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, final String accessTokenUrl) throws IOException {
-    System.out.println(Jsons.serialize(data));
-    if (data.has("refresh_token")) {
-      final String refreshToken = data.get("refresh_token").asText();
-      return Map.of("refresh_token", refreshToken);
-    } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
-    }
   }
 
 }

@@ -61,7 +61,7 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) {
     // Facebook does not have refresh token but calls it "long lived access token" instead:
     // see https://developers.facebook.com/docs/facebook-login/access-tokens/refreshing
     Preconditions.checkArgument(data.has("access_token"), "Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL);
@@ -73,7 +73,7 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
                                                   final String clientSecret,
                                                   final String authCode,
                                                   final String redirectUrl,
-                                                  JsonNode oAuthParamConfig)
+                                                  final JsonNode oAuthParamConfig)
       throws IOException {
     // Access tokens generated via web login are short-lived tokens
     // they arre valid for 1 hour and need to be exchanged for long-lived access token

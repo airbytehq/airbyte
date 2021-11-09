@@ -4,8 +4,6 @@
 
 package io.airbyte.oauth.flows;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
@@ -47,13 +45,16 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
           .addParameter("state", getState())
           .addParameter("scopes", getScopes())
           .build().toString();
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(final String clientId, final String clientSecret, final String authCode, final String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         // required
         .put("client_id", clientId)
@@ -89,20 +90,6 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
   @Override
   protected String getAccessTokenUrl() {
     return "https://api.hubapi.com/oauth/v1/token";
-  }
-
-  @Override
-  protected String getClientIdUnsafe(final JsonNode config) {
-    // the config object containing client ID and secret is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientIdUnsafe(config.get("credentials"));
-  }
-
-  @Override
-  protected String getClientSecretUnsafe(final JsonNode config) {
-    // the config object containing client ID and secret is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientSecretUnsafe(config.get("credentials"));
   }
 
 }

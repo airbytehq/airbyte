@@ -26,17 +26,17 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
   private static final String AUTHORIZE_URL = "https://api.surveymonkey.com/oauth/authorize";
   private static final String ACCESS_TOKEN_URL = "https://api.surveymonkey.com/oauth/token";
 
-  public SurveymonkeyOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+  public SurveymonkeyOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
   @VisibleForTesting
-  SurveymonkeyOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+  SurveymonkeyOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
     try {
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
@@ -55,7 +55,10 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         .putAll(super.getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))
         .put("grant_type", "authorization_code")
@@ -63,7 +66,7 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) {
     Preconditions.checkArgument(data.has("access_token"), "Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL);
     return Map.of("access_token", data.get("access_token").asText());
   }
