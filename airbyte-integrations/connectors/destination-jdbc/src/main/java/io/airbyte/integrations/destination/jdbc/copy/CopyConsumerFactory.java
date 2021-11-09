@@ -29,7 +29,7 @@ public class CopyConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CopyConsumerFactory.class);
 
-  private static final int MAX_BATCH_SIZE = 10000;
+  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256 mib
 
   public static <T> AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                                   final JdbcDatabase database,
@@ -56,7 +56,7 @@ public class CopyConsumerFactory {
         onCloseFunction(pairToCopier, database, sqlOperations, pairToIgnoredRecordCount),
         catalog,
         sqlOperations::isValidData,
-        MAX_BATCH_SIZE);
+        MAX_BATCH_SIZE_BYTES);
   }
 
   private static <T> Map<AirbyteStreamNameNamespacePair, StreamCopier> createWriteConfigs(final ExtendedNameTransformer namingResolver,
