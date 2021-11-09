@@ -5,16 +5,13 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-protocol",
-    "base-python",
-    "backoff==1.10.0",
-    "pendulum==1.2.0",
-    "requests==2.25.1",
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1"]
+
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+    "requests_mock==1.8.0",
+    "source-acceptance-test",
 ]
-
-TEST_REQUIREMENTS = ["pytest", "requests_mock==1.8.0"]
-
 
 setup(
     name="source_zendesk_talk",
