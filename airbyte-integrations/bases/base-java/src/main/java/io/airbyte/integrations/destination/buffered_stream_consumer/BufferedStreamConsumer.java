@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.buffered_stream_consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.bytes.ByteUtils;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
@@ -146,7 +147,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       // are serialized again when writing to
       // the destination
       // TODO use a smarter way of estimating byte size rather than always multiply by two
-      long messageSizeInBytes = Jsons.serialize(recordMessage.getData()).length() * 2; // Strings serialize to UTF-8 by default
+      long messageSizeInBytes = ByteUtils.getSizeInBytes(Jsons.serialize(recordMessage.getData()));
       if (bufferSizeInBytes + messageSizeInBytes >= maxQueueSizeInBytes) {
         flushQueueToDestination();
         bufferSizeInBytes = 0;
