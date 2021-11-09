@@ -371,7 +371,8 @@ class AdsInsights(FBMarketingIncrementalStream):
                 return job
             else:
                 time_range = (job["date_start"], job["date_stop"])
-                if self.times_job_restarted.get(time_range, 0) < 6:
+                self.times_job_restarted[time_range] = self.times_job_restarted.get(time_range, 0)
+                if self.times_job_restarted[time_range] < 6:
                     params = deep_merge(
                         {"time_range": {"since": job["date_start"], "until": job["date_stop"]}},
                         self.request_params(stream_state=stream_state),
