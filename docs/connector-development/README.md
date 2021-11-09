@@ -139,6 +139,6 @@ In order to run integration tests in CI, you'll often need to inject credentials
 #### How to migrate to the new secrets' logic:
 1. Create all necessary secrets how it is explained above.
 2. Remove all lines with old connector's Github secrets from this file: tools/bin/ci_credentials.sh
-3. Remove all old secrets from Githubthe secret from env variables to the connector directory**: edit `tools/bin/ci_credentials.sh` to write the secret into the `secrets/` directory of the relevant connector.  
+3. Remove all old secrets from Github repository secrets.
 5. That should be it.
 
