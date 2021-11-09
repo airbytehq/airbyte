@@ -6,7 +6,7 @@ package io.airbyte.oauth.flows;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -14,12 +14,12 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
-public class SlackOAuthFlow extends BaseOAuthFlow {
+public class SlackOAuthFlow extends BaseOAuth2Flow {
 
   final String SLACK_CONSENT_URL_BASE = "https://slack.com/oauth/authorize";
   final String SLACK_TOKEN_URL = "https://slack.com/api/oauth.access";
 
-  public SlackOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+  public SlackOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
@@ -32,13 +32,9 @@ public class SlackOAuthFlow extends BaseOAuthFlow {
    * Depending on the OAuth flow implementation, the URL to grant user's consent may differ,
    * especially in the query parameters to be provided. This function should generate such consent URL
    * accordingly.
-   *
-   * @param definitionId
-   * @param clientId
-   * @param redirectUrl
    */
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
     try {
       return new URIBuilder(SLACK_CONSENT_URL_BASE)
           .addParameter("client_id", clientId)
@@ -46,7 +42,7 @@ public class SlackOAuthFlow extends BaseOAuthFlow {
           .addParameter("state", getState())
           .addParameter("scope", "read")
           .build().toString();
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
