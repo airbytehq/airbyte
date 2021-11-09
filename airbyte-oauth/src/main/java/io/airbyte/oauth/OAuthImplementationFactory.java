@@ -33,7 +33,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-intercom", new IntercomOAuthFlow(configRepository), httpClient)
+        .put("airbyte/source-intercom", new IntercomOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-instagram", new InstagramOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-slack", new SlackOAuthFlow(configRepository, httpClient))

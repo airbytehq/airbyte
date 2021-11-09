@@ -21,12 +21,12 @@ public class IntercomOAuthFlow extends BaseOAuthFlow {
   private static final String AUTHORIZE_URL = "https://app.intercom.com/a/oauth/connect";
   private static final String ACCESS_TOKEN_URL = "https://api.intercom.io/auth/eagle/token";
 
-  public IntercomOAuthFlow(ConfigRepository configRepository) {
-    super(configRepository);
+  public IntercomOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
-  public IntercomOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+  public IntercomOAuthFlow(ConfigRepository configRepository, final HttpClient httpClient, Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
