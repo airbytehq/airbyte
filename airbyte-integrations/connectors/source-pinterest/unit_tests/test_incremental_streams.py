@@ -33,7 +33,7 @@ def test_get_updated_state(patch_incremental_base_class, test_current_stream_sta
 def test_stream_slices(patch_incremental_base_class, test_current_stream_state, test_incremental_config):
     stream = IncrementalPinterestSubStream(None, config=test_incremental_config)
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": "updated_time", "stream_state": test_current_stream_state}
-    expected_stream_slice = [{"start_date": "2021-10-22", "end_date": "2022-04-25"}]
+    expected_stream_slice = [{"start_date": "2021-10-22", "end_date": "2021-11-21"}]
     assert [i for i in stream.stream_slices(**inputs)] == expected_stream_slice
 
 
