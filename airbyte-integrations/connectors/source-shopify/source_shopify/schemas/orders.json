@@ -1644,10 +1644,6 @@
                   "type": ["null", "string"]
                 },
                 {
-                  "type": ["null", "object"],
-                  "additionaProperties": true
-                },
-                {
                   "type": ["null", "integer"]
                 },
                 {
@@ -1662,10 +1658,6 @@
                     "oneOf": [
                       {
                         "type": ["null", "string"]
-                      },
-                      {
-                        "type": ["null", "object"],
-                        "additionaProperties": true
                       },
                       {
                         "type": ["null", "integer"]

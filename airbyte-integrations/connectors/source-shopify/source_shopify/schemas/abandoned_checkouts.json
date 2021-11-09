@@ -220,10 +220,6 @@
                   "type": ["null", "string"]
                 },
                 {
-                  "type": ["null", "object"],
-                  "additionaProperties": true
-                },
-                {
                   "type": ["null", "integer"]
                 },
                 {
@@ -238,10 +234,6 @@
                     "oneOf": [
                       {
                         "type": ["null", "string"]
-                      },
-                      {
-                        "type": ["null", "object"],
-                        "additionaProperties": true
                       },
                       {
                         "type": ["null", "integer"]
@@ -392,7 +384,9 @@
             "type": ["null", "string"]
           },
           "discount_allocations": {
+            "type": ["null", "array"],
             "items": {
+              "type": ["null", "object"],
               "properties": {
                 "discount_application_index": {
                   "type": ["null", "integer"]
@@ -427,10 +421,8 @@
                 "amount": {
                   "type": ["null", "number"]
                 }
-              },
-              "type": ["null", "object"]
-            },
-            "type": ["null", "array"]
+              }
+            }
           },
           "admin_graphql_api_id": {
             "type": ["null", "string"]
@@ -634,10 +626,6 @@
                   "type": ["null", "string"]
                 },
                 {
-                  "type": ["null", "object"],
-                  "additionaProperties": true
-                },
-                {
                   "type": ["null", "integer"]
                 },
                 {
@@ -652,10 +640,6 @@
                     "oneOf": [
                       {
                         "type": ["null", "string"]
-                      },
-                      {
-                        "type": ["null", "object"],
-                        "additionaProperties": true
                       },
                       {
                         "type": ["null", "integer"]

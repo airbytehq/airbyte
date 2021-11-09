@@ -392,7 +392,41 @@
             "type": ["null", "integer"]
           },
           "properties": {
-            "type": ["null", "array"]
+            "type": ["null", "array"],
+            "items": {
+              "oneOf": [
+                {
+                  "type": ["null", "string"]
+                },
+                {
+                  "type": ["null", "integer"]
+                },
+                {
+                  "type": ["null", "number"]
+                },
+                {
+                  "type": ["null", "boolean"]
+                },
+                {
+                  "type": ["null", "array"],
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": ["null", "string"]
+                      },
+                      {
+                        "type": ["null", "integer"]
+                      },
+                      {
+                        "type": ["null", "number"]
+                      },
+                      {
+                        "type": ["null", "boolean"]
+                      }
+                    ]
+                  }
+                }
+              ]
           },
           "quantity": {
             "type": ["null", "integer"]
@@ -839,28 +873,42 @@
       }
     },
     "applied_discounts": {
-      "oneOf": [
-        {
-          "type": ["null", "object"],
-          "additionalProperties": true
-        },
-        {
-          "type": ["null", "string"]
-        },
-        {
-          "type": ["null", "number"]
-        },
-        {
-          "type": ["null", "integer"]
-        },
-        {
-          "type": ["null", "array"],
-          "items": {
-            "type": ["null", "object"],
-            "additionalProperties": true
+      "type": ["null", "array"],
+      "items": {
+        "oneOf": [
+          {
+            "type": ["null", "string"]
+          },
+          {
+            "type": ["null", "integer"]
+          },
+          {
+            "type": ["null", "number"]
+          },
+          {
+            "type": ["null", "boolean"]
+          },
+          {
+            "type": ["null", "array"],
+            "items": {
+              "oneOf": [
+                {
+                  "type": ["null", "string"]
+                },
+                {
+                  "type": ["null", "integer"]
+                },
+                {
+                  "type": ["null", "number"]
+                },
+                {
+                  "type": ["null", "boolean"]
+                }
+              ]
+            }
           }
-        }
-      ]
+        ]
+      }
     },
     "taxes_included": {
       "type": ["null", "boolean"]
