@@ -76,4 +76,5 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
   protected List<String> getDefaultOAuthOutputPath() {
     return List.of();
   }
+
 }
