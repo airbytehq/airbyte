@@ -7,7 +7,9 @@ package io.airbyte.server.handlers;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.CompleteDestinationOAuthRequest;
+import io.airbyte.api.model.CompleteDestinationOauthResponse;
 import io.airbyte.api.model.CompleteSourceOauthRequest;
+import io.airbyte.api.model.CompleteSourceOauthResponse;
 import io.airbyte.api.model.DestinationOauthConsentRequest;
 import io.airbyte.api.model.OAuthConsentRead;
 import io.airbyte.api.model.SetInstancewideDestinationOauthParamsRequestBody;
@@ -26,7 +28,6 @@ import io.airbyte.scheduler.persistence.job_tracker.TrackingMetadata;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.http.HttpClient;
-import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,17 +84,18 @@ public class OAuthHandler {
     return result;
   }
 
-  public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest oauthSourceRequestBody)
+  public CompleteSourceOauthResponse completeSourceOAuth(final CompleteSourceOauthRequest oauthSourceRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(oauthSourceRequestBody.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation =
         oAuthImplementationFactory.create(sourceDefinition, oauthSourceRequestBody.getWorkspaceId());
     final ImmutableMap<String, Object> metadata = generateSourceMetadata(oauthSourceRequestBody.getSourceDefinitionId());
-    final Map<String, Object> result = oAuthFlowImplementation.completeSourceOAuth(
+    final CompleteSourceOauthResponse result = new CompleteSourceOauthResponse();
+    result.oauthOutput(oAuthFlowImplementation.completeSourceOAuth(
         oauthSourceRequestBody.getWorkspaceId(),
         oauthSourceRequestBody.getSourceDefinitionId(),
         oauthSourceRequestBody.getQueryParams(),
-        oauthSourceRequestBody.getRedirectUrl());
+        oauthSourceRequestBody.getRedirectUrl()));
     try {
       trackingClient.track(oauthSourceRequestBody.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
     } catch (final Exception e) {
@@ -102,18 +104,19 @@ public class OAuthHandler {
     return result;
   }
 
-  public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest oauthDestinationRequestBody)
+  public CompleteDestinationOauthResponse completeDestinationOAuth(final CompleteDestinationOAuthRequest oauthDestinationRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinition(oauthDestinationRequestBody.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation =
         oAuthImplementationFactory.create(destinationDefinition, oauthDestinationRequestBody.getWorkspaceId());
     final ImmutableMap<String, Object> metadata = generateDestinationMetadata(oauthDestinationRequestBody.getDestinationDefinitionId());
-    final Map<String, Object> result = oAuthFlowImplementation.completeDestinationOAuth(
+    final CompleteDestinationOauthResponse result = new CompleteDestinationOauthResponse();
+    result.oauthOutput(oAuthFlowImplementation.completeDestinationOAuth(
         oauthDestinationRequestBody.getWorkspaceId(),
         oauthDestinationRequestBody.getDestinationDefinitionId(),
         oauthDestinationRequestBody.getQueryParams(),
-        oauthDestinationRequestBody.getRedirectUrl());
+        oauthDestinationRequestBody.getRedirectUrl()));
     try {
       trackingClient.track(oauthDestinationRequestBody.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
     } catch (final Exception e) {
