@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import { Routes } from "../../../routes";
+import { Routes } from "pages/routes";
 import PageTitle from "components/PageTitle";
 import DestinationForm from "./components/DestinationForm";
 import useRouter from "hooks/useRouter";

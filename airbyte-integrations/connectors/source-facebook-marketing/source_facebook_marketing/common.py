@@ -23,6 +23,10 @@ class FacebookAPIException(Exception):
     """General class for all API errors"""
 
 
+class JobException(Exception):
+    """Job failed after FB exception"""
+
+
 class JobTimeoutException(Exception):
     """Scheduled job timed out"""
 

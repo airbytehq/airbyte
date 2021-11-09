@@ -97,6 +97,9 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
         .put("db", db.getDatabaseName())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "unencrypted")
+            .build()))
         .build());
 
     database = Databases.createJdbcDatabase(

@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public class ElasticsearchAirbyteMessageConsumerFactory {
 
   private static final Logger log = LoggerFactory.getLogger(ElasticsearchAirbyteMessageConsumerFactory.class);
-  private static final int MAX_BATCH_SIZE = 10000;
+  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256mib
   private static final ObjectMapper mapper = new ObjectMapper();
 
   private static AtomicLong recordsWritten = new AtomicLong(0);
@@ -50,7 +50,7 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
         onCloseFunction(connection),
         catalog,
         isValidFunction(connection),
-        MAX_BATCH_SIZE);
+        MAX_BATCH_SIZE_BYTES);
   }
 
   // is there any json node that wont fit in the index?
