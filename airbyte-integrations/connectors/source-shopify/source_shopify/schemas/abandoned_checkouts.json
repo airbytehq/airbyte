@@ -130,7 +130,30 @@
         "properties": {
           "price_set": {
             "type": ["null", "object"],
-            "additionalProperties": true
+            "properties": {
+              "shop_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "presentment_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
           },
           "price": {
             "type": ["null", "number"]
@@ -237,15 +260,84 @@
           },
           "total_discount_set": {
             "type": ["null", "object"],
-            "additionalProperties": true
+            "properties": {
+              "shop_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "presentment_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
           },
           "pre_tax_price_set": {
-            "type": ["null", "object"],
-            "additionalProperties": true
+            "properties": {
+              "shop_money": {
+                "properties": {
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  },
+                  "amount": {
+                    "type": ["null", "number"]
+                  }
+                },
+                "type": ["null", "object"]
+              },
+              "presentment_money": {
+                "properties": {
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  },
+                  "amount": {
+                    "type": ["null", "number"]
+                  }
+                },
+                "type": ["null", "object"]
+              }
+            },
+            "type": ["null", "object"]
           },
           "price_set": {
             "type": ["null", "object"],
-            "additionalProperties": true
+            "properties": {
+              "shop_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "presentment_money": {
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
           },
           "grams": {
             "type": ["null", "integer"]
@@ -379,7 +471,30 @@
               "properties": {
                 "price_set": {
                   "type": ["null", "object"],
-                  "additionalProperties": true
+                  "properties": {
+                    "shop_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    },
+                    "presentment_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
                 },
                 "price": {
                   "type": ["null", "number"]
@@ -557,10 +672,6 @@
               ]
             }
           },
-          "custom_tax_lines": {
-            "type": ["null", "object"],
-            "additionalProperties": true
-          },
           "phone": {
             "type": ["null", "string"]
           },
@@ -593,7 +704,30 @@
               "properties": {
                 "price_set": {
                   "type": ["null", "object"],
-                  "additionalProperties": true
+                  "properties": {
+                    "shop_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    },
+                    "presentment_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
                 },
                 "price": {
                   "type": ["null", "number"]

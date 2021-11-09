@@ -556,8 +556,60 @@
         "phone": {
           "type": ["null", "string"]
         },
-        "discounted_price_set": {},
-        "price_set": {},
+        "discounted_price_set": {
+          "type": ["null", "object"],
+          "properties": {
+            "shop_money": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "number"]
+                },
+                "currency_code": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "presentment_money": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "number"]
+                },
+                "currency_code": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "price_set": {
+          "type": ["null", "object"],
+          "properties": {
+            "shop_money": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "number"]
+                },
+                "currency_code": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "presentment_money": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "number"]
+                },
+                "currency_code": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
         "price": {
           "type": ["null", "number"]
         },

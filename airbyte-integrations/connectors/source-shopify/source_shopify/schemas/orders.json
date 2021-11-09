@@ -1737,7 +1737,11 @@
                 },
                 "receipt": {
                   "type": ["null", "object"],
-                  "additionalProperties": true
+                  "properties": {
+                    "paid_amount": {
+                      "type": ["null", "string"]
+                    }
+                  }
                 },
                 "source_name": {
                   "type": ["null", "string"]

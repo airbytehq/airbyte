@@ -29,8 +29,17 @@
       "type": ["null", "string"]
     },
     "value": {
-      "type": ["null", "integer", "object", "string"],
-      "properties": {}
+      "oneOf": [
+        {
+          "type": ["null", "string"]
+        },
+        {
+          "type": ["null", "number"]
+        },
+        {
+          "type": ["null", "boolean"]
+        }
+      ]
     },
     "updated_at": {
       "type": ["null", "string"],
