@@ -81,7 +81,7 @@ class TplcentralStream(HttpStream, ABC):
 class StockSummaries(TplcentralStream):
     # https://api.3plcentral.com/rels/inventory/stocksummaries
     collection_field = "Summaries"
-    primary_key = ["facility_id", "_item_identifier_id"]
+    primary_key = ["FacilityId", "_item_identifier_id"]
     page_size = 500
 
     def path(
