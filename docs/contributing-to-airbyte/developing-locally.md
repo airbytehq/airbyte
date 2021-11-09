@@ -3,7 +3,7 @@
 The following technologies are required to build Airbyte locally.
 
 1. [`Java 14`](https://jdk.java.net/archive/)
-2. `Node 14`
+2. `Node 16`
 3. `Python 3.7`
 4. `Docker`
 5. `Postgresql`
@@ -40,6 +40,8 @@ some additional environment variables:
 ```bash
 export DOCKER_BUILD_PLATFORM=linux/arm64
 export DOCKER_BUILD_ARCH=arm64
+export ALPINE_IMAGE=arm64v8/alpine:3.14
+export POSTGRES_IMAGE=arm64v8/postgres:13-alpine
 export JDK_VERSION=17
 export NODE_VERSION=16.11.1
 SUB_BUILD=PLATFORM ./gradlew build

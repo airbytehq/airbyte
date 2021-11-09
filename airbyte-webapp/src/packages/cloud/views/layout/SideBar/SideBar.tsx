@@ -37,6 +37,8 @@ const Bar = styled.nav`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
+  z-index: 9999;
 `;
 
 const Menu = styled.ul`

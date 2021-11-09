@@ -111,7 +111,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.0"
+- dockerImage: "airbyte/source-amazon-seller-partner:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
@@ -973,6 +973,54 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-commercetools:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/commercetools"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Commercetools Source CDK Specifications"
+      type: "object"
+      required:
+      - "region"
+      - "start_date"
+      - "host"
+      - "project_key"
+      - "client_id"
+      - "client_secret"
+      additionalProperties: false
+      properties:
+        region:
+          type: "string"
+          description: "The region of the platform."
+          examples:
+          - "us-central1"
+          - "australia-southeast1"
+        host:
+          type: "string"
+          enum:
+          - "gcp"
+          - "aws"
+          description: "The cloud provider your shop is hosted. See: https://docs.commercetools.com/api/authorization"
+        start_date:
+          type: "string"
+          description: "The date you would like to replicate data. Format: YYYY-MM-DD."
+          examples:
+          - "2021-01-01"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        project_key:
+          type: "string"
+          description: "The project key"
+        client_id:
+          type: "string"
+          description: "Id of API Client."
+          airbyte_secret: true
+        client_secret:
+          type: "string"
+          description: "The password of secret of API Client."
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-delighted:0.1.0"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -1084,7 +1132,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.21"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -1934,31 +1982,100 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-directory:0.1.6"
+- dockerImage: "airbyte/source-google-directory:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-directory"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Directory Spec"
       type: "object"
-      required:
-      - "credentials_json"
-      - "email"
-      additionalProperties: false
+      required: []
+      additionalProperties: true
       properties:
-        credentials_json:
-          type: "string"
-          description: "The contents of the JSON service account key. See the <a href=\"\
-            https://developers.google.com/admin-sdk/directory/v1/guides/delegation\"\
-            >docs</a> for more information on how to generate this key."
-          airbyte_secret: true
-        email:
-          type: "string"
-          description: "The email of the user, which has permissions to access the\
-            \ Google Workspace Admin APIs."
+        credentials:
+          title: "Google Credentials"
+          description: "Google APIs use the OAuth 2.0 protocol for authentication\
+            \ and authorization. The Source supports <a href=\"https://developers.google.com/identity/protocols/oauth2#webserver\"\
+            \ target=\"_blank\">Web server application</a> and <a href=\"https://developers.google.com/identity/protocols/oauth2#serviceaccount\"\
+            \ target=\"_blank\">Service accounts</a> scenarios"
+          type: "object"
+          oneOf:
+          - title: "Sign in via Google (Oauth)"
+            description: "For these scenario user only needs to give permission to\
+              \ read Google Directory data"
+            type: "object"
+            required:
+            - "client_id"
+            - "client_secret"
+            - "refresh_token"
+            properties:
+              credentials_title:
+                type: "string"
+                title: "Credentials title"
+                description: "Authentication scenario"
+                const: "Web server app"
+                enum:
+                - "Web server app"
+                default: "Web server app"
+                order: 0
+              client_id:
+                title: "Client ID"
+                type: "string"
+                description: "The client ID of developer application"
+                airbyte_secret: true
+              client_secret:
+                title: "Client secret"
+                type: "string"
+                description: "The client secret of developer application"
+                airbyte_secret: true
+              refresh_token:
+                title: "Refresh Token"
+                type: "string"
+                description: "The token for obtaining new access token"
+                airbyte_secret: true
+          - title: "Service account Key"
+            description: "For these scenario user should obtain service account's\
+              \ credentials from the Google API Console and provide delegated email"
+            type: "object"
+            required:
+            - "credentials_json"
+            - "email"
+            properties:
+              credentials_title:
+                type: "string"
+                title: "Credentials title"
+                description: "Authentication scenario"
+                const: "Service accounts"
+                enum:
+                - "Service accounts"
+                default: "Service accounts"
+                order: 0
+              credentials_json:
+                type: "string"
+                title: "Credentials JSON"
+                description: "The contents of the JSON service account key. See the\
+                  \ <a href=\"https://developers.google.com/admin-sdk/directory/v1/guides/delegation\"\
+                  >docs</a> for more information on how to generate this key."
+                airbyte_secret: true
+              email:
+                type: "string"
+                title: "Email"
+                description: "The email of the user, which has permissions to access\
+                  \ the Google Workspace Admin APIs."
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    authSpecification:
+      auth_type: "oauth2.0"
+      oauth2Specification:
+        rootObject:
+        - "credentials"
+        - "0"
+        oauthFlowInitParameters:
+        - - "client_id"
+        - - "client_secret"
+        oauthFlowOutputParameters:
+        - - "refresh_token"
 - dockerImage: "airbyte/source-google-search-console:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-search-console"
@@ -2150,7 +2267,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-workspace-admin-reports:0.1.5"
+- dockerImage: "airbyte/source-google-workspace-admin-reports:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports"
     connectionSpecification:
@@ -2181,7 +2298,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-greenhouse:0.2.5"
+- dockerImage: "airbyte/source-greenhouse:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/greenhouse"
     connectionSpecification:
@@ -2237,7 +2354,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/source-hubspot:0.1.22"
+- dockerImage: "airbyte/source-hubspot:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -2265,11 +2382,9 @@
           - type: "object"
             title: "Authenticate via Hubspot (Oauth)"
             required:
-            - "redirect_uri"
             - "client_id"
             - "client_secret"
             - "refresh_token"
-            - "access_token"
             - "credentials_title"
             properties:
               credentials_title:
@@ -2337,7 +2452,6 @@
         oauthFlowInitParameters:
         - - "client_id"
         - - "client_secret"
-        - - "refresh_token"
         oauthFlowOutputParameters:
         - - "refresh_token"
 - dockerImage: "airbyte/source-db2:0.1.1"
@@ -3320,6 +3434,25 @@
           - "US"
           - "EU"
           default: "US"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-monday:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Monday Spec"
+      type: "object"
+      required:
+      - "api_token"
+      additionalProperties: false
+      properties:
+        api_token:
+          type: "string"
+          description: "This is the API token to authenticate requests to Monday.\
+            \ Profile picture (bottom left) => Admin => API"
+          airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -4433,7 +4566,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.1.3"
+- dockerImage: "airbyte/source-recharge:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/recharge"
     connectionSpecification:
@@ -4788,7 +4921,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:0.1.2"
+- dockerImage: "airbyte/source-salesforce:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/salesforce"
     connectionSpecification:
@@ -4820,7 +4953,9 @@
           airbyte_secret: true
         start_date:
           description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
-            \ data before this date will not be replicated."
+            \ data before this date will not be replicated. Priority for filtering\
+            \ by `updated` fields, and only then by `created` fields if they are available\
+            \ for stream."
           type: "string"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           examples:
@@ -4877,7 +5012,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.1.21"
+- dockerImage: "airbyte/source-shopify:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/shopify"
     connectionSpecification:
@@ -5329,7 +5464,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:0.1.21"
+- dockerImage: "airbyte/source-stripe:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
@@ -5404,7 +5539,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-tempo:0.2.3"
+- dockerImage: "airbyte/source-tempo:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/"
     connectionSpecification:
