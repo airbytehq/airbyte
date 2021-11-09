@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.33
+ Resolve $ref fields for discover json schema.
+
 ## 0.1.32
 - Added Sphinx docs `airbyte-cdk/python/reference_docs` module. 
 - Added module documents at `airbyte-cdk/python/sphinx-docs.md`.
