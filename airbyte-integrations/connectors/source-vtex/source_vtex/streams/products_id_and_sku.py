@@ -14,7 +14,7 @@ class ProductsIdAndSku(VtexStream):
 
     @property
     def cursor_field(self) -> str:
-        return "productId"
+        return "orderId"
 
     def path(
         self,
@@ -58,3 +58,6 @@ class ProductsIdAndSku(VtexStream):
 
         for productId in response_json:
             yield {"productId": productId, "skuIds": response_json[productId]}
+
+
+""
