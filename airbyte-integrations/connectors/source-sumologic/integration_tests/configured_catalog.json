@@ -3,7 +3,57 @@
     {
       "stream": {
         "name": "messages",
-        "json_schema": {},
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "_messageid": {
+              "type": "string"
+            },
+            "_sourceid": {
+              "type": "string"
+            },
+            "_sourcename": {
+              "type": "string"
+            },
+            "_sourcehost": {
+              "type": "string"
+            },
+            "_sourcecategory": {
+              "type": "string"
+            },
+            "_format": {
+              "type": "string"
+            },
+            "_size": {
+              "type": "string"
+            },
+            "_messagetime": {
+              "type": "string"
+            },
+            "_receipttime": {
+              "type": "string"
+            },
+            "_messagecount": {
+              "type": "string"
+            },
+            "_raw": {
+              "type": "string"
+            },
+            "_source": {
+              "type": "string"
+            },
+            "_collectorid": {
+              "type": "string"
+            },
+            "_collector": {
+              "type": "string"
+            },
+            "_blockid": {
+              "type": "string"
+            }
+          }
+        },
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
