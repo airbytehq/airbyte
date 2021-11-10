@@ -61,7 +61,7 @@
         },
         "IsNotTrackable": {
           "type": "boolean",
-          "description": "Not trackable"
+          "description": "Is the location trackable"
         },
         "LocationTag": {
           "type": "string",
