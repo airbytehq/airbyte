@@ -13,7 +13,7 @@ git checkout master
 git pull --no-rebase
 
 # TODO: Change to docker-image build when merge
-SUB_BUILD=PLATFORM "$SCRIPT_DIR"/../../gradlew -p "$SCRIPT_DIR"/../.. assemble
+SUB_BUILD=PLATFORM "$SCRIPT_DIR"/../../gradlew -p "$SCRIPT_DIR"/../.. generate-docker
 
 curl https://raw.githubusercontent.com/airbytehq/airbyte/master/docker-compose.yaml > /tmp/old-docker-compose/docker-compose.yaml
 
@@ -25,6 +25,6 @@ docker compose down
 
 git stash
 git checkout $NEW_HASH
-SUB_BUILD=PLATFORM "$SCRIPT_DIR"/../../gradlew -p "$SCRIPT_DIR"/../.. assemble
+SUB_BUILD=PLATFORM "$SCRIPT_DIR"/../../gradlew -p "$SCRIPT_DIR"/../.. generate-docker
 
 VERSION=dev docker-compose -f "$SCRIPT_DIR"/../../docker-compose.yaml up
