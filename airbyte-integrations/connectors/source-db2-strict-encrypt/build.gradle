@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.ви2_strict_encrypt.Db2StrictEncryptSource'
+    mainClass = 'io.airbyte.integrations.source.db2_strict_encrypt.Db2StrictEncryptSource'
     applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
