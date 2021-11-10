@@ -1,12 +1,31 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import pytest
+from requests import HTTPError
+from requests.models import Response
 from source_sumologic.client import Client
 
 
-def test_check(mocker):
-    mocker.patch("source_sumologic.client.SumoLogic")
-    Client("foo", "bar").check()
+def test_check__success(mocker):
+    resp = Response()
+    resp.status_code = 404
+    sumo = mocker.Mock()
+    sumo.session.get.return_value = resp
+    sumo.endpoint = "https://fakeurl"
+    mocker.patch("source_sumologic.client.SumoLogic", return_value=sumo)
+    assert Client("foo", "bar").check() is True
+
+
+def test_check__fail(mocker):
+    resp = Response()
+    resp.status_code = 401
+    sumo = mocker.Mock()
+    sumo.session.get.return_value = resp
+    sumo.endpoint = "https://fakeurl"
+    mocker.patch("source_sumologic.client.SumoLogic", return_value=sumo)
+    with pytest.raises(HTTPError):
+        Client("foo", "bar").check()
 
 
 def test_search(mocker):

@@ -17,8 +17,16 @@ class Client:
         self.sumo = SumoLogic(access_id, access_key)
 
     def check(self):
-        # Make sure the client has correct access info
-        self.sumo.get_personal_folder()
+        # Make sure the client has correct access info.
+        # 0 is an invalid search job ID in sumo-logic.
+        invalid_job_id = 0
+        resp = self.sumo.session.get(self.sumo.endpoint + f"/search/jobs/{invalid_job_id}")
+        # If has permission to search job API, it will respond 404, invalid job id.
+        # If access_id or access_key are invalid, this call will respond 401.
+        if resp.status_code == 404:
+            return True
+        else:
+            resp.raise_for_status()
 
     def search(
         self,
