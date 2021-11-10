@@ -48,7 +48,7 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-db2:dev";
+    return "airbyte/source-db2-strict-encrypt:dev";
   }
 
   @Override
