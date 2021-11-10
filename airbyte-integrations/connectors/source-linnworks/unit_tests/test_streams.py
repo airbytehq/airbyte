@@ -7,7 +7,8 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_linnworks.streams import LinnworksStream
+from airbyte_cdk.models.airbyte_protocol import SyncMode
+from source_linnworks.streams import LinnworksStream, Location, StockItems, StockLocations
 
 
 @pytest.fixture
@@ -89,3 +90,74 @@ def test_backoff_time(patch_base_class, requests_mock, header_name, header_value
     requests_mock.get("https://dummy", headers={header_name: header_value}, status_code=429)
     result = stream.backoff_time(requests.get("https://dummy"))
     assert result == expected
+
+
+def test_stock_locations(mocker):
+    fake_stock_locations = [
+        {"StockLocationId": 1},
+        {"StockLocationId": 2},
+    ]
+
+    mocker.patch.object(LinnworksStream, "read_records", lambda *args: iter(fake_stock_locations))
+    mocker.patch.object(Location, "read_records", lambda *args: iter([{"FakeLocationFor": args[-1]}]))
+
+    source = StockLocations()
+    records = source.read_records(SyncMode.full_refresh)
+
+    assert list(records) == [
+        {"StockLocationId": 1, "location": {"FakeLocationFor": {"pkStockLocationId": 1}}},
+        {"StockLocationId": 2, "location": {"FakeLocationFor": {"pkStockLocationId": 2}}},
+    ]
+
+
+@pytest.mark.parametrize(
+    ("query", "item_count", "expected"),
+    [
+        ("", 0, None),
+        ("?entriesPerPage=100&pageNumber=1", 100, {"entriesPerPage": 100, "pageNumber": 2}),
+        ("?entriesPerPage=200&pageNumber=2", 100, None),
+    ],
+)
+def test_stock_items_next_page_token(mocker, requests_mock, query, item_count, expected):
+    url = f"http://dummy{query}"
+    requests_mock.get(url, json=[None] * item_count)
+    response = requests.get(url)
+
+    source = StockItems()
+    next_page_token = source.next_page_token(response)
+
+    assert next_page_token == expected
+
+
+@pytest.mark.parametrize(
+    ("status_code", "expected"),
+    [
+        (200, ["the_response"]),
+        (400, []),
+        (500, []),
+    ],
+)
+def test_stock_items_parse_response(mocker, requests_mock, status_code, expected):
+    requests_mock.get("https://dummy", json="the_response", status_code=status_code)
+    response = requests.get("https://dummy")
+
+    source = StockItems()
+    parsed_response = source.parse_response(response)
+
+    assert list(parsed_response) == expected
+
+
+@pytest.mark.parametrize(
+    ("next_page_token", "expected"),
+    [
+        (None, False),
+        ({"NextPageTokenKey": "NextPageTokenValue"}, True),
+    ],
+)
+def test_stock_items_request_params(mocker, requests_mock, next_page_token, expected):
+    source = StockItems()
+    params = source.request_params(None, None, next_page_token)
+
+    assert ("NextPageTokenKey" in params) == expected
+    if next_page_token:
+        assert next_page_token.items() <= params.items()
