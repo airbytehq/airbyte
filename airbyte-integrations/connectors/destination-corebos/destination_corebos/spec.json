@@ -1,22 +1,40 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/corebos",
   "supported_destination_sync_modes": [
-    "TODO, available options are: 'overwrite', 'append', and 'append_dedup'"
+    "overwrite", "append","append_dedup"
   ],
   "supportsIncremental": true,
   "supportsDBT": false,
   "supportsNormalization": false,
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Destination Corebos",
+    "title": "CoreBOS Source Spec",
     "type": "object",
-    "required": ["TODO -- fix me!"],
+    "required": ["url","username","access_token","query"],
     "additionalProperties": false,
     "properties": {
-      "TODO": {
+      "url": {
+        "description": "a coreBOS server instance url http:// or https://",
         "type": "string",
-        "description": "FIX ME"
+        "pattern": "^http(s)?:\\/\\/.*$",
+        "example":"http://test.coreboscrm.com/denorm/webservice.php"
+      },
+      "access_token":{
+          "description":"The user access token.",
+          "type":"string",
+          "example": "aj49tFk90nGdm3Aui"
+      },
+      "username": {
+        "description": "User name to be included in the request.",
+        "type": "string",
+        "example": "charity"
+      },
+      "module": {
+        "description": "coreBOS wenservice modue for the incoming stream ",
+        "type": "string",
+        "example": "helpdesk"
       }
     }
   }
 }
+
