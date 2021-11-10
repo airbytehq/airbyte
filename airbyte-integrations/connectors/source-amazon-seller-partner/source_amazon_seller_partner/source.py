@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import boto3
+import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -50,6 +51,11 @@ class ConnectorConfig(BaseModel):
     region: AWSRegion = Field(description="Region to pull data from")
 
 
+class NoDataForCheck(Exception):
+    def __repr__(self):
+        return "Couldn't check connection without data for Orders stream"
+
+
 class SourceAmazonSellerPartner(AbstractSource):
     def _get_stream_kwargs(self, config: ConnectorConfig) -> Mapping[str, Any]:
         endpoint, marketplace_id, region = get_marketplaces(config.aws_environment)[config.region]
@@ -92,7 +98,10 @@ class SourceAmazonSellerPartner(AbstractSource):
             orders_stream = Orders(**stream_kwargs)
             next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
-        except Exception as e:
+        except StopIteration or requests.exceptions.RequestException as e:
+            if isinstance(e, StopIteration):
+                e = 'Could not check connection without data for Orders stream. ' \
+                    'Please change value for replication start date field.'
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
