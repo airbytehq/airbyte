@@ -22,7 +22,6 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.StringJoiner;
@@ -30,12 +29,8 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.xml.bind.DatatypeConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCType> {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSourceOperations.class);
 
   /**
    * Map records returned in a result set.
@@ -74,12 +69,7 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
       // attempt to access the column. this allows us to know if it is null before we do type-specific
       // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
       // checking for null values with jdbc.
-      LOGGER.warn("Debug: {}", queryContext.getMetaData().getColumnTypeName(i));
-      if (queryContext.getMetaData().getColumnTypeName(i).equalsIgnoreCase("numeric")) {
-        queryContext.getDouble(i);
-      } else {
-        queryContext.getObject(i);
-      }
+      queryContext.getObject(i);
       if (queryContext.wasNull()) {
         continue;
       }
@@ -165,9 +155,7 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
   }
 
   protected void putNumber(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    LOGGER.warn(resultSet.getMetaData().getColumnTypeName(index));
-    LOGGER.warn(resultSet.getObject(index).toString());
-    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getDouble(index)));
+    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getBigDecimal(index)));
   }
 
   protected void putString(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
