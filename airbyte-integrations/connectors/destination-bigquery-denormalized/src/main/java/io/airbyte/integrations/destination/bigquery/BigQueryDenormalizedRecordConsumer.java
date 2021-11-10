@@ -63,7 +63,11 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     // replace ObjectNode with TextNode for fields with $ref definition key
     // Do not need to iterate through all JSON Object nodes, only first nesting object.
     if (!fieldsWithRefDefinition.isEmpty()) {
-      fieldsWithRefDefinition.forEach(key -> data.put(key, data.get(key).toString()));
+      fieldsWithRefDefinition.forEach(key -> {
+        if (data.get(key) != null && !data.get(key).isNull()){
+          data.put(key, data.get(key).toString());
+        }
+      });
     }
     data.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt);

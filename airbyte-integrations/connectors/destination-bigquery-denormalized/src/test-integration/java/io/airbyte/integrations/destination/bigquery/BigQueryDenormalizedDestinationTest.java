@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -32,17 +33,21 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.assertj.core.util.Sets;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,33 +62,20 @@ import org.slf4j.LoggerFactory;
 class BigQueryDenormalizedDestinationTest {
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  private static final Set<String> AIRBYTE_METADATA_FIELDS = Set.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, JavaBaseConstants.COLUMN_NAME_AB_ID);
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestinationTest.class);
 
   private static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
   private static final Instant NOW = Instant.now();
   private static final String USERS_STREAM_NAME = "users";
-  private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-          .withData(getData())
-          .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-          .withData(getDataWithEmptyObjectAndArray())
-          .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_USERS3 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-          .withData(getDataWithFormats())
-          .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_USERS4 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-          .withData(getDataWithJSONDateTimeFormats())
-          .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_USERS5 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-          .withData(getDataWithJSONWithReference())
-          .withEmittedAt(NOW.toEpochMilli()));
-
+  private static final AirbyteMessage MESSAGE_USERS1 = createRecordMessage(USERS_STREAM_NAME, getData());
+  private static final AirbyteMessage MESSAGE_USERS2 = createRecordMessage(USERS_STREAM_NAME, getDataWithEmptyObjectAndArray());
+  private static final AirbyteMessage MESSAGE_USERS3 = createRecordMessage(USERS_STREAM_NAME, getDataWithFormats());
+  private static final AirbyteMessage MESSAGE_USERS4 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONDateTimeFormats());
+  private static final AirbyteMessage MESSAGE_USERS5 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONWithReference());
+  private static final AirbyteMessage MESSAGE_USERS6 = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{\"users\":null}"));
+  private static final AirbyteMessage EMPTY_MESSAGE = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{}"));
 
   private JsonNode config;
 
@@ -122,6 +114,8 @@ class BigQueryDenormalizedDestinationTest {
     MESSAGE_USERS3.getRecord().setNamespace(datasetId);
     MESSAGE_USERS4.getRecord().setNamespace(datasetId);
     MESSAGE_USERS5.getRecord().setNamespace(datasetId);
+    MESSAGE_USERS6.getRecord().setNamespace(datasetId);
+    EMPTY_MESSAGE.getRecord().setNamespace(datasetId);
 
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
     dataset = bigquery.create(datasetInfo);
@@ -258,12 +252,20 @@ class BigQueryDenormalizedDestinationTest {
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.accept(MESSAGE_USERS5);
+    consumer.accept(MESSAGE_USERS6);
+    consumer.accept(EMPTY_MESSAGE);
     consumer.close();
 
-    final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
-    final JsonNode resultJson = usersActual.get(0);
-    assertEquals(usersActual.size(), 1);
-    assertEquals(extractJsonValues(resultJson, "users"), Set.of("{\"name\":\"John\",\"surname\":\"Adams\"}"));
+    final Set<String> actual =
+        retrieveRecordsAsJson(USERS_STREAM_NAME).stream().flatMap(x -> extractJsonValues(x, "users").stream()).collect(Collectors.toSet());
+
+    final Set<String> expected = Sets.set(
+        "{\"name\":\"John\",\"surname\":\"Adams\"}",
+        null // we expect one record to have not had the users field set
+    );
+
+    assertEquals(2, actual.size());
+    assertEquals(expected, actual);
   }
 
   private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
@@ -282,6 +284,13 @@ class BigQueryDenormalizedDestinationTest {
     return resultSet;
   }
 
+  private JsonNode removeAirbyteMetadataFields(JsonNode record) {
+    for (String airbyteMetadataField : AIRBYTE_METADATA_FIELDS) {
+      ((ObjectNode) record).remove(airbyteMetadataField);
+    }
+    return record;
+  }
+
   private List<JsonNode> retrieveRecordsAsJson(final String tableName) throws Exception {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
@@ -294,6 +303,7 @@ class BigQueryDenormalizedDestinationTest {
         .stream(BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
         .map(v -> v.get("jsonValue").getStringValue())
         .map(Jsons::deserialize)
+        .map(this::removeAirbyteMetadataFields)
         .collect(Collectors.toList());
   }
 
@@ -304,4 +314,10 @@ class BigQueryDenormalizedDestinationTest {
         arguments(getSchema(), MESSAGE_USERS2));
   }
 
+  private static AirbyteMessage createRecordMessage(String stream, JsonNode data) {
+    return new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withStream(stream)
+            .withData(data)
+            .withEmittedAt(NOW.toEpochMilli()));
+  }
 }

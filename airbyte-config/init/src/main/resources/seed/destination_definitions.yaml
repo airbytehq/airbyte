@@ -11,7 +11,7 @@
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
 - name: Cassandra
   destinationDefinitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
