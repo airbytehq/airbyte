@@ -207,8 +207,7 @@ public class BigQueryDenormalizedTestDataUtils {
     return Jsons.jsonNode(
         ImmutableMap.of("users", ImmutableMap.of(
             "name", "John",
-            "surname", "Adams"
-        )));
+            "surname", "Adams")));
   }
 
   public static JsonNode getSchemaWithReferenceDefinition() {
