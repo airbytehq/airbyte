@@ -41,7 +41,9 @@
         "type": "integer",
         "title": "Limit",
         "description": "The number of messages starting at offset to return. The maximum value for limit is 10,000 messages or 100 MB in total message size, which means the query may return less than 10,000 messages if you exceed the size limit.",
-        "default": 10000
+        "default": 10000,
+        "minimum": 0,
+        "maximum": 10000
       }
     }
   }
