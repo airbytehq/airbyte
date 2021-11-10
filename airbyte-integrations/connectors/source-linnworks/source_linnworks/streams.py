@@ -25,7 +25,7 @@ class LinnworksStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return self._authenticator.get_server()
+        return self.authenticator.get_server()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
