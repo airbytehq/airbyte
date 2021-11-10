@@ -100,7 +100,8 @@ class SegmentTrackingClientTest {
   @Test
   void testTrack() {
     final ArgumentCaptor<TrackMessage.Builder> mockBuilder = ArgumentCaptor.forClass(TrackMessage.Builder.class);
-    final ImmutableMap<String, Object> metadata = ImmutableMap.of("airbyte_version", AIRBYTE_VERSION.serialize(), "user_id", IDENTITY.getCustomerId());
+    final ImmutableMap<String, Object> metadata =
+        ImmutableMap.of("airbyte_version", AIRBYTE_VERSION.serialize(), "user_id", IDENTITY.getCustomerId());
 
     segmentTrackingClient.track(WORKSPACE_ID, "jump");
 
