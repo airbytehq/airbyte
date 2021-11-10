@@ -54,7 +54,6 @@ class Client:
     def _wait_for_search_job(self, search_job: dict, delay: int=5) -> dict:
         self.logger.info("Waiting for search job to be ready...")
 
-        delay = 5
         status: dict = self.sumo.search_job_status(search_job)
         while status["state"] != "DONE GATHERING RESULTS":
             if status["state"] == "CANCELLED":
