@@ -107,3 +107,6 @@ class Client:
             for msg in response["messages"]:
                 yield msg["map"]
             self.logger.debug(f"Messages downloaded: {min(count, total)}/{total}")
+
+            # Sumo Logic API rate limit is 4 requests per second
+            time.sleep(1 / 4)
