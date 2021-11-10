@@ -39,9 +39,9 @@ import java.util.function.Function;
  */
 public class SegmentTrackingClient implements TrackingClient {
 
+  public static final String CUSTOMER_ID_KEY = "user_id";
   private static final String SEGMENT_WRITE_KEY = "7UDdp5K55CyiGgsauOr2pNNujGvmhaeu";
   private static final String AIRBYTE_VERSION_KEY = "airbyte_version";
-  private static final String CUSTOMER_ID_KEY = "user_id";
   private static final String AIRBYTE_ROLE = "airbyte_role";
 
   // Analytics is threadsafe.
