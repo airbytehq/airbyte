@@ -8,13 +8,10 @@ import { NavLink } from "react-router-dom";
 
 import { Routes } from "pages/routes";
 import { useConfig } from "config";
-
-import useConnector from "hooks/services/useConnector";
 import useWorkspace from "hooks/services/useWorkspace";
 
 import { Link } from "components";
 import Version from "components/Version";
-import Indicator from "components/Indicator";
 
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
@@ -22,6 +19,7 @@ import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
 import SettingsIcon from "./components/SettingsIcon";
 import SourceIcon from "./components/SourceIcon";
+import { NotificationIndicator } from "./NotificationIndicator";
 
 const Bar = styled.nav`
   width: 100px;
@@ -33,6 +31,8 @@ const Bar = styled.nav`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
+  z-index: 9999;
 `;
 
 const Menu = styled.ul`
@@ -89,14 +89,7 @@ const HelpIcon = styled(FontAwesomeIcon)`
   line-height: 21px;
 `;
 
-const Notification = styled(Indicator)`
-  position: absolute;
-  top: 11px;
-  right: 23px;
-`;
-
 const SideBar: React.FC = () => {
-  const { hasNewVersions } = useConnector();
   const config = useConfig();
   const { workspace } = useWorkspace();
 
@@ -155,7 +148,9 @@ const SideBar: React.FC = () => {
                 location.pathname.startsWith(Routes.Settings)
               }
             >
-              {hasNewVersions ? <Notification /> : null}
+              <React.Suspense fallback={null}>
+                <NotificationIndicator />
+              </React.Suspense>
               <SettingsIcon />
               <Text>
                 <FormattedMessage id="sidebar.settings" />

@@ -77,26 +77,28 @@ const SourceForm: React.FC<IProps> = ({
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
-    <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
-      <ServiceForm
-        onServiceSelect={onDropDownSelect}
-        onSubmit={onSubmitForm}
-        formType="source"
-        availableServices={sourceDefinitions}
-        selectedConnector={sourceDefinitionSpecification}
-        hasSuccess={hasSuccess}
-        fetchingConnectorError={sourceDefinitionError}
-        errorMessage={errorMessage}
-        isLoading={isLoading}
-        formValues={
-          sourceDefinitionId
-            ? { serviceType: sourceDefinitionId, name: "" }
-            : undefined
-        }
-        allowChangeConnector
-      />
-      <JobsLogItem jobInfo={jobInfo} />
-    </ContentCard>
+    <>
+      <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
+        <ServiceForm
+          onServiceSelect={onDropDownSelect}
+          onSubmit={onSubmitForm}
+          formType="source"
+          availableServices={sourceDefinitions}
+          selectedConnector={sourceDefinitionSpecification}
+          hasSuccess={hasSuccess}
+          fetchingConnectorError={sourceDefinitionError}
+          errorMessage={errorMessage}
+          isLoading={isLoading}
+          formValues={
+            sourceDefinitionId
+              ? { serviceType: sourceDefinitionId, name: "" }
+              : undefined
+          }
+          allowChangeConnector
+        />
+        <JobsLogItem jobInfo={jobInfo} />
+      </ContentCard>
+    </>
   );
 };
 

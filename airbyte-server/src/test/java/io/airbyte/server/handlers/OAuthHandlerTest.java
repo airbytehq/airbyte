@@ -17,6 +17,7 @@ import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +33,14 @@ class OAuthHandlerTest {
   ConfigRepository configRepository;
   OAuthHandler handler;
   TrackingClient trackingClient;
+  private HttpClient httpClient;
 
   @BeforeEach
   public void init() {
     configRepository = Mockito.mock(ConfigRepository.class);
     trackingClient = mock(TrackingClient.class);
-    handler = new OAuthHandler(configRepository, trackingClient);
+    httpClient = Mockito.mock(HttpClient.class);
+    handler = new OAuthHandler(configRepository, httpClient, trackingClient);
   }
 
   @Test
