@@ -18,9 +18,9 @@ git pull --no-rebase
 SUB_BUILD=PLATFORM "$SCRIPT_DIR"/../../gradlew -p "$SCRIPT_DIR"/../.. generate-docker
 
 VERSION=dev docker-compose -f "$SCRIPT_DIR"/../../docker-compose.yaml up &
-pid=$!
+
 sleep 75
-kill -9 $pid
+VERSION=dev docker-compose down
 
 git stash
 git checkout $NEW_HASH
