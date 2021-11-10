@@ -64,7 +64,7 @@ def test_get_updated_state(patch_incremental_base_class, inputs, expected_state)
 def test_stream_slices(patch_incremental_base_class):
     stream = IncrementalLinnworksStream()
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    expected_stream_slice = [{"test_cursor_field": None}]
+    expected_stream_slice = [None]
     assert stream.stream_slices(**inputs) == expected_stream_slice
 
 
@@ -81,5 +81,5 @@ def test_source_defined_cursor(patch_incremental_base_class):
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
     stream = IncrementalLinnworksStream()
-    expected_checkpoint_interval = 100
+    expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
