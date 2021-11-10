@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.db2_strict_encrypt;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -14,9 +13,6 @@ import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Db2StrictEncryptSource extends SpecModifyingSource implements Source {
 

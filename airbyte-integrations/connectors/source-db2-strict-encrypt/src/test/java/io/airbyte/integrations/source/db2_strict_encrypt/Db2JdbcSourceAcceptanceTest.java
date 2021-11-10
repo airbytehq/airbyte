@@ -4,36 +4,30 @@
 
 package io.airbyte.integrations.source.db2_strict_encrypt;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import io.airbyte.protocol.models.ConnectorSpecification;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Db2Container;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
@@ -164,7 +158,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
     final ConnectorSpecification expected =
-            Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class);
+        Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class);
 
     assertEquals(expected, actual);
   }
@@ -174,9 +168,9 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   private static String getCertificate() throws IOException, InterruptedException {
     db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -keydb -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS + "\" -stash");
     db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -cert -create -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS
-            + "\" -label \"mylabel\" -dn \"CN=testcompany\" -size 2048 -sigalg SHA256_WITH_RSA");
+        + "\" -label \"mylabel\" -dn \"CN=testcompany\" -size 2048 -sigalg SHA256_WITH_RSA");
     db.execInContainer("su", "-", "db2inst1", "-c", "gsk8capicmd_64 -cert -extract -db \"server.kdb\" -pw \"" + TEST_KEY_STORE_PASS
-            + "\" -label \"mylabel\" -target \"server.arm\" -format ascii -fips");
+        + "\" -label \"mylabel\" -target \"server.arm\" -format ascii -fips");
 
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_KEYDB /database/config/db2inst1/server.kdb");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_STASH /database/config/db2inst1/server.sth");
@@ -195,9 +189,9 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
     runProcess(
-            "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + TEST_KEY_STORE_PASS
-                    + " -noprompt",
-            run);
+        "keytool -import -alias rds-root -keystore " + KEY_STORE_FILE_PATH + " -file certificate.der -storepass " + TEST_KEY_STORE_PASS
+            + " -noprompt",
+        run);
   }
 
   private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {

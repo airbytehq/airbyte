@@ -40,7 +40,7 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
   private static final String TEST_KEY_STORE_PASS = "Passw0rd";
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
   private static final String SSL_CONFIG = ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
-          ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
+      ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
 
   private Db2Container db;
   private JsonNode config;
