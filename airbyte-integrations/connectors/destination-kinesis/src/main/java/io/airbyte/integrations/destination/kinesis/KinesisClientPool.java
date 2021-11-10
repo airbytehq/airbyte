@@ -8,6 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import software.amazon.awssdk.services.kinesis.KinesisClient;
 
+/**
+ * KinesisClientPool class for managing a pool of kinesis clients with different configurations.
+ */
 public class KinesisClientPool {
 
   private static final ConcurrentHashMap<KinesisConfig, Tuple<KinesisClient, AtomicInteger>> clients;
@@ -20,6 +23,14 @@ public class KinesisClientPool {
 
   }
 
+  /**
+   * Initializes a Kinesis client for accessing Kinesis. If there is already an existing
+   * client with the provided configuration it will return the existing one and increase
+   * the usage count, if not it will return a new one.
+   *
+   * @param kinesisConfig used to configure the Kinesis client.
+   * @return KinesisClient which can be used to access Kinesis.
+   */
   public static KinesisClient initClient(KinesisConfig kinesisConfig) {
     var cachedClient = clients.get(kinesisConfig);
     if (cachedClient != null) {
@@ -32,6 +43,13 @@ public class KinesisClientPool {
     }
   }
 
+  /**
+   * Returns a Kinesis client to the pool. If the client is no longer used by
+   * any other external instances it will be closed and removed from the map,
+   * if not only its usage count will be decreased.
+   *
+   * @param kinesisConfig that was used to configure the Kinesis client.
+   */
   public static void closeClient(KinesisConfig kinesisConfig) {
     var cachedClient = clients.get(kinesisConfig);
     if (cachedClient == null) {

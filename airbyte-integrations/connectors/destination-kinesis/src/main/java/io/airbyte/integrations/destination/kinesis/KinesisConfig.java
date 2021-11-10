@@ -7,9 +7,10 @@ package io.airbyte.integrations.destination.kinesis;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
 /*
- * Immutable configuration for kinesis.
+ * KinesisConfig class for storing immutable configuration for Kinesis.
  */
 public class KinesisConfig {
 
@@ -75,6 +76,24 @@ public class KinesisConfig {
 
   public int getBufferSize() {
     return bufferSize;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    KinesisConfig that = (KinesisConfig) o;
+    return Objects.equals(endpoint, that.endpoint) && Objects.equals(region, that.region) &&
+        accessKey.equals(that.accessKey) && privateKey.equals(that.privateKey);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(endpoint, region, accessKey, privateKey);
   }
 
   static class UncheckedURISyntaxException extends RuntimeException {

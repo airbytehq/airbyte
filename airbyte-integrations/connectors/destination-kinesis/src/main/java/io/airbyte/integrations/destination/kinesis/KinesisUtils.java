@@ -11,12 +11,21 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.kinesis.KinesisClient;
 import software.amazon.awssdk.services.kinesis.model.KinesisException;
 
+/**
+ * KinesisUtils class providing utility methods for various Kinesis functionalities.
+ */
 public class KinesisUtils {
 
   private KinesisUtils() {
 
   }
 
+  /**
+   * Configures and returns a Kinesis client with the provided configuration.
+   *
+   * @param kinesisConfig used to configure the Kinesis client.
+   * @return KinesisClient which can be used to access Kinesis.
+   */
   static KinesisClient buildKinesisClient(KinesisConfig kinesisConfig) {
     var kinesisClientBuilder = KinesisClient.builder();
 
@@ -37,6 +46,13 @@ public class KinesisUtils {
     return kinesisClientBuilder.build();
   }
 
+  /**
+   * Build a Kinesis exception with the provided message and cause.
+   *
+   * @param message of the exception
+   * @param cause   of the exception
+   * @return KinesisException to be thrown
+   */
   static KinesisException buildKinesisException(String message, Throwable cause) {
     return (KinesisException) KinesisException.builder()
         .message(message)
@@ -44,6 +60,11 @@ public class KinesisUtils {
         .build();
   }
 
+  /**
+   * Create random UUID which can be used as a partition key for streaming data.
+   *
+   * @return String partition key for distributing data across shards.
+   */
   static String buildPartitionKey() {
     return UUID.randomUUID().toString();
   }

@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * KinesisRecord class for mapping records in the Kinesis stream.
+ */
 public class KinesisRecord {
 
   @JsonProperty("_airbyte_ab_id")

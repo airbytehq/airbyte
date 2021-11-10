@@ -16,6 +16,9 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * KinesisDestination class for configuring Kinesis as an Airbyte destination.
+ */
 public class KinesisDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KinesisDestination.class);
@@ -24,6 +27,12 @@ public class KinesisDestination extends BaseConnector implements Destination {
     new IntegrationRunner(new KinesisDestination()).run(args);
   }
 
+  /**
+   * Check Kinesis connection status with the provided Json configuration.
+   *
+   * @param config json configuration for connecting to Kinesis
+   * @return AirbyteConnectionStatus status of the connection result.
+   */
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     KinesisStream kinesisStream = null;
@@ -51,6 +60,14 @@ public class KinesisDestination extends BaseConnector implements Destination {
     }
   }
 
+  /**
+   * Returns an Airbyte message consumer which can be used to handle the incoming Airbyte messages.
+   *
+   * @param config                json configuration for connecting to Kinesis
+   * @param configuredCatalog     of the incoming stream.
+   * @param outputRecordCollector state collector.
+   * @return KinesisMessageConsumer for consuming Airbyte messages and streaming them to Kinesis.
+   */
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog configuredCatalog,

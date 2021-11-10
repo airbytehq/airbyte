@@ -27,7 +27,7 @@ public class KinesisContainerInitializr {
   static class KinesisContainer extends LocalStackContainer {
 
     private KinesisContainer() {
-      super(DockerImageName.parse("localstack/localstack"));
+      super(DockerImageName.parse("localstack/localstack:0.12.20"));
     }
 
     static KinesisContainer createContainer() {
@@ -39,7 +39,7 @@ public class KinesisContainerInitializr {
           .withEnv("KINESIS_SHARD_LIMIT", "500");
     }
 
-    public URI getEndpointOverride() {
+    URI getEndpointOverride() {
       return super.getEndpointOverride(LocalStackContainer.Service.KINESIS);
     }
 

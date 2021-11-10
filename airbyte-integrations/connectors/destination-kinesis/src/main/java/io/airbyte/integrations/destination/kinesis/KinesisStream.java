@@ -23,6 +23,9 @@ import software.amazon.awssdk.services.kinesis.model.Shard;
 import software.amazon.awssdk.services.kinesis.model.ShardIteratorType;
 import software.amazon.awssdk.services.kinesis.model.StreamStatus;
 
+/**
+ * KinesisStream class for performing various operations on a Kinesis stream.
+ */
 public class KinesisStream implements Closeable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KinesisStream.class);
@@ -43,7 +46,14 @@ public class KinesisStream implements Closeable {
     this.buffer = new ArrayList<>(bufferSize);
   }
 
-  void createStream(String streamName) {
+  /**
+   * Creates a stream specified via its name and with the provided shard count.
+   * The method will block and retry every 2s until it verifies that the stream is active and can be written to.
+   * If the stream is already created it will only wait until it is active.
+   *
+   * @param streamName name of the stream to be created.
+   */
+  public void createStream(String streamName) {
     try {
       kinesisClient.createStream(b -> b.streamName(streamName).shardCount(kinesisConfig.getShardCount()));
     } catch (ResourceInUseException e) {
@@ -64,6 +74,12 @@ public class KinesisStream implements Closeable {
     }
   }
 
+  /**
+   * Delete the stream specified via its name. The method will block and retry every 2s
+   * until it verifies that the stream is deleted by receiving the appropriate exception.
+   *
+   * @param streamName name of the stream to be deleted.
+   */
   public void deleteStream(String streamName) {
     kinesisClient.deleteStream(b -> b.streamName(streamName));
     // block/wait until stream is deleted
@@ -80,10 +96,23 @@ public class KinesisStream implements Closeable {
     }
   }
 
+  /**
+   * Deletes all streams in the Kinesis service, waiting/blocking
+   * until all of them are deleted.
+   */
   public void deleteAllStreams() {
     kinesisClient.listStreams().streamNames().forEach(this::deleteStream);
   }
 
+  /**
+   * Sends a record to the Kinesis stream specified via its name. To improve
+   * performance the records are buffered until the buffer limit is reached after which
+   * they are flushed to its destination stream.
+   *
+   * @param streamName   name of the stream where the record should be sent
+   * @param partitionKey to determine the destination shard
+   * @param data         actual data to be streamed
+   */
   public void putRecord(String streamName, String partitionKey, String data) {
     buffer.add(Tuple.of(streamName, Tuple.of(partitionKey, data)));
     if (buffer.size() == bufferSize) {
@@ -91,6 +120,14 @@ public class KinesisStream implements Closeable {
     }
   }
 
+  /**
+   * Iterates over all the shards for a given streams and retrieves the records
+   * which are combined and deserialized to a
+   * {@link io.airbyte.integrations.destination.kinesis.KinesisRecord} objects.
+   *
+   * @param streamName from where to retrieve the records.
+   * @return List of KinesisRecord objects retrieved from the stream.
+   */
   public List<KinesisRecord> getRecords(String streamName) {
     DescribeStreamResponse describeStream;
     List<Shard> shards = new ArrayList<>();
@@ -116,8 +153,11 @@ public class KinesisStream implements Closeable {
         .collect(Collectors.toList());
   }
 
+  /**
+   * Flush all records previously buffered to increase throughput and performance.
+   * Records are grouped by stream name and are sent for each stream separately.
+   */
   public void flush() {
-    // batch records for increased throughput
     buffer.stream()
         .collect(Collectors.groupingBy(Tuple::value1, Collectors.mapping(Tuple::value2, Collectors.toList())))
         .forEach((k, v) -> {
@@ -132,6 +172,9 @@ public class KinesisStream implements Closeable {
         });
   }
 
+  /**
+   * Return the kinesis client to the pool to be closed if no longer used.
+   */
   @Override
   public void close() {
     KinesisClientPool.closeClient(kinesisConfig);

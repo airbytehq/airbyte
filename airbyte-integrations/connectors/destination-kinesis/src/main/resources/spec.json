@@ -46,7 +46,7 @@
       },
       "bufferSize": {
         "title": "bufferSize",
-        "description": "Buffer size for storing kinesis records before being batch inserted.",
+        "description": "Buffer size for storing kinesis records before being batch streamed.",
         "type": "integer",
         "minimum": 1,
         "maximum": 500,

@@ -1,52 +1,44 @@
 # Kinesis
 
-TODO: update this doc
-
 ## Sync overview
+
 
 ### Output schema
 
-Is the output schema fixed (e.g: for an API like Stripe)? If so, point to the connector's schema (e.g: link to Stripe’s documentation) or describe the schema here directly (e.g: include a diagram or paragraphs describing the schema).
+The incoming Airbyte data is structured in a Json format and is sent across diferent stream shards determined by the partition key. 
+This connector maps an incoming data from a namespace and stream to a unique Kinesis stream. The Kinesis record which is sent to the stream is consisted of the following Json fields
 
-Describe how the connector's schema is mapped to Airbyte concepts. An example description might be: "MagicDB tables become Airbyte Streams and MagicDB columns become Airbyte Fields. In addition, an extracted\_at column is appended to each row being read."
-
-### Data type mapping
-
-This section should contain a table mapping each of the connector's data types to Airbyte types. At the moment, Airbyte uses the same types used by [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html). `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number` are the most commonly used data types.
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-
+* `_airbyte_ab_id`: Random UUID generated to be used as a partition key for sending data to different shards.
+* `_airbyte_emitted_at`: a timestamp representing when the event was received from the data source.
+* `_airbyte_data`: a json text/object representing the data that was received from the data source.
 
 ### Features
 
-This section should contain a table with the following format:
-
-| Feature | Supported?(Yes/No) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync |  |  |
-| Incremental Sync |  |  |
-| Replicate Incremental Deletes |  |  |
-| For databases, WAL/Logical replication |  |  |
-| SSL connection |  |  |
-| SSH Tunnel Support |  |  |
-| (Any other source-specific features) |  |  |
+| Feature                       | Support| Notes                                                                             |
+| :-----------------------------| :-----:| :---------------------------------------------------------------------------------|
+| Full Refresh Sync             | ❌     |                                                                                   |
+| Incremental - Append Sync     | ✅     |  Incoming messages are streamed/appended to a Kinesis stream as they are received.|
+| Incremental - Deduped History | ❌     |                                                                                   |
+| Namespaces                    | ✅     | Namespaces will be used to determine the Kinesis stream name.                     |
 
 ### Performance considerations
 
-Could this connector hurt the user's database/API/etc... or put too much strain on it in certain circumstances? For example, if there are a lot of tables or rows in a table? What is the breaking point (e.g: 100mm&gt; records)? What can the user do to prevent this? (e.g: use a read-only replica, or schedule frequent syncs, etc..)
+Although Kinesis is designed to handle large amounts of real-time data by scaling streams with shards, you should be aware of the following Kinesis [Quotas and Limits](https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html).
+The connector buffer size should also be tweaked according to your data size and freguency
 
 ## Getting started
 
 ### Requirements
 
-* What versions of this connector does this implementation support? (e.g: `postgres v3.14 and above`)
-* What configurations, if any, are required on the connector? (e.g: `buffer_size > 1024`)
-* Network accessibility requirements
-* Credentials/authentication requirements? (e.g: A  DB user with read permissions on certain tables)
+* The connector is compatible with the latest Kinesis service version at the time of this writing. 
+* Configuration
+    * **_Endpoint_**(`Optional`): Aws Kinesis endpoint to connect to. Default endpoint if not provided   
+    * **_Region_**(`Optional`): Aws Kinesis region to connect to. Default region if not provided.  
+    * **_shardCount_**: The number of shards with which the stream should be created. The amount of shards affects the throughput of your stream. 
+    * **_accessKey_**: Access key credential for authenticating with the service.  
+    * **_privateKey_**: Private key credential for authenticating with the service.
+    * **_bufferSize_**: Buffer size used to increase throughput by sending data in a single request.
 
 ### Setup guide
 
-For each of the above high-level requirements as appropriate, add or point to a follow-along guide. See existing source or destination guides for an example.
-
-For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.
+######TODO: more info, screenshots?, etc...

@@ -17,6 +17,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * KinesisMessageConsumer class for handling incoming Airbyte messages.
+ */
 public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KinesisMessageConsumer.class);
@@ -43,11 +46,20 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
                 k.getDestinationSyncMode())));
   }
 
+  /**
+   * Start tracking the incoming Airbyte streams by creating the needed Kinesis streams.
+   */
   @Override
   protected void startTracked() {
     kinesisStreams.forEach((k, v) -> kinesisStream.createStream(v.getStreamName()));
   }
 
+  /**
+   * Handle an incoming Airbyte message by serializing it to the appropriate Kinesis
+   * structure and sending it to the stream.
+   *
+   * @param message received from the Airbyte source.
+   */
   @Override
   protected void acceptTracked(AirbyteMessage message) {
     if (message.getType() == AirbyteMessage.Type.RECORD) {
@@ -75,6 +87,12 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
+  /**
+   * Flush the Kinesis stream if there are any remaining messages to be sent
+   * and close the client as a terminal operation.
+   *
+   * @param hasFailed flag for indicating if the operation has failed.
+   */
   @Override
   protected void close(boolean hasFailed) {
     if (!hasFailed) {

@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.kinesis;
 
+/**
+ * Tuple class for wrapping a pair od objects.
+ */
 public class Tuple<V1, V2> {
 
   private final V1 value1;
