@@ -11,6 +11,7 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+      timeout_seconds: 60
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

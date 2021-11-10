@@ -31,6 +31,9 @@
             },
             "USD": {
               "type": "number"
+            },
+            "column`_'with\"_quotes": {
+              "type": "string"
             }
           }
         },

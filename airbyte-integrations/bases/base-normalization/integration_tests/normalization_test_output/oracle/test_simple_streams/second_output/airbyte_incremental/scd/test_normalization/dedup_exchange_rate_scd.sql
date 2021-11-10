@@ -42,13 +42,13 @@ scd_data as (
             "DATE" desc,
             "_AIRBYTE_EMITTED_AT" desc
       ) as "_AIRBYTE_END_AT",
-      case when lag("DATE") over (
+      case when row_number() over (
         partition by id, currency, cast(nzd as varchar2(4000))
         order by
             "DATE" asc nulls last,
             "DATE" desc,
             "_AIRBYTE_EMITTED_AT" desc
-      ) is null  then 1 else 0 end as "_AIRBYTE_ACTIVE_ROW",
+      ) = 1 then 1 else 0 end as "_AIRBYTE_ACTIVE_ROW",
       "_AIRBYTE_AB_ID",
       "_AIRBYTE_EMITTED_AT",
       "_AIRBYTE_DEDUP_EXCHANGE_RATE_HASHID"

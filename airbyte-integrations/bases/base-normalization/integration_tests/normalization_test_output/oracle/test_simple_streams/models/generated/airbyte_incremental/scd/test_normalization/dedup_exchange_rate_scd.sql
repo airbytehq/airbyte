@@ -71,13 +71,13 @@ scd_data as (
             {{ quote('DATE') }} desc,
             {{ quote('_AIRBYTE_EMITTED_AT') }} desc
       ) as {{ quote('_AIRBYTE_END_AT') }},
-      case when lag({{ quote('DATE') }}) over (
+      case when row_number() over (
         partition by id, currency, cast(nzd as {{ dbt_utils.type_string() }})
         order by
             {{ quote('DATE') }} asc nulls last,
             {{ quote('DATE') }} desc,
             {{ quote('_AIRBYTE_EMITTED_AT') }} desc
-      ) is null  then 1 else 0 end as {{ quote('_AIRBYTE_ACTIVE_ROW') }},
+      ) = 1 then 1 else 0 end as {{ quote('_AIRBYTE_ACTIVE_ROW') }},
       {{ quote('_AIRBYTE_AB_ID') }},
       {{ quote('_AIRBYTE_EMITTED_AT') }},
       {{ quote('_AIRBYTE_DEDUP_EXCHANGE_RATE_HASHID') }}
