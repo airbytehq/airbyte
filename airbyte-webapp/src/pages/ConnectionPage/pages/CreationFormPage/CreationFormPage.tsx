@@ -8,6 +8,7 @@ import PageTitle from "components/PageTitle";
 import StepsMenu from "components/StepsMenu";
 import { FormPageContent } from "components/ConnectorBlocks";
 import CreateEntityView from "./components/CreateEntityView";
+import ExistingEntityForm from "./components/ExistingEntityForm";
 import SourceForm from "./components/SourceForm";
 import DestinationForm from "./components/DestinationForm";
 import ConnectionBlock from "components/ConnectionBlock";
@@ -76,6 +77,28 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
       : null
   );
 
+  const onSelectExistingSource = (id: string) => {
+    push({
+      state: {
+        ...(location.state as Record<string, unknown>),
+        sourceId: id,
+      },
+    });
+    setCurrentEntityStep(EntityStepsTypes.DESTINATION);
+    setCurrentStep(StepsTypes.CREATE_CONNECTOR);
+  };
+
+  const onSelectExistingDestination = (id: string) => {
+    push({
+      state: {
+        ...(location.state as Record<string, unknown>),
+        destinationId: id,
+      },
+    });
+    setCurrentEntityStep(EntityStepsTypes.CONNECTION);
+    setCurrentStep(StepsTypes.CREATE_CONNECTION);
+  };
+
   const renderStep = () => {
     if (
       currentStep === StepsTypes.CREATE_ENTITY ||
@@ -97,14 +120,22 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         }
 
         return (
-          <SourceForm
-            afterSubmit={() => {
-              setCurrentEntityStep(EntityStepsTypes.DESTINATION);
-              if (type === "connection") {
-                setCurrentStep(StepsTypes.CREATE_CONNECTOR);
-              }
-            }}
-          />
+          <>
+            {type === "connection" && (
+              <ExistingEntityForm
+                type="source"
+                onSubmit={onSelectExistingSource}
+              />
+            )}
+            <SourceForm
+              afterSubmit={() => {
+                setCurrentEntityStep(EntityStepsTypes.DESTINATION);
+                if (type === "connection") {
+                  setCurrentStep(StepsTypes.CREATE_CONNECTOR);
+                }
+              }}
+            />
+          </>
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
         if (location.state?.destinationId) {
@@ -120,12 +151,20 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         }
 
         return (
-          <DestinationForm
-            afterSubmit={() => {
-              setCurrentEntityStep(EntityStepsTypes.CONNECTION);
-              setCurrentStep(StepsTypes.CREATE_CONNECTION);
-            }}
-          />
+          <>
+            {type === "connection" && (
+              <ExistingEntityForm
+                type="destination"
+                onSubmit={onSelectExistingDestination}
+              />
+            )}
+            <DestinationForm
+              afterSubmit={() => {
+                setCurrentEntityStep(EntityStepsTypes.CONNECTION);
+                setCurrentStep(StepsTypes.CREATE_CONNECTION);
+              }}
+            />
+          </>
         );
       }
     }
