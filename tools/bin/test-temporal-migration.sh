@@ -21,7 +21,7 @@ VERSION=dev docker-compose -f "$SCRIPT_DIR"/../../docker-compose.yaml up &
 
 sleep 120
 
-docker compose down
+VERSION=dev docker-compose down
 
 git stash
 git checkout $NEW_HASH
