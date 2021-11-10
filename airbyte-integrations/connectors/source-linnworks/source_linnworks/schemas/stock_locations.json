@@ -17,7 +17,7 @@
     },
     "IsFulfillmentCenter": {
       "type": "boolean",
-      "description": "If location is a fulfilment center"
+      "description": "If location is a fulfillment center"
     },
     "LocationTag": {
       "type": "string",
