@@ -16,50 +16,57 @@ import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSheetsOAuthFlow;
+import java.lang.reflect.InvocationTargetException;
 import java.net.http.HttpClient;
 import java.util.Map;
-import java.util.UUID;
 
-public class OAuthImplementationFactory {
+public class OAuthImplementationFactory<T extends OAuthFlowImplementation> {
 
-  private final Map<String, OAuthFlowImplementation> OAUTH_FLOW_MAPPING;
+  private final Map<String, Class<? extends OAuthFlowImplementation>> OAUTH_FLOW_MAPPING;
+  private final ConfigRepository configRepository;
+  private final HttpClient httpClient;
 
   public OAuthImplementationFactory(final ConfigRepository configRepository, final HttpClient httpClient) {
-    OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
-        .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-facebook-pages", new FacebookPagesOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-github", new GithubOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-google-ads", new GoogleAdsOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-intercom", new IntercomOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-instagram", new InstagramOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-slack", new SlackOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-quickbooks", new QuickbooksOAuthFlow(configRepository, httpClient))
+    this.configRepository = configRepository;
+    this.httpClient = httpClient;
+    OAUTH_FLOW_MAPPING = ImmutableMap.<String, Class<? extends OAuthFlowImplementation>>builder()
+        .put("airbyte/source-asana", AsanaOAuthFlow.class)
+        .put("airbyte/source-facebook-marketing", FacebookMarketingOAuthFlow.class)
+        .put("airbyte/source-facebook-pages", FacebookPagesOAuthFlow.class)
+        .put("airbyte/source-github", GithubOAuthFlow.class)
+        .put("airbyte/source-google-ads", GoogleAdsOAuthFlow.class)
+        .put("airbyte/source-google-analytics-v4", GoogleAnalyticsOAuthFlow.class)
+        .put("airbyte/source-google-search-console", GoogleSearchConsoleOAuthFlow.class)
+        .put("airbyte/source-google-sheets", GoogleSheetsOAuthFlow.class)
+        .put("airbyte/source-hubspot", HubspotOAuthFlow.class)
+        .put("airbyte/source-intercom", IntercomOAuthFlow.class)
+        .put("airbyte/source-instagram", InstagramOAuthFlow.class)
+        .put("airbyte/source-salesforce", SalesforceOAuthFlow.class)
+        .put("airbyte/source-slack", SlackOAuthFlow.class)
+        .put("airbyte/source-surveymonkey", SurveymonkeyOAuthFlow.class)
+        .put("airbyte/source-trello", TrelloOAuthFlow.class)
+        .put("airbyte/source-hubspot", HubspotOAuthFlow.class)
+        .put("airbyte/source-quickbooks", QuickbooksOAuthFlow.class)
         .build();
   }
 
-  public OAuthFlowImplementation create(final StandardSourceDefinition sourceDefinition, final UUID workspaceId) {
-    final String imageName = sourceDefinition.getDockerRepository();
-    if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
-      return OAUTH_FLOW_MAPPING.get(imageName);
-    } else {
-      throw new IllegalStateException(
-          String.format("Requested OAuth implementation for %s, but it is not included in the oauth mapping.", imageName));
-    }
+  public OAuthFlowImplementation create(final StandardSourceDefinition sourceDefinition) {
+    return create(sourceDefinition.getDockerRepository());
   }
 
-  public OAuthFlowImplementation create(final StandardDestinationDefinition destinationDefinition, final UUID workspaceId) {
-    final String imageName = destinationDefinition.getDockerRepository();
+  public OAuthFlowImplementation create(final StandardDestinationDefinition destinationDefinition) {
+    return create(destinationDefinition.getDockerRepository());
+  }
+
+  public OAuthFlowImplementation create(final String imageName) {
     if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
-      return OAUTH_FLOW_MAPPING.get(imageName);
+      try {
+        var implementation = OAUTH_FLOW_MAPPING.get(imageName).getDeclaredConstructor(ConfigRepository.class, HttpClient.class);
+        return implementation.newInstance(configRepository, httpClient);
+      } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
+        throw new IllegalStateException(
+            String.format("Requested OAuth implementation for %s, but it could not be instantiated.", imageName), e);
+      }
     } else {
       throw new IllegalStateException(
           String.format("Requested OAuth implementation for %s, but it is not included in the oauth mapping.", imageName));
