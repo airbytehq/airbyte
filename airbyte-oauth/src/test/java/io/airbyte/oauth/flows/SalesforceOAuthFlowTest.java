@@ -29,7 +29,7 @@ public class SalesforceOAuthFlowTest {
   private UUID workspaceId;
   private UUID definitionId;
   private ConfigRepository configRepository;
-  private SalesforceOAuthFlow salesforceoAuthFlow;
+  private SalesforceOAuthFlow salesforceOAuthFlow;
   private HttpClient httpClient;
 
   private static final String REDIRECT_URL = "https://airbyte.io";
@@ -52,28 +52,28 @@ public class SalesforceOAuthFlowTest {
             .put("client_id", "test_client_id")
             .put("client_secret", "test_client_secret")
             .build()))));
-    salesforceoAuthFlow = new SalesforceOAuthFlow(configRepository, httpClient, SalesforceOAuthFlowTest::getConstantState);
+    salesforceOAuthFlow = new SalesforceOAuthFlow(configRepository, httpClient, SalesforceOAuthFlowTest::getConstantState);
 
   }
 
   @Test
-  public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
-    final String concentUrl =
-        salesforceoAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    assertEquals(concentUrl,
-        "https://login.salesforce.com/services/oauth2/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state");
+  public void testGetSourceConsentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
+    final String consentUrl = salesforceOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    assertEquals(
+        "https://login.salesforce.com/services/oauth2/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state",
+        consentUrl);
   }
 
   @Test
   public void testCompleteSourceOAuth() throws IOException, JsonValidationException, InterruptedException, ConfigNotFoundException {
 
-    Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
+    final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        salesforceoAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        salesforceOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
     assertEquals(Jsons.serialize(returnedCredentials), Jsons.serialize(actualQueryParams));
   }
 
