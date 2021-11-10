@@ -18,7 +18,7 @@ DEFAULT_NAMESPACE="${DEFAULT_NAMESPACE:-default}"
 DEFAULT_NAMESPACE_RETENTION=${DEFAULT_NAMESPACE_RETENTION:-1}
 
 # See https://github.com/temporalio/temporal/blob/release/v1.13.x/docker/entrypoint.sh
-initEntryPoint() {
+init_entry_point() {
   echo "Start init"
   export BIND_ON_IP="${BIND_ON_IP:-$(hostname -i)}"
 
@@ -127,7 +127,7 @@ setup_server(){
     fi
 }
 
-initEntryPoint
+init_entry_point
 wait_for_postgres
 update_postgres_schema
 

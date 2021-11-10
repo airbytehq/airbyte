@@ -180,7 +180,8 @@ services:
     logging: *default-logging
     container_name: airbyte-temporal
     restart: unless-stopped
-    command: ./update-and-start-temporal.sh
+    ports:
+      - 7233:7233
     environment:
       - DB=postgresql
       - DB_PORT=${DATABASE_PORT}
