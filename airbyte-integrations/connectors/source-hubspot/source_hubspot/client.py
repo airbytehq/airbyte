@@ -26,7 +26,7 @@ from source_hubspot.api import (
 
 
 class Client(BaseClient):
-    """Hubspot client, provides methods to discover and read streams"""
+    """HubSpot client, provides methods to discover and read streams"""
 
     def __init__(self, start_date, credentials, **kwargs):
         self._start_date = start_date
