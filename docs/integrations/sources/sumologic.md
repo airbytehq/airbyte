@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Sumo Logic source supports both Full Refresh and Incremental syncs of their [Job Search API](https://help.sumologic.com/APIs/Search-Job-API/About-the-Search-Job-API).
+The Sumo Logic source supports incremental syncs of their [Job Search API](https://help.sumologic.com/APIs/Search-Job-API/About-the-Search-Job-API).
 
 ### Output schema
 
