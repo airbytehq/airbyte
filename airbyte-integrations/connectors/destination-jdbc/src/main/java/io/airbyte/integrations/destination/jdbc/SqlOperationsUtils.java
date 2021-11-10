@@ -79,9 +79,11 @@ public class SqlOperationsUtils {
       // string. Thus there will be two loops below.
       // 1) Loop over records to build the full string.
       // 2) Loop over the records and bind the appropriate values to the string.
-      // We also partition the query to run on 10k records at a time, since some DBs set a max limit on how many records can be inserted at once
-      // TODO(sherif) this should use a smarter, destination-aware partitioning scheme instead of 10k by default
-      for (List<AirbyteRecordMessage> partition : Iterables.partition(records, 10_000)){
+      // We also partition the query to run on 10k records at a time, since some DBs set a max limit on
+      // how many records can be inserted at once
+      // TODO(sherif) this should use a smarter, destination-aware partitioning scheme instead of 10k by
+      // default
+      for (List<AirbyteRecordMessage> partition : Iterables.partition(records, 10_000)) {
         final StringBuilder sql = new StringBuilder(insertQueryComponent);
         partition.forEach(r -> sql.append(recordQueryComponent));
         final String s = sql.toString();
