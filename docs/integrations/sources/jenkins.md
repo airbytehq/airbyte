@@ -12,8 +12,8 @@ columns you set up for replication, every time a sync is run.
 
 Several output streams are available from this source:
 
-* [Builds](https://docs.gitlab.com/ee/api/commits.html) \(Incremental\)
-* [Jobs](https://docs.gitlab.com/ee/api/commits.html)
+* [Builds](TODO) \(Incremental\)
+* [Jobs](TODO)
 
 If there are more endpoints you'd like Faros AI to support, please [create an
 issue.](https://github.com/faros-ai/airbyte-connectors/issues/new)
