@@ -12,7 +12,7 @@ This Source is capable of syncing the following core Streams:
 
 ### Note on Incremental Syncs
 
-By default, this connector uses `_messagetime` as cursor for incremental syncs, but user can set `by_receipt_time` option to `True` to use `_receipttime` instead.
+Messages can be late-arrival, so this connector uses `_receipttime` as cursor for incremental syncs.
 
 ### Features
 

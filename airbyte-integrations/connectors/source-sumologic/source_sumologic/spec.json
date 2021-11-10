@@ -32,11 +32,6 @@
         "description": "UTC date and time in the format 2021-11-10T11:30:00. Any data before this date will not be replicated. Leave empty if you want to pull from the very start.",
         "examples": ["2021-11-10T11:30:00"]
       },
-      "by_receipt_time": {
-        "type": "boolean",
-        "title": "By Receipt Time",
-        "description": "Query logs by receipt time instead of message, default is using message time."
-      },
       "limit": {
         "type": "integer",
         "title": "Limit",

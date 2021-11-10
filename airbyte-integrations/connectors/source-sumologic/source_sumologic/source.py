@@ -33,10 +33,12 @@ class IncrementalSumologicStream(SumologicStream, ABC):
 
     @property
     def cursor_field(self) -> str:
-        return "_receipttime" if self.config.get("by_receipt_time", False) else "_messagetime"
+        return "_receipttime"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, "0"), current_stream_state.get(self.cursor_field, "0"))}
+        return {
+            self.cursor_field: str(max(int(latest_record.get(self.cursor_field, 0)), int(current_stream_state.get(self.cursor_field, 0))))
+        }
 
 
 class Messages(IncrementalSumologicStream):
@@ -55,14 +57,23 @@ class Messages(IncrementalSumologicStream):
         else:
             from_time = self.config.get("from_time")
 
-        # to_time is required by sumo-logic API
-        to_time = datetime.datetime.utcnow().replace(microsecond=0).isoformat()
+        # from_time and to_time are both required by sumo-logic API
+        # and sumo-logic API will throw error if from_time is greater than to_time
+        # so set to_time to be 1 minute after from_time if from_time is in future
+        # else set to_time to be 1 minute after utcnow
+        utcnow = datetime.datetime.utcnow()
+
+        from_time_dt = datetime.datetime.fromisoformat(from_time) if from_time else None
+        if from_time_dt and from_time_dt >= utcnow:
+            to_time_dt = from_time_dt + datetime.timedelta(minutes=1)
+        else:
+            to_time_dt = utcnow + datetime.timedelta(minutes=1)
+        to_time = to_time_dt.replace(microsecond=0).isoformat()
         records = self.client.search(
             query=self.config["query"],
             from_time=from_time,
             to_time=to_time,
             limit=self.config.get("limit", 10000),
-            by_receipt_time=self.config.get("by_receipt_time", False),
         )
         return records
 

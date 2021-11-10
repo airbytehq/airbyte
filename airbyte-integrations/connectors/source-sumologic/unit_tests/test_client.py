@@ -39,8 +39,8 @@ def test_search(mocker):
     ]
     sumo.search_job_messages.return_value = {
         "messages": [
-            {"map": {"_messagetime": 100}},
-            {"map": {"_messagetime": 200}},
+            {"map": {"_receipttime": 100}},
+            {"map": {"_receipttime": 200}},
         ]
     }
     mocker.patch("source_sumologic.client.SumoLogic", return_value=sumo)
@@ -50,7 +50,7 @@ def test_search(mocker):
         "from_time": None,
         "to_time": None,
         "time_zone": "UTC",
-        "by_receipt_time": False,
+        "by_receipt_time": True,
     }
 
     messages = list(Client("foo", "bar").search(config["query"]))
@@ -91,8 +91,8 @@ def test_read_messages(mocker):
     sumo = mocker.Mock()
     sumo.search_job_messages.return_value = {
         "messages": [
-            {"map": {"_messagetime": 100}},
-            {"map": {"_messagetime": 200}},
+            {"map": {"_receipttime": 100}},
+            {"map": {"_receipttime": 200}},
         ]
     }
     mocker.patch("source_sumologic.client.SumoLogic", return_value=sumo)

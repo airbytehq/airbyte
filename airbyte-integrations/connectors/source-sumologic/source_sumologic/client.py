@@ -36,7 +36,7 @@ class Client:
         limit: int = 10000,
         offset: int = 0,
         time_zone: str = "UTC",
-        by_receipt_time: bool = False,
+        by_receipt_time: bool = True,
     ) -> Iterator[Mapping[str, Any]]:
 
         self.logger.info(f"Creating search job: {query}, from: {from_time}, to: {to_time}")
@@ -51,15 +51,37 @@ class Client:
         status: dict = self._wait_for_search_job(search_job)
         return self._read_messages(search_job, status, limit, offset)
 
-    def _wait_for_search_job(self, search_job: dict, delay: int=5) -> dict:
-        self.logger.info("Waiting for search job to be ready...")
+    def _wait_for_search_job(self, search_job: dict, delay: int = 5, timeout=28800) -> dict:
+        """Wait for search job to finish gathering results.
 
+        While the search job is running you need to request the job status based on the search job ID.
+        The API keeps the search job alive by either polling for status or gathering results.
+        If the search job is not kept alive by API requests, it is canceled after five minutes.
+        When a search job is canceled after five minutes of inactivity, you will get a 404 status.
+        You must enable cookies for subsequent requests to the search job.
+        A 404 status (Page Not Found) on a follow-up request may be due to a cookie not accompanying the request.
+        There's a query timeout after eight hours (28800 seconds), even if the API is polling and making requests.
+        If you are running very few queries, you may be able to go a little longer,
+        but you can expect most of your queries to end after eight hours.
+        """
+        self.logger.info("Waiting for search job to be ready...")
+        waittime: int = 0
         status: dict = self.sumo.search_job_status(search_job)
+        # Possible state values are:
+        #   - NOT STARTED
+        #   - GATHERING RESULTS
+        #   - FORCE PAUSED
+        #   - DONE GATHERING RESULTS
+        #   - CANCELLED
+        # https://help.sumologic.com/APIs/Search-Job-API/About-the-Search-Job-API#sample-session-1
         while status["state"] != "DONE GATHERING RESULTS":
             if status["state"] == "CANCELLED":
                 self.logger.warning("Search job status: CANCELLED.")
                 break
             time.sleep(delay)
+            waittime += delay
+            if waittime > timeout:
+                raise Exception(f"Reached query timeout {waittime}/{timeout}.")
             status = self.sumo.search_job_status(search_job)
 
         self.logger.info(f"Search job status: {status.get('state')}")
