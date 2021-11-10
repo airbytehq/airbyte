@@ -168,16 +168,6 @@ class IncrementalLinnworksStream(LinnworksStream, ABC):
     def cursor_field(self) -> str:
         return True
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        if not stream_state:
-            stream_state = {}
-
-        return [
-            {
-                self.cursor_field: stream_state.get(self.cursor_field, self.start_date),
-            }
-        ]
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current = current_stream_state.get(self.cursor_field, "")
         latest = latest_record.get(self.cursor_field, "")
@@ -198,15 +188,26 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
     def path(self, **kwargs) -> str:
         return "/api/ProcessedOrders/SearchProcessedOrders"
 
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        if not stream_state:
+            stream_state = {}
+
+        from_date = stream_state.get(self.cursor_field, self.start_date)
+        to_date = pendulum.tomorrow("UTC").isoformat()
+        return [
+            {
+                "FromDate": from_date,
+                "ToDate": max(from_date, to_date),
+            }
+        ]
+
     def request_body_data(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        from_date = stream_slice[self.cursor_field]
-        to_date = pendulum.tomorrow("UTC").isoformat()
         request = {
             "DateField": "received",
-            "FromDate": from_date,
-            "ToDate": max(from_date, to_date),
+            "FromDate": stream_slice["FromDate"],
+            "ToDate": stream_slice["ToDate"],
             "PageNumber": 1 if not next_page_token else next_page_token["PageNumber"],
             "ResultsPerPage": self.page_size,
             "SearchSorting": {"SortField": "dReceivedDate", "SortDirection": "ASC"},
