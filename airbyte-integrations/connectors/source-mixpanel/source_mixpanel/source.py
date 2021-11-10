@@ -812,9 +812,7 @@ class SourceMixpanel(AbstractSource):
         start_date = config.get("start_date")
         if start_date and isinstance(start_date, str):
             start_date = pendulum.parse(config["start_date"]).date()
-        year_ago = now - timedelta(days=365)
-        # start_date can't be older than 1 year ago
-        config["start_date"] = start_date if start_date and start_date >= year_ago else year_ago  # set to 1 year ago by default
+        config["start_date"] = start_date or now - timedelta(days=365)
 
         end_date = config.get("end_date")
         if end_date and isinstance(end_date, str):
