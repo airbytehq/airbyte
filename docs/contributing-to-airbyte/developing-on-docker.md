@@ -41,3 +41,7 @@ Task dockerBuildTask = getDockerBuildTask("init", project.projectDir)
 dockerBuildTask.dependsOn(copyScripts)
 assemble.dependsOn(dockerBuildTask)
 ```
+
+## Building the docker images
+
+The gradle task `generate-docker` allows to build all the docker images.
