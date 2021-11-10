@@ -4,6 +4,7 @@ import { FieldArray, useField } from "formik";
 import { DropDown, Input, Multiselect, TextArea, TagInput } from "components";
 import ConfirmationControl from "./ConfirmationControl";
 import { FormBaseItem } from "core/form/types";
+import { isDefined } from "utils/common";
 
 type IProps = {
   property: FormBaseItem;
@@ -105,7 +106,7 @@ const Control: React.FC<IProps> = ({
   } else if (property.isSecret) {
     const unfinishedSecret = unfinishedFlows[name];
     const isEditInProgress = !!unfinishedSecret;
-    const isFormInEditMode = !!meta.initialValue;
+    const isFormInEditMode = isDefined(meta.initialValue);
     return (
       <ConfirmationControl
         component={
