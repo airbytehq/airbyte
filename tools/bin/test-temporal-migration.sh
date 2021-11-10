@@ -17,9 +17,9 @@ SUB_BUILD=PLATFORM "$SCRIPT_DIR"/../../gradlew -p "$SCRIPT_DIR"/../.. assemble
 
 curl https://raw.githubusercontent.com/airbytehq/airbyte/master/docker-compose.yaml > /tmp/old-docker-compose/docker-compose.yaml
 
-VERSION=dev docker-compose -f /tmp/old-docker-compose/docker-compose.yaml up &
+VERSION=dev docker-compose -f "$SCRIPT_DIR"/../../docker-compose.yaml up &
 
-sleep 2m
+sleep 120
 
 git checkout $NEW_HASH
 SUB_BUILD=PLATFORM "$SCRIPT_DIR"/../../gradlew -p "$SCRIPT_DIR"/../.. assemble
