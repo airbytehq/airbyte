@@ -2,7 +2,7 @@ import collections
 import itertools
 import time
 from abc import ABC, abstractmethod
-from typing import Iterator, Union, Mapping
+from typing import Iterator, Union, Mapping, Optional
 
 import pendulum
 from airbyte_cdk.sources import AbstractSource
@@ -14,11 +14,12 @@ class JobWaitTimeout(Exception):
 
 
 class AsyncJob(ABC):
-    """Total time allowed for job to run, in case it is None the job will run endlessly"""
-    job_wait_timeout = None
+    @property
+    def job_wait_timeout(self) -> Optional[pendulum.Duration]:
+        """Total time allowed for job to run, in case it is None the job will run endlessly"""
+        return None
 
     @property
-    @abstractmethod
     def job_sleep_interval(self) -> pendulum.Duration:
         """Sleep interval after each check of job status"""
         return pendulum.duration(seconds=5)
@@ -32,10 +33,10 @@ class AsyncJob(ABC):
         """Something that will tell if job was successful"""
 
     def should_retry(self, exc: Exception) -> bool:
-        """Tell if the job should be restarted when the following exception caught"""
+        """Tell if the job should be restarted when the following exception occurs"""
         return False
 
-    def _wait_for_job(self):
+    def wait_completion(self):
         """Actual waiting for job to finish"""
         start_time = pendulum.now()
 
@@ -46,20 +47,15 @@ class AsyncJob(ABC):
 
         raise JobWaitTimeout("Waiting for job more than allowed")
 
-    def fetch_result(self) -> Any:
-        """Reading job result, separate function because we want this to happen after we retrieved jobs in particular order"""
-        self._wait_for_job()
-        return self
-
 
 StreamSliceType = Union[Mapping[str, Any], AsyncJob, None]
 
 
 class AsyncSource(AbstractSource, ABC):
-    @abstractmethod
     @property
-    def concurrent_limit(self):
-        """Maximum number of concurrent jobs"""
+    def concurrent_limit(self) -> Optional[int]:
+        """Maximum number of concurrent jobs. By default is None - no limit"""
+        return None
 
     def iterate_over_slices(self, slices: Iterator[StreamSliceType]) -> Iterator[Mapping]:
         first_item = next(slices, None)
@@ -72,21 +68,21 @@ class AsyncSource(AbstractSource, ABC):
     def iterate_over_jobs(self, jobs: Iterator[AsyncJob]) -> Iterator[Mapping]:
         """ Produce slices in expected order
 
-        :param jobs:
+        :param jobs: async job
 
         input:
-            {non async} {async} {}
+            {async job} {async job}
 
         output:
-            {non async} {response} {}
+            {finished async job} {finished async job} {finished async job}
 
+        Algorithm:
         1. check slices if there any async jobs,
         2. start job, add it the queue
-        q.appendleft()
-        3. if queue is full wait and emit first item from the queue, restart any slice from the queue if needed (optional)
-        get first item and wait for it,
-        why we iterate over the rest? to restart or fail fast in case they fail
-        4. yield slice and continue with next slice at step #2
+        3. if queue is full wait and emit first item from the queue,
+        4. (optional) restart any slice from the queue if needed
+        5. get first item and wait for it,
+        6. yield slice and continue with next slice at step #2
 
         """
         running_jobs = collections.deque(maxlen=self.concurrent_limit)
@@ -95,9 +91,11 @@ class AsyncSource(AbstractSource, ABC):
             job.start_job()
             running_jobs.appendleft(job)
             if len(running_jobs) == self.concurrent_limit:
-                yield running_jobs.pop().fetch_result()
+                current_job = running_jobs.pop()
+                current_job.wait_completion()
+                yield current_job
 
         while running_jobs:
-            yield {
-                running_jobs.pop().fetch_result()
-            }
+            current_job = running_jobs.pop()
+            current_job.wait_completion()
+            yield current_job
