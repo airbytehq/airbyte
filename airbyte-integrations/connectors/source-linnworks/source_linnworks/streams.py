@@ -37,9 +37,6 @@ class LinnworksStream(HttpStream, ABC):
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code != requests.codes.ok:
-            return None
-
         json = response.json()
         if not isinstance(json, list):
             json = [json]
@@ -142,6 +139,11 @@ class StockItems(LinnworksStream):
                 "entriesPerPage": page_size,
                 "pageNumber": page_number + 1,
             }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code != requests.codes.ok:
+            return None
+        yield from super().parse_response(response, **kwargs)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
