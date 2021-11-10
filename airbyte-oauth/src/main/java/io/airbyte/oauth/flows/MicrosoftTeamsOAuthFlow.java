@@ -17,6 +17,12 @@ import org.apache.http.client.utils.URIBuilder;
 
 public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
 
+  /*
+   * hard-coded TENANT_ID for testing
+   */
+
+  private static final String TENANT_ID = "277f8a66-1e88-46c9-8c7b-23c442857904";
+
   public MicrosoftTeamsOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
@@ -40,7 +46,7 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
       return new URIBuilder()
           .setScheme("https")
           .setHost("login.microsoftonline.com")
-          .setPath("277f8a66-1e88-46c9-8c7b-23c442857904/oauth2/v2.0/authorize")
+          .setPath(TENANT_ID + "/oauth2/v2.0/authorize")
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("state", getState())
@@ -68,7 +74,27 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
   }
 
   private String getScopes() {
-    return "User.ReadBasic.All offline_access";
+    return String.join(" ", "offline_access",
+        "Application.Read.All",
+        "Channel.ReadBasic.All",
+        "ChannelMember.Read.All",
+        "ChannelMember.ReadWrite.All",
+        "ChannelSettings.Read.All",
+        "ChannelSettings.ReadWrite.All",
+        "Directory.Read.All",
+        "Directory.ReadWrite.All",
+        "Files.Read.All",
+        "Files.ReadWrite.All",
+        "Group.Read.All",
+        "Group.ReadWrite.All",
+        "GroupMember.Read.All",
+        "Reports.Read.All",
+        "Sites.Read.All",
+        "Sites.ReadWrite.All",
+        "TeamsTab.Read.All",
+        "TeamsTab.ReadWrite.All",
+        "User.Read.All",
+        "User.ReadWrite.All");
   }
 
   /**
@@ -77,7 +103,7 @@ public class MicrosoftTeamsOAuthFlow extends BaseOAuth2Flow {
    */
   @Override
   protected String getAccessTokenUrl() {
-    return "https://login.microsoftonline.com/277f8a66-1e88-46c9-8c7b-23c442857904/oauth2/v2.0/token";
+    return "https://login.microsoftonline.com/" + TENANT_ID + "/oauth2/v2.0/token";
   }
 
 }
