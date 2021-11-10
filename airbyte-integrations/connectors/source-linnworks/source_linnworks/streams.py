@@ -108,7 +108,7 @@ class StockLocations(LinnworksStream):
 
         for record in records:
             location = Location(authenticator=self.authenticator)
-            srecords = location.read_records(sync_mode, cursor_field, stream_slice, {"pkStockLocationId": record["StockLocationId"]})
+            stock_location_records = location.read_records(sync_mode, cursor_field, stream_slice, {"pkStockLocationId": record["StockLocationId"]})
             record["location"] = next(srecords)
             yield record
 
