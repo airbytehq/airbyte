@@ -12,6 +12,7 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
@@ -39,6 +40,7 @@ public class JobSubmitter implements Runnable {
   private final JobNotifier jobNotifier;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
+  private final ConfigRepository configRepository;
 
   // See attemptJobSubmit() to understand the need for this Concurrent Set.
   private final Set<Long> runningJobs = Sets.newConcurrentHashSet();
@@ -49,7 +51,7 @@ public class JobSubmitter implements Runnable {
                       final JobTracker jobTracker,
                       final JobNotifier jobNotifier,
                       final WorkerEnvironment workerEnvironment,
-                      final LogConfigs logConfigs) {
+                      final LogConfigs logConfigs, final ConfigRepository configRepository) {
     this.threadPool = threadPool;
     this.persistence = persistence;
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
@@ -57,6 +59,7 @@ public class JobSubmitter implements Runnable {
     this.jobNotifier = jobNotifier;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
+    this.configRepository = configRepository;
   }
 
   @Override
@@ -130,7 +133,7 @@ public class JobSubmitter implements Runnable {
 
           if (output.getStatus() == io.airbyte.workers.JobStatus.SUCCEEDED) {
             persistence.succeedAttempt(job.getId(), attemptNumber);
-            job.getConfig().getDiscoverCatalog().getConnectionConfiguration()
+            // job.getConfig().getDiscoverCatalog().getConnectionConfiguration();
             // TODO: bmoric Add the stuff.
             if (job.getConfigType() == ConfigType.SYNC) {
               jobNotifier.successJob(job);

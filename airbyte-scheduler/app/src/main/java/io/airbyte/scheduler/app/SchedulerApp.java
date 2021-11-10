@@ -123,7 +123,7 @@ public class SchedulerApp {
         jobPersistence,
         temporalWorkerRunFactory,
         new JobTracker(configRepository, jobPersistence, trackingClient),
-        jobNotifier, workerEnvironment, logConfigs);
+        jobNotifier, workerEnvironment, logConfigs, configRepository);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -152,7 +152,6 @@ public class SchedulerApp {
 
     cleanupJobsPool.scheduleWithFixedDelay(
         () -> {
-          final StandardWorkspace standardWorkspace = configRepository.get;
           MDC.setContextMap(mdc);
           jobCleaner.run();
           jobPersistence.purgeJobHistory();
