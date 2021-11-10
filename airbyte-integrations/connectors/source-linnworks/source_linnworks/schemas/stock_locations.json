@@ -29,7 +29,7 @@
     },
     "IsWarehouseManaged": {
       "type": ["null", "boolean"],
-      "description": "If the location is warehosue managed."
+      "description": "If the location is warehouse managed."
     },
     "location": {
       "type": "object",
