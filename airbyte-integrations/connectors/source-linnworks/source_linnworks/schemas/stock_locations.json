@@ -9,7 +9,7 @@
     },
     "StockLocationIntId": {
       "type": "integer",
-      "description": "Stock location integet id"
+      "description": "Stock location integer id"
     },
     "LocationName": {
       "type": "string",
