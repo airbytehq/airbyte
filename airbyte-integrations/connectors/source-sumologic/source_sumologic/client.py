@@ -51,7 +51,7 @@ class Client:
         status: dict = self._wait_for_search_job(search_job)
         return self._read_messages(search_job, status, limit, offset)
 
-    def _wait_for_search_job(self, search_job: dict) -> dict:
+    def _wait_for_search_job(self, search_job: dict, delay: int=5) -> dict:
         self.logger.info("Waiting for search job to be ready...")
 
         delay = 5
