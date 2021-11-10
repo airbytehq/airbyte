@@ -68,7 +68,7 @@ class ReportResources(HttpStream):
         self.name = name
         self.jobs_stream = jobs_stream
         self.job_id = job_id
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -109,7 +109,7 @@ class ChannelReports(HttpSubStream):
     def __init__(self, name: str, dimensions: List[str], **kwargs):
         self.name = name
         self.primary_key = dimensions
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
