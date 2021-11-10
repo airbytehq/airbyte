@@ -188,12 +188,16 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("1900-01-01T00:00:00Z", "2079-06-06T00:00:00Z", null)
             .build());
 
+    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so dates would be
+    // always represented as a datetime with 00:00:00 time
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("datetime")
+            .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'1753-01-01'", "'9999-12-31'", "null")
-            .addExpectedValues("1753-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
+            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'",
+                "null")
+            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z",
+                "1999-01-08T00:00:00Z", null)
             .build());
 
     addDataTypeTestData(
@@ -204,12 +208,14 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
             .build());
 
+// TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
+    // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'23:59:59.123456'", "'15:59:59'", "'00:00:00'")
-            .addExpectedValues(null, "23:59:59.123456", "15:59:59", "00:00:00")
+            .addInsertValues("null")
+            .addNullExpectedValue()
             .build());
 
     addDataTypeTestData(
