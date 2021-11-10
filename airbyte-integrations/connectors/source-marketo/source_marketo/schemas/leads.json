@@ -1,280 +1,571 @@
 {
-  "type": ["object", "null"],
+  "type": [
+    "object",
+    "null"
+  ],
   "additionalProperties": false,
   "properties": {
     "company": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "site": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "billingStreet": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "billingCity": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "billingState": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "billingCountry": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "billingPostalCode": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "website": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "mainPhone": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "annualRevenue": {
-      "type": ["number", "null"]
+      "type": [
+        "string",
+        "number",
+        "null"
+      ]
     },
     "numberOfEmployees": {
-      "type": ["integer", "null"]
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
     },
     "industry": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "sicCode": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "mktoCompanyNotes": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "externalCompanyId": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "id": {
-      "type": ["integer", "null"]
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
     },
     "mktoName": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "personType": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "mktoIsPartner": {
-      "type": ["boolean", "null"]
+      "type": [
+        "string",
+        "boolean",
+        "null"
+      ]
     },
     "isLead": {
-      "type": ["boolean", "null"]
+      "type": [
+        "string",
+        "boolean",
+        "null"
+      ]
     },
     "mktoIsCustomer": {
-      "type": ["boolean", "null"]
+      "type": [
+        "string",
+        "boolean",
+        "null"
+      ]
     },
     "isAnonymous": {
-      "type": ["boolean", "null"]
+      "type": [
+        "string",
+        "boolean",
+        "null"
+      ]
     },
     "salutation": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "firstName": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "middleName": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "lastName": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "email": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "phone": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "mobilePhone": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "fax": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "title": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "contactCompany": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "dateOfBirth": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date-time"
     },
     "address": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "city": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "state": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "country": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "postalCode": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "personTimeZone": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "originalSourceType": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "originalSourceInfo": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "registrationSourceType": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "registrationSourceInfo": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "originalSearchEngine": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "originalSearchPhrase": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "originalReferrer": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "emailInvalid": {
-      "type": ["boolean", "null"]
+      "type": [
+        "string",
+        "boolean",
+        "null"
+      ]
     },
     "emailInvalidCause": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "unsubscribed": {
-      "type": ["boolean", "null"]
+      "type": [
+        "string",
+        "boolean",
+        "null"
+      ]
     },
     "unsubscribedReason": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "doNotCall": {
-      "type": ["boolean", "null"]
+      "type": [
+        "string",
+        "boolean",
+        "null"
+      ]
     },
     "mktoDoNotCallCause": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "doNotCallReason": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "marketingSuspended": {
-      "type": ["boolean", "null"]
+      "type": [
+        "string",
+        "boolean",
+        "null"
+      ]
     },
     "marketingSuspendedCause": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "blackListed": {
-      "type": ["boolean", "null"]
+      "type": [
+        "string",
+        "boolean",
+        "null"
+      ]
     },
     "blackListedCause": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "mktoPersonNotes": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "anonymousIP": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "inferredCompany": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "inferredCountry": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "inferredCity": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "inferredStateRegion": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "inferredPostalCode": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "inferredMetropolitanArea": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "inferredPhoneAreaCode": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "emailSuspended": {
-      "type": ["boolean", "null"]
+      "type": [
+        "string",
+        "boolean",
+        "null"
+      ]
     },
     "emailSuspendedCause": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "emailSuspendedAt": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date-time"
     },
     "department": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "createdAt": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date-time"
     },
     "updatedAt": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date-time"
     },
     "cookies": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "externalSalesPersonId": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "leadPerson": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "leadRole": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "leadSource": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "leadStatus": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "leadScore": {
-      "type": ["integer", "null"]
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
     },
     "urgency": {
-      "type": ["number", "null"]
+      "type": [
+        "string",
+        "number",
+        "null"
+      ]
     },
     "priority": {
-      "type": ["integer", "null"]
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
     },
     "relativeScore": {
-      "type": ["integer", "null"]
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
     },
     "relativeUrgency": {
-      "type": ["integer", "null"]
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
     },
     "rating": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "personPrimaryLeadInterest": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "leadPartitionId": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "leadRevenueCycleModelId": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "leadRevenueStageId": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "acquisitionProgramId": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "mktoAcquisitionDate": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date-time"
     }
   }

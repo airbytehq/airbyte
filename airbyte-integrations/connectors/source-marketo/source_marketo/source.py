@@ -55,9 +55,13 @@ class MarketoStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        data = response.json().get(self.data_field, [])
+        data = response.json()
 
-        for record in data:
+        data_field = self.data_field
+        if "errors" in data:
+            data_field = "errors"
+
+        for record in data.get(data_field, []):
             yield record
 
 
@@ -133,9 +137,6 @@ class MarketoExportBase(IncrementalMarketoStream):
     # The status is only updated once every 60 seconds
     poll_interval = 60
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
     @property
     def stream_fields(self):
         return {}
@@ -143,6 +144,17 @@ class MarketoExportBase(IncrementalMarketoStream):
     @property
     def stream_filter(self):
         return {}
+
+    @property
+    def raise_on_http_errors(self):
+        """We need turn off http errors, because when we get an Export daily quota exceeded error.
+        Field exportId field was None, according to that stream_slice['id'] also None,
+        so as not stop sync according to 404 error and lose all data
+        we sync till we get Export daily quota exceeded error and save state"""
+        return False
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
 
     def create_export(self, param):
         return next(MarketoExportCreate(self.config, stream_name=self.stream_name, param=param).read_records(sync_mode=None), {})
@@ -170,7 +182,12 @@ class MarketoExportBase(IncrementalMarketoStream):
 
             export = self.create_export(param)
 
-            date_slice["id"] = export["exportId"]
+            # if we get record-level errors like "1029, Export daily quota exceeded" we signaling about that in log
+            if "code" in export:
+                self.logger.error(f"{export.get('code')}, {export.get('message')}")
+
+            date_slice["id"] = export.get("exportId")
+
         return date_slices
 
     def sleep_till_export_completed(self, stream_slice: Mapping[str, Any]) -> bool:
