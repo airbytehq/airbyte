@@ -113,23 +113,32 @@ class AuthSpecification(BaseModel):
     )
 
 
-class ConnectorSpecification(BaseModel):
-    class Config:
-        extra = Extra.allow
+class AuthFlowType(Enum):
+    oauth1_0 = "oauth1.0"
+    oauth2_0 = "oauth2.0"
 
-    documentationUrl: Optional[AnyUrl] = None
-    changelogUrl: Optional[AnyUrl] = None
-    connectionSpecification: Dict[str, Any] = Field(
-        ...,
-        description="ConnectorDefinition specific blob. Must be a valid JSON string.",
+
+class OAuthConfigSpecification(BaseModel):
+    oauth_user_input_from_connector_config_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth. Must be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification using special annotation 'path_in_connector_config'. These are input values the user is entering through the UI to configure the connector, that are also shared as requirements for the OAuth flow when interacting with the distant API OAuth urls.",
     )
-    supportsIncremental: Optional[bool] = Field(None, description="If the connector supports incremental mode or not.")
-    supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
-    supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
-    supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
-        None, description="List of destination sync modes supported by the connector"
+    complete_oauth_output_root_path_in_connector_config: Optional[List[str]] = Field(
+        None,
+        description="Json Path describing where in 'ConnectorSpecification.connectionSpecification' outputs should be written to. This can be overridden by annotation `path_in_connector_config`, otherwise all outputs should be written at the same root node located at this path.",
     )
-    authSpecification: Optional[AuthSpecification] = None
+    complete_oauth_output_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations produced by the OAuth flows as they are returned by the distant OAuth APIs. Must be a valid JSON describing the fields to merge back to `ConnectorSpecification.connectionSpecification`. For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it, or it would fallback to `complete_oauth_output_root_path_in_connector_config`.",
+    )
+    complete_oauth_server_input_parameter_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations. Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the server when using OAuth flow APIs.",
+    )
+    complete_oauth_server_output_parameter_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that also need to be merged back into the connector configuration at runtime. This is a subset configuration of `complete_oauth_server_input_parameter_specification` that filters fields out to retain only the ones that are necessary for the connector to function with OAuth. Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the connector when using OAuth flow APIs. These fields are to be merged back to `ConnectorSpecification.connectionSpecification`. For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it, or it would fallback to `complete_oauth_output_root_path_in_connector_config`.",
+    )
 
 
 class AirbyteStream(BaseModel):
@@ -171,6 +180,42 @@ class ConfiguredAirbyteStream(BaseModel):
     primary_key: Optional[List[List[str]]] = Field(
         None,
         description="Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.",
+    )
+
+
+class AdvancedAuth(BaseModel):
+    auth_flow_type: Optional[AuthFlowType] = None
+    predicate_key: Optional[List[str]] = Field(
+        None,
+        description="Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.",
+    )
+    predicate_value: Optional[str] = Field(
+        None,
+        description="Value of the predicate_key fields for the advanced auth to be applicable.",
+    )
+    oauth_config_specification: Optional[OAuthConfigSpecification] = None
+
+
+class ConnectorSpecification(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    documentationUrl: Optional[AnyUrl] = None
+    changelogUrl: Optional[AnyUrl] = None
+    connectionSpecification: Dict[str, Any] = Field(
+        ...,
+        description="ConnectorDefinition specific blob. Must be a valid JSON string.",
+    )
+    supportsIncremental: Optional[bool] = Field(None, description="If the connector supports incremental mode or not.")
+    supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
+    supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
+    supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
+        None, description="List of destination sync modes supported by the connector"
+    )
+    authSpecification: Optional[AuthSpecification] = Field(None, description="deprecated, switching to advanced_auth instead")
+    advanced_auth: Optional[AdvancedAuth] = Field(
+        None,
+        description="Additional specification object to describe what an advanced auth flow would need to function.",
     )
 
 

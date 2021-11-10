@@ -209,7 +209,7 @@ definitions:
       #- upsert_dedup # TODO chris: SCD Type 1 can be implemented later
       - append_dedup # SCD Type 1 & 2
   OAuth2Specification:
-    description: An object containing any metadata needed to describe this connector's Oauth flow
+    description: An object containing any metadata needed to describe this connector's Oauth flow. Deprecated, switching to advanced_auth instead
     type: object
     additionalProperties: true
     properties:
@@ -297,6 +297,7 @@ definitions:
         items:
           "$ref": "#/definitions/DestinationSyncMode"
       authSpecification:
+        description: deprecated, switching to advanced_auth instead
         type: object
         properties:
           auth_type:
@@ -305,3 +306,64 @@ definitions:
           oauth2Specification:
             description: If the connector supports OAuth, this field should be non-null.
             "$ref": "#/definitions/OAuth2Specification"
+      advanced_auth:
+        description: Additional specification object to describe what an advanced auth flow would need to function.
+        type: object
+        properties:
+          auth_flow_type:
+            type: string
+            enum: ["oauth1.0", "oauth2.0"] # Future auth types should be added here
+          predicate_key:
+            description: Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.
+            type: array
+            items:
+              type: string
+          predicate_value:
+            description: Value of the predicate_key fields for the advanced auth to be applicable.
+            type: string
+          oauth_config_specification:
+            "$ref": "#/definitions/OAuthConfigSpecification"
+  OAuthConfigSpecification:
+    type: object
+    properties:
+      oauth_user_input_from_connector_config_specification:
+        description: "OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.
+          Must be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification
+          using special annotation 'path_in_connector_config'.
+          These are input values the user is entering through the UI to configure the connector, that are also shared
+          as requirements for the OAuth flow when interacting with the distant API OAuth urls."
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      complete_oauth_output_root_path_in_connector_config:
+        description: "Json Path describing where in 'ConnectorSpecification.connectionSpecification' outputs should be written to.
+              This can be overridden by annotation `path_in_connector_config`, otherwise all outputs should be written at the same root node located
+              at this path."
+        type: array
+        items:
+          type: string
+      complete_oauth_output_specification:
+        description: "OAuth specific blob. This is a Json Schema used to validate Json configurations produced by the OAuth flows as they are
+          returned by the distant OAuth APIs.
+          Must be a valid JSON describing the fields to merge back to `ConnectorSpecification.connectionSpecification`.
+          For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,
+          or it would fallback to `complete_oauth_output_root_path_in_connector_config`."
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      complete_oauth_server_input_parameter_specification:
+        description: "OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations.
+          Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
+          server when using OAuth flow APIs."
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      complete_oauth_server_output_parameter_specification:
+        description: "OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that
+          also need to be merged back into the connector configuration at runtime.
+          This is a subset configuration of `complete_oauth_server_input_parameter_specification` that filters fields out to retain only the ones that
+          are necessary for the connector to function with OAuth.
+          Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
+          connector when using OAuth flow APIs.
+          These fields are to be merged back to `ConnectorSpecification.connectionSpecification`.
+          For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,
+          or it would fallback to `complete_oauth_output_root_path_in_connector_config`."
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode

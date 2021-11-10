@@ -113,23 +113,27 @@ class AuthSpecification(BaseModel):
     )
 
 
-class ConnectorSpecification(BaseModel):
-    class Config:
-        extra = Extra.allow
+class AuthFlowType(Enum):
+    oauth2_0 = "oauth2.0"
 
-    documentationUrl: Optional[AnyUrl] = None
-    changelogUrl: Optional[AnyUrl] = None
-    connectionSpecification: Dict[str, Any] = Field(
-        ...,
-        description="ConnectorDefinition specific blob. Must be a valid JSON string.",
+
+class OAuth2ConfigSpecification(BaseModel):
+    input_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description="OAuth2 specific blob. Must be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification using special annotation 'path_in_connector_config'.",
     )
-    supportsIncremental: Optional[bool] = Field(None, description="If the connector supports incremental mode or not.")
-    supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
-    supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
-    supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
-        None, description="List of destination sync modes supported by the connector"
+    parameter_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description="OAuth2 specific blob. Must be a valid non-nested JSON to be injected at runtime for using OAuth flow APIs.",
     )
-    authSpecification: Optional[AuthSpecification] = None
+    connector_auth_root_path: Optional[List[str]] = Field(
+        None,
+        description="Json Path describing where in ConnectorSpecification.connectionSpecification oauth outputs should be written to.",
+    )
+    output_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description="OAuth2 specific blob. Must be a valid JSON describing the fields to merge back to ConnectorSpecification.connectionSpecification using the special annotation 'connector_auth_root_path'.",
+    )
 
 
 class AirbyteStream(BaseModel):
@@ -172,6 +176,39 @@ class ConfiguredAirbyteStream(BaseModel):
         None,
         description="Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.",
     )
+
+
+class AdvancedAuth(BaseModel):
+    auth_flow_type: Optional[AuthFlowType] = None
+    predicate_key: Optional[List[str]] = Field(
+        None,
+        description="Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.",
+    )
+    predicate_value: Optional[str] = Field(
+        None,
+        description="Value of the predicate_key fields for the advanced auth to be applicable.",
+    )
+    oauth2_specification: Optional[OAuth2ConfigSpecification] = None
+
+
+class ConnectorSpecification(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    documentationUrl: Optional[AnyUrl] = None
+    changelogUrl: Optional[AnyUrl] = None
+    connectionSpecification: Dict[str, Any] = Field(
+        ...,
+        description="ConnectorDefinition specific blob. Must be a valid JSON string.",
+    )
+    supportsIncremental: Optional[bool] = Field(None, description="If the connector supports incremental mode or not.")
+    supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
+    supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
+    supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
+        None, description="List of destination sync modes supported by the connector"
+    )
+    authSpecification: Optional[AuthSpecification] = Field(None, description="deprecated, switching to connection_auth instead")
+    advanced_auth: Optional[AdvancedAuth] = None
 
 
 class AirbyteCatalog(BaseModel):
