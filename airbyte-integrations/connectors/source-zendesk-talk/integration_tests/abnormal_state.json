@@ -1,5 +1,8 @@
 {
-  "events": {
-    "timestamp": 9621295127
+  "calls": {
+    "updated_at": "2121-01-01T00:00:00Z"
+  },
+  "call_legs": {
+    "updated_at": "2121-01-01T00:00:00Z"
   }
 }

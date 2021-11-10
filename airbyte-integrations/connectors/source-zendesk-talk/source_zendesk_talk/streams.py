@@ -33,6 +33,19 @@ class ZendeskTalkStream(HttpStream, ABC):
         """ API base url based on configured subdomain"""
         return f"https://{self._subdomain}.zendesk.com/api/v2/channels/voice"
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        """
+        Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
+
+        This method is called only if should_backoff() returns True for the input request.
+
+        :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
+        to the default backoff behavior (e.g using an exponential algorithm).
+        """
+        delay_time = response.headers.get("Retry-After")
+        if delay_time:
+            return int(delay_time)
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
@@ -44,10 +57,7 @@ class ZendeskTalkStream(HttpStream, ABC):
         """
         response_json = response.json()
         next_page_url = response_json.get("next_page")
-        if not next_page_url:
-            return None
-
-        if not response_json.get("count") or response_json.get("count") > 1:
+        if next_page_url:
             next_url = urlparse(next_page_url)
             next_params = parse_qs(next_url.query)
             return next_params
@@ -76,10 +86,14 @@ class ZendeskTalkStream(HttpStream, ABC):
 
 
 class ZendeskTalkIncrementalStream(ZendeskTalkStream, ABC):
-    """Stream that supports state and incremental read"""
+    """Stream that supports state and incremental read, for now only incremental export endpoints use this class.
+    Docs: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports
+    """
 
     # required to support old format as well (only read, but save as new)
     legacy_cursor_field = "timestamp"
+    cursor_field = "updated_at"
+    filter_param = "start_time"
 
     def __init__(self, start_date: datetime, **kwargs):
         super().__init__(**kwargs)
@@ -98,12 +112,36 @@ class ZendeskTalkIncrementalStream(ZendeskTalkStream, ABC):
         """ Add incremental parameters"""
         params = super().request_params(stream_state=stream_state, **kwargs)
 
-        stream_state = stream_state or {}
-        state_str = stream_state.get(self.cursor_field, stream_state.get(self.legacy_cursor_field))
-        state = pendulum.parse(state_str) if state_str else self._start_date
-        params["start_time"] = int(max(state, self._start_date).timestamp())
+        if self.filter_param not in params:
+            # use cursor as filter value only if it is not already a parameter (i.e. we are in the middle of the pagination)
+            stream_state = stream_state or {}
+            state_str = stream_state.get(self.cursor_field, stream_state.get(self.legacy_cursor_field))
+            state = pendulum.parse(state_str) if state_str else self._start_date
+            params[self.filter_param] = int(max(state, self._start_date).timestamp())
 
         return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
+        to most other methods in this class to help you form headers, request bodies, query params, etc..
+
+        :param response: the most recent response from the API
+        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
+                If there are no more pages in the result, return None.
+        """
+        next_params = super().next_page_token(response)
+        if not next_params:
+            return None
+
+        current_url = urlparse(response.request.url)
+        current_params = parse_qs(current_url.query)
+
+        # check if cursor value was changed
+        if current_params[self.filter_param] != next_params[self.filter_param]:
+            return next_params
+
+        return None
 
 
 class PhoneNumbers(ZendeskTalkStream):
@@ -158,6 +196,7 @@ class IVRs(ZendeskTalkStream):
     name = "ivrs"
     data_field = "ivrs"
     use_cache = True
+    cache_filename = "ivrs.yml"
 
     def path(self, **kwargs) -> str:
         return "/ivr.json"
@@ -200,6 +239,7 @@ class AccountOverview(ZendeskTalkStream):
     """
 
     data_field = "account_overview"
+    primary_key = None  # the stream contains only single record
 
     def path(self, **kwargs) -> str:
         return "/stats/account_overview"
@@ -211,6 +251,7 @@ class AgentsActivity(ZendeskTalkStream):
     """
 
     data_field = "agents_activity"
+    primary_key = "agent_id"
 
     def path(self, **kwargs) -> str:
         return "/stats/agents_activity"
@@ -222,6 +263,7 @@ class AgentsOverview(ZendeskTalkStream):
     """
 
     data_field = "agents_overview"
+    primary_key = None  # the stream contains only single record
 
     def path(self, **kwargs) -> str:
         return "/stats/agents_overview"
@@ -233,6 +275,7 @@ class CurrentQueueActivity(ZendeskTalkStream):
     """
 
     data_field = "current_queue_activity"
+    primary_key = None  # the stream contains only single record
 
     def path(self, **kwargs) -> str:
         return "/stats/current_queue_activity"

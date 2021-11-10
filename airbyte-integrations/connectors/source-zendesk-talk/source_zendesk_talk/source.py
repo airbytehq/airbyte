@@ -52,7 +52,7 @@ class SourceZendeskTalk(AbstractSource):
         authenticator = HTTPBasicAuth(username=f"{parsed_config.email}/token", password=parsed_config.access_token)
         stream = AccountOverview(authenticator=authenticator, subdomain=parsed_config.subdomain)
 
-        account_info = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+        account_info = next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)), None)
         if not account_info:
             raise RuntimeError("Unable to read account information, please check the permissions of your token")
 
