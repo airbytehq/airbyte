@@ -39,8 +39,8 @@ Bug fixes:
 * **Slack** source: Sync operations no longer hang indefinitely.
 * **Jira** source: Now uses updated time as the cursor field for incremental sync instead of the created time.
 * **Intercom** source: Fixed inconsistency between schema and output data.
-* **Hubspot** source: Streams with the items property now have their schemas fixed.
-* **Hubspot** source: Empty strings are no longer handled as dates, fixing the deals, companies, and contacts streams.
+* **HubSpot** source: Streams with the items property now have their schemas fixed.
+* **HubSpot** source: Empty strings are no longer handled as dates, fixing the deals, companies, and contacts streams.
 * **Typeform** source: Allows for multiple choices in responses now.
 * **Shopify** source: The type for the amount field is now fixed in the schema.
 * **Postgres** destination: \u0000\(NULL\) value processing is now fixed.
@@ -93,7 +93,7 @@ New features:
 Bug fixes:
 
 * **Quickbooks** source: Now uses the number data type for decimal fields.
-* **Hubspot** source: Fixed `empty string` inside of the `number` and `float` datatypes.
+* **HubSpot** source: Fixed `empty string` inside of the `number` and `float` datatypes.
 * **GitHub** source: Validation fixed on non-required fields.
 * **BigQuery** destination: Now supports processing of arrays of records properly.
 * **Oracle** destination: Fixed destination check for users without DBA role.
@@ -113,13 +113,13 @@ New features:
 * **Shopify** source: The `status` property is now in the `Products` stream.
 * **Amazon Seller Partner** source: Added support for `GET_MERCHANT_LISTINGS_ALL_DATA` and `GET_FBA_INVENTORY_AGED_DATA` stream endpoints.
 * **GitHub** source: Existing streams now don't minify the `user` property.
-* **Hubspot** source: Updated user-defined custom field schema generation.
+* **HubSpot** source: Updated user-defined custom field schema generation.
 * **Zendesk** source: Migrated from Singer to the Airbyte CDK.
 * **Amazon Seller Partner** source: Migrated to the Airbyte CDK.
 
 Bug fixes:
 
-* **Hubspot** source: Casting exceptions are now logged correctly.
+* **HubSpot** source: Casting exceptions are now logged correctly.
 * **S3** source: Fixed bug where syncs could hang indefinitely.
 * **Shopify** source: Fixed the `products` schema to be in accordance with the API.
 * **PayPal Transactions** source: Fixed the start date minimum to be 3 years rather than 45 days.
@@ -394,7 +394,7 @@ Progress on connectors:
 * **Github**: pull\_requests stream only incremental syncs \([\#2886](https://github.com/airbytehq/airbyte/pull/2886)\) \([\#3009](https://github.com/airbytehq/airbyte/pull/3009)\), thanks to [Zirochkaa](https://github.com/Zirochkaa)
 * Create streaming writes to a file and manage the issuance of copy commands for the destination \([\#2921](https://github.com/airbytehq/airbyte/pull/2921)\)
 * **Redshift**: make Redshift part size configurable. \([\#3053](https://github.com/airbytehq/airbyte/pull/23053)\)
-* **Hubspot**: fix argument error in log call \(\#3087\) \([\#3087](https://github.com/airbytehq/airbyte/pull/3087)\) , thanks to [Nathan Yergler](https://github.com/nyergler)
+* **HubSpot**: fix argument error in log call \(\#3087\) \([\#3087](https://github.com/airbytehq/airbyte/pull/3087)\) , thanks to [Nathan Yergler](https://github.com/nyergler)
 
 ## 04/20/2021
 
@@ -437,7 +437,7 @@ Other progress on connectors:
 
 ## 03/22/2021
 
-* 2 new source connectors: [**Gitlab**](https://docs.airbyte.io/integrations/sources/gitlab) and [**Airbyte-native Hubspot**](https://docs.airbyte.io/integrations/sources/hubspot)
+* 2 new source connectors: [**Gitlab**](https://docs.airbyte.io/integrations/sources/gitlab) and [**Airbyte-native HubSpot**](https://docs.airbyte.io/integrations/sources/hubspot)
 * Developing connectors now requires almost no interaction with Gradle, Airbyte’s monorepo build tool. If you’re building a Python connector, you never have to worry about developing outside your typical flow. See [the updated documentation](https://docs.airbyte.io/connector-development).
 
 ## 03/15/2021
@@ -456,7 +456,7 @@ Other progress on connectors:
 
 ## 03/01/2021
 
-* **New native Hubspot connector** with schema folder populated
+* **New native HubSpot connector** with schema folder populated
 * Facebook Marketing connector: add option to include deleted records
 
 ## 02/22/2021
@@ -518,7 +518,7 @@ Other progress on connectors:
 
 ## 01/05/2021
 
-* **Incremental support for 2 new source connectors:** [Mixpanel](../../integrations/sources/mixpanel.md) and [Hubspot](../../integrations/sources/hubspot.md)
+* **Incremental support for 2 new source connectors:** [Mixpanel](../../integrations/sources/mixpanel.md) and [HubSpot](../../integrations/sources/hubspot.md)
 * Fixes on connectors:
   * Fixed a bug in the github connector where the connector didn’t verify the provided API token was granted the correct permissions
   * Fixed a bug in the Google sheets connector where rate limits were not always respected
@@ -578,7 +578,7 @@ Other progress on connectors:
 
 ## 10/30/2020
 
-**New sources:** [Salesforce](../../integrations/sources/salesforce.md), Google Analytics, [Hubspot](../../integrations/sources/hubspot.md), [GitHub](../../integrations/sources/github.md), [Google Sheets](../../integrations/sources/google-sheets.md), [Rest APIs](connectors.md), and [MySQL](../../integrations/sources/mysql.md)
+**New sources:** [Salesforce](../../integrations/sources/salesforce.md), Google Analytics, [HubSpot](../../integrations/sources/hubspot.md), [GitHub](../../integrations/sources/github.md), [Google Sheets](../../integrations/sources/google-sheets.md), [Rest APIs](connectors.md), and [MySQL](../../integrations/sources/mysql.md)
 
 ## 10/21/2020
 
