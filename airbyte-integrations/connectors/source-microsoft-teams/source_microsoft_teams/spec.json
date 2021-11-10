@@ -59,5 +59,13 @@
         }
       }
     }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials"],
+      "oauthFlowInitParameters": [["tenant_id"], ["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"]]
+    }
   }
 }

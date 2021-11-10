@@ -55,7 +55,7 @@ class Client:
             self.credentials = {
                 "tenant_id": config["tenant_id"],
                 "client_id": config["client_id"],
-                "client_secret": config["client_secret"]
+                "client_secret": config["client_secret"],
             }
         self._group_ids = None
         self.msal_app = msal.ConfidentialClientApplication(
