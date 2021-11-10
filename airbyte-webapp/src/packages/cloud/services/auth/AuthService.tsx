@@ -2,57 +2,84 @@ import React, { useContext, useEffect, useMemo } from "react";
 import { useQueryClient } from "react-query";
 
 import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
-import useTypesafeReducer from "components/hooks/useTypesafeReducer";
+import useTypesafeReducer from "hooks/useTypesafeReducer";
 import {
   actions,
   AuthServiceState,
   authStateReducer,
   initialState,
 } from "./reducer";
-import { firebaseApp } from "packages/cloud/config/firebase";
-import { User, UserService } from "packages/cloud/lib/domain/users";
-import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
+import { User } from "packages/cloud/lib/domain/users";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
-import { api } from "packages/cloud/config/api";
+import { useGetUserService } from "packages/cloud/services/users/UserService";
+import { useAuth } from "packages/firebaseReact";
+
+export type AuthUpdatePassword = (
+  email: string,
+  currentPassword: string,
+  newPassword: string
+) => Promise<void>;
+
+export type AuthRequirePasswordReset = (email: string) => Promise<void>;
+export type AuthConfirmPasswordReset = (
+  code: string,
+  newPassword: string
+) => Promise<void>;
+
+export type AuthLogin = (values: {
+  email: string;
+  password: string;
+}) => Promise<void>;
+
+export type AuthSignUp = (form: {
+  email: string;
+  password: string;
+}) => Promise<User | null>;
+
+export type AuthChangeEmail = (
+  email: string,
+  password: string
+) => Promise<void>;
+
+export type AuthSendEmailVerification = () => Promise<void>;
+export type AuthVerifyEmail = (code: string) => Promise<void>;
+export type AuthLogout = () => void;
 
 type AuthContextApi = {
   user: User | null;
   inited: boolean;
+  emailVerified: boolean;
   isLoading: boolean;
-  login: (values: { email: string; password: string }) => Promise<User | null>;
-  signUp: (form: { email: string; password: string }) => Promise<User | null>;
-  resetPassword: (email: string) => Promise<void>;
-  logout: () => void;
+  login: AuthLogin;
+  signUp: AuthSignUp;
+  updatePassword: AuthUpdatePassword;
+  updateEmail: AuthChangeEmail;
+  requirePasswordReset: AuthRequirePasswordReset;
+  confirmPasswordReset: AuthConfirmPasswordReset;
+  sendEmailVerification: AuthSendEmailVerification;
+  verifyEmail: AuthVerifyEmail;
+  logout: AuthLogout;
 };
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
-// TODO: place token into right place
-export let token = "";
-
-// TODO: add proper DI service
-const authService = new GoogleAuthService();
-const userService = new UserService(
-  [
-    RequestAuthMiddleware({
-      getValue(): string {
-        return token;
-      },
-    }),
-  ],
-  api.cloud
-);
-
 export const AuthenticationProvider: React.FC = ({ children }) => {
-  const [state, { loggedIn, authInited, loggedOut }] = useTypesafeReducer<
-    AuthServiceState,
-    typeof actions
-  >(authStateReducer, initialState, actions);
+  const [
+    state,
+    { loggedIn, emailVerified, authInited, loggedOut },
+  ] = useTypesafeReducer<AuthServiceState, typeof actions>(
+    authStateReducer,
+    initialState,
+    actions
+  );
+  const auth = useAuth();
+  const userService = useGetUserService();
+  const authService = useMemo(() => new GoogleAuthService(() => auth), [auth]);
 
   useEffect(() => {
-    firebaseApp.auth().onAuthStateChanged(async (currentUser) => {
+    return auth.onAuthStateChanged(async (currentUser) => {
       if (state.currentUser === null && currentUser) {
-        token = await currentUser.getIdToken();
+        // token = await currentUser.getIdToken();
 
         let user: User | undefined;
 
@@ -73,7 +100,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         }
 
         if (user) {
-          loggedIn(user);
+          loggedIn({ user, emailVerified: currentUser.emailVerified });
         }
       } else {
         authInited();
@@ -87,24 +114,44 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
     () => ({
       inited: state.inited,
       isLoading: state.loading,
-      async login(values: {
-        email: string;
-        password: string;
-      }): Promise<User | null> {
+      emailVerified: state.emailVerified,
+      async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
-
-        return null;
       },
       async logout(): Promise<void> {
         await authService.signOut();
         loggedOut();
         await queryClient.invalidateQueries();
       },
-      async resetPassword(email: string): Promise<void> {
+      async updateEmail(email, password): Promise<void> {
+        await userService.changeEmail(email);
+        return authService.updateEmail(email, password);
+      },
+      async updatePassword(
+        email: string,
+        currentPassword: string,
+        newPassword: string
+      ): Promise<void> {
+        // re-authentication may be needed before updating password
+        // https://firebase.google.com/docs/auth/web/manage-users#re-authenticate_a_user
+        await authService.reauthenticate(email, currentPassword);
+        return authService.updatePassword(newPassword);
+      },
+      async requirePasswordReset(email: string): Promise<void> {
         await authService.resetPassword(email);
       },
-      async confirmPasswordReset(_email: string, _code: string): Promise<void> {
-        throw new Error("not yet implemented");
+      async sendEmailVerification(): Promise<void> {
+        await authService.sendEmailVerifiedLink();
+      },
+      async verifyEmail(code: string): Promise<void> {
+        await authService.confirmEmailVerify(code);
+        emailVerified(true);
+      },
+      async confirmPasswordReset(
+        code: string,
+        newPassword: string
+      ): Promise<void> {
+        await authService.finishResetPassword(code, newPassword);
       },
       async signUp(form: {
         email: string;
@@ -118,11 +165,12 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         //   name: form.email,
         // });
 
+        await authService.sendEmailVerifiedLink();
         return null;
       },
       user: state.currentUser,
     }),
-    [state, queryClient]
+    [state, queryClient, userService]
   );
 
   return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>;

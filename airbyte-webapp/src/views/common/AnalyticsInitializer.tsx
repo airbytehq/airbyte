@@ -1,13 +1,9 @@
 import React, { useEffect } from "react";
-import * as FullStory from "@fullstory/browser";
 
-import config from "config";
-import useFullStory from "components/hooks/useFullStory";
-import AnalyticsServiceProvider, {
-  useAnalytics,
-} from "components/hooks/useAnalytics";
-import useTracker from "components/hooks/useOpenReplay";
-import useSegment from "components/hooks/useSegment";
+import { useConfig } from "config";
+import AnalyticsServiceProvider, { useAnalytics } from "hooks/useAnalytics";
+import useSegment from "hooks/useSegment";
+import { useGetService } from "core/servicesProvider";
 
 function WithAnalytics({
   customerId,
@@ -15,33 +11,26 @@ function WithAnalytics({
   customerId: string;
   workspaceId?: string;
 }) {
-  useSegment(config.segment.token);
-  const analyticsService = useAnalytics();
+  const config = useConfig();
 
+  // segment section
+  useSegment(config.segment.enabled ? config.segment.token : "");
+  const analyticsService = useAnalytics();
   useEffect(() => {
     analyticsService.identify(customerId);
   }, [analyticsService, customerId]);
-
-  const tracker = useTracker(config.openreplay);
-  useEffect(() => {
-    tracker.userID(customerId);
-  }, [tracker, customerId]);
-
-  const initializedFullstory = useFullStory(config.fullstory);
-  useEffect(() => {
-    if (initializedFullstory) {
-      FullStory.identify(customerId);
-    }
-  }, [initializedFullstory, customerId]);
 
   return null;
 }
 
 const AnalyticsInitializer: React.FC<{
   children: React.ReactNode;
-  customerIdProvider: () => string;
-}> = ({ children, customerIdProvider }) => {
+}> = ({ children }) => {
+  const customerIdProvider = useGetService<() => string>(
+    "useCustomerIdProvider"
+  );
   const customerId = customerIdProvider();
+  const config = useConfig();
 
   return (
     <AnalyticsServiceProvider userId={customerId} version={config.version}>

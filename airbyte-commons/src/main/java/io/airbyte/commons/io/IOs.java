@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.io;
@@ -43,25 +23,25 @@ import org.apache.commons.io.input.ReversedLinesFileReader;
 
 public class IOs {
 
-  public static Path writeFile(Path path, String fileName, String contents) {
+  public static Path writeFile(final Path path, final String fileName, final String contents) {
     final Path filePath = path.resolve(fileName);
     return writeFile(filePath, contents);
   }
 
-  public static Path writeFile(Path filePath, byte[] contents) {
+  public static Path writeFile(final Path filePath, final byte[] contents) {
     try {
       Files.write(filePath, contents);
       return filePath;
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static Path writeFile(Path filePath, String contents) {
+  public static Path writeFile(final Path filePath, final String contents) {
     try {
       Files.writeString(filePath, contents, StandardCharsets.UTF_8);
       return filePath;
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -70,43 +50,43 @@ public class IOs {
    * Writes a file to a random directory in the /tmp folder. Useful as a staging group for test
    * resources.
    */
-  public static String writeFileToRandomTmpDir(String filename, String contents) {
+  public static String writeFileToRandomTmpDir(final String filename, final String contents) {
     final Path source = Paths.get("/tmp", UUID.randomUUID().toString());
     try {
-      Path tmpFile = source.resolve(filename);
+      final Path tmpFile = source.resolve(filename);
       Files.deleteIfExists(tmpFile);
       Files.createDirectory(source);
       writeFile(tmpFile, contents);
       return tmpFile.toString();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static String readFile(Path path, String fileName) {
+  public static String readFile(final Path path, final String fileName) {
     return readFile(path.resolve(fileName));
   }
 
-  public static String readFile(Path fullpath) {
+  public static String readFile(final Path fullpath) {
     try {
       return Files.readString(fullpath, StandardCharsets.UTF_8);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static List<String> getTail(int numLines, Path path) throws IOException {
+  public static List<String> getTail(final int numLines, final Path path) throws IOException {
     if (path == null) {
       return Collections.emptyList();
     }
 
-    File file = path.toFile();
+    final File file = path.toFile();
     if (!file.exists()) {
       return Collections.emptyList();
     }
 
-    try (ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
-      List<String> lines = new ArrayList<>();
+    try (final ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
+      final List<String> lines = new ArrayList<>();
 
       String line;
       while ((line = fileReader.readLine()) != null && lines.size() < numLines) {
@@ -122,7 +102,7 @@ public class IOs {
   public static InputStream inputStream(final Path path) {
     try {
       return Files.newInputStream(path);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -130,7 +110,7 @@ public class IOs {
   public static void silentClose(final Closeable closeable) {
     try {
       closeable.close();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }

@@ -1,31 +1,13 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.PreparedStatement;
@@ -42,36 +24,39 @@ public class OracleOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleOperations.class);
 
-  private String tablespace;
+  private final String tablespace;
 
-  public OracleOperations(String tablespace) {
+  public OracleOperations(final String tablespace) {
     this.tablespace = tablespace;
   }
 
   @Override
-  public void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception {
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     if (database.queryInt("select count(*) from all_users where upper(username) = upper(?)", schemaName) == 0) {
       LOGGER.warn("Schema " + schemaName + " is not found! Trying to create a new one.");
       final String query = String.format("create user %s identified by %s quota unlimited on %s",
           schemaName, schemaName, tablespace);
+      // need to grant privileges to new user / this option is not mandatory for Oracle DB 18c or higher
+      final String privileges = String.format("GRANT ALL PRIVILEGES TO %s", schemaName);
       database.execute(query);
+      database.execute(privileges);
     }
   }
 
   @Override
-  public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws Exception {
+  public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws Exception {
     try {
       if (!tableExists(database, schemaName, tableName)) {
         database.execute(createTableQuery(database, schemaName, tableName));
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Error while creating table.", e);
       throw e;
     }
   }
 
   @Override
-  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE %s.%s ( \n"
             + "%s VARCHAR(64) PRIMARY KEY,\n"
@@ -83,19 +68,19 @@ public class OracleOperations implements SqlOperations {
         OracleDestination.COLUMN_NAME_DATA);
   }
 
-  private boolean tableExists(JdbcDatabase database, String schemaName, String tableName) throws Exception {
-    Integer count = database.queryInt("select count(*) \n from all_tables\n where upper(owner) = upper(?) and upper(table_name) = upper(?)",
+  private boolean tableExists(final JdbcDatabase database, final String schemaName, final String tableName) throws Exception {
+    final Integer count = database.queryInt("select count(*) \n from all_tables\n where upper(owner) = upper(?) and upper(table_name) = upper(?)",
         schemaName, tableName);
     return count == 1;
   }
 
   @Override
-  public void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws Exception {
+  public void dropTableIfExists(final JdbcDatabase database, final String schemaName, final String tableName) throws Exception {
     if (tableExists(database, schemaName, tableName)) {
       try {
         final String query = String.format("DROP TABLE %s.%s", schemaName, tableName);
         database.execute(query);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         LOGGER.error(String.format("Error dropping table %s.%s", schemaName, tableName), e);
         throw e;
       }
@@ -103,12 +88,15 @@ public class OracleOperations implements SqlOperations {
   }
 
   @Override
-  public String truncateTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+  public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format("DELETE FROM %s.%s\n", schemaName, tableName);
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tempTableName)
+  public void insertRecords(final JdbcDatabase database,
+                            final List<AirbyteRecordMessage> records,
+                            final String schemaName,
+                            final String tempTableName)
       throws Exception {
     final String tableName = String.format("%s.%s", schemaName, tempTableName);
     final String columns = String.format("(%s, %s, %s)",
@@ -118,12 +106,12 @@ public class OracleOperations implements SqlOperations {
   }
 
   // Adapted from SqlUtils.insertRawRecordsInSingleQuery to meet some needs specific to Oracle syntax
-  private static void insertRawRecordsInSingleQuery(String tableName,
-                                                    String columns,
-                                                    String recordQueryComponent,
-                                                    JdbcDatabase jdbcDatabase,
-                                                    List<AirbyteRecordMessage> records,
-                                                    Supplier<UUID> uuidSupplier)
+  private static void insertRawRecordsInSingleQuery(final String tableName,
+                                                    final String columns,
+                                                    final String recordQueryComponent,
+                                                    final JdbcDatabase jdbcDatabase,
+                                                    final List<AirbyteRecordMessage> records,
+                                                    final Supplier<UUID> uuidSupplier)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -150,8 +138,9 @@ public class OracleOperations implements SqlOperations {
         int i = 1;
         for (final AirbyteRecordMessage message : records) {
           // 1-indexed
+          final JsonNode formattedData = StandardNameTransformer.formatJsonPath(message.getData());
           statement.setString(i, uuidSupplier.get().toString());
-          statement.setString(i + 1, Jsons.serialize(message.getData()));
+          statement.setString(i + 1, Jsons.serialize(formattedData));
           statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
           i += 3;
         }
@@ -162,18 +151,21 @@ public class OracleOperations implements SqlOperations {
   }
 
   @Override
-  public String copyTableQuery(JdbcDatabase database, String schemaName, String sourceTableName, String destinationTableName) {
+  public String copyTableQuery(final JdbcDatabase database,
+                               final String schemaName,
+                               final String sourceTableName,
+                               final String destinationTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s\n", schemaName, destinationTableName, schemaName, sourceTableName);
   }
 
   @Override
-  public void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception {
-    String SQL = "BEGIN\n COMMIT;\n" + String.join(";\n", queries) + "; \nCOMMIT; \nEND;";
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
+    final String SQL = "BEGIN\n COMMIT;\n" + String.join(";\n", queries) + "; \nCOMMIT; \nEND;";
     database.execute(SQL);
   }
 
   @Override
-  public boolean isValidData(String data) {
+  public boolean isValidData(final JsonNode data) {
     return true;
   }
 

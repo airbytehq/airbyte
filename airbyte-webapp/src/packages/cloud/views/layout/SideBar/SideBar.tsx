@@ -1,22 +1,30 @@
 import React from "react";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBook, faCog } from "@fortawesome/free-solid-svg-icons";
-import { faSlack } from "@fortawesome/free-brands-svg-icons";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
 
-import { Routes } from "pages/routes";
-import config from "config";
+import { Routes } from "packages/cloud/routes";
+import { useConfig } from "config";
 
-import useConnector from "components/hooks/services/useConnector";
+import useWorkspace from "hooks/services/useWorkspace";
 import { Link } from "components";
-import Indicator from "components/Indicator";
-
-import Source from "./components/SourceIcon";
-import Connections from "./components/ConnectionsIcon";
-import Destination from "./components/DestinationIcon";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
+
+import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
+import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
+import DocsIcon from "views/layout/SideBar/components/DocsIcon";
+import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
+import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
+import SourceIcon from "views/layout/SideBar/components/SourceIcon";
+import { useGetWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
+import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
+
+const CreditsIcon = styled(FontAwesomeIcon)`
+  font-size: 21px;
+  line-height: 21px;
+`;
 
 const Bar = styled.nav`
   width: 100px;
@@ -28,6 +36,8 @@ const Bar = styled.nav`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
+  z-index: 9999;
 `;
 
 const Menu = styled.ul`
@@ -79,48 +89,39 @@ const Text = styled.div`
   margin-top: 7px;
 `;
 
-const DocsIcon = styled(FontAwesomeIcon)`
-  font-size: 18px;
-  line-height: 18px;
-`;
-
-const HelpIcon = styled(FontAwesomeIcon)`
-  font-size: 21px;
-  line-height: 21px;
-`;
-
-const SettingsIcon = styled(FontAwesomeIcon)`
-  font-size: 16px;
-  line-height: 15px;
-`;
-
-const Notification = styled(Indicator)`
-  position: absolute;
-  top: 11px;
-  right: 23px;
-`;
-
 const WorkspaceButton = styled.div`
   font-size: 9px;
-  line-height: 11px;
+  line-height: 21px;
+  font-weight: 400;
   height: 21px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   color: ${({ theme }) => theme.whiteColor};
   border-radius: 10px;
   margin-top: 13px;
   background: rgba(255, 255, 255, 0.2);
   cursor: pointer;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 8px;
+  text-align: center;
 `;
 
 const SideBar: React.FC = () => {
-  const { hasNewVersions } = useConnector();
+  const config = useConfig();
+  const { workspace } = useWorkspace();
+  const { data: cloudWorkspace } = useGetWorkspace(workspace.workspaceId);
 
   return (
     <Bar>
       <div>
-        <Link to={Routes.Root}>
+        <Link
+          to={
+            workspace.displaySetupWizard
+              ? Routes.Onboarding
+              : Routes.Connections
+          }
+        >
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <WorkspacePopout>
@@ -129,25 +130,27 @@ const SideBar: React.FC = () => {
           )}
         </WorkspacePopout>
         <Menu>
+          {workspace.displaySetupWizard ? (
+            <li>
+              <MenuItem to={Routes.Onboarding} activeClassName="active">
+                <OnboardingIcon />
+                <Text>
+                  <FormattedMessage id="sidebar.onboarding" />
+                </Text>
+              </MenuItem>
+            </li>
+          ) : null}
           <li>
             <MenuItem to={Routes.Connections} activeClassName="active">
-              <Connections />
+              <ConnectionsIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
               </Text>
             </MenuItem>
           </li>
           <li>
-            <MenuItem
-              to={Routes.Root}
-              exact
-              activeClassName="active"
-              isActive={(_, location) =>
-                location.pathname === Routes.Root ||
-                location.pathname.startsWith(Routes.Source)
-              }
-            >
-              <Source />
+            <MenuItem to={Routes.Source} activeClassName="active">
+              <SourceIcon />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
               </Text>
@@ -155,7 +158,7 @@ const SideBar: React.FC = () => {
           </li>
           <li>
             <MenuItem to={Routes.Destination} activeClassName="active">
-              <Destination />
+              <DestinationIcon />
               <Text>
                 <FormattedMessage id="sidebar.destinations" />
               </Text>
@@ -165,17 +168,19 @@ const SideBar: React.FC = () => {
       </div>
       <Menu>
         <li>
-          <MenuLinkItem href={config.ui.slackLink} target="_blank">
-            {/*@ts-ignore slack icon fails here*/}
-            <HelpIcon icon={faSlack} />
+          <MenuItem to={Routes.Credits} activeClassName="active">
+            <CreditsIcon icon={faStar} />
             <Text>
-              <FormattedMessage id="sidebar.slack" />
+              <FormattedMessage id="credits.credits" />
+              <div>
+                <FormattedNumber value={cloudWorkspace.remainingCredits} />
+              </div>
             </Text>
-          </MenuLinkItem>
+          </MenuItem>
         </li>
         <li>
           <MenuLinkItem href={config.ui.docsLink} target="_blank">
-            <DocsIcon icon={faBook} />
+            <DocsIcon />
             <Text>
               <FormattedMessage id="sidebar.docs" />
             </Text>
@@ -189,8 +194,8 @@ const SideBar: React.FC = () => {
               location.pathname.startsWith(Routes.Settings)
             }
           >
-            {hasNewVersions ? <Notification /> : null}
-            <SettingsIcon icon={faCog} />
+            <NotificationIndicator />
+            <SettingsIcon />
             <Text>
               <FormattedMessage id="sidebar.settings" />
             </Text>

@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from enum import Enum
@@ -38,7 +18,7 @@ from airbyte_cdk.models import (
 )
 from pydantic import BaseModel
 from source_acceptance_test.tests.test_incremental import records_with_state
-from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper
+from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
 @pytest.fixture(name="simple_state")
@@ -105,7 +85,7 @@ def test_simple_path(records, stream_mapping, simple_state):
     paths = {"my_stream": ["id"]}
 
     result = records_with_state(records=records, state=simple_state, stream_mapping=stream_mapping, state_cursor_paths=paths)
-    record_value, state_value = next(result)
+    record_value, state_value, stream_name = next(result)
 
     assert record_value == 1, "record value must be correctly found"
     assert state_value == 11, "state value must be correctly found"
@@ -116,7 +96,7 @@ def test_nested_path(records, stream_mapping, nested_state):
     paths = {"my_stream": ["some_account_id", "ts_updated"]}
 
     result = records_with_state(records=records, state=nested_state, stream_mapping=stream_mapping, state_cursor_paths=paths)
-    record_value, state_value = next(result)
+    record_value, state_value, stream_name = next(result)
 
     assert record_value == pendulum.datetime(2015, 5, 1), "record value must be correctly found"
     assert state_value == pendulum.datetime(2015, 1, 1, 22, 3, 11), "state value must be correctly found"
@@ -136,7 +116,7 @@ def test_absolute_path(records, stream_mapping, singer_state):
     paths = {"my_stream": ["bookmarks", "my_stream", "ts_created"]}
 
     result = records_with_state(records=records, state=singer_state, stream_mapping=stream_mapping, state_cursor_paths=paths)
-    record_value, state_value = next(result)
+    record_value, state_value, stream_name = next(result)
 
     assert record_value == pendulum.datetime(2015, 11, 1, 22, 3, 11), "record value must be correctly found"
     assert state_value == pendulum.datetime(2014, 1, 1, 22, 3, 11), "state value must be correctly found"
@@ -187,3 +167,53 @@ def test_json_schema_helper_pydantic_generated():
     assert variant_paths == [["properties", "f", "anyOf"], ["definitions", "C", "properties", "e", "anyOf"]]
     # TODO: implement validation for pydantic generated objects as well
     # js_helper.validate_variant_paths(variant_paths)
+
+
+@pytest.mark.parametrize(
+    "object, pathes",
+    [
+        ({}, []),
+        ({"a": 12}, ["/a"]),
+        ({"a": {"b": 12}}, ["/a", "/a/b"]),
+        ({"a": {"b": 12}, "c": 45}, ["/a", "/a/b", "/c"]),
+        (
+            {"a": [{"b": 12}]},
+            ["/a", "/a/[]", "/a/[]/b"],
+        ),
+        ({"a": [{"b": 12}, {"b": 15}]}, ["/a", "/a/[]", "/a/[]/b"]),
+        ({"a": [[[{"b": 12}, {"b": 15}]]]}, ["/a", "/a/[]", "/a/[]/[]", "/a/[]/[]/[]", "/a/[]/[]/[]/b"]),
+    ],
+)
+def test_get_object_strucutre(object, pathes):
+    assert get_object_structure(object) == pathes
+
+
+@pytest.mark.parametrize(
+    "schema, pathes",
+    [
+        ({"type": "object", "properties": {"a": {"type": "string"}}}, ["/a"]),
+        ({"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "number"}}}, ["/a", "/b"]),
+        (
+            {
+                "type": "object",
+                "properties": {"a": {"type": "string"}, "b": {"$ref": "#definitions/b_type"}},
+                "definitions": {"b_type": {"type": "number"}},
+            },
+            ["/a", "/b"],
+        ),
+        ({"type": "object", "oneOf": [{"properties": {"a": {"type": "string"}}}, {"properties": {"b": {"type": "string"}}}]}, ["/a", "/b"]),
+        # Some of pydantic generatec schemas have anyOf keyword
+        ({"type": "object", "anyOf": [{"properties": {"a": {"type": "string"}}}, {"properties": {"b": {"type": "string"}}}]}, ["/a", "/b"]),
+        (
+            {"type": "array", "items": {"oneOf": [{"properties": {"a": {"type": "string"}}}, {"properties": {"b": {"type": "string"}}}]}},
+            ["/[]/a", "/[]/b"],
+        ),
+        # There could be an object with any properties with specific type
+        ({"type": "object", "properties": {"a": {"type": "object", "additionalProperties": {"type": "string"}}}}, ["/a"]),
+        # Array with no item type specified
+        ({"type": "array"}, ["/[]"]),
+        ({"type": "array", "items": {"type": "object", "additionalProperties": {"type": "string"}}}, ["/[]"]),
+    ],
+)
+def test_get_expected_schema_structure(schema, pathes):
+    assert get_expected_schema_structure(schema) == pathes

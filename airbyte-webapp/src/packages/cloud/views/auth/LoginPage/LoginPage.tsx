@@ -36,12 +36,12 @@ const LoginPage: React.FC = () => {
           password: "",
         }}
         validationSchema={LoginPageValidationSchema}
-        onSubmit={async (values, { setFieldError, setStatus }) =>
+        onSubmit={async (values, { setFieldError }) =>
           login(values).catch((err) => {
             if (err instanceof FieldError) {
               setFieldError(err.field, err.message);
             } else {
-              setStatus(err.message);
+              setFieldError("password", err.message);
             }
           })
         }
@@ -75,9 +75,9 @@ const LoginPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label={<FormattedMessage id="login.password" />}
+                    label={<FormattedMessage id="login.yourPassword" />}
                     placeholder={formatMessage({
-                      id: "login.password.placeholder",
+                      id: "login.yourPassword.placeholder",
                     })}
                     type="password"
                     error={!!meta.error && meta.touched}

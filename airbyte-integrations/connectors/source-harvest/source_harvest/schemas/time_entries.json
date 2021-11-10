@@ -28,6 +28,9 @@
         },
         "name": {
           "type": ["null", "string"]
+        },
+        "currency": {
+          "type": ["null", "string"]
         }
       }
     },
@@ -38,6 +41,9 @@
           "type": ["null", "integer"]
         },
         "name": {
+          "type": ["null", "string"]
+        },
+        "code": {
           "type": ["null", "string"]
         }
       }
@@ -66,7 +72,7 @@
           "type": ["null", "boolean"]
         },
         "budget": {
-          "type": ["null", "string"]
+          "type": ["null", "number"]
         },
         "created_at": {
           "type": ["null", "string"],
@@ -105,11 +111,14 @@
           "type": ["null", "number"]
         },
         "budget": {
-          "type": ["null", "string"]
+          "type": ["null", "number"]
         }
       }
     },
     "hours": {
+      "type": ["null", "number"]
+    },
+    "hours_without_timer": {
       "type": ["null", "number"]
     },
     "rounded_hours": {
@@ -153,7 +162,15 @@
       "type": ["null", "boolean"]
     },
     "invoice": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "number": {
+          "type": "string"
+        }
+      }
     },
     "external_reference": {
       "type": ["null", "string"]

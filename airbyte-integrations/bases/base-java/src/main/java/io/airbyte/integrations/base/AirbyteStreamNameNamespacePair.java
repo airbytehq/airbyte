@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -42,7 +22,7 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
   final private String name;
   final private String namespace;
 
-  public AirbyteStreamNameNamespacePair(String name, String namespace) {
+  public AirbyteStreamNameNamespacePair(final String name, final String namespace) {
     this.name = name;
     this.namespace = namespace;
   }
@@ -64,14 +44,14 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    AirbyteStreamNameNamespacePair that = (AirbyteStreamNameNamespacePair) o;
+    final AirbyteStreamNameNamespacePair that = (AirbyteStreamNameNamespacePair) o;
     return Objects.equals(name, that.name) && Objects.equals(namespace, that.namespace);
   }
 
@@ -81,13 +61,13 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
   }
 
   @Override
-  public int compareTo(AirbyteStreamNameNamespacePair o) {
+  public int compareTo(final AirbyteStreamNameNamespacePair o) {
     if (o == null) {
       return 1;
     }
 
     // first sort by name
-    int nameCheck = name.compareTo(o.getName());
+    final int nameCheck = name.compareTo(o.getName());
     if (nameCheck != 0) {
       return nameCheck;
     }
@@ -105,27 +85,27 @@ public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamN
     return namespace.compareTo(o.getNamespace());
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     System.out.println("test".compareTo(null));
   }
 
-  public static AirbyteStreamNameNamespacePair fromRecordMessage(AirbyteRecordMessage msg) {
+  public static AirbyteStreamNameNamespacePair fromRecordMessage(final AirbyteRecordMessage msg) {
     return new AirbyteStreamNameNamespacePair(msg.getStream(), msg.getNamespace());
   }
 
-  public static AirbyteStreamNameNamespacePair fromAirbyteSteam(AirbyteStream stream) {
+  public static AirbyteStreamNameNamespacePair fromAirbyteSteam(final AirbyteStream stream) {
     return new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace());
   }
 
-  public static AirbyteStreamNameNamespacePair fromConfiguredAirbyteSteam(ConfiguredAirbyteStream stream) {
+  public static AirbyteStreamNameNamespacePair fromConfiguredAirbyteSteam(final ConfiguredAirbyteStream stream) {
     return fromAirbyteSteam(stream.getStream());
   }
 
-  public static Set<AirbyteStreamNameNamespacePair> fromConfiguredCatalog(ConfiguredAirbyteCatalog catalog) {
-    var pairs = new HashSet<AirbyteStreamNameNamespacePair>();
+  public static Set<AirbyteStreamNameNamespacePair> fromConfiguredCatalog(final ConfiguredAirbyteCatalog catalog) {
+    final var pairs = new HashSet<AirbyteStreamNameNamespacePair>();
 
-    for (ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      var pair = fromAirbyteSteam(stream.getStream());
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      final var pair = fromAirbyteSteam(stream.getStream());
       pairs.add(pair);
     }
 

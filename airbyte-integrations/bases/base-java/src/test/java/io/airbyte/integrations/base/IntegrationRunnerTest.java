@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -97,7 +77,7 @@ class IntegrationRunnerTest {
     stdoutConsumer = Mockito.mock(Consumer.class);
     destination = mock(Destination.class);
     source = mock(Source.class);
-    Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
+    final Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
     configuredCatalogPath = IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
@@ -143,7 +123,7 @@ class IntegrationRunnerTest {
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).check(CONFIG);
@@ -163,7 +143,7 @@ class IntegrationRunnerTest {
     when(destination.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
     new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator).run(ARGS);
 
@@ -185,7 +165,7 @@ class IntegrationRunnerTest {
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).discover(CONFIG);
@@ -210,7 +190,7 @@ class IntegrationRunnerTest {
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
@@ -230,7 +210,7 @@ class IntegrationRunnerTest {
     when(destination.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
-    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
     final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator));
     runner.run(ARGS);
@@ -264,7 +244,7 @@ class IntegrationRunnerTest {
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
 
-    InOrder inOrder = inOrder(airbyteMessageConsumerMock);
+    final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
     inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
     inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage2);
     inOrder.verify(airbyteMessageConsumerMock).accept(stateMessage);
@@ -292,7 +272,7 @@ class IntegrationRunnerTest {
 
     assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
 
-    InOrder inOrder = inOrder(airbyteMessageConsumerMock);
+    final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
     inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
     inOrder.verify(airbyteMessageConsumerMock).close();
     inOrder.verifyNoMoreInteractions();

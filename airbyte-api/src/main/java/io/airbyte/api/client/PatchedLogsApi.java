@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.api.client;
@@ -58,7 +38,7 @@ public class PatchedLogsApi {
     this(new ApiClient());
   }
 
-  public PatchedLogsApi(ApiClient apiClient) {
+  public PatchedLogsApi(final ApiClient apiClient) {
     memberVarHttpClient = apiClient.getHttpClient();
     memberVarObjectMapper = apiClient.getObjectMapper();
     memberVarBaseUri = apiClient.getBaseUri();
@@ -74,8 +54,8 @@ public class PatchedLogsApi {
    * @return File
    * @throws ApiException if fails to make API call
    */
-  public File getLogs(LogsRequestBody logsRequestBody) throws ApiException {
-    ApiResponse<File> localVarResponse = getLogsWithHttpInfo(logsRequestBody);
+  public File getLogs(final LogsRequestBody logsRequestBody) throws ApiException {
+    final ApiResponse<File> localVarResponse = getLogsWithHttpInfo(logsRequestBody);
     return localVarResponse.getData();
   }
 
@@ -86,10 +66,10 @@ public class PatchedLogsApi {
    * @return ApiResponse&lt;File&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<File> getLogsWithHttpInfo(LogsRequestBody logsRequestBody) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getLogsRequestBuilder(logsRequestBody);
+  public ApiResponse<File> getLogsWithHttpInfo(final LogsRequestBody logsRequestBody) throws ApiException {
+    final HttpRequest.Builder localVarRequestBuilder = getLogsRequestBuilder(logsRequestBody);
     try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+      final HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
           HttpResponse.BodyHandlers.ofInputStream());
       if (memberVarResponseInterceptor != null) {
@@ -102,7 +82,7 @@ public class PatchedLogsApi {
             localVarResponse.body() == null ? null : new String(localVarResponse.body().readAllBytes()));
       }
 
-      File tmpFile = File.createTempFile("patched-logs-api", "response"); // CHANGED
+      final File tmpFile = File.createTempFile("patched-logs-api", "response"); // CHANGED
       tmpFile.deleteOnExit(); // CHANGED
 
       FileUtils.copyInputStreamToFile(localVarResponse.body(), tmpFile); // CHANGED
@@ -112,23 +92,23 @@ public class PatchedLogsApi {
           localVarResponse.headers().map(),
           tmpFile // CHANGED
       );
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new ApiException(e);
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new ApiException(e);
     }
   }
 
-  private HttpRequest.Builder getLogsRequestBuilder(LogsRequestBody logsRequestBody) throws ApiException {
+  private HttpRequest.Builder getLogsRequestBuilder(final LogsRequestBody logsRequestBody) throws ApiException {
     // verify the required parameter 'logsRequestBody' is set
     if (logsRequestBody == null) {
       throw new ApiException(400, "Missing the required parameter 'logsRequestBody' when calling getLogs");
     }
 
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+    final HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/v1/logs/get";
+    final String localVarPath = "/v1/logs/get";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
@@ -137,9 +117,9 @@ public class PatchedLogsApi {
     localVarRequestBuilder.header("Accept", "text/plain"); // CHANGED
 
     try {
-      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(logsRequestBody);
+      final byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(logsRequestBody);
       localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new ApiException(e);
     }
     if (memberVarReadTimeout != null) {

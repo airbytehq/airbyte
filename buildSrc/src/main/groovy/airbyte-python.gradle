@@ -13,20 +13,20 @@ class AirbytePythonConfiguration {
 class Helpers {
     static addTestTaskIfTestFilesFound(Project project, String testFilesDirectory, String taskName, taskDependencies) {
         """
-        This method verifies if there are test files in a directory before adding the pytest task to run tests on that directory. This is needed 
+        This method verifies if there are test files in a directory before adding the pytest task to run tests on that directory. This is needed
         because if there are no tests in that dir and we run pytest on it, it exits with exit code 5 which gradle takes to mean that the process
         failed, since it's non-zero. This means that if a module doesn't need a unit or integration test, it still needs to add a dummy test file
-        like: 
-        
+        like:
+
         ```
         def make_ci_pass_test():
             assert True
         ```
-        
+
         So we use this method to leverage pytest's test discovery rules (https://docs.pytest.org/en/6.2.x/goodpractices.html#conventions-for-python-test-discovery)
-        to selectively run pytest based on whether there seem to be test files in that directory. 
-        Namely, if the directory contains a file whose name is test_*.py or *_test.py then it's a test. 
-       
+        to selectively run pytest based on whether there seem to be test files in that directory.
+        Namely, if the directory contains a file whose name is test_*.py or *_test.py then it's a test.
+
         See https://github.com/airbytehq/airbyte/issues/4979 for original context
         """
         if (project.file(testFilesDirectory).exists()) {
@@ -34,7 +34,7 @@ class Helpers {
             project.projectDir.toPath().resolve(testFilesDirectory).traverse(type: FileType.FILES, nameFilter: ~/(^test_.*|.*_test)\.py$/) { file ->
                 project.task(taskName, type: PythonTask, dependsOn: taskDependencies) {
                     module = "pytest"
-                    command = "-s ${testFilesDirectory}"
+                    command = "-s ${testFilesDirectory} --cov=./ --cov-config=${project.rootProject.file('tools/python/.coveragerc').absolutePath} --cov-report html --cov-report term"
                 }
                 // If a file is found, terminate the traversal, thus causing this task to be declared at most once
                 return FileVisitResult.TERMINATE
@@ -68,6 +68,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             pip 'mypy:0.812'
             pip 'isort:5.6.4'
             pip 'pytest:6.1.2'
+            pip 'pytest-cov:2.12.1'
             pip 'pip:21.1.3'
         }
 

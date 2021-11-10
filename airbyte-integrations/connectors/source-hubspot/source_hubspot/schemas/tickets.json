@@ -2,17 +2,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
   "properties": {
-    "objectType": {
+    "id": {
       "type": ["null", "string"]
-    },
-    "portalId": {
-      "type": ["null", "integer"]
-    },
-    "objectId": {
-      "type": ["null", "integer"]
-    },
-    "isDeleted": {
-      "type": ["null", "boolean"]
     },
     "createdAt": {
       "type": ["null", "string"],
@@ -21,6 +12,9 @@
     "updatedAt": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "archived": {
+      "type": ["null", "boolean"]
     }
   }
 }

@@ -1,0 +1,108 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-analytics-v4",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Google Analytics V4 Spec",
+    "type": "object",
+    "required": ["view_id", "start_date"],
+    "additionalProperties": true,
+    "properties": {
+      "view_id": {
+        "type": "string",
+        "title": "View ID",
+        "description": "The ID for the Google Analytics View you want to fetch data from. This can be found from the <a href=\"https://ga-dev-tools.appspot.com/account-explorer/\">Google Analytics Account Explorer</a>.",
+        "airbyte_secret": true
+      },
+      "start_date": {
+        "type": "string",
+        "title": "Start Date",
+        "description": "A date in the format YYYY-MM-DD.",
+        "examples": ["2020-06-01"]
+      },
+      "window_in_days": {
+        "type": "integer",
+        "description": "The amount of days for each data-chunk begining from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
+        "examples": [30, 60, 90, 120, 200, 364],
+        "default": 90
+      },
+      "custom_reports": {
+        "title": "Custom Reports",
+        "type": "string",
+        "description": "A JSON array describing the custom reports you want to sync from GA. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4\">docs</a> to get more information about this field."
+      },
+      "credentials": {
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Authenticate via Google (Oauth)",
+            "type": "object",
+            "required": ["client_id", "client_secret", "refresh_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "enum": ["Client"],
+                "default": "Client",
+                "order": 0
+              },
+              "client_id": {
+                "title": "Client ID",
+                "type": "string",
+                "description": "The Client ID of your developer application",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "The client secret of your developer application",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "title": "Refresh Token",
+                "type": "string",
+                "description": "A refresh token generated using the above client ID and secret",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "title": "Access Token",
+                "type": "string",
+                "description": "A access token generated using the above client ID, secret and refresh_token",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Service Account Key Authentication",
+            "required": ["credentials_json"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Service",
+                "enum": ["Service"],
+                "default": "Service",
+                "order": 0
+              },
+              "credentials_json": {
+                "type": "string",
+                "description": "The JSON key of the service account to use for authorization",
+                "examples": [
+                  "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
+                ],
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials", 0],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
+    }
+  }
+}

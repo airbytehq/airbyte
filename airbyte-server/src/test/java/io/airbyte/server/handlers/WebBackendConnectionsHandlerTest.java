@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -42,6 +22,7 @@ import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionSchedule.TimeUnitEnum;
+import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
@@ -68,6 +49,7 @@ import io.airbyte.api.model.WebBackendConnectionCreate;
 import io.airbyte.api.model.WebBackendConnectionRead;
 import io.airbyte.api.model.WebBackendConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
+import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -245,6 +227,27 @@ class WebBackendConnectionsHandlerTest {
     final WebBackendConnectionReadList WebBackendConnectionReadList = wbHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody);
     assertEquals(1, WebBackendConnectionReadList.getConnections().size());
     assertEquals(expected, WebBackendConnectionReadList.getConnections().get(0));
+  }
+
+  @Test
+  public void testWebBackendSearchConnections() throws ConfigNotFoundException, IOException, JsonValidationException {
+    final ConnectionReadList connectionReadList = new ConnectionReadList();
+    connectionReadList.setConnections(Collections.singletonList(connectionRead));
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
+    connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
+
+    when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
+    when(connectionsHandler.listConnections()).thenReturn(connectionReadList);
+    when(connectionsHandler.matchSearch(new ConnectionSearch(), connectionRead)).thenReturn(true);
+
+    final WebBackendConnectionSearch webBackendConnectionSearch = new WebBackendConnectionSearch();
+    WebBackendConnectionReadList webBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(1, webBackendConnectionReadList.getConnections().size());
+    assertEquals(expected, webBackendConnectionReadList.getConnections().get(0));
+
+    when(connectionsHandler.matchSearch(new ConnectionSearch(), connectionRead)).thenReturn(false);
+    webBackendConnectionReadList = wbHandler.webBackendSearchConnections(webBackendConnectionSearch);
+    assertEquals(0, webBackendConnectionReadList.getConnections().size());
   }
 
   @Test
@@ -428,7 +431,7 @@ class WebBackendConnectionsHandlerTest {
             .schedule(expected.getSchedule()));
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
 
-    WebBackendConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
+    final WebBackendConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(expected.getSyncCatalog(), connectionRead.getSyncCatalog());
 
@@ -472,7 +475,7 @@ class WebBackendConnectionsHandlerTest {
             .schedule(expected.getSchedule()));
     when(operationsHandler.updateOperation(operationUpdate)).thenReturn(new OperationRead().operationId(operationUpdate.getOperationId()));
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
-    WebBackendConnectionRead actualConnectionRead = wbHandler.webBackendUpdateConnection(updateBody);
+    final WebBackendConnectionRead actualConnectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(connectionRead.getOperationIds(), actualConnectionRead.getOperationIds());
     verify(operationsHandler, times(1)).updateOperation(operationUpdate);
@@ -510,7 +513,7 @@ class WebBackendConnectionsHandlerTest {
 
     assertEquals(expectedWithNewSchema.getSyncCatalog(), connectionRead.getSyncCatalog());
 
-    ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
+    final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     verify(schedulerHandler, times(1)).resetConnection(connectionId);
     verify(schedulerHandler, times(1)).syncConnection(connectionId);
   }

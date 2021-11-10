@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -28,11 +8,14 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
 import java.net.InetAddress;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -43,7 +26,24 @@ public class KubeProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
 
+  public static final String JOB_TYPE = "job_type";
+  public static final String SYNC_JOB = "sync";
+  public static final String SPEC_JOB = "spec";
+  public static final String CHECK_JOB = "check";
+  public static final String DISCOVER_JOB = "discover";
+  public static final String NORMALIZATION_JOB = "normalize";
+
+  public static final String SYNC_STEP = "sync_step";
+  public static final String READ_STEP = "read";
+  public static final String WRITE_STEP = "write";
+  public static final String NORMALISE_STEP = "normalise";
+  public static final String CUSTOM_STEP = "custom";
+
   private static final Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");;
+  private static final String JOB_LABEL_KEY = "job_id";
+  private static final String ATTEMPT_LABEL_KEY = "attempt_id";
+  private static final String WORKER_POD_LABEL_KEY = "airbyte";
+  private static final String WORKER_POD_LABEL_VALUE = "worker-pod";
 
   private final String namespace;
   private final ApiClient officialClient;
@@ -54,11 +54,12 @@ public class KubeProcessFactory implements ProcessFactory {
   /**
    * Sets up a process factory with the default processRunnerHost.
    */
-  public KubeProcessFactory(String namespace,
-                            ApiClient officialClient,
-                            KubernetesClient fabricClient,
-                            String kubeHeartbeatUrl) {
-    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()));
+  public KubeProcessFactory(final String namespace,
+                            final ApiClient officialClient,
+                            final KubernetesClient fabricClient,
+                            final String kubeHeartbeatUrl,
+                            final Set<Integer> ports) {
+    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()), ports);
   }
 
   /**
@@ -71,39 +72,48 @@ public class KubeProcessFactory implements ProcessFactory {
    *        injectable for testing.
    */
   @VisibleForTesting
-  public KubeProcessFactory(String namespace,
-                            ApiClient officialClient,
-                            KubernetesClient fabricClient,
-                            String kubeHeartbeatUrl,
-                            String processRunnerHost) {
+  public KubeProcessFactory(final String namespace,
+                            final ApiClient officialClient,
+                            final KubernetesClient fabricClient,
+                            final String kubeHeartbeatUrl,
+                            final String processRunnerHost,
+                            final Set<Integer> ports) {
     this.namespace = namespace;
     this.officialClient = officialClient;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.processRunnerHost = processRunnerHost;
+    KubePortManagerSingleton.init(ports);
   }
 
   @Override
-  public Process create(String jobId,
-                        int attempt,
+  public Process create(final String jobId,
+                        final int attempt,
                         final Path jobRoot,
                         final String imageName,
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
+                        final Map<String, String> customLabels,
                         final String... args)
       throws WorkerException {
     try {
       // used to differentiate source and destination processes with the same id and attempt
-
       final String podName = createPodName(imageName, jobId, attempt);
 
-      final int stdoutLocalPort = KubePortManagerSingleton.take();
+      final int stdoutLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
 
-      final int stderrLocalPort = KubePortManagerSingleton.take();
+      final int stderrLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
+
+      final var allLabels = new HashMap<>(customLabels);
+      final var generalKubeLabels = Map.of(
+          JOB_LABEL_KEY, jobId,
+          ATTEMPT_LABEL_KEY, String.valueOf(attempt),
+          WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE);
+      allLabels.putAll(generalKubeLabels);
 
       return new KubePodProcess(
           processRunnerHost,
@@ -112,6 +122,7 @@ public class KubeProcessFactory implements ProcessFactory {
           podName,
           namespace,
           imageName,
+          WorkerUtils.DEFAULT_JOB_IMAGE_PULL_POLICY,
           stdoutLocalPort,
           stderrLocalPort,
           kubeHeartbeatUrl,
@@ -119,8 +130,12 @@ public class KubeProcessFactory implements ProcessFactory {
           files,
           entrypoint,
           resourceRequirements,
+          WorkerUtils.DEFAULT_JOBS_IMAGE_PULL_SECRET,
+          WorkerUtils.DEFAULT_WORKER_POD_TOLERATIONS,
+          WorkerUtils.DEFAULT_WORKER_POD_NODE_SELECTORS,
+          allLabels,
           args);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new WorkerException(e.getMessage(), e);
     }
   }
@@ -137,22 +152,22 @@ public class KubeProcessFactory implements ProcessFactory {
    * easier operations.
    */
   @VisibleForTesting
-  protected static String createPodName(String fullImagePath, String jobId, int attempt) {
-    var versionDelimiter = ":";
-    var noVersion = fullImagePath.split(versionDelimiter)[0];
+  protected static String createPodName(final String fullImagePath, final String jobId, final int attempt) {
+    final var versionDelimiter = ":";
+    final var noVersion = fullImagePath.split(versionDelimiter)[0];
 
-    var dockerDelimiter = "/";
-    var nameParts = noVersion.split(dockerDelimiter);
+    final var dockerDelimiter = "/";
+    final var nameParts = noVersion.split(dockerDelimiter);
     var imageName = nameParts[nameParts.length - 1];
 
-    var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+    final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
     final String suffix = "worker-" + jobId + "-" + attempt + "-" + randSuffix;
 
     var podName = imageName + "-" + suffix;
 
-    var podNameLenLimit = 63;
+    final var podNameLenLimit = 63;
     if (podName.length() > podNameLenLimit) {
-      var extra = podName.length() - podNameLenLimit;
+      final var extra = podName.length() - podNameLenLimit;
       imageName = imageName.substring(extra);
       podName = imageName + "-" + suffix;
     }

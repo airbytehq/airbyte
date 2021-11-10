@@ -1,30 +1,12 @@
 #
-# MIT License
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-#
+
 
 from enum import Enum
 from typing import Any, List, Mapping
 
+import pendulum
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v8.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from proto.marshal.collections import Repeated, RepeatedComposite
@@ -40,6 +22,7 @@ REPORT_MAPPING = {
     "display_topics_performance_report": "topic_view",
     "shopping_performance_report": "shopping_performance_view",
     "user_location_report": "user_location_view",
+    "click_view": "click_view",
 }
 
 
@@ -60,10 +43,32 @@ class GoogleAds:
 
         return self.ga_service.search(search_request)
 
+    def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
+        """
+        Issue Google API request to get detailed information on data type for custom query columns.
+        :params fields list of columns for user defined query.
+        :return dict of fields type info.
+        """
+
+        ga_field_service = self.client.get_service("GoogleAdsFieldService")
+        request = self.client.get_type("SearchGoogleAdsFieldsRequest")
+        request.page_size = len(fields)
+        fields_sql = ",".join([f"'{field}'" for field in fields])
+        request.query = f"""
+        SELECT
+          name,
+          data_type,
+          enum_values,
+          is_repeated
+        WHERE name in ({fields_sql})
+        """
+        response = ga_field_service.search_google_ads_fields(request=request)
+        return {r.name: r for r in response}
+
     @staticmethod
     def get_fields_from_schema(schema: Mapping[str, Any]) -> List[str]:
         properties = schema.get("properties")
-        return [*properties]
+        return list(properties.keys())
 
     @staticmethod
     def convert_schema_into_query(
@@ -76,13 +81,15 @@ class GoogleAds:
         query_template = f"SELECT {fields} FROM {from_category} "
 
         if cursor_field:
-            # Fix issue 5411: Make date_start and date_end inclusive.
-            query_template += f"WHERE {cursor_field} >= '{from_date}' AND {cursor_field} <= '{to_date}' ORDER BY {cursor_field} ASC"
+            end_date_inclusive = "<=" if (pendulum.parse(to_date) - pendulum.parse(from_date)).days > 1 else "<"
+            query_template += (
+                f"WHERE {cursor_field} >= '{from_date}' AND {cursor_field} {end_date_inclusive} '{to_date}' ORDER BY {cursor_field} ASC"
+            )
 
         return query_template
 
     @staticmethod
-    def get_field_value(field_value: GoogleAdsRow, field: str) -> str:
+    def get_field_value(field_value: GoogleAdsRow, field: str, schema_type: Mapping[str, Any]) -> str:
         field_name = field.split(".")
         for level_attr in field_name:
             """
@@ -130,7 +137,6 @@ class GoogleAds:
                 # In GoogleAdsRow there are attributes that add an underscore at the end in their name.
                 # For example, 'ad_group_ad.ad.type' is replaced by 'ad_group_ad.ad.type_'.
                 field_value = getattr(field_value, level_attr + "_", None)
-
             if isinstance(field_value, Enum):
                 field_value = field_value.name
             elif isinstance(field_value, (Repeated, RepeatedComposite)):
@@ -144,13 +150,23 @@ class GoogleAds:
         # For example:
         # 1. ad_group_ad.ad.responsive_display_ad.long_headline - type AdTextAsset (https://developers.google.com/google-ads/api/reference/rpc/v6/AdTextAsset?hl=en).
         # 2. ad_group_ad.ad.legacy_app_install_ad - type LegacyAppInstallAdInfo (https://developers.google.com/google-ads/api/reference/rpc/v7/LegacyAppInstallAdInfo?hl=en).
+        #
         if not (isinstance(field_value, (list, int, float, str, bool, dict)) or field_value is None):
             field_value = str(field_value)
+        # In case of custom query field has MESSAGE type it represents protobuf
+        # message and could be anything, convert it to a string or array of
+        # string if it has "repeated" flag on metadata
+        if schema_type.get("protobuf_message"):
+            if "array" in schema_type.get("type"):
+                field_value = [str(field) for field in field_value]
+            else:
+                field_value = str(field_value)
 
         return field_value
 
     @staticmethod
     def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow):
+        props = schema.get("properties")
         fields = GoogleAds.get_fields_from_schema(schema)
-        single_record = {field: GoogleAds.get_field_value(result, field) for field in fields}
+        single_record = {field: GoogleAds.get_field_value(result, field, props.get(field)) for field in fields}
         return single_record

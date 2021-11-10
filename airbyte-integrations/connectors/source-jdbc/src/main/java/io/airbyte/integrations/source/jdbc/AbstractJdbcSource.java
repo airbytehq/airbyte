@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc;
@@ -34,6 +14,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
@@ -58,6 +39,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class contains helper functions and boilerplate for implementing a source connector for a
+ * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
+ * for a relational DB which has a JDBC driver, make an effort to use this class.
+ */
 public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBCType, JdbcDatabase> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
@@ -75,11 +61,20 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
 
   private final String driverClass;
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
+  protected final JdbcSourceOperations sourceOperations;
+
   private String quoteString;
 
   public AbstractJdbcSource(final String driverClass, final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
+    this(driverClass, jdbcStreamingQueryConfiguration, JdbcUtils.getDefaultSourceOperations());
+  }
+
+  public AbstractJdbcSource(final String driverClass,
+                            final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
+                            final JdbcSourceOperations sourceOperations) {
     this.driverClass = driverClass;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
+    this.sourceOperations = sourceOperations;
   }
 
   /**
@@ -87,10 +82,10 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
    *
    * @return list of consumers that run queries for the check command.
    */
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
+      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), sourceOperations::rowToJson);
     });
   }
 
@@ -99,7 +94,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
    *
    * @return a map by StreamName to associated list of primary keys
    */
-  private static Map<String, List<String>> aggregatePrimateKeys(List<SimpleImmutableEntry<String, String>> entries) {
+  private static Map<String, List<String>> aggregatePrimateKeys(final List<SimpleImmutableEntry<String, String>> entries) {
     final Map<String, List<String>> result = new HashMap<>();
     entries.forEach(entry -> {
       if (!result.containsKey(entry.getKey())) {
@@ -110,17 +105,15 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
     return result;
   }
 
-  private String getCatalog(SqlDatabase database) {
+  private String getCatalog(final SqlDatabase database) {
     return (database.getSourceConfig().has("database") ? database.getSourceConfig().get("database").asText() : null);
-
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database)
-      throws Exception {
+  protected List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database, final String schema) throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
     return database.bufferedResultSetQuery(
-        conn -> conn.getMetaData().getColumns(getCatalog(database), null, null, null),
+        conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
             // we always want a namespace, if we cannot get a schema, use db name.
             .put(INTERNAL_SCHEMA_NAME,
@@ -145,7 +138,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
                   JDBCType jdbcType;
                   try {
                     jdbcType = JDBCType.valueOf(f.get(INTERNAL_COLUMN_TYPE).asInt());
-                  } catch (IllegalArgumentException ex) {
+                  } catch (final IllegalArgumentException ex) {
                     LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
                         f.get(INTERNAL_COLUMN_NAME),
                         f.get(INTERNAL_SCHEMA_NAME),
@@ -161,13 +154,19 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   }
 
   @Override
-  protected JsonSchemaPrimitive getType(JDBCType columnType) {
-    return SourceJdbcUtils.getType(columnType);
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database)
+      throws Exception {
+    return discoverInternal(database, null);
   }
 
   @Override
-  protected Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
-                                                          List<TableInfo<CommonField<JDBCType>>> tableInfos) {
+  protected JsonSchemaPrimitive getType(final JDBCType columnType) {
+    return sourceOperations.getType(columnType);
+  }
+
+  @Override
+  protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
+                                                          final List<TableInfo<CommonField<JDBCType>>> tableInfos) {
     LOGGER.info("Discover primary keys for tables: " + tableInfos.stream().map(tab -> tab.getName()).collect(
         Collectors.toSet()));
     try {
@@ -177,30 +176,30 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
-            final String streamName = SourceJdbcUtils.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
+            final String streamName = sourceOperations.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
             final String primaryKey = r.getString(JDBC_COLUMN_COLUMN_NAME);
             return new SimpleImmutableEntry<>(streamName, primaryKey);
           }));
       if (!tablePrimaryKeys.isEmpty()) {
         return tablePrimaryKeys;
       }
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       LOGGER.debug(String.format("Could not retrieve primary keys without a table name (%s), retrying", e));
     }
     // Get primary keys one table at a time
     return tableInfos.stream()
         .collect(Collectors.toMap(
-            tableInfo -> SourceJdbcUtils
+            tableInfo -> sourceOperations
                 .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
-              final String streamName = SourceJdbcUtils
+              final String streamName = sourceOperations
                   .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
               try {
                 final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
                     conn -> conn.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
                     r -> new SimpleImmutableEntry<>(streamName, r.getString(JDBC_COLUMN_COLUMN_NAME))));
                 return primaryKeys.getOrDefault(streamName, Collections.emptyList());
-              } catch (SQLException e) {
+              } catch (final SQLException e) {
                 LOGGER.error(String.format("Could not retrieve primary keys for %s: %s", streamName, e));
                 return Collections.emptyList();
               }
@@ -213,13 +212,13 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   }
 
   @Override
-  public AutoCloseableIterator<JsonNode> queryTableIncremental(JdbcDatabase database,
-                                                               List<String> columnNames,
-                                                               String schemaName,
-                                                               String tableName,
-                                                               String cursorField,
-                                                               JDBCType cursorFieldType,
-                                                               String cursor) {
+  public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
+                                                               final List<String> columnNames,
+                                                               final String schemaName,
+                                                               final String tableName,
+                                                               final String cursorField,
+                                                               final JDBCType cursorFieldType,
+                                                               final String cursor) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -227,39 +226,44 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
-                  SourceJdbcUtils.enquoteIdentifierList(connection, columnNames),
-                  SourceJdbcUtils
+                  sourceOperations.enquoteIdentifierList(connection, columnNames),
+                  sourceOperations
                       .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  SourceJdbcUtils.enquoteIdentifier(connection, cursorField));
+                  sourceOperations.enquoteIdentifier(connection, cursorField));
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              SourceJdbcUtils.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
+              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
-            JdbcUtils::rowToJson);
+            sourceOperations::rowToJson);
         return AutoCloseableIterators.fromStream(stream);
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         throw new RuntimeException(e);
       }
     });
   }
 
   @Override
-  public JdbcDatabase createDatabase(JsonNode config) throws SQLException {
-    JsonNode jdbcConfig = toDatabaseConfig(config);
+  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+    final JsonNode jdbcConfig = toDatabaseConfig(config);
 
-    JdbcDatabase database = Databases.createStreamingJdbcDatabase(
+    final JdbcDatabase database = Databases.createStreamingJdbcDatabase(
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
         jdbcStreamingQueryConfiguration,
-        jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null);
+        jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null,
+        getSourceOperations());
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
     return database;
+  }
+
+  protected JdbcSourceOperations getSourceOperations() {
+    return JdbcUtils.getDefaultSourceOperations();
   }
 
 }

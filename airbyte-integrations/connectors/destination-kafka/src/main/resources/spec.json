@@ -162,19 +162,19 @@
         "title": "Batch size",
         "description": "The producer will attempt to batch records together into fewer requests whenever multiple records are being sent to the same partition.",
         "type": "integer",
-        "default": 16384
+        "examples": [16384]
       },
       "linger_ms": {
         "title": "Linger ms",
         "description": "The producer groups together any records that arrive in between request transmissions into a single batched request.",
-        "type": "number",
-        "default": 0
+        "type": "string",
+        "examples": [0]
       },
       "max_in_flight_requests_per_connection": {
         "title": "Max in flight requests per connection",
         "description": "The maximum number of unacknowledged requests the client will send on a single connection before blocking.",
         "type": "integer",
-        "default": 5
+        "examples": [5]
       },
       "client_dns_lookup": {
         "title": "Client DNS lookup",
@@ -191,62 +191,62 @@
       "buffer_memory": {
         "title": "Buffer memory",
         "description": "The total bytes of memory the producer can use to buffer records waiting to be sent to the server.",
-        "type": "number",
-        "default": 33554432
+        "type": "string",
+        "examples": 33554432
       },
       "max_request_size": {
         "title": "Max request size",
         "description": "The maximum size of a request in bytes.",
         "type": "integer",
-        "default": 1048576
+        "examples": [1048576]
       },
       "retries": {
         "title": "Retries",
         "description": "Setting a value greater than zero will cause the client to resend any record whose send fails with a potentially transient error.",
         "type": "integer",
-        "default": 2147483647
+        "examples": [2147483647]
       },
       "socket_connection_setup_timeout_ms": {
         "title": "Socket connection setup timeout",
         "description": "The amount of time the client will wait for the socket connection to be established.",
-        "type": "number",
-        "default": 10000
+        "type": "string",
+        "examples": [10000]
       },
       "socket_connection_setup_timeout_max_ms": {
         "title": "Socket connection setup max timeout",
         "description": "The maximum amount of time the client will wait for the socket connection to be established. The connection setup timeout will increase exponentially for each consecutive connection failure up to this maximum.",
-        "type": "number",
-        "default": 30000
+        "type": "string",
+        "examples": [30000]
       },
       "max_block_ms": {
         "title": "Max block ms",
         "description": "The configuration controls how long the KafkaProducer's send(), partitionsFor(), initTransactions(), sendOffsetsToTransaction(), commitTransaction() and abortTransaction() methods will block.",
-        "type": "number",
-        "default": 60000
+        "type": "string",
+        "examples": [60000]
       },
       "request_timeout_ms": {
         "title": "Request timeout",
         "description": "The configuration controls the maximum amount of time the client will wait for the response of a request. If the response is not received before the timeout elapses the client will resend the request if necessary or fail the request if retries are exhausted.",
         "type": "integer",
-        "default": 30000
+        "examples": [30000]
       },
       "delivery_timeout_ms": {
         "title": "Delivery timeout",
         "description": "An upper bound on the time to report success or failure after a call to 'send()' returns.",
         "type": "integer",
-        "default": 120000
+        "examples": [120000]
       },
       "send_buffer_bytes": {
         "title": "Send buffer bytes",
         "description": "The size of the TCP send buffer (SO_SNDBUF) to use when sending data. If the value is -1, the OS default will be used.",
         "type": "integer",
-        "default": 131072
+        "examples": [131072]
       },
       "receive_buffer_bytes": {
         "title": "Receive buffer bytes",
         "description": "The size of the TCP receive buffer (SO_RCVBUF) to use when reading data. If the value is -1, the OS default will be used.",
         "type": "integer",
-        "default": 32768
+        "examples": [32768]
       }
     }
   }

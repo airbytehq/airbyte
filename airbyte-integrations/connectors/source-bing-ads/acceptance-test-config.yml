@@ -12,7 +12,7 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-  # connector doesn't have incremental streams
+  # incremental test doesn't work if a single stream has multiple states
   #incremental:
   #  - config_path: "secrets/config.json"
   #    configured_catalog_path: "integration_tests/configured_catalog.json"

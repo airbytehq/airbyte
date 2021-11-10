@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.migrate;
@@ -42,15 +22,16 @@ public class MigrationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationRunner.class);
 
-  public static void run(String[] args) throws IOException {
-    MigrateConfig migrateConfig = parse(args);
+  public static void run(final String[] args) throws IOException {
+    final MigrateConfig migrateConfig = parse(args);
     run(migrateConfig);
   }
 
   public static void run(MigrateConfig migrateConfig) throws IOException {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_migrate");
-    migrateConfig = new MigrateConfig(migrateConfig.getInputPath(), migrateConfig.getOutputPath(),
-        AirbyteVersion.versionWithoutPatch(migrateConfig.getTargetVersion()).getVersion());
+    migrateConfig = new MigrateConfig(migrateConfig.getInputPath(),
+        migrateConfig.getOutputPath(),
+        AirbyteVersion.versionWithoutPatch(migrateConfig.getTargetVersion()).serialize());
 
     if (migrateConfig.getInputPath().toString().endsWith(".gz")) {
       LOGGER.info("Unpacking tarball");
@@ -80,7 +61,7 @@ public class MigrationRunner {
     LOGGER.info("Migration output written to {}", outputPath);
   }
 
-  private static MigrateConfig parse(String[] args) {
+  private static MigrateConfig parse(final String[] args) {
     LOGGER.info("args: {}", Arrays.asList(args));
     final ArgumentParser parser = ArgumentParsers.newFor(Migrate.class.getName()).build()
         .defaultHelp(true)
@@ -106,13 +87,13 @@ public class MigrationRunner {
       final String targetVersion =
           Objects.isNull(targetVersionFromCli) ? Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1).getVersion() : targetVersionFromCli;
       return new MigrateConfig(inputPath, outputPath, targetVersion);
-    } catch (ArgumentParserException e) {
+    } catch (final ArgumentParserException e) {
       parser.handleError(e);
       throw new IllegalArgumentException(e);
     }
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(final String[] args) throws IOException {
     MigrationRunner.run(args);
   }
 

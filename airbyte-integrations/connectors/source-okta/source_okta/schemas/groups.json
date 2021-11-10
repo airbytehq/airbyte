@@ -2,7 +2,7 @@
   "properties": {
     "_links": {
       "additionalProperties": {
-        "type": ["object", "null"]
+        "type": ["array", "object", "null"]
       },
       "type": ["object", "null"]
     },

@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.29.10-alpha",
+  "version": "0.30.38-alpha",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
@@ -11,20 +11,17 @@
     "lint": "eslint --ext js,ts,tsx src"
   },
   "dependencies": {
-    "@asayerio/tracker": "^5.6.8",
-    "@fortawesome/fontawesome-svg-core": "^1.2.27",
-    "@fortawesome/free-brands-svg-icons": "^5.15.2",
-    "@fortawesome/free-regular-svg-icons": "^5.14.0",
-    "@fortawesome/free-solid-svg-icons": "^5.12.1",
-    "@fortawesome/react-fontawesome": "^0.1.8",
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/free-brands-svg-icons": "^5.15.4",
+    "@fortawesome/free-regular-svg-icons": "^5.15.4",
+    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@fortawesome/react-fontawesome": "^0.1.16",
     "@fullstory/browser": "^1.4.9",
-    "@papercups-io/chat-widget": "^1.1.5",
-    "@papercups-io/storytime": "^1.0.6",
     "@rest-hooks/legacy": "^2.0.5",
-    "@storybook/preset-create-react-app": "^3.2.0",
-    "@storybook/react": "^6.3.2",
+    "@sentry/react": "^6.11.0",
+    "@sentry/tracing": "^6.11.0",
     "dayjs": "^1.8.35",
-    "firebase": "^8.8.1",
+    "firebase": "^9.0.1",
     "flat": "^5.0.2",
     "formik": "2.1.5",
     "lodash.get": "^4.4.2",
@@ -37,13 +34,17 @@
     "react-helmet": "6.1.0",
     "react-intl": "^3.12.0",
     "react-lazylog": "^4.5.3",
+    "react-markdown": "^7.0.1",
     "react-pose": "^4.0.10",
     "react-query": "^3.19.1",
     "react-router-dom": "^5.1.2",
     "react-select": "^4.3.1",
     "react-table": "^7.5.0",
     "react-use": "^15.3.8",
+    "react-use-intercom": "^1.4.0",
     "react-widgets": "^4.6.1",
+    "recharts": "^2.1.3",
+    "remark-gfm": "^3.0.0",
     "rest-hooks": "^5.0.20",
     "sanitize-html": "^2.3.3",
     "styled-components": "^5.1.1",
@@ -53,6 +54,9 @@
   "devDependencies": {
     "@rest-hooks/test": "^6.2.0",
     "@storybook/addon-essentials": "^6.3.6",
+    "@storybook/preset-create-react-app": "^3.2.0",
+    "@storybook/react": "^6.3.2",
+    "@storybook/theming": "^6.3.8",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/react-hooks": "^7.0.1",
@@ -85,7 +89,7 @@
     "prettier": "^2.2.1",
     "react-scripts": "4.0.2",
     "storybook-addon-styled-component-theme": "^2.0.0",
-    "typescript": "4.1.5"
+    "typescript": "4.2.4"
   },
   "husky": {
     "hooks": {

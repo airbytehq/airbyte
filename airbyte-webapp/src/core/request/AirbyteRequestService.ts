@@ -1,4 +1,3 @@
-import config from "config";
 import merge from "lodash.merge";
 
 import { CommonRequestError } from "./CommonRequestError";
@@ -6,11 +5,9 @@ import { VersionError } from "./VersionError";
 import { RequestMiddleware } from "./RequestMiddleware";
 
 abstract class AirbyteRequestService {
-  static rootUrl = config.apiUrl;
-
   constructor(
-    private middlewares: RequestMiddleware[] = [],
-    protected rootUrl: string = config.apiUrl
+    protected rootUrl: string,
+    private middlewares: RequestMiddleware[] = []
   ) {}
 
   /** Perform network request */

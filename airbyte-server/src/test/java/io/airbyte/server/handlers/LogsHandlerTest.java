@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -33,6 +13,7 @@ import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfiguration;
 import java.io.File;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -44,9 +25,11 @@ class LogsHandlerTest {
     final Configs configs = mock(Configs.class);
     when(configs.getWorkspaceRoot()).thenReturn(Path.of("/workspace"));
     when(configs.getWorkerEnvironment()).thenReturn(WorkerEnvironment.DOCKER);
+    when(configs.getLogConfigs()).thenReturn(LogConfiguration.EMPTY);
 
     final File expected = Path.of(String.format("/workspace/server/logs/%s", LogClientSingleton.LOG_FILENAME)).toFile();
-    final File actual = new LogsHandler().getLogs(configs, new LogsRequestBody().logType(LogType.SERVER));
+    final File actual = new LogsHandler().getLogs(configs.getWorkspaceRoot(), configs.getWorkerEnvironment(),
+        configs.getLogConfigs(), new LogsRequestBody().logType(LogType.SERVER));
 
     assertEquals(expected, actual);
   }
@@ -56,9 +39,11 @@ class LogsHandlerTest {
     final Configs configs = mock(Configs.class);
     when(configs.getWorkspaceRoot()).thenReturn(Path.of("/workspace"));
     when(configs.getWorkerEnvironment()).thenReturn(WorkerEnvironment.DOCKER);
+    when(configs.getLogConfigs()).thenReturn(LogConfiguration.EMPTY);
 
     final File expected = Path.of(String.format("/workspace/scheduler/logs/%s", LogClientSingleton.LOG_FILENAME)).toFile();
-    final File actual = new LogsHandler().getLogs(configs, new LogsRequestBody().logType(LogType.SCHEDULER));
+    final File actual = new LogsHandler().getLogs(configs.getWorkspaceRoot(), configs.getWorkerEnvironment(),
+        configs.getLogConfigs(), new LogsRequestBody().logType(LogType.SCHEDULER));
 
     assertEquals(expected, actual);
   }

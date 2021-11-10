@@ -1,31 +1,12 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
-import json
+import functools
 from typing import List, Mapping, Optional
 
+import dpath.exceptions
+import dpath.util
 import icdiff
 import py
 from pprintpp import pformat
@@ -70,23 +51,49 @@ def diff_dicts(left, right, use_markup) -> Optional[List[str]]:
     return ["equals failed"] + [color_off + line for line in icdiff_lines]
 
 
-class DictWithHash(dict):
-
-    _hash: str = None
+@functools.total_ordering
+class HashMixin:
+    @staticmethod
+    def get_hash(obj):
+        if isinstance(obj, Mapping):
+            return hash(str({k: (HashMixin.get_hash(v)) for k, v in sorted(obj.items())}))
+        if isinstance(obj, List):
+            return hash(str(sorted([HashMixin.get_hash(v) for v in obj])))
+        return hash(obj)
 
     def __hash__(self):
-        if not self._hash:
-            self._hash = hash(json.dumps({k: serialize(v) for k, v in self.items()}, sort_keys=True))
-        return self._hash
+        return HashMixin.get_hash(self)
 
     def __lt__(self, other):
         return hash(self) < hash(other)
 
+    def __eq__(self, other):
+        return hash(self) == hash(other)
 
-def serialize(value) -> str:
-    """Simplify comparison of nested dicts/lists"""
-    if isinstance(value, Mapping):
-        return DictWithHash(value)
-    if isinstance(value, List):
-        return sorted([serialize(v) for v in value])
-    return str(value)
+
+class DictWithHashMixin(HashMixin, dict):
+    pass
+
+
+class ListWithHashMixin(HashMixin, list):
+    pass
+
+
+def make_hashable(obj, exclude_fields: List[str] = None) -> str:
+    """
+    Simplify comparison of nested dicts/lists
+    :param obj value for comparison
+    :param exclude_fields if value is Mapping, some fields can be excluded
+    """
+    if isinstance(obj, Mapping):
+        # If value is Mapping, some fields can be excluded
+        exclude_fields = exclude_fields or []
+        for field in exclude_fields:
+            try:
+                dpath.util.delete(obj, field)
+            except dpath.exceptions.PathNotFound:
+                pass
+        return DictWithHashMixin(obj)
+    if isinstance(obj, List):
+        return ListWithHashMixin(obj)
+    return obj

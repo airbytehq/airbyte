@@ -1,34 +1,18 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
+import os
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
+import vcr
+import vcr.cassette as Cassette
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
+from requests.auth import AuthBase
 
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
@@ -44,10 +28,50 @@ class HttpStream(Stream, ABC):
     """
 
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
+    page_size = None  # Use this variable to define page size for API http requests with pagination support
 
-    def __init__(self, authenticator: HttpAuthenticator = NoAuth()):
-        self._authenticator = authenticator
+    # TODO: remove legacy HttpAuthenticator authenticator references
+    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
         self._session = requests.Session()
+
+        self._authenticator = NoAuth()
+        if isinstance(authenticator, AuthBase):
+            self._session.auth = authenticator
+        elif authenticator:
+            self._authenticator = authenticator
+
+        if self.use_cache:
+            self.cache_file = self.request_cache()
+            # we need this attr to get metadata about cassettes, such as record play count, all records played, etc.
+            self.cassete = None
+
+    @property
+    def cache_filename(self):
+        """
+        Override if needed. Return the name of cache file
+        """
+        return f"{self.name}.yml"
+
+    @property
+    def use_cache(self):
+        """
+        Override if needed. If True, all records will be cached.
+        """
+        return False
+
+    def request_cache(self) -> Cassette:
+        """
+        Builds VCR instance.
+        It deletes file everytime we create it, normally should be called only once.
+        We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
+        """
+
+        try:
+            os.remove(self.cache_filename)
+        except FileNotFoundError:
+            pass
+
+        return vcr.use_cassette(self.cache_filename, record_mode="new_episodes", serializer="yaml")
 
     @property
     @abstractmethod
@@ -62,6 +86,27 @@ class HttpStream(Stream, ABC):
         Override if needed. See get_request_data/get_request_json if using POST/PUT/PATCH.
         """
         return "GET"
+
+    @property
+    def raise_on_http_errors(self) -> bool:
+        """
+        Override if needed. If set to False, allows opting-out of raising HTTP code exception.
+        """
+        return True
+
+    @property
+    def max_retries(self) -> Union[int, None]:
+        """
+        Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
+        """
+        return 5
+
+    @property
+    def retry_factor(self) -> int:
+        """
+        Override if needed. Specifies factor for backoff policy.
+        """
+        return 5
 
     @property
     def authenticator(self) -> HttpAuthenticator:
@@ -120,7 +165,7 @@ class HttpStream(Stream, ABC):
 
         If returns a ready text that it will be sent as is.
         If returns a dict that it will be converted to a urlencoded form.
-           E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
+        E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
@@ -207,13 +252,10 @@ class HttpStream(Stream, ABC):
 
         return self._session.prepare_request(requests.Request(**args))
 
-    # TODO allow configuring these parameters. If we can get this into the requests library, then we can do it without the ugly exception hacks
-    #  see https://github.com/litl/backoff/pull/122
-    @default_backoff_handler(max_tries=5, factor=5)
-    @user_defined_backoff_handler(max_tries=5)
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """
         Wraps sending the request in rate limit and error handlers.
+        Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
 
         This method handles two types of exceptions:
             1. Expected transient exceptions e.g: 429 status code.
@@ -230,18 +272,50 @@ class HttpStream(Stream, ABC):
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
         response: requests.Response = self._session.send(request, **request_kwargs)
+
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
             if custom_backoff_time:
                 raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
             else:
                 raise DefaultBackoffException(request=request, response=response)
-        else:
+        elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
-            # TODO handle ignoring errors
             response.raise_for_status()
 
         return response
+
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+        """
+        Creates backoff wrappers which are responsible for retry logic
+        """
+
+        """
+        Backoff package has max_tries parameter that means total number of
+        tries before giving up, so if this number is 0 no calls expected to be done.
+        But for this class we call it max_REtries assuming there would be at
+        least one attempt and some retry attempts, to comply this logic we add
+        1 to expected retries attempts.
+        """
+        max_tries = self.max_retries
+        """
+        According to backoff max_tries docstring:
+            max_tries: The maximum number of attempts to make before giving
+                up ...The default value of None means there is no limit to
+                the number of tries.
+        This implies that if max_tries is excplicitly set to None there is no
+        limit to retry attempts, otherwise it is limited number of tries. But
+        this is not true for current version of backoff packages (1.8.0). Setting
+        max_tries to 0 or negative number would result in endless retry atempts.
+        Add this condition to avoid an endless loop if it hasnt been set
+        explicitly (i.e. max_retries is not None).
+        """
+        if max_tries is not None:
+            max_tries = max(0, max_tries) + 1
+
+        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
+        backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
+        return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     def read_records(
         self,
@@ -264,7 +338,18 @@ class HttpStream(Stream, ABC):
                 data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             )
             request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            response = self._send_request(request, request_kwargs)
+
+            if self.use_cache:
+                # use context manager to handle and store cassette metadata
+                with self.cache_file as cass:
+                    self.cassete = cass
+                    # vcr tries to find records based on the request, if such records exist, return from cache file
+                    # else make a request and save record in cache file
+                    response = self._send_request(request, request_kwargs)
+
+            else:
+                response = self._send_request(request, request_kwargs)
+
             yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
             next_page_token = self.next_page_token(response)
@@ -273,3 +358,29 @@ class HttpStream(Stream, ABC):
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
+
+
+class HttpSubStream(HttpStream, ABC):
+    def __init__(self, parent: HttpStream, **kwargs):
+        """
+        :param parent: should be the instance of HttpStream class
+        """
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+
+        # iterate over all parent stream_slices
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+
+            # iterate over all parent records with current stream_slice
+            for record in parent_records:
+                yield {"parent": record}

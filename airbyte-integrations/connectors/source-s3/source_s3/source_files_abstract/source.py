@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -71,7 +51,8 @@ class SourceFilesAbstract(AbstractSource, ABC):
             - That the path pattern(s) provided in config are valid to be matched against.
 
         :param logger: an instance of AirbyteLogger to use
-        :param config: The user-provided configuration as specified by the source's spec. This usually contains information required to check connection e.g. tokens, secrets and keys etc.
+        :param config: The user-provided configuration as specified by the source's spec.
+                                This usually contains information required to check connection e.g. tokens, secrets and keys etc.
         :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful and we can connect to the underlying data
         source using the provided configuration.
         Otherwise, the input config cannot be used to connect to the underlying data source, and the "error" object should describe what went wrong.
@@ -80,10 +61,11 @@ class SourceFilesAbstract(AbstractSource, ABC):
 
         found_a_file = False
         try:
-            for filepath in self.stream_class.filepath_iterator(logger, config.get("provider")):
+            for filepath in self.stream_class(**config).filepath_iterator():
                 found_a_file = True
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
-                globmatch(filepath, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)  # test that matching on the pattern doesn't error
+                # test that matching on the pattern doesn't error
+                globmatch(filepath, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
                 break  # just need first file here to test connection and valid patterns
 
         except Exception as e:

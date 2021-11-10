@@ -1,9 +1,15 @@
 import React, { useContext, useMemo } from "react";
 
 import { WidgetConfigMap } from "core/form/types";
+import {
+  ConnectorDefinition,
+  ConnectorDefinitionSpecification,
+} from "core/domain/connector";
 
 type Context = {
   formType: "source" | "destination";
+  selectedService?: ConnectorDefinition;
+  selectedConnector?: ConnectorDefinitionSpecification;
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
   isRequestConnectorModalOpen: boolean;
@@ -34,6 +40,8 @@ const ServiceFormContextProvider: React.FC<{
   widgetsInfo: WidgetConfigMap;
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
+  selectedService?: ConnectorDefinition;
+  selectedConnector?: ConnectorDefinitionSpecification;
   isEditMode?: boolean;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
 }> = ({ children, widgetsInfo, setUiWidgetsInfo, ...props }) => {
@@ -42,6 +50,8 @@ const ServiceFormContextProvider: React.FC<{
     return {
       widgetsInfo,
       setUiWidgetsInfo,
+      selectedService: props.selectedService,
+      selectedConnector: props.selectedConnector,
       formType: props.formType,
       isLoadingSchema: props.isLoadingSchema,
       isEditMode: props.isEditMode,

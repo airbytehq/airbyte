@@ -1,0 +1,21 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/bamboo-hr",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Bamboo HR Spec",
+    "type": "object",
+    "required": ["subdomain", "api_key"],
+    "additionalProperties": false,
+    "properties": {
+      "subdomain": {
+        "type": "string",
+        "description": "Sub Domain of bamboo hr"
+      },
+      "api_key": {
+        "type": "string",
+        "description": "Api key of bamboo hr",
+        "airbyte_secret": true
+      }
+    }
+  }
+}

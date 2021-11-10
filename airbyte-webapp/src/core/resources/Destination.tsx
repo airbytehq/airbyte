@@ -63,6 +63,24 @@ export class DestinationResource extends BaseResource implements Destination {
       schema: this,
     };
   }
+
+  static createShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<Destination>> {
+    return {
+      ...super.createShape(),
+      schema: this,
+      fetch: async (
+        _: Readonly<Record<string, string>>,
+        body: Readonly<Record<string, unknown>>
+      ): Promise<Destination> =>
+        await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/destinations/create`,
+          body
+        ),
+    };
+  }
 }
 
 export default DestinationResource;

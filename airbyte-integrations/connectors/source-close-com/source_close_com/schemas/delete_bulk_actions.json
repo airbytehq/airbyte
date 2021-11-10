@@ -1,0 +1,38 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "status": {
+      "type": ["null", "string"]
+    },
+    "query": {
+      "type": ["null", "string"]
+    },
+    "n_leads": {
+      "type": ["null", "number"]
+    },
+    "n_leads_processed": {
+      "type": ["null", "number"]
+    },
+    "send_done_email": {
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "updated_by": {
+      "type": ["null", "string"]
+    },
+    "created_by": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -2,7 +2,6 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import { Field, FieldProps, Form, Formik } from "formik";
-import * as yup from "yup";
 
 import { Input, ControlLabels, DropDown, Button } from "components";
 import { Values } from "./types";
@@ -27,21 +26,14 @@ const RequestButton = styled(Button)`
   min-width: 105px;
 `;
 
-type ConnectorFormProps = {
+type Props = {
   onSubmit: (values: Values) => void;
   onCancel: () => void;
   currentValues?: Values;
   hasFeedback?: boolean;
 };
 
-const requestConnectorValidationSchema = yup.object().shape({
-  connectorType: yup.string().required("form.empty.error"),
-  name: yup.string().required("form.empty.error"),
-  website: yup.string().required("form.empty.error"),
-  email: yup.string().email("form.email.error").required("form.empty.error"),
-});
-
-const ConnectorForm: React.FC<ConnectorFormProps> = ({
+const InviteUsersForm: React.FC<Props> = ({
   onSubmit,
   onCancel,
   currentValues,
@@ -64,9 +56,6 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
         website: currentValues?.website || "",
         email: currentValues?.email || "",
       }}
-      validateOnBlur={true}
-      validateOnChange={true}
-      validationSchema={requestConnectorValidationSchema}
       onSubmit={onSubmit}
     >
       {({ setFieldValue }) => (
@@ -89,7 +78,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
                   })}
                   error={!!meta.error && meta.touched}
                   onChange={(item) => {
-                    setFieldValue("connectorType", item.value);
+                    setFieldValue(field.name, item.value);
                   }}
                 />
               </ControlLabelsWithMargin>
@@ -178,4 +167,4 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
   );
 };
 
-export default ConnectorForm;
+export default InviteUsersForm;

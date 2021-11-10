@@ -25,24 +25,24 @@ The data type mapping adopted by this connector is based on the Smartsheet [docu
 
 **NOTE**: For any column datatypes interpreted by Smartsheets beside `DATE` and `DATETIME`, this connector's source schema generation assumes a `string` type, in which case the `format` field is not required by Airbyte.
 
- | Integration Type | Airbyte Type | Airbyte Format | 
- | :--- | :--- | :--- | 
- | `TEXT_NUMBER` | `string` | | 
- | `DATE` | `string` | `format: date` | 
- | `DATETIME` | `string` | `format: date-time` | 
- | `anything else` | `string` | |
+| Integration Type | Airbyte Type | Airbyte Format |
+| :--- | :--- | :--- |
+| `TEXT_NUMBER` | `string` |  |
+| `DATE` | `string` | `format: date` |
+| `DATETIME` | `string` | `format: date-time` |
+| `anything else` | `string` |  |
 
-The remaining column datatypes supported by Smartsheets are more complex types (e.g. Predecessor, Dropdown List) and are not supported by this connector beyond its `string` representation.
+The remaining column datatypes supported by Smartsheets are more complex types \(e.g. Predecessor, Dropdown List\) and are not supported by this connector beyond its `string` representation.
 
 ### Features
 
 This source connector only supports Full Refresh Sync. Since Smartsheets only allows 5000 rows per sheet, it's likely that the Full Refresh Sync Mode will suit the majority of use-cases.
 
- | Feature | Supported?| 
- | :--- | :--- | 
- | Full Refresh Sync |Yes | 
- | Incremental Sync |No | 
- | Namespaces |No |
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | No |
+| Namespaces | No |
 
 ### Performance considerations
 
@@ -63,7 +63,7 @@ To configure the Smartsheet Source for syncs, you'll need the following:
 
 You can generate an API key for your account from a session of your Smartsheet webapp by clicking:
 
-* Account (top-right icon)
+* Account \(top-right icon\)
 * Apps & Integrations
 * API Access
 * Generate new access token

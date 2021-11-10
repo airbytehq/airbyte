@@ -1,34 +1,15 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
+import json
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List
 
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog
 from base_python import AirbyteLogger
+from google.oauth2 import credentials as client_account
 from google.oauth2 import service_account
 from googleapiclient import discovery
 
@@ -50,7 +31,11 @@ class Helpers(object):
 
     @staticmethod
     def get_authenticated_google_credentials(credentials: Dict[str, str], scopes: List[str] = SCOPES):
-        return service_account.Credentials.from_service_account_info(credentials, scopes=scopes)
+        auth_type = credentials.pop("auth_type")
+        if auth_type == "Service":
+            return service_account.Credentials.from_service_account_info(json.loads(credentials["service_account_info"]), scopes=scopes)
+        elif auth_type == "Client":
+            return client_account.Credentials.from_authorized_user_info(info=credentials)
 
     @staticmethod
     def headers_to_airbyte_stream(logger: AirbyteLogger, sheet_name: str, header_row_values: List[str]) -> AirbyteStream:
@@ -71,7 +56,7 @@ class Helpers(object):
             "properties": {field: {"type": "string"} for field in fields},
         }
 
-        return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema)
+        return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema, supported_sync_modes=["full_refresh"])
 
     @staticmethod
     def get_valid_headers_and_duplicates(header_row_values: List[str]) -> (List[str], List[str]):
@@ -149,7 +134,7 @@ class Helpers(object):
         client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
     ) -> Dict[str, Dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
-
+        print(f"available_sheets: {available_sheets}")
         available_sheets_to_column_index_to_name = defaultdict(dict)
         for sheet, columns in requested_sheets_and_columns.items():
             if sheet in available_sheets:

@@ -1,31 +1,12 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import time
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from urllib.parse import parse_qsl, urlparse
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -63,9 +44,7 @@ class IntercomStream(HttpStream, ABC):
         next_page = response.json().get("pages", {}).get("next")
 
         if next_page:
-            return {"starting_after": next_page["starting_after"]}
-        else:
-            return None
+            return dict(parse_qsl(urlparse(next_page).query))
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {}
@@ -127,13 +106,6 @@ class IncrementalIntercomStream(IntercomStream, ABC):
         record = super().parse_response(response, stream_state, **kwargs)
 
         for record in record:
-            updated_at = record.get(self.cursor_field)
-
-            if updated_at:
-                record[self.cursor_field] = datetime.fromtimestamp(
-                    record[self.cursor_field]
-                ).isoformat()  # convert timestamp to datetime string
-
             yield from self.filter_by_state(stream_state=stream_state, record=record)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
@@ -189,9 +161,7 @@ class Companies(IncrementalIntercomStream):
         data = response.json().get("data")
 
         if data:
-            return {"scroll_param": response.json()["scroll_param"]}
-        else:
-            return None
+            return {"scroll_param": response.json().get("scroll_param")}
 
     def path(self, **kwargs) -> str:
         return "companies/scroll"
@@ -251,6 +221,20 @@ class Contacts(IncrementalIntercomStream):
     API Docs: https://developers.intercom.com/intercom-api-reference/reference#list-contacts
     Endpoint: https://api.intercom.io/contacts
     """
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Abstract method of HttpStream - should be overwritten.
+        Returning None means there are no more pages to read in response.
+        """
+
+        next_page = response.json().get("pages", {}).get("next")
+
+        if isinstance(next_page, dict):
+            return {"starting_after": next_page["starting_after"]}
+
+        if isinstance(next_page, str):
+            return super().next_page_token(response)
 
     def path(self, **kwargs) -> str:
         return "contacts"
@@ -325,6 +309,7 @@ class SourceIntercom(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config["start_date"] = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
 
         auth = TokenAuthenticator(token=config["access_token"])

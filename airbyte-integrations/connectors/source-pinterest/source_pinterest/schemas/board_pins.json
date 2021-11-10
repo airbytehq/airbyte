@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "link": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "alt_text": {
+      "type": ["null", "string"]
+    },
+    "board_id": {
+      "type": ["null", "string"]
+    },
+    "board_section_id": {
+      "type": ["null", "string"]
+    },
+    "board_owner": {
+      "type": ["null", "object"],
+      "properties": {
+        "username": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "media": {
+      "type": ["null", "object"],
+      "properties": {
+        "media_type": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

@@ -18,8 +18,7 @@
       "type": ["null", "string"]
     },
     "redeem_by": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "duration": {
       "type": ["null", "string"]

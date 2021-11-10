@@ -12,6 +12,7 @@ const Content = styled.div`
   width: 100%;
   max-width: 550px;
   margin: 0 auto;
+  padding-bottom: 26px;
 `;
 
 const WorkspacesList: React.FC = () => {

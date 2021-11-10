@@ -1,8 +1,21 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:7.1.0'
+    }
+}
+
 plugins {
     id 'base'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.7.0'
-    id 'com.github.hierynomus.license' version '0.15.0'
+    id 'com.github.hierynomus.license' version '0.16.1'
 }
 
 repositories {
@@ -66,11 +79,14 @@ def createSpotlessTarget = { pattern ->
         '*.egg-info',
         'build',
         'dbt-project-template',
-        'dbt_data_tests',
-        'dbt_schema_tests',
+        'dbt-project-template-mssql',
+        'dbt-project-template-mysql',
+        'dbt-project-template-oracle',
+        'dbt_test_config',
         'normalization_test_output',
         'tools',
-        'secrets'
+        'secrets',
+        'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -88,7 +104,7 @@ spotless {
 
         eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
 
-        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE'))
+        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
         removeUnusedImports()
         trimTrailingWhitespace()
     }
@@ -108,26 +124,40 @@ spotless {
 }
 check.dependsOn 'spotlessApply'
 
+@SuppressWarnings('GroovyAssignabilityCheck')
+def Task getDockerBuildTask(String artifactName, String projectDir) {
+    return task ("buildDockerImage-$artifactName" (type: DockerBuildImage) {
+        def buildTag = System.getenv('VERSION') ?: 'dev'
+        def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
+        def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
+        def postgresImage = System.getenv('POSTGRES_IMAGE') ?: 'postgres:13-alpine'
+        def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
+        def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
+
+        inputDir = file("$projectDir/build/docker")
+        platform = buildPlatform
+        images.add("airbyte/$artifactName:$buildTag")
+        buildArgs.put('JDK_VERSION', jdkVersion)
+        buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
+        buildArgs.put('ALPINE_IMAGE', alpineImage)
+        buildArgs.put('POSTGRES_IMAGE', postgresImage)
+    })
+}
+
 allprojects {
-    apply plugin: 'base'
+    apply plugin: 'com.bmuschko.docker-remote-api'
 
-    afterEvaluate { project ->
-        def composeDeps = [
-                ":airbyte-config:init",
-                ":airbyte-db",
-                ":airbyte-migration",
-                ":airbyte-scheduler:app",
-                ":airbyte-server",
-                ":airbyte-webapp",
-        ].toSet().asImmutable()
+    task copyDocker(type: Copy) {
+        delete "build/docker"
 
-        if (project.getPath() in composeDeps) {
-            composeBuild.dependsOn(project.getPath() + ':assemble')
-        }
+        from "${project.projectDir}/Dockerfile"
+        into "build/docker/"
     }
 }
 
 allprojects {
+    apply plugin: 'base'
+
     // by default gradle uses directory as the project name. That works very well in a single project environment but
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.
     def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
@@ -161,7 +191,7 @@ subprojects {
     pmd {
         consoleOutput = true
 
-        rulePriority = 5
+        rulesMinimumPriority = 5
         ruleSets = []
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
     }
@@ -224,26 +254,21 @@ subprojects {
         implementation 'software.amazon.awssdk:s3:2.16.84'
 
 
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
-        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
-        testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'
-    }
-}
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
+        testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
+        testImplementation 'org.assertj:assertj-core:3.21.0'
 
-task composeBuild {
-    def buildTag = System.getenv('VERSION') ?: 'dev'
-    doFirst {
-        exec {
-            workingDir rootDir
-            commandLine 'docker-compose', '-f', 'docker-compose.build.yaml', 'build', '--parallel', '--quiet'
-            environment 'VERSION', buildTag
-        }
     }
-}
 
-if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
-    build.dependsOn(composeBuild)
+    tasks.withType(Tar) {
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+
+    tasks.withType(Zip) {
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
 }
 
 task('generate') {
@@ -261,10 +286,10 @@ task('format') {
 subprojects {
     def pythonFormatTask = project.tasks.findByName('blackFormat')
 
-    if(pythonFormatTask != null) {
+    if (pythonFormatTask != null) {
         apply plugin: "com.github.hierynomus.license"
         task licenseFormatPython(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
-            header = createPythonLicenseWith(rootProject.file('LICENSE'))
+            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
             source = fileTree(dir: projectDir)
                     .include("**/*.py")
                     .exclude(".venv/**/*.py")
@@ -277,10 +302,20 @@ subprojects {
         flakeCheck.dependsOn licenseTask
 
         def generateFilesTask = project.tasks.findByName('generateProtocolClassFiles')
-        if(generateFilesTask != null) {
+        if (generateFilesTask != null) {
             licenseTask.dependsOn generateFilesTask
         }
     }
+}
+
+task('generate-docker') {
+    dependsOn(':airbyte-workers:assemble')
+    dependsOn(':airbyte-webapp:assemble')
+    dependsOn(':airbyte-server:assemble')
+    dependsOn(':airbyte-scheduler:app:assemble')
+    dependsOn(':airbyte-migration:assemble')
+    dependsOn(':airbyte-db:lib:assemble')
+    dependsOn(':airbyte-config:init:assemble')
 }
 
 // produce reproducible archives
@@ -300,7 +335,7 @@ tasks.withType(AbstractArchiveTask) {
 //        ':airbyte-config:init',
 //        ':airbyte-config:models',
 //        ':airbyte-config:persistence',
-//        ':airbyte-db',
+//        ':airbyte-db:lib',
 //        ':airbyte-json-validation',
 //        ':airbyte-migration',
 //        ':airbyte-notification',

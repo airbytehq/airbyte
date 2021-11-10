@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.migrate;
@@ -55,16 +35,16 @@ public class MigrationUtils {
    *        that are included here. resolving those dependencies is handled separately.
    * @return ResourceId to the JsonSchema found there.
    */
-  public static Map<ResourceId, JsonNode> getNameToSchemasFromResourcePath(Path migrationResourcePath,
-                                                                           Path relativePath,
-                                                                           ResourceType resourceType,
-                                                                           Set<String> schemasToInclude) {
+  public static Map<ResourceId, JsonNode> getNameToSchemasFromResourcePath(final Path migrationResourcePath,
+                                                                           final Path relativePath,
+                                                                           final ResourceType resourceType,
+                                                                           final Set<String> schemasToInclude) {
     return getNameToSchemasFromResourcePath(migrationResourcePath.resolve(relativePath), resourceType, schemasToInclude);
   }
 
-  public static Map<ResourceId, JsonNode> getNameToSchemasFromResourcePath(Path pathToSchemasResource,
-                                                                           ResourceType resourceType,
-                                                                           Set<String> schemasToInclude) {
+  public static Map<ResourceId, JsonNode> getNameToSchemasFromResourcePath(final Path pathToSchemasResource,
+                                                                           final ResourceType resourceType,
+                                                                           final Set<String> schemasToInclude) {
     final Map<ResourceId, JsonNode> schemas = new HashMap<>();
     final Path pathToSchemas = JsonSchemas.prepareSchemas(pathToSchemasResource.toString(), MigrationUtils.class);
     FileUtils.listFiles(pathToSchemas.toFile(), null, false)
@@ -81,7 +61,7 @@ public class MigrationUtils {
 
   // this method is decently inefficient. if you need to fetch the schema for multiple configs, use
   // getNameToSchemasFromResourcePath.
-  public static JsonNode getSchemaFromResourcePath(Path pathToSchema, ResourceId resourceId) {
+  public static JsonNode getSchemaFromResourcePath(final Path pathToSchema, final ResourceId resourceId) {
     final Map<ResourceId, JsonNode> nameToSchemas = getNameToSchemasFromResourcePath(
         pathToSchema,
         resourceId.getType(),
@@ -89,15 +69,15 @@ public class MigrationUtils {
     return nameToSchemas.get(resourceId);
   }
 
-  private static String getTitleAsConstantCase(JsonNode jsonNode) {
+  private static String getTitleAsConstantCase(final JsonNode jsonNode) {
     return CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, jsonNode.get("title").asText());
   }
 
-  public static Map<ResourceId, JsonNode> getConfigModels(Path migrationResourcePath, Set<String> schemasToInclude) {
+  public static Map<ResourceId, JsonNode> getConfigModels(final Path migrationResourcePath, final Set<String> schemasToInclude) {
     return getNameToSchemasFromResourcePath(migrationResourcePath, ResourceType.CONFIG.getDirectoryName(), ResourceType.CONFIG, schemasToInclude);
   }
 
-  public static Map<ResourceId, JsonNode> getJobModels(Path migrationResourcePath, Set<String> schemasToInclude) {
+  public static Map<ResourceId, JsonNode> getJobModels(final Path migrationResourcePath, final Set<String> schemasToInclude) {
     return getNameToSchemasFromResourcePath(migrationResourcePath, ResourceType.JOB.getDirectoryName(), ResourceType.JOB, schemasToInclude);
   }
 
@@ -118,7 +98,7 @@ public class MigrationUtils {
     return ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
   }
 
-  public static Map<ResourceId, Consumer<JsonNode>> mapRecordConsumerToConsumer(Map<ResourceId, ? extends Consumer<JsonNode>> recordConsumers) {
+  public static Map<ResourceId, Consumer<JsonNode>> mapRecordConsumerToConsumer(final Map<ResourceId, ? extends Consumer<JsonNode>> recordConsumers) {
     return recordConsumers.entrySet()
         .stream()
         .collect(Collectors.toMap(Entry::getKey, e -> (v) -> e.getValue().accept(v)));

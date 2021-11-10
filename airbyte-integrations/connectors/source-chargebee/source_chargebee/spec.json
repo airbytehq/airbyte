@@ -11,13 +11,13 @@
         "type": "string",
         "title": "Site",
         "description": "The site prefix for your Chargebee instance.",
-        "examples": "airbyte-test"
+        "examples": ["airbyte-test"]
       },
       "site_api_key": {
         "type": "string",
         "title": "API Key",
         "description": "The API key from your Chargebee instance.",
-        "examples": "test_3yzfanAXF66USdWC9wQcM555DQJkSYoppu",
+        "examples": ["test_3yzfanAXF66USdWC9wQcM555DQJkSYoppu"],
         "airbyte_secret": true
       },
       "start_date": {

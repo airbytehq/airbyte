@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -57,24 +37,24 @@ public class MySqlSourceTests {
         .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD)
         .withEnv("TZ", "Europe/Moscow");
     container.start();
-    Properties properties = new Properties();
+    final Properties properties = new Properties();
     properties.putAll(ImmutableMap.of("user", "root", "password", TEST_PASSWORD, "serverTimezone", "Europe/Moscow"));
     DriverManager.getConnection(container.getJdbcUrl(), properties);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     config = getConfig(container, dbName, "serverTimezone=Europe/Moscow");
 
-    try (Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
+    try (final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
       connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
       connection.createStatement().execute("CREATE DATABASE " + config.get("database").asText());
     }
-    AirbyteConnectionStatus check = new MySqlSource().check(config);
+    final AirbyteConnectionStatus check = new MySqlSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
 
     // cleanup
     container.close();
   }
 
-  private static JsonNode getConfig(MySQLContainer dbContainer, String dbName, String jdbcParams) {
+  private static JsonNode getConfig(final MySQLContainer dbContainer, final String dbName, final String jdbcParams) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", dbContainer.getHost())
         .put("port", dbContainer.getFirstMappedPort())
