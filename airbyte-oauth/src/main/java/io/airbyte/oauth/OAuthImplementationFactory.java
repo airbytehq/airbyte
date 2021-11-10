@@ -5,9 +5,10 @@
 package io.airbyte.oauth;
 
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.flows.*;
-import io.airbyte.oauth.flows.QuickbooksOAuthFlow;
 import io.airbyte.oauth.flows.facebook.FacebookMarketingOAuthFlow;
 import io.airbyte.oauth.flows.facebook.FacebookPagesOAuthFlow;
 import io.airbyte.oauth.flows.facebook.InstagramOAuthFlow;
@@ -33,8 +34,11 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-intercom", new IntercomOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-instagram", new InstagramOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-slack", new SlackOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository, httpClient))
@@ -42,7 +46,18 @@ public class OAuthImplementationFactory {
         .build();
   }
 
-  public OAuthFlowImplementation create(final String imageName, final UUID workspaceId) {
+  public OAuthFlowImplementation create(final StandardSourceDefinition sourceDefinition, final UUID workspaceId) {
+    final String imageName = sourceDefinition.getDockerRepository();
+    if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
+      return OAUTH_FLOW_MAPPING.get(imageName);
+    } else {
+      throw new IllegalStateException(
+          String.format("Requested OAuth implementation for %s, but it is not included in the oauth mapping.", imageName));
+    }
+  }
+
+  public OAuthFlowImplementation create(final StandardDestinationDefinition destinationDefinition, final UUID workspaceId) {
+    final String imageName = destinationDefinition.getDockerRepository();
     if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
       return OAUTH_FLOW_MAPPING.get(imageName);
     } else {

@@ -50,7 +50,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Google Sheets](sources/google-sheets.md) | Certified |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md) | Certified |
 | [Greenhouse](sources/greenhouse.md) | Beta |
-| [Hubspot](sources/hubspot.md) | Certified |
+| [HubSpot](sources/hubspot.md) | Certified |
 | [Instagram](sources/instagram.md) | Certified |
 | [Intercom](sources/intercom.md) | Beta |
 | [Iterable](sources/iterable.md) | Beta |
@@ -81,6 +81,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md) | Beta |
 | [PayPal Transaction](sources/paypal-transaction.md) | Beta |
 | [Paystack](sources/paystack.md) | Alpha |
+| [Pinterest](sources/pinterest.md) | Alpha |
 | [Pipedrive](sources/pipedrive.md) | Alpha |
 | [Plaid](sources/plaid.md) | Alpha |
 | [PokéAPI](sources/pokeapi.md) | Beta |

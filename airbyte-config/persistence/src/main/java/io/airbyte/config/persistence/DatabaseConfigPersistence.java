@@ -19,6 +19,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigSchemaMigrationSupport;
+import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.Configs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -119,6 +120,22 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .fetch());
     return results.stream()
         .map(record -> Jsons.deserialize(record.get(AIRBYTE_CONFIGS.CONFIG_BLOB).data(), clazz))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz) throws IOException {
+    final Result<Record> results = database.query(ctx -> ctx.select(asterisk())
+        .from(AIRBYTE_CONFIGS)
+        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()))
+        .orderBy(AIRBYTE_CONFIGS.CONFIG_TYPE, AIRBYTE_CONFIGS.CONFIG_ID)
+        .fetch());
+    return results.stream()
+        .map(record -> new ConfigWithMetadata<>(record.get(AIRBYTE_CONFIGS.CONFIG_ID),
+            record.get(AIRBYTE_CONFIGS.CONFIG_TYPE),
+            record.get(AIRBYTE_CONFIGS.CREATED_AT).toInstant(),
+            record.get(AIRBYTE_CONFIGS.UPDATED_AT).toInstant(),
+            Jsons.deserialize(record.get(AIRBYTE_CONFIGS.CONFIG_BLOB).data(), clazz)))
         .collect(Collectors.toList());
   }
 

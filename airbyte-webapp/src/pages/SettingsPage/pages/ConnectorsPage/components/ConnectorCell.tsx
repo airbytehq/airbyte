@@ -3,11 +3,13 @@ import styled from "styled-components";
 
 import Indicator from "components/Indicator";
 import { getIcon } from "utils/imageUtils";
+import { FormattedMessage } from "react-intl";
 
 type IProps = {
   connectorName: string;
   img?: string;
   hasUpdate?: boolean;
+  isDeprecated?: boolean;
 };
 
 const Content = styled.div<{ enabled?: boolean }>`
@@ -30,12 +32,28 @@ const Notification = styled(Indicator)`
   left: 8px;
 `;
 
-const ConnectorCell: React.FC<IProps> = ({ connectorName, img, hasUpdate }) => {
+const CustomAnnotation = styled.span`
+  color: ${({ theme }) => theme.greyColor40};
+`;
+
+const ConnectorCell: React.FC<IProps> = ({
+  connectorName,
+  img,
+  hasUpdate,
+  isDeprecated,
+}) => {
   return (
     <Content>
       {hasUpdate && <Notification />}
       <Image>{getIcon(img)}</Image>
-      {connectorName}
+      <span>
+        {connectorName}{" "}
+        {isDeprecated ? (
+          <CustomAnnotation>
+            ( <FormattedMessage id="admin.customImage" /> )
+          </CustomAnnotation>
+        ) : null}
+      </span>
     </Content>
   );
 };
