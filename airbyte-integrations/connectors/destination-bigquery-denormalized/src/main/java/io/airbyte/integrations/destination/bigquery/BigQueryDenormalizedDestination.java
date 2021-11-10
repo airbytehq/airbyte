@@ -43,7 +43,8 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   private static final String TYPE_FIELD = "type";
   private static final String FORMAT_FIELD = "format";
   private static final String REF_DEFINITION_KEY = "$ref";
-  private static final Set<String> fieldsContainRefDefinitionValue = new HashSet<>();
+
+  private final Set<String> fieldsContainRefDefinitionValue = new HashSet<>();
 
   @Override
   protected String getTargetTableName(final String streamName) {
@@ -73,7 +74,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     return com.google.cloud.bigquery.Schema.of(fieldList);
   }
 
-  private static List<Field> getSchemaFields(final BigQuerySQLNameTransformer namingResolver, final JsonNode jsonSchema) {
+  private List<Field> getSchemaFields(final BigQuerySQLNameTransformer namingResolver, final JsonNode jsonSchema) {
     Preconditions.checkArgument(jsonSchema.isObject() && jsonSchema.has(PROPERTIES_FIELD));
     final ObjectNode properties = (ObjectNode) jsonSchema.get(PROPERTIES_FIELD);
     List<Field> tmpFields = Jsons.keys(properties).stream()
@@ -96,7 +97,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
    * Currently, AirByte doesn't support parsing value by $ref key definition.
    * The issue to track this <a href="https://github.com/airbytehq/airbyte/issues/7725">7725</a>
    */
-  private static Consumer<String> addToRefList(ObjectNode properties) {
+  private Consumer<String> addToRefList(ObjectNode properties) {
     return key -> {
       if (properties.get(key).has(REF_DEFINITION_KEY)) {
         fieldsContainRefDefinitionValue.add(key);

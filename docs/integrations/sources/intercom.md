@@ -55,6 +55,8 @@ Please read [How to get your Access Token](https://developers.intercom.com/build
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.8 | 2021-09-28 | [7060](https://github.com/airbytehq/airbyte/pull/7060) | Added oauth support |
+| 0.1.7 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 | 0.1.6 | 2021-10-07 | [6879](https://github.com/airbytehq/airbyte/pull/6879) | Corrected pagination for contacts |
 | 0.1.5 | 2021-09-28 | [6082](https://github.com/airbytehq/airbyte/pull/6082) | Corrected android\_last\_seen\_at field data type in schemas |
 | 0.1.4 | 2021-09-20 | [6087](https://github.com/airbytehq/airbyte/pull/6087) | Corrected updated\_at field data type in schemas |
