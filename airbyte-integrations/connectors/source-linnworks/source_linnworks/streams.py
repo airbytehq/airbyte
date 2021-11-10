@@ -21,6 +21,7 @@ class LinnworksStream(HttpStream, ABC):
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, start_date: str = None):
         super().__init__(authenticator=authenticator)
 
+        self._authenticator = authenticator
         self.start_date = start_date
 
     @property
