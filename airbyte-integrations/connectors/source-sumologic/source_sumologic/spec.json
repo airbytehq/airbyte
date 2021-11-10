@@ -42,7 +42,7 @@
       "by_receipt_time": {
         "type": "boolean",
         "title": "By Receipt Time",
-        "description": "Query logs by _receipttime instead of _messagetime, default is using _messagetime."
+        "description": "Query logs by receipt time instead of message, default is using message time."
       },
       "limit": {
         "type": "integer",
