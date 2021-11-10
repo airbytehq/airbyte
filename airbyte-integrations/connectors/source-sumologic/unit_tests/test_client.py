@@ -70,3 +70,43 @@ def test_search(mocker):
             mocker.call(search_job, limit=10000, offset=10000),
         ]
     )
+
+
+def test_wait_for_search_job(mocker):
+    sumo = mocker.Mock()
+    sumo.search_job_status.side_effect = [
+        {"state": "x"},
+        {"state": "DONE GATHERING RESULTS", "messageCount": 20000},
+    ]
+    mocker.patch("source_sumologic.client.SumoLogic", return_value=sumo)
+
+    search_job = {"id": "abc"}
+    status = Client("foo", "bar")._wait_for_search_job(search_job)
+    expected_status = {"state": "DONE GATHERING RESULTS", "messageCount": 20000}
+    assert status == expected_status
+    assert sumo.search_job_status.call_count == 2
+
+
+def test_read_messages(mocker):
+    sumo = mocker.Mock()
+    sumo.search_job_messages.return_value = {
+        "messages": [
+            {"map": {"_messagetime": 100}},
+            {"map": {"_messagetime": 200}},
+        ]
+    }
+    mocker.patch("source_sumologic.client.SumoLogic", return_value=sumo)
+
+    search_job = {"id": "abc"}
+    status = {"state": "DONE GATHERING RESULTS", "messageCount": 4}
+    limit = 2
+    offset = 0
+    messages = Client("foo", "bar")._read_messages(search_job, status, limit, offset)
+
+    assert len(list(messages)) == status["messageCount"]
+    sumo.search_job_messages.assert_has_calls(
+        [
+            mocker.call(search_job, limit=2, offset=0),
+            mocker.call(search_job, limit=2, offset=2),
+        ]
+    )
