@@ -9,9 +9,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
 import java.net.http.HttpClient;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -33,15 +31,15 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
   @Override
   protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
     try {
-      return URLDecoder.decode(
-          new URIBuilder(CONSENT_URL)
-              .addParameter("client_id", clientId)
-              .addParameter("scope", getScopes())
-              .addParameter("redirect_uri", redirectUrl)
-              .addParameter("response_type", "code")
-              .addParameter("state", getState())
-              .build().toString(),
-          StandardCharsets.UTF_8.toString());
+
+      return (new URIBuilder(CONSENT_URL)
+          .addParameter("client_id", clientId)
+          .addParameter("scope", getScopes())
+          .addParameter("redirect_uri", redirectUrl)
+          .addParameter("response_type", "code")
+          .addParameter("state", getState())
+          .build()).toString();
+
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }

@@ -36,12 +36,12 @@ public class OAuthHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(OAuthHandler.class);
 
   private final ConfigRepository configRepository;
-  private final OAuthImplementationFactory<OAuthFlowImplementation> oAuthImplementationFactory;
+  private final OAuthImplementationFactory oAuthImplementationFactory;
   private final TrackingClient trackingClient;
 
   public OAuthHandler(final ConfigRepository configRepository, final HttpClient httpClient, final TrackingClient trackingClient) {
     this.configRepository = configRepository;
-    this.oAuthImplementationFactory = new OAuthImplementationFactory<>(configRepository, httpClient);
+    this.oAuthImplementationFactory = new OAuthImplementationFactory(configRepository, httpClient);
     this.trackingClient = trackingClient;
   }
 
