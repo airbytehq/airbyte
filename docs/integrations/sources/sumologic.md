@@ -18,7 +18,6 @@ By default, this connector uses `_messagetime` as cursor for incremental syncs, 
 
 | Feature | Supported? |
 | :--- | :--- |
-| Full Refresh Sync | Yes |
 | Incremental - Append Sync | Yes |
 | Incremental - Dedupe Sync | Yes |
 | SSL connection | Yes |
