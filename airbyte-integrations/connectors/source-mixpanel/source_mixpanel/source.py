@@ -812,7 +812,7 @@ class SourceMixpanel(AbstractSource):
         start_date = config.get("start_date")
         if start_date and isinstance(start_date, str):
             start_date = pendulum.parse(config["start_date"]).date()
-        config["start_date"] = start_date or now
+        config["start_date"] = start_date or now - timedelta(days=365)
 
         end_date = config.get("end_date")
         if end_date and isinstance(end_date, str):
