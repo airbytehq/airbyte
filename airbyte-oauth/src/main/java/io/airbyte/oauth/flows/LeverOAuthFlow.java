@@ -10,7 +10,10 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
+import org.apache.http.client.utils.URIBuilder;
+
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.UUID;
@@ -51,7 +54,6 @@ public class LeverOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected Map<String, Object> extractRefreshToken(JsonNode data, String accessTokenUrl) throws IOException {
-    System.out.println(Jsons.serialize(data));
     if (data.has("refresh_token")) {
       final String refreshToken = data.get("refresh_token").asText();
       return Map.of("refresh_token", refreshToken);
@@ -62,13 +64,18 @@ public class LeverOAuthFlow extends BaseOAuthFlow {
 
   @Override
   protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
-    return String.format("%s?client_id=%s&redirect_uri=%s&response_type=code&state=%s&scope=%s&prompt=consent&audience=%s",
-        AUTHORIZE_URL,
-        clientId,
-        redirectUrl,
-        getState(),
-        SCOPES,
-        getAudience());
+    try {
+      return (new URIBuilder(AUTHORIZE_URL))
+              .addParameter("response_type", "code")
+              .addParameter("client_id", clientId)
+              .addParameter("redirect_uri", redirectUrl)
+              .addParameter("state", getState())
+              .addParameter("scope", SCOPES)
+              .addParameter("audience", getAudience())
+              .addParameter("prompt", "consent").build().toString();
+    } catch (URISyntaxException e) {
+      throw new IOException("Failed to format Consent URL for OAuth flow", e);
+    }
   }
 
   public LeverOAuthFlow(ConfigRepository configRepository) {
