@@ -21,6 +21,9 @@ VERSION=dev docker-compose -f "$SCRIPT_DIR"/../../docker-compose.yaml up &
 
 sleep 120
 
+docker compose down
+
+git stash
 git checkout $NEW_HASH
 SUB_BUILD=PLATFORM "$SCRIPT_DIR"/../../gradlew -p "$SCRIPT_DIR"/../.. assemble
 
