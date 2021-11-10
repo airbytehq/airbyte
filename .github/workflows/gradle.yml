@@ -228,8 +228,8 @@ jobs:
       - name: Build
         run: SUB_BUILD=PLATFORM ./gradlew build --scan
 
-      - name: Ensure no file change
-        run: git --no-pager diff && test -z "$(git --no-pager diff)"
+      - name: Test if Seed spec is updated
+        run: SUB_BUILD=PLATFORM ./gradlew format && git --no-pager diff && test -z "$(git --no-pager diff)"
 
       # todo (cgardens) - scope by platform.
       - name: Check documentation
