@@ -60,5 +60,3 @@ resources/examples/airflow/logs/*
 
 # Cloud Demo
 !airbyte-webapp/src/packages/cloud/data
-/bin/
-/**/bin/
