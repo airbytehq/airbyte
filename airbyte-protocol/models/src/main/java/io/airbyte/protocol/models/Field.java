@@ -14,8 +14,14 @@ public class Field extends CommonField<JsonSchemaPrimitive> {
     return new Field(name, type);
   }
 
-  public String getTypeAsJsonSchemaString() {
-    return getType().name().toLowerCase();
+
+    public String getTypeAsJsonSchemaString() {
+      return getType().name().toLowerCase();
+  }
+
+  public String getTypeForComplexObjectAsJsonSchemaString() {
+    String type = getType().name().toLowerCase();
+    return type.substring(0,type.indexOf("_"));
   }
 
 }

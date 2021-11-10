@@ -5,6 +5,9 @@
 package io.airbyte.protocol.models;
 
 public enum JsonSchemaPrimitive {
+  STRING_DATE,
+  STRING_TIME,
+  STRING_TIMESTAMP,
   STRING,
   NUMBER,
   OBJECT,
