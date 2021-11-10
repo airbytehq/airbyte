@@ -53,7 +53,7 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+    return Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class);
   }
 
   @Override
