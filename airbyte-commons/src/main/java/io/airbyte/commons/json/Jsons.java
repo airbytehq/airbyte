@@ -197,6 +197,24 @@ public class Jsons {
     return optional.map(JsonNode::asInt).orElse(0);
   }
 
+  public static JsonNode flattenConfig(final JsonNode config) {
+    return flattenConfig((ObjectNode) Jsons.emptyObject(), (ObjectNode) config);
+  }
+
+  private static ObjectNode flattenConfig(final ObjectNode flatConfig, final ObjectNode configToFlatten) {
+    for (final String key : Jsons.keys(configToFlatten)) {
+      if (configToFlatten.get(key).getNodeType() == OBJECT) {
+        flattenConfig(flatConfig, (ObjectNode) configToFlatten.get(key));
+      } else {
+        if (flatConfig.has(key)) {
+          LOGGER.warn(String.format("Config's key '%s' already exists", key));
+        }
+        flatConfig.set(key, configToFlatten.get(key));
+      }
+    }
+    return flatConfig;
+  }
+
   /**
    * By the Jackson DefaultPrettyPrinter prints objects with an extra space as follows: {"name" :
    * "airbyte"}. We prefer {"name": "airbyte"}.

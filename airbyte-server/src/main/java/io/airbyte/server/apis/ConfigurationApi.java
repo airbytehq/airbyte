@@ -189,7 +189,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs);
-    oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient);
+    oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient, specFetcher);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(
         connectionsHandler,
         sourceHandler,

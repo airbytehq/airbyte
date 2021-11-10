@@ -5,7 +5,6 @@
 package io.airbyte.oauth.flows.facebook;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -35,7 +34,6 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
     super(configRepository, httpClient);
   }
 
-  @VisibleForTesting
   FacebookOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
@@ -70,11 +68,11 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected Map<String, Object> completeOAuthFlow(final String clientId,
-                                                  final String clientSecret,
-                                                  final String authCode,
-                                                  final String redirectUrl,
-                                                  final JsonNode oAuthParamConfig)
+  protected Map<String, Object> internalCompleteOAuthFlow(final String clientId,
+                                                          final String clientSecret,
+                                                          final String authCode,
+                                                          final String redirectUrl,
+                                                          final JsonNode oAuthParamConfig)
       throws IOException {
     // Access tokens generated via web login are short-lived tokens
     // they arre valid for 1 hour and need to be exchanged for long-lived access token
@@ -82,7 +80,7 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
     // https://developers.facebook.com/docs/instagram-basic-display-api/overview#short-lived-access-tokens
     // Long-Term Tokens section)
 
-    final Map<String, Object> data = super.completeOAuthFlow(clientId, clientSecret, authCode, redirectUrl, oAuthParamConfig);
+    final Map<String, Object> data = super.internalCompleteOAuthFlow(clientId, clientSecret, authCode, redirectUrl, oAuthParamConfig);
     Preconditions.checkArgument(data.containsKey("access_token"));
     final String shortLivedAccessToken = (String) data.get("access_token");
     final String longLivedAccessToken = getLongLivedAccessToken(clientId, clientSecret, shortLivedAccessToken);

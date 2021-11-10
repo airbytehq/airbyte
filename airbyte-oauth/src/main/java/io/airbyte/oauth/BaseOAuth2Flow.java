@@ -11,6 +11,7 @@ import com.google.gson.reflect.TypeToken;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.OAuthConfigSpecification;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -106,6 +107,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   }
 
   @Override
+  @Deprecated
   public Map<String, Object> completeSourceOAuth(final UUID workspaceId,
                                                  final UUID sourceDefinitionId,
                                                  final Map<String, Object> queryParams,
@@ -114,7 +116,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return formatOAuthOutput(
         oAuthParamConfig,
-        completeOAuthFlow(
+        internalCompleteOAuthFlow(
             getClientIdUnsafe(oAuthParamConfig),
             getClientSecretUnsafe(oAuthParamConfig),
             extractCodeParameter(queryParams),
@@ -124,6 +126,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   }
 
   @Override
+  @Deprecated
   public Map<String, Object> completeDestinationOAuth(final UUID workspaceId,
                                                       final UUID destinationDefinitionId,
                                                       final Map<String, Object> queryParams,
@@ -132,7 +135,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return formatOAuthOutput(
         oAuthParamConfig,
-        completeOAuthFlow(
+        internalCompleteOAuthFlow(
             getClientIdUnsafe(oAuthParamConfig),
             getClientSecretUnsafe(oAuthParamConfig),
             extractCodeParameter(queryParams),
@@ -141,11 +144,51 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
         getDefaultOAuthOutputPath());
   }
 
-  protected Map<String, Object> completeOAuthFlow(final String clientId,
-                                                  final String clientSecret,
-                                                  final String authCode,
-                                                  final String redirectUrl,
-                                                  final JsonNode oAuthParamConfig)
+  @Override
+  public Map<String, Object> completeSourceOAuth(final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl,
+                                                 final JsonNode inputOAuthConfiguration,
+                                                 final OAuthConfigSpecification oAuthConfigSpecification)
+      throws IOException, ConfigNotFoundException {
+    final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, sourceDefinitionId);
+    return formatOAuthOutput(
+        oAuthParamConfig,
+        internalCompleteOAuthFlow(
+            getClientIdUnsafe(oAuthParamConfig),
+            getClientSecretUnsafe(oAuthParamConfig),
+            extractCodeParameter(queryParams),
+            redirectUrl,
+            oAuthParamConfig),
+        oAuthConfigSpecification);
+  }
+
+  @Override
+  public Map<String, Object> completeDestinationOAuth(final UUID workspaceId,
+                                                      final UUID destinationDefinitionId,
+                                                      final Map<String, Object> queryParams,
+                                                      final String redirectUrl,
+                                                      final JsonNode inputOAuthConfiguration,
+                                                      final OAuthConfigSpecification oAuthConfigSpecification)
+      throws IOException, ConfigNotFoundException {
+    final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
+    return formatOAuthOutput(
+        oAuthParamConfig,
+        internalCompleteOAuthFlow(
+            getClientIdUnsafe(oAuthParamConfig),
+            getClientSecretUnsafe(oAuthParamConfig),
+            extractCodeParameter(queryParams),
+            redirectUrl,
+            oAuthParamConfig),
+        oAuthConfigSpecification);
+  }
+
+  protected Map<String, Object> internalCompleteOAuthFlow(final String clientId,
+                                                          final String clientSecret,
+                                                          final String authCode,
+                                                          final String redirectUrl,
+                                                          final JsonNode oAuthParamConfig)
       throws IOException {
     final var accessTokenUrl = getAccessTokenUrl();
     final HttpRequest request = HttpRequest.newBuilder()
@@ -212,6 +255,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   }
 
   @Override
+  @Deprecated
   public List<String> getDefaultOAuthOutputPath() {
     return List.of("credentials");
   }

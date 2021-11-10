@@ -253,6 +253,19 @@ class JsonsTest {
     assertNull(Jsons.getStringOrNull(json, "xyz"));
   }
 
+  @Test
+  void testFlattenConfig() {
+    final JsonNode nestedConfig = Jsons.jsonNode(Map.of(
+        "field", "value1",
+        "top-level", Map.of(
+            "nested_field", "value2",
+            "field", "value3")));
+    final JsonNode expectedConfig = Jsons.jsonNode(Map.of(
+        "field", "value1",
+        "nested_field", "value2"));
+    final JsonNode actualConfig = Jsons.flattenConfig(nestedConfig);
+    assertEquals(expectedConfig, actualConfig);
+  }
 
   private void maskAllValues(final ObjectNode node) {
     for (final String key : Jsons.keys(node)) {
@@ -344,7 +357,6 @@ class JsonsTest {
 
     assertEquals(expected, actual);
   }
-
 
   private ObjectNode generateJsonConfig() {
     return (ObjectNode) Jsons.jsonNode(ImmutableMap.builder()

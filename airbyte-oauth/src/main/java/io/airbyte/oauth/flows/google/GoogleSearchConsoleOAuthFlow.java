@@ -30,6 +30,7 @@ public class GoogleSearchConsoleOAuthFlow extends GoogleOAuthFlow {
   }
 
   @Override
+  @Deprecated
   public List<String> getDefaultOAuthOutputPath() {
     return List.of("authorization");
   }
