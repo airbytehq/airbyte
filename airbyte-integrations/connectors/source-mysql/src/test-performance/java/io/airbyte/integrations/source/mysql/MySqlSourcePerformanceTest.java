@@ -128,30 +128,12 @@ public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
    * The test checks that connector can fetch prepared data without failure.
    */
   @Test
-  public void test2Streams() throws Exception {
+  public void test1000Streams() throws Exception {
     numberOfColumns = 240; // 240 is near the max value for varchar(8) type
     // 200 is near the max value for 1 batch call,if need more - implement multiple batching for single
     // stream
     numberOfDummyRecords = 20; // 200;
-    numberOfStreams = 2;
-
-    setupDatabaseInternal();
-
-    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
-    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
-        numberOfStreams, numberOfDummyRecords);
-    final Map<String, Integer> checkStatusMap =
-        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
-    validateNumberOfReceivedMsgs(checkStatusMap);
-  }
-
-  @Test
-  public void test100Streams() throws Exception {
-    numberOfColumns = 240; // 240 is near the max value for varchar(8) type
-    // 200 is near the max value for 1 batch call,if need more - implement multiple batching for single
-    // stream
-    numberOfDummyRecords = 20; // 200;
-    numberOfStreams = 100;
+    numberOfStreams = 1000;
 
     setupDatabaseInternal();
 
