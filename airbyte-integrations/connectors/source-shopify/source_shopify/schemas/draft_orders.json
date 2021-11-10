@@ -394,39 +394,15 @@
           "properties": {
             "type": ["null", "array"],
             "items": {
-              "oneOf": [
-                {
+              "type": ["null", "object"],
+              "properties": {
+                "name": {
                   "type": ["null", "string"]
                 },
-                {
-                  "type": ["null", "integer"]
-                },
-                {
-                  "type": ["null", "number"]
-                },
-                {
-                  "type": ["null", "boolean"]
-                },
-                {
-                  "type": ["null", "array"],
-                  "items": {
-                    "oneOf": [
-                      {
-                        "type": ["null", "string"]
-                      },
-                      {
-                        "type": ["null", "integer"]
-                      },
-                      {
-                        "type": ["null", "number"]
-                      },
-                      {
-                        "type": ["null", "boolean"]
-                      }
-                    ]
-                  }
+                "value": {
+                  "type": ["null", "string"]
                 }
-              ]
+              }
           },
           "quantity": {
             "type": ["null", "integer"]
@@ -872,42 +848,24 @@
         }
       }
     },
-    "applied_discounts": {
-      "type": ["null", "array"],
-      "items": {
-        "oneOf": [
-          {
-            "type": ["null", "string"]
-          },
-          {
-            "type": ["null", "integer"]
-          },
-          {
-            "type": ["null", "number"]
-          },
-          {
-            "type": ["null", "boolean"]
-          },
-          {
-            "type": ["null", "array"],
-            "items": {
-              "oneOf": [
-                {
-                  "type": ["null", "string"]
-                },
-                {
-                  "type": ["null", "integer"]
-                },
-                {
-                  "type": ["null", "number"]
-                },
-                {
-                  "type": ["null", "boolean"]
-                }
-              ]
-            }
-          }
-        ]
+    "applied_discount": {
+      "type": ["null", "object"],
+      "properties": {
+        "description": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "string"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "amount": {
+          "type": ["null", "string"]
+        },
+        "value_type": {
+          "type": ["null", "string"]
+        }
       }
     },
     "taxes_included": {
