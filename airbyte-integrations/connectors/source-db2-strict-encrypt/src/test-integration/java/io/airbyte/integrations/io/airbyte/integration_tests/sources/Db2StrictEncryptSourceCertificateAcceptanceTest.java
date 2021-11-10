@@ -39,6 +39,8 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
 
   private static final String TEST_KEY_STORE_PASS = "Passw0rd";
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
+  private static final String SSL_CONFIG = ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
+          ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
 
   private Db2Container db;
   private JsonNode config;
@@ -122,8 +124,7 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
     String jdbcUrl = String.format("jdbc:db2://%s:%s/%s",
         config.get("host").asText(),
         db.getMappedPort(50000),
-        config.get("db").asText()) + ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
-        ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
+        config.get("db").asText()) + SSL_CONFIG;
 
     database = Databases.createJdbcDatabase(
         config.get("username").asText(),
