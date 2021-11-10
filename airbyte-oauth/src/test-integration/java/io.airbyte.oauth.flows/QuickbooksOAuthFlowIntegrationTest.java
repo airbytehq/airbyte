@@ -59,10 +59,10 @@ public class QuickbooksOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials",ImmutableMap.builder()
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
-            .build()))));
+            .build())))));
     final String url = getFlowImplementation(configRepository, httpClient).getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing

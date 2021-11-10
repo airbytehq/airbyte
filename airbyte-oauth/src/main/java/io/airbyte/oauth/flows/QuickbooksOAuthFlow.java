@@ -7,7 +7,9 @@ package io.airbyte.oauth.flows;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -16,11 +18,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.http.client.utils.URIBuilder;
 
-public class QuickbooksOAuthFlow extends BaseOAuthFlow {
+public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
 
   final String CONSENT_URL = "https://appcenter.intuit.com/app/connect/oauth2";
   final String TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer";
@@ -52,7 +55,6 @@ public class QuickbooksOAuthFlow extends BaseOAuthFlow {
               .addParameter("redirect_uri", redirectUrl)
               .addParameter("response_type", "code")
               .addParameter("state", getState())
-
               .build().toString(),
           StandardCharsets.UTF_8.toString());
     } catch (final URISyntaxException e) {
@@ -60,29 +62,6 @@ public class QuickbooksOAuthFlow extends BaseOAuthFlow {
     }
   }
 
-  protected Map<String, Object> completeOAuthFlow(final String clientId,
-                                                  final String clientSecret,
-                                                  final String authCode,
-                                                  final String redirectUrl,
-                                                  JsonNode oAuthParamConfig)
-      throws IOException {
-    var accessTokenUrl = getAccessTokenUrl();
-    try {
-      final HttpRequest request = HttpRequest.newBuilder()
-          .POST(HttpRequest.BodyPublishers
-              .ofString(getTokenReqContentType().getConverter().apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
-          .uri(new URIBuilder(getAccessTokenUrl()).build())
-          .header("Content-Type", getTokenReqContentType().getContentType())
-          .header("Accept", "application/json")
-          .build();
-
-      HttpResponse<String> response;
-      response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      return extractRefreshToken(Jsons.deserialize(response.body()), accessTokenUrl);
-    } catch (final InterruptedException | URISyntaxException e) {
-      throw new IOException("Failed to complete OAuth flow", e);
-    }
-  }
 
   protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
     return ImmutableMap.<String, String>builder()
@@ -101,6 +80,16 @@ public class QuickbooksOAuthFlow extends BaseOAuthFlow {
   @Override
   protected String getAccessTokenUrl() {
     return TOKEN_URL;
+  }
+
+
+  /**
+   * This function should be redefined in each OAuthFlow implementation to isolate such "hardcoded"
+   * values.
+   */
+  @Override
+  protected List<String> getDefaultOAuthOutputPath() {
+    return List.of("credentials");
   }
 
 }
