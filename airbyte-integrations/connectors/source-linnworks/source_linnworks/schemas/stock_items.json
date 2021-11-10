@@ -64,7 +64,7 @@
           },
           "SupplierCurrency": {
             "type": "string",
-            "description": "Supplier's default currency"
+            "description": "Supplier default currency"
           },
           "StockItemId": {
             "type": "string",
