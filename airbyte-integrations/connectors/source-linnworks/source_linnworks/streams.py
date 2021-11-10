@@ -209,13 +209,10 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
             "DateField": "received",
             "FromDate": from_date,
             "ToDate": max(from_date, to_date),
-            "PageNumber": 1  if not next_page_token else next_page_token["PageNumber"]
+            "PageNumber": 1 if not next_page_token else next_page_token["PageNumber"],
             "ResultsPerPage": self.page_size,
             "SearchSorting": {"SortField": "dReceivedDate", "SortDirection": "ASC"},
         }
-
-        if next_page_token:
-            request["PageNumber"] = next_page_token["PageNumber"]
 
         return {
             "request": json.dumps(request, separators=(",", ":")),
