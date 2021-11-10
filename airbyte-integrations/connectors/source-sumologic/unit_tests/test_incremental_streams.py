@@ -43,18 +43,14 @@ def test_cursor_field__when_by_receipt_time(patch_incremental_base_class, client
 
 def test_get_updated_state(patch_incremental_base_class, client, config):
     stream = IncrementalSumologicStream(client, config)
-    # TODO: replace this with your input parameters
-    inputs = {"current_stream_state": {"_messagetime": 100}, "latest_record": {"_messagetime": 200}}
-    # TODO: replace this with your expected updated stream state
-    expected_state = {"_messagetime": 200}
+    inputs = {"current_stream_state": {"_messagetime": "1633060800000"}, "latest_record": {"_messagetime": "1633147200000"}}
+    expected_state = {"_messagetime": "1633147200000"}
     assert stream.get_updated_state(**inputs) == expected_state
 
 
 def test_stream_slices(patch_incremental_base_class, client, config):
     stream = IncrementalSumologicStream(client, config)
-    # TODO: replace this with your input parameters
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    # TODO: replace this with your expected stream slices list
     expected_stream_slice = [None]
     assert stream.stream_slices(**inputs) == expected_stream_slice
 
@@ -72,6 +68,5 @@ def test_source_defined_cursor(patch_incremental_base_class, client, config):
 
 def test_stream_checkpoint_interval(patch_incremental_base_class, client, config):
     stream = IncrementalSumologicStream(client, config)
-    # TODO: replace this with your expected checkpoint interval
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
