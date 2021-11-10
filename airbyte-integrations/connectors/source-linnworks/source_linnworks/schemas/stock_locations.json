@@ -77,7 +77,7 @@
         },
         "IsWarehouseManaged": {
           "type": "boolean",
-          "description": "Indicates if the location is warehosue managed."
+          "description": "Indicates if the location is warehouse managed"
         },
         "StockLocationId": {
           "type": "string",
