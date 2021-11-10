@@ -23,6 +23,7 @@ class LinnworksAuthenticator(Oauth2Authenticator):
         token: str,
         token_expiry_date: pendulum.datetime = None,
         access_token_name: str = "Token",
+        expires_in_name: str = "TTL",
         server_name: str = "Server",
     ):
         super().__init__(
@@ -33,9 +34,8 @@ class LinnworksAuthenticator(Oauth2Authenticator):
             scopes=None,
             token_expiry_date=token_expiry_date,
             access_token_name=access_token_name,
+            expires_in_name=expires_in_name,
         )
-
-        self.expires_in = 1800
 
         self.application_id = application_id
         self.application_secret = application_secret
@@ -48,10 +48,10 @@ class LinnworksAuthenticator(Oauth2Authenticator):
     def get_access_token(self):
         if self.token_has_expired():
             t0 = pendulum.now()
-            token, server = self.refresh_access_token()
+            token, expires_in, server = self.refresh_access_token()
             self._access_token = token
+            self._token_expiry_date = t0.add(seconds=expires_in)
             self._server = server
-            self._token_expiry_date = t0.add(seconds=self.expires_in)
 
         return self._access_token
 
@@ -75,7 +75,7 @@ class LinnworksAuthenticator(Oauth2Authenticator):
             response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
             response.raise_for_status()
             response_json = response.json()
-            return response_json[self.access_token_name], response_json[self.server_name]
+            return response_json[self.access_token_name], response_json[self.expires_in_name], response_json[self.server_name]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
 
