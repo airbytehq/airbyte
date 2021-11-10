@@ -382,26 +382,28 @@ class AdsInsights(FBMarketingIncrementalStream):
                     self.times_job_restarted[time_range] += 1
                 else:
                     error_msg = """
-                        AdReportRun job with id={id} {error_type}.
-                        Details: report_run_id={report_run_id},
-                        date_start={date_start}, date_stop={date_stop}
+                        AdReportRun job {id} {error_type}.
+                        Details: date_start={date_start}, date_stop={date_stop}, 
+                        {job}
                     """
                     if job["async_status"] == "Job Failed":
                         raise JobException(
                             error_msg.format(
+                                id=job_id,
                                 error_type="failed",
-                                report_run_id=job["report_run_id"],
                                 date_start=job["date_start"],
                                 date_stop=job["date_stop"],
+                                job=job,
                             )
                         )
                     elif job["async_status"] == "Job Skipped":
                         raise JobException(
                             error_msg.format(
-                                error_type="failed",
-                                report_run_id=job["report_run_id"],
+                                id=job_id,
+                                error_type="skipped",
                                 date_start=job["date_start"],
                                 date_stop=job["date_stop"],
+                                job=job,
                             )
                         )
 
