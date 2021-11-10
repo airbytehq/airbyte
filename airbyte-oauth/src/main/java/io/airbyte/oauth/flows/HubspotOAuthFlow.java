@@ -4,11 +4,9 @@
 
 package io.airbyte.oauth.flows;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -17,15 +15,15 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
-public class HubspotOAuthFlow extends BaseOAuthFlow {
+public class HubspotOAuthFlow extends BaseOAuth2Flow {
 
-  private final String AUTHORIZE_URL = "https://app.hubspot.com/oauth/authorize";
+  private static final String AUTHORIZE_URL = "https://app.hubspot.com/oauth/authorize";
 
-  public HubspotOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+  public HubspotOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
-  public HubspotOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+  public HubspotOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier, TOKEN_REQUEST_CONTENT_TYPE.JSON);
   }
 
@@ -39,7 +37,7 @@ public class HubspotOAuthFlow extends BaseOAuthFlow {
    * @param redirectUrl the redirect URL
    */
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
     try {
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
@@ -47,13 +45,16 @@ public class HubspotOAuthFlow extends BaseOAuthFlow {
           .addParameter("state", getState())
           .addParameter("scopes", getScopes())
           .build().toString();
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         // required
         .put("client_id", clientId)
@@ -85,25 +86,10 @@ public class HubspotOAuthFlow extends BaseOAuthFlow {
   /**
    * Returns the URL where to retrieve the access token from.
    *
-   * @param oAuthParamConfig the configuration map
    */
   @Override
   protected String getAccessTokenUrl() {
     return "https://api.hubapi.com/oauth/v1/token";
-  }
-
-  @Override
-  protected String getClientIdUnsafe(final JsonNode config) {
-    // the config object containing client ID and secret is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientIdUnsafe(config.get("credentials"));
-  }
-
-  @Override
-  protected String getClientSecretUnsafe(final JsonNode config) {
-    // the config object containing client ID and secret is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientSecretUnsafe(config.get("credentials"));
   }
 
 }

@@ -5,7 +5,6 @@
 package io.airbyte.oauth.flows.google;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -38,21 +37,14 @@ public class GoogleSheetsOAuthFlowTest {
   private UUID definitionId;
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws JsonValidationException, IOException {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
     googleSheetsOAuthFlow = new GoogleSheetsOAuthFlow(configRepository, httpClient, GoogleSheetsOAuthFlowTest::getConstantState);
 
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
-  }
 
-  private static String getConstantState() {
-    return "state";
-  }
-
-  @Test
-  public void testCompleteSourceOAuth() throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
@@ -61,7 +53,30 @@ public class GoogleSheetsOAuthFlowTest {
             .put("client_id", "test_client_id")
             .put("client_secret", "test_client_secret")
             .build())))));
+    when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
+        .withOauthParameterId(UUID.randomUUID())
+        .withDestinationDefinitionId(definitionId)
+        .withWorkspaceId(workspaceId)
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
+            .put("client_id", "test_client_id")
+            .put("client_secret", "test_client_secret")
+            .build())))));
+  }
 
+  private static String getConstantState() {
+    return "state";
+  }
+
+  @Test
+  public void testGetSourceConsentUrl() throws IOException, ConfigNotFoundException {
+    final String consentUrl = googleSheetsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    assertEquals(
+        "https://accounts.google.com/o/oauth2/v2/auth?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fspreadsheets.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.readonly&access_type=offline&state=state&include_granted_scopes=true&prompt=consent",
+        consentUrl);
+  }
+
+  @Test
+  public void testCompleteSourceOAuth() throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
     final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
@@ -74,15 +89,6 @@ public class GoogleSheetsOAuthFlowTest {
 
   @Test
   public void testCompleteDestinationOAuth() throws IOException, ConfigNotFoundException, JsonValidationException, InterruptedException {
-    when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withDestinationDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build())))));
-
     final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
@@ -92,26 +98,6 @@ public class GoogleSheetsOAuthFlowTest {
         googleSheetsOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
 
     assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
-  }
-
-  @Test
-  public void testGetClientIdUnsafe() {
-    final String clientId = "123";
-    final Map<String, String> clientIdMap = Map.of("client_id", clientId);
-    final Map<String, Map<String, String>> nestedConfig = Map.of("credentials", clientIdMap);
-
-    assertThrows(IllegalArgumentException.class, () -> googleSheetsOAuthFlow.getClientIdUnsafe(Jsons.jsonNode(clientIdMap)));
-    assertEquals(clientId, googleSheetsOAuthFlow.getClientIdUnsafe(Jsons.jsonNode(nestedConfig)));
-  }
-
-  @Test
-  public void testGetClientSecretUnsafe() {
-    final String clientSecret = "secret";
-    final Map<String, String> clientIdMap = Map.of("client_secret", clientSecret);
-    final Map<String, Map<String, String>> nestedConfig = Map.of("credentials", clientIdMap);
-
-    assertThrows(IllegalArgumentException.class, () -> googleSheetsOAuthFlow.getClientSecretUnsafe(Jsons.jsonNode(clientIdMap)));
-    assertEquals(clientSecret, googleSheetsOAuthFlow.getClientSecretUnsafe(Jsons.jsonNode(nestedConfig)));
   }
 
 }

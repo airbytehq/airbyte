@@ -29,7 +29,7 @@ public class HubspotOAuthFlowTest {
   private UUID workspaceId;
   private UUID definitionId;
   private ConfigRepository configRepository;
-  private HubspotOAuthFlow flow;
+  private HubspotOAuthFlow hubspotOAuthFlow;
   private HttpClient httpClient;
 
   private static final String REDIRECT_URL = "https://airbyte.io";
@@ -52,16 +52,16 @@ public class HubspotOAuthFlowTest {
             .put("client_id", "test_client_id")
             .put("client_secret", "test_client_secret")
             .build())))));
-    flow = new HubspotOAuthFlow(configRepository, httpClient, HubspotOAuthFlowTest::getConstantState);
+    hubspotOAuthFlow = new HubspotOAuthFlow(configRepository, httpClient, HubspotOAuthFlowTest::getConstantState);
 
   }
 
   @Test
-  public void testGetSourceConcentUrl() throws IOException, ConfigNotFoundException {
-    final String concentUrl =
-        flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    assertEquals(concentUrl,
-        "https://app.hubspot.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&state=state&scopes=content+crm.schemas.deals.read+crm.objects.owners.read+forms+tickets+e-commerce+crm.objects.companies.read+crm.lists.read+crm.objects.deals.read+crm.schemas.contacts.read+crm.objects.contacts.read+crm.schemas.companies.read+files+forms-uploaded-files+files.ui_hidden.read");
+  public void testGetSourceConsentUrl() throws IOException, ConfigNotFoundException {
+    final String consentUrl = hubspotOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    assertEquals(
+        "https://app.hubspot.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&state=state&scopes=content+crm.schemas.deals.read+crm.objects.owners.read+forms+tickets+e-commerce+crm.objects.companies.read+crm.lists.read+crm.objects.deals.read+crm.schemas.contacts.read+crm.objects.contacts.read+crm.schemas.companies.read+files+forms-uploaded-files+files.ui_hidden.read",
+        consentUrl);
   }
 
   @Test
@@ -72,7 +72,7 @@ public class HubspotOAuthFlowTest {
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
     final Map<String, Object> actualQueryParams =
-        flow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+        hubspotOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
     assertEquals(Jsons.serialize(Map.of("credentials", Jsons.deserialize(returnedCredentials))), Jsons.serialize(actualQueryParams));
   }
 
