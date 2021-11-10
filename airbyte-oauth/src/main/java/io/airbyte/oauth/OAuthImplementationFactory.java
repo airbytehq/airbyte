@@ -12,6 +12,7 @@ import io.airbyte.oauth.flows.AsanaOAuthFlow;
 import io.airbyte.oauth.flows.GithubOAuthFlow;
 import io.airbyte.oauth.flows.HubspotOAuthFlow;
 import io.airbyte.oauth.flows.IntercomOAuthFlow;
+import io.airbyte.oauth.flows.MicrosoftTeamsOAuthFlow;
 import io.airbyte.oauth.flows.SalesforceOAuthFlow;
 import io.airbyte.oauth.flows.SlackOAuthFlow;
 import io.airbyte.oauth.flows.SurveymonkeyOAuthFlow;
@@ -44,6 +45,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-intercom", new IntercomOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-instagram", new InstagramOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-microsoft-teams", new MicrosoftTeamsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-slack", new SlackOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
