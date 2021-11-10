@@ -17,7 +17,7 @@ git pull --no-rebase
 
 SUB_BUILD=PLATFORM "$SCRIPT_DIR"/../../gradlew -p "$SCRIPT_DIR"/../.. generate-docker
 
-VERSION=dev timeout -k 60s 60s docker-compose -f "$SCRIPT_DIR"/../../docker-compose.yaml up &
+VERSION=dev timeout -k 120s 60s docker-compose -f "$SCRIPT_DIR"/../../docker-compose.yaml up &
 pid=$!
 wait pid
 
