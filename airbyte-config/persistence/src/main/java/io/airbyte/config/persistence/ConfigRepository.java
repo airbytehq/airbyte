@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -132,6 +133,10 @@ public class ConfigRepository {
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public Set<String> getConnectorReposInUse() throws IOException {
+    return persistence.getConnectorReposInUse();
   }
 
   public List<StandardSourceDefinition> listStandardSourceDefinitions() throws JsonValidationException, IOException {
@@ -229,10 +234,9 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param workspaceId workspace id for the config
-   * @param fullConfig full config
-   * @param spec connector specification
+   * @param fullConfig  full config
+   * @param spec        connector specification
    * @return partial config
    */
   public JsonNode statefulSplitSecrets(final UUID workspaceId, final JsonNode fullConfig, final ConnectorSpecification spec) {
@@ -240,11 +244,10 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param workspaceId workspace id for the config
-   * @param oldConfig old full config
-   * @param fullConfig new full config
-   * @param spec connector specification
+   * @param oldConfig   old full config
+   * @param fullConfig  new full config
+   * @param spec        connector specification
    * @return partial config
    */
   public JsonNode statefulUpdateSecrets(final UUID workspaceId,
@@ -279,9 +282,8 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param fullConfig full config
-   * @param spec connector specification
+   * @param spec       connector specification
    * @return partial config
    */
   public JsonNode statefulSplitEphemeralSecrets(final JsonNode fullConfig, final ConnectorSpecification spec) {
@@ -460,8 +462,8 @@ public class ConfigRepository {
   }
 
   /**
-   * Converts between a dumpConfig() output and a replaceAllConfigs() input, by deserializing the
-   * string/jsonnode into the AirbyteConfig, Stream&lt;Object&lt;AirbyteConfig.getClassName()&gt;&gt;
+   * Converts between a dumpConfig() output and a replaceAllConfigs() input, by deserializing the string/jsonnode into the AirbyteConfig,
+   * Stream&lt;Object&lt;AirbyteConfig.getClassName()&gt;&gt;
    *
    * @param configurations from dumpConfig()
    * @return input suitable for replaceAllConfigs()
@@ -469,7 +471,8 @@ public class ConfigRepository {
   public static Map<AirbyteConfig, Stream<?>> deserialize(final Map<String, Stream<JsonNode>> configurations) {
     final Map<AirbyteConfig, Stream<?>> deserialized = new LinkedHashMap<AirbyteConfig, Stream<?>>();
     for (final String configSchemaName : configurations.keySet()) {
-      deserialized.put(ConfigSchema.valueOf(configSchemaName),
+      deserialized.put(
+          ConfigSchema.valueOf(configSchemaName),
           configurations.get(configSchemaName).map(jsonNode -> Jsons.object(jsonNode, ConfigSchema.valueOf(configSchemaName).getClassName())));
     }
     return deserialized;
@@ -485,8 +488,7 @@ public class ConfigRepository {
       final var augmentedMap = new HashMap<>(configs);
 
       // get all source defs so that we can use their specs when storing secrets.
-      @SuppressWarnings("unchecked")
-      final List<StandardSourceDefinition> sourceDefs =
+      @SuppressWarnings("unchecked") final List<StandardSourceDefinition> sourceDefs =
           (List<StandardSourceDefinition>) augmentedMap.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).collect(Collectors.toList());
       // restore data in the map that gets consumed downstream.
       augmentedMap.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefs.stream());
@@ -499,8 +501,7 @@ public class ConfigRepository {
           }));
 
       // get all destination defs so that we can use their specs when storing secrets.
-      @SuppressWarnings("unchecked")
-      final List<StandardDestinationDefinition> destinationDefs =
+      @SuppressWarnings("unchecked") final List<StandardDestinationDefinition> destinationDefs =
           (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).collect(Collectors.toList());
       augmentedMap.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefs.stream());
       final Map<UUID, ConnectorSpecification> destinationDefIdToSpec = destinationDefs

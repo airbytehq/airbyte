@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,12 +42,10 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   private final Path configRoot;
 
   /**
-   * Check if there are existing configs under the storage root. Previously the seed container copies
-   * the configs to the storage root, it may take some time for the operation to complete and for the
-   * CONFIG_DIR to show up. So we cannot infer anything based on the existence of this directory. Now
-   * this seed generation step has been removed. So we can tell immediately whether CONFIG_DIR exists
-   * or not. If CONFIG_DIR exists, it means the user has just migrated Airbyte from an old version
-   * that uses this file system config persistence.
+   * Check if there are existing configs under the storage root. Previously the seed container copies the configs to the storage root, it may take
+   * some time for the operation to complete and for the CONFIG_DIR to show up. So we cannot infer anything based on the existence of this directory.
+   * Now this seed generation step has been removed. So we can tell immediately whether CONFIG_DIR exists or not. If CONFIG_DIR exists, it means the
+   * user has just migrated Airbyte from an old version that uses this file system config persistence.
    */
   public static boolean hasExistingConfigs(final Path storageRoot) {
     return Files.exists(storageRoot.resolve(CONFIG_DIR));
@@ -80,7 +79,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(AirbyteConfig configType, Class<T> clazz)
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
       throws JsonValidationException, IOException {
     throw new UnsupportedOperationException("File Persistence doesn't support metadata");
   }
@@ -193,6 +192,11 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   @Override
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
     // this method is not supported in this implementation, but needed in tests; do nothing
+  }
+
+  @Override
+  public Set<String> getConnectorReposInUse() throws IOException {
+    throw new UnsupportedOperationException("The file system config persistence does not support retrieving connectors in use.");
   }
 
   private <T> T getConfigInternal(final AirbyteConfig configType, final String configId, final Class<T> clazz)

@@ -13,6 +13,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 // we force all interaction with disk storage to be effectively single threaded.
@@ -48,7 +49,7 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(AirbyteConfig configType, Class<T> clazz)
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
       throws JsonValidationException, IOException {
     final List<ConfigWithMetadata<T>> configs = decoratedPersistence.listConfigsWithMetadata(configType, clazz);
     for (final ConfigWithMetadata<T> config : configs) {
@@ -82,6 +83,11 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   @Override
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
     decoratedPersistence.loadData(seedPersistence);
+  }
+
+  @Override
+  public Set<String> getConnectorReposInUse() throws IOException {
+    throw new UnsupportedOperationException("The validating config persistence does not support retrieving connectors in use.");
   }
 
   private <T> void validateJson(final T config, final AirbyteConfig configType) throws JsonValidationException {

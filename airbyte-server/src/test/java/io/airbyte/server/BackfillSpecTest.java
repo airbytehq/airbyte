@@ -21,6 +21,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
@@ -47,12 +48,14 @@ class BackfillSpecTest {
   private ConfigRepository configRepository;
   private TrackingClient trackingClient;
   private SynchronousSchedulerClient schedulerClient;
+  private ConfigPersistence seed;
 
   @BeforeEach
   void setup() throws IOException, JsonValidationException {
     configRepository = mock(ConfigRepository.class);
     when(configRepository.listStandardWorkspaces(true)).thenReturn(List.of(WORKSPACE));
 
+    seed = mock(ConfigPersistence.class);
     trackingClient = mock(TrackingClient.class);
     schedulerClient = mock(SynchronousSchedulerClient.class);
   }
@@ -81,7 +84,13 @@ class BackfillSpecTest {
     when(schedulerClient.createGetSpecJob(SOURCE_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG)).thenReturn(successfulSourceResponse);
     when(schedulerClient.createGetSpecJob(DEST_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG)).thenReturn(successfulDestResponse);
 
-    ServerApp.migrateAllDefinitionsToContainSpec(configRepository, schedulerClient, trackingClient, WorkerEnvironment.DOCKER, mock(LogConfigs.class));
+    ConnectorDefinitionSpecBackfiller.migrateAllDefinitionsToContainSpec(
+        configRepository,
+        schedulerClient,
+        trackingClient,
+        WorkerEnvironment.DOCKER,
+        mock(LogConfigs.class),
+        seed);
 
     final StandardSourceDefinition expectedSourceDef = Jsons.clone(sourceDef).withSpec(sourceSpec);
     final StandardDestinationDefinition expectedDestDef = Jsons.clone(destDef).withSpec(destSpec);
