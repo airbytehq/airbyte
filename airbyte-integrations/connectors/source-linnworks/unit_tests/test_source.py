@@ -20,6 +20,7 @@ def config():
             {
                 "Token": "00000000-0000-0000-0000-000000000000",
                 "Server": "https://xx-ext.linnworks.net",
+                "TTL": 1234,
             },
             (True, None),
         ),
@@ -28,7 +29,7 @@ def config():
                 "Code": None,
                 "Message": "Invalid application id or application secret",
             },
-            (False, "Unable to connect to Linnworks API with the provided credentials - Invalid application id or application secret"),
+            (False, "Unable to connect to Linnworks API with the provided credentials - Error while refreshing access token: 'Token'"),
         ),
     ],
 )
@@ -53,6 +54,7 @@ def test_authenticator_success(mocker, config, requests_mock):
     response = {
         "Token": "00000000-0000-0000-0000-000000000000",
         "Server": "http://xx-ext.dummy",
+        "TTL": 1234,
     }
     requests_mock.post("http://dummy", json=response)
 
