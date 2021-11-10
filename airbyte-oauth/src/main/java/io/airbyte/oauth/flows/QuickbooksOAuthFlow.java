@@ -4,19 +4,13 @@
 
 package io.airbyte.oauth.flows;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
-import io.airbyte.oauth.BaseOAuthFlow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -36,15 +30,6 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
     return "com.intuit.quickbooks.accounting";
   }
 
-  /**
-   * Depending on the OAuth flow implementation, the URL to grant user's consent may differ,
-   * especially in the query parameters to be provided. This function should generate such consent URL
-   * accordingly.
-   *
-   * @param definitionId
-   * @param clientId
-   * @param redirectUrl
-   */
   @Override
   protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
     try {
@@ -61,7 +46,6 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
-
 
   protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
     return ImmutableMap.<String, String>builder()
@@ -81,7 +65,6 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
   protected String getAccessTokenUrl() {
     return TOKEN_URL;
   }
-
 
   /**
    * This function should be redefined in each OAuthFlow implementation to isolate such "hardcoded"

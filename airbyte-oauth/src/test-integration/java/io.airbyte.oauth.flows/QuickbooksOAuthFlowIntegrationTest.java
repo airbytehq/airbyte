@@ -48,6 +48,7 @@ public class QuickbooksOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest
   // https://appcenter.intuit.com/app/connect/oauth2?client_id=ABy25v4o09iEIHzwpFA61Dmu7Bs3hL8S4EgTVI6KxsTgTJC0sz&scope=com.intuit.quickbooks.accounting%20com.intuit.quickbooks.payment&redirect_uri=http://localhost:3000/auth_flow&response_type=code&state=PlaygroundAuth#/OpenIdAuthorize
   // https://appcenter.intuit.com/connect/oauth2?client_id=ABRLiF1l4w058BbowtFnAzwB83fbLLVIOGaLqBm8xFxQicZunK&redirect_uri=http://localhost:3000/auth_flow&state=IWLq46B&scope=com.intuit.quickbooks.accounting&response_type=code
   // https://appcenter.intuit.com/app/connect/oauth2?client_id=ABRLiF1l4w058BbowtFnAzwB83fbLLVIOGaLqBm8xFxQicZunK&redirect_uri=http://localhost:3000/auth_flow&state=lolTKn8&scope=com.intuit.quickbooks.accounting&response_type=code
+  @SuppressWarnings("BusyWait")
   @Test
   public void testFullOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     int limit = 20;
@@ -59,7 +60,7 @@ public class QuickbooksOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("credentials",ImmutableMap.builder()
+        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build())))));
@@ -77,7 +78,8 @@ public class QuickbooksOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest
 
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("credentials"));
-    final Map<String, Object> credentials = Collections.unmodifiableMap((Map<String, Object>) params.get("credentials"));
+    final Map<String, Object> credentials;
+    credentials = Collections.unmodifiableMap((Map<String, Object>)params.get("credentials"));
     assertTrue(credentials.containsKey("refresh_token"));
     assertTrue(credentials.get("refresh_token").toString().length() > 0);
   }
