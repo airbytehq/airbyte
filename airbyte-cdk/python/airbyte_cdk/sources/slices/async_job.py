@@ -1,3 +1,8 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
+
 import time
 from abc import ABC, abstractmethod
 from typing import Optional

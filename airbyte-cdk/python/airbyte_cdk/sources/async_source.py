@@ -1,3 +1,8 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
+
 import collections
 import itertools
 from abc import ABC
@@ -12,7 +17,7 @@ from pydantic.tools import Any
 StreamSliceType = Union[Mapping[str, Any], AbstractAsyncJob, None]
 
 
-class AsyncSource(AbstractSource, ABC):
+class AbstractAsyncSource(AbstractSource, ABC):
     @property
     def concurrent_limit(self) -> Optional[int]:
         """Maximum number of concurrent jobs. By default it is None, meaning no limit"""
@@ -45,7 +50,7 @@ class AsyncSource(AbstractSource, ABC):
             {async job} {async job}
 
         output:
-            {finished async job} {finished async job} {finished async job}
+            {finished async job} {finished async job}
 
         Algorithm:
         1. check slices if there any async jobs,

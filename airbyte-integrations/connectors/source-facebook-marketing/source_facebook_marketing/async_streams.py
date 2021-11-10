@@ -37,16 +37,12 @@ from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.common import retry_pattern, deep_merge
 from source_facebook_marketing.streams import FBMarketingIncrementalStream
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 
 logger = logging.getLogger(__name__)
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
-
-
-class JobWaitTimeout(Exception):
-    """Job took too long to finish"""
 
 
 class JobFailed(Exception):
@@ -89,10 +85,10 @@ class InsightAsyncJob(AsyncJob):
 
         return False
 
-    def fetch_result(self) -> Any:
+    @property
+    def result(self) -> Any:
         """Reading job result, separate function because we want this to happen after we retrieved jobs in particular order"""
         if not self._result:
-            super().get_result()
             self._result = self._job.get_result()
 
         return self._result
