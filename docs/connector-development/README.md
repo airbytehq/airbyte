@@ -136,17 +136,17 @@ In order to run integration tests in CI, you'll often need to inject credentials
     * `filename` (optional) -- custom target secret file. Unfortunately Google doesn't use '.' into labels' values and so Airbyte CI scripts will add '.json' to the end automatically. By default secrets will be saved to `./secrets/config.json` i.e: `filename=config_auth` => `secrets/config_auth.json`
 3. That should be it.
 
-#### Access of developers to GSM
-Access to the GSM storage is limited. Only admins of the GCP project `dataline-integration-testing` can provide it:
+#### Access CI secrets on GSM
+Access to GSM storage is limited to Airbyte employees. To give an employee permissions to the project:
 1. Go to the permissions' [page](https://console.cloud.google.com/iam-admin/iam?project=dataline-integration-testing)
 2. Add a new principal to `dataline-integration-testing`:
-- input a nessosary Google account/group value.
+- input their login email
 - select the role `Development_CI_Secrets`
 3. Save
 
 #### How to migrate to the new secrets' logic:
-1. Create all necessary secrets how it is explained above.
+1. Create all necessary secrets according to the instructions above
 2. Remove all lines with old connector's Github secrets from this file: tools/bin/ci_credentials.sh
 3. Remove all old secrets from Github repository secrets.
-5. That should be it.
+4. That should be it.
 
