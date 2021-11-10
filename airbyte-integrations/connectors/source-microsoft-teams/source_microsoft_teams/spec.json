@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Microsoft Teams Spec",
     "type": "object",
-    "required": ["tenant_id", "client_id", "client_secret", "period"],
+    "required": ["period"],
     "additionalProperties": false,
     "properties": {
       "tenant_id": {
@@ -27,6 +27,36 @@
         "type": "string",
         "description": "Specifies the length of time over which the Team Device Report stream is aggregated. The supported values are: D7, D30, D90, and D180.",
         "examples": ["D7"]
+      },
+      "credentials": {
+        "type": "object",
+        "title": "Authenticate via Microsoft (OAuth 2.0)",
+        "required": ["tenant_id", "client_id", "client_secret", "refresh_token"],
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "title": "Directory (tenant) ID",
+            "type": "string",
+            "description": "Directory (tenant) ID"
+          },
+          "client_id": {
+            "title": "Application (client) ID",
+            "type": "string",
+            "description": "Application (client) ID"
+          },
+          "client_secret": {
+            "title": "Client Secret",
+            "type": "string",
+            "description": "Client secret",
+            "airbyte_secret": true
+          },
+          "refresh_token": {
+            "title": "Refresh Token",
+            "type": "string",
+            "description": "A refresh token generated using the above client ID and secret",
+            "airbyte_secret": true
+          }
+        }
       }
     }
   }
