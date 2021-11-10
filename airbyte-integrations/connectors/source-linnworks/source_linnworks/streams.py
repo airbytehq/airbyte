@@ -165,7 +165,7 @@ class IncrementalLinnworksStream(LinnworksStream, ABC):
 
     @property
     def cursor_field(self) -> str:
-        return []
+        return True
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         if not stream_state:
