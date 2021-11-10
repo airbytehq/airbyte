@@ -176,7 +176,7 @@ services:
       - OPENREPLAY=${OPENREPLAY:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
   airbyte-temporal:
-    image: temporalio/auto-setup:1.7.0
+    image: airbyte/temporal:${VERSION}
     logging: *default-logging
     container_name: airbyte-temporal
     restart: unless-stopped
