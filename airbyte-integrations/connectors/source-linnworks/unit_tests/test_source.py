@@ -28,7 +28,7 @@ def config():
                 "Code": None,
                 "Message": "Invalid application id or application secret",
             },
-            (False, "Unable to connect to Linnworks API with the provided credentials - Error while refreshing access token: 'Token'"),
+            (False, "Unable to connect to Linnworks API with the provided credentials - Invalid application id or application secret"),
         ),
     ],
 )
