@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -205,6 +185,11 @@ class SourceTrello(AbstractSource):
     Source Trello fetch date from web-based, Kanban-style, list-making application.
     """
 
+    @staticmethod
+    def _get_authenticator(config: dict) -> TrelloAuthenticator:
+        key, token = config["key"], config["token"]
+        return TrelloAuthenticator(token=token, key=key)
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector by granting the credentials.
@@ -213,7 +198,7 @@ class SourceTrello(AbstractSource):
         try:
             url = f"{TrelloStream.url_base}members/me"
 
-            authenticator = TrelloAuthenticator(token=config["token"], key=config["key"])
+            authenticator = self._get_authenticator(config)
 
             session = requests.get(url, headers=authenticator.get_auth_header())
             session.raise_for_status()
@@ -223,6 +208,6 @@ class SourceTrello(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        config["authenticator"] = TrelloAuthenticator(token=config["token"], key=config["key"])
+        config["authenticator"] = self._get_authenticator(config)
 
         return [Actions(config), Boards(config), Cards(config), Checklists(config), Lists(config), Users(config)]

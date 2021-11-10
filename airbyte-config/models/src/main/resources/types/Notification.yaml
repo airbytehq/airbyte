@@ -6,11 +6,17 @@ description: Notification Settings
 type: object
 required:
   - notificationType
-additionalProperties: false
+additionalProperties: true
 properties:
   # Instead of this type field, we would prefer a json schema "oneOf" but unfortunately,
   # the jsonschema2pojo does not seem to support it yet: https://github.com/joelittlejohn/jsonschema2pojo/issues/392
   notificationType:
     "$ref": NotificationType.yaml
+  sendOnSuccess:
+    type: boolean
+    default: false
+  sendOnFailure:
+    type: boolean
+    default: true
   slackConfiguration:
     "$ref": SlackNotificationConfiguration.yaml

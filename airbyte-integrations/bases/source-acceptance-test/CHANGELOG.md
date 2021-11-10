@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.1.28
+Print stream name when incremental sync tests fail
+
+## 0.1.27
+Add ignored fields for full refresh test (unit tests)
+
+## 0.1.26
+Add ignored fields for full refresh test
+
+## 0.1.25
+Fix incorrect nested strucutres compare.
+
+## 0.1.24
+Improve message about errors in the stream's schema: https://github.com/airbytehq/airbyte/pull/6934
+
+## 0.1.23
+Fix incorrect auth init flow check defect.
+
+## 0.1.22
+Fix checking schemas with root $ref keyword
+
+## 0.1.21
+Fix rootObject oauth init parameter check
+
+## 0.1.20
+Add oauth init flow parameter verification for spec.
+
+## 0.1.19
+Assert a non-empty overlap between the fields present in the record and the declared json schema.
+
+## 0.1.18
+Fix checking date-time format againt nullable field.
+
+## 0.1.17
+Fix serialize function for acceptance-tests: https://github.com/airbytehq/airbyte/pull/5738
+
 ## 0.1.16
 Fix for flake8-ckeck for acceptance-tests: https://github.com/airbytehq/airbyte/pull/5785
 

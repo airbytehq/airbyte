@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -36,7 +16,7 @@ public class IntegrationConfig {
   private final Path catalogPath;
   private final Path statePath;
 
-  private IntegrationConfig(Command command, Path configPath, Path catalogPath, Path statePath) {
+  private IntegrationConfig(final Command command, final Path configPath, final Path catalogPath, final Path statePath) {
     this.command = command;
     this.configPath = configPath;
     this.catalogPath = catalogPath;
@@ -47,23 +27,23 @@ public class IntegrationConfig {
     return new IntegrationConfig(Command.SPEC, null, null, null);
   }
 
-  public static IntegrationConfig check(Path config) {
+  public static IntegrationConfig check(final Path config) {
     Preconditions.checkNotNull(config);
     return new IntegrationConfig(Command.CHECK, config, null, null);
   }
 
-  public static IntegrationConfig discover(Path config) {
+  public static IntegrationConfig discover(final Path config) {
     Preconditions.checkNotNull(config);
     return new IntegrationConfig(Command.DISCOVER, config, null, null);
   }
 
-  public static IntegrationConfig read(Path configPath, Path catalogPath, Path statePath) {
+  public static IntegrationConfig read(final Path configPath, final Path catalogPath, final Path statePath) {
     Preconditions.checkNotNull(configPath);
     Preconditions.checkNotNull(catalogPath);
     return new IntegrationConfig(Command.READ, configPath, catalogPath, statePath);
   }
 
-  public static IntegrationConfig write(Path configPath, Path catalogPath) {
+  public static IntegrationConfig write(final Path configPath, final Path catalogPath) {
     Preconditions.checkNotNull(configPath);
     Preconditions.checkNotNull(catalogPath);
     return new IntegrationConfig(Command.WRITE, configPath, catalogPath, null);
@@ -99,14 +79,14 @@ public class IntegrationConfig {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    IntegrationConfig that = (IntegrationConfig) o;
+    final IntegrationConfig that = (IntegrationConfig) o;
     return command == that.command &&
         Objects.equals(configPath, that.configPath) &&
         Objects.equals(catalogPath, that.catalogPath) &&

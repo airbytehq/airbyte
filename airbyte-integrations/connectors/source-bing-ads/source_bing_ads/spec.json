@@ -11,7 +11,12 @@
       "customer_id",
       "developer_token",
       "refresh_token",
-      "user_id"
+      "user_id",
+      "reports_start_date",
+      "hourly_reports",
+      "daily_reports",
+      "weekly_reports",
+      "monthly_reports"
     ],
     "additionalProperties": false,
     "properties": {
@@ -29,7 +34,7 @@
               "selection_strategy": {
                 "type": "string",
                 "enum": ["all"],
-                "default": "all"
+                "const": "all"
               }
             }
           },
@@ -42,7 +47,7 @@
               "selection_strategy": {
                 "type": "string",
                 "enum": ["subset"],
-                "default": "subset"
+                "const": "subset"
               },
               "ids": {
                 "type": "array",
@@ -84,6 +89,36 @@
       "user_id": {
         "type": "string",
         "description": "Unique user identifier."
+      },
+      "reports_start_date": {
+        "type": "string",
+        "format": "date",
+        "default": "2020-01-01",
+        "description": "From which date perform initial sync for report related streams. In YYYY-MM-DD format"
+      },
+      "hourly_reports": {
+        "title": "Hourly reports",
+        "type": "boolean",
+        "description": "The report data will be aggregated by each hour of the day.",
+        "default": false
+      },
+      "daily_reports": {
+        "title": "Daily reports",
+        "type": "boolean",
+        "description": "The report data will be aggregated by each day.",
+        "default": false
+      },
+      "weekly_reports": {
+        "title": "Weekly reports",
+        "type": "boolean",
+        "description": "The report data will be aggregated by each week running from Sunday through Saturday.",
+        "default": false
+      },
+      "monthly_reports": {
+        "title": "Monthly reports",
+        "type": "boolean",
+        "description": "The report data will be aggregated by each month.",
+        "default": false
       }
     }
   }

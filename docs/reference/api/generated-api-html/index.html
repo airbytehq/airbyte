@@ -226,6 +226,7 @@ font-style: italic;
   <li><a href="#getState"><code><span class="http-method">post</span> /v1/state/get</code></a></li>
   <li><a href="#listConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/connections/list</code></a></li>
   <li><a href="#resetConnection"><code><span class="http-method">post</span> /v1/connections/reset</code></a></li>
+  <li><a href="#searchConnections"><code><span class="http-method">post</span> /v1/connections/search</code></a></li>
   <li><a href="#syncConnection"><code><span class="http-method">post</span> /v1/connections/sync</code></a></li>
   <li><a href="#updateConnection"><code><span class="http-method">post</span> /v1/connections/update</code></a></li>
   </ul>
@@ -250,6 +251,7 @@ font-style: italic;
   <li><a href="#deleteDestination"><code><span class="http-method">post</span> /v1/destinations/delete</code></a></li>
   <li><a href="#getDestination"><code><span class="http-method">post</span> /v1/destinations/get</code></a></li>
   <li><a href="#listDestinationsForWorkspace"><code><span class="http-method">post</span> /v1/destinations/list</code></a></li>
+  <li><a href="#searchDestinations"><code><span class="http-method">post</span> /v1/destinations/search</code></a></li>
   <li><a href="#updateDestination"><code><span class="http-method">post</span> /v1/destinations/update</code></a></li>
   </ul>
   <h4><a href="#DestinationDefinition">DestinationDefinition</a></h4>
@@ -288,6 +290,8 @@ font-style: italic;
   <li><a href="#completeSourceOAuth"><code><span class="http-method">post</span> /v1/source_oauths/complete_oauth</code></a></li>
   <li><a href="#getDestinationOAuthConsent"><code><span class="http-method">post</span> /v1/destination_oauths/get_consent_url</code></a></li>
   <li><a href="#getSourceOAuthConsent"><code><span class="http-method">post</span> /v1/source_oauths/get_consent_url</code></a></li>
+  <li><a href="#setInstancewideDestinationOauthParams"><code><span class="http-method">post</span> /v1/destination_oauths/oauth_params/create</code></a></li>
+  <li><a href="#setInstancewideSourceOauthParams"><code><span class="http-method">post</span> /v1/source_oauths/oauth_params/create</code></a></li>
   </ul>
   <h4><a href="#Openapi">Openapi</a></h4>
   <ul>
@@ -317,6 +321,7 @@ font-style: italic;
   <li><a href="#discoverSchemaForSource"><code><span class="http-method">post</span> /v1/sources/discover_schema</code></a></li>
   <li><a href="#getSource"><code><span class="http-method">post</span> /v1/sources/get</code></a></li>
   <li><a href="#listSourcesForWorkspace"><code><span class="http-method">post</span> /v1/sources/list</code></a></li>
+  <li><a href="#searchSources"><code><span class="http-method">post</span> /v1/sources/search</code></a></li>
   <li><a href="#updateSource"><code><span class="http-method">post</span> /v1/sources/update</code></a></li>
   </ul>
   <h4><a href="#SourceDefinition">SourceDefinition</a></h4>
@@ -334,10 +339,11 @@ font-style: italic;
   <h4><a href="#WebBackend">WebBackend</a></h4>
   <ul>
   <li><a href="#webBackendCreateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/create</code></a></li>
+  <li><a href="#webBackendCreateDestination"><code><span class="http-method">post</span> /v1/web_backend/destinations/create</code></a></li>
+  <li><a href="#webBackendCreateSource"><code><span class="http-method">post</span> /v1/web_backend/sources/create</code></a></li>
   <li><a href="#webBackendGetConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/get</code></a></li>
   <li><a href="#webBackendListConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list</code></a></li>
-  <li><a href="#webBackendRecreateDestination"><code><span class="http-method">post</span> /v1/web_backend/destinations/recreate</code></a></li>
-  <li><a href="#webBackendRecreateSource"><code><span class="http-method">post</span> /v1/web_backend/sources/recreate</code></a></li>
+  <li><a href="#webBackendSearchConnections"><code><span class="http-method">post</span> /v1/web_backend/connections/search</code></a></li>
   <li><a href="#webBackendUpdateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/update</code></a></li>
   </ul>
   <h4><a href="#Workspace">Workspace</a></h4>
@@ -911,6 +917,163 @@ font-style: italic;
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="searchConnections"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connections/search</code></pre></div>
+    <div class="method-summary">Search connections (<span class="nickname">searchConnections</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectionSearch <a href="#ConnectionSearch">ConnectionSearch</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectionReadList">ConnectionReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "connections" : [ {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "resourceRequirements" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "schedule" : {
+      "units" : 0,
+      "timeUnit" : "minutes"
+    },
+    "prefix" : "prefix",
+    "name" : "name",
+    "syncCatalog" : {
+      "streams" : [ {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      }, {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      } ]
+    },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
+    "operationIds" : [ null, null ],
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "resourceRequirements" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "schedule" : {
+      "units" : 0,
+      "timeUnit" : "minutes"
+    },
+    "prefix" : "prefix",
+    "name" : "name",
+    "syncCatalog" : {
+      "streams" : [ {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      }, {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      } ]
+    },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
+    "operationIds" : [ null, null ],
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectionReadList">ConnectionReadList</a>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
@@ -1890,6 +2053,79 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="searchDestinations"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destinations/search</code></pre></div>
+    <div class="method-summary">Search destinations (<span class="nickname">searchDestinations</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationSearch <a href="#DestinationSearch">DestinationSearch</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationReadList">DestinationReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "destinations" : [ {
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "destinationName" : "destinationName",
+    "name" : "name",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "destinationName" : "destinationName",
+    "name" : "name",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationReadList">DestinationReadList</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="updateDestination"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2294,6 +2530,14 @@ font-style: italic;
   "supportedDestinationSyncModes" : [ null, null ],
   "supportsDbt" : true,
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "authSpecification" : {
+    "auth_type" : "oauth2.0",
+    "oauth2Specification" : {
+      "oauthFlowOutputParameters" : [ [ "oauthFlowOutputParameters", "oauthFlowOutputParameters" ], [ "oauthFlowOutputParameters", "oauthFlowOutputParameters" ] ],
+      "rootObject" : [ "path", 1 ],
+      "oauthFlowInitParameters" : [ [ "oauthFlowInitParameters", "oauthFlowInitParameters" ], [ "oauthFlowInitParameters", "oauthFlowInitParameters" ] ]
+    }
+  },
   "jobInfo" : {
     "createdAt" : 0,
     "configId" : "configId",
@@ -2765,7 +3009,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_oauths/complete_oauth</code></pre></div>
-    <div class="method-summary">null (<span class="nickname">completeDestinationOAuth</span>)</div>
+    <div class="method-summary">Given a destination def ID generate an access/refresh token etc. (<span class="nickname">completeDestinationOAuth</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -2818,7 +3062,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_oauths/complete_oauth</code></pre></div>
-    <div class="method-summary">Given a source def ID and optional workspaceID generate an access/refresh token etc. (<span class="nickname">completeSourceOAuth</span>)</div>
+    <div class="method-summary">Given a source def ID generate an access/refresh token etc. (<span class="nickname">completeSourceOAuth</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -2981,6 +3225,102 @@ font-style: italic;
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="setInstancewideDestinationOauthParams"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_oauths/oauth_params/create</code></pre></div>
+    <div class="method-summary">Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables. (<span class="nickname">setInstancewideDestinationOauthParams</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SetInstancewideDestinationOauthParamsRequestBody <a href="#SetInstancewideDestinationOauthParamsRequestBody">SetInstancewideDestinationOauthParamsRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Exception occurred; see message for details.
+        <a href="#KnownExceptionInfo">KnownExceptionInfo</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="setInstancewideSourceOauthParams"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_oauths/oauth_params/create</code></pre></div>
+    <div class="method-summary">Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables. (<span class="nickname">setInstancewideSourceOauthParams</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SetInstancewideSourceOauthParamsRequestBody <a href="#SetInstancewideSourceOauthParamsRequestBody">SetInstancewideSourceOauthParamsRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Exception occurred; see message for details.
+        <a href="#KnownExceptionInfo">KnownExceptionInfo</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Openapi">Openapi</a></h1>
@@ -4139,6 +4479,79 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="searchSources"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/sources/search</code></pre></div>
+    <div class="method-summary">Search sources (<span class="nickname">searchSources</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceSearch <a href="#SourceSearch">SourceSearch</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceReadList">SourceReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sources" : [ {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "name" : "name",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceName" : "sourceName",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "name" : "name",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceName" : "sourceName",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceReadList">SourceReadList</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="updateSource"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -4543,6 +4956,14 @@ font-style: italic;
     }
   },
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "authSpecification" : {
+    "auth_type" : "oauth2.0",
+    "oauth2Specification" : {
+      "oauthFlowOutputParameters" : [ [ "oauthFlowOutputParameters", "oauthFlowOutputParameters" ], [ "oauthFlowOutputParameters", "oauthFlowOutputParameters" ] ],
+      "rootObject" : [ "path", 1 ],
+      "oauthFlowInitParameters" : [ [ "oauthFlowInitParameters", "oauthFlowInitParameters" ], [ "oauthFlowInitParameters", "oauthFlowInitParameters" ] ]
+    }
+  },
   "jobInfo" : {
     "createdAt" : 0,
     "configId" : "configId",
@@ -4727,6 +5148,130 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="webBackendCreateDestination"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/destinations/create</code></pre></div>
+    <div class="method-summary">Create a destination (<span class="nickname">webBackendCreateDestination</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationCreate <a href="#DestinationCreate">DestinationCreate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationRead">DestinationRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "connectionConfiguration" : {
+    "user" : "charles"
+  },
+  "destinationName" : "destinationName",
+  "name" : "name",
+  "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationRead">DestinationRead</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="webBackendCreateSource"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/sources/create</code></pre></div>
+    <div class="method-summary">Create a source (<span class="nickname">webBackendCreateSource</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceCreate <a href="#SourceCreate">SourceCreate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceRead">SourceRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "connectionConfiguration" : {
+    "user" : "charles"
+  },
+  "name" : "name",
+  "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "sourceName" : "sourceName",
+  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceRead">SourceRead</a>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
@@ -5158,11 +5703,11 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="webBackendRecreateDestination"/>
+  <div class="method"><a name="webBackendSearchConnections"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/destinations/recreate</code></pre></div>
-    <div class="method-summary">Recreate a destination (<span class="nickname">webBackendRecreateDestination</span>)</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/search</code></pre></div>
+    <div class="method-summary">Search connections (<span class="nickname">webBackendSearchConnections</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -5174,7 +5719,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">DestinationRecreate <a href="#DestinationRecreate">DestinationRecreate</a> (required)</div>
+      <div class="param">WebBackendConnectionSearch <a href="#WebBackendConnectionSearch">WebBackendConnectionSearch</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -5185,7 +5730,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      <a href="#DestinationRead">DestinationRead</a>
+      <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
       
     </div>
 
@@ -5194,14 +5739,215 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "connectionConfiguration" : {
-    "user" : "charles"
-  },
-  "destinationName" : "destinationName",
-  "name" : "name",
-  "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  "connections" : [ {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "latestSyncJobCreatedAt" : 0,
+    "prefix" : "prefix",
+    "destination" : {
+      "connectionConfiguration" : {
+        "user" : "charles"
+      },
+      "destinationName" : "destinationName",
+      "name" : "name",
+      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "isSyncing" : true,
+    "source" : {
+      "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "connectionConfiguration" : {
+        "user" : "charles"
+      },
+      "name" : "name",
+      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "sourceName" : "sourceName",
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "resourceRequirements" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "schedule" : {
+      "units" : 0,
+      "timeUnit" : "minutes"
+    },
+    "operations" : [ {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    }, {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    } ],
+    "name" : "name",
+    "syncCatalog" : {
+      "streams" : [ {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      }, {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      } ]
+    },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
+    "operationIds" : [ null, null ]
+  }, {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "latestSyncJobCreatedAt" : 0,
+    "prefix" : "prefix",
+    "destination" : {
+      "connectionConfiguration" : {
+        "user" : "charles"
+      },
+      "destinationName" : "destinationName",
+      "name" : "name",
+      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "isSyncing" : true,
+    "source" : {
+      "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "connectionConfiguration" : {
+        "user" : "charles"
+      },
+      "name" : "name",
+      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "sourceName" : "sourceName",
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "resourceRequirements" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "schedule" : {
+      "units" : 0,
+      "timeUnit" : "minutes"
+    },
+    "operations" : [ {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    }, {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    } ],
+    "name" : "name",
+    "syncCatalog" : {
+      "streams" : [ {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      }, {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      } ]
+    },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
+    "operationIds" : [ null, null ]
+  } ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -5214,69 +5960,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful operation
-        <a href="#DestinationRead">DestinationRead</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="webBackendRecreateSource"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/sources/recreate</code></pre></div>
-    <div class="method-summary">Recreate a source (<span class="nickname">webBackendRecreateSource</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">SourceRecreate <a href="#SourceRecreate">SourceRecreate</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#SourceRead">SourceRead</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "connectionConfiguration" : {
-    "user" : "charles"
-  },
-  "name" : "name",
-  "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "sourceName" : "sourceName",
-  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        <a href="#SourceRead">SourceRead</a>
+        <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
@@ -5488,11 +6172,15 @@ font-style: italic;
   "notifications" : [ {
     "slackConfiguration" : {
       "webhook" : "webhook"
-    }
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true
   }, {
     "slackConfiguration" : {
       "webhook" : "webhook"
-    }
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -5609,11 +6297,15 @@ font-style: italic;
   "notifications" : [ {
     "slackConfiguration" : {
       "webhook" : "webhook"
-    }
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true
   }, {
     "slackConfiguration" : {
       "webhook" : "webhook"
-    }
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -5685,11 +6377,15 @@ font-style: italic;
   "notifications" : [ {
     "slackConfiguration" : {
       "webhook" : "webhook"
-    }
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true
   }, {
     "slackConfiguration" : {
       "webhook" : "webhook"
-    }
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -5750,11 +6446,15 @@ font-style: italic;
     "notifications" : [ {
       "slackConfiguration" : {
         "webhook" : "webhook"
-      }
+      },
+      "sendOnSuccess" : false,
+      "sendOnFailure" : true
     }, {
       "slackConfiguration" : {
         "webhook" : "webhook"
-      }
+      },
+      "sendOnSuccess" : false,
+      "sendOnFailure" : true
     } ],
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
@@ -5770,11 +6470,15 @@ font-style: italic;
     "notifications" : [ {
       "slackConfiguration" : {
         "webhook" : "webhook"
-      }
+      },
+      "sendOnSuccess" : false,
+      "sendOnFailure" : true
     }, {
       "slackConfiguration" : {
         "webhook" : "webhook"
-      }
+      },
+      "sendOnSuccess" : false,
+      "sendOnFailure" : true
     } ],
     "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
@@ -5841,11 +6545,15 @@ font-style: italic;
   "notifications" : [ {
     "slackConfiguration" : {
       "webhook" : "webhook"
-    }
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true
   }, {
     "slackConfiguration" : {
       "webhook" : "webhook"
-    }
+    },
+    "sendOnSuccess" : false,
+    "sendOnFailure" : true
   } ],
   "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -5882,6 +6590,7 @@ font-style: italic;
     <li><a href="#AttemptInfoRead"><code>AttemptInfoRead</code> - </a></li>
     <li><a href="#AttemptRead"><code>AttemptRead</code> - </a></li>
     <li><a href="#AttemptStatus"><code>AttemptStatus</code> - </a></li>
+    <li><a href="#AuthSpecification"><code>AuthSpecification</code> - </a></li>
     <li><a href="#CheckConnectionRead"><code>CheckConnectionRead</code> - </a></li>
     <li><a href="#CheckOperationRead"><code>CheckOperationRead</code> - </a></li>
     <li><a href="#CompleteDestinationOAuthRequest"><code>CompleteDestinationOAuthRequest</code> - </a></li>
@@ -5891,6 +6600,7 @@ font-style: italic;
     <li><a href="#ConnectionRead"><code>ConnectionRead</code> - </a></li>
     <li><a href="#ConnectionReadList"><code>ConnectionReadList</code> - </a></li>
     <li><a href="#ConnectionSchedule"><code>ConnectionSchedule</code> - </a></li>
+    <li><a href="#ConnectionSearch"><code>ConnectionSearch</code> - </a></li>
     <li><a href="#ConnectionState"><code>ConnectionState</code> - </a></li>
     <li><a href="#ConnectionStatus"><code>ConnectionStatus</code> - </a></li>
     <li><a href="#ConnectionUpdate"><code>ConnectionUpdate</code> - </a></li>
@@ -5912,7 +6622,7 @@ font-style: italic;
     <li><a href="#DestinationOauthConsentRequest"><code>DestinationOauthConsentRequest</code> - </a></li>
     <li><a href="#DestinationRead"><code>DestinationRead</code> - </a></li>
     <li><a href="#DestinationReadList"><code>DestinationReadList</code> - </a></li>
-    <li><a href="#DestinationRecreate"><code>DestinationRecreate</code> - </a></li>
+    <li><a href="#DestinationSearch"><code>DestinationSearch</code> - </a></li>
     <li><a href="#DestinationSyncMode"><code>DestinationSyncMode</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
@@ -5937,6 +6647,7 @@ font-style: italic;
     <li><a href="#Notification"><code>Notification</code> - </a></li>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
     <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
+    <li><a href="#OAuth2Specification"><code>OAuth2Specification</code> - </a></li>
     <li><a href="#OAuthConsentRead"><code>OAuthConsentRead</code> - </a></li>
     <li><a href="#OperationCreate"><code>OperationCreate</code> - </a></li>
     <li><a href="#OperationIdRequestBody"><code>OperationIdRequestBody</code> - </a></li>
@@ -5949,6 +6660,8 @@ font-style: italic;
     <li><a href="#OperatorType"><code>OperatorType</code> - </a></li>
     <li><a href="#Pagination"><code>Pagination</code> - </a></li>
     <li><a href="#ResourceRequirements"><code>ResourceRequirements</code> - </a></li>
+    <li><a href="#SetInstancewideDestinationOauthParamsRequestBody"><code>SetInstancewideDestinationOauthParamsRequestBody</code> - </a></li>
+    <li><a href="#SetInstancewideSourceOauthParamsRequestBody"><code>SetInstancewideSourceOauthParamsRequestBody</code> - </a></li>
     <li><a href="#SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a></li>
     <li><a href="#SlugRequestBody"><code>SlugRequestBody</code> - </a></li>
     <li><a href="#SourceCoreConfig"><code>SourceCoreConfig</code> - </a></li>
@@ -5964,7 +6677,7 @@ font-style: italic;
     <li><a href="#SourceOauthConsentRequest"><code>SourceOauthConsentRequest</code> - </a></li>
     <li><a href="#SourceRead"><code>SourceRead</code> - </a></li>
     <li><a href="#SourceReadList"><code>SourceReadList</code> - </a></li>
-    <li><a href="#SourceRecreate"><code>SourceRecreate</code> - </a></li>
+    <li><a href="#SourceSearch"><code>SourceSearch</code> - </a></li>
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
     <li><a href="#SyncMode"><code>SyncMode</code> - </a></li>
     <li><a href="#SynchronousJobRead"><code>SynchronousJobRead</code> - </a></li>
@@ -5973,6 +6686,7 @@ font-style: italic;
     <li><a href="#WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a></li>
     <li><a href="#WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a></li>
+    <li><a href="#WebBackendConnectionSearch"><code>WebBackendConnectionSearch</code> - </a></li>
     <li><a href="#WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a></li>
     <li><a href="#WebBackendOperationCreateOrUpdate"><code>WebBackendOperationCreateOrUpdate</code> - </a></li>
     <li><a href="#WorkspaceCreate"><code>WorkspaceCreate</code> - </a></li>
@@ -6050,6 +6764,16 @@ font-style: italic;
           </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="AuthSpecification"><code>AuthSpecification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">auth_type (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">oauth2.0</div>
+<div class="param">oauth2Specification (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuth2Specification">OAuth2Specification</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="CheckConnectionRead"><code>CheckConnectionRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -6075,7 +6799,8 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">workspaceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">redirectUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given. </div>
 <div class="param">queryParams (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span> The query parameters present in the redirect URL after a user granted consent e.g auth code </div>
     </div>  <!-- field-items -->
   </div>
@@ -6084,7 +6809,8 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">workspaceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">redirectUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given. </div>
 <div class="param">queryParams (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span> The query parameters present in the redirect URL after a user granted consent e.g auth code </div>
     </div>  <!-- field-items -->
   </div>
@@ -6145,6 +6871,23 @@ font-style: italic;
 <div class="param">timeUnit </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">minutes</div><div class="param-enum">hours</div><div class="param-enum">days</div><div class="param-enum">weeks</div><div class="param-enum">months</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectionSearch"><code>ConnectionSearch</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
+<div class="param">namespaceFormat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If &quot;${SOURCE_NAMESPACE}&quot; then behaves like namespaceDefinition = 'source'. </div>
+<div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
+<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
+<div class="param">source (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceSearch">SourceSearch</a></span>  </div>
+<div class="param">destination (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSearch">DestinationSearch</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -6286,6 +7029,7 @@ font-style: italic;
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">documentationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">connectionSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionSpecification">DestinationDefinitionSpecification</a></span>  </div>
+<div class="param">authSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#AuthSpecification">AuthSpecification</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
 <div class="param">supportedDestinationSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSyncMode">array[DestinationSyncMode]</a></span>  </div>
 <div class="param">supportsDbt (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
@@ -6311,8 +7055,9 @@ font-style: italic;
     <h3><a name="DestinationOauthConsentRequest"><code>DestinationOauthConsentRequest</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">sourceDefinitionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">workspaceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">redirectUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The url to redirect to after getting the user consent </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -6335,14 +7080,15 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="DestinationRecreate"><code>DestinationRecreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="DestinationSearch"><code>DestinationSearch</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
-<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">destinationDefinitionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">connectionConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">destinationName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -6521,6 +7267,8 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">notificationType </div><div class="param-desc"><span class="param-type"><a href="#NotificationType">NotificationType</a></span>  </div>
+<div class="param">sendOnSuccess </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">sendOnFailure </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">slackConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#SlackNotificationConfiguration">SlackNotificationConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -6539,6 +7287,17 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OAuth2Specification"><code>OAuth2Specification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>An object containing any metadata needed to describe this connector's Oauth flow</div>
+    <div class="field-items">
+      <div class="param">rootObject </div><div class="param-desc"><span class="param-type"><a href="#AnyType">array[oas_any_type_not_mapped]</a></span> A list of strings representing a pointer to the root object which contains any oauth parameters in the ConnectorSpecification.
+Examples:
+if oauth parameters were contained inside the top level, rootObject=[] If they were nested inside another object {'credentials': {'app_id' etc...}, rootObject=['credentials'] If they were inside a oneOf {'switch': {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=['switch', 0] </div>
+<div class="param">oauthFlowInitParameters </div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow. Each inner array represents the path in the rootObject of the referenced field. For example. Assume the rootObject contains params 'app_secret', 'app_id' which are needed to get the initial refresh token. If they are not nested in the rootObject, then the array would look like this [['app_secret'], ['app_id']] If they are nested inside an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']] </div>
+<div class="param">oauthFlowOutputParameters </div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> Pointers to the fields in the rootObject which can be populated from successfully completing the oauth flow using the init parameters. This is typically a refresh/access token. Each inner array represents the path in the rootObject of the referenced field. </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="OAuthConsentRead"><code>OAuthConsentRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -6642,6 +7401,22 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="SetInstancewideDestinationOauthParamsRequestBody"><code>SetInstancewideDestinationOauthParamsRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">params </div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SetInstancewideSourceOauthParamsRequestBody"><code>SetInstancewideSourceOauthParamsRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">params </div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -6717,6 +7492,7 @@ font-style: italic;
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">documentationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">connectionSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionSpecification">SourceDefinitionSpecification</a></span>  </div>
+<div class="param">authSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#AuthSpecification">AuthSpecification</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -6748,7 +7524,8 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">workspaceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">redirectUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The url to redirect to after getting the user consent </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -6771,14 +7548,15 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="SourceRecreate"><code>SourceRecreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="SourceSearch"><code>SourceSearch</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
-<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">sourceDefinitionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">connectionConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">sourceName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -6877,6 +7655,23 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="WebBackendConnectionSearch"><code>WebBackendConnectionSearch</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
+<div class="param">namespaceFormat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If &quot;${SOURCE_NAMESPACE}&quot; then behaves like namespaceDefinition = 'source'. </div>
+<div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
+<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
+<div class="param">source (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceSearch">SourceSearch</a></span>  </div>
+<div class="param">destination (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSearch">DestinationSearch</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -6913,6 +7708,7 @@ font-style: italic;
 <div class="param">news (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
+<div class="param">displaySetupWizard (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

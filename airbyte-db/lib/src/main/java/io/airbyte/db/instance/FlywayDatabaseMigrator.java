@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance;
@@ -59,27 +39,27 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
    * @param migrationFileLocations Example: "classpath:db/migration". See:
    *        https://flywaydb.org/documentation/concepts/migrations#discovery-1
    */
-  protected FlywayDatabaseMigrator(Database database,
-                                   String dbIdentifier,
-                                   String migrationRunner,
-                                   String migrationFileLocations) {
+  protected FlywayDatabaseMigrator(final Database database,
+                                   final String dbIdentifier,
+                                   final String migrationRunner,
+                                   final String migrationFileLocations) {
     this(database, getConfiguration(database, dbIdentifier, migrationRunner, migrationFileLocations).load());
   }
 
   @VisibleForTesting
-  public FlywayDatabaseMigrator(Database database, Flyway flyway) {
+  public FlywayDatabaseMigrator(final Database database, final Flyway flyway) {
     this.database = database;
     this.flyway = flyway;
   }
 
-  private static String getDefaultMigrationFileLocation(String dbIdentifier) {
+  private static String getDefaultMigrationFileLocation(final String dbIdentifier) {
     return String.format("classpath:io/airbyte/db/instance/%s/migrations", dbIdentifier);
   }
 
-  private static FluentConfiguration getConfiguration(Database database,
-                                                      String dbIdentifier,
-                                                      String migrationRunner,
-                                                      String migrationFileLocations) {
+  private static FluentConfiguration getConfiguration(final Database database,
+                                                      final String dbIdentifier,
+                                                      final String migrationRunner,
+                                                      final String migrationFileLocations) {
     return Flyway.configure()
         .dataSource(database.getDataSource())
         .baselineVersion(BASELINE_VERSION)
@@ -92,21 +72,21 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
 
   @Override
   public MigrateResult migrate() {
-    MigrateResult result = flyway.migrate();
+    final MigrateResult result = flyway.migrate();
     result.warnings.forEach(LOGGER::warn);
     return result;
   }
 
   @Override
   public List<MigrationInfo> list() {
-    MigrationInfoService result = flyway.info();
+    final MigrationInfoService result = flyway.info();
     result.getInfoResult().warnings.forEach(LOGGER::warn);
     return Arrays.asList(result.all());
   }
 
   @Override
   public BaselineResult createBaseline() {
-    BaselineResult result = flyway.baseline();
+    final BaselineResult result = flyway.baseline();
     result.warnings.forEach(LOGGER::warn);
     return result;
   }

@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "dfffecb7-9a13-43e9-acdc-b92af7997ca9",
+  "name": "Close.com",
+  "dockerRepository": "airbyte/source-close-com",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/close-com"
+}

@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -47,16 +27,13 @@ class MixpanelStream(HttpStream, ABC):
       A maximum of 5 concurrent queries
       400 queries per hour.
 
-    API Rate Limit Handler:
-    If total number of planned requests is lower than it is allowed per hour
-    then
-        reset reqs_per_hour_limit and send requests with small delay (1 reqs/sec)
-        because API endpoint accept requests bursts up to 3 reqs/sec
-    else
-        send requests with planned delay: 3600/reqs_per_hour_limit seconds
+    API Rate Limit Handler: after each request freeze for the time period: 3600/reqs_per_hour_limit seconds
     """
 
-    url_base = "https://mixpanel.com/api/2.0/"
+    @property
+    def url_base(self):
+        prefix = "eu." if self.region == "EU" else ""
+        return f"https://{prefix}mixpanel.com/api/2.0/"
 
     # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
     reqs_per_hour_limit = 400  # 1 req in 9 secs
@@ -64,6 +41,7 @@ class MixpanelStream(HttpStream, ABC):
     def __init__(
         self,
         authenticator: HttpAuthenticator,
+        region: str = None,
         start_date: Union[date, str] = None,
         end_date: Union[date, str] = None,
         date_window_size: int = 30,  # in days
@@ -76,6 +54,7 @@ class MixpanelStream(HttpStream, ABC):
         self.date_window_size = date_window_size
         self.attribution_window = attribution_window
         self.additional_properties = select_properties_by_default
+        self.region = region if region else "US"
 
         super().__init__(authenticator=authenticator)
 
@@ -97,7 +76,7 @@ class MixpanelStream(HttpStream, ABC):
                 self.logger.error(f"Stream {self.name}: {e.response.status_code} {e.response.reason} - {error_message}")
             raise e
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         if self.data_field is not None:
             data = json_response.get(self.data_field, [])
@@ -109,8 +88,19 @@ class MixpanelStream(HttpStream, ABC):
         for record in data:
             yield record
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+
+        # parse the whole response
+        yield from self.process_response(response, **kwargs)
+
         # wait for X seconds to match API limitations
         time.sleep(3600 / self.reqs_per_hour_limit)
+
+    def get_stream_params(self) -> Mapping[str, Any]:
+        """
+        Fetch required parameters in a given stream. Used to create sub-streams
+        """
+        return {"authenticator": self.authenticator, "region": self.region}
 
 
 class IncrementalMixpanelStream(MixpanelStream, ABC):
@@ -199,10 +189,6 @@ class DateSlicesMixin:
             # add 1 additional day because date range is inclusive
             start_date = end_date + timedelta(days=1)
 
-        # reset reqs_per_hour_limit if we expect less requests (1 req per stream) than it is allowed by API reqs_per_hour_limit
-        if len(date_slices) < self.reqs_per_hour_limit:
-            self.reqs_per_hour_limit = 3600  # 1 query per sec
-
         return date_slices
 
     def request_params(
@@ -229,7 +215,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         return "funnels"
 
     def funnel_slices(self, sync_mode) -> List[dict]:
-        funnel_slices = FunnelsList(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
+        funnel_slices = FunnelsList(**self.get_stream_params()).read_records(sync_mode=sync_mode)
         funnel_slices = list(funnel_slices)  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
 
         # save all funnels in dict(<funnel_id1>:<name1>, ...)
@@ -278,9 +264,6 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
             for date_slice in date_slices:
                 stream_slices.append({**funnel_slice, **date_slice})
 
-        # reset reqs_per_hour_limit if we expect less requests (1 req per stream) than it is allowed by API reqs_per_hour_limit
-        if len(stream_slices) < self.reqs_per_hour_limit:
-            self.reqs_per_hour_limit = 3600  # queries per hour (1 query per sec)
         return stream_slices
 
     def request_params(
@@ -297,7 +280,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         params["unit"] = "day"
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         response.json() example:
         {
@@ -377,7 +360,7 @@ class EngageSchema(MixpanelStream):
     def path(self, **kwargs) -> str:
         return "engage/properties"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         response.json() example:
         {
@@ -453,7 +436,7 @@ class Engage(MixpanelStream):
             self._total = None
             return None
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         {
             "page": 0
@@ -523,7 +506,7 @@ class Engage(MixpanelStream):
         }
 
         # read existing Engage schema from API
-        schema_properties = EngageSchema(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
+        schema_properties = EngageSchema(**self.get_stream_params()).read_records(sync_mode=SyncMode.full_refresh)
         for property_entry in schema_properties:
             property_name: str = property_entry["name"]
             property_type: str = property_entry["type"]
@@ -532,7 +515,9 @@ class Engage(MixpanelStream):
                 # from API: '$browser'
                 # to stream: 'browser'
                 property_name = property_name[1:]
-            schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
+            # Do not overwrite 'standard' hard-coded properties, add 'custom' properties
+            if property_name not in schema["properties"]:
+                schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
 
         return schema
 
@@ -553,7 +538,7 @@ class CohortMembers(Engage):
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_slices = []
-        cohorts = Cohorts(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
+        cohorts = Cohorts(**self.get_stream_params()).read_records(sync_mode=sync_mode)
         for cohort in cohorts:
             stream_slices.append({"id": cohort["id"]})
 
@@ -600,7 +585,7 @@ class Revenue(DateSlicesMixin, IncrementalMixpanelStream):
     def path(self, **kwargs) -> str:
         return "engage/revenue"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         response.json() example:
         {
@@ -643,7 +628,7 @@ class ExportSchema(MixpanelStream):
     def path(self, **kwargs) -> str:
         return "events/properties/top"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[str]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[str]:
         """
         response.json() example:
         {
@@ -692,12 +677,15 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     cursor_field = "time"
     reqs_per_hour_limit = 60  # 1 query per minute
 
-    url_base = "https://data.mixpanel.com/api/2.0/"
+    @property
+    def url_base(self):
+        prefix = "-eu" if self.region == "EU" else ""
+        return f"https://data{prefix}.mixpanel.com/api/2.0/"
 
     def path(self, **kwargs) -> str:
         return "export"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """Export API return response.text in JSONL format but each line is a valid JSON object
         Raw item example:
             {
@@ -716,6 +704,10 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 }
             }
         """
+        if response.text == "terminated early\n":
+            # no data available
+            self.logger.warn(f"Couldn't fetch data from Export API. Response: {response.text}")
+            return []
 
         for record_line in response.text.splitlines():
             record = json.loads(record_line)
@@ -739,9 +731,6 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
             yield item
 
-        # wait for X seconds to meet API limitation
-        time.sleep(3600 / self.reqs_per_hour_limit)
-
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.
@@ -758,7 +747,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         schema["additionalProperties"] = self.additional_properties
 
         # read existing Export schema from API
-        schema_properties = ExportSchema(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
+        schema_properties = ExportSchema(**self.get_stream_params()).read_records(sync_mode=SyncMode.full_refresh)
         for property_entry in schema_properties:
             property_name: str = property_entry
             if property_name.startswith("$"):
@@ -781,7 +770,7 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
 
 
 class SourceMixpanel(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
@@ -790,14 +779,15 @@ class SourceMixpanel(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        authenticator = TokenAuthenticatorBase64(token=config["api_secret"])
+        auth = TokenAuthenticatorBase64(token=config["api_secret"])
+        funnels = FunnelsList(authenticator=auth, **config)
         try:
             response = requests.request(
                 "GET",
-                url="https://mixpanel.com/api/2.0/funnels/list",
+                url=funnels.url_base + funnels.path(),
                 headers={
                     "Accept": "application/json",
-                    **authenticator.get_auth_header(),
+                    **auth.get_auth_header(),
                 },
             )
 

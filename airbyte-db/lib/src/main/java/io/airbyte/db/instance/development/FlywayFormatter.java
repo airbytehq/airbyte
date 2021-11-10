@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.development;
@@ -52,13 +32,13 @@ public class FlywayFormatter {
   /**
    * Format the {@link DatabaseMigrator#list} output.
    */
-  static String formatMigrationInfoList(List<MigrationInfo> migrationInfoList) {
-    Field<String> type = field("Type", SQLDataType.VARCHAR);
-    Field<String> version = field("Version", SQLDataType.VARCHAR);
-    Field<String> description = field("Description", SQLDataType.VARCHAR);
-    Field<String> state = field("State", SQLDataType.VARCHAR);
-    Field<Date> migratedAt = field("MigratedAt", SQLDataType.DATE);
-    Result<Record5<String, String, String, String, Date>> result = CTX.newResult(type, version, description, state, migratedAt);
+  static String formatMigrationInfoList(final List<MigrationInfo> migrationInfoList) {
+    final Field<String> type = field("Type", SQLDataType.VARCHAR);
+    final Field<String> version = field("Version", SQLDataType.VARCHAR);
+    final Field<String> description = field("Description", SQLDataType.VARCHAR);
+    final Field<String> state = field("State", SQLDataType.VARCHAR);
+    final Field<Date> migratedAt = field("MigratedAt", SQLDataType.DATE);
+    final Result<Record5<String, String, String, String, Date>> result = CTX.newResult(type, version, description, state, migratedAt);
     migrationInfoList.forEach(info -> result.add(CTX.newRecord(type, version, description, state, migratedAt).values(
         info.getType().name(),
         info.getVersion().toString(),
@@ -68,12 +48,12 @@ public class FlywayFormatter {
     return result.format();
   }
 
-  static String formatMigrationOutputList(List<MigrateOutput> migrationOutputList) {
-    Field<String> type = field("Type", SQLDataType.VARCHAR);
-    Field<String> version = field("Version", SQLDataType.VARCHAR);
-    Field<String> description = field("Description", SQLDataType.VARCHAR);
-    Field<String> script = field("Script", SQLDataType.VARCHAR);
-    Result<Record4<String, String, String, String>> result = CTX.newResult(type, version, description, script);
+  static String formatMigrationOutputList(final List<MigrateOutput> migrationOutputList) {
+    final Field<String> type = field("Type", SQLDataType.VARCHAR);
+    final Field<String> version = field("Version", SQLDataType.VARCHAR);
+    final Field<String> description = field("Description", SQLDataType.VARCHAR);
+    final Field<String> script = field("Script", SQLDataType.VARCHAR);
+    final Result<Record4<String, String, String, String>> result = CTX.newResult(type, version, description, script);
     migrationOutputList.forEach(output -> result.add(CTX.newRecord(type, version, description, script).values(
         String.format("%s %s", output.type, output.category),
         output.version,
@@ -85,7 +65,7 @@ public class FlywayFormatter {
   /**
    * Format the {@link DatabaseMigrator#migrate} output.
    */
-  static String formatMigrationResult(MigrateResult result) {
+  static String formatMigrationResult(final MigrateResult result) {
     return String.format("Version: %s -> %s\n", result.initialSchemaVersion, result.targetSchemaVersion)
         + String.format("Migrations executed: %s\n", result.migrationsExecuted)
         + formatMigrationOutputList(result.migrations);

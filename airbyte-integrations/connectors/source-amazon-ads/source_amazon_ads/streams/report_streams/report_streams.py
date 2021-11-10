@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -208,6 +188,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     """
 
     primary_key = None
+    # Amazon ads updates the data for the next 3 days
+    LOOK_BACK_WINDOW = 3
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "%Y%m%d"
     cursor_field = "reportDate"
@@ -284,6 +266,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         if not start_report_date:
             start_report_date = now
 
+        # You cannot pull data for amazon ads more than 60 days
+        if (now - start_report_date).days > (60 - ReportStream.LOOK_BACK_WINDOW):
+            start_report_date = now + timedelta(days=-(60 - ReportStream.LOOK_BACK_WINDOW))
+
         for days in range(0, (now - start_report_date).days + 1):
             next_date = start_report_date + timedelta(days=days)
             next_date = next_date.strftime(ReportStream.REPORT_DATE_FORMAT)
@@ -292,6 +278,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+
         if sync_mode == SyncMode.full_refresh:
             # For full refresh stream use date from config start_date field.
             start_date = self._start_date
@@ -302,7 +289,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             if start_date:
                 start_date = pendulum.from_format(start_date, self.REPORT_DATE_FORMAT, tz="UTC")
                 # We already processed records for date specified in stream state, move to the day after
-                start_date += timedelta(days=1)
+                start_date += timedelta(days=-self.LOOK_BACK_WINDOW)
             else:
                 start_date = self._start_date
 
@@ -312,3 +299,76 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"reportDate": latest_data["reportDate"]}
+
+    @abstractmethod
+    def _get_init_report_body(self, report_date: str, record_type: str, profile) -> Dict[str, Any]:
+        """
+        Override to return dict representing body of POST request for initiating report creation.
+        """
+
+    def _init_reports(self, report_date: str) -> List[ReportInfo]:
+        """
+        Send report generation requests for all profiles and for all record types for specific day.
+        :report_date - date for generating metric report.
+        :return List of ReportInfo objects each of them has reportId field to check report status.
+        """
+        report_infos = []
+        for profile in self._profiles:
+            for record_type, metrics in self.metrics_map.items():
+                metric_date = self._calc_report_generation_date(report_date, profile)
+
+                report_init_body = self._get_init_report_body(metric_date, record_type, profile)
+                if not report_init_body:
+                    continue
+                # Some of the record types has subtypes. For example asins type
+                # for  product report have keyword and targets subtypes and it
+                # repseneted as asins_keywords and asins_targets types. Those
+                # subtypes have mutualy excluded parameters so we requesting
+                # different metric list for each record.
+                record_type = record_type.split("_")[0]
+                logger.info(f"Initiating report generation for {profile.profileId} profile with {record_type} type for {metric_date} date")
+                response = self._send_http_request(
+                    urljoin(self._url, self.report_init_endpoint(record_type)),
+                    profile.profileId,
+                    report_init_body,
+                )
+                if response.status_code != HTTPStatus.ACCEPTED:
+                    raise Exception(
+                        f"Unexpected error when registering {record_type}, {self.__class__.__name__} for {profile.profileId} profile: {response.text}"
+                    )
+
+                response = ReportInitResponse.parse_raw(response.text)
+                report_infos.append(
+                    ReportInfo(
+                        report_id=response.reportId,
+                        record_type=record_type,
+                        profile_id=profile.profileId,
+                    )
+                )
+                logger.info("Initiated successfully")
+
+        return report_infos
+
+    @staticmethod
+    def _calc_report_generation_date(report_date: str, profile) -> str:
+        """
+        According to reference time zone is specified by the profile used to
+        request the report. If specified date is today, then the performance
+        report may contain partial information. Based on this we generating
+        reports from day before specified report date and we should take into
+        account timezone for each profile.
+        :param report_date requested date that stored in stream state.
+        :return date parameter for Amazon Ads generate report.
+        """
+        report_date = datetime.strptime(report_date, ReportStream.REPORT_DATE_FORMAT)
+        profile_tz = pytz.timezone(profile.timezone)
+        profile_time = report_date.astimezone(profile_tz)
+        return profile_time.strftime(ReportStream.REPORT_DATE_FORMAT)
+
+    def _download_report(self, report_info: ReportInfo, url: str) -> List[dict]:
+        """
+        Download and parse report result
+        """
+        response = self._send_http_request(url, report_info.profile_id)
+        raw_string = decompress(response.content).decode("utf")
+        return json.loads(raw_string)

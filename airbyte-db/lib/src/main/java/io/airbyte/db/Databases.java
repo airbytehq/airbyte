@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db;
@@ -28,8 +8,11 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
+import io.airbyte.db.mongodb.MongoDatabase;
 import java.util.Optional;
 import java.util.function.Function;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -41,15 +24,18 @@ public class Databases {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Databases.class);
 
-  public static Database createPostgresDatabase(String username, String password, String jdbcConnectionString) {
+  public static Database createPostgresDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
-  public static Database createPostgresDatabaseWithRetry(String username,
-                                                         String password,
-                                                         String jdbcConnectionString,
-                                                         Function<Database, Boolean> isDbReady) {
+  public static Database createPostgresDatabaseWithRetry(final String username,
+                                                         final String password,
+                                                         final String jdbcConnectionString,
+                                                         final Function<Database, Boolean> isDbReady) {
     Database database = null;
+    if (jdbcConnectionString == null || jdbcConnectionString.trim().equals("")) {
+      throw new IllegalArgumentException("Using a null or empty jdbc url will hang database creation; aborting.");
+    }
 
     while (database == null) {
       LOGGER.warn("Waiting for database to become available...");
@@ -61,7 +47,7 @@ public class Databases {
           database = null;
           Exceptions.toRuntime(() -> Thread.sleep(5000));
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         // Ignore the exception because this likely means that the database server is still initializing.
         LOGGER.warn("Ignoring exception while trying to request database:", e);
         database = null;
@@ -73,19 +59,19 @@ public class Databases {
     return database;
   }
 
-  public static JdbcDatabase createRedshiftDatabase(String username, String password, String jdbcConnectionString) {
+  public static JdbcDatabase createRedshiftDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createJdbcDatabase(username, password, jdbcConnectionString, "com.amazon.redshift.jdbc.Driver");
   }
 
-  public static Database createMySqlDatabase(String username, String password, String jdbcConnectionString) {
+  public static Database createMySqlDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
   }
 
-  public static Database createSqlServerDatabase(String username, String password, String jdbcConnectionString) {
+  public static Database createSqlServerDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "com.microsoft.sqlserver.jdbc.SQLServerDriver", SQLDialect.DEFAULT);
   }
 
-  public static Database createOracleDatabase(String username, String password, String jdbcConnectionString) {
+  public static Database createOracleDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "oracle.jdbc.OracleDriver", SQLDialect.DEFAULT);
   }
 
@@ -115,9 +101,17 @@ public class Databases {
                                                 final String password,
                                                 final String jdbcConnectionString,
                                                 final String driverClassName) {
+    return createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, JdbcUtils.getDefaultSourceOperations());
+  }
+
+  public static JdbcDatabase createJdbcDatabase(final String username,
+                                                final String password,
+                                                final String jdbcConnectionString,
+                                                final String driverClassName,
+                                                final JdbcSourceOperations sourceOperations) {
     final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
 
-    return new DefaultJdbcDatabase(connectionPool);
+    return new DefaultJdbcDatabase(connectionPool, sourceOperations);
   }
 
   public static JdbcDatabase createJdbcDatabase(final String username,
@@ -125,10 +119,20 @@ public class Databases {
                                                 final String jdbcConnectionString,
                                                 final String driverClassName,
                                                 final String connectionProperties) {
+    return createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, connectionProperties,
+        JdbcUtils.getDefaultSourceOperations());
+  }
+
+  public static JdbcDatabase createJdbcDatabase(final String username,
+                                                final String password,
+                                                final String jdbcConnectionString,
+                                                final String driverClassName,
+                                                final String connectionProperties,
+                                                final JdbcSourceOperations sourceOperations) {
     final BasicDataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
 
-    return new DefaultJdbcDatabase(connectionPool);
+    return new DefaultJdbcDatabase(connectionPool, sourceOperations);
   }
 
   public static JdbcDatabase createStreamingJdbcDatabase(final String username,
@@ -137,11 +141,22 @@ public class Databases {
                                                          final String driverClassName,
                                                          final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
                                                          final String connectionProperties) {
+    return createStreamingJdbcDatabase(username, password, jdbcConnectionString, driverClassName, jdbcStreamingQuery, connectionProperties,
+        JdbcUtils.getDefaultSourceOperations());
+  }
+
+  public static JdbcDatabase createStreamingJdbcDatabase(final String username,
+                                                         final String password,
+                                                         final String jdbcConnectionString,
+                                                         final String driverClassName,
+                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
+                                                         final String connectionProperties,
+                                                         final JdbcSourceOperations sourceOperations) {
     final BasicDataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
 
     final JdbcDatabase defaultJdbcDatabase =
-        createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, connectionProperties);
+        createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, connectionProperties, sourceOperations);
     return new StreamingJdbcDatabase(connectionPool, defaultJdbcDatabase, jdbcStreamingQuery);
   }
 
@@ -169,6 +184,10 @@ public class Databases {
 
   public static BigQueryDatabase createBigQueryDatabase(final String projectId, final String jsonCreds) {
     return new BigQueryDatabase(projectId, jsonCreds);
+  }
+
+  public static MongoDatabase createMongoDatabase(final String connectionString, final String databaseName) {
+    return new MongoDatabase(connectionString, databaseName);
   }
 
 }

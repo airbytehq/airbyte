@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from base64 import b64encode
@@ -35,7 +15,10 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from .streams import (
     ApplicationRoles,
     Avatars,
+    BoardIssues,
+    Boards,
     Dashboards,
+    Epics,
     Filters,
     FilterSharing,
     Groups,
@@ -73,6 +56,8 @@ from .streams import (
     ScreenSchemes,
     ScreenTabFields,
     ScreenTabs,
+    SprintIssues,
+    Sprints,
     TimeTracking,
     Users,
     Workflows,
@@ -95,7 +80,7 @@ class SourceJira(AbstractSource):
 
         try:
             authenticator = self.get_authenticator(config)
-            args = {"authenticator": authenticator, "domain": config["domain"]}
+            args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
             issue_resolutions = IssueResolutions(**args)
             for item in issue_resolutions.read_records(sync_mode=SyncMode.full_refresh):
                 continue
@@ -114,16 +99,24 @@ class SourceJira(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
-        args = {"authenticator": authenticator, "domain": config["domain"]}
+        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+        incremental_args = {**args, "start_date": config.get("start_date", "")}
         return [
             ApplicationRoles(**args),
             Avatars(**args),
+            Boards(**args),
+            BoardIssues(**incremental_args),
             Dashboards(**args),
+            Epics(**incremental_args),
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),
-            Issues(**args),
-            IssueComments(**args),
+            Issues(
+                **incremental_args,
+                additional_fields=config.get("additional_fields", []),
+                expand_changelog=config.get("expand_issue_changelog", False)
+            ),
+            IssueComments(**incremental_args),
             IssueFields(**args),
             IssueFieldConfigurations(**args),
             IssueCustomFieldContexts(**args),
@@ -131,15 +124,15 @@ class SourceJira(AbstractSource):
             IssueNavigatorSettings(**args),
             IssueNotificationSchemes(**args),
             IssuePriorities(**args),
-            IssueProperties(**args),
-            IssueRemoteLinks(**args),
+            IssueProperties(**incremental_args),
+            IssueRemoteLinks(**incremental_args),
             IssueResolutions(**args),
             IssueSecuritySchemes(**args),
             IssueTypeSchemes(**args),
             IssueTypeScreenSchemes(**args),
-            IssueVotes(**args),
-            IssueWatchers(**args),
-            IssueWorklogs(**args),
+            IssueVotes(**incremental_args),
+            IssueWatchers(**incremental_args),
+            IssueWorklogs(**incremental_args),
             JiraSettings(**args),
             Labels(**args),
             Permissions(**args),
@@ -156,6 +149,8 @@ class SourceJira(AbstractSource):
             ScreenTabs(**args),
             ScreenTabFields(**args),
             ScreenSchemes(**args),
+            Sprints(**args),
+            SprintIssues(**incremental_args),
             TimeTracking(**args),
             Users(**args),
             Workflows(**args),

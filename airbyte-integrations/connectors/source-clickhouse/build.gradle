@@ -6,6 +6,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.source.clickhouse.ClickHouseSource'
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
@@ -21,5 +22,5 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse')
     integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    integrationTestJavaImplementation "org.testcontainers:clickhouse:1.15.3"
+    integrationTestJavaImplementation "org.testcontainers:clickhouse:1.16.0"
 }

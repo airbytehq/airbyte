@@ -79,13 +79,13 @@ spec:
           env:
             - name: POSTGRES_USER
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: DATABASE_USER
             - name: POSTGRES_PWD
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: DATABASE_PASSWORD
             - name: DYNAMIC_CONFIG_FILE_PATH
               value: "config/dynamicconfig/development.yaml"

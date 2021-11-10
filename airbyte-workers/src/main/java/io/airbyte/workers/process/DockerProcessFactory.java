@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -58,7 +38,7 @@ public class DockerProcessFactory implements ProcessFactory {
   private final String networkName;
   private final Path imageExistsScriptPath;
 
-  public DockerProcessFactory(Path workspaceRoot, String workspaceMountSource, String localMountSource, String networkName) {
+  public DockerProcessFactory(final Path workspaceRoot, final String workspaceMountSource, final String localMountSource, final String networkName) {
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
@@ -75,20 +55,21 @@ public class DockerProcessFactory implements ProcessFactory {
         throw new RuntimeException(String.format("Could not set %s to executable", scriptPath));
       }
       return scriptPath;
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public Process create(String jobId,
-                        int attempt,
+  public Process create(final String jobId,
+                        final int attempt,
                         final Path jobRoot,
                         final String imageName,
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
+                        final Map<String, String> labels,
                         final String... args)
       throws WorkerException {
     try {
@@ -100,7 +81,7 @@ public class DockerProcessFactory implements ProcessFactory {
         Files.createDirectory(jobRoot);
       }
 
-      for (Map.Entry<String, String> file : files.entrySet()) {
+      for (final Map.Entry<String, String> file : files.entrySet()) {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
 
@@ -146,7 +127,7 @@ public class DockerProcessFactory implements ProcessFactory {
       LOGGER.info("Preparing command: {}", Joiner.on(" ").join(cmd));
 
       return new ProcessBuilder(cmd).start();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new WorkerException(e.getMessage(), e);
     }
   }
@@ -157,7 +138,7 @@ public class DockerProcessFactory implements ProcessFactory {
   }
 
   @VisibleForTesting
-  boolean checkImageExists(String imageName) throws WorkerException {
+  boolean checkImageExists(final String imageName) throws WorkerException {
     try {
       final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
@@ -170,7 +151,7 @@ public class DockerProcessFactory implements ProcessFactory {
       } else {
         return process.exitValue() == 0;
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }

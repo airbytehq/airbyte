@@ -6,6 +6,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.meilisearch.MeiliSearchDestination'
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
@@ -18,7 +19,7 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-meilisearch')
 
-    integrationTestJavaImplementation "org.testcontainers:testcontainers:1.15.1"
+    integrationTestJavaImplementation "org.testcontainers:testcontainers:1.15.3"
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-facebook-pages:dev
 tests:
@@ -18,3 +18,10 @@ tests:
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      ignored_fields:
+        # Since we generating new Page access token for each connector run this
+        # field would containt different values.
+        page:
+          - "posts/paging/next"
+          - "published_posts/paging/next"
+          - "feed/paging/next"

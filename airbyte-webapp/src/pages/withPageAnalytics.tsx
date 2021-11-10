@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 
-import useRouter from "components/hooks/useRouterHook";
-import { useAnalytics } from "components/hooks/useAnalytics";
+import useRouter from "hooks/useRouter";
+import { useAnalytics } from "hooks/useAnalytics";
 import { Routes } from "./routes";
 
 const getPageName = (pathname: string) => {

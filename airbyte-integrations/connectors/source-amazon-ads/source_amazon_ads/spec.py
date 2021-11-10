@@ -1,28 +1,11 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from typing import List
+
 from pydantic import BaseModel, Field
+from source_amazon_ads.constants import AmazonAdsRegion
 
 
 class AmazonAdsConfig(BaseModel):
@@ -61,7 +44,14 @@ class AmazonAdsConfig(BaseModel):
         description="Start date for collectiong reports, should not be more than 60 days in past. In YYYY-MM-DD format",
         examples=["2022-10-10", "2022-10-22"],
     )
-    host: str = Field(None, alias="_host")
+
+    region: AmazonAdsRegion = Field(name="Region", description="Region to pull data from (EU/NA/FE/SANDBOX)", default=AmazonAdsRegion.NA)
+
+    profiles: List[int] = Field(
+        None,
+        name="Profile Ids",
+        description="profile Ids you want to fetch data for",
+    )
 
     @classmethod
     def schema(cls, **kvargs):
@@ -70,4 +60,10 @@ class AmazonAdsConfig(BaseModel):
         # environment for SAT but dont want it to be visible for end users,
         # filter out it from the jsonschema output
         schema["properties"] = {name: desc for name, desc in schema["properties"].items() if not name.startswith("_")}
+        # Transform pydantic generated enum for region
+        schema["definitions"]["AmazonAdsRegion"].pop("description")
+        schema["properties"]["region"].update(schema["definitions"]["AmazonAdsRegion"])
+        schema["properties"]["region"].pop("allOf", None)
+        schema["properties"]["region"].pop("$ref", None)
+        del schema["definitions"]
         return schema

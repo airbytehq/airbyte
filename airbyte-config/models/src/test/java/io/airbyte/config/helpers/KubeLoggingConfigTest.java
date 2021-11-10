@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -51,8 +31,9 @@ public class KubeLoggingConfigTest {
   public void cleanUpLogs() {
     if (logPath != null) {
       try {
-        LogClientSingleton.deleteLogs(new EnvConfigs(), logPath);
-      } catch (Exception e) {
+        final EnvConfigs envConfigs = new EnvConfigs();
+        LogClientSingleton.getInstance().deleteLogs(envConfigs.getWorkerEnvironment(), envConfigs.getLogConfigs(), logPath);
+      } catch (final Exception e) {
         // Ignore Minio delete error.
       }
     }
@@ -67,12 +48,13 @@ public class KubeLoggingConfigTest {
    */
   @Test
   public void testLoggingConfiguration() throws IOException, InterruptedException {
-    var randPath = Strings.addRandomSuffix("-", "", 5);
+    final EnvConfigs envConfigs = new EnvConfigs();
+    final var randPath = Strings.addRandomSuffix("-", "", 5);
     // This mirrors our Log4j2 set up. See log4j2.xml.
-    LogClientSingleton.setJobMdc(Path.of(randPath));
+    LogClientSingleton.getInstance().setJobMdc(envConfigs.getWorkerEnvironment(), envConfigs.getLogConfigs(), Path.of(randPath));
 
-    var toLog = List.of("line 1", "line 2", "line 3");
-    for (String l : toLog) {
+    final var toLog = List.of("line 1", "line 2", "line 3");
+    for (final String l : toLog) {
       LOGGER.info(l);
     }
     // So we don't publish anything else.
@@ -84,11 +66,11 @@ public class KubeLoggingConfigTest {
     logPath = randPath + "/logs.log/";
     // The same env vars that log4j2 uses to determine where to publish to determine how to retrieve the
     // log file.
-    var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), Path.of(logPath));
+    final var logs = LogClientSingleton.getInstance().getJobLogFile(envConfigs.getWorkerEnvironment(), envConfigs.getLogConfigs(), Path.of(logPath));
     // Each log line is of the form <time-stamp> <log-level> <log-message>. Further, there might be
     // other log lines from the system running. Join all the lines to simplify assertions.
-    var logsLine = Strings.join(logs, " ");
-    for (String l : toLog) {
+    final var logsLine = Strings.join(logs, " ");
+    for (final String l : toLog) {
       assertTrue(logsLine.contains(l));
     }
   }

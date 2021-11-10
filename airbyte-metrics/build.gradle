@@ -1,0 +1,13 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    implementation project(':airbyte-commons')
+    implementation project(':airbyte-config:models')
+
+    implementation 'io.prometheus:simpleclient:0.12.0' // basic client
+    implementation 'io.prometheus:simpleclient_hotspot:0.12.0' // basic client instrumentation
+    implementation 'io.prometheus:simpleclient_httpserver:0.12.0' // basic server to serve prometheus port
+    implementation 'io.prometheus:simpleclient_pushgateway:0.12.0' // push libs for basic server
+}

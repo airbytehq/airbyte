@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.development;
@@ -47,14 +27,16 @@ public abstract class MigrationDevCenter {
     DUMP_SCHEMA
   }
 
+  private final String dbIdentifier;
   private final String schemaDumpFile;
 
-  protected MigrationDevCenter(String schemaDumpFile) {
+  protected MigrationDevCenter(final String dbIdentifier, final String schemaDumpFile) {
+    this.dbIdentifier = dbIdentifier;
     this.schemaDumpFile = schemaDumpFile;
   }
 
   private static PostgreSQLContainer<?> createContainer() {
-    PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:13-alpine")
+    final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName("airbyte")
         .withUsername("docker")
         .withPassword("docker");
@@ -67,48 +49,48 @@ public abstract class MigrationDevCenter {
   protected abstract Database getDatabase(PostgreSQLContainer<?> container) throws IOException;
 
   private void createMigration() {
-    try (PostgreSQLContainer<?> container = createContainer(); Database database = getDatabase(container)) {
-      FlywayDatabaseMigrator migrator = getMigrator(database);
-      MigrationDevHelper.createNextMigrationFile("configs", migrator);
-    } catch (Exception e) {
+    try (final PostgreSQLContainer<?> container = createContainer(); final Database database = getDatabase(container)) {
+      final FlywayDatabaseMigrator migrator = getMigrator(database);
+      MigrationDevHelper.createNextMigrationFile(dbIdentifier, migrator);
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   private void runLastMigration() {
-    try (PostgreSQLContainer<?> container = createContainer(); Database database = getDatabase(container)) {
-      FlywayDatabaseMigrator fullMigrator = getMigrator(database);
-      DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
+    try (final PostgreSQLContainer<?> container = createContainer(); final Database database = getDatabase(container)) {
+      final FlywayDatabaseMigrator fullMigrator = getMigrator(database);
+      final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
       MigrationDevHelper.runLastMigration(devDatabaseMigrator);
-      String schema = fullMigrator.dumpSchema();
+      final String schema = fullMigrator.dumpSchema();
       MigrationDevHelper.dumpSchema(schema, schemaDumpFile, false);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   private void dumpSchema() {
-    try (PostgreSQLContainer<?> container = createContainer(); Database database = getDatabase(container)) {
-      FlywayDatabaseMigrator migrator = getMigrator(database);
+    try (final PostgreSQLContainer<?> container = createContainer(); final Database database = getDatabase(container)) {
+      final FlywayDatabaseMigrator migrator = getMigrator(database);
       migrator.migrate();
-      String schema = migrator.dumpSchema();
+      final String schema = migrator.dumpSchema();
       MigrationDevHelper.dumpSchema(schema, schemaDumpFile, true);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     final MigrationDevCenter devCenter;
 
-    Db db = Db.valueOf(args[0].toUpperCase());
+    final Db db = Db.valueOf(args[0].toUpperCase());
     switch (db) {
       case CONFIGS -> devCenter = new ConfigsDatabaseMigrationDevCenter();
       case JOBS -> devCenter = new JobsDatabaseMigrationDevCenter();
       default -> throw new IllegalArgumentException("Unexpected database: " + args[0]);
     }
 
-    Command command = Command.valueOf(args[1].toUpperCase());
+    final Command command = Command.valueOf(args[1].toUpperCase());
     switch (command) {
       case CREATE -> devCenter.createMigration();
       case MIGRATE -> devCenter.runLastMigration();

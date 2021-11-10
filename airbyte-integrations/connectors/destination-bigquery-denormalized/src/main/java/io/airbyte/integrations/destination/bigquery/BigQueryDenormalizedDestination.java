@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -45,8 +25,10 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -59,24 +41,28 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   protected static final String PROPERTIES_FIELD = "properties";
   protected static final String NESTED_ARRAY_FIELD = "value";
   private static final String TYPE_FIELD = "type";
+  private static final String FORMAT_FIELD = "format";
+  private static final String REF_DEFINITION_KEY = "$ref";
+  private static final Set<String> fieldsContainRefDefinitionValue = new HashSet<>();
 
   @Override
-  protected String getTargetTableName(String streamName) {
+  protected String getTargetTableName(final String streamName) {
     // This BigQuery destination does not write to a staging "raw" table but directly to a normalized
     // table
     return getNamingResolver().getIdentifier(streamName);
   }
 
-  @Override
-  protected AirbyteMessageConsumer getRecordConsumer(BigQuery bigquery,
-                                                     Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                                     ConfiguredAirbyteCatalog catalog,
-                                                     Consumer<AirbyteMessage> outputRecordCollector) {
-    return new BigQueryDenormalizedRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, getNamingResolver());
+  protected AirbyteMessageConsumer getRecordConsumer(final BigQuery bigquery,
+                                                     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                                     final ConfiguredAirbyteCatalog catalog,
+                                                     final Consumer<AirbyteMessage> outputRecordCollector,
+                                                     final boolean isGcsUploadingMode,
+                                                     final boolean isKeepFilesInGcs) {
+    return new BigQueryDenormalizedRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, getNamingResolver(), fieldsContainRefDefinitionValue);
   }
 
   @Override
-  protected Schema getBigQuerySchema(JsonNode jsonSchema) {
+  protected Schema getBigQuerySchema(final JsonNode jsonSchema) {
     final List<Field> fieldList = getSchemaFields(getNamingResolver(), jsonSchema);
     if (fieldList.stream().noneMatch(f -> f.getName().equals(JavaBaseConstants.COLUMN_NAME_AB_ID))) {
       fieldList.add(Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING));
@@ -87,13 +73,39 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     return com.google.cloud.bigquery.Schema.of(fieldList);
   }
 
-  private static List<Field> getSchemaFields(BigQuerySQLNameTransformer namingResolver, JsonNode jsonSchema) {
+  private static List<Field> getSchemaFields(final BigQuerySQLNameTransformer namingResolver, final JsonNode jsonSchema) {
     Preconditions.checkArgument(jsonSchema.isObject() && jsonSchema.has(PROPERTIES_FIELD));
     final ObjectNode properties = (ObjectNode) jsonSchema.get(PROPERTIES_FIELD);
-    return Jsons.keys(properties).stream().map(key -> getField(namingResolver, key, properties.get(key)).build()).collect(Collectors.toList());
+    List<Field> tmpFields = Jsons.keys(properties).stream()
+        .peek(addToRefList(properties))
+        .map(key -> getField(namingResolver, key, properties.get(key))
+            .build())
+        .collect(Collectors.toList());
+    if (!fieldsContainRefDefinitionValue.isEmpty()) {
+      LOGGER.warn("Next fields contain \"$ref\" as Definition: {}. They are going to be saved as String Type column", fieldsContainRefDefinitionValue);
+    }
+    return tmpFields;
   }
 
-  private static Builder getField(BigQuerySQLNameTransformer namingResolver, String key, JsonNode fieldDefinition) {
+    /**
+   * @param properties - JSON schema with properties
+   *
+   * The method is responsible for population of fieldsContainRefDefinitionValue set with keys
+   * contain $ref definition
+   *
+   * Currently, AirByte doesn't support parsing value by $ref key definition.
+   * The issue to track this <a href="https://github.com/airbytehq/airbyte/issues/7725">7725</a>
+   */
+  private static Consumer<String> addToRefList(ObjectNode properties) {
+    return key -> {
+      if (properties.get(key).has(REF_DEFINITION_KEY)) {
+        fieldsContainRefDefinitionValue.add(key);
+      }
+    };
+  }
+
+  private static Builder getField(final BigQuerySQLNameTransformer namingResolver, final String key, final JsonNode fieldDefinition) {
+
     final String fieldName = namingResolver.getIdentifier(key);
     final Builder builder = Field.newBuilder(fieldName, StandardSQLTypeName.STRING);
     final List<JsonSchemaType> fieldTypes = getTypes(fieldName, fieldDefinition.get(TYPE_FIELD));
@@ -117,7 +129,10 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
             if (fieldDefinition.has("items")) {
               items = fieldDefinition.get("items");
             } else {
-              items = fieldDefinition;
+              LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
+              // this is handler for case when we get "array" without "items"
+              // (https://github.com/airbytehq/airbyte/issues/5486)
+              items = getTypeStringSchema();
             }
             final Builder subField = getField(namingResolver, fieldName, items).setMode(Mode.REPEATED);
             // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
@@ -149,10 +164,28 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
         }
       }
     }
+
+    // If a specific format is defined, use their specific type instead of the JSON's one
+    final JsonNode fieldFormat = fieldDefinition.get(FORMAT_FIELD);
+    if (fieldFormat != null) {
+      final JsonSchemaFormat schemaFormat = JsonSchemaFormat.fromJsonSchemaFormat(fieldFormat.asText());
+      if (schemaFormat != null) {
+        builder.setType(schemaFormat.getBigQueryType());
+      }
+    }
+
     return builder;
   }
 
-  private static List<JsonSchemaType> getTypes(String fieldName, JsonNode type) {
+  private static JsonNode getTypeStringSchema() {
+    return Jsons.deserialize("{\n"
+        + "    \"type\": [\n"
+        + "      \"string\"\n"
+        + "    ]\n"
+        + "  }");
+  }
+
+  private static List<JsonSchemaType> getTypes(final String fieldName, final JsonNode type) {
     if (type == null) {
       LOGGER.warn("Field {} has no type defined, defaulting to STRING", fieldName);
       return List.of(JsonSchemaType.STRING);
@@ -169,7 +202,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     }
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new BigQueryDenormalizedDestination();
     LOGGER.info("starting destination: {}", BigQueryDenormalizedDestination.class);
     new IntegrationRunner(destination).run(args);

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -67,6 +47,7 @@ public class TestStreamingJdbcDatabase {
   private JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
   private JdbcDatabase defaultJdbcDatabase;
   private JdbcDatabase streamingJdbcDatabase;
+  private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
 
   @BeforeAll
   static void init() {
@@ -113,7 +94,7 @@ public class TestStreamingJdbcDatabase {
   @SuppressWarnings("unchecked")
   @Test
   void testExecute() throws SQLException {
-    CheckedConsumer<Connection, SQLException> queryExecutor = mock(CheckedConsumer.class);
+    final CheckedConsumer<Connection, SQLException> queryExecutor = mock(CheckedConsumer.class);
     doNothing().when(defaultJdbcDatabase).execute(queryExecutor);
 
     streamingJdbcDatabase.execute(queryExecutor);
@@ -128,7 +109,7 @@ public class TestStreamingJdbcDatabase {
 
     final List<JsonNode> actual = streamingJdbcDatabase.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        JdbcUtils::rowToJson);
+        sourceOperations::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual);
     verify(defaultJdbcDatabase).bufferedResultSetQuery(any(), any());
@@ -141,7 +122,7 @@ public class TestStreamingJdbcDatabase {
 
     final Stream<JsonNode> actual = streamingJdbcDatabase.resultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        JdbcUtils::rowToJson);
+        sourceOperations::rowToJson);
     final List<JsonNode> actualAsList = actual.collect(Collectors.toList());
     actual.close();
 
@@ -162,14 +143,14 @@ public class TestStreamingJdbcDatabase {
           ps1.set(ps);
           return ps;
         },
-        JdbcUtils::rowToJson);
+        sourceOperations::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual.collect(Collectors.toList()));
     // verify that the query configuration is invoked.
     verify(jdbcStreamingQueryConfiguration).accept(connection1.get(), ps1.get());
   }
 
-  private JsonNode getConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
+  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())

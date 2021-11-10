@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.migration;
@@ -30,9 +10,14 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.common.io.Resources;
 import io.airbyte.commons.io.Archives;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
@@ -42,15 +27,22 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.FileSystemConfigPersistence;
-import io.airbyte.config.persistence.YamlSeedConfigPersistence;
+import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
+import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.migrate.Migrations;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.RunMigration;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -64,9 +56,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 public class RunMigrationTest {
 
@@ -74,11 +69,39 @@ public class RunMigrationTest {
   private static final String TARGET_VERSION = Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1).getVersion();
   private static final String DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED = "d2147be5-fa36-4936-977e-f031affa5895";
   private static final String DEPRECATED_SOURCE_DEFINITION_BEING_USED = "4eb22946-2a79-4d20-a3e6-effd234613c3";
+  private static final ConnectorSpecification MOCK_CONNECTOR_SPEC = new ConnectorSpecification()
+      .withConnectionSpecification(Jsons.deserialize("{}"));
+
+  private static PostgreSQLContainer<?> container;
+  private static Database jobDatabase;
+  private static Database configDatabase;
+
   private List<File> resourceToBeCleanedUp;
+  private SecretPersistence secretPersistence;
+
+  @BeforeAll
+  public static void prepareContainer() throws IOException {
+    container = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withDatabaseName("airbyte")
+        .withUsername("docker")
+        .withPassword("docker");
+    container.start();
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    jobDatabase = databaseProviders.createNewJobsDatabase();
+    configDatabase = databaseProviders.createNewConfigsDatabase();
+  }
+
+  @AfterAll
+  public static void closeContainer() {
+    if (container != null) {
+      container.close();
+    }
+  }
 
   @BeforeEach
   public void setup() {
     resourceToBeCleanedUp = new ArrayList<>();
+    secretPersistence = new MemorySecretPersistence();
   }
 
   @AfterEach
@@ -97,44 +120,65 @@ public class RunMigrationTest {
   @SuppressWarnings("UnstableApiUsage")
   @Test
   public void testRunMigration() throws Exception {
-    try (final StubAirbyteDB stubAirbyteDB = new StubAirbyteDB()) {
-      final File file = Path
-          .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
-          .toFile();
+    final Path configRoot = Files.createTempDirectory(Path.of("/tmp"), "dummy_data");
+    final ConfigPersistence configPersistence = getConfigPersistence(configRoot);
 
-      final Path dummyDataSource = Path.of(Resources.getResource("migration/dummy_data").toURI());
+    final File file = Path
+        .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
+        .toFile();
+    final JobPersistence jobPersistence = getJobPersistence(file, INITIAL_VERSION);
+    assertPreMigrationConfigs(configPersistence, jobPersistence);
 
-      final Path configRoot = Files.createTempDirectory(Path.of("/tmp"), "dummy_data");
-      FileUtils.copyDirectory(dummyDataSource.toFile(), configRoot.toFile());
-      resourceToBeCleanedUp.add(configRoot.toFile());
-      final JobPersistence jobPersistence = getJobPersistence(stubAirbyteDB.getDatabase(), file, INITIAL_VERSION);
-      assertPreMigrationConfigs(configRoot, jobPersistence);
+    runMigration(configPersistence, jobPersistence);
 
-      runMigration(jobPersistence, configRoot);
-
-      assertDatabaseVersion(jobPersistence, TARGET_VERSION);
-      assertPostMigrationConfigs(configRoot);
-      FileUtils.deleteDirectory(configRoot.toFile());
-    }
+    assertDatabaseVersion(jobPersistence, TARGET_VERSION);
+    assertPostMigrationConfigs(configPersistence);
+    FileUtils.deleteDirectory(configRoot.toFile());
   }
 
-  private void assertPreMigrationConfigs(Path configRoot, JobPersistence jobPersistence) throws Exception {
+  @SuppressWarnings("UnstableApiUsage")
+  private ConfigPersistence getConfigPersistence(final Path configRoot) throws Exception {
+    final Path dummyDataSource = Path.of(Resources.getResource("migration/dummy_data").toURI());
+
+    FileUtils.copyDirectory(dummyDataSource.toFile(), configRoot.toFile());
+    resourceToBeCleanedUp.add(configRoot.toFile());
+    final Configs configs = mock(Configs.class);
+    when(configs.getConfigRoot()).thenReturn(configRoot);
+    // The database provider creates a config database that is ready to use, which contains a mock
+    // config entry. However, the migrateFileConfigs method will only copy the file configs if the
+    // database is empty. So we need to purge the database first.
+    configDatabase.transaction(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs;"));
+    return new DatabaseConfigPersistence(configDatabase)
+        .migrateFileConfigs(configs);
+  }
+
+  private void assertPreMigrationConfigs(final ConfigPersistence configPersistence, final JobPersistence jobPersistence) throws Exception {
     assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
-    ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot));
-    Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSources().stream()
+    final ConfigRepository configRepository = new ConfigRepository(
+        configPersistence,
+        new NoOpSecretsHydrator(),
+        Optional.of(secretPersistence),
+        Optional.of(secretPersistence));
+    configRepository.setSpecFetcher(s -> MOCK_CONNECTOR_SPEC);
+    final Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSourceDefinitions().stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
     assertTrue(sourceDefinitionsBeforeMigration.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
     assertTrue(sourceDefinitionsBeforeMigration.containsKey(DEPRECATED_SOURCE_DEFINITION_BEING_USED));
   }
 
-  private void assertDatabaseVersion(JobPersistence jobPersistence, String version) throws IOException {
+  private void assertDatabaseVersion(final JobPersistence jobPersistence, final String version) throws IOException {
     final Optional<String> versionFromDb = jobPersistence.getVersion();
     assertTrue(versionFromDb.isPresent());
     assertEquals(versionFromDb.get(), version);
   }
 
-  private void assertPostMigrationConfigs(Path importRoot) throws Exception {
-    final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(importRoot));
+  private void assertPostMigrationConfigs(final ConfigPersistence configPersistence) throws Exception {
+    final ConfigRepository configRepository = new ConfigRepository(
+        configPersistence,
+        new NoOpSecretsHydrator(),
+        Optional.of(secretPersistence),
+        Optional.of(secretPersistence));
+    configRepository.setSpecFetcher(s -> MOCK_CONNECTOR_SPEC);
     final UUID workspaceId = configRepository.listStandardWorkspaces(true).get(0).getWorkspaceId();
     // originally the default workspace started with a hardcoded id. the migration in version 0.29.0
     // took that id and randomized it. we want to check that the id is now NOT that hardcoded id and
@@ -149,13 +193,13 @@ public class RunMigrationTest {
     assertDestinationDefinitions(configRepository);
   }
 
-  private void assertSourceDefinitions(ConfigRepository configRepository) throws JsonValidationException, IOException {
-    final Map<String, StandardSourceDefinition> sourceDefinitions = configRepository.listStandardSources()
+  private void assertSourceDefinitions(final ConfigRepository configRepository) throws JsonValidationException, IOException {
+    final Map<String, StandardSourceDefinition> sourceDefinitions = configRepository.listStandardSourceDefinitions()
         .stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
-    assertTrue(sourceDefinitions.size() >= 59);
-    // the definition is not present in latest seeds so it should be deleted
-    assertFalse(sourceDefinitions.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
+    assertTrue(sourceDefinitions.size() >= 98);
+    // the definition is not present in latest seeds but we no longer purge unused deprecated definition
+    assertTrue(sourceDefinitions.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
     // the definition is not present in latest seeds but it was being used as a connection so it should
     // not be deleted
     assertTrue(sourceDefinitions.containsKey(DEPRECATED_SOURCE_DEFINITION_BEING_USED));
@@ -165,7 +209,7 @@ public class RunMigrationTest {
     assertEquals("MySQL", mysqlDefinition.getName());
 
     final StandardSourceDefinition postgresDefinition = sourceDefinitions.get("decd338e-5647-4c0b-adf4-da0e75f5a750");
-    String[] tagBrokenAsArray = postgresDefinition.getDockerImageTag().replace(".", ",").split(",");
+    final String[] tagBrokenAsArray = postgresDefinition.getDockerImageTag().replace(".", ",").split(",");
     assertEquals(3, tagBrokenAsArray.length);
     assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
     assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
@@ -173,7 +217,7 @@ public class RunMigrationTest {
     assertTrue(postgresDefinition.getName().contains("Postgres"));
   }
 
-  private void assertDestinationDefinitions(ConfigRepository configRepository) throws JsonValidationException, IOException {
+  private void assertDestinationDefinitions(final ConfigRepository configRepository) throws JsonValidationException, IOException {
     final Map<String, StandardDestinationDefinition> sourceDefinitions = configRepository.listStandardDestinationDefinitions()
         .stream()
         .collect(Collectors.toMap(c -> c.getDestinationDefinitionId().toString(), c -> c));
@@ -188,7 +232,7 @@ public class RunMigrationTest {
     assertEquals("0.2.0", localCsvDefinition.getDockerImageTag());
 
     final StandardDestinationDefinition snowflakeDefinition = sourceDefinitions.get("424892c4-daac-4491-b35d-c6688ba547ba");
-    String[] tagBrokenAsArray = snowflakeDefinition.getDockerImageTag().replace(".", ",").split(",");
+    final String[] tagBrokenAsArray = snowflakeDefinition.getDockerImageTag().replace(".", ",").split(",");
     assertEquals(3, tagBrokenAsArray.length);
     assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
     assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
@@ -196,12 +240,12 @@ public class RunMigrationTest {
     assertTrue(snowflakeDefinition.getName().contains("Snowflake"));
   }
 
-  private void assertStandardSyncs(ConfigRepository configRepository,
-                                   StandardSyncOperation standardSyncOperation)
+  private void assertStandardSyncs(final ConfigRepository configRepository,
+                                   final StandardSyncOperation standardSyncOperation)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<StandardSync> standardSyncs = configRepository.listStandardSyncs();
     assertEquals(standardSyncs.size(), 2);
-    for (StandardSync standardSync : standardSyncs) {
+    for (final StandardSync standardSync : standardSyncs) {
       if (standardSync.getConnectionId().toString().equals("a294256f-1abe-4837-925f-91602c7207b4")) {
         assertEquals(standardSync.getPrefix(), "");
         assertEquals(standardSync.getSourceId().toString(), "28ffee2b-372a-4f72-9b95-8ed56a8b99c5");
@@ -228,7 +272,7 @@ public class RunMigrationTest {
   }
 
   @NotNull
-  private StandardSyncOperation assertSyncOperations(ConfigRepository configRepository) throws IOException, JsonValidationException {
+  private StandardSyncOperation assertSyncOperations(final ConfigRepository configRepository) throws IOException, JsonValidationException {
     final List<StandardSyncOperation> standardSyncOperations = configRepository.listStandardSyncOperations();
     assertEquals(standardSyncOperations.size(), 1);
     final StandardSyncOperation standardSyncOperation = standardSyncOperations.get(0);
@@ -240,7 +284,7 @@ public class RunMigrationTest {
     return standardSyncOperation;
   }
 
-  private void assertSources(ConfigRepository configRepository, UUID workspaceId) throws JsonValidationException, IOException {
+  private void assertSources(final ConfigRepository configRepository, final UUID workspaceId) throws JsonValidationException, IOException {
     final Map<String, SourceConnection> sources = configRepository.listSourceConnection()
         .stream()
         .collect(Collectors.toMap(sourceConnection -> sourceConnection.getSourceId().toString(), sourceConnection -> sourceConnection));
@@ -259,7 +303,7 @@ public class RunMigrationTest {
 
   }
 
-  private void assertWorkspace(ConfigRepository configRepository, UUID workspaceId) throws JsonValidationException, IOException {
+  private void assertWorkspace(final ConfigRepository configRepository, final UUID workspaceId) throws JsonValidationException, IOException {
     final List<StandardWorkspace> standardWorkspaces = configRepository.listStandardWorkspaces(true);
     assertEquals(1, standardWorkspaces.size());
     final StandardWorkspace workspace = standardWorkspaces.get(0);
@@ -274,7 +318,7 @@ public class RunMigrationTest {
     assertEquals(false, workspace.getDisplaySetupWizard());
   }
 
-  private void assertDestinations(ConfigRepository configRepository, UUID workspaceId) throws JsonValidationException, IOException {
+  private void assertDestinations(final ConfigRepository configRepository, final UUID workspaceId) throws JsonValidationException, IOException {
     final List<DestinationConnection> destinationConnections = configRepository.listDestinationConnection();
     assertEquals(destinationConnections.size(), 2);
     for (final DestinationConnection destination : destinationConnections) {
@@ -300,19 +344,26 @@ public class RunMigrationTest {
     }
   }
 
-  private void runMigration(JobPersistence jobPersistence, Path configRoot) throws Exception {
+  private void runMigration(final ConfigPersistence configPersistence, final JobPersistence jobPersistence) throws Exception {
+    final ConfigRepository configRepository = new ConfigRepository(
+        configPersistence,
+        new NoOpSecretsHydrator(),
+        Optional.of(secretPersistence),
+        Optional.of(secretPersistence));
+    configRepository.setSpecFetcher(s -> MOCK_CONNECTOR_SPEC);
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
-        new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot)),
-        TARGET_VERSION,
-        YamlSeedConfigPersistence.get())) {
+        configRepository,
+        new AirbyteVersion(TARGET_VERSION),
+        YamlSeedConfigPersistence.getDefault(),
+        mock(SpecFetcher.class))) {
       runMigration.run();
     }
   }
 
   @SuppressWarnings("SameParameterValue")
-  private JobPersistence getJobPersistence(Database database, File file, String version) throws IOException {
-    final DefaultJobPersistence jobPersistence = new DefaultJobPersistence(database);
+  private JobPersistence getJobPersistence(final File file, final String version) throws IOException {
+    final DefaultJobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "db_init");
     resourceToBeCleanedUp.add(tempFolder.toFile());
 

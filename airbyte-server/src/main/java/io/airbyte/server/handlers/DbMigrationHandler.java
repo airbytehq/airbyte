@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -43,27 +23,27 @@ public class DbMigrationHandler {
   private final DatabaseMigrator configDbMigrator;
   private final DatabaseMigrator jobDbMigrator;
 
-  public DbMigrationHandler(Database configsDatabase, Database jobsDatabase) {
+  public DbMigrationHandler(final Database configsDatabase, final Database jobsDatabase) {
     this.configDbMigrator = new ConfigsDatabaseMigrator(configsDatabase, DbMigrationHandler.class.getSimpleName());
     this.jobDbMigrator = new JobsDatabaseMigrator(jobsDatabase, DbMigrationHandler.class.getSimpleName());
   }
 
-  public DbMigrationReadList list(DbMigrationRequestBody request) {
-    DatabaseMigrator migrator = getMigrator(request.getDatabase());
+  public DbMigrationReadList list(final DbMigrationRequestBody request) {
+    final DatabaseMigrator migrator = getMigrator(request.getDatabase());
     return new DbMigrationReadList()
         .migrations(migrator.list().stream().map(DbMigrationHandler::toMigrationRead).collect(Collectors.toList()));
   }
 
-  public DbMigrationExecutionRead migrate(DbMigrationRequestBody request) {
-    DatabaseMigrator migrator = getMigrator(request.getDatabase());
-    MigrateResult result = migrator.migrate();
+  public DbMigrationExecutionRead migrate(final DbMigrationRequestBody request) {
+    final DatabaseMigrator migrator = getMigrator(request.getDatabase());
+    final MigrateResult result = migrator.migrate();
     return new DbMigrationExecutionRead()
         .initialVersion(result.initialSchemaVersion)
         .targetVersion(result.targetSchemaVersion)
         .executedMigrations(result.migrations.stream().map(DbMigrationHandler::toMigrationRead).collect(Collectors.toList()));
   }
 
-  private DatabaseMigrator getMigrator(String database) {
+  private DatabaseMigrator getMigrator(final String database) {
     if (database.equalsIgnoreCase("configs")) {
       return configDbMigrator;
     } else if (database.equalsIgnoreCase("jobs")) {
@@ -72,7 +52,7 @@ public class DbMigrationHandler {
     throw new IllegalArgumentException("Unexpected database: " + database);
   }
 
-  private static DbMigrationRead toMigrationRead(MigrationInfo info) {
+  private static DbMigrationRead toMigrationRead(final MigrationInfo info) {
     return new DbMigrationRead()
         .migrationType(info.getType().name())
         .migrationVersion(info.getVersion().toString())
@@ -83,7 +63,7 @@ public class DbMigrationHandler {
         .migrationScript(info.getScript());
   }
 
-  private static DbMigrationRead toMigrationRead(MigrateOutput output) {
+  private static DbMigrationRead toMigrationRead(final MigrateOutput output) {
     return new DbMigrationRead()
         .migrationType(String.format("%s %s", output.type, output.category))
         .migrationVersion(output.version)

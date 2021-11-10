@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.validation.json;
@@ -53,7 +33,7 @@ public class JsonSchemaValidator {
     this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
   }
 
-  public Set<String> validate(JsonNode schemaJson, JsonNode objectJson) {
+  public Set<String> validate(final JsonNode schemaJson, final JsonNode objectJson) {
     return validateInternal(schemaJson, objectJson)
         .stream()
         .map(ValidationMessage::getMessage)
@@ -61,7 +41,7 @@ public class JsonSchemaValidator {
   }
 
   // keep this internal as it returns a type specific to the wrapped library.
-  private Set<ValidationMessage> validateInternal(JsonNode schemaJson, JsonNode objectJson) {
+  private Set<ValidationMessage> validateInternal(final JsonNode schemaJson, final JsonNode objectJson) {
     Preconditions.checkNotNull(schemaJson);
     Preconditions.checkNotNull(objectJson);
 
@@ -69,8 +49,8 @@ public class JsonSchemaValidator {
         .validate(objectJson);
   }
 
-  public boolean test(JsonNode schemaJson, JsonNode objectJson) {
-    Set<ValidationMessage> validationMessages = validateInternal(schemaJson, objectJson);
+  public boolean test(final JsonNode schemaJson, final JsonNode objectJson) {
+    final Set<ValidationMessage> validationMessages = validateInternal(schemaJson, objectJson);
 
     if (!validationMessages.isEmpty()) {
       LOGGER.info("JSON schema validation failed. \nerrors: {}", Strings.join(validationMessages, ", "));
@@ -79,23 +59,22 @@ public class JsonSchemaValidator {
     return validationMessages.isEmpty();
   }
 
-  public void ensure(JsonNode schemaJson, JsonNode objectJson) throws JsonValidationException {
+  public void ensure(final JsonNode schemaJson, final JsonNode objectJson) throws JsonValidationException {
     final Set<ValidationMessage> validationMessages = validateInternal(schemaJson, objectJson);
     if (validationMessages.isEmpty()) {
       return;
     }
 
     throw new JsonValidationException(String.format(
-        "json schema validation failed. \nerrors: %s \nschema: \n%s \nobject: \n%s",
+        "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
         Strings.join(validationMessages, ", "),
-        schemaJson.toPrettyString(),
-        objectJson.toPrettyString()));
+        schemaJson.toPrettyString()));
   }
 
-  public void ensureAsRuntime(JsonNode schemaJson, JsonNode objectJson) {
+  public void ensureAsRuntime(final JsonNode schemaJson, final JsonNode objectJson) {
     try {
       ensure(schemaJson, objectJson);
-    } catch (JsonValidationException e) {
+    } catch (final JsonValidationException e) {
       throw new RuntimeException(e);
     }
   }
@@ -119,7 +98,7 @@ public class JsonSchemaValidator {
   public static JsonNode getSchema(final File schemaFile) {
     try {
       return getProcessor().process(schemaFile);
-    } catch (IOException | JsonReferenceException e) {
+    } catch (final IOException | JsonReferenceException e) {
       throw new RuntimeException(e);
     }
   }
@@ -133,11 +112,11 @@ public class JsonSchemaValidator {
    *        of a JsonSchema file (instead of the main object in that file).
    * @return schema object processed from across all dependency files.
    */
-  public static JsonNode getSchema(final File schemaFile, String definitionStructName) {
+  public static JsonNode getSchema(final File schemaFile, final String definitionStructName) {
     try {
       final JsonContext jsonContext = new JsonContext(schemaFile);
       return getProcessor().process(jsonContext, jsonContext.getDocument().get("definitions").get(definitionStructName));
-    } catch (IOException | JsonReferenceException e) {
+    } catch (final IOException | JsonReferenceException e) {
       throw new RuntimeException(e);
     }
   }

@@ -3,7 +3,7 @@ repos:
     rev: v0.8.8
     hooks:
       - id: licenseheaders
-        args: ["--tmpl=LICENSE", "--ext=py", "-f"]
+        args: ["--tmpl=LICENSE_SHORT", "--ext=py", "-f"]
 
   - repo: https://github.com/ambv/black
     rev: 20.8b1
@@ -35,3 +35,16 @@ repos:
     hooks:
       - id: mypy
         args: ["--config-file=tools/python/.mypy.ini"]
+
+  - repo: local
+    hooks:
+      - id: spec-linter
+        name: validate connectors spec files
+        language: system
+        entry: python tools/git_hooks/spec_linter.py
+        files: ^.*/spec.json$
+        exclude: |
+          (?x)^.*(
+              /connectors/destination-e2e-test|
+              /connectors/source-e2e-test
+          ).*$

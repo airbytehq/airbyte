@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.resources;
@@ -41,13 +21,21 @@ import java.util.stream.Stream;
 public class MoreResources {
 
   @SuppressWarnings("UnstableApiUsage")
-  public static String readResource(String name) throws IOException {
-    URL resource = Resources.getResource(name);
+  public static String readResource(final String name) throws IOException {
+    final URL resource = Resources.getResource(name);
     return Resources.toString(resource, StandardCharsets.UTF_8);
   }
 
-  public static byte[] readBytes(String name) throws IOException {
-    URL resource = Resources.getResource(name);
+  @SuppressWarnings("UnstableApiUsage")
+  public static String readResource(final Class<?> klass, final String name) throws IOException {
+    final String rootedName = !name.startsWith("/") ? String.format("/%s", name) : name;
+    final URL url = Resources.getResource(klass, rootedName);
+    return Resources.toString(url, StandardCharsets.UTF_8);
+  }
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static byte[] readBytes(final String name) throws IOException {
+    final URL resource = Resources.getResource(name);
     return Resources.toByteArray(resource);
   }
 
@@ -59,7 +47,7 @@ public class MoreResources {
    * @return stream of paths to each resource file. THIS STREAM MUST BE CLOSED.
    * @throws IOException you never know when you IO.
    */
-  public static Stream<Path> listResources(Class<?> klass, String name) throws IOException {
+  public static Stream<Path> listResources(final Class<?> klass, final String name) throws IOException {
     Preconditions.checkNotNull(klass);
     Preconditions.checkNotNull(name);
     Preconditions.checkArgument(!name.isBlank());
@@ -67,8 +55,10 @@ public class MoreResources {
     try {
       final String rootedResourceDir = !name.startsWith("/") ? String.format("/%s", name) : name;
       final URL url = klass.getResource(rootedResourceDir);
+      // noinspection ConstantConditions
+      Preconditions.checkNotNull(url, "Could not find resource.");
 
-      Path searchPath;
+      final Path searchPath;
       if (url.toString().startsWith("jar")) {
         final FileSystem fileSystem = FileSystems.newFileSystem(url.toURI(), Collections.emptyMap());
         searchPath = fileSystem.getPath(rootedResourceDir);
@@ -78,7 +68,7 @@ public class MoreResources {
         return Files.walk(searchPath, 1);
       }
 
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new RuntimeException(e);
     }
   }

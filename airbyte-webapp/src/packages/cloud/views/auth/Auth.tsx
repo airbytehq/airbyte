@@ -3,14 +3,16 @@ import styled from "styled-components";
 import { Redirect, Route, Switch } from "react-router-dom";
 
 import { LoadingPage } from "components";
-import useRouter from "components/hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 import FormContent from "./components/FormContent";
 import News from "./components/News";
+
+import { FirebaseActionMode, Routes } from "packages/cloud/routes";
 
 import { LoginPage } from "./LoginPage";
 import { SignupPage } from "./SignupPage";
 import { ResetPasswordPage } from "./ResetPasswordPage";
-import { Routes } from "packages/cloud/routes";
+import { ResetPasswordConfirmPage } from "./ConfirmPasswordResetPage";
 
 const Content = styled.div`
   width: 100%;
@@ -35,33 +37,49 @@ const NewsPart = styled(Part)`
   justify-content: space-between;
 `;
 
+const FirebaseActionRoute: React.FC = () => {
+  const { query } = useRouter<{ mode: string }>();
+
+  if (query.mode === FirebaseActionMode.RESET_PASSWORD) {
+    return <ResetPasswordConfirmPage />;
+  }
+  return <LoadingPage />;
+};
+
 const Auth: React.FC = () => {
   const { pathname } = useRouter();
 
   return (
-    <Content>
-      <Part>
-        <FormContent toLogin={pathname === Routes.Signup}>
-          <Suspense fallback={<LoadingPage />}>
-            <Switch>
-              <Route path={Routes.Login}>
-                <LoginPage />
-              </Route>
-              <Route path={Routes.Signup}>
-                <SignupPage />
-              </Route>
-              <Route path={Routes.ResetPassword}>
-                <ResetPasswordPage />
-              </Route>
-              <Redirect to={Routes.Login} />
-            </Switch>
-          </Suspense>
-        </FormContent>
-      </Part>
-      <NewsPart>
-        <News />
-      </NewsPart>
-    </Content>
+    <Switch>
+      <Route>
+        <Content>
+          <Part>
+            <FormContent toLogin={pathname === Routes.Signup}>
+              <Suspense fallback={<LoadingPage />}>
+                <Switch>
+                  <Route path={Routes.Login}>
+                    <LoginPage />
+                  </Route>
+                  <Route path={Routes.Signup}>
+                    <SignupPage />
+                  </Route>
+                  <Route path={Routes.ResetPassword}>
+                    <ResetPasswordPage />
+                  </Route>
+                  <Route path={Routes.FirebaseAction}>
+                    <FirebaseActionRoute />
+                  </Route>
+                  <Redirect to={Routes.Login} />
+                </Switch>
+              </Suspense>
+            </FormContent>
+          </Part>
+          <NewsPart>
+            <News />
+          </NewsPart>
+        </Content>
+      </Route>
+    </Switch>
   );
 };
 

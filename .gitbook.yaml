@@ -23,7 +23,7 @@ redirects:
   changelog: ./project-overview/changelog.md
   changelog/platform: ./project-overview/changelog/platform.md
   changelog/connectors: ./project-overview/changelog/connectors.md
-  license: ./project-overview/license.md
+  license: ./project-overview/licenses/README.md
   tutorials/postgres-replication: ./examples/postgres-replication.md
   tutorials/build-a-slack-activity-dashboard: ./examples/build-a-slack-activity-dashboard.md
   tutorials/zoom-activity-dashboard: ./examples/zoom-activity-dashboard.md
@@ -72,3 +72,4 @@ redirects:
   contributing-to-airbyte/building-new-connector/tutorials/building-a-python-source: ./connector-development/tutorials/building-a-python-source.md
   contributing-to-airbyte/building-new-connector/tutorials/building-a-python-destination: ./connector-development/tutorials/building-a-python-destination.md
   contributing-to-airbyte/building-new-connector/tutorials/building-a-java-destination: ./connector-development/tutorials/building-a-java-destination.md
+  project-overview/code-of-conduct: ./project-overview/slack-code-of-conduct

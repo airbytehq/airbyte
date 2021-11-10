@@ -8,10 +8,16 @@ IMAGE_RESTISH_PATH=/root/.restish/apis.json
 DOWNLOADED_CONFIG_PATH=/tmp/downloaded-airbyte-api-config
 IMAGE_CONFIG_PATH=/tmp/config.yaml
 
-API_URL=http://localhost:8001
-curl -s "$API_URL"/api/v1/openapi -o "$DOWNLOADED_CONFIG_PATH"
+if [ ! -f "$LOCAL_RESTISH_PATH" ]; then
+  API_URL="${API_URL:-http://localhost:8001}"
+  if ! curl -s "${API_URL}/api/v1/openapi" -o "$DOWNLOADED_CONFIG_PATH"; then
+    2>&1 echo "ERROR: failed to download config file from ${API_URL}/api/v1/openapi"
+    2>&1 echo "       if the API is elsewhere you can specify it using:"
+    2>&1 echo "       API_URL=XXX $0"
+    exit 1
+  fi
 
-cat > "$LOCAL_RESTISH_PATH" <<EOL
+  cat > "$LOCAL_RESTISH_PATH" <<EOL
 {
   "airbyte": {
     "base": "${API_URL}",
@@ -19,6 +25,9 @@ cat > "$LOCAL_RESTISH_PATH" <<EOL
   }
 }
 EOL
+else
+  echo "using config file: $LOCAL_RESTISH_PATH"
+fi
 
 docker run --rm \
   -v "$LOCAL_RESTISH_PATH":"$IMAGE_RESTISH_PATH" \

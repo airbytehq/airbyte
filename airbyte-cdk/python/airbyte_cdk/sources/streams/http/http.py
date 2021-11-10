@@ -1,34 +1,18 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
+import os
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
+import vcr
+import vcr.cassette as Cassette
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
+from requests.auth import AuthBase
 
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
@@ -46,9 +30,48 @@ class HttpStream(Stream, ABC):
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
     page_size = None  # Use this variable to define page size for API http requests with pagination support
 
-    def __init__(self, authenticator: HttpAuthenticator = NoAuth()):
-        self._authenticator = authenticator
+    # TODO: remove legacy HttpAuthenticator authenticator references
+    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
         self._session = requests.Session()
+
+        self._authenticator = NoAuth()
+        if isinstance(authenticator, AuthBase):
+            self._session.auth = authenticator
+        elif authenticator:
+            self._authenticator = authenticator
+
+        if self.use_cache:
+            self.cache_file = self.request_cache()
+            # we need this attr to get metadata about cassettes, such as record play count, all records played, etc.
+            self.cassete = None
+
+    @property
+    def cache_filename(self):
+        """
+        Override if needed. Return the name of cache file
+        """
+        return f"{self.name}.yml"
+
+    @property
+    def use_cache(self):
+        """
+        Override if needed. If True, all records will be cached.
+        """
+        return False
+
+    def request_cache(self) -> Cassette:
+        """
+        Builds VCR instance.
+        It deletes file everytime we create it, normally should be called only once.
+        We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
+        """
+
+        try:
+            os.remove(self.cache_filename)
+        except FileNotFoundError:
+            pass
+
+        return vcr.use_cassette(self.cache_filename, record_mode="new_episodes", serializer="yaml")
 
     @property
     @abstractmethod
@@ -142,7 +165,7 @@ class HttpStream(Stream, ABC):
 
         If returns a ready text that it will be sent as is.
         If returns a dict that it will be converted to a urlencoded form.
-           E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
+        E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
@@ -315,7 +338,18 @@ class HttpStream(Stream, ABC):
                 data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             )
             request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            response = self._send_request(request, request_kwargs)
+
+            if self.use_cache:
+                # use context manager to handle and store cassette metadata
+                with self.cache_file as cass:
+                    self.cassete = cass
+                    # vcr tries to find records based on the request, if such records exist, return from cache file
+                    # else make a request and save record in cache file
+                    response = self._send_request(request, request_kwargs)
+
+            else:
+                response = self._send_request(request, request_kwargs)
+
             yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
             next_page_token = self.next_page_token(response)
@@ -324,3 +358,29 @@ class HttpStream(Stream, ABC):
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
+
+
+class HttpSubStream(HttpStream, ABC):
+    def __init__(self, parent: HttpStream, **kwargs):
+        """
+        :param parent: should be the instance of HttpStream class
+        """
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+
+        # iterate over all parent stream_slices
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+
+            # iterate over all parent records with current stream_slice
+            for record in parent_records:
+                yield {"parent": record}

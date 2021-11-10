@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
@@ -42,6 +22,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSync;
@@ -51,6 +32,7 @@ import io.airbyte.config.State;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
@@ -157,7 +139,7 @@ class DefaultReplicationWorkerTest {
     // set up the mdc so that actually log to a file, so that we can verify that file logging captures
     // threads.
     final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-    LogClientSingleton.setJobMdc(jobRoot);
+    LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfiguration.EMPTY, jobRoot);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -211,7 +193,7 @@ class DefaultReplicationWorkerTest {
     final Thread workerThread = new Thread(() -> {
       try {
         output.set(worker.run(syncInput, jobRoot));
-      } catch (WorkerException e) {
+      } catch (final WorkerException e) {
         throw new RuntimeException(e);
       }
     });

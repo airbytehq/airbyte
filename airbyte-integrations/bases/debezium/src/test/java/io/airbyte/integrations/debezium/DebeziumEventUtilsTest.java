@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.debezium;
@@ -47,9 +27,9 @@ class DebeziumEventUtilsTest {
     final String stream = "names";
     final Instant emittedAt = Instant.now();
     final CdcMetadataInjector cdcMetadataInjector = new DummyMetadataInjector();
-    ChangeEvent<String, String> insertChangeEvent = mockChangeEvent("insert_change_event.json");
-    ChangeEvent<String, String> updateChangeEvent = mockChangeEvent("update_change_event.json");
-    ChangeEvent<String, String> deleteChangeEvent = mockChangeEvent("delete_change_event.json");
+    final ChangeEvent<String, String> insertChangeEvent = mockChangeEvent("insert_change_event.json");
+    final ChangeEvent<String, String> updateChangeEvent = mockChangeEvent("update_change_event.json");
+    final ChangeEvent<String, String> deleteChangeEvent = mockChangeEvent("delete_change_event.json");
 
     final AirbyteMessage actualInsert = DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcMetadataInjector, emittedAt);
     final AirbyteMessage actualUpdate = DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, cdcMetadataInjector, emittedAt);
@@ -64,7 +44,7 @@ class DebeziumEventUtilsTest {
     deepCompare(expectedDelete, actualDelete);
   }
 
-  private static ChangeEvent<String, String> mockChangeEvent(String resourceName) throws IOException {
+  private static ChangeEvent<String, String> mockChangeEvent(final String resourceName) throws IOException {
     final ChangeEvent<String, String> mocked = mock(ChangeEvent.class);
     final String resource = MoreResources.readResource(resourceName);
     when(mocked.value()).thenReturn(resource);
@@ -72,7 +52,7 @@ class DebeziumEventUtilsTest {
     return mocked;
   }
 
-  private static AirbyteMessage createAirbyteMessage(String stream, Instant emittedAt, String resourceName) throws IOException {
+  private static AirbyteMessage createAirbyteMessage(final String stream, final Instant emittedAt, final String resourceName) throws IOException {
     final String data = MoreResources.readResource(resourceName);
 
     final AirbyteRecordMessage recordMessage = new AirbyteRecordMessage()
@@ -86,20 +66,20 @@ class DebeziumEventUtilsTest {
         .withRecord(recordMessage);
   }
 
-  private static void deepCompare(Object expected, Object actual) {
+  private static void deepCompare(final Object expected, final Object actual) {
     assertEquals(Jsons.deserialize(Jsons.serialize(expected)), Jsons.deserialize(Jsons.serialize(actual)));
   }
 
   public static class DummyMetadataInjector implements CdcMetadataInjector {
 
     @Override
-    public void addMetaData(ObjectNode event, JsonNode source) {
-      long lsn = source.get("lsn").asLong();
+    public void addMetaData(final ObjectNode event, final JsonNode source) {
+      final long lsn = source.get("lsn").asLong();
       event.put("_ab_cdc_lsn", lsn);
     }
 
     @Override
-    public String namespace(JsonNode source) {
+    public String namespace(final JsonNode source) {
       return source.get("schema").asText();
     }
 

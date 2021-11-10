@@ -48,27 +48,23 @@
       "type": ["null", "string"]
     },
     "period_start": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": ["null", "string"]
     },
     "period_end": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": ["null", "string"]
     },
     "issue_date": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": ["null", "string"]
     },
     "due_date": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": ["null", "string"]
     },
     "payment_term": {
       "type": ["null", "string"]
     },
     "sent_at": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time"
     },
     "paid_at": {
       "type": ["null", "string"]
@@ -84,11 +80,11 @@
     },
     "created_at": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time"
     },
     "updated_at": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time"
     },
     "currency": {
       "type": ["null", "string"]

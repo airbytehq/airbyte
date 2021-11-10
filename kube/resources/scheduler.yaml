@@ -12,8 +12,6 @@ spec:
       labels:
         airbyte: scheduler
     spec:
-      serviceAccountName: airbyte-admin
-      automountServiceAccountToken: true
       containers:
         - name: airbyte-scheduler-container
           image: airbyte/scheduler
@@ -40,8 +38,8 @@ spec:
                   key: DATABASE_PORT
             - name: DATABASE_PASSWORD
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: DATABASE_PASSWORD
             - name: DATABASE_URL
               valueFrom:
@@ -50,8 +48,8 @@ spec:
                   key: DATABASE_URL
             - name: DATABASE_USER
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: DATABASE_USER
             - name: TRACKING_STRATEGY
               valueFrom:
@@ -136,13 +134,13 @@ spec:
                   key: S3_LOG_BUCKET_REGION
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: AWS_ACCESS_KEY_ID
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: AWS_SECRET_ACCESS_KEY
             - name: S3_MINIO_ENDPOINT
               valueFrom:
@@ -156,8 +154,8 @@ spec:
                   key: S3_PATH_STYLE_ACCESS
             - name: GOOGLE_APPLICATION_CREDENTIALS
               valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
+                secretKeyRef:
+                  name: airbyte-secrets
                   key: GOOGLE_APPLICATION_CREDENTIALS
             - name: GCP_STORAGE_BUCKET
               valueFrom:
@@ -169,38 +167,6 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: INTERNAL_API_HOST
-          ports:
-            - containerPort: 9000 # for heartbeat server
-            - containerPort: 9001 # start temporal worker port pool
-            - containerPort: 9002
-            - containerPort: 9003
-            - containerPort: 9004
-            - containerPort: 9005
-            - containerPort: 9006
-            - containerPort: 9007
-            - containerPort: 9008
-            - containerPort: 9009
-            - containerPort: 9010
-            - containerPort: 9011
-            - containerPort: 9012
-            - containerPort: 9013
-            - containerPort: 9014
-            - containerPort: 9015
-            - containerPort: 9016
-            - containerPort: 9017
-            - containerPort: 9018
-            - containerPort: 9019
-            - containerPort: 9020
-            - containerPort: 9021
-            - containerPort: 9022
-            - containerPort: 9023
-            - containerPort: 9024
-            - containerPort: 9025
-            - containerPort: 9026
-            - containerPort: 9027
-            - containerPort: 9028
-            - containerPort: 9029
-            - containerPort: 9030 # end temporal worker port pool
           volumeMounts:
             - name: gcs-log-creds-volume
               mountPath: /secrets/gcs-log-creds

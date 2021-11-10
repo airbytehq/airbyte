@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -110,12 +90,17 @@ class IncrementalOktaStream(OktaStream, ABC):
             )
         }
 
-    def request_params(self, stream_state=None, **kwargs):
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
+        params = super().request_params(stream_state, stream_slice, next_page_token)
         latest_entry = stream_state.get(self.cursor_field)
         if latest_entry:
-            params["filter"] = f"{self.cursor_field} gt {latest_entry}"
+            params["filter"] = f'{self.cursor_field} gt "{latest_entry}"'
         return params
 
 
@@ -128,11 +113,30 @@ class Groups(IncrementalOktaStream):
 
 
 class Logs(IncrementalOktaStream):
+
     cursor_field = "published"
     primary_key = "uuid"
 
     def path(self, **kwargs) -> str:
         return "logs"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        # The log stream use a different params to get data
+        # https://developer.okta.com/docs/reference/api/system-log/#datetime-filter
+        stream_state = stream_state or {}
+        params = {
+            "limit": self.page_size,
+            **(next_page_token or {}),
+        }
+        latest_entry = stream_state.get(self.cursor_field)
+        if latest_entry:
+            params["since"] = latest_entry
+        return params
 
 
 class Users(IncrementalOktaStream):

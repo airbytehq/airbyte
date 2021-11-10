@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.migrate.migrations;
@@ -65,7 +45,7 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
 
   private final Migration previousMigration;
 
-  public MigrationV0_18_0(Migration previousMigration) {
+  public MigrationV0_18_0(final Migration previousMigration) {
     super(previousMigration);
     this.previousMigration = previousMigration;
   }
@@ -90,7 +70,7 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
   }
 
   @Override
-  public void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
@@ -103,7 +83,7 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
     }
   }
 
-  private JsonNode migrateCatalog(JsonNode catalog) {
+  private JsonNode migrateCatalog(final JsonNode catalog) {
     final List<Map<String, JsonNode>> configuredStreams = MoreIterators.toList(catalog.get("streams").elements())
         .stream()
         .map(stream -> {
@@ -133,7 +113,7 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
           }
           JsonNode primaryKey = stream.get("primary_key");
           if (primaryKey == null) {
-            JsonNode sourceDefinedPrimaryKey = airbyteStream.get("source_defined_primary_key");
+            final JsonNode sourceDefinedPrimaryKey = airbyteStream.get("source_defined_primary_key");
             primaryKey = sourceDefinedPrimaryKey != null ? sourceDefinedPrimaryKey : Jsons.jsonNode(Collections.emptyList());
           }
           // configured catalog fields
@@ -155,9 +135,9 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
 
     INCREMENTAL("incremental");
 
-    private String value;
+    private final String value;
 
-    SyncMode(String value) {
+    SyncMode(final String value) {
       this.value = value;
     }
 
@@ -165,8 +145,8 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
       return String.valueOf(value);
     }
 
-    public static SyncMode fromValue(String value) {
-      for (SyncMode b : SyncMode.values()) {
+    public static SyncMode fromValue(final String value) {
+      for (final SyncMode b : SyncMode.values()) {
         if (b.value.equals(value)) {
           return b;
         }
@@ -184,7 +164,7 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
 
     private final String value;
 
-    private DestinationSyncMode(String value) {
+    private DestinationSyncMode(final String value) {
       this.value = value;
     }
 
@@ -192,8 +172,8 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
       return String.valueOf(value);
     }
 
-    public static DestinationSyncMode fromValue(String value) {
-      for (DestinationSyncMode b : DestinationSyncMode.values()) {
+    public static DestinationSyncMode fromValue(final String value) {
+      for (final DestinationSyncMode b : DestinationSyncMode.values()) {
         if (b.value.equals(value)) {
           return b;
         }

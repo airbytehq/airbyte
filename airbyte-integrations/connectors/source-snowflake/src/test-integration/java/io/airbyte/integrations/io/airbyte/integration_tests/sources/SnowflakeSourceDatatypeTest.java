@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -51,7 +31,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
   }
 
   @Override
-  protected JsonNode getConfig() throws Exception {
+  protected JsonNode getConfig() {
     return config;
   }
 
@@ -81,7 +61,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String dropSchemaQuery = String
         .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
     database = getDatabase();
@@ -106,15 +86,14 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
 
   @Override
   protected void initTests() {
-    // TODO https://github.com/airbytehq/airbyte/issues/4316
-    // should be tested with Snowflake extreme range -99999999999999999999999999999999999999 to
-    // +99999999999999999999999999999999999999 (inclusive)
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("NUMBER")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
-            .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
+            .addInsertValues("null", "99999999999999999999999999999999999999", "-99999999999999999999999999999999999999", "9223372036854775807",
+                "-9223372036854775808")
+            .addExpectedValues(null, "99999999999999999999999999999999999999", "-99999999999999999999999999999999999999", "9223372036854775807",
+                "-9223372036854775808")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -127,15 +106,17 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         TestDataHolder.builder()
             .sourceType("NUMERIC")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
-            .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
+            .addInsertValues("null", "99999999999999999999999999999999999999", "-99999999999999999999999999999999999999", "9223372036854775807",
+                "-9223372036854775808")
+            .addExpectedValues(null, "99999999999999999999999999999999999999", "-99999999999999999999999999999999999999", "9223372036854775807",
+                "-9223372036854775808")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("BIGINT")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
-            .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
+            .addInsertValues("null", "99999999999999999999999999999999999999", "-99999999999999999999999999999999999999")
+            .addExpectedValues(null, "99999999999999999999999999999999999999", "-99999999999999999999999999999999999999")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -194,13 +175,12 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .addInsertValues("10e-308", "10e+307")
             .addExpectedValues("1.0E-307", "1.0E308")
             .build());
-    // TODO should be fixed in scope of https://github.com/airbytehq/airbyte/issues/4316
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("FLOAT")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("'NaN'", "'inf'", "'-inf'")
-            .addExpectedValues(null, null, null)
+            .addExpectedValues("NaN", "Infinity", "-Infinity")
             .build());
 
     // Data Types for Text Strings

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance;
@@ -58,13 +38,13 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
    * @param isDatabaseReady a function to check if the database has been initialized and ready for
    *        consumption
    */
-  protected BaseDatabaseInstance(String username,
-                                 String password,
-                                 String connectionString,
-                                 String initialSchema,
-                                 String databaseName,
-                                 Set<String> tableNames,
-                                 Function<Database, Boolean> isDatabaseReady) {
+  protected BaseDatabaseInstance(final String username,
+                                 final String password,
+                                 final String connectionString,
+                                 final String initialSchema,
+                                 final String databaseName,
+                                 final Set<String> tableNames,
+                                 final Function<Database, Boolean> isDatabaseReady) {
     this.username = username;
     this.password = password;
     this.connectionString = connectionString;
@@ -76,7 +56,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
 
   @Override
   public boolean isInitialized() throws IOException {
-    Database database = Databases.createPostgresDatabaseWithRetry(
+    final Database database = Databases.createPostgresDatabaseWithRetry(
         username,
         password,
         connectionString,
@@ -100,14 +80,14 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
     // When we need to setup the database, it means the database will be initialized after
     // we connect to the database. So the database itself is considered ready as long as
     // the connection is alive.
-    Database database = Databases.createPostgresDatabaseWithRetry(
+    final Database database = Databases.createPostgresDatabaseWithRetry(
         username,
         password,
         connectionString,
         isDatabaseConnected(databaseName));
 
     new ExceptionWrappingDatabase(database).transaction(ctx -> {
-      boolean hasTables = tableNames.stream().allMatch(tableName -> hasTable(ctx, tableName));
+      final boolean hasTables = tableNames.stream().allMatch(tableName -> hasTable(ctx, tableName));
       if (hasTables) {
         LOGGER.info("The {} database has been initialized", databaseName);
         return null;
@@ -123,7 +103,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
   /**
    * @return true if the table exists.
    */
-  protected static boolean hasTable(DSLContext ctx, String tableName) {
+  protected static boolean hasTable(final DSLContext ctx, final String tableName) {
     return ctx.fetchExists(select()
         .from("information_schema.tables")
         .where(DSL.field("table_name").eq(tableName)
@@ -133,16 +113,16 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
   /**
    * @return true if the table has data.
    */
-  protected static boolean hasData(DSLContext ctx, String tableName) {
+  protected static boolean hasData(final DSLContext ctx, final String tableName) {
     return ctx.fetchExists(select().from(tableName));
   }
 
-  protected static Function<Database, Boolean> isDatabaseConnected(String databaseName) {
+  protected static Function<Database, Boolean> isDatabaseConnected(final String databaseName) {
     return database -> {
       try {
         LOGGER.info("Testing {} database connection...", databaseName);
         return database.query(ctx -> ctx.fetchExists(select().from("information_schema.tables")));
-      } catch (Exception e) {
+      } catch (final Exception e) {
         return false;
       }
     };

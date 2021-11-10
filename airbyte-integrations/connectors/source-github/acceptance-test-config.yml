@@ -19,7 +19,7 @@ tests:
       cursor_paths:
         comments: ["airbytehq/integration-test", "updated_at"]
         commit_comments: ["airbytehq/integration-test", "updated_at"]
-        commits: ["airbytehq/integration-test", "created_at"]
+        commits: ["airbytehq/integration-test", "master", "created_at"]
         events: ["airbytehq/integration-test", "created_at"]
         issue_events: ["airbytehq/integration-test", "created_at"]
         issue_milestones: ["airbytehq/integration-test", "updated_at"]

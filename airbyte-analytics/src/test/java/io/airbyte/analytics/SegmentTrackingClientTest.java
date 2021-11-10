@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.analytics;
@@ -33,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import java.util.Map;
@@ -45,7 +26,7 @@ import org.mockito.ArgumentCaptor;
 
 class SegmentTrackingClientTest {
 
-  private static final String AIRBYTE_VERSION = "dev";
+  private static final AirbyteVersion AIRBYTE_VERSION = new AirbyteVersion("dev");
   private static final Deployment DEPLOYMENT = new Deployment(Configs.DeploymentMode.OSS, UUID.randomUUID(), WorkerEnvironment.DOCKER);
   private static final String EMAIL = "a@airbyte.io";
   private static final TrackingIdentity IDENTITY = new TrackingIdentity(AIRBYTE_VERSION, UUID.randomUUID(), EMAIL, false, false, true);
@@ -69,7 +50,7 @@ class SegmentTrackingClientTest {
   void testIdentify() {
     // equals is not defined on MessageBuilder, so we need to use ArgumentCaptor to inspect each field
     // manually.
-    ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
+    final ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
 
     segmentTrackingClient.identify(WORKSPACE_ID);
 
@@ -79,7 +60,7 @@ class SegmentTrackingClientTest {
         .put("deployment_env", DEPLOYMENT.getDeploymentEnv())
         .put("deployment_mode", DEPLOYMENT.getDeploymentMode())
         .put("deployment_id", DEPLOYMENT.getDeploymentId())
-        .put("airbyte_version", AIRBYTE_VERSION)
+        .put("airbyte_version", AIRBYTE_VERSION.serialize())
         .put("email", IDENTITY.getEmail().get())
         .put("anonymized", IDENTITY.isAnonymousDataCollection())
         .put("subscribed_newsletter", IDENTITY.isNews())
@@ -94,7 +75,7 @@ class SegmentTrackingClientTest {
     segmentTrackingClient = new SegmentTrackingClient((workspaceId) -> IDENTITY, DEPLOYMENT, "role", analytics);
     // equals is not defined on MessageBuilder, so we need to use ArgumentCaptor to inspect each field
     // manually.
-    ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
+    final ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
     when(roleSupplier.get()).thenReturn("role");
 
     segmentTrackingClient.identify(WORKSPACE_ID);
@@ -105,7 +86,7 @@ class SegmentTrackingClientTest {
         .put("deployment_env", DEPLOYMENT.getDeploymentEnv())
         .put("deployment_mode", DEPLOYMENT.getDeploymentMode())
         .put("deployment_id", DEPLOYMENT.getDeploymentId())
-        .put("airbyte_version", AIRBYTE_VERSION)
+        .put("airbyte_version", AIRBYTE_VERSION.serialize())
         .put("email", IDENTITY.getEmail().get())
         .put("anonymized", IDENTITY.isAnonymousDataCollection())
         .put("subscribed_newsletter", IDENTITY.isNews())
@@ -119,12 +100,12 @@ class SegmentTrackingClientTest {
   @Test
   void testTrack() {
     final ArgumentCaptor<TrackMessage.Builder> mockBuilder = ArgumentCaptor.forClass(TrackMessage.Builder.class);
-    final ImmutableMap<String, Object> metadata = ImmutableMap.of("airbyte_version", AIRBYTE_VERSION);
+    final ImmutableMap<String, Object> metadata = ImmutableMap.of("airbyte_version", AIRBYTE_VERSION.serialize());
 
     segmentTrackingClient.track(WORKSPACE_ID, "jump");
 
     verify(analytics).enqueue(mockBuilder.capture());
-    TrackMessage actual = mockBuilder.getValue().build();
+    final TrackMessage actual = mockBuilder.getValue().build();
     assertEquals("jump", actual.event());
     assertEquals(IDENTITY.getCustomerId().toString(), actual.userId());
     assertEquals(metadata, actual.properties());
@@ -136,7 +117,7 @@ class SegmentTrackingClientTest {
     final ImmutableMap<String, Object> metadata = ImmutableMap.of(
         "height", "80 meters",
         "email", EMAIL,
-        "airbyte_version", AIRBYTE_VERSION);
+        "airbyte_version", AIRBYTE_VERSION.serialize());
 
     segmentTrackingClient.track(WORKSPACE_ID, "jump", metadata);
 

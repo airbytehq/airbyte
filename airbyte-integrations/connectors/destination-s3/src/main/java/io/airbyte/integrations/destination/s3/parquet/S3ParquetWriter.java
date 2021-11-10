@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.parquet;
@@ -28,7 +8,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
-import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -49,6 +28,7 @@ import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
@@ -56,28 +36,30 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
   private final ParquetWriter<Record> parquetWriter;
   private final AvroRecordFactory avroRecordFactory;
+  private final Schema schema;
+  private final String outputFilename;
 
-  public S3ParquetWriter(S3DestinationConfig config,
-                         AmazonS3 s3Client,
-                         ConfiguredAirbyteStream configuredStream,
-                         Timestamp uploadTimestamp,
-                         Schema schema,
-                         JsonFieldNameUpdater nameUpdater)
+  public S3ParquetWriter(final S3DestinationConfig config,
+                         final AmazonS3 s3Client,
+                         final ConfiguredAirbyteStream configuredStream,
+                         final Timestamp uploadTimestamp,
+                         final Schema schema,
+                         final JsonAvroConverter converter)
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
 
-    String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
-    String objectKey = String.join("/", outputPrefix, outputFilename);
+    this.outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
+    final String objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
+    LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
-    URI uri = new URI(
+    final URI uri = new URI(
         String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
-    Path path = new Path(uri);
+    final Path path = new Path(uri);
 
-    S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
-    Configuration hadoopConfig = getHadoopConfig(config);
+    final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
+    final Configuration hadoopConfig = getHadoopConfig(config);
     this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
@@ -87,11 +69,12 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
         .withDictionaryPageSize(formatConfig.getDictionaryPageSize())
         .withDictionaryEncoding(formatConfig.isDictionaryEncoding())
         .build();
-    this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
+    this.avroRecordFactory = new AvroRecordFactory(schema, converter);
+    this.schema = schema;
   }
 
-  public static Configuration getHadoopConfig(S3DestinationConfig config) {
-    Configuration hadoopConfig = new Configuration();
+  public static Configuration getHadoopConfig(final S3DestinationConfig config) {
+    final Configuration hadoopConfig = new Configuration();
     hadoopConfig.set(Constants.ACCESS_KEY, config.getAccessKeyId());
     hadoopConfig.set(Constants.SECRET_KEY, config.getSecretAccessKey());
     if (config.getEndpoint().isEmpty()) {
@@ -105,8 +88,23 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     return hadoopConfig;
   }
 
+  public Schema getSchema() {
+    return schema;
+  }
+
+  /**
+   * The file path includes prefix and filename, but does not include the bucket name.
+   */
+  public String getOutputFilePath() {
+    return outputPrefix + "/" + outputFilename;
+  }
+
+  public String getOutputFilename() {
+    return outputFilename;
+  }
+
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
     parquetWriter.write(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.development;
@@ -54,7 +34,7 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
   // before the last migration.
   private final DatabaseMigrator baselineMigrator;
 
-  public DevDatabaseMigrator(FlywayDatabaseMigrator fullMigrator) {
+  public DevDatabaseMigrator(final FlywayDatabaseMigrator fullMigrator) {
     this.fullMigrator = fullMigrator;
     this.baselineMigrator = getBaselineMigrator(fullMigrator);
   }
@@ -87,9 +67,9 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
    * Create a baseline migration from a full migrator. The baseline migrator does not run the last
    * migration, which will be usually the migration to be tested.
    */
-  private static DatabaseMigrator getBaselineMigrator(FlywayDatabaseMigrator fullMigrator) {
-    Configuration fullConfig = fullMigrator.getFlyway().getConfiguration();
-    FluentConfiguration baselineConfig = Flyway.configure()
+  private static DatabaseMigrator getBaselineMigrator(final FlywayDatabaseMigrator fullMigrator) {
+    final Configuration fullConfig = fullMigrator.getFlyway().getConfiguration();
+    final FluentConfiguration baselineConfig = Flyway.configure()
         .dataSource(fullConfig.getDataSource())
         .baselineVersion(fullConfig.getBaselineVersion())
         .baselineDescription(fullConfig.getBaselineDescription())
@@ -98,7 +78,7 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
         .table(fullConfig.getTable())
         .locations(fullConfig.getLocations());
 
-    Optional<MigrationVersion> secondToLastMigrationVersion = MigrationDevHelper.getSecondToLastMigrationVersion(fullMigrator);
+    final Optional<MigrationVersion> secondToLastMigrationVersion = MigrationDevHelper.getSecondToLastMigrationVersion(fullMigrator);
     if (secondToLastMigrationVersion.isEmpty()) {
       LOGGER.info("There is zero or one migration. No extra baseline setup is needed.");
       return new NoOpDatabaseMigrator();

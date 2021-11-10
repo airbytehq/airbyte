@@ -136,7 +136,7 @@
     },
     "segments.date": {
       "type": ["null", "string"],
-      "format": "datetime"
+      "format": "date"
     },
     "segments.day_of_week": {
       "type": ["null", "string"]

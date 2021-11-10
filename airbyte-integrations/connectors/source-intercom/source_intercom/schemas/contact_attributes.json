@@ -45,12 +45,10 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "updated_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     }
   }
 }

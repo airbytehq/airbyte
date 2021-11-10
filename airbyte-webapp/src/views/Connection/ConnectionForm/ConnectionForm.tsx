@@ -8,8 +8,8 @@ import { equal } from "utils/objects";
 
 import { ControlLabels, DropDown, DropDownRow, Input, Label } from "components";
 
-import { useDestinationDefinitionSpecificationLoadAsync } from "components/hooks/services/useDestinationHook";
-import useWorkspace from "components/hooks/services/useWorkspace";
+import { useDestinationDefinitionSpecificationLoadAsync } from "hooks/services/useDestinationHook";
+import useWorkspace from "hooks/services/useWorkspace";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { TransformationField } from "./components/TransformationField";
 import { NormalizationField } from "./components/NormalizationField";
@@ -29,7 +29,7 @@ import Connector from "./components/Connector";
 import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
-import { useFeatureService } from "components/hooks/services/Feature";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -99,7 +99,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const { source, destination, operations } = connection;
   const supportsNormalization = destDefinition.supportsNormalization;
   const supportsTransformations =
-    destDefinition.supportsDbt && hasFeature("ALLOW_CUSTOM_DBT");
+    destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
 
   const initialValues = useInitialValues(
     connection,

@@ -13,18 +13,18 @@ type IProps = {
   setCurrentStep: (step: string) => void;
 };
 
-const ItemTabs: React.FC<IProps> = ({ currentStep, setCurrentStep }) => {
-  const steps = [
-    {
-      id: StepsTypes.OVERVIEW,
-      name: <FormattedMessage id="tables.overview" />,
-    },
-    {
-      id: StepsTypes.SETTINGS,
-      name: <FormattedMessage id="tables.settings" />,
-    },
-  ];
+const steps = [
+  {
+    id: StepsTypes.OVERVIEW,
+    name: <FormattedMessage id="tables.overview" />,
+  },
+  {
+    id: StepsTypes.SETTINGS,
+    name: <FormattedMessage id="tables.settings" />,
+  },
+];
 
+const ItemTabs: React.FC<IProps> = ({ currentStep, setCurrentStep }) => {
   return (
     <StepsMenu
       lightMode

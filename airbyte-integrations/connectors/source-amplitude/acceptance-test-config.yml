@@ -16,9 +16,7 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_without_events.json"
       # Unable to use 'state_path' because Amplitude returns an error when specifying a date in the future.
-      # state_path: "integration_tests/abnormal_state.json"
-      cursor_paths:
-        active_users: [ "date" ]
+      # future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_without_events.json"

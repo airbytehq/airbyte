@@ -6,8 +6,8 @@ import { PageViewContainer } from "components/CenteredPageComponents";
 import { H1 } from "components";
 import { PreferencesForm } from "views/Settings/PreferencesForm";
 import HeadTitle from "components/HeadTitle";
-import { useAnalytics } from "components/hooks/useAnalytics";
-import useWorkspace from "components/hooks/services/useWorkspace";
+import { useAnalytics } from "hooks/useAnalytics";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const Title = styled(H1)`
   margin-bottom: 47px;

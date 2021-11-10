@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -65,6 +45,7 @@ public class TestJdbcUtils {
   private static PostgreSQLContainer<?> PSQL_DB;
 
   private BasicDataSource dataSource;
+  private static final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
 
   @BeforeAll
   static void init() {
@@ -100,7 +81,7 @@ public class TestJdbcUtils {
     });
   }
 
-  private JsonNode getConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
+  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
@@ -115,7 +96,7 @@ public class TestJdbcUtils {
     try (final Connection connection = dataSource.getConnection()) {
       final ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM id_and_name;");
       rs.next();
-      assertEquals(RECORDS_AS_JSON.get(0), JdbcUtils.rowToJson(rs));
+      assertEquals(RECORDS_AS_JSON.get(0), sourceOperations.rowToJson(rs));
     }
   }
 
@@ -123,7 +104,7 @@ public class TestJdbcUtils {
   void testToStream() throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {
       final ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM id_and_name;");
-      final List<JsonNode> actual = JdbcUtils.toStream(rs, JdbcUtils::rowToJson).collect(Collectors.toList());
+      final List<JsonNode> actual = sourceOperations.toStream(rs, sourceOperations::rowToJson).collect(Collectors.toList());
       assertEquals(RECORDS_AS_JSON, actual);
     }
   }
@@ -149,21 +130,21 @@ public class TestJdbcUtils {
 
       // insert the bit here to stay consistent even though setStatementField does not support it yet.
       ps.setString(1, "1");
-      JdbcUtils.setStatementField(ps, 2, JDBCType.BOOLEAN, "true");
-      JdbcUtils.setStatementField(ps, 3, JDBCType.SMALLINT, "1");
-      JdbcUtils.setStatementField(ps, 4, JDBCType.INTEGER, "1");
-      JdbcUtils.setStatementField(ps, 5, JDBCType.BIGINT, "1");
-      JdbcUtils.setStatementField(ps, 6, JDBCType.FLOAT, "1.0");
-      JdbcUtils.setStatementField(ps, 7, JDBCType.DOUBLE, "1.0");
-      JdbcUtils.setStatementField(ps, 8, JDBCType.REAL, "1.0");
-      JdbcUtils.setStatementField(ps, 9, JDBCType.NUMERIC, "1");
-      JdbcUtils.setStatementField(ps, 10, JDBCType.DECIMAL, "1");
-      JdbcUtils.setStatementField(ps, 11, JDBCType.CHAR, "a");
-      JdbcUtils.setStatementField(ps, 12, JDBCType.VARCHAR, "a");
-      JdbcUtils.setStatementField(ps, 13, JDBCType.DATE, "2020-11-01T00:00:00Z");
-      JdbcUtils.setStatementField(ps, 14, JDBCType.TIME, "1970-01-01T05:00:00Z");
-      JdbcUtils.setStatementField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00Z");
-      JdbcUtils.setStatementField(ps, 16, JDBCType.BINARY, "61616161");
+      sourceOperations.setStatementField(ps, 2, JDBCType.BOOLEAN, "true");
+      sourceOperations.setStatementField(ps, 3, JDBCType.SMALLINT, "1");
+      sourceOperations.setStatementField(ps, 4, JDBCType.INTEGER, "1");
+      sourceOperations.setStatementField(ps, 5, JDBCType.BIGINT, "1");
+      sourceOperations.setStatementField(ps, 6, JDBCType.FLOAT, "1.0");
+      sourceOperations.setStatementField(ps, 7, JDBCType.DOUBLE, "1.0");
+      sourceOperations.setStatementField(ps, 8, JDBCType.REAL, "1.0");
+      sourceOperations.setStatementField(ps, 9, JDBCType.NUMERIC, "1");
+      sourceOperations.setStatementField(ps, 10, JDBCType.DECIMAL, "1");
+      sourceOperations.setStatementField(ps, 11, JDBCType.CHAR, "a");
+      sourceOperations.setStatementField(ps, 12, JDBCType.VARCHAR, "a");
+      sourceOperations.setStatementField(ps, 13, JDBCType.DATE, "2020-11-01T00:00:00Z");
+      sourceOperations.setStatementField(ps, 14, JDBCType.TIME, "1970-01-01T05:00:00Z");
+      sourceOperations.setStatementField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00Z");
+      sourceOperations.setStatementField(ps, 16, JDBCType.BINARY, "61616161");
 
       ps.execute();
 
@@ -172,7 +153,7 @@ public class TestJdbcUtils {
     }
   }
 
-  private static void createTableWithAllTypes(Connection connection) throws SQLException {
+  private static void createTableWithAllTypes(final Connection connection) throws SQLException {
     // jdbctype not included because they are not directly supported in postgres: TINYINT, LONGVARCHAR,
     // VARBINAR, LONGVARBINARY
     connection.createStatement().execute("CREATE TABLE data("
@@ -196,7 +177,7 @@ public class TestJdbcUtils {
 
   }
 
-  private static void insertRecordOfEachType(Connection connection) throws SQLException {
+  private static void insertRecordOfEachType(final Connection connection) throws SQLException {
     connection.createStatement().execute("INSERT INTO data("
         + "bit,"
         + "boolean,"
@@ -234,11 +215,11 @@ public class TestJdbcUtils {
         + ");");
   }
 
-  private static void assertExpectedOutputValues(Connection connection) throws SQLException {
+  private static void assertExpectedOutputValues(final Connection connection) throws SQLException {
     final ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM data;");
 
     resultSet.next();
-    final JsonNode actual = JdbcUtils.rowToJson(resultSet);
+    final JsonNode actual = sourceOperations.rowToJson(resultSet);
 
     final ObjectNode expected = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     expected.put("bit", true);
@@ -265,14 +246,14 @@ public class TestJdbcUtils {
     assertEquals(expected, actual);
   }
 
-  private static void assertExpectedOutputTypes(Connection connection) throws SQLException {
+  private static void assertExpectedOutputTypes(final Connection connection) throws SQLException {
     final ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM data;");
 
     resultSet.next();
     final int columnCount = resultSet.getMetaData().getColumnCount();
     final Map<String, JsonSchemaPrimitive> actual = new HashMap<>(columnCount);
     for (int i = 1; i <= columnCount; i++) {
-      actual.put(resultSet.getMetaData().getColumnName(i), JdbcUtils.getType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
+      actual.put(resultSet.getMetaData().getColumnName(i), sourceOperations.getType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
     }
 
     final Map<String, JsonSchemaPrimitive> expected = ImmutableMap.<String, JsonSchemaPrimitive>builder()

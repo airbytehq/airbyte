@@ -45,6 +45,16 @@
     },
     {
       "stream": {
+        "name": "commit_comment_reactions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "commit_comments",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -84,6 +94,16 @@
     },
     {
       "stream": {
+        "name": "issue_comment_reactions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "issue_events",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -120,6 +140,16 @@
     },
     {
       "stream": {
+        "name": "issue_reactions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "issues",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -153,6 +183,16 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["updated_at"]
+    },
+    {
+      "stream": {
+        "name": "pull_request_comment_reactions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {

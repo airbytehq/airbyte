@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -47,21 +27,21 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSqlOperations.class);
 
   @Override
-  public void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception {
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     database.execute(createSchemaQuery(schemaName));
   }
 
-  private String createSchemaQuery(String schemaName) {
+  private String createSchemaQuery(final String schemaName) {
     return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
   }
 
   @Override
-  public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
+  public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
     database.execute(createTableQuery(database, schemaName, tableName));
   }
 
   @Override
-  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -71,16 +51,16 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
-  protected void writeBatchToFile(File tmpFile, List<AirbyteRecordMessage> records) throws Exception {
+  protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
     PrintWriter writer = null;
     try {
       writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
-      var csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
+      final var csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
 
-      for (AirbyteRecordMessage record : records) {
-        var uuid = UUID.randomUUID().toString();
-        var jsonData = Jsons.serialize(formatData(record.getData()));
-        var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
+      for (final AirbyteRecordMessage record : records) {
+        final var uuid = UUID.randomUUID().toString();
+        final var jsonData = Jsons.serialize(formatData(record.getData()));
+        final var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
         csvPrinter.printRecord(uuid, jsonData, emittedAt);
       }
     } finally {
@@ -90,25 +70,25 @@ public abstract class JdbcSqlOperations implements SqlOperations {
     }
   }
 
-  protected JsonNode formatData(JsonNode data) {
+  protected JsonNode formatData(final JsonNode data) {
     return data;
   }
 
   @Override
-  public String truncateTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+  public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
   }
 
   @Override
-  public String copyTableQuery(JdbcDatabase database, String schemaName, String srcTableName, String dstTableName) {
+  public String copyTableQuery(final JdbcDatabase database, final String schemaName, final String srcTableName, final String dstTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
   }
 
   @Override
-  public void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
     final StringBuilder appendedQueries = new StringBuilder();
     appendedQueries.append("BEGIN;\n");
-    for (String query : queries) {
+    for (final String query : queries) {
       appendedQueries.append(query);
     }
     appendedQueries.append("COMMIT;");
@@ -116,11 +96,11 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   @Override
-  public void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
+  public void dropTableIfExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
     database.execute(dropTableIfExistsQuery(schemaName, tableName));
   }
 
-  private String dropTableIfExistsQuery(String schemaName, String tableName) {
+  private String dropTableIfExistsQuery(final String schemaName, final String tableName) {
     return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
   }
 
@@ -130,15 +110,15 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   @Override
-  public boolean isValidData(JsonNode data) {
+  public boolean isValidData(final JsonNode data) {
     return true;
   }
 
   @Override
-  public final void insertRecords(JdbcDatabase database,
-                                  List<AirbyteRecordMessage> records,
-                                  String schemaName,
-                                  String tableName)
+  public final void insertRecords(final JdbcDatabase database,
+                                  final List<AirbyteRecordMessage> records,
+                                  final String schemaName,
+                                  final String tableName)
       throws Exception {
     records.forEach(airbyteRecordMessage -> getDataAdapter().adapt(airbyteRecordMessage.getData()));
     insertRecordsInternal(database, records, schemaName, tableName);

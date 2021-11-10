@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -46,7 +26,17 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
   private final JdbcDatabase database;
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
 
-  public StreamingJdbcDatabase(DataSource dataSource, JdbcDatabase database, JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
+  public StreamingJdbcDatabase(final DataSource dataSource,
+                               final JdbcDatabase database,
+                               final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
+    this(dataSource, database, jdbcStreamingQueryConfiguration, database.sourceOperations);
+  }
+
+  public StreamingJdbcDatabase(final DataSource dataSource,
+                               final JdbcDatabase database,
+                               final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
+                               final JdbcSourceOperations sourceOperations) {
+    super(sourceOperations);
     this.dataSource = dataSource;
     this.database = database;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
@@ -58,20 +48,20 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
   }
 
   @Override
-  public void execute(CheckedConsumer<Connection, SQLException> query) throws SQLException {
+  public void execute(final CheckedConsumer<Connection, SQLException> query) throws SQLException {
     database.execute(query);
   }
 
   @Override
-  public <T> List<T> bufferedResultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                                            CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> List<T> bufferedResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
+                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     return database.bufferedResultSetQuery(query, recordTransform);
   }
 
   @Override
-  public <T> Stream<T> resultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                                      CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> resultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
+                                      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     return database.resultSetQuery(query, recordTransform);
   }
@@ -93,24 +83,24 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
    * @throws SQLException SQL related exceptions.
    */
   @Override
-  public <T> Stream<T> query(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                             CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> query(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try {
       final Connection connection = dataSource.getConnection();
       final PreparedStatement ps = statementCreator.apply(connection);
       // allow configuration of connection and prepared statement to make streaming possible.
       jdbcStreamingQueryConfiguration.accept(connection, ps);
-      return JdbcUtils.toStream(ps.executeQuery(), recordTransform)
+      return sourceOperations.toStream(ps.executeQuery(), recordTransform)
           .onClose(() -> {
             try {
               connection.setAutoCommit(true);
               connection.close();
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
               throw new RuntimeException(e);
             }
           });
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
   }

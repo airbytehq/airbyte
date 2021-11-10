@@ -1,30 +1,11 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import os
 import time
-from abc import ABC
+from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
@@ -55,17 +36,22 @@ class GithubStream(HttpStream, ABC):
     cache = request_cache()
     url_base = "https://api.github.com/"
 
+    # To prevent dangerous behavior, the `vcr` library prohibits the use of nested caching.
+    # Here's an example of dangerous behavior:
+    # cache = Cassette.use('whatever')
+    # with cache:
+    #     with cache:
+    #         pass
+    #
+    # Therefore, we will only use `cache` for the top-level stream, so as not to cause possible difficulties.
+    top_level_stream = True
+
     primary_key = "id"
 
     # GitHub pagination could be from 1 to 100.
     page_size = 100
 
     stream_base_params = {}
-
-    # Fields in below variable will be used for data clearing. Put there keys which represent:
-    #   - objects `{}`, like `user`, `actor` etc.
-    #   - lists `[]`, like `labels`, `assignees` etc.
-    fields_to_minimize = ()
 
     def __init__(self, repositories: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -109,7 +95,11 @@ class GithubStream(HttpStream, ABC):
 
     def read_records(self, stream_slice: Mapping[str, any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         try:
-            yield from super().read_records(stream_slice=stream_slice, **kwargs)
+            if self.top_level_stream:
+                with self.cache:
+                    yield from super().read_records(stream_slice=stream_slice, **kwargs)
+            else:
+                yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
             error_msg = str(e)
 
@@ -127,8 +117,28 @@ class GithubStream(HttpStream, ABC):
                 )
             elif e.response.status_code == requests.codes.NOT_FOUND and "/teams?" in error_msg:
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
-                # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
-                error_msg = f"Syncing `Team` stream isn't available for repository `{stream_slice['repository']}`."
+                # url: https://api.github.com/orgs/<org_name>/teams?per_page=100" error.
+                error_msg = f"Syncing `Team` stream isn't available for organization `{stream_slice['organization']}`."
+            elif e.response.status_code == requests.codes.NOT_FOUND and "/repos?" in error_msg:
+                # `Repositories` stream is not available for repositories not in an organization.
+                # Handle "404 Client Error: Not Found for url: https://api.github.com/orgs/<org_name>/repos?per_page=100" error.
+                error_msg = f"Syncing `Repositories` stream isn't available for organization `{stream_slice['organization']}`."
+            elif e.response.status_code == requests.codes.GONE and "/projects?" in error_msg:
+                # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
+                # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
+                error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.NOT_FOUND and "/orgs/" in error_msg:
+                # Some streams are not available for repositories owned by a user instead of an organization.
+                # Handle "404 Client Error: Not Found" errors
+                if isinstance(self, Repositories):
+                    error_msg = f"Syncing `Repositories` stream isn't available for organization `{stream_slice['organization']}`."
+                elif isinstance(self, Users):
+                    error_msg = f"Syncing `Users` stream isn't available for organization `{stream_slice['organization']}`."
+                elif isinstance(self, Organizations):
+                    error_msg = f"Syncing `Organizations` stream isn't available for organization `{stream_slice['organization']}`."
+                else:
+                    self.logger.error(f"Undefined error while reading records: {error_msg}")
+                    raise e
             elif e.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
                     f"Syncing `{self.name}` stream isn't available for repository "
@@ -170,34 +180,6 @@ class GithubStream(HttpStream, ABC):
             yield self.transform(record=record, repository=stream_slice["repository"])
 
     def transform(self, record: MutableMapping[str, Any], repository: str = None, organization: str = None) -> MutableMapping[str, Any]:
-        """
-        Use this method to:
-            - remove excessive fields from record;
-            - minify subelements in the record. For example, if you have `reviews` record which looks like this:
-            {
-              "id": 671782869,
-              "node_id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NjcxNzgyODY5",
-              "user": {
-                "login": "keu",
-                "id": 1619536,
-                ... <other fields>
-              },
-              "body": "lgtm, just  small comment",
-              ... <other fields>
-            }
-
-            `user` subelement contains almost all possible fields fo user and it's not optimal to store such data in
-            `reviews` record. We may leave only `user.id` field and save in to `user_id` field in the record. So if you
-            need to do something similar with your record you may use this method.
-        """
-        for field in self.fields_to_minimize:
-            field_value = record.pop(field, None)
-            if field_value is None:
-                record[field] = field_value
-            elif isinstance(field_value, dict):
-                record[f"{field}_id"] = field_value.get("id") if field_value else None
-            elif isinstance(field_value, list):
-                record[field] = [value.get("id") for value in field_value]
         if repository:
             record["repository"] = repository
         if organization:
@@ -276,7 +258,9 @@ class SemiIncrementalGithubStream(GithubStream):
 class IncrementalGithubStream(SemiIncrementalGithubStream):
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        params["since"] = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"])
+        since_params = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"])
+        if since_params:
+            params["since"] = since_params
         return params
 
 
@@ -307,6 +291,8 @@ class PullRequestStats(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
     """
 
+    top_level_stream = False
+
     @property
     def record_keys(self) -> List[str]:
         return list(self.get_json_schema()["properties"].keys())
@@ -334,6 +320,8 @@ class Reviews(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
     """
+
+    top_level_stream = False
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -452,7 +440,6 @@ class Releases(SemiIncrementalGithubStream):
     """
 
     cursor_field = "created_at"
-    fields_to_minimize = ("author",)
 
     def transform(self, record: MutableMapping[str, Any], repository: str = None, **kwargs) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
@@ -471,11 +458,6 @@ class Events(SemiIncrementalGithubStream):
     """
 
     cursor_field = "created_at"
-    fields_to_minimize = (
-        "actor",
-        "repo",
-        "org",
-    )
 
 
 class PullRequests(SemiIncrementalGithubStream):
@@ -484,14 +466,6 @@ class PullRequests(SemiIncrementalGithubStream):
     """
 
     page_size = 50
-    fields_to_minimize = (
-        "milestone",
-        "assignee",
-        "labels",
-        "assignees",
-        "requested_reviewers",
-        "requested_teams",
-    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -502,8 +476,7 @@ class PullRequests(SemiIncrementalGithubStream):
         Decide if this a first read or not by the presence of the state object
         """
         self._first_read = not bool(stream_state)
-        with self.cache:
-            yield from super().read_records(stream_state=stream_state, **kwargs)
+        yield from super().read_records(stream_state=stream_state, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls"
@@ -548,7 +521,6 @@ class IssueMilestones(SemiIncrementalGithubStream):
     """
 
     is_sorted_descending = True
-    fields_to_minimize = ("creator",)
     stream_base_params = {
         "state": "all",
         "sort": "updated",
@@ -590,7 +562,6 @@ class Projects(SemiIncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/projects#list-repository-projects
     """
 
-    fields_to_minimize = ("creator",)
     stream_base_params = {
         "state": "all",
     }
@@ -610,10 +581,6 @@ class IssueEvents(SemiIncrementalGithubStream):
     """
 
     cursor_field = "created_at"
-    fields_to_minimize = (
-        "actor",
-        "issue",
-    )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/events"
@@ -635,26 +602,104 @@ class Comments(IncrementalGithubStream):
 
 class Commits(IncrementalGithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
+    API docs: https://docs.github.com/en/rest/reference/repos#list-commits
+
+    Pull commits from each branch of each repository, tracking state for each branch
     """
 
     primary_key = "sha"
     cursor_field = "created_at"
-    fields_to_minimize = (
-        "author",
-        "committer",
-    )
 
-    def transform(self, record: MutableMapping[str, Any], repository: str = None, **kwargs) -> MutableMapping[str, Any]:
+    def __init__(self, branches_to_pull: Mapping[str, List[str]], default_branches: Mapping[str, str], **kwargs):
+        super().__init__(**kwargs)
+        self.branches_to_pull = branches_to_pull
+        self.default_branches = default_branches
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super(IncrementalGithubStream, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params["since"] = self.get_starting_point(
+            stream_state=stream_state, repository=stream_slice["repository"], branch=stream_slice["branch"]
+        )
+        params["sha"] = stream_slice["branch"]
+        return params
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(**kwargs):
+            repository = stream_slice["repository"]
+            for branch in self.branches_to_pull.get(repository, []):
+                yield {"branch": branch, "repository": repository}
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        for record in response.json():  # GitHub puts records in an array.
+            yield self.transform(record=record, repository=stream_slice["repository"], branch=stream_slice["branch"])
+
+    def transform(self, record: MutableMapping[str, Any], repository: str = None, branch: str = None, **kwargs) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
 
         # Record of the `commits` stream doesn't have an updated_at/created_at field at the top level (so we could
         # just write `record["updated_at"]` or `record["created_at"]`). Instead each record has such value in
         # `commit.author.date`. So the easiest way is to just enrich the record returned from API with top level
         # field `created_at` and use it as cursor_field.
+        # Include the branch in the record
         record["created_at"] = record["commit"]["author"]["date"]
+        record["branch"] = branch
 
         return record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        state_value = latest_cursor_value = latest_record.get(self.cursor_field)
+        current_repository = latest_record["repository"]
+        current_branch = latest_record["branch"]
+
+        if current_stream_state.get(current_repository):
+            repository_commits_state = current_stream_state[current_repository]
+            if repository_commits_state.get(self.cursor_field):
+                # transfer state from old source version to per-branch version
+                if current_branch == self.default_branches[current_repository]:
+                    state_value = max(latest_cursor_value, repository_commits_state[self.cursor_field])
+                    del repository_commits_state[self.cursor_field]
+            elif repository_commits_state.get(current_branch, {}).get(self.cursor_field):
+                state_value = max(latest_cursor_value, repository_commits_state[current_branch][self.cursor_field])
+
+        if current_repository not in current_stream_state:
+            current_stream_state[current_repository] = {}
+
+        current_stream_state[current_repository][current_branch] = {self.cursor_field: state_value}
+        return current_stream_state
+
+    def get_starting_point(self, stream_state: Mapping[str, Any], repository: str, branch: str) -> str:
+        start_point = self._start_date
+        if stream_state and stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field):
+            return max(start_point, stream_state[repository][branch][self.cursor_field])
+        if branch == self.default_branches[repository]:
+            return super().get_starting_point(stream_state=stream_state, repository=repository)
+        return start_point
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        repository = stream_slice["repository"]
+        start_point_map = {
+            branch: self.get_starting_point(stream_state=stream_state, repository=repository, branch=branch)
+            for branch in self.branches_to_pull.get(repository, [])
+        }
+        for record in super(SemiIncrementalGithubStream, self).read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            if record.get(self.cursor_field) > start_point_map[stream_slice["branch"]]:
+                yield record
+            elif self.is_sorted_descending and record.get(self.cursor_field) < start_point_map[stream_slice["branch"]]:
+                break
 
 
 class Issues(IncrementalGithubStream):
@@ -664,12 +709,6 @@ class Issues(IncrementalGithubStream):
 
     page_size = 50  # `issues` is a large stream so it's better to set smaller page size.
 
-    fields_to_minimize = (
-        "assignee",
-        "milestone",
-        "labels",
-        "assignees",
-    )
     stream_base_params = {
         "state": "all",
         "sort": "updated",
@@ -686,3 +725,70 @@ class ReviewComments(IncrementalGithubStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls/comments"
+
+
+# Reactions streams
+
+
+class ReactionStream(GithubStream, ABC):
+
+    parent_key = "id"
+    top_level_stream = False
+
+    def __init__(self, **kwargs):
+        self._stream_kwargs = deepcopy(kwargs)
+        self._parent_stream = self.parent_entity(**kwargs)
+        kwargs.pop("start_date", None)
+        super().__init__(**kwargs)
+
+    @property
+    @abstractmethod
+    def parent_entity(self):
+        """
+        Specify the class of the parent stream for which receive reactions
+        """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        parent_path = self._parent_stream.path(stream_slice=stream_slice, **kwargs)
+        return f"{parent_path}/{stream_slice[self.parent_key]}/reactions"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(**kwargs):
+            for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                yield {self.parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
+
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        return {"Accept": "application/vnd.github.squirrel-girl-preview+json"}
+
+
+class CommitCommentReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-commit-comment
+    """
+
+    parent_entity = CommitComments
+
+
+class IssueCommentReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue-comment
+    """
+
+    parent_entity = Comments
+
+
+class IssueReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue
+    """
+
+    parent_entity = Issues
+    parent_key = "number"
+
+
+class PullRequestCommentReactions(ReactionStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment
+    """
+
+    parent_entity = ReviewComments

@@ -8,6 +8,8 @@ type FormItem = {
   order?: number;
   title?: string;
   description?: string;
+
+  airbyte_hidden?: boolean;
 };
 
 export type FormBaseItem = {
@@ -23,6 +25,7 @@ type FormGroupItem = {
   jsonSchema: AirbyteJSONSchema;
   properties: FormBlock[];
   isLoading?: boolean;
+  hasOauth?: boolean;
   default?: JSONSchema7Type;
   examples?: JSONSchema7Type;
 } & FormItem;
