@@ -155,6 +155,7 @@ class IVRs(ZendeskTalkStream):
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/ivrs#list-ivrs
     """
 
+    name = "ivrs"
     data_field = "ivrs"
     use_cache = True
 
@@ -166,6 +167,8 @@ class IVRMenus(IVRs):
     """IVR Menus
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/ivrs#list-ivrs
     """
+
+    name = "ivr_menus"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """ Simply parse json and iterates over root object"""
@@ -179,6 +182,8 @@ class IVRRoutes(IVRs):
     """IVR Routes
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/ivr_routes#list-ivr-routes
     """
+
+    name = "ivr_routes"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """ Simply parse json and iterates over root object"""
@@ -242,7 +247,7 @@ class Calls(ZendeskTalkIncrementalStream):
     cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
-        return "/phone_numbers"
+        return "/stats/incremental/calls"
 
 
 class CallLegs(ZendeskTalkIncrementalStream):
@@ -254,5 +259,5 @@ class CallLegs(ZendeskTalkIncrementalStream):
     cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
-        return "/stats/incremental/calls"
+        return "/stats/incremental/legs"
 
