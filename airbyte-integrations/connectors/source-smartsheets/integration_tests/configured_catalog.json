@@ -8,31 +8,32 @@
           "type": "object",
           "properties": {
             "0": {
-              "type": "number"
+              "type": ["null", "string", "number"]
             },
             "First Name": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "Last Name": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "Gender": {
-              "type": "string"
+              "type": ["null", "number", "string"]
             },
             "Country": {
-              "type": "string"
+              "type": ["null", "number", "string"]
             },
             "Age": {
-              "type": "number"
+              "type": ["null", "string", "number"]
             },
             "Date": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "Id": {
-              "type": "number"
+              "type": ["null", "string", "number"]
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
