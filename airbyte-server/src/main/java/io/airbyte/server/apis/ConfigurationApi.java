@@ -8,9 +8,7 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.CheckOperationRead;
 import io.airbyte.api.model.CompleteDestinationOAuthRequest;
-import io.airbyte.api.model.CompleteDestinationOauthResponse;
 import io.airbyte.api.model.CompleteSourceOauthRequest;
-import io.airbyte.api.model.CompleteSourceOauthResponse;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
@@ -124,6 +122,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
+import java.util.Map;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
@@ -165,7 +164,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final String webappUrl,
                           final AirbyteVersion airbyteVersion,
                           final Path workspaceRoot,
-                          HttpClient httpClient) {
+                          final HttpClient httpClient) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;
@@ -301,7 +300,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public CompleteSourceOauthResponse completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest) {
+  public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest) {
     return execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
   }
 
@@ -311,7 +310,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public CompleteDestinationOauthResponse completeDestinationOAuth(final CompleteDestinationOAuthRequest requestBody) {
+  public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest requestBody) {
     return execute(() -> oAuthHandler.completeDestinationOAuth(requestBody));
   }
 

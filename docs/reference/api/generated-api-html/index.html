@@ -3032,20 +3032,12 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      <a href="#CompleteDestinationOauthResponse">CompleteDestinationOauthResponse</a>
       
+      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "oauthOutput" : {
-    "key" : "{}"
-  },
-  "authConfiguration" : ""
-}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -3057,7 +3049,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful operation
-        <a href="#CompleteDestinationOauthResponse">CompleteDestinationOauthResponse</a>
+        <a href="#map[String, Object]">map[String, Object]</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -3093,20 +3085,12 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      <a href="#CompleteSourceOauthResponse">CompleteSourceOauthResponse</a>
       
+      map[String, Object]
     </div>
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "oauthOutput" : {
-    "key" : "{}"
-  },
-  "authConfiguration" : ""
-}</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -3118,7 +3102,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful operation
-        <a href="#CompleteSourceOauthResponse">CompleteSourceOauthResponse</a>
+        <a href="#map[String, Object]">map[String, Object]</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -6610,9 +6594,7 @@ font-style: italic;
     <li><a href="#CheckConnectionRead"><code>CheckConnectionRead</code> - </a></li>
     <li><a href="#CheckOperationRead"><code>CheckOperationRead</code> - </a></li>
     <li><a href="#CompleteDestinationOAuthRequest"><code>CompleteDestinationOAuthRequest</code> - </a></li>
-    <li><a href="#CompleteDestinationOauthResponse"><code>CompleteDestinationOauthResponse</code> - </a></li>
     <li><a href="#CompleteSourceOauthRequest"><code>CompleteSourceOauthRequest</code> - </a></li>
-    <li><a href="#CompleteSourceOauthResponse"><code>CompleteSourceOauthResponse</code> - </a></li>
     <li><a href="#ConnectionCreate"><code>ConnectionCreate</code> - </a></li>
     <li><a href="#ConnectionIdRequestBody"><code>ConnectionIdRequestBody</code> - </a></li>
     <li><a href="#ConnectionRead"><code>ConnectionRead</code> - </a></li>
@@ -6820,15 +6802,7 @@ font-style: italic;
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given. </div>
 <div class="param">queryParams (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span> The query parameters present in the redirect URL after a user granted consent e.g auth code </div>
-<div class="param">authConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#">oas_any_type_not_mapped</a></span> The values required to configure OAuth flows. The schema for this must match the authSpecification schema. </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="CompleteDestinationOauthResponse"><code>CompleteDestinationOauthResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">oauthOutput (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span>  </div>
-<div class="param">authConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#">oas_any_type_not_mapped</a></span> The values required to configure OAuth flows. The schema for this must match the authSpecification schema. </div>
+<div class="param">authInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#">oas_any_type_not_mapped</a></span> The values required to configure OAuth flows. The schema for this must match the authSpecification schema. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -6839,15 +6813,7 @@ font-style: italic;
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given. </div>
 <div class="param">queryParams (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span> The query parameters present in the redirect URL after a user granted consent e.g auth code </div>
-<div class="param">authConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#">oas_any_type_not_mapped</a></span> The values required to configure OAuth flows. The schema for this must match the authSpecification schema. </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="CompleteSourceOauthResponse"><code>CompleteSourceOauthResponse</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">oauthOutput (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span>  </div>
-<div class="param">authConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#">oas_any_type_not_mapped</a></span> The values required to configure OAuth flows. The schema for this must match the authSpecification schema. </div>
+<div class="param">authInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#">oas_any_type_not_mapped</a></span> The values required to configure OAuth flows. The schema for this must match the authSpecification schema. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -7094,7 +7060,7 @@ font-style: italic;
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The url to redirect to after getting the user consent </div>
-<div class="param">authConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#">oas_any_type_not_mapped</a></span> The values required to configure OAuth flows. The schema for this must match the authSpecification schema. </div>
+<div class="param">authInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#">oas_any_type_not_mapped</a></span> The values required to configure OAuth flows. The schema for this must match the authSpecification schema. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -7563,7 +7529,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The url to redirect to after getting the user consent </div>
-<div class="param">authConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#">oas_any_type_not_mapped</a></span> The values required to configure OAuth flows. The schema for this must match the authSpecification schema. </div>
+<div class="param">authInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#">oas_any_type_not_mapped</a></span> The values required to configure OAuth flows. The schema for this must match the authSpecification schema. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
