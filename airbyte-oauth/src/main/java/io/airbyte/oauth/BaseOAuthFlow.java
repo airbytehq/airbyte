@@ -19,6 +19,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -161,6 +162,7 @@ public abstract class BaseOAuthFlow extends BaseOAuthConfig {
         .POST(HttpRequest.BodyPublishers
             .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
         .uri(URI.create(accessTokenUrl))
+        .header("Authorization", "Basic " + Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()))
         .header("Content-Type", tokenReqContentType.contentType)
         .header("Accept", "application/json")
         .build();

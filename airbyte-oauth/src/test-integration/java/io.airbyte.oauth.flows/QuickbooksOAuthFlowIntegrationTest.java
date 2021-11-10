@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -73,9 +74,12 @@ public class QuickbooksOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
     final Map<String, Object> params = flow.completeSourceOAuth(workspaceId, definitionId,
         Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
+
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
-    assertTrue(params.containsKey("access_token"));
-    assertTrue(params.get("access_token").toString().length() > 0);
+    assertTrue(params.containsKey("credentials"));
+    final Map<String, Object> credentials = Collections.unmodifiableMap((Map<String, Object>) params.get("credentials"));
+    assertTrue(credentials.containsKey("refresh_token"));
+    assertTrue(credentials.get("refresh_token").toString().length() > 0);
   }
 
 }

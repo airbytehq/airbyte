@@ -5,6 +5,7 @@
 package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
@@ -15,12 +16,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.message.BasicNameValuePair;
 
 public class QuickbooksOAuthFlow extends BaseOAuthFlow {
 
@@ -70,15 +68,10 @@ public class QuickbooksOAuthFlow extends BaseOAuthFlow {
       throws IOException {
     var accessTokenUrl = getAccessTokenUrl();
     try {
-      var parametersMap = getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl);
-      var queryParameters = new ArrayList<NameValuePair>(parametersMap.size());
-      for (var entry : parametersMap.entrySet()) {
-        queryParameters.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
-      }
       final HttpRequest request = HttpRequest.newBuilder()
           .POST(HttpRequest.BodyPublishers
               .ofString(getTokenReqContentType().getConverter().apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
-          .uri(new URIBuilder(getAccessTokenUrl()).addParameters(queryParameters).build())
+          .uri(new URIBuilder(getAccessTokenUrl()).build())
           .header("Content-Type", getTokenReqContentType().getContentType())
           .header("Accept", "application/json")
           .build();
@@ -89,6 +82,17 @@ public class QuickbooksOAuthFlow extends BaseOAuthFlow {
     } catch (final InterruptedException | URISyntaxException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
+  }
+
+  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+    return ImmutableMap.<String, String>builder()
+        // required
+        .put("redirect_uri", redirectUrl)
+        .put("grant_type", "authorization_code")
+        .put("code", authCode)
+        .put("client_id", clientId)
+        .put("client_secret", clientSecret)
+        .build();
   }
 
   /**
