@@ -29,15 +29,8 @@
         "type": "string",
         "title": "From Time",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00. Any data before this date will not be replicated. Leave empty if you want to pull from the very start.",
-        "examples": ["2017-01-25T00:00:00"]
-      },
-      "to_time": {
-        "type": "string",
-        "title": "To Time",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00. Any data after this date will not be replicated. Leave empty if you want to pull util the most recent.",
-        "examples": ["2017-01-25T00:00:00"]
+        "description": "UTC date and time in the format 2021-11-10T11:30:00. Any data before this date will not be replicated. Leave empty if you want to pull from the very start.",
+        "examples": ["2021-11-10T11:30:00"]
       },
       "by_receipt_time": {
         "type": "boolean",
@@ -49,12 +42,6 @@
         "title": "Limit",
         "description": "This row size limit used for pagination. Higher value requires more memory.",
         "default": 10000
-      },
-      "offset": {
-        "type": "integer",
-        "title": "Offset",
-        "description": "Skip the first N messages. Default 0",
-        "default": 0
       }
     }
   }

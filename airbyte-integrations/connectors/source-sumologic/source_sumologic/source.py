@@ -55,12 +55,13 @@ class Messages(IncrementalSumologicStream):
         else:
             from_time = self.config.get("from_time")
 
+        # to_time is required by sumo-logic API
+        to_time = datetime.datetime.utcnow().replace(microsecond=0).isoformat()
         records = self.client.search(
             query=self.config["query"],
             from_time=from_time,
-            to_time=self.config.get("to_time", datetime.datetime.utcnow().replace(microsecond=0).isoformat()),
+            to_time=to_time,
             limit=self.config.get("limit", 10000),
-            offset=self.config.get("offset", 0),
             by_receipt_time=self.config.get("by_receipt_time", False),
         )
         return records
