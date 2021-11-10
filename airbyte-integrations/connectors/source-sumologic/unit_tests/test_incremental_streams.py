@@ -31,7 +31,7 @@ def config(mocker):
 
 def test_cursor_field(patch_incremental_base_class, client, config):
     stream = IncrementalSumologicStream(client, config)
-    assert stream.cursor_field == "_messagetime"
+    assert stream.cursor_field == "_receipttime"
 
 
 def test_cursor_field__when_by_receipt_time(patch_incremental_base_class, client, config):
@@ -43,8 +43,8 @@ def test_cursor_field__when_by_receipt_time(patch_incremental_base_class, client
 
 def test_get_updated_state(patch_incremental_base_class, client, config):
     stream = IncrementalSumologicStream(client, config)
-    inputs = {"current_stream_state": {"_messagetime": "1633060800000"}, "latest_record": {"_messagetime": "1633147200000"}}
-    expected_state = {"_messagetime": "1633147200000"}
+    inputs = {"current_stream_state": {"_receipttime": "1633060800000"}, "latest_record": {"_receipttime": "1633147200000"}}
+    expected_state = {"_receipttime": "1633147200000"}
     assert stream.get_updated_state(**inputs) == expected_state
 
 
