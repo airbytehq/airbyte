@@ -22,7 +22,8 @@
       "query": {
         "type": "string",
         "title": "Query",
-        "description": "Sumo Logic query string for the search job. You may need to escape certain characters."
+        "description": "Sumo Logic query string for the search job. You may need to escape certain characters. See search query syntax document <a href=\"https://help.sumologic.com/05Search/Get-Started-with-Search/How-to-Build-a-Search/Search-Syntax-Overview\" target=\"_blank\">here</a>",
+        "examples": ["_sourceCategory=apache AND _sourcehost=vpn3000"]
       },
       "from_time": {
         "type": "string",
