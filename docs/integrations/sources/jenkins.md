@@ -44,7 +44,8 @@ rate limit issues that are not automatically retried successfully.
 
 ### Setup guide
 
-TODO
+Login to your Jenkins server in your browser and go to
+`$JENKINS_SERVER_URL/me/configure` to generate your API token.
 
 ## Changelog
 
