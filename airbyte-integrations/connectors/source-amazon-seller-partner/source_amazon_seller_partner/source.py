@@ -51,11 +51,6 @@ class ConnectorConfig(BaseModel):
     region: AWSRegion = Field(description="Region to pull data from")
 
 
-class NoDataForCheck(Exception):
-    def __repr__(self):
-        return "Couldn't check connection without data for Orders stream"
-
-
 class SourceAmazonSellerPartner(AbstractSource):
     def _get_stream_kwargs(self, config: ConnectorConfig) -> Mapping[str, Any]:
         endpoint, marketplace_id, region = get_marketplaces(config.aws_environment)[config.region]
