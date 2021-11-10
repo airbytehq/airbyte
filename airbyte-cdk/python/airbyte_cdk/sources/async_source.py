@@ -1,71 +1,42 @@
 import collections
 import itertools
-import time
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Iterator, Union, Mapping, Optional
 
-import pendulum
+
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.source.async_job import AbstractAsyncJob
 from pydantic.tools import Any
 
 
-class JobWaitTimeout(Exception):
-    pass
-
-
-class AsyncJob(ABC):
-    @property
-    def job_wait_timeout(self) -> Optional[pendulum.Duration]:
-        """Total time allowed for job to run, in case it is None the job will run endlessly"""
-        return None
-
-    @property
-    def job_sleep_interval(self) -> pendulum.Duration:
-        """Sleep interval after each check of job status"""
-        return pendulum.duration(seconds=5)
-
-    @abstractmethod
-    def start_job(self) -> None:
-        """Create async job and return"""
-
-    @abstractmethod
-    def completed_successfully(self) -> bool:
-        """Something that will tell if job was successful"""
-
-    def should_retry(self, exc: Exception) -> bool:
-        """Tell if the job should be restarted when the following exception occurs"""
-        return False
-
-    def wait_completion(self):
-        """Actual waiting for job to finish"""
-        start_time = pendulum.now()
-
-        while self.job_wait_timeout and pendulum.now() - start_time > self.job_wait_timeout:
-            if self.completed_successfully():
-                return
-            time.sleep(self.job_sleep_interval.in_seconds())
-
-        raise JobWaitTimeout("Waiting for job more than allowed")
-
-
-StreamSliceType = Union[Mapping[str, Any], AsyncJob, None]
+StreamSliceType = Union[Mapping[str, Any], AbstractAsyncJob, None]
 
 
 class AsyncSource(AbstractSource, ABC):
     @property
     def concurrent_limit(self) -> Optional[int]:
-        """Maximum number of concurrent jobs. By default is None - no limit"""
+        """Maximum number of concurrent jobs. By default it is None, meaning no limit"""
         return None
 
     def iterate_over_slices(self, slices: Iterator[StreamSliceType]) -> Iterator[Mapping]:
+        """Wrapper to iterate over different kinds of slices.
+        We generally support two kinds of slices:
+        - sync - classic, dictionaries with values
+        - async - instances of classes inherited from AbstractAsyncJob interface
+
+        NOTE: this method may take a lot of time to execute in case of using with async slices.
+
+        :param slices: slices iterable
+        :yield: proper slice object, will wait async job for completion before yielding it
+        """
         first_item = next(slices, None)
         all_slices = itertools.chain((first_item,), slices)
-        if isinstance(first_item, AsyncJob):
+        if isinstance(first_item, AbstractAsyncJob):
             yield from self.iterate_over_jobs(jobs=all_slices)
         else:
             yield from all_slices
 
-    def iterate_over_jobs(self, jobs: Iterator[AsyncJob]) -> Iterator[Mapping]:
+    def iterate_over_jobs(self, jobs: Iterator[AbstractAsyncJob]) -> Iterator[Mapping]:
         """ Produce slices in expected order
 
         :param jobs: async job
