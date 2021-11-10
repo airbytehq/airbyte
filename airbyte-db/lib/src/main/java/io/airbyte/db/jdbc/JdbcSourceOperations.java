@@ -96,8 +96,7 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
 
     // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
     switch (columnType) {
-      case BIT -> putBit(o, columnName, r, i);
-      case BOOLEAN -> putBoolean(o, columnName, r, i);
+      case BIT, BOOLEAN -> putBoolean(o, columnName, r, i);
       case TINYINT, SMALLINT -> putShortInt(o, columnName, r, i);
       case INTEGER -> putInteger(o, columnName, r, i);
       case BIGINT -> putBigInt(o, columnName, r, i);
@@ -114,10 +113,6 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
   }
 
   protected void putBoolean(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, resultSet.getBoolean(index));
-  }
-
-  protected void putBit(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, resultSet.getBoolean(index));
   }
 

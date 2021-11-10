@@ -119,8 +119,8 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("bit")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "'0'", "1", "'false'", "'true'")
-            .addExpectedValues(null, "0", "1", "0", "1")
+            .addInsertValues("null", "0", "1", "'true'", "'false'")
+            .addExpectedValues(null, "false", "true", "true", "false")
             .build());
 
     addDataTypeTestData(

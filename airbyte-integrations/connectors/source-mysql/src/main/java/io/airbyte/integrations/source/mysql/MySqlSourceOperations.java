@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public class MySqlSourceOperations extends JdbcSourceOperations {
 
   @Override
-  protected void putBit(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+  protected void putBoolean(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
     node.put(columnName, resultSet.getInt(index) == 1);
   }
