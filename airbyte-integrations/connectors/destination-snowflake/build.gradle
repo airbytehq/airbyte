@@ -6,7 +6,21 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestination'
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+// enable when profiling
+    applicationDefaultJvmArgs = [
+
+            '-XX:MaxRAMPercentage=75.0',
+//            '-XX:NativeMemoryTracking=detail',
+//            "-Djava.rmi.server.hostname=localhost",
+//            '-Dcom.sun.management.jmxremote=true',
+//            '-Dcom.sun.management.jmxremote.port=6000',
+//            "-Dcom.sun.management.jmxremote.rmi.port=6000",
+//            '-Dcom.sun.management.jmxremote.local.only=false',
+//            '-Dcom.sun.management.jmxremote.authenticate=false',
+//            '-Dcom.sun.management.jmxremote.ssl=false',
+//            '-agentpath:/usr/local/YourKit-JavaProfiler-2021.3/bin/linux-x86-64/libyjpagent.so=port=10001,listen=all'
+    ]
+
 }
 
 dependencies {

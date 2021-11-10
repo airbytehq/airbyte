@@ -37,16 +37,6 @@
                       }
                     }
                   }
-                },
-                "column`_'with\"_quotes": {
-                  "type": ["null", "array"],
-                  "items": {
-                    "properties": {
-                      "currency": {
-                        "type": ["null", "string"]
-                      }
-                    }
-                  }
                 }
               }
             }
@@ -234,6 +224,16 @@
                     "properties": {
                       "owner_id": {
                         "type": ["null", "integer"]
+                      },
+                      "column`_'with\"_quotes": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "properties": {
+                            "currency": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        }
                       }
                     }
                   }
