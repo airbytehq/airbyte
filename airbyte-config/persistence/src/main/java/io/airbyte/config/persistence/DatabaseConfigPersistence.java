@@ -148,7 +148,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) throws IOException, JsonValidationException {
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) throws IOException {
     database.transaction(ctx -> {
       configs.forEach((configId, config) -> {
         final boolean isExistingConfig = ctx.fetchExists(select()

@@ -28,8 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This config persistence contains all seed definitions according to the yaml files. It is
- * read-only.
+ * This config persistence contains all seed definitions according to the yaml files. It is read-only.
  */
 public class YamlSeedConfigPersistence implements ConfigPersistence {
 
@@ -67,11 +66,11 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * Merges the corresponding spec JSON into the definition JSON. This is necessary because specs are
-   * stored in a separate resource file from definitions.
+   * Merges the corresponding spec JSON into the definition JSON. This is necessary because specs are stored in a separate resource file from
+   * definitions.
    *
    * @param definitionJson JSON of connector definition that is missing a spec
-   * @param specConfigs map of docker image to JSON of docker image/connector spec pair
+   * @param specConfigs    map of docker image to JSON of docker image/connector spec pair
    * @return JSON of connector definition including the connector spec
    */
   private JsonNode mergeSpecIntoDefinition(final JsonNode definitionJson, final Map<String, JsonNode> specConfigs) {
@@ -131,8 +130,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void writeConfigs(final AirbyteConfig configType, final String configId, final List<T> configs)
-      throws IOException, JsonValidationException {
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 

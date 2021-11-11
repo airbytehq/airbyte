@@ -91,6 +91,8 @@ public abstract class BaseDatabaseConfigPersistenceTest {
 
   protected static void writeDestinations(final ConfigPersistence configPersistence, final List<StandardDestinationDefinition> destinations)
       throws Exception {
+    final Map<String, StandardDestinationDefinition> destinationsByID = destinations.stream()
+        .collect
     configPersistence.writeConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(), destinations);
   }
 

@@ -5,13 +5,13 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -60,15 +60,18 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws JsonValidationException, IOException {
-    writeConfigs(configType, configId, Lists.newArrayList(config));
+    final Map<String, T> configIdToConfig = new HashMap<>() {{
+      put(configId, config);
+    }};
+    writeConfigs(configType, configIdToConfig);
   }
 
   @Override
-  public <T> void writeConfigs(final AirbyteConfig configType, final String configId, final List<T> configs)
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs)
       throws IOException, JsonValidationException {
-    for (final T config : configs) {
+    for (final Map.Entry<String, T> config : configs.entrySet()) {
       validateJson(Jsons.jsonNode(config), configType);
-      decoratedPersistence.writeConfig(configType, configId, config);
+      decoratedPersistence.writeConfig(configType, config.getKey(), config.getValue());
     }
   }
 

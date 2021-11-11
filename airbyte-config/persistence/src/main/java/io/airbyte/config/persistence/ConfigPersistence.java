@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public interface ConfigPersistence {
-
+  
   <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz) throws ConfigNotFoundException, JsonValidationException, IOException;
 
   <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) throws JsonValidationException, IOException;
