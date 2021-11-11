@@ -77,7 +77,7 @@ public class ConnectorDefinitionSpecBackfiller {
 
       // if a source definition is not being used and is not in the seed, don't bother to attempt to fetch
       // a spec for it; just delete.
-      if (!seedSourceRepos.contains(sourceDef.getDockerRepository()) && !connectorReposInUse.contains(sourceDef.getDockerRepository())) {
+      if (!connectorReposInUse.contains(sourceDef.getDockerRepository()) && !seedSourceRepos.contains(sourceDef.getDockerRepository())) {
         LOGGER.info(
             "migrateAllDefinitionsToContainSpec - Source Definition {} does not have a spec, is not in the seed, and is not currently used in a connection. Deleting...",
             sourceDef.getName());
@@ -110,6 +110,7 @@ public class ConnectorDefinitionSpecBackfiller {
             configRepository,
             sourceDef.getDockerRepository(),
             sourceDef.getDockerImageTag(),
+            connectorReposInUse.contains(sourceDef.getDockerRepository()),
             configs.getVersion31ForceUpgrade(),
             logRead.toString());
         if (configs.getVersion31ForceUpgrade()) {
@@ -170,6 +171,7 @@ public class ConnectorDefinitionSpecBackfiller {
             configRepository,
             destDef.getDockerRepository(),
             destDef.getDockerImageTag(),
+            connectorReposInUse.contains(destDef.getDockerRepository()),
             configs.getVersion31ForceUpgrade(),
             logRead.toString());
         if (configs.getVersion31ForceUpgrade()) {
@@ -197,6 +199,7 @@ public class ConnectorDefinitionSpecBackfiller {
                                                final ConfigRepository configRepository,
                                                final String dockerRepo,
                                                final String dockerImageTag,
+                                               final boolean connectorInUse,
                                                final boolean forceUpgrade,
                                                final String logs)
       throws JsonValidationException, IOException {
@@ -207,6 +210,7 @@ public class ConnectorDefinitionSpecBackfiller {
         "docker_image_name", dockerRepo,
         "docker_image_tag", dockerImageTag,
         "force_upgrade", forceUpgrade,
+        "connector_in_use", connectorInUse,
         "logs", logs);
     trackingClient.track(workspaceId, "failed_spec_backfill_major_bump", metadata);
   }
