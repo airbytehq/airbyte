@@ -80,6 +80,8 @@ public class ServerApp implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
+  private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.31.0-alpha");
+
   /**
    * We can't support automatic migration for kube before this version because we had a bug in kube
    * which would cause airbyte db to erase state upon termination, as a result the automatic migration
@@ -242,6 +244,18 @@ public class ServerApp implements ServerRunnable {
 
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
 
+    if (!isLegalUpgrade(airbyteDatabaseVersion.orElse(null), airbyteVersion)) {
+      final String message = String.format(
+          "Cannot upgrade from version %s to version %s directly. First you must upgrade to version %s. After that upgrade is complete, you may upgrade to version %s",
+          airbyteDatabaseVersion.get(),
+          airbyteVersion,
+          VERSION_BREAK,
+          airbyteVersion);
+
+      LOGGER.error(message);
+      throw new RuntimeException(message);
+    }
+
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
 
@@ -277,6 +291,28 @@ public class ServerApp implements ServerRunnable {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);
     }
+  }
+
+  @VisibleForTesting
+  static boolean isLegalUpgrade(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
+    // means there was no previous version so upgrade even needs to happen. always legal.
+    if (airbyteDatabaseVersion == null) {
+      return true;
+    }
+
+    return !isUpgradingThroughVersionBreak(airbyteDatabaseVersion, airbyteVersion);
+  }
+
+  /**
+   * Check to see if given the current version of the app and the version we are trying to upgrade if
+   * it passes through a version break (i.e. a major version bump).
+   *
+   * @param airbyteDatabaseVersion - current version of the app
+   * @param airbyteVersion - version we are trying to upgrade to
+   * @return true if upgrading through a major version, otherwise false.
+   */
+  private static boolean isUpgradingThroughVersionBreak(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
+    return airbyteDatabaseVersion.lessThan(VERSION_BREAK) && airbyteVersion.greaterThan(VERSION_BREAK);
   }
 
   /**
