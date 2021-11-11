@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server;
 
 import com.google.api.client.util.Lists;
@@ -30,21 +34,23 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// todo (lmossman) - delete this class after the faux major version bump, along with making the spec field required on the definition structs
+// todo (lmossman) - delete this class after the faux major version bump, along with making the spec
+// field required on the definition structs
 public class ConnectorDefinitionSpecBackfiller {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorDefinitionSpecBackfiller.class);
 
   /**
-   * Check that each spec in the database has a spec. If it doesn't, add it. If it can't be added, delete the connector definition or fail according
-   * to the VERSION_0_31_0_FORCE_UPGRADE env var. The goal is to try to end up in a state where all definitions in the db contain specs, or fail
+   * Check that each spec in the database has a spec. If it doesn't, add it. If it can't be added,
+   * delete the connector definition or fail according to the VERSION_0_31_0_FORCE_UPGRADE env var.
+   * The goal is to try to end up in a state where all definitions in the db contain specs, or fail
    * otherwise.
    *
    * @param configRepository - access to the db
-   * @param database         - access to the db at a lower level (for deleting connections and syncs)
-   * @param schedulerClient  - scheduler client so that specs can be fetched as needed
-   * @param trackingClient   - tracking client for reporting failures to Segment
-   * @param configs          - for retrieving various configs (env vars, worker environment, logs)
+   * @param database - access to the db at a lower level (for deleting connections and syncs)
+   * @param schedulerClient - scheduler client so that specs can be fetched as needed
+   * @param trackingClient - tracking client for reporting failures to Segment
+   * @param configs - for retrieving various configs (env vars, worker environment, logs)
    */
   @VisibleForTesting
   static void migrateAllDefinitionsToContainSpec(final ConfigRepository configRepository,
@@ -52,7 +58,8 @@ public class ConnectorDefinitionSpecBackfiller {
                                                  final ConfigPersistence seed,
                                                  final SynchronousSchedulerClient schedulerClient,
                                                  final TrackingClient trackingClient,
-                                                 final Configs configs) throws IOException, JsonValidationException, ConfigNotFoundException {
+                                                 final Configs configs)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
     final List<String> failedBackfillImages = Lists.newArrayList();
 
     final JobConverter jobConverter = new JobConverter(configs.getWorkerEnvironment(), configs.getLogConfigs());
@@ -67,7 +74,8 @@ public class ConnectorDefinitionSpecBackfiller {
       final String imageName = sourceDef.getDockerRepository() + ":" + sourceDef.getDockerImageTag();
       try {
         if (sourceDef.getSpec() == null) {
-          // if a source definition is not being used and is not in the seed, don't bother to attempt to fetch a spec for it; just delete.
+          // if a source definition is not being used and is not in the seed, don't bother to attempt to fetch
+          // a spec for it; just delete.
           if (!seedSourceRepos.contains(sourceDef.getDockerRepository()) && !connectorReposInUse.contains(sourceDef.getDockerRepository())) {
             LOGGER.info(
                 "migrateAllDefinitionsToContainSpec - Source Definition {} does not have a spec, is not in the seed, and is not currently used in a connection. Deleting...",
@@ -124,7 +132,8 @@ public class ConnectorDefinitionSpecBackfiller {
       final String imageName = destDef.getDockerRepository() + ":" + destDef.getDockerImageTag();
       try {
         if (destDef.getSpec() == null) {
-          // if a source definition is not being used and is not in the seed, don't bother to attempt to fetch a spec for it; just delete.
+          // if a source definition is not being used and is not in the seed, don't bother to attempt to fetch
+          // a spec for it; just delete.
           if (!connectorReposInUse.contains(destDef.getDockerRepository()) && !seedDestRepos.contains(destDef.getDockerRepository())) {
             LOGGER.info(
                 "migrateAllDefinitionsToContainSpec - Destination Definition {} does not have a spec, is not in the seed, and is not currently used in a connection. Deleting...",
@@ -208,13 +217,14 @@ public class ConnectorDefinitionSpecBackfiller {
   }
 
   private static <T> void deleteConnectorDefinition(
-      final ConfigPersistence configPersistence,
-      final ConfigSchema definitionType,
-      final ConfigSchema connectorType,
-      final Class<T> connectorClass,
-      final Function<T, UUID> connectorIdGetter,
-      final Function<T, UUID> connectorDefinitionIdGetter,
-      final UUID definitionId) throws JsonValidationException, IOException, ConfigNotFoundException {
+                                                    final ConfigPersistence configPersistence,
+                                                    final ConfigSchema definitionType,
+                                                    final ConfigSchema connectorType,
+                                                    final Class<T> connectorClass,
+                                                    final Function<T, UUID> connectorIdGetter,
+                                                    final Function<T, UUID> connectorDefinitionIdGetter,
+                                                    final UUID definitionId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final Set<T> connectors = configPersistence.listConfigs(connectorType, connectorClass)
         .stream()
         .filter(connector -> connectorDefinitionIdGetter.apply(connector).equals(definitionId))
@@ -249,4 +259,5 @@ public class ConnectorDefinitionSpecBackfiller {
         "exception", exception);
     trackingClient.track(workspaceId, "failed_spec_backfill", metadata);
   }
+
 }

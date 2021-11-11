@@ -301,8 +301,8 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Returns worker pod tolerations parsed from its own environment variable. The value of the env is a string that represents one or more
-   * tolerations.
+   * Returns worker pod tolerations parsed from its own environment variable. The value of the env is
+   * a string that represents one or more tolerations.
    * <ul>
    * <li>Tolerations are separated by a `;`
    * <li>Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and
@@ -332,8 +332,8 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Returns a map of node selectors from its own environment variable. The value of the env is a string that represents one or more node selector
-   * labels. Each kv-pair is separated by a `,`
+   * Returns a map of node selectors from its own environment variable. The value of the env is a
+   * string that represents one or more node selector labels. Each kv-pair is separated by a `,`
    * <p>
    * For example:- The following represents two node selectors
    * <p>
@@ -404,8 +404,9 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically injected in the KubePodProcess class and used
-   * in the job pod templates. The empty string is a no-op value.
+   * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
+   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
+   * no-op value.
    */
   @Override
   public String getJobsImagePullSecret() {

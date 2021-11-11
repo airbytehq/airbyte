@@ -195,10 +195,10 @@ class ConnectorDefinitionSpecBackfillerTest {
         schedulerClient,
         trackingClient,
         configs))
-        .isInstanceOf(RuntimeException.class)
-        .hasMessageContaining(
-            "Specs could not be retrieved for the following connector images: ["
-                + SOURCE_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG + ", " + DEST_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG + "]");
+            .isInstanceOf(RuntimeException.class)
+            .hasMessageContaining(
+                "Specs could not be retrieved for the following connector images: ["
+                    + SOURCE_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG + ", " + DEST_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG + "]");
 
     verify(configRepository, never()).writeStandardSourceDefinition(any());
     verify(configRepository, never()).writeStandardDestinationDefinition(any());
