@@ -30,8 +30,11 @@ Check out common troubleshooting issues for the BigQuery destination connector o
 Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
-* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `String`. Due to a Google [limitations](https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types) for data migration from GCs to BigQuery by its native job - the timestamp \(seconds from 1970' can't be used\). Only date format, so only String is accepted for us in this case.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
 * `_airbyte_data`: a json blob representing with the event data. The column type in BigQuery is `String`.
+
+The output tables from the BigQuery destination are partitioned and clustered by the Time-unit column `_airbyte_emitted_at` at a daily granularity. Partitions boundaries are based on UTC time.
+This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a WHERE clause). Filters on the partitioning column will be used to prune the partitions and reduce the query cost. (The parameter "Require partition filter" is not enabled by Airbyte, but you may toggle this by updating the produced tables if you wish so)
 
 ## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
 
@@ -89,7 +92,11 @@ You should now have all the requirements needed to configure BigQuery as a desti
 * **Dataset Location**
 * **Dataset ID**: the name of the schema where the tables will be created.
 * **Service Account Key**: the contents of your Service Account Key JSON file
+
+Additional options can also be customized:
+
 * **Google BigQuery client chunk size**: Google BigQuery client's chunk\(buffer\) size \(MIN=1, MAX = 15\) for each table. The default 15MiB value is used if not set explicitly. It's recommended to decrease value for big data sets migration for less HEAP memory consumption and avoiding crashes. For more details refer to [https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html](https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html)
+* **Transformation Priority**: configure the priority of queries run for transformations. Refer to [https://cloud.google.com/bigquery/docs/running-queries](https://cloud.google.com/bigquery/docs/running-queries). By default, Airbyte runs interactive query jobs on BigQuery, which means that the query is executed as soon as possible and count towards daily concurrent quotas and limits. If set to use batch query on your behalf, BigQuery starts the query as soon as idle resources are available in the BigQuery shared resource pool. This usually occurs within a few minutes. If BigQuery hasn't started the query within 24 hours, BigQuery changes the job priority to interactive. Batch queries don't count towards your concurrent rate limit, which can make it easier to start many queries at once.
 
 Once you've configured BigQuery as a destination, delete the Service Account Key from your computer.
 
@@ -148,7 +155,8 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.4.0 | 2021-10-04 | [\#6733](https://github.com/airbytehq/airbyte/issues/6733) | Support dataset starting with numbers |
+| 0.5.0 | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables |
+| 0.4.1 | 2021-10-04 | [\#6733](https://github.com/airbytehq/airbyte/issues/6733) | Support dataset starting with numbers |
 | 0.4.0 | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option |
 | 0.3.12 | 2021-08-03 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size |
 | 0.3.11 | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
@@ -161,6 +169,10 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.10 | 2021-11-09 | [\#7804](https://github.com/airbytehq/airbyte/pull/7804) |  handle null values in fields described by a $ref definition |
+| 0.1.9 | 2021-11-08 | [\#7736](https://github.com/airbytehq/airbyte/issues/7736) | Fixed the handling of ObjectNodes with $ref definition key |
+| 0.1.8 | 2021-10-27 | [\#7413](https://github.com/airbytehq/airbyte/issues/7413) | Fixed DATETIME conversion for BigQuery |
+| 0.1.7 | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables |
 | 0.1.6 | 2021-09-16 | [\#6145](https://github.com/airbytehq/airbyte/pull/6145) | BigQuery Denormalized support for date, datetime & timestamp types through the json "format" key |
 | 0.1.5 | 2021-09-07 | [\#5881](https://github.com/airbytehq/airbyte/pull/5881) | BigQuery Denormalized NPE fix |
 | 0.1.4 | 2021-09-04 | [\#5813](https://github.com/airbytehq/airbyte/pull/5813) | fix Stackoverflow error when receive a schema from source where "Array" type doesn't contain a required "items" element |

@@ -130,6 +130,7 @@ class TransformConfig:
             "type": "bigquery",
             "project": config["project_id"],
             "dataset": config["dataset_id"],
+            "priority": config.get("transformation_priority", "interactive"),
             "threads": 32,
             "retries": 1,
         }

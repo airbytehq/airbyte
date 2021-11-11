@@ -2,12 +2,12 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import sys
 from typing import Any, Iterable, Sequence
 
 import backoff
 import pendulum
-from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
 from facebook_business.exceptions import FacebookRequestError
 
 # The Facebook API error codes indicating rate-limiting are listed at
@@ -16,9 +16,15 @@ FACEBOOK_RATE_LIMIT_ERROR_CODES = (4, 17, 32, 613, 80000, 80001, 80002, 80003, 8
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
 DEFAULT_SLEEP_INTERVAL = pendulum.duration(minutes=1)
 
+logger = logging.getLogger(__name__)
+
 
 class FacebookAPIException(Exception):
     """General class for all API errors"""
+
+
+class JobException(Exception):
+    """Job failed after FB exception"""
 
 
 class JobTimeoutException(Exception):

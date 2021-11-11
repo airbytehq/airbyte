@@ -120,7 +120,7 @@ public class ConfigDumpImporter {
     }
   }
 
-  public void importDataWithSeed(final String targetVersion, final File archive, final ConfigPersistence seedPersistence)
+  public void importDataWithSeed(final AirbyteVersion targetVersion, final File archive, final ConfigPersistence seedPersistence)
       throws IOException, JsonValidationException {
     final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
     try {
@@ -145,7 +145,7 @@ public class ConfigDumpImporter {
 
       // 5. Set DB version
       LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
-      jobPersistence.setVersion(targetVersion);
+      jobPersistence.setVersion(targetVersion.serialize());
 
       // 6. check db version
       checkDBVersion(targetVersion);
@@ -158,10 +158,12 @@ public class ConfigDumpImporter {
     configRepository.listStandardWorkspaces(true).forEach(workspace -> TrackingClientSingleton.get().identify(workspace.getWorkspaceId()));
   }
 
-  private void checkImport(final String targetVersion, final Path tempFolder) throws IOException {
+  private void checkImport(final AirbyteVersion targetVersion, final Path tempFolder) throws IOException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
-    final String importVersion = Files.readString(versionFile, Charset.defaultCharset())
-        .replace("\n", "").strip();
+    final AirbyteVersion importVersion = new AirbyteVersion(Files
+        .readString(versionFile, Charset.defaultCharset())
+        .replace("\n", "")
+        .strip());
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));
     if (!AirbyteVersion.isCompatible(targetVersion, importVersion)) {
       throw new IOException(String
@@ -232,7 +234,7 @@ public class ConfigDumpImporter {
   }
 
   // Postgres Portion
-  public void importDatabaseFromArchive(final Path storageRoot, final String airbyteVersion) throws IOException {
+  public void importDatabaseFromArchive(final Path storageRoot, final AirbyteVersion airbyteVersion) throws IOException {
     try {
       final Map<JobsDatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
       for (final JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
@@ -245,7 +247,7 @@ public class ConfigDumpImporter {
 
         data.put(tableType, tableStream);
       }
-      jobPersistence.importDatabase(airbyteVersion, data);
+      jobPersistence.importDatabase(airbyteVersion.serialize(), data);
       LOGGER.info("Successful upgrade of airbyte postgres database from archive");
     } catch (final Exception e) {
       LOGGER.warn("Postgres database version upgrade failed, reverting to state previous to migration.");
@@ -309,10 +311,10 @@ public class ConfigDumpImporter {
     }
   }
 
-  private void checkDBVersion(final String airbyteVersion) throws IOException {
-    final Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
+  private void checkDBVersion(final AirbyteVersion airbyteVersion) throws IOException {
+    final Optional<AirbyteVersion> airbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new);
     airbyteDatabaseVersion
-        .ifPresent(dbversion -> AirbyteVersion.assertIsCompatible(airbyteVersion, dbversion));
+        .ifPresent(dbVersion -> AirbyteVersion.assertIsCompatible(airbyteVersion, dbVersion));
   }
 
   public UploadRead uploadArchiveResource(final File archive) {
@@ -341,7 +343,7 @@ public class ConfigDumpImporter {
     FileUtils.deleteQuietly(archive);
   }
 
-  public void importIntoWorkspace(final String targetVersion, final UUID workspaceId, final File archive)
+  public void importIntoWorkspace(final AirbyteVersion targetVersion, final UUID workspaceId, final File archive)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
     try {
@@ -594,8 +596,8 @@ public class ConfigDumpImporter {
   }
 
   /**
-   * List all configurations of type @param <T> that already exists (we'll be using this to know which
-   * ids are already in use)
+   * List all configurations of type @param &lt;T&gt; that already exists (we'll be using this to know
+   * which ids are already in use)
    */
   public interface ListConfigCall<T> {
 

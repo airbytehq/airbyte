@@ -8,11 +8,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -21,12 +20,12 @@ import org.apache.http.client.utils.URIBuilder;
 /**
  * Following docs from https://developers.google.com/identity/protocols/oauth2/web-server
  */
-public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
+public abstract class GoogleOAuthFlow extends BaseOAuth2Flow {
 
   private static final String ACCESS_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
-  public GoogleOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public GoogleOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
@@ -64,15 +63,6 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
   protected abstract String getScope();
 
   @Override
-  protected String extractCodeParameter(final Map<String, Object> queryParams) throws IOException {
-    if (queryParams.containsKey("code")) {
-      return (String) queryParams.get("code");
-    } else {
-      throw new IOException("Undefined 'code' from consent redirected url.");
-    }
-  }
-
-  @Override
   protected String getAccessTokenUrl() {
     return ACCESS_TOKEN_URL;
   }
@@ -92,15 +82,11 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data) throws IOException {
-    final Map<String, Object> result = new HashMap<>();
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
+    final Map<String, Object> result = super.extractOAuthOutput(data, accessTokenUrl);
     if (data.has("access_token")) {
+      // google also returns an access token the first time you complete oauth flow
       result.put("access_token", data.get("access_token").asText());
-    }
-    if (data.has("refresh_token")) {
-      result.put("refresh_token", data.get("refresh_token").asText());
-    } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", ACCESS_TOKEN_URL));
     }
     return result;
   }

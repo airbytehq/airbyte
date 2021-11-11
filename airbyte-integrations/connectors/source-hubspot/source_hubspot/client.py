@@ -5,8 +5,8 @@
 
 from typing import Any, Callable, Iterator, Mapping, Optional, Tuple
 
-from airbyte_protocol import AirbyteStream
-from base_python import BaseClient
+from airbyte_cdk.models import AirbyteStream
+from airbyte_cdk.sources.deprecated.client import BaseClient
 from requests import HTTPError
 from source_hubspot.api import (
     API,
@@ -18,6 +18,7 @@ from source_hubspot.api import (
     EmailEventStream,
     EngagementStream,
     FormStream,
+    MarketingEmailStream,
     OwnerStream,
     SubscriptionChangeStream,
     WorkflowStream,
@@ -25,7 +26,7 @@ from source_hubspot.api import (
 
 
 class Client(BaseClient):
-    """Hubspot client, provides methods to discover and read streams"""
+    """HubSpot client, provides methods to discover and read streams"""
 
     def __init__(self, start_date, credentials, **kwargs):
         self._start_date = start_date
@@ -43,6 +44,7 @@ class Client(BaseClient):
             "engagements": EngagementStream(**common_params),
             "forms": FormStream(**common_params),
             "line_items": CRMObjectStream(entity="line_item", **common_params),
+            "marketing_emails": MarketingEmailStream(**common_params),
             "owners": OwnerStream(**common_params),
             "products": CRMObjectStream(entity="product", **common_params),
             "subscription_changes": SubscriptionChangeStream(**common_params),
