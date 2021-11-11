@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.34
+Fix logging inside source and streams
+
 ## 0.1.33
  Resolve $ref fields for discover json schema.
 

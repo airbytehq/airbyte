@@ -22,7 +22,7 @@ logger = init_logger("airbyte")
 class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         self.source = source
-        self.logger = logging.getLogger(f"source.{getattr(source, 'name', '')}")
+        self.logger = logging.getLogger(f"airbyte.{getattr(source, 'name', '')}")
 
     def parse_args(self, args: List[str]) -> argparse.Namespace:
         # set up parent parsers

@@ -6,7 +6,7 @@ repos:
         args: ["--tmpl=LICENSE_SHORT", "--ext=py", "-f"]
 
   - repo: https://github.com/ambv/black
-    rev: 20.8b1
+    rev: 21.10b0
     hooks:
       - id: black
         args: ["--line-length=140"]
