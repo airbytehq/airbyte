@@ -77,6 +77,12 @@ class LinnworksAuthenticator(Oauth2Authenticator):
             response_json = response.json()
             return response_json[self.access_token_name], response_json[self.expires_in_name], response_json[self.server_name]
         except Exception as e:
+            try:
+                e = Exception(response.json()["Message"])
+            except:
+                # Unable to get an error message from the response body.
+                # Continue with the original error.
+                pass
             raise Exception(f"Error while refreshing access token: {e}") from e
 
 
@@ -93,8 +99,7 @@ class SourceLinnworks(AbstractSource):
         try:
             self._auth(config).get_auth_header()
         except Exception as error:
-            return False, f"Unable to connect to Linnworks API with the provided credentials - {error}"
-
+            return False, f"Unable to connect to Linnworks API with the provided credentials: {error}"
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
