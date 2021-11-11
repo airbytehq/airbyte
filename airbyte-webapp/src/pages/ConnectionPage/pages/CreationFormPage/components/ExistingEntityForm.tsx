@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
 import styled from "styled-components";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useResource } from "rest-hooks";
 import { Formik, Form, Field, FieldProps } from "formik";
 import * as yup from "yup";
 
 import ContentCard from "components/ContentCard";
-import { DropDown, Button } from "components/base";
+import { DropDown, Button, ControlLabels } from "components";
 import useWorkspace from "hooks/services/useWorkspace";
 import SourceResource from "core/resources/Source";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
@@ -19,11 +19,8 @@ type IProps = {
   onSubmit: (id: string) => void;
 };
 
-const Content = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
+const FormContent = styled(Form)`
+  padding: 22px 27px 23px 24px;
 `;
 
 const BottomBlock = styled.div`
@@ -39,15 +36,12 @@ const PaddingBlock = styled.div`
   line-height: 18px;
 `;
 
-const ConnectorsDropDown = styled(DropDown)`
-  min-width: 50%;
-`;
-
 const existingEntityValidationSchema = yup.object().shape({
   entityId: yup.string().required("form.empty.error"),
 });
 
 const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
+  const formatMessage = useIntl().formatMessage;
   const { workspace } = useWorkspace();
 
   const { sources } = useResource(SourceResource.listShape(), {
@@ -104,40 +98,43 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
   return (
     <>
       <ContentCard
-        title={
-          <Formik
-            initialValues={initialValues}
-            validationSchema={existingEntityValidationSchema}
-            onSubmit={(values: { entityId: string }) => {
-              onSubmit(values.entityId);
-            }}
-          >
-            {({ isSubmitting, setFieldValue }) => (
-              <Form>
-                <Content>
-                  <FormattedMessage id={`connectionForm.${type}Existing`} />
-                  <Field name="entityId">
-                    {({ field }: FieldProps<string>) => (
-                      <ConnectorsDropDown
-                        {...field}
-                        options={dropDownData}
-                        onChange={(item: { value: string }) => {
-                          setFieldValue(field.name, item.value);
-                        }}
-                      />
-                    )}
-                  </Field>
-                </Content>
-                <BottomBlock>
-                  <Button disabled={isSubmitting} type="submit">
-                    <FormattedMessage id={`connectionForm.${type}Use`} />
-                  </Button>
-                </BottomBlock>
-              </Form>
-            )}
-          </Formik>
-        }
-      />
+        title={<FormattedMessage id={`connectionForm.${type}Existing`} />}
+      >
+        <Formik
+          initialValues={initialValues}
+          validationSchema={existingEntityValidationSchema}
+          onSubmit={(values: { entityId: string }) => {
+            onSubmit(values.entityId);
+          }}
+        >
+          {({ isSubmitting, setFieldValue }) => (
+            <FormContent>
+              <Field name="entityId">
+                {({ field }: FieldProps<string>) => (
+                  <ControlLabels
+                    label={formatMessage({
+                      id: `connectionForm.${type}Title`,
+                    })}
+                  >
+                    <DropDown
+                      {...field}
+                      options={dropDownData}
+                      onChange={(item: { value: string }) => {
+                        setFieldValue(field.name, item.value);
+                      }}
+                    />
+                  </ControlLabels>
+                )}
+              </Field>
+              <BottomBlock>
+                <Button disabled={isSubmitting} type="submit">
+                  <FormattedMessage id={`connectionForm.${type}Use`} />
+                </Button>
+              </BottomBlock>
+            </FormContent>
+          )}
+        </Formik>
+      </ContentCard>
       <PaddingBlock>
         <FormattedMessage id="onboarding.or" />
       </PaddingBlock>
