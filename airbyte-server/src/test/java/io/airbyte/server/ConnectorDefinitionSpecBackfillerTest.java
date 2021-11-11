@@ -121,6 +121,7 @@ class ConnectorDefinitionSpecBackfillerTest {
     final StandardDestinationDefinition expectedDestDef = Jsons.clone(destDef).withSpec(destSpec);
     verify(configRepository, times(1)).writeStandardSourceDefinition(expectedSourceDef);
     verify(configRepository, times(1)).writeStandardDestinationDefinition(expectedDestDef);
+    verify(database, never()).deleteConfig(any(), any());
   }
 
   @Test
@@ -152,6 +153,8 @@ class ConnectorDefinitionSpecBackfillerTest {
         trackingClient,
         configs);
 
+    verify(configRepository, never()).writeStandardSourceDefinition(any());
+    verify(configRepository, never()).writeStandardDestinationDefinition(any());
     verify(database, times(1)).deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDef.getSourceDefinitionId().toString());
     verify(database, times(1)).deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destDef.getDestinationDefinitionId().toString());
   }
@@ -199,6 +202,7 @@ class ConnectorDefinitionSpecBackfillerTest {
 
     verify(configRepository, never()).writeStandardSourceDefinition(any());
     verify(configRepository, never()).writeStandardDestinationDefinition(any());
+    verify(database, never()).deleteConfig(any(), any());
 
     verify(trackingClient, times(2)).track(eq(WORKSPACE.getWorkspaceId()), eq(FAILED_SPEC_BACKFILL_ACTION), anyMap());
   }
