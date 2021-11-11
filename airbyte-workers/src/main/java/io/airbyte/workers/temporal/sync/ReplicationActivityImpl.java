@@ -123,7 +123,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     return standardSyncOutput;
   }
 
-  private static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output) {
+  public static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output) {
     final long totalBytesReplicated = output.getReplicationAttemptSummary().getBytesSynced();
     final long totalRecordsReplicated = output.getReplicationAttemptSummary().getRecordsSynced();
 

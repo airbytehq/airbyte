@@ -30,6 +30,7 @@ public class KubeProcessFactory implements ProcessFactory {
   public static final String SYNC_JOB = "sync";
   public static final String SPEC_JOB = "spec";
   public static final String CHECK_JOB = "check";
+  public static final String SYNC_ATTEMPT = "sync_attempt";
   public static final String DISCOVER_JOB = "discover";
   public static final String NORMALIZATION_JOB = "normalize";
 

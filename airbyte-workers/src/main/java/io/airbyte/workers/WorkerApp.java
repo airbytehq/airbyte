@@ -139,12 +139,13 @@ public class WorkerApp {
         new DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
             databasePassword, databaseUrl, airbyteVersion),
         new PersistStateActivityImpl(workspaceRoot, configRepository),
-        new LaunchSyncAttemptActivityImpl(processFactory));
+        new LaunchSyncAttemptActivityImpl(processFactory, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
+            databasePassword, databaseUrl, airbyteVersion));
 
     factory.start();
   }
 
-  private static ProcessFactory getProcessBuilderFactory(final Configs configs) throws IOException {
+  public static ProcessFactory getProcessBuilderFactory(final Configs configs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final ApiClient officialClient = Config.defaultClient();
       final KubernetesClient fabricClient = new DefaultKubernetesClient();

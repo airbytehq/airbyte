@@ -4,72 +4,98 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.*;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.*;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.temporal.TemporalUtils;
-import io.temporal.activity.ActivityCancellationType;
-import io.temporal.activity.ActivityOptions;
-import io.temporal.common.RetryOptions;
-import io.temporal.workflow.Workflow;
+import io.airbyte.workers.protocols.airbyte.*;
+import io.airbyte.workers.temporal.CancellationHandler;
+import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LaunchSyncAttemptActivityImpl implements LaunchSyncAttemptActivity {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LaunchSyncAttemptActivityImpl.class);
-  private static final String VERSION_LABEL = "sync-workflow";
-  private static final int CURRENT_VERSION = 1;
-
-  private static final int MAX_SYNC_TIMEOUT_DAYS = new EnvConfigs().getMaxSyncTimeoutDays();
-
-  private static final ActivityOptions options = ActivityOptions.newBuilder()
-      .setScheduleToCloseTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))
-      .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
-      .setRetryOptions(TemporalUtils.NO_RETRY)
-      .build();
 
   private final ProcessFactory processFactory;
+  private final Path workspaceRoot;
+  private final Configs.WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
+  private final String databaseUser;
+  private final String databasePassword;
+  private final String databaseUrl;
+  private final String airbyteVersion;
 
-  public LaunchSyncAttemptActivityImpl(final ProcessFactory processFactory) {
+  public LaunchSyncAttemptActivityImpl(
+                                       final ProcessFactory processFactory,
+                                       final Path workspaceRoot,
+                                       final Configs.WorkerEnvironment workerEnvironment,
+                                       final LogConfigs logConfigs,
+                                       final String databaseUser,
+                                       final String databasePassword,
+                                       final String databaseUrl,
+                                       final String airbyteVersion) {
     this.processFactory = processFactory;
+    this.workspaceRoot = workspaceRoot;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+    this.databaseUser = databaseUser;
+    this.databasePassword = databasePassword;
+    this.databaseUrl = databaseUrl;
+    this.airbyteVersion = airbyteVersion;
   }
 
   @Override
   public StandardSyncOutput launch(JobRunConfig jobRunConfig,
                                    IntegrationLauncherConfig sourceLauncherConfig,
                                    IntegrationLauncherConfig destinationLauncherConfig,
-                                   StandardSyncInput syncInput,
+                                   StandardSyncInput partialSyncInput,
                                    UUID connectionId) {
 
-    // for now keep same failure behavior where this is heartbeating and depends on the parent worker to exist
-    final Process process = processFactory.create(
-            "sync-attempt-" + UUID.randomUUID().toString().substring(0, 10),
-            0,
-            jobPath,
-            imageName,
-            false,
-            fileMap,
-            entrypoint,
-            resourceRequirements,
-            labels,
-            args
-    );
+    final Supplier<StandardSyncInput> inputSupplier = () -> partialSyncInput;
 
-    // todo: handle exception
-    process.waitFor();
+    final TemporalAttemptExecution<StandardSyncInput, StandardSyncOutput> temporalAttempt = new TemporalAttemptExecution<>(
+        workspaceRoot,
+        workerEnvironment,
+        logConfigs,
+        jobRunConfig,
+        getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, partialSyncInput, connectionId),
+        inputSupplier,
+        new CancellationHandler.TemporalCancellationHandler(),
+        databaseUser,
+        databasePassword,
+        databaseUrl,
+        airbyteVersion);
 
-    // todo: extract sync output from the job (maybe pull directly from persistence?)
-    StandardSyncOutput run = null;
+    final StandardSyncOutput attemptOutput = temporalAttempt.get();
 
-    return run;
+    LOGGER.info("sync summary: {}", attemptOutput);
+
+    return attemptOutput;
+  }
+
+  private CheckedSupplier<Worker<StandardSyncInput, StandardSyncOutput>, Exception> getWorkerFactory(
+                                                                                                     final IntegrationLauncherConfig sourceLauncherConfig,
+                                                                                                     final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                     final JobRunConfig jobRunConfig,
+                                                                                                     final StandardSyncInput syncInput,
+                                                                                                     final UUID connectionId) {
+    return () -> new LaunchSyncAttemptWorker(
+        sourceLauncherConfig,
+        destinationLauncherConfig,
+        jobRunConfig,
+        syncInput,
+        processFactory,
+        workspaceRoot,
+        airbyteVersion,
+        connectionId);
   }
 
 }
