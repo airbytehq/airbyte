@@ -21,7 +21,7 @@ class SourceSurveymonkey(AbstractSource):
             start_date = pendulum.parse(config["start_date"])
             stream = Surveys(authenticator=authenticator, start_date=start_date)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
-            next(records)
+            next(records, None)
             return True, None
         except Exception as e:
             return False, repr(e)
