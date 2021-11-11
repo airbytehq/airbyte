@@ -79,7 +79,7 @@ class LinnworksAuthenticator(Oauth2Authenticator):
         except Exception as e:
             try:
                 e = Exception(response.json()["Message"])
-            except:
+            except Exception:
                 # Unable to get an error message from the response body.
                 # Continue with the original error.
                 pass
