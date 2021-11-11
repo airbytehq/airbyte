@@ -1,6 +1,6 @@
-FROM nginx:1.19-alpine as webapp
+FROM nginxinc/nginx-unprivileged:1.19-alpine as webapp
 
-EXPOSE 80
+EXPOSE 8080
 
 COPY bin/docs docs/
 COPY bin/build /usr/share/nginx/html
