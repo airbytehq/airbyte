@@ -94,7 +94,11 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
         };
       });
     }
-  }, [type, sources, sourceDefinitions, destinations, destinationDefinitions]);
+  }, [type]);
+
+  if (!dropDownData.length) {
+    return null;
+  }
 
   const initialValues = { entityId: "" };
   return (
