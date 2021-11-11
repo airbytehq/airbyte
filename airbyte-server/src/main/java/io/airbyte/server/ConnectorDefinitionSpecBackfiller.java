@@ -64,7 +64,7 @@ public class ConnectorDefinitionSpecBackfiller {
 
     final JobConverter jobConverter = new JobConverter(configs.getWorkerEnvironment(), configs.getLogConfigs());
 
-    final Set<String> connectorReposInUse = configRepository.getConnectorReposInUse();
+    final Set<String> connectorReposInUse = database.getConnectorReposInUse();
 
     final List<String> seedSourceRepos = seed.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)
         .stream()

@@ -90,7 +90,7 @@ class ConnectorDefinitionSpecBackfillerTest {
     when(configRepository.listStandardSourceDefinitions()).thenReturn(List.of(sourceDef));
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(destDef));
     // source def is in use but not in seed, should be backfilled
-    when(configRepository.getConnectorReposInUse()).thenReturn(Set.of(SOURCE_DOCKER_REPO));
+    when(database.getConnectorReposInUse()).thenReturn(Set.of(SOURCE_DOCKER_REPO));
     when(seed.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)).thenReturn(List.of());
     // dest def is not in use but is in seed, should be backfilled
     when(seed.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)).thenReturn(List.of(destDef));
@@ -138,7 +138,7 @@ class ConnectorDefinitionSpecBackfillerTest {
     when(configRepository.listStandardSourceDefinitions()).thenReturn(List.of(sourceDef));
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(destDef));
     // both source and destination definitions are not in use and are not in the seed, should be deleted
-    when(configRepository.getConnectorReposInUse()).thenReturn(Set.of());
+    when(database.getConnectorReposInUse()).thenReturn(Set.of());
     when(seed.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)).thenReturn(List.of());
     when(seed.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)).thenReturn(List.of());
 
@@ -173,7 +173,7 @@ class ConnectorDefinitionSpecBackfillerTest {
     when(configRepository.listStandardSourceDefinitions()).thenReturn(List.of(sourceDef));
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(destDef));
     // both source and destination definitions are in use, so should be backfilled
-    when(configRepository.getConnectorReposInUse()).thenReturn(Set.of(SOURCE_DOCKER_REPO, DEST_DOCKER_REPO));
+    when(database.getConnectorReposInUse()).thenReturn(Set.of(SOURCE_DOCKER_REPO, DEST_DOCKER_REPO));
 
     final SynchronousResponse<ConnectorSpecification> failureSourceResponse = new SynchronousResponse<>(
         null,
@@ -221,7 +221,7 @@ class ConnectorDefinitionSpecBackfillerTest {
     when(configRepository.listStandardSourceDefinitions()).thenReturn(List.of(sourceDef));
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(destDef));
     // both source and destination definitions are in use, so should be backfilled
-    when(configRepository.getConnectorReposInUse()).thenReturn(Set.of(SOURCE_DOCKER_REPO, DEST_DOCKER_REPO));
+    when(database.getConnectorReposInUse()).thenReturn(Set.of(SOURCE_DOCKER_REPO, DEST_DOCKER_REPO));
 
     final SourceConnection sourceConnection = new SourceConnection().withSourceId(UUID.randomUUID())
         .withSourceDefinitionId(sourceDef.getSourceDefinitionId());

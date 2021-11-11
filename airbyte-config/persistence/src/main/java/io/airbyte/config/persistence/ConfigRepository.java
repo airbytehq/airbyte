@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -133,10 +132,6 @@ public class ConfigRepository {
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public Set<String> getConnectorReposInUse() throws IOException {
-    return persistence.getConnectorReposInUse();
   }
 
   public List<StandardSourceDefinition> listStandardSourceDefinitions() throws JsonValidationException, IOException {
