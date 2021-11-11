@@ -5,6 +5,7 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigWithMetadata;
@@ -48,7 +49,7 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(AirbyteConfig configType, Class<T> clazz)
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
       throws JsonValidationException, IOException {
     final List<ConfigWithMetadata<T>> configs = decoratedPersistence.listConfigsWithMetadata(configType, clazz);
     for (final ConfigWithMetadata<T> config : configs) {
@@ -59,8 +60,15 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws JsonValidationException, IOException {
-    validateJson(Jsons.jsonNode(config), configType);
-    decoratedPersistence.writeConfig(configType, configId, config);
+    writeConfigs(configType, configId, Lists.newArrayList(config));
+  }
+
+  @Override
+  public <T> void writeConfigs(final AirbyteConfig configType, final String configId, final List<T> configs) throws IOException, JsonValidationException {
+    for (final T config : configs) {
+      validateJson(Jsons.jsonNode(config), configType);
+      decoratedPersistence.writeConfig(configType, configId, config);
+    }
   }
 
   @Override

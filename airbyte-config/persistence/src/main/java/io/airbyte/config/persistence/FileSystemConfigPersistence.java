@@ -41,12 +41,10 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   private final Path configRoot;
 
   /**
-   * Check if there are existing configs under the storage root. Previously the seed container copies
-   * the configs to the storage root, it may take some time for the operation to complete and for the
-   * CONFIG_DIR to show up. So we cannot infer anything based on the existence of this directory. Now
-   * this seed generation step has been removed. So we can tell immediately whether CONFIG_DIR exists
-   * or not. If CONFIG_DIR exists, it means the user has just migrated Airbyte from an old version
-   * that uses this file system config persistence.
+   * Check if there are existing configs under the storage root. Previously the seed container copies the configs to the storage root, it may take
+   * some time for the operation to complete and for the CONFIG_DIR to show up. So we cannot infer anything based on the existence of this directory.
+   * Now this seed generation step has been removed. So we can tell immediately whether CONFIG_DIR exists or not. If CONFIG_DIR exists, it means the
+   * user has just migrated Airbyte from an old version that uses this file system config persistence.
    */
   public static boolean hasExistingConfigs(final Path storageRoot) {
     return Files.exists(storageRoot.resolve(CONFIG_DIR));
@@ -80,7 +78,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(AirbyteConfig configType, Class<T> clazz)
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
       throws JsonValidationException, IOException {
     throw new UnsupportedOperationException("File Persistence doesn't support metadata");
   }
@@ -89,6 +87,14 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws IOException {
     synchronized (lock) {
       writeConfigInternal(configType, configId, config);
+    }
+  }
+
+  @Override public <T> void writeConfigs(final AirbyteConfig configType, final String configId, final List<T> configs) throws IOException, JsonValidationException {
+    synchronized (lock) {
+      for (final T config : configs) {
+        writeConfigInternal(configType, configId, config);
+      }
     }
   }
 

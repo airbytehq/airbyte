@@ -28,6 +28,7 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfiguration;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
@@ -67,6 +68,7 @@ public class JobSubmitterTest {
   private JobSubmitter jobSubmitter;
   private JobTracker jobTracker;
   private JobNotifier jobNotifier;
+  private ConfigRepository configRepository;
 
   @BeforeEach
   public void setup() throws IOException {
@@ -88,12 +90,17 @@ public class JobSubmitterTest {
     when(persistence.createAttempt(JOB_ID, logPath)).thenReturn(ATTEMPT_NUMBER);
     jobNotifier = mock(JobNotifier.class);
 
+    configRepository = mock(ConfigRepository.class);
+
     jobSubmitter = spy(new JobSubmitter(
         MoreExecutors.newDirectExecutorService(),
         persistence,
         workerRunFactory,
         jobTracker,
-        jobNotifier, WorkerEnvironment.DOCKER, LogConfiguration.EMPTY, configRepository));
+        jobNotifier,
+        WorkerEnvironment.DOCKER,
+        LogConfiguration.EMPTY,
+        configRepository));
   }
 
   @Test
@@ -220,7 +227,8 @@ public class JobSubmitterTest {
   class OnlyOneJobIdRunning {
 
     /**
-     * See {@link JobSubmitter#attemptJobSubmit()} to understand why we need to test that only one job id can be successfully submited at once.
+     * See {@link JobSubmitter#attemptJobSubmit()} to understand why we need to test that only one job
+     * id can be successfully submited at once.
      */
     @Test
     public void testOnlyOneJobCanBeSubmittedAtOnce() throws Exception {

@@ -15,6 +15,32 @@ import java.util.stream.Stream;
 
 public interface ConfigPersistence {
 
+  /*public class ConfigBlob<T> {
+
+    public AirbyteConfig getConfigType() {
+      return configType;
+    }
+
+    public String getConfigId() {
+      return configId;
+    }
+
+    public T getConfig() {
+      return config;
+    }
+
+    private final AirbyteConfig configType;
+    private final String configId;
+    private final T config;
+
+    public ConfigBlob(final AirbyteConfig configType, final String configId, final T config) {
+      this.configType = configType;
+      this.configId = configId;
+      this.config = config;
+    }
+
+  }*/
+
   <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz) throws ConfigNotFoundException, JsonValidationException, IOException;
 
   <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) throws JsonValidationException, IOException;
@@ -22,6 +48,8 @@ public interface ConfigPersistence {
   <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(AirbyteConfig configType, Class<T> clazz) throws JsonValidationException, IOException;
 
   <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws JsonValidationException, IOException;
+
+  <T> void writeConfigs(AirbyteConfig configType, String configId, List<T> configs) throws IOException, JsonValidationException;
 
   void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException;
 

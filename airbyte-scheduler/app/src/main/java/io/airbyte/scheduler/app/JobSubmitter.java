@@ -10,6 +10,7 @@ import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -21,10 +22,12 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -51,7 +54,8 @@ public class JobSubmitter implements Runnable {
                       final JobTracker jobTracker,
                       final JobNotifier jobNotifier,
                       final WorkerEnvironment workerEnvironment,
-                      final LogConfigs logConfigs, final ConfigRepository configRepository) {
+                      final LogConfigs logConfigs,
+                      final ConfigRepository configRepository) {
     this.threadPool = threadPool;
     this.persistence = persistence;
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
@@ -80,14 +84,17 @@ public class JobSubmitter implements Runnable {
   }
 
   /**
-   * Since job submission and job execution happen in two separate thread pools, and job execution is what removes a job from the submission queue, it
-   * is possible for a job to be submitted multiple times.
+   * Since job submission and job execution happen in two separate thread pools, and job execution is
+   * what removes a job from the submission queue, it is possible for a job to be submitted multiple
+   * times.
    * <p>
-   * This synchronised block guarantees only a single thread can utilise the concurrent set to decide whether a job should be submitted. This job id
-   * is added here, and removed in the finish block of {@link #submitJob(Job)}.
+   * This synchronised block guarantees only a single thread can utilise the concurrent set to decide
+   * whether a job should be submitted. This job id is added here, and removed in the finish block of
+   * {@link #submitJob(Job)}.
    * <p>
-   * Since {@link JobPersistence#getNextJob()} returns the next queued job, this solution cause head-of-line blocking as the JobSubmitter tries to
-   * submit the same job. However, this suggests the Worker Pool needs more workers and is inevitable when dealing with pending jobs.
+   * Since {@link JobPersistence#getNextJob()} returns the next queued job, this solution cause
+   * head-of-line blocking as the JobSubmitter tries to submit the same job. However, this suggests
+   * the Worker Pool needs more workers and is inevitable when dealing with pending jobs.
    * <p>
    * See https://github.com/airbytehq/airbyte/issues/4378 for more info.
    */
@@ -133,8 +140,17 @@ public class JobSubmitter implements Runnable {
 
           if (output.getStatus() == io.airbyte.workers.JobStatus.SUCCEEDED) {
             persistence.succeedAttempt(job.getId(), attemptNumber);
-            // job.getConfig().getDiscoverCatalog().getConnectionConfiguration();
             // TODO: bmoric Add the stuff.
+
+            final List<StandardWorkspace> standardWorkspaces = configRepository.listStandardWorkspaces(false);
+
+            final List<StandardWorkspace> workspaceToUpdate = standardWorkspaces.stream()
+                .filter(standardWorkspace -> !standardWorkspace.getFirstCompletedSync())
+                .map(standardWorkspace -> {
+                  standardWorkspace.setFirstCompletedSync(true);
+                  return standardWorkspace;
+                })
+                .collect(Collectors.toList());
             if (job.getConfigType() == ConfigType.SYNC) {
               jobNotifier.successJob(job);
             }

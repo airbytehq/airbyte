@@ -12,6 +12,7 @@ import static org.jooq.impl.DSL.select;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
@@ -59,8 +60,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * If this is a migration deployment from an old version that relies on file system config
-   * persistence, copy the existing configs from local files.
+   * If this is a migration deployment from an old version that relies on file system config persistence, copy the existing configs from local files.
    */
   public DatabaseConfigPersistence migrateFileConfigs(final Configs serverConfigs) throws IOException {
     database.transaction(ctx -> {
@@ -141,18 +141,26 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws IOException {
+    writeConfigs(configType, configId, Lists.newArrayList(config));
+  }
+
+  @Override
+  public <T> void writeConfigs(final AirbyteConfig configType, final String configId, final List<T> configs) throws IOException {
     database.transaction(ctx -> {
-      final boolean isExistingConfig = ctx.fetchExists(select()
-          .from(AIRBYTE_CONFIGS)
-          .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId)));
+      configs.forEach(config -> {
+        final boolean isExistingConfig = ctx.fetchExists(select()
+            .from(AIRBYTE_CONFIGS)
+            .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId)));
 
-      final OffsetDateTime timestamp = OffsetDateTime.now();
+        final OffsetDateTime timestamp = OffsetDateTime.now();
 
-      if (isExistingConfig) {
-        updateConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configId);
-      } else {
-        insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configType.getIdFieldName());
-      }
+        if (isExistingConfig) {
+          updateConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configId);
+        } else {
+          insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config),
+              configType.getIdFieldName());
+        }
+      });
 
       return null;
     });
@@ -216,11 +224,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    */
   @VisibleForTesting
   int insertConfigRecord(
-                         final DSLContext ctx,
-                         final OffsetDateTime timestamp,
-                         final String configType,
-                         final JsonNode configJson,
-                         @Nullable final String idFieldName) {
+      final DSLContext ctx,
+      final OffsetDateTime timestamp,
+      final String configType,
+      final JsonNode configJson,
+      @Nullable final String idFieldName) {
     final String configId = idFieldName == null
         ? UUID.randomUUID().toString()
         : configJson.get(idFieldName).asText();
@@ -355,17 +363,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * @param connectorRepositoriesInUse when a connector is used in any standard sync, its definition
-   *        will not be updated. This is necessary because the new connector version may not be
-   *        backward compatible.
+   * @param connectorRepositoriesInUse when a connector is used in any standard sync, its definition will not be updated. This is necessary because
+   *                                   the new connector version may not be backward compatible.
    */
-  @VisibleForTesting
-  <T> ConnectorCounter updateConnectorDefinitions(final DSLContext ctx,
-                                                  final OffsetDateTime timestamp,
-                                                  final AirbyteConfig configType,
-                                                  final List<T> latestDefinitions,
-                                                  final Set<String> connectorRepositoriesInUse,
-                                                  final Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap)
+  @VisibleForTesting <T> ConnectorCounter updateConnectorDefinitions(final DSLContext ctx,
+                                                                     final OffsetDateTime timestamp,
+                                                                     final AirbyteConfig configType,
+                                                                     final List<T> latestDefinitions,
+                                                                     final Set<String> connectorRepositoriesInUse,
+                                                                     final Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap)
       throws IOException {
     int newCount = 0;
     int updatedCount = 0;
@@ -452,10 +458,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * @return A map about current connectors (both source and destination). It maps from connector
-   *         repository to its definition id and docker image tag. We identify a connector by its
-   *         repository name instead of definition id because connectors can be added manually by
-   *         users, and are not always the same as those in the seed.
+   * @return A map about current connectors (both source and destination). It maps from connector repository to its definition id and docker image
+   * tag. We identify a connector by its repository name instead of definition id because connectors can be added manually by users, and are not
+   * always the same as those in the seed.
    */
   @VisibleForTesting
   Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(final DSLContext ctx) {
@@ -484,10 +489,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * @return A set of connectors (both source and destination) that are already used in standard
-   *         syncs. We identify connectors by its repository name instead of definition id because
-   *         connectors can be added manually by users, and their config ids are not always the same
-   *         as those in the seed.
+   * @return A set of connectors (both source and destination) that are already used in standard syncs. We identify connectors by its repository name
+   * instead of definition id because connectors can be added manually by users, and their config ids are not always the same as those in the seed.
    */
   private Set<String> getConnectorRepositoriesInUse(final DSLContext ctx) {
     final Set<String> usedConnectorDefinitionIds = new HashSet<>();
