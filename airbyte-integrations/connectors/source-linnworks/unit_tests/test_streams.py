@@ -144,7 +144,11 @@ def test_stock_items_parse_response(mocker, requests_mock, status_code, expected
     source = StockItems()
     parsed_response = source.parse_response(response)
 
-    assert list(parsed_response) == expected
+    if status_code not in [200, 400]:
+        with pytest.raises(requests.exceptions.HTTPError):
+            list(parsed_response)
+    else:
+        assert list(parsed_response) == expected
 
 
 @pytest.mark.parametrize(

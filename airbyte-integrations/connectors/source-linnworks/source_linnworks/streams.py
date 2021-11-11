@@ -143,8 +143,9 @@ class StockItems(LinnworksStream):
             }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code != requests.codes.ok:
+        if response.status_code == requests.codes.bad_request:
             return None
+        response.raise_for_status()
         yield from super().parse_response(response, **kwargs)
 
     def request_params(
