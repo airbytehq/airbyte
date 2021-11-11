@@ -295,9 +295,24 @@ public class ServerApp implements ServerRunnable {
 
   @VisibleForTesting
   static boolean isLegalUpgrade(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
-    return !(airbyteDatabaseVersion != null
-        && airbyteDatabaseVersion.lessThan(VERSION_BREAK)
-        && airbyteVersion.greaterThan(VERSION_BREAK));
+    // means there was no previous version so upgrade even needs to happen. always legal.
+    if (airbyteDatabaseVersion == null) {
+      return true;
+    }
+
+    return !isUpgradingThroughVersionBreak(airbyteDatabaseVersion, airbyteVersion);
+  }
+
+  /**
+   * Check to see if given the current version of the app and the version we are trying to upgrade if
+   * it passes through a version break (i.e. a major version bump).
+   *
+   * @param airbyteDatabaseVersion - current version of the app
+   * @param airbyteVersion - version we are trying to upgrade to
+   * @return true if upgrading through a major version, otherwise false.
+   */
+  private static boolean isUpgradingThroughVersionBreak(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
+    return airbyteDatabaseVersion.lessThan(VERSION_BREAK) && airbyteVersion.greaterThan(VERSION_BREAK);
   }
 
   /**
