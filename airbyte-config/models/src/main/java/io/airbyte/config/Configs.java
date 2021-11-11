@@ -115,6 +115,8 @@ public interface Configs {
 
   boolean getPublishMetrics();
 
+  boolean getVersion31ForceUpgrade();
+
   SecretPersistenceType getSecretPersistenceType();
 
   enum TrackingStrategy {

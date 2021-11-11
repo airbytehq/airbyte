@@ -5,23 +5,17 @@
 package io.airbyte.server;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.api.model.LogRead;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -34,20 +28,17 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.BucketSpecCacheSchedulerClient;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
-import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
-import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
@@ -80,10 +71,11 @@ public class ServerApp implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
+  private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.31.0-alpha");
+
   /**
-   * We can't support automatic migration for kube before this version because we had a bug in kube
-   * which would cause airbyte db to erase state upon termination, as a result the automatic migration
-   * wouldn't run
+   * We can't support automatic migration for kube before this version because we had a bug in kube which would cause airbyte db to erase state upon
+   * termination, as a result the automatic migration wouldn't run
    */
   private static final AirbyteVersion KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION = new AirbyteVersion("0.26.5-alpha");
   private final AirbyteVersion airbyteVersion;
@@ -179,7 +171,7 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
-            .getAndInitialize();
+        .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).migrateFileConfigs(configs);
 
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
@@ -194,7 +186,7 @@ public class ServerApp implements ServerRunnable {
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl())
-            .getAndInitialize();
+        .getAndInitialize();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
     createDeploymentIfNoneExists(jobPersistence);
@@ -242,6 +234,18 @@ public class ServerApp implements ServerRunnable {
 
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
 
+    if (!isLegalUpgrade(airbyteDatabaseVersion.orElse(null), airbyteVersion)) {
+      final String message = String.format(
+          "Cannot upgrade from version %s to version %s directly. First you must upgrade to version %s. After that upgrade is complete, you may upgrade to version %s",
+          airbyteDatabaseVersion.get(),
+          airbyteVersion,
+          VERSION_BREAK,
+          airbyteVersion);
+
+      LOGGER.error(message);
+      throw new RuntimeException(message);
+    }
+
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
 
@@ -253,12 +257,13 @@ public class ServerApp implements ServerRunnable {
 
       // todo (lmossman) - this will only exist temporarily to ensure all definitions contain specs. It
       // will be removed after the faux major version bump
-      migrateAllDefinitionsToContainSpec(
+      ConnectorDefinitionSpecBackfiller.migrateAllDefinitionsToContainSpec(
           configRepository,
+          configPersistence,
+          seed,
           cachingSchedulerClient,
           trackingClient,
-          configs.getWorkerEnvironment(),
-          configs.getLogConfigs());
+          configs);
       LOGGER.info("Migrated all definitions to contain specs...");
 
       return apiFactory.create(
@@ -283,108 +288,26 @@ public class ServerApp implements ServerRunnable {
     }
   }
 
-  /**
-   * Check that each spec in the database has a spec. If it doesn't, add it. If it can't be added,
-   * track the failure in Segment. The goal is to try to end up in a state where all definitions in
-   * the db contain specs, and to understand what is stopping us from getting there.
-   *
-   * @param configRepository - access to the db
-   * @param schedulerClient - scheduler client so that specs can be fetched as needed
-   * @param trackingClient
-   * @param workerEnvironment
-   * @param logConfigs
-   */
   @VisibleForTesting
-  static void migrateAllDefinitionsToContainSpec(final ConfigRepository configRepository,
-                                                 final SynchronousSchedulerClient schedulerClient,
-                                                 final TrackingClient trackingClient,
-                                                 final WorkerEnvironment workerEnvironment,
-                                                 final LogConfigs logConfigs)
-      throws JsonValidationException, IOException {
-    final JobConverter jobConverter = new JobConverter(workerEnvironment, logConfigs);
-    for (final StandardSourceDefinition sourceDef : configRepository.listStandardSourceDefinitions()) {
-      try {
-        if (sourceDef.getSpec() == null) {
-          LOGGER.info(
-              "migrateAllDefinitionsToContainSpec - Source Definition {} does not have a spec. Attempting to retrieve spec...",
-              sourceDef.getName());
-          final SynchronousResponse<ConnectorSpecification> getSpecJob = schedulerClient
-              .createGetSpecJob(sourceDef.getDockerRepository() + ":" + sourceDef.getDockerImageTag());
-          if (getSpecJob.isSuccess()) {
-            LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Spec for Source Definition {} was successfully retrieved. Writing to the db...",
-                sourceDef.getName());
-            final StandardSourceDefinition updatedDef = Jsons.clone(sourceDef).withSpec(getSpecJob.getOutput());
-            configRepository.writeStandardSourceDefinition(updatedDef);
-            LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Spec for Source Definition {} was successfully written to the db record.",
-                sourceDef.getName());
-          } else {
-            final LogRead logRead = jobConverter.getLogRead(getSpecJob.getMetadata().getLogPath());
-            LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Failed to retrieve spec for Source Definition {}. Logs: {}",
-                sourceDef.getName(),
-                logRead.toString());
-            throw new RuntimeException(String.format(
-                "Failed to retrieve spec for Source Definition %s. Logs: %s",
-                sourceDef.getName(),
-                logRead.toString()));
-          }
-        }
-      } catch (final Exception e) {
-        trackSpecBackfillFailure(trackingClient, configRepository, sourceDef.getDockerRepository(), sourceDef.getDockerImageTag(), e);
-      }
+  static boolean isLegalUpgrade(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
+    // means there was no previous version so upgrade even needs to happen. always legal.
+    if (airbyteDatabaseVersion == null) {
+      return true;
     }
 
-    for (final StandardDestinationDefinition destDef : configRepository.listStandardDestinationDefinitions()) {
-      try {
-        if (destDef.getSpec() == null) {
-          LOGGER.info(
-              "migrateAllDefinitionsToContainSpec - Destination Definition {} does not have a spec. Attempting to retrieve spec...",
-              destDef.getName());
-          final SynchronousResponse<ConnectorSpecification> getSpecJob = schedulerClient
-              .createGetSpecJob(destDef.getDockerRepository() + ":" + destDef.getDockerImageTag());
-          if (getSpecJob.isSuccess()) {
-            LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Spec for Destination Definition {} was successfully retrieved. Writing to the db...",
-                destDef.getName());
-            final StandardDestinationDefinition updatedDef = Jsons.clone(destDef).withSpec(getSpecJob.getOutput());
-            configRepository.writeStandardDestinationDefinition(updatedDef);
-            LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Spec for Destination Definition {} was successfully written to the db record.",
-                destDef.getName());
-          } else {
-            final LogRead logRead = jobConverter.getLogRead(getSpecJob.getMetadata().getLogPath());
-            LOGGER.info(
-                "migrateAllDefinitionsToContainSpec - Failed to retrieve spec for Destination Definition {}. Logs: {}",
-                destDef.getName(),
-                logRead.toString());
-            throw new RuntimeException(String.format(
-                "Failed to retrieve spec for Destination Definition %s. Logs: %s",
-                destDef.getName(),
-                logRead.toString()));
-          }
-        }
-      } catch (final Exception e) {
-        trackSpecBackfillFailure(trackingClient, configRepository, destDef.getDockerRepository(), destDef.getDockerImageTag(), e);
-      }
-    }
+    return !isUpgradingThroughVersionBreak(airbyteDatabaseVersion, airbyteVersion);
   }
 
-  private static void trackSpecBackfillFailure(final TrackingClient trackingClient,
-                                               final ConfigRepository configRepository,
-                                               final String dockerRepo,
-                                               final String dockerImageTag,
-                                               final Exception exception)
-      throws JsonValidationException, IOException {
-    // There is guaranteed to be at least one workspace, because the getServer() function enforces that
-    final UUID workspaceId = configRepository.listStandardWorkspaces(true).get(0).getWorkspaceId();
-
-    final ImmutableMap<String, Object> metadata = ImmutableMap.of(
-        "docker_image_name", dockerRepo,
-        "docker_image_tag", dockerImageTag,
-        "exception", exception);
-    trackingClient.track(workspaceId, "failed_spec_backfill", metadata);
+  /**
+   * Check to see if given the current version of the app and the version we are trying to upgrade if it passes through a version break (i.e. a major
+   * version bump).
+   *
+   * @param airbyteDatabaseVersion - current version of the app
+   * @param airbyteVersion         - version we are trying to upgrade to
+   * @return true if upgrading through a major version, otherwise false.
+   */
+  private static boolean isUpgradingThroughVersionBreak(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
+    return airbyteDatabaseVersion.lessThan(VERSION_BREAK) && airbyteVersion.greaterThan(VERSION_BREAK);
   }
 
   @Deprecated
@@ -421,8 +344,7 @@ public class ServerApp implements ServerRunnable {
   }
 
   /**
-   * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
-   * no other operation is allowed
+   * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and no other operation is allowed
    */
   private static void runAutomaticMigration(final ConfigRepository configRepository,
                                             final JobPersistence jobPersistence,

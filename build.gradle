@@ -316,6 +316,7 @@ task('generate-docker') {
     dependsOn(':airbyte-migration:assemble')
     dependsOn(':airbyte-db:lib:assemble')
     dependsOn(':airbyte-config:init:assemble')
+    dependsOn(':airbyte-temporal:assemble')
 }
 
 // produce reproducible archives
