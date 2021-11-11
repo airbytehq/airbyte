@@ -8,13 +8,13 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AirbyteCatalog, AirbyteStream
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
+from airbyte_cdk.models import AirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
+from .helpers import Helpers
 
 # Basic full refresh stream
 class AirtableStream(HttpStream, ABC):
@@ -76,56 +76,32 @@ class AirtableStream(HttpStream, ABC):
 
 # Source
 class SourceAirtable(AbstractSource):
-    schemas = {}
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        auth = TokenAuthenticator(token=config["api_key"]).get_auth_header()
+        auth = TokenAuthenticator(token=config["api_key"])
         for table in config["tables"]:
-            url = f"https://api.airtable.com/v0/{config['base_id']}/{table}?pageSize=1"
             try:
-                response = requests.get(url, headers=auth)
-                response.raise_for_status()
-            except requests.exceptions.HTTPError as e:
-                return False, e
+                Helpers.get_first_row(auth, config["base_id"], table)
+            except Exception as e:
+                return False, str(e)
         return True, None
 
     def discover(self, logger: AirbyteLogger, config) -> AirbyteCatalog:
         streams = []
-        auth = TokenAuthenticator(token=config["api_key"]).get_auth_header()
+        auth = TokenAuthenticator(token=config["api_key"])
         for table in config["tables"]:
-            url = f"https://api.airtable.com/v0/{config['base_id']}/{table}?pageSize=1"
-            response = requests.get(url, headers=auth)
-            response.raise_for_status()
-            record = response.json().get("records", [])[0].get("fields", {})
-            properties = {
-                "_airtable_id": {"type": ["null", "string"]},
-                "_airtable_created_time": {"type": ["null", "string"]},
-            }
-
-            for field in record:
-                properties[field] = {"type": ["null", "string"]}
-                json_schema = {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
-                    "type": "object",
-                    "properties": properties,
-                }
-
-            self.schemas[table] = json_schema
-            streams.append(
-                AirbyteStream(
-                    name=table,
-                    json_schema=json_schema,
-                    supported_sync_modes=[SyncMode.full_refresh],
-                    supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup],
-                )
-            )
+            record = Helpers.get_first_row(auth, config["base_id"], table)
+            json_schema = Helpers.get_json_schema(record)
+            airbyte_stream = Helpers.get_aribyte_stream(table, json_schema)
+            streams.append(airbyte_stream)
         return AirbyteCatalog(streams=streams)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(token=config["api_key"])
         streams = []
-        for table_name in config["tables"]:
-            kwargs = {"base_id": config["base_id"], "table_name": table_name, "authenticator": auth, "schema": self.schemas.get(table_name)}
+        for table in config["tables"]:
+            record = Helpers.get_first_row(auth, config["base_id"], table)
+            json_schema = Helpers.get_json_schema(record)
+            kwargs = {"base_id": config["base_id"], "table_name": table, "authenticator": auth, "schema": json_schema}
             stream = AirtableStream(**kwargs)
             streams.append(stream)
         return streams
