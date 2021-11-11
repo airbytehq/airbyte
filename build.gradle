@@ -71,23 +71,23 @@ def createJavaLicenseWith = { license ->
 // monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
 def createSpotlessTarget = { pattern ->
     def excludes = [
-            '.gradle',
-            'node_modules',
-            '.eggs',
-            '.mypy_cache',
-            '.venv',
-            '*.egg-info',
-            'build',
-            'dbt-project-template',
-            'dbt-project-template-mssql',
-            'dbt-project-template-mysql',
-            'dbt-project-template-oracle',
-            'dbt_test_config',
-            'normalization_test_output',
-            'tools',
-            'secrets',
-            'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
-            'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
+        '.gradle',
+        'node_modules',
+        '.eggs',
+        '.mypy_cache',
+        '.venv',
+        '*.egg-info',
+        'build',
+        'dbt-project-template',
+        'dbt-project-template-mssql',
+        'dbt-project-template-mysql',
+        'dbt-project-template-oracle',
+        'dbt_test_config',
+        'normalization_test_output',
+        'tools',
+        'secrets',
+        'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+        'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -127,7 +127,7 @@ check.dependsOn 'spotlessApply'
 
 @SuppressWarnings('GroovyAssignabilityCheck')
 def Task getDockerBuildTask(String artifactName, String projectDir) {
-    return task("buildDockerImage-$artifactName"(type: DockerBuildImage) {
+    return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
         def buildTag = System.getenv('VERSION') ?: 'dev'
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
