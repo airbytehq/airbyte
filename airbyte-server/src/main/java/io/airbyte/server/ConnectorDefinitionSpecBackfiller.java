@@ -30,9 +30,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// todo (lmossman) - delete this class after the faux major version bump, along with making the spec field required on the definition structs
 public class ConnectorDefinitionSpecBackfiller {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorDefinitionSpecBackfiller.class);
 
   /**
    * Check that each spec in the database has a spec. If it doesn't, add it. If it can't be added, delete the connector definition or fail according
@@ -124,7 +125,7 @@ public class ConnectorDefinitionSpecBackfiller {
       try {
         if (destDef.getSpec() == null) {
           // if a source definition is not being used and is not in the seed, don't bother to attempt to fetch a spec for it; just delete.
-          if (!seedDestRepos.contains(destDef.getDockerRepository()) && !connectorReposInUse.contains(destDef.getDockerRepository())) {
+          if (!connectorReposInUse.contains(destDef.getDockerRepository()) && !seedDestRepos.contains(destDef.getDockerRepository())) {
             LOGGER.info(
                 "migrateAllDefinitionsToContainSpec - Destination Definition {} does not have a spec, is not in the seed, and is not currently used in a connection. Deleting...",
                 destDef.getName());
@@ -189,6 +190,7 @@ public class ConnectorDefinitionSpecBackfiller {
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         ConfigSchema.SOURCE_CONNECTION,
         SourceConnection.class,
+        SourceConnection::getSourceId,
         SourceConnection::getSourceDefinitionId,
         sourceDefinitionId);
   }
@@ -200,6 +202,7 @@ public class ConnectorDefinitionSpecBackfiller {
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         ConfigSchema.DESTINATION_CONNECTION,
         DestinationConnection.class,
+        DestinationConnection::getDestinationId,
         DestinationConnection::getDestinationDefinitionId,
         destinationDefinitionId);
   }
@@ -209,6 +212,7 @@ public class ConnectorDefinitionSpecBackfiller {
       final ConfigSchema definitionType,
       final ConfigSchema connectorType,
       final Class<T> connectorClass,
+      final Function<T, UUID> connectorIdGetter,
       final Function<T, UUID> connectorDefinitionIdGetter,
       final UUID definitionId) throws JsonValidationException, IOException, ConfigNotFoundException {
     final Set<T> connectors = configPersistence.listConfigs(connectorType, connectorClass)
@@ -218,13 +222,14 @@ public class ConnectorDefinitionSpecBackfiller {
     for (final T connector : connectors) {
       final Set<StandardSync> syncs = configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class)
           .stream()
-          .filter(sync -> sync.getDestinationId().equals(connectorDefinitionIdGetter.apply(connector)))
+          .filter(sync -> sync.getSourceId().equals(connectorIdGetter.apply(connector))
+              || sync.getDestinationId().equals(connectorIdGetter.apply(connector)))
           .collect(Collectors.toSet());
 
       for (final StandardSync sync : syncs) {
         configPersistence.deleteConfig(ConfigSchema.STANDARD_SYNC, sync.getConnectionId().toString());
       }
-      configPersistence.deleteConfig(connectorType, connectorDefinitionIdGetter.apply(connector).toString());
+      configPersistence.deleteConfig(connectorType, connectorIdGetter.apply(connector).toString());
     }
     configPersistence.deleteConfig(definitionType, definitionId.toString());
   }
