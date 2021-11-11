@@ -51,6 +51,7 @@
     * [Dixa](integrations/sources/dixa.md)
     * [Drift](integrations/sources/drift.md)
     * [Drupal](integrations/sources/drupal.md)
+    * [ElasticSearch](integrations/sources/elasticsearch.md)
     * [Exchange Rates API](integrations/sources/exchangeratesapi.md)
     * [Facebook Marketing](integrations/sources/facebook-marketing.md)
     * [Facebook Pages](integrations/sources/facebook-pages.md)

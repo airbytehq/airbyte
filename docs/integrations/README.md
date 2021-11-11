@@ -35,6 +35,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Dixa](sources/dixa.md) | Alpha |
 | [Drift](sources/drift.md) | Beta |
 | [Drupal](sources/drupal.md) | Beta |
+| [ElasticSearch](sources/elasticsearch.md) | Alpha |
 | [Exchange Rates API](sources/exchangeratesapi.md) | Certified |
 | [Facebook Marketing](sources/facebook-marketing.md) | Beta |
 | [Facebook Pages](sources/facebook-pages.md) | Alpha |
