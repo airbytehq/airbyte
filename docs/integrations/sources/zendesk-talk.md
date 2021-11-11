@@ -65,4 +65,4 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| `0.1.3` | 2021-10-17 | [x](https://github.com/airbytehq/airbyte/pull/x) | Fix pagination |
+| `0.1.3` | 2021-11-11 | [7173](https://github.com/airbytehq/airbyte/pull/7173) | Fix pagination and migrate to CDK |
