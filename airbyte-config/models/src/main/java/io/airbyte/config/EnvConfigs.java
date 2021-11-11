@@ -74,6 +74,7 @@ public class EnvConfigs implements Configs {
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   private static final String JOBS_IMAGE_PULL_SECRET = "JOBS_IMAGE_PULL_SECRET";
   private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
+  private static final String VERSION_0_31_0_FORCE_UPGRADE = "VERSION_0_31_0_FORCE_UPGRADE";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
@@ -95,7 +96,7 @@ public class EnvConfigs implements Configs {
   public static final String DEFAULT_NETWORK = "host";
 
   private final Function<String, String> getEnv;
-  private LogConfiguration logConfiguration;
+  private final LogConfiguration logConfiguration;
 
   public EnvConfigs() {
     this(System::getenv);
@@ -281,12 +282,14 @@ public class EnvConfigs implements Configs {
         .collect(Collectors.toMap(s -> s[0], s -> s[1]));
 
     if (tolerationMap.containsKey("key") && tolerationMap.containsKey("effect") && tolerationMap.containsKey("operator")) {
-      return new WorkerPodToleration(tolerationMap.get("key"),
+      return new WorkerPodToleration(
+          tolerationMap.get("key"),
           tolerationMap.get("effect"),
           tolerationMap.get("value"),
           tolerationMap.get("operator"));
     } else {
-      LOGGER.warn("Ignoring toleration {}, missing one of key,effect or operator",
+      LOGGER.warn(
+          "Ignoring toleration {}, missing one of key,effect or operator",
           tolerationStr);
       return null;
     }
@@ -452,6 +455,11 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean getPublishMetrics() {
     return getEnvOrDefault(PUBLISH_METRICS, false);
+  }
+
+  @Override
+  public boolean getVersion31ForceUpgrade() {
+    return getEnvOrDefault(VERSION_0_31_0_FORCE_UPGRADE, false);
   }
 
   @Override
