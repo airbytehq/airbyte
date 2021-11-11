@@ -246,7 +246,6 @@ jobs:
       - name: Automatic Migration Acceptance Test
         run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
 
-
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: rtCamp/action-slack-notify@master
