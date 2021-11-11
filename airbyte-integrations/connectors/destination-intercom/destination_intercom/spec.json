@@ -12,7 +12,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Intercom",
     "type": "object",
-    "required": ["access_token"],
+    "required": ["access_token", "model"],
     "additionalProperties": true,
     "properties": {
       "access_token": {
@@ -21,6 +21,14 @@
         "description": "Intercom access token from the app developer hub",
         "airbyte_secret": true,
         "order": 1
+      },
+      "model": {
+        "title": "Intercom object model",
+        "type": "string",
+        "description": "Object model to sync, e.g. contact, company",
+        "enum": ["contact", "company"],
+        "airbyte_secret": false,
+        "order": 2
       }
     }
   }

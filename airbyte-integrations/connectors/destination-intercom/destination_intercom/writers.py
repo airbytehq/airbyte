@@ -12,7 +12,8 @@ class IntercomWriter:
 
     companies_default_attributes = [
         'name',
-        'company_id'
+        'company_id',
+        'website'
     ]
 
     def __init__(self, client: IntercomClient):
@@ -93,6 +94,42 @@ class IntercomWriter:
 class ContactWriter(IntercomWriter):
     endpoint = 'contacts'
 
+    # contact request body parameters from https://developers.intercom.com/intercom-api-reference/reference#create-contact
+    default_attributes = [
+        'role',
+        'external_id',
+        'email',
+        'phone',
+        'name',
+        'avatar',
+        'signed_up_at',
+        'last_seen_at',
+        'owner_id',
+        'unsubscribed_from_emails',
+    ]
+
 
 class CompanyWriter(IntercomWriter):
     endpoint = 'companies'
+
+    # company request body parameters from https://developers.intercom.com/intercom-api-reference/reference#create-or-update-company
+    default_attributes = [
+        'remote_created_at',
+        'company_id',
+        'name',
+        'monthly_spend',
+        'plan',
+        'size',
+        'website',
+        'industry'
+    ]
+
+
+def create_writer(
+    access_token: str = None,
+    model: str = None
+):
+    if model == 'company':
+        return CompanyWriter(IntercomClient(access_token=access_token))
+    elif model == 'contact':
+        return ContactWriter(IntercomClient(access_token=access_token))

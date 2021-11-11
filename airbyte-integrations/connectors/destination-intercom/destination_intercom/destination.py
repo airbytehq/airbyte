@@ -13,8 +13,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-from destination_intercom.client import IntercomClient
-from destination_intercom.writers import IntercomWriter
+from destination_intercom.writers import create_writer
 
 
 class DestinationIntercom(Destination):
@@ -40,7 +39,7 @@ class DestinationIntercom(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
-        writer = IntercomWriter(IntercomClient(**config))
+        writer = create_writer(**config)
 
         # for configured_stream in configured_catalog.streams:
         #     if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
@@ -76,8 +75,8 @@ class DestinationIntercom(Destination):
         """
         try:
             # check Intercom API access by trying to list all contacts
-            client = IntercomClient(**config)
-            client._request("get", endpoint="companies")
+            writer = create_writer(**config)
+            writer.client._request("get", endpoint="companies")
         except requests.exceptions.HTTPError as err:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Intercom error - {err}")
         except Exception as e:

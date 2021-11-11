@@ -60,6 +60,7 @@ resources/examples/airflow/logs/*
 
 # Cloud Demo
 !airbyte-webapp/src/packages/cloud/data
+<<<<<<< HEAD
 /bin/
 /**/bin/
 
@@ -68,3 +69,5 @@ resources/examples/airflow/logs/*
 
 # Sample Files
 sample_files/
+=======
+>>>>>>> upstream/master
