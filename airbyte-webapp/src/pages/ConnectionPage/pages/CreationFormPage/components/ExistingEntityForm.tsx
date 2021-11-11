@@ -130,7 +130,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
                 </Content>
                 <BottomBlock>
                   <Button disabled={isSubmitting} type="submit">
-                    <FormattedMessage id="form.saveChanges" />
+                    <FormattedMessage id={`connectionForm.${type}Use`} />
                   </Button>
                 </BottomBlock>
               </Form>

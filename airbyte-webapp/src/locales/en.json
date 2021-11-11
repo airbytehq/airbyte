@@ -113,6 +113,8 @@
   "connectionForm.cursor.searchPlaceholder": "search cursor fields by name",
   "connectionForm.destinationExisting": "Select an existing destination",
   "connectionForm.sourceExisting": "Select an existing source",
+  "connectionForm.sourceUse": "Use existing source",
+  "connectionForm.destinationUse": "Use existing destination",
 
   "connectorForm.authenticate": "Authenticate your {connector} account",
   "connectorForm.authenticate.succeeded": "Authentication succeeded!",
