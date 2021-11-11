@@ -53,7 +53,6 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
-
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new MssqlSource(), HOST_KEY, PORT_KEY);
   }

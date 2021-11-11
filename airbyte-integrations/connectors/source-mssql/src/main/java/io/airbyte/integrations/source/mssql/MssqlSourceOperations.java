@@ -1,12 +1,13 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.format.DateTimeFormatter;
 
 public class MssqlSourceOperations extends JdbcSourceOperations {
 
