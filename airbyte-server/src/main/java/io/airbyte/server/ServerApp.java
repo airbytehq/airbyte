@@ -4,6 +4,7 @@
 
 package io.airbyte.server;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -70,10 +71,11 @@ public class ServerApp implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
+  private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.31.0-alpha");
+
   /**
-   * We can't support automatic migration for kube before this version because we had a bug in kube
-   * which would cause airbyte db to erase state upon termination, as a result the automatic migration
-   * wouldn't run
+   * We can't support automatic migration for kube before this version because we had a bug in kube which would cause airbyte db to erase state upon
+   * termination, as a result the automatic migration wouldn't run
    */
   private static final AirbyteVersion KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION = new AirbyteVersion("0.26.5-alpha");
   private final AirbyteVersion airbyteVersion;
@@ -169,7 +171,7 @@ public class ServerApp implements ServerRunnable {
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
-            .getAndInitialize();
+        .getAndInitialize();
     final DatabaseConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).migrateFileConfigs(configs);
 
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
@@ -184,7 +186,7 @@ public class ServerApp implements ServerRunnable {
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl())
-            .getAndInitialize();
+        .getAndInitialize();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
     createDeploymentIfNoneExists(jobPersistence);
@@ -232,6 +234,18 @@ public class ServerApp implements ServerRunnable {
 
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
 
+    if (!isLegalUpgrade(airbyteDatabaseVersion.orElse(null), airbyteVersion)) {
+      final String message = String.format(
+          "Cannot upgrade from version %s to version %s directly. First you must upgrade to version %s. After that upgrade is complete, you may upgrade to version %s",
+          airbyteDatabaseVersion.get(),
+          airbyteVersion,
+          VERSION_BREAK,
+          airbyteVersion);
+
+      LOGGER.error(message);
+      throw new RuntimeException(message);
+    }
+
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
 
@@ -270,6 +284,28 @@ public class ServerApp implements ServerRunnable {
     }
   }
 
+  @VisibleForTesting
+  static boolean isLegalUpgrade(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
+    // means there was no previous version so upgrade even needs to happen. always legal.
+    if (airbyteDatabaseVersion == null) {
+      return true;
+    }
+
+    return !isUpgradingThroughVersionBreak(airbyteDatabaseVersion, airbyteVersion);
+  }
+
+  /**
+   * Check to see if given the current version of the app and the version we are trying to upgrade if it passes through a version break (i.e. a major
+   * version bump).
+   *
+   * @param airbyteDatabaseVersion - current version of the app
+   * @param airbyteVersion         - version we are trying to upgrade to
+   * @return true if upgrading through a major version, otherwise false.
+   */
+  private static boolean isUpgradingThroughVersionBreak(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
+    return airbyteDatabaseVersion.lessThan(VERSION_BREAK) && airbyteVersion.greaterThan(VERSION_BREAK);
+  }
+
   @Deprecated
   @SuppressWarnings({"DeprecatedIsStillUsed"})
   private static Optional<AirbyteVersion> runFileMigration(final AirbyteVersion airbyteVersion,
@@ -304,8 +340,7 @@ public class ServerApp implements ServerRunnable {
   }
 
   /**
-   * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
-   * no other operation is allowed
+   * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and no other operation is allowed
    */
   private static void runAutomaticMigration(final ConfigRepository configRepository,
                                             final JobPersistence jobPersistence,
