@@ -1,7 +1,8 @@
 {{ config(
-    indexes = [{'columns':['_airbyte_active_row','_airbyte_unique_key','_airbyte_emitted_at'],'type': 'btree'}],
+    indexes = [{'columns':['_airbyte_active_row','_airbyte_unique_key_scd','_airbyte_emitted_at'],'type': 'btree'}],
     unique_key = "_airbyte_unique_key_scd",
     schema = "test_normalization",
+    post_hook = ['drop table if exists _airbyte_test_normalization.dedup_exchange_rate_ab3'],
     tags = [ "top-level" ]
 ) }}
 with
@@ -72,13 +73,13 @@ scd_data as (
             {{ adapter.quote('date') }} desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
-      case when lag({{ adapter.quote('date') }}) over (
+      case when row_number() over (
         partition by {{ adapter.quote('id') }}, currency, cast(nzd as {{ dbt_utils.type_string() }})
         order by
             {{ adapter.quote('date') }} is null asc,
             {{ adapter.quote('date') }} desc,
             _airbyte_emitted_at desc
-      ) is null  then 1 else 0 end as _airbyte_active_row,
+      ) = 1 then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_dedup_exchange_rate_hashid
