@@ -33,13 +33,19 @@ def config():
                 "Code": None,
                 "Message": "Invalid application id or application secret",
             },
-            (False, "Unable to connect to Linnworks API with the provided credentials: Error while refreshing access token: Invalid application id or application secret"),
+            (
+                False,
+                "Unable to connect to Linnworks API with the provided credentials: Error while refreshing access token: Invalid application id or application secret",
+            ),
         ),
         (
             400,
             False,
             "invalid_json",
-            (False, "Unable to connect to Linnworks API with the provided credentials: Error while refreshing access token: 400 Client Error: None for url: https://api.linnworks.net/api/Auth/AuthorizeByApplication"),
+            (
+                False,
+                "Unable to connect to Linnworks API with the provided credentials: Error while refreshing access token: 400 Client Error: None for url: https://api.linnworks.net/api/Auth/AuthorizeByApplication",
+            ),
         ),
     ],
 )
