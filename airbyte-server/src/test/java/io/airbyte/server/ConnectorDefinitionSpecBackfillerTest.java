@@ -24,7 +24,6 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
@@ -53,7 +52,7 @@ class ConnectorDefinitionSpecBackfillerTest {
   private static final String SOURCE_DOCKER_REPO = "docker-repo/source";
   private static final String DEST_DOCKER_REPO = "docker-repo/destination";
   private static final String DOCKER_IMAGE_TAG = "tag";
-  private static final String FAILED_SPEC_BACKFILL_ACTION = "failed_spec_backfill";
+  private static final String FAILED_SPEC_BACKFILL_ACTION = "failed_spec_backfill_major_bump";
   private static final StandardWorkspace WORKSPACE = new StandardWorkspace().withWorkspaceId(UUID.randomUUID());
 
   private ConfigRepository configRepository;
@@ -122,7 +121,8 @@ class ConnectorDefinitionSpecBackfillerTest {
     final StandardDestinationDefinition expectedDestDef = Jsons.clone(destDef).withSpec(destSpec);
     verify(configRepository, times(1)).writeStandardSourceDefinition(expectedSourceDef);
     verify(configRepository, times(1)).writeStandardDestinationDefinition(expectedDestDef);
-    verify(database, never()).deleteConfig(any(), any());
+    verify(configRepository, never()).deleteSourceDefinitionAndAssociations(any());
+    verify(configRepository, never()).deleteDestinationDefinitionAndAssociations(any());
   }
 
   @Test
@@ -156,8 +156,8 @@ class ConnectorDefinitionSpecBackfillerTest {
 
     verify(configRepository, never()).writeStandardSourceDefinition(any());
     verify(configRepository, never()).writeStandardDestinationDefinition(any());
-    verify(database, times(1)).deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDef.getSourceDefinitionId().toString());
-    verify(database, times(1)).deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destDef.getDestinationDefinitionId().toString());
+    verify(configRepository, times(1)).deleteSourceDefinitionAndAssociations(sourceDef.getSourceDefinitionId());
+    verify(configRepository, times(1)).deleteDestinationDefinitionAndAssociations(destDef.getDestinationDefinitionId());
   }
 
   @Test
@@ -196,14 +196,15 @@ class ConnectorDefinitionSpecBackfillerTest {
         schedulerClient,
         trackingClient,
         configs))
-        .isInstanceOf(RuntimeException.class)
-        .hasMessageContaining(
-            "Specs could not be retrieved for the following connector images: ["
-                + SOURCE_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG + ", " + DEST_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG + "]");
+            .isInstanceOf(RuntimeException.class)
+            .hasMessageContaining(
+                "Specs could not be retrieved for the following connector images: ["
+                    + SOURCE_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG + ", " + DEST_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG + "]");
 
     verify(configRepository, never()).writeStandardSourceDefinition(any());
     verify(configRepository, never()).writeStandardDestinationDefinition(any());
-    verify(database, never()).deleteConfig(any(), any());
+    verify(configRepository, never()).deleteSourceDefinitionAndAssociations(any());
+    verify(configRepository, never()).deleteDestinationDefinitionAndAssociations(any());
 
     verify(trackingClient, times(2)).track(eq(WORKSPACE.getWorkspaceId()), eq(FAILED_SPEC_BACKFILL_ACTION), anyMap());
   }
@@ -223,19 +224,6 @@ class ConnectorDefinitionSpecBackfillerTest {
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(destDef));
     // both source and destination definitions are in use, so should be backfilled
     when(database.getInUseConnectorDockerImageNames()).thenReturn(Set.of(SOURCE_DOCKER_REPO, DEST_DOCKER_REPO));
-
-    final SourceConnection sourceConnection = new SourceConnection().withSourceId(UUID.randomUUID())
-        .withSourceDefinitionId(sourceDef.getSourceDefinitionId());
-    when(database.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class)).thenReturn(List.of(sourceConnection));
-    final DestinationConnection destConnection = new DestinationConnection().withDestinationId(UUID.randomUUID())
-        .withDestinationDefinitionId(destDef.getDestinationDefinitionId());
-    when(database.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class)).thenReturn(List.of(destConnection));
-
-    final StandardSync sourceSync = new StandardSync().withConnectionId(UUID.randomUUID()).withSourceId(sourceConnection.getSourceId())
-        .withDestinationId(UUID.randomUUID());
-    final StandardSync destSync = new StandardSync().withConnectionId(UUID.randomUUID()).withDestinationId(destConnection.getDestinationId())
-        .withSourceId(UUID.randomUUID());
-    when(database.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class)).thenReturn(List.of(sourceSync, destSync));
 
     final SynchronousResponse<ConnectorSpecification> failureSourceResponse = new SynchronousResponse<>(
         null,
@@ -260,15 +248,10 @@ class ConnectorDefinitionSpecBackfillerTest {
 
     verify(configRepository, never()).writeStandardSourceDefinition(any());
     verify(configRepository, never()).writeStandardDestinationDefinition(any());
+    verify(configRepository, times(1)).deleteSourceDefinitionAndAssociations(sourceDef.getSourceDefinitionId());
+    verify(configRepository, times(1)).deleteDestinationDefinitionAndAssociations(destDef.getDestinationDefinitionId());
 
     verify(trackingClient, times(2)).track(eq(WORKSPACE.getWorkspaceId()), eq(FAILED_SPEC_BACKFILL_ACTION), anyMap());
-
-    verify(database, times(1)).deleteConfig(ConfigSchema.STANDARD_SYNC, sourceSync.getConnectionId().toString());
-    verify(database, times(1)).deleteConfig(ConfigSchema.STANDARD_SYNC, destSync.getConnectionId().toString());
-    verify(database, times(1)).deleteConfig(ConfigSchema.SOURCE_CONNECTION, sourceConnection.getSourceId().toString());
-    verify(database, times(1)).deleteConfig(ConfigSchema.DESTINATION_CONNECTION, destConnection.getDestinationId().toString());
-    verify(database, times(1)).deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDef.getSourceDefinitionId().toString());
-    verify(database, times(1)).deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destDef.getDestinationDefinitionId().toString());
   }
 
   @Test
@@ -294,7 +277,8 @@ class ConnectorDefinitionSpecBackfillerTest {
     verify(schedulerClient, never()).createGetSpecJob(any());
     verify(configRepository, never()).writeStandardSourceDefinition(any());
     verify(configRepository, never()).writeStandardDestinationDefinition(any());
-    verify(database, never()).deleteConfig(any(), any());
+    verify(configRepository, never()).deleteSourceDefinitionAndAssociations(any());
+    verify(configRepository, never()).deleteDestinationDefinitionAndAssociations(any());
   }
 
   private SynchronousJobMetadata mockJobMetadata(final boolean succeeded) {

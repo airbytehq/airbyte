@@ -59,7 +59,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * If this is a migration deployment from an old version that relies on file system config persistence, copy the existing configs from local files.
+   * If this is a migration deployment from an old version that relies on file system config
+   * persistence, copy the existing configs from local files.
    */
   public DatabaseConfigPersistence migrateFileConfigs(final Configs serverConfigs) throws IOException {
     database.transaction(ctx -> {
@@ -220,11 +221,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    */
   @VisibleForTesting
   int insertConfigRecord(
-      final DSLContext ctx,
-      final OffsetDateTime timestamp,
-      final String configType,
-      final JsonNode configJson,
-      @Nullable final String idFieldName) {
+                         final DSLContext ctx,
+                         final OffsetDateTime timestamp,
+                         final String configType,
+                         final JsonNode configJson,
+                         @Nullable final String idFieldName) {
     final String configId = idFieldName == null
         ? UUID.randomUUID().toString()
         : configJson.get(idFieldName).asText();
@@ -359,8 +360,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * @param connectorRepositoriesInUse when a connector is used in any standard sync, its definition will not be updated. This is necessary because
-   *                                   the new connector version may not be backward compatible.
+   * @param connectorRepositoriesInUse when a connector is used in any standard sync, its definition
+   *        will not be updated. This is necessary because the new connector version may not be
+   *        backward compatible.
    */
   @VisibleForTesting
   <T> ConnectorCounter updateConnectorDefinitions(final DSLContext ctx,
@@ -455,9 +457,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * @return A map about current connectors (both source and destination). It maps from connector repository to its definition id and docker image
-   * tag. We identify a connector by its repository name instead of definition id because connectors can be added manually by users, and are not
-   * always the same as those in the seed.
+   * @return A map about current connectors (both source and destination). It maps from connector
+   *         repository to its definition id and docker image tag. We identify a connector by its
+   *         repository name instead of definition id because connectors can be added manually by
+   *         users, and are not always the same as those in the seed.
    */
   @VisibleForTesting
   Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(final DSLContext ctx) {
@@ -486,8 +489,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * @return A set of connectors (both source and destination) that are already used in standard syncs. We identify connectors by its repository name
-   * instead of definition id because connectors can be added manually by users, and their config ids are not always the same as those in the seed.
+   * @return A set of connectors (both source and destination) that are already used in standard
+   *         syncs. We identify connectors by its repository name instead of definition id because
+   *         connectors can be added manually by users, and their config ids are not always the same
+   *         as those in the seed.
    */
   private Set<String> getConnectorRepositoriesInUse(final DSLContext ctx) {
     final Set<String> usedConnectorDefinitionIds = new HashSet<>();
