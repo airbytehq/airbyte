@@ -7,6 +7,7 @@ package io.airbyte.protocol.models;
 import com.google.common.collect.ImmutableMap;
 
 public enum JsonSchemaPrimitive {
+
   STRING_DATE(ImmutableMap.of("type", "string", "format", "date")),
   STRING_TIME(ImmutableMap.of("type", "string", "format", "time")),
   STRING_TIMESTAMP(ImmutableMap.of("type", "string", "format", "date-time")),
@@ -17,13 +18,14 @@ public enum JsonSchemaPrimitive {
   BOOLEAN(ImmutableMap.of("type", "boolean")),
   NULL(ImmutableMap.of("type", "null"));
 
-  private final ImmutableMap<String,String> jsonSchemaTypeMap;
+  private final ImmutableMap<String, String> jsonSchemaTypeMap;
 
-  JsonSchemaPrimitive(ImmutableMap<String,String> jsonSchemaTypeMap) {
-    this.jsonSchemaTypeMap =jsonSchemaTypeMap;
+  JsonSchemaPrimitive(ImmutableMap<String, String> jsonSchemaTypeMap) {
+    this.jsonSchemaTypeMap = jsonSchemaTypeMap;
   }
 
   public ImmutableMap<String, String> getJsonSchemaTypeMap() {
     return jsonSchemaTypeMap;
   }
+
 }

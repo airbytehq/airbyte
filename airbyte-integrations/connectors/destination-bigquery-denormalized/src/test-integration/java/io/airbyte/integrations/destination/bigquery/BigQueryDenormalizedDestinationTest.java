@@ -33,20 +33,17 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
 import org.assertj.core.util.Sets;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
@@ -320,4 +317,5 @@ class BigQueryDenormalizedDestinationTest {
             .withData(data)
             .withEmittedAt(NOW.toEpochMilli()));
   }
+
 }
