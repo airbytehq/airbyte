@@ -49,7 +49,7 @@ run | tee build.out
 # https://tldp.org/LDP/abs/html/internalvariables.html#PIPESTATUSREF
 run_status=${PIPESTATUS[0]}
 
-test $run_status == "0" || {
+test_performance $run_status == "0" || {
    # Build failed
    link=$(cat build.out | grep -a -A1 "Publishing build scan..." | tail -n1 | tr -d "\n")
    # Save gradle scan link to github GRADLE_SCAN_LINK variable for next job.
@@ -61,7 +61,7 @@ test $run_status == "0" || {
 # Build successed
 coverage_report=`sed -n '/^[ \t]*-\+ coverage: /,/TOTAL   /p' build.out`
 
-if ! test -z "$coverage_report"
+if ! test_performance -z "$coverage_report"
 then
    echo "PYTHON_UNITTEST_COVERAGE_REPORT<<EOF" >> $GITHUB_ENV
    echo "Python tests coverage:" >> $GITHUB_ENV
