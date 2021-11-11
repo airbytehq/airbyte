@@ -121,8 +121,6 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "0", "1", "'true'", "'false'")
             .addExpectedValues(null, "false", "true", "true", "false")
-            .addInsertValues("null")
-            .addNullExpectedValue()
             .build());
 
     addDataTypeTestData(
@@ -285,27 +283,21 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
-    // TODO BUG Returns binary value instead of actual value
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("binary")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            // .addInsertValues("CAST( 'A' AS VARBINARY)", "null")
-            // .addExpectedValues("A")
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("CAST( 'A' AS BINARY(1))", "null")
+            .addExpectedValues("A", null)
             .build());
 
-    // TODO BUG Returns binary value instead of actual value
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varbinary")
-            .fullSourceDataType("varbinary(30)")
+            .fullSourceDataType("varbinary(3)")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            // .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
-            // .addExpectedValues("A")
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
+            .addExpectedValues("ABC", null)
             .build());
 
     // TODO BUG: airbyte returns binary representation instead of readable one

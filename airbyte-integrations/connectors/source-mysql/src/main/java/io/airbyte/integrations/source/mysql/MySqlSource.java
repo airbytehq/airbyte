@@ -15,7 +15,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -252,11 +251,6 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public enum ReplicationMethod {
     STANDARD,
     CDC
-  }
-
-  @Override
-  protected JdbcSourceOperations getSourceOperations() {
-    return new MySqlSourceOperations();
   }
 
 }
