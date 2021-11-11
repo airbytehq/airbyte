@@ -93,21 +93,8 @@ public class CatalogHelpers {
                         .stream()
                         .collect(Collectors.toMap(
                                 Field::getName,
-                                CatalogHelpers::resolveFieldType)))
+                                field -> field.getType().getJsonSchemaTypeMap())))
                 .build());
-    }
-
-    private static ImmutableMap<String, String> resolveFieldType(Field field) {
-
-        return switch (field.getType()) {
-            case STRING, NUMBER, OBJECT, ARRAY, BOOLEAN, NULL -> ImmutableMap.of("type", field.getTypeAsJsonSchemaString());
-            case STRING_DATE -> ImmutableMap.of("type", field.getTypeForComplexObjectAsJsonSchemaString(),
-                    "format", "date");
-            case STRING_TIME -> ImmutableMap.of("type", field.getTypeForComplexObjectAsJsonSchemaString(),
-                    "format", "time");
-            case STRING_TIMESTAMP -> ImmutableMap.of("type", field.getTypeForComplexObjectAsJsonSchemaString(),
-                    "format", "date-time");
-        };
     }
 
     /**
