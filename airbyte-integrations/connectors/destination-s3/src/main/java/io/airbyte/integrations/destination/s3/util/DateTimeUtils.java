@@ -65,7 +65,12 @@ public class DateTimeUtils {
       LocalTime time = LocalTime.parse(dateTime, timeFormatter);
       secondOfDay = time.toNanoOfDay();
     } catch (DateTimeParseException e) {
-      LOGGER.error("Failed to parse time :" + dateTime);
+      try {
+        LocalTime time = LocalTime.parse(dateTime,formatter);
+        secondOfDay = time.toNanoOfDay();
+      }catch (DateTimeParseException ex){
+        LOGGER.error("Failed to parse time :" + dateTime);
+      }
     }
     return Objects.requireNonNull(secondOfDay) / 1000;
   }
