@@ -176,7 +176,7 @@ class Salesforce:
         token: str = None,
         client_id: str = None,
         client_secret: str = None,
-        is_sandbox: bool = False,
+        is_sandbox: bool = True,
         start_date: str = None,
         api_type: str = None,
     ):
