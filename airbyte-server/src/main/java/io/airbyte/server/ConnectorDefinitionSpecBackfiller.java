@@ -66,10 +66,10 @@ public class ConnectorDefinitionSpecBackfiller {
 
     final Set<String> connectorReposInUse = database.getInUseConnectorDockerImageNames();
 
-    final List<String> seedSourceRepos = seed.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)
+    final Set<String> seedSourceRepos = seed.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)
         .stream()
         .map(StandardSourceDefinition::getDockerRepository)
-        .collect(Collectors.toList());
+        .collect(Collectors.toSet());
     for (final StandardSourceDefinition sourceDef : configRepository.listStandardSourceDefinitions()) {
       final String imageName = sourceDef.getDockerRepository() + ":" + sourceDef.getDockerImageTag();
       try {
@@ -124,10 +124,10 @@ public class ConnectorDefinitionSpecBackfiller {
       }
     }
 
-    final List<String> seedDestRepos = seed.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)
+    final Set<String> seedDestRepos = seed.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)
         .stream()
         .map(StandardDestinationDefinition::getDockerRepository)
-        .collect(Collectors.toList());
+        .collect(Collectors.toSet());
     for (final StandardDestinationDefinition destDef : configRepository.listStandardDestinationDefinitions()) {
       final String imageName = destDef.getDockerRepository() + ":" + destDef.getDockerImageTag();
       try {
