@@ -12,7 +12,6 @@ import static org.jooq.impl.DSL.select;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
@@ -30,6 +29,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -141,13 +141,16 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws IOException {
-    writeConfigs(configType, configId, Lists.newArrayList(config));
+    final Map<String, T> configIdToConfig = new HashMap<>() {{
+      put(configId, config);
+    }};
+    writeConfigs(configType, configIdToConfig);
   }
 
   @Override
-  public <T> void writeConfigs(final AirbyteConfig configType, final String configId, final List<T> configs) throws IOException {
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) throws IOException, JsonValidationException {
     database.transaction(ctx -> {
-      configs.forEach(config -> {
+      configs.forEach((configId, config) -> {
         final boolean isExistingConfig = ctx.fetchExists(select()
             .from(AIRBYTE_CONFIGS)
             .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId)));

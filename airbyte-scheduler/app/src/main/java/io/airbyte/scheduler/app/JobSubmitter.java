@@ -84,17 +84,14 @@ public class JobSubmitter implements Runnable {
   }
 
   /**
-   * Since job submission and job execution happen in two separate thread pools, and job execution is
-   * what removes a job from the submission queue, it is possible for a job to be submitted multiple
-   * times.
+   * Since job submission and job execution happen in two separate thread pools, and job execution is what removes a job from the submission queue, it
+   * is possible for a job to be submitted multiple times.
    * <p>
-   * This synchronised block guarantees only a single thread can utilise the concurrent set to decide
-   * whether a job should be submitted. This job id is added here, and removed in the finish block of
-   * {@link #submitJob(Job)}.
+   * This synchronised block guarantees only a single thread can utilise the concurrent set to decide whether a job should be submitted. This job id
+   * is added here, and removed in the finish block of {@link #submitJob(Job)}.
    * <p>
-   * Since {@link JobPersistence#getNextJob()} returns the next queued job, this solution cause
-   * head-of-line blocking as the JobSubmitter tries to submit the same job. However, this suggests
-   * the Worker Pool needs more workers and is inevitable when dealing with pending jobs.
+   * Since {@link JobPersistence#getNextJob()} returns the next queued job, this solution cause head-of-line blocking as the JobSubmitter tries to
+   * submit the same job. However, this suggests the Worker Pool needs more workers and is inevitable when dealing with pending jobs.
    * <p>
    * See https://github.com/airbytehq/airbyte/issues/4378 for more info.
    */
@@ -140,17 +137,19 @@ public class JobSubmitter implements Runnable {
 
           if (output.getStatus() == io.airbyte.workers.JobStatus.SUCCEEDED) {
             persistence.succeedAttempt(job.getId(), attemptNumber);
-            // TODO: bmoric Add the stuff.
 
             final List<StandardWorkspace> standardWorkspaces = configRepository.listStandardWorkspaces(false);
 
-            final List<StandardWorkspace> workspaceToUpdate = standardWorkspaces.stream()
+            final List<StandardWorkspace> workspacesToUpdate = standardWorkspaces.stream()
                 .filter(standardWorkspace -> !standardWorkspace.getFirstCompletedSync())
                 .map(standardWorkspace -> {
                   standardWorkspace.setFirstCompletedSync(true);
                   return standardWorkspace;
                 })
                 .collect(Collectors.toList());
+
+            configRepository.writeStandardWorkspaces(workspacesToUpdate);
+
             if (job.getConfigType() == ConfigType.SYNC) {
               jobNotifier.successJob(job);
             }

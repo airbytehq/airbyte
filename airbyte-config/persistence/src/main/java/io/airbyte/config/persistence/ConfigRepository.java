@@ -111,6 +111,12 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
+  public void writeStandardWorkspaces(final List<StandardWorkspace> workspaces) throws JsonValidationException, IOException {
+    for (final StandardWorkspace workspace : workspaces) {
+      persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
+    }
+  }
+
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString(), StandardSourceDefinition.class);
@@ -229,7 +235,6 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param workspaceId workspace id for the config
    * @param fullConfig full config
    * @param spec connector specification
@@ -240,7 +245,6 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param workspaceId workspace id for the config
    * @param oldConfig old full config
    * @param fullConfig new full config
@@ -279,7 +283,6 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param fullConfig full config
    * @param spec connector specification
    * @return partial config

@@ -15,6 +15,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.db.Database;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -86,6 +87,11 @@ public abstract class BaseDatabaseConfigPersistenceTest {
   protected static void writeDestination(final ConfigPersistence configPersistence, final StandardDestinationDefinition destination)
       throws Exception {
     configPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(), destination);
+  }
+
+  protected static void writeDestinations(final ConfigPersistence configPersistence, final List<StandardDestinationDefinition> destinations)
+      throws Exception {
+    configPersistence.writeConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(), destinations);
   }
 
   protected static void deleteDestination(final ConfigPersistence configPersistence, final StandardDestinationDefinition destination)
