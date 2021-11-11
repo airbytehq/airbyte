@@ -7,6 +7,8 @@ package io.airbyte.integrations.source.db2;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.Db2JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -24,12 +26,13 @@ public class Db2Source extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Db2Source.class);
   public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
+  private static Db2SourceOperations operations;
 
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
 
   public Db2Source() {
-    super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration(), new Db2SourceOperations());
   }
 
   public static void main(final String[] args) throws Exception {
