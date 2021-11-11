@@ -8,14 +8,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 
-class TestDataFactory {
+class RedisDataFactory {
 
-  private TestDataFactory() {
+  private RedisDataFactory() {
 
-  }
-
-  static RedisConfig redisConfig(String host, int port) {
-    return new RedisConfig(host, port, "default", "pw");
   }
 
   static JsonNode jsonConfig(String host, int port) {

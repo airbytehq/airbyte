@@ -28,18 +28,18 @@ class RedisDestination extends BaseConnector implements Destination {
   public AirbyteConnectionStatus check(JsonNode config) {
     var redisConfig = new RedisConfig(config);
 
-    RedisOpsProvider redisOpsProvider = null;
+    RedisCache redisCache = null;
     try {
-      redisOpsProvider = new RedisOpsProvider(redisConfig);
+      redisCache = new RedisCache(redisConfig);
       // check connection and write permissions
-      redisOpsProvider.ping("Connection check");
+      redisCache.ping("Connection check");
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.error("Can't establish Redis connection with reason: ", e);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED);
     } finally {
-      if (redisOpsProvider != null) {
-        redisOpsProvider.close();
+      if (redisCache != null) {
+        redisCache.close();
       }
     }
 

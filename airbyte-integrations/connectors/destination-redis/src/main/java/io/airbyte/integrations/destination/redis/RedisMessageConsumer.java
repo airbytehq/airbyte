@@ -27,7 +27,7 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private final RedisNameTransformer nameTransformer;
 
-  private final RedisOpsProvider redisOpsProvider;
+  private final RedisCache redisCache;
 
   private AirbyteMessage lastMessage = null;
 
@@ -36,7 +36,7 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
                               Consumer<AirbyteMessage> outputRecordCollector) {
     this.configuredCatalog = configuredCatalog;
     this.outputRecordCollector = outputRecordCollector;
-    this.redisOpsProvider = new RedisOpsProvider(redisConfig);
+    this.redisCache = new RedisCache(redisConfig);
     this.nameTransformer = new RedisNameTransformer();
   }
 
@@ -46,9 +46,8 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
         .collect(Collectors.toUnmodifiableMap(
             AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam,
             k -> new RedisStreamConfig(
-                nameTransformer.outputNamespace(k.getStream().getNamespace()),
-                nameTransformer.outputKey(k.getStream().getName()),
-                nameTransformer.outputTmpKey(k.getStream().getName()),
+                nameTransformer.keyName(k.getStream().getNamespace(), k.getStream().getName()),
+                nameTransformer.tmpKeyName(k.getStream().getNamespace(), k.getStream().getName()),
                 k.getDestinationSyncMode())));
   }
 
@@ -62,7 +61,7 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
         throw new IllegalArgumentException("Unrecognized destination stream");
       }
       var data = Jsons.serialize(messageRecord.getData());
-      redisOpsProvider.insert(streamConfig.getNamespace(), streamConfig.getTmpKeyName(), data);
+      redisCache.insert(streamConfig.getTmpKey(), data);
     } else if (message.getType() == AirbyteMessage.Type.STATE) {
       this.lastMessage = message;
     } else {
@@ -77,11 +76,11 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
         try {
           switch (v.getDestinationSyncMode()) {
             case APPEND -> {
-              redisOpsProvider.rename(v.getNamespace(), v.getTmpKeyName(), v.getKeyName());
+              redisCache.rename(v.getTmpKey(), v.getKey());
             }
             case OVERWRITE -> {
-              redisOpsProvider.delete(v.getNamespace(), v.getKeyName());
-              redisOpsProvider.rename(v.getNamespace(), v.getTmpKeyName(), v.getKeyName());
+              redisCache.delete(v.getKey());
+              redisCache.rename(v.getTmpKey(), v.getKey());
             }
             default -> throw new UnsupportedOperationException("Unsupported destination sync mode");
           }
@@ -92,7 +91,7 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
       outputRecordCollector.accept(lastMessage);
     }
 
-    redisOpsProvider.close();
+    redisCache.close();
 
   }
 

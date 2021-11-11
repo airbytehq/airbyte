@@ -9,16 +9,16 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 
 class RedisNameTransformer extends StandardNameTransformer {
 
-  String outputNamespace(String namespace) {
-    return namespace == null || namespace.isBlank() ? "" : Names.toAlphanumericAndUnderscore(namespace);
+  String keyName(String namespace, String stream) {
+    namespace = namespace != null ? namespace : "";
+    var keyName = namespace + "_" + stream;
+    return Names.toAlphanumericAndUnderscore(keyName);
   }
 
-  String outputKey(String streamName) {
-    return super.getRawTableName(streamName);
-  }
-
-  String outputTmpKey(String streamName) {
-    return super.getTmpTableName(streamName);
+  String tmpKeyName(String namespace, String stream) {
+    namespace = namespace != null ? namespace : "";
+    var keyName = "tmp_" + namespace + "_" + stream;
+    return Names.toAlphanumericAndUnderscore(keyName);
   }
 
 }

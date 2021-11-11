@@ -8,11 +8,11 @@ import java.time.Instant;
 
 public class RedisRecord {
 
-  Long id;
+  private final Long id;
 
-  String data;
+  private final String data;
 
-  Instant timestamp;
+  private final Instant timestamp;
 
   public RedisRecord(Long id, String data, Instant timestamp) {
     this.id = id;

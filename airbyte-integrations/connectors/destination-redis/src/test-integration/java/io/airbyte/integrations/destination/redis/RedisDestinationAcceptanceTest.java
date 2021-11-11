@@ -20,7 +20,7 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private JsonNode configJson;
 
-  private RedisOpsProvider redisOpsProvider;
+  private RedisCache redisCache;
 
   private RedisNameTransformer redisNameTransformer;
 
@@ -33,17 +33,17 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    configJson = TestDataFactory.jsonConfig(
+    configJson = RedisDataFactory.jsonConfig(
         redisContainer.getHost(),
         redisContainer.getFirstMappedPort());
     var redisConfig = new RedisConfig(configJson);
-    redisOpsProvider = new RedisOpsProvider(redisConfig);
+    redisCache = new RedisCache(redisConfig);
     redisNameTransformer = new RedisNameTransformer();
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    redisOpsProvider.flush();
+    redisCache.flush();
   }
 
   @Override
@@ -58,7 +58,7 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return TestDataFactory.jsonConfig(
+    return RedisDataFactory.jsonConfig(
         "127.0.0.9",
         8080);
   }
@@ -73,9 +73,8 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
                                            String streamName,
                                            String namespace,
                                            JsonNode streamSchema) {
-    var nm = redisNameTransformer.outputNamespace(namespace);
-    var key = redisNameTransformer.outputKey(streamName);
-    return redisOpsProvider.getAll(nm, key).stream()
+    var key = redisNameTransformer.keyName(namespace, streamName);
+    return redisCache.getAll(key).stream()
         .sorted(Comparator.comparing(RedisRecord::getTimestamp))
         .map(RedisRecord::getData)
         .map(Jsons::deserialize)

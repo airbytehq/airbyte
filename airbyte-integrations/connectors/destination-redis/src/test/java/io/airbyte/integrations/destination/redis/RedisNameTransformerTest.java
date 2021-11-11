@@ -19,29 +19,16 @@ class RedisNameTransformerTest {
   }
 
   @Test
-  void testOutputKey() {
+  void testKeyName() {
 
-    var table = redisNameTransformer.outputKey("stream_name");
 
-    assertThat(table).matches("_airbyte_raw_stream_name");
 
   }
 
   @Test
-  void testOutputTmpKey() {
+  void testTmpKeyName() {
 
-    var table = redisNameTransformer.outputTmpKey("stream_name");
 
-    assertThat(table).matches("_airbyte_tmp_+[a-z]+_stream_name");
-
-  }
-
-  @Test
-  void testOutputNamespace() {
-
-    var keyspace = redisNameTransformer.outputNamespace("*keyspace^h");
-
-    assertThat(keyspace).matches("_keyspace_h");
 
   }
 
