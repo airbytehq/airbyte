@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -48,7 +49,7 @@ class ExchangeRates(HttpStream):
         response_json = response.json()
         yield response_json
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
         start_date = pendulum.parse(stream_state.get(self.date_field_name, self._start_date))
         return chunk_date_range(start_date)
@@ -61,7 +62,7 @@ class ExchangeRates(HttpStream):
         return current_stream_state
 
 
-def chunk_date_range(start_date: DateTime) -> Iterable[Mapping[str, any]]:
+def chunk_date_range(start_date: DateTime) -> Iterable[Mapping[str, Any]]:
     """
     Returns a list of each day between the start date and now. Ignore weekends since exchanges don't run on weekends.
     The return value is a list of dicts {'date': date_string}.
@@ -78,7 +79,7 @@ def chunk_date_range(start_date: DateTime) -> Iterable[Mapping[str, any]]:
 
 
 class SourceExchangeRates(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             params = {"access_key": config["access_key"]}
             base = config.get("base")

@@ -87,7 +87,6 @@ def createSpotlessTarget = { pattern ->
         'tools',
         'secrets',
         'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
-        'resources/seed/*_specs.yaml'
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -307,6 +306,16 @@ subprojects {
             licenseTask.dependsOn generateFilesTask
         }
     }
+}
+
+task('generate-docker') {
+    dependsOn(':airbyte-workers:assemble')
+    dependsOn(':airbyte-webapp:assemble')
+    dependsOn(':airbyte-server:assemble')
+    dependsOn(':airbyte-scheduler:app:assemble')
+    dependsOn(':airbyte-migration:assemble')
+    dependsOn(':airbyte-db:lib:assemble')
+    dependsOn(':airbyte-config:init:assemble')
 }
 
 // produce reproducible archives
