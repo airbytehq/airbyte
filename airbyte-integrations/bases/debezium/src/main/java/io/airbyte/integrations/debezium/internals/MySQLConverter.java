@@ -19,9 +19,9 @@ import org.slf4j.LoggerFactory;
  * https://debezium.io/documentation/reference/1.4/development/converters.html This is built from
  * reference with {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter} If you
  * rename this class then remember to rename the datetime.type property value in
- * {@link io.airbyte-integrations.source.mysql.MySqlCdcProperties#getDebeziumProperties()} (If you
- * don't rename, a test would still fail but it might be tricky to figure out where to change the
- * property name)
+ * io.airbyte-integrations.source.mysql.MySqlCdcProperties#getDebeziumProperties() (If you don't
+ * rename, a test would still fail but it might be tricky to figure out where to change the property
+ * name)
  */
 public class MySQLConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
 
