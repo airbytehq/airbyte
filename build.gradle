@@ -87,6 +87,7 @@ def createSpotlessTarget = { pattern ->
         'tools',
         'secrets',
         'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+        'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -126,7 +127,7 @@ check.dependsOn 'spotlessApply'
 
 @SuppressWarnings('GroovyAssignabilityCheck')
 def Task getDockerBuildTask(String artifactName, String projectDir) {
-    return task ("buildDockerImage-$artifactName" (type: DockerBuildImage) {
+    return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
         def buildTag = System.getenv('VERSION') ?: 'dev'
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
