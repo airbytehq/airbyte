@@ -13,6 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
 from .utils import get_parent_stream_values, transform_data
@@ -305,15 +306,25 @@ class SourceLinkedinAds(AbstractSource):
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any])-> TokenAuthenticator:
-        """Validate input parameters and generate a necessary Authentication object"""
+        """
+           Validate input parameters and generate a necessary Authentication object
+           This connectors support 2 auth methods:
+           1) direct access token with TTL = 2 months
+           2) refresh token (TTL = 1 year) which can be converted to access tokens
+              Every new refresh revokes all previous access tokens q
+        """
         auth_method = config.get("credentials", {}).get("credentials")
         if not auth_method or auth_method == "access_token":
             # support of backward compatibility with old exists configs
             access_token = config["credentials"]["access_token"] if auth_method else config["access_token"]
             return TokenAuthenticator(token=access_token)
         elif auth_method == "oAuth2.0":
-            raise Exception("aaaaaaaa %s" % config)
-
+            return Oauth2Authenticator(
+                token_refresh_endpoint="https://www.linkedin.com/oauth/v2/accessToken",
+                client_id=config["credentials"]["client_id"],
+                client_secret=config["credentials"]["client_secret"],
+                refresh_token=config["credentials"]["refresh_token"]
+            )
         raise Exception("incorrect input parameters")
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:

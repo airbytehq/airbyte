@@ -37,7 +37,7 @@
             "required": [
               "client_id",
               "client_secret",
-              "access_token"
+              "refresh_token"
             ],
             "properties": {
               "credentials": {
@@ -52,11 +52,6 @@
               "client_secret": {
                 "type": "string",
                 "description": "The API Secret the Gitlab developer application.",
-                "airbyte_secret": true
-              },
-              "access_token": {
-                "type": "string",
-                "description": "Access Token for making authenticated requests.",
                 "airbyte_secret": true
               },
               "refresh_token": {
@@ -105,9 +100,6 @@
         ]
       ],
       "oauthFlowOutputParameters": [
-        [
-          "access_token"
-        ],
         [
           "refresh_token"
         ]
