@@ -246,7 +246,10 @@ public class ServerApp implements ServerRunnable {
       LOGGER.info("Starting server...");
 
       runFlywayMigration(configs, configDatabase, jobDatabase);
+      LOGGER.info("Ran Flyway migrations...");
+
       configPersistence.loadData(seed);
+      LOGGER.info("Loaded seed data...");
 
       // todo (lmossman) - this will only exist temporarily to ensure all definitions contain specs. It
       // will be removed after the faux major version bump
@@ -256,6 +259,7 @@ public class ServerApp implements ServerRunnable {
           trackingClient,
           configs.getWorkerEnvironment(),
           configs.getLogConfigs());
+      LOGGER.info("Migrated all definitions to contain specs...");
 
       return apiFactory.create(
           schedulerJobClient,
