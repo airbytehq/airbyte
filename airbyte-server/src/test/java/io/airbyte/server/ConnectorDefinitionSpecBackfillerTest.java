@@ -27,9 +27,10 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
@@ -56,8 +57,8 @@ class ConnectorDefinitionSpecBackfillerTest {
   private static final StandardWorkspace WORKSPACE = new StandardWorkspace().withWorkspaceId(UUID.randomUUID());
 
   private ConfigRepository configRepository;
-  private ConfigPersistence database;
-  private ConfigPersistence seed;
+  private DatabaseConfigPersistence database;
+  private YamlSeedConfigPersistence seed;
   private TrackingClient trackingClient;
   private SynchronousSchedulerClient schedulerClient;
   private Configs configs;
@@ -67,8 +68,8 @@ class ConnectorDefinitionSpecBackfillerTest {
     configRepository = mock(ConfigRepository.class);
     when(configRepository.listStandardWorkspaces(true)).thenReturn(List.of(WORKSPACE));
 
-    database = mock(ConfigPersistence.class);
-    seed = mock(ConfigPersistence.class);
+    database = mock(DatabaseConfigPersistence.class);
+    seed = mock(YamlSeedConfigPersistence.class);
     trackingClient = mock(TrackingClient.class);
     schedulerClient = mock(SynchronousSchedulerClient.class);
     configs = mock(Configs.class);
@@ -90,7 +91,7 @@ class ConnectorDefinitionSpecBackfillerTest {
     when(configRepository.listStandardSourceDefinitions()).thenReturn(List.of(sourceDef));
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(destDef));
     // source def is in use but not in seed, should be backfilled
-    when(database.getConnectorReposInUse()).thenReturn(Set.of(SOURCE_DOCKER_REPO));
+    when(database.getInUseConnectorDockerImageNames()).thenReturn(Set.of(SOURCE_DOCKER_REPO));
     when(seed.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)).thenReturn(List.of());
     // dest def is not in use but is in seed, should be backfilled
     when(seed.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)).thenReturn(List.of(destDef));
@@ -138,7 +139,7 @@ class ConnectorDefinitionSpecBackfillerTest {
     when(configRepository.listStandardSourceDefinitions()).thenReturn(List.of(sourceDef));
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(destDef));
     // both source and destination definitions are not in use and are not in the seed, should be deleted
-    when(database.getConnectorReposInUse()).thenReturn(Set.of());
+    when(database.getInUseConnectorDockerImageNames()).thenReturn(Set.of());
     when(seed.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)).thenReturn(List.of());
     when(seed.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)).thenReturn(List.of());
 
@@ -173,7 +174,7 @@ class ConnectorDefinitionSpecBackfillerTest {
     when(configRepository.listStandardSourceDefinitions()).thenReturn(List.of(sourceDef));
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(destDef));
     // both source and destination definitions are in use, so should be backfilled
-    when(database.getConnectorReposInUse()).thenReturn(Set.of(SOURCE_DOCKER_REPO, DEST_DOCKER_REPO));
+    when(database.getInUseConnectorDockerImageNames()).thenReturn(Set.of(SOURCE_DOCKER_REPO, DEST_DOCKER_REPO));
 
     final SynchronousResponse<ConnectorSpecification> failureSourceResponse = new SynchronousResponse<>(
         null,
@@ -195,10 +196,10 @@ class ConnectorDefinitionSpecBackfillerTest {
         schedulerClient,
         trackingClient,
         configs))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessageContaining(
-                "Specs could not be retrieved for the following connector images: ["
-                    + SOURCE_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG + ", " + DEST_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG + "]");
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining(
+            "Specs could not be retrieved for the following connector images: ["
+                + SOURCE_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG + ", " + DEST_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG + "]");
 
     verify(configRepository, never()).writeStandardSourceDefinition(any());
     verify(configRepository, never()).writeStandardDestinationDefinition(any());
@@ -221,7 +222,7 @@ class ConnectorDefinitionSpecBackfillerTest {
     when(configRepository.listStandardSourceDefinitions()).thenReturn(List.of(sourceDef));
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(destDef));
     // both source and destination definitions are in use, so should be backfilled
-    when(database.getConnectorReposInUse()).thenReturn(Set.of(SOURCE_DOCKER_REPO, DEST_DOCKER_REPO));
+    when(database.getInUseConnectorDockerImageNames()).thenReturn(Set.of(SOURCE_DOCKER_REPO, DEST_DOCKER_REPO));
 
     final SourceConnection sourceConnection = new SourceConnection().withSourceId(UUID.randomUUID())
         .withSourceDefinitionId(sourceDef.getSourceDefinitionId());

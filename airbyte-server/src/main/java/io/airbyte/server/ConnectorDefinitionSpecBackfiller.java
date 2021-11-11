@@ -20,6 +20,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
@@ -41,20 +42,19 @@ public class ConnectorDefinitionSpecBackfiller {
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorDefinitionSpecBackfiller.class);
 
   /**
-   * Check that each spec in the database has a spec. If it doesn't, add it. If it can't be added,
-   * delete the connector definition or fail according to the VERSION_0_31_0_FORCE_UPGRADE env var.
-   * The goal is to try to end up in a state where all definitions in the db contain specs, or fail
+   * Check that each spec in the database has a spec. If it doesn't, add it. If it can't be added, delete the connector definition or fail according
+   * to the VERSION_0_31_0_FORCE_UPGRADE env var. The goal is to try to end up in a state where all definitions in the db contain specs, or fail
    * otherwise.
    *
    * @param configRepository - access to the db
-   * @param database - access to the db at a lower level (for deleting connections and syncs)
-   * @param schedulerClient - scheduler client so that specs can be fetched as needed
-   * @param trackingClient - tracking client for reporting failures to Segment
-   * @param configs - for retrieving various configs (env vars, worker environment, logs)
+   * @param database         - access to the db at a lower level (for deleting connections and syncs)
+   * @param schedulerClient  - scheduler client so that specs can be fetched as needed
+   * @param trackingClient   - tracking client for reporting failures to Segment
+   * @param configs          - for retrieving various configs (env vars, worker environment, logs)
    */
   @VisibleForTesting
   static void migrateAllDefinitionsToContainSpec(final ConfigRepository configRepository,
-                                                 final ConfigPersistence database,
+                                                 final DatabaseConfigPersistence database,
                                                  final ConfigPersistence seed,
                                                  final SynchronousSchedulerClient schedulerClient,
                                                  final TrackingClient trackingClient,
@@ -64,7 +64,7 @@ public class ConnectorDefinitionSpecBackfiller {
 
     final JobConverter jobConverter = new JobConverter(configs.getWorkerEnvironment(), configs.getLogConfigs());
 
-    final Set<String> connectorReposInUse = database.getConnectorReposInUse();
+    final Set<String> connectorReposInUse = database.getInUseConnectorDockerImageNames();
 
     final List<String> seedSourceRepos = seed.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)
         .stream()
@@ -217,13 +217,13 @@ public class ConnectorDefinitionSpecBackfiller {
   }
 
   private static <T> void deleteConnectorDefinition(
-                                                    final ConfigPersistence configPersistence,
-                                                    final ConfigSchema definitionType,
-                                                    final ConfigSchema connectorType,
-                                                    final Class<T> connectorClass,
-                                                    final Function<T, UUID> connectorIdGetter,
-                                                    final Function<T, UUID> connectorDefinitionIdGetter,
-                                                    final UUID definitionId)
+      final ConfigPersistence configPersistence,
+      final ConfigSchema definitionType,
+      final ConfigSchema connectorType,
+      final Class<T> connectorClass,
+      final Function<T, UUID> connectorIdGetter,
+      final Function<T, UUID> connectorDefinitionIdGetter,
+      final UUID definitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final Set<T> connectors = configPersistence.listConfigs(connectorType, connectorClass)
         .stream()

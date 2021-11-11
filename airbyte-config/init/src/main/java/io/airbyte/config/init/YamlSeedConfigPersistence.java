@@ -24,13 +24,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This config persistence contains all seed definitions according to the yaml files. It is
- * read-only.
+ * This config persistence contains all seed definitions according to the yaml files. It is read-only.
  */
 public class YamlSeedConfigPersistence implements ConfigPersistence {
 
@@ -68,11 +66,11 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * Merges the corresponding spec JSON into the definition JSON. This is necessary because specs are
-   * stored in a separate resource file from definitions.
+   * Merges the corresponding spec JSON into the definition JSON. This is necessary because specs are stored in a separate resource file from
+   * definitions.
    *
    * @param definitionJson JSON of connector definition that is missing a spec
-   * @param specConfigs map of docker image to JSON of docker image/connector spec pair
+   * @param specConfigs    map of docker image to JSON of docker image/connector spec pair
    * @return JSON of connector definition including the connector spec
    */
   private JsonNode mergeSpecIntoDefinition(final JsonNode definitionJson, final Map<String, JsonNode> specConfigs) {
@@ -151,11 +149,6 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   @Override
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
-  }
-
-  @Override
-  public Set<String> getConnectorReposInUse() throws IOException {
-    throw new UnsupportedOperationException("The seed config persistence does not support retrieving connectors in use.");
   }
 
 }
