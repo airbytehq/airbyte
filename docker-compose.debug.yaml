@@ -12,7 +12,7 @@ services:
     ports:
       - 8011:5432
   airbyte-temporal-ui:
-    image: temporalio/web:latest
+    image: temporalio/web:1.13.0
     logging: *default-logging
     container_name: airbyte-temporal-ui
     restart: unless-stopped
