@@ -16,6 +16,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 from .helpers import Helpers
 
+
 # Basic full refresh stream
 class AirtableStream(HttpStream, ABC):
     url_base = "https://api.airtable.com/v0/"
@@ -91,7 +92,7 @@ class SourceAirtable(AbstractSource):
         for table in config["tables"]:
             record = Helpers.get_first_row(auth, config["base_id"], table)
             json_schema = Helpers.get_json_schema(record)
-            airbyte_stream = Helpers.get_aribyte_stream(table, json_schema)
+            airbyte_stream = Helpers.get_airbyte_stream(table, json_schema)
             streams.append(airbyte_stream)
         return AirbyteCatalog(streams=streams)
 

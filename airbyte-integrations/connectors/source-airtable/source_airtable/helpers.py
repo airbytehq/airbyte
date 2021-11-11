@@ -3,11 +3,12 @@
 #
 
 
+from typing import Any, Dict
+
 import requests
-from typing import List, Dict, Any
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class Helpers(object):
@@ -47,7 +48,7 @@ class Helpers(object):
         return json_schema
 
     @staticmethod
-    def get_aribyte_stream(table: str, json_schema: Dict[str, Any]) -> AirbyteStream:
+    def get_airbyte_stream(table: str, json_schema: Dict[str, Any]) -> AirbyteStream:
         return AirbyteStream(
             name=table,
             json_schema=json_schema,

@@ -2,16 +2,35 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-from requests.exceptions import HTTPError
+from airbyte_cdk.models import AirbyteCatalog, ConnectorSpecification
 from source_airtable.source import SourceAirtable
 
 
-def test_check_connection_failure(mocker, test_config):
+def test_spec():
     source = SourceAirtable()
     logger_mock = MagicMock()
-    response = source.check_connection(logger_mock, test_config)
+    spec = source.spec(logger_mock)
+    assert isinstance(spec, ConnectorSpecification)
 
-    assert response[0] is False
-    assert type(response[1]) == HTTPError
+
+@patch("requests.get")
+def test_discover(test_config):
+    source = SourceAirtable()
+    logger_mock = MagicMock()
+    response = source.discover(logger_mock, test_config)
+    assert isinstance(response, AirbyteCatalog)
+
+
+@patch("requests.get")
+def test_check_connection(test_config):
+    source = SourceAirtable()
+    logger_mock = MagicMock()
+    assert source.check_connection(logger_mock, test_config) == (True, None)
+
+
+@patch("requests.get")
+def test_streams(test_config):
+    source = SourceAirtable()
+    source.streams(test_config)
