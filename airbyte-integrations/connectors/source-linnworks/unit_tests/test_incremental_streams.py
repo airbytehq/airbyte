@@ -89,32 +89,67 @@ def test_stream_checkpoint_interval(patch_incremental_base_class):
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
 
 
+def date(*args):
+    return pendulum.datetime(*args).isoformat()
+
+
 @pytest.mark.parametrize(
-    ("now", "stream_state", "expected_from_date", "expected_to_date"),
+    ("now", "stream_state", "slice_count", "expected_from_date", "expected_to_date"),
     [
-        (None, None, "2050-01-01T00:00:00+00:00", "2050-01-01T00:00:00+00:00"),
-        ("2050-01-02T00:00:00+00:00", None, "2050-01-01T00:00:00+00:00", "2050-01-03T00:00:00+00:00"),
-        (None, {"dReceivedDate": "2050-01-04T00:00:00+00:00"}, "2050-01-04T00:00:00+00:00", "2050-01-04T00:00:00+00:00"),
+        (None, None, 24, date(2050, 1, 1), date(2050, 1, 2)),
+        (date(2050, 1, 2), None, 48, date(2050, 1, 1), date(2050, 1, 3)),
+        (None, {"dReceivedDate": date(2050, 1, 4)}, 1, date(2050, 1, 4), date(2050, 1, 4)),
         (
-            "2050-01-05T00:00:00+00:00",
-            {"dReceivedDate": "2050-01-04T00:00:00+00:00"},
-            "2050-01-04T00:00:00+00:00",
-            "2050-01-06T00:00:00+00:00",
+            date(2050, 1, 5),
+            {"dReceivedDate": date(2050, 1, 4)},
+            48,
+            date(2050, 1, 4),
+            date(2050, 1, 6),
+        ),
+        (
+            # Yearly
+            date(2052, 1, 1),
+            {"dReceivedDate": date(2050, 1, 1)},
+            25,
+            date(2050, 1, 1),
+            date(2052, 1, 2),
+        ),
+        (
+            # Monthly
+            date(2050, 4, 1),
+            {"dReceivedDate": date(2050, 1, 1)},
+            13,
+            date(2050, 1, 1),
+            date(2050, 4, 2),
+        ),
+        (
+            # Weekly
+            date(2050, 1, 31),
+            {"dReceivedDate": date(2050, 1, 1)},
+            5,
+            date(2050, 1, 1),
+            date(2050, 2, 1),
+        ),
+        (
+            # Daily
+            date(2050, 1, 1, 23, 59, 59),
+            {"dReceivedDate": date(2050, 1, 1)},
+            24,
+            date(2050, 1, 1),
+            date(2050, 1, 2),
         ),
     ],
 )
-def test_processed_orders_stream_slices(patch_incremental_base_class, now, stream_state, expected_from_date, expected_to_date):
-    start_date = "2050-01-01T00:00:00+00:00"
+def test_processed_orders_stream_slices(patch_incremental_base_class, now, stream_state, slice_count, expected_from_date, expected_to_date):
+    start_date = date(2050, 1, 1)
+    pendulum.set_test_now(pendulum.parse(now if now else start_date))
+
     stream = ProcessedOrders(start_date=start_date)
+    stream_slices = list(stream.stream_slices(stream_state))
 
-    if now:
-        now_date = pendulum.parse(now)
-        pendulum.set_test_now(now_date)
-
-    stream_slices = stream.stream_slices(stream_state)
-
+    assert len(stream_slices) == slice_count
     assert stream_slices[0]["FromDate"] == expected_from_date
-    assert stream_slices[0]["ToDate"] == expected_to_date
+    assert stream_slices[-1]["ToDate"] == expected_to_date
 
 
 @pytest.mark.parametrize(

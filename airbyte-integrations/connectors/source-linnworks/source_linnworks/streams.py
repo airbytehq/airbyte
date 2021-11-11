@@ -195,14 +195,25 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
         if not stream_state:
             stream_state = {}
 
-        from_date = stream_state.get(self.cursor_field, self.start_date)
-        to_date = pendulum.tomorrow("UTC").isoformat()
-        return [
-            {
-                "FromDate": from_date,
-                "ToDate": max(from_date, to_date),
-            }
-        ]
+        from_date = pendulum.parse(stream_state.get(self.cursor_field, self.start_date))
+        end_date = max(from_date, pendulum.tomorrow("UTC"))
+
+        date_diff = end_date - from_date
+        if date_diff.years > 0:
+            interval = pendulum.duration(months=1)
+        elif date_diff.months > 0:
+            interval = pendulum.duration(weeks=1)
+        elif date_diff.weeks > 0:
+            interval = pendulum.duration(days=1)
+        else:
+            interval = pendulum.duration(hours=1)
+
+        while True:
+            to_date = min(from_date + interval, end_date)
+            yield {"FromDate": from_date.isoformat(), "ToDate": to_date.isoformat()}
+            from_date = to_date
+            if from_date >= end_date:
+                break
 
     def request_body_data(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
