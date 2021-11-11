@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
