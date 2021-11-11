@@ -8,7 +8,3 @@ airbytePython {
     moduleDirectory 'source_{{snakeCase name}}'
 }
 
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
-    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
-}
