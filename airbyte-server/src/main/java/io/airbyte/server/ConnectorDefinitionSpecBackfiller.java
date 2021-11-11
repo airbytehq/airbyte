@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.LogRead;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 public class ConnectorDefinitionSpecBackfiller {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorDefinitionSpecBackfiller.class);
+  private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.31.0-alpha");
 
   /**
    * Check that each spec in the database has a spec. If it doesn't, add it. If it can't be added,
@@ -187,11 +189,12 @@ public class ConnectorDefinitionSpecBackfiller {
 
     if (failedBackfillImages.size() > 0 && !configs.getVersion31ForceUpgrade()) {
       throw new RuntimeException(String.format(
-          "migrateAllDefinitionsToContainSpec - Specs could not be retrieved for the following connector images: %s. Upgrading to version 0.31.0 "
+          "migrateAllDefinitionsToContainSpec - Specs could not be retrieved for the following connector images: %s. Upgrading to version %s "
               + "requires specs to be retrieved for all connector definitions, so you must either fix the images or restart the deployment with "
               + "the VERSION_0_31_0_FORCE_UPGRADE environment variable set to true, which will cause any connector definitions for which specs "
               + "cannot be retrieved to be deleted, as well as their associated connections/syncs.",
-          failedBackfillImages.toString()));
+          failedBackfillImages.toString(),
+          VERSION_BREAK));
     }
   }
 
