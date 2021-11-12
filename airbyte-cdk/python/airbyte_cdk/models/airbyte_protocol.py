@@ -114,25 +114,30 @@ class AuthSpecification(BaseModel):
 
 
 class AuthFlowType(Enum):
+    oauth1_0 = "oauth1.0"
     oauth2_0 = "oauth2.0"
 
 
-class OAuth2ConfigSpecification(BaseModel):
-    input_specification: Optional[Dict[str, Any]] = Field(
+class OAuthConfigSpecification(BaseModel):
+    oauth_user_input_from_connector_config_specification: Optional[Dict[str, Any]] = Field(
         None,
-        description="OAuth2 specific blob. Must be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification using special annotation 'path_in_connector_config'.",
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.\nMust be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification\nusing special annotation 'path_in_connector_config'.\nThese are input values the user is entering through the UI to configure the connector, that are also shared\nas requirements for the OAuth flow when interacting with the distant API OAuth urls.\n\nExamples:\n\nif no connector values is shared during oauth flow, oauth_user_input_from_connector_config_specification=[]\nif connector values such as 'app_id' inside the top level are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['app_id']\n    }\n  }\nif connector values such as 'info.app_id' nested inside another object are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['info', 'app_id']\n    }\n  }",
     )
-    parameter_specification: Optional[Dict[str, Any]] = Field(
+    complete_oauth_output_root_path_in_connector_config: Optional[List[str]] = Field(
         None,
-        description="OAuth2 specific blob. Must be a valid non-nested JSON to be injected at runtime for using OAuth flow APIs.",
+        description="Json Path describing where in 'ConnectorSpecification.connectionSpecification' outputs should be written to.\nThis can be overridden by annotation `path_in_connector_config`, otherwise all outputs should be written at the same root node located\nat this path.\n\nExamples:\n\n  if oauth properties were contained inside the top level, complete_oauth_output_root_path_in_connector_config=[]\n  If they were nested inside another object {'credentials': {'refresh_token', 'app_id' etc...}, complete_oauth_output_root_path_in_connector_config=['credentials']\n  If they were inside a oneOf {'switch': {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=['switch']",
     )
-    connector_auth_root_path: Optional[List[str]] = Field(
+    complete_oauth_output_specification: Optional[Dict[str, Any]] = Field(
         None,
-        description="Json Path describing where in ConnectorSpecification.connectionSpecification oauth outputs should be written to.",
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations produced by the OAuth flows as they are\nreturned by the distant OAuth APIs.\nMust be a valid JSON describing the fields to merge back to `ConnectorSpecification.connectionSpecification`.\nFor each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,\nor it would fallback to `complete_oauth_output_root_path_in_connector_config`.\n\nExamples:\n\n    complete_oauth_output_root_path_in_connector_config=['credentials'],\n    complete_oauth_output_specification={\n      refresh_token: {\n        type: string\n      }\n    }\n\nis similar to:\n\n    complete_oauth_output_root_path_in_connector_config=[],\n    complete_oauth_output_specification={\n      refresh_token: {\n        type: string,\n        path_in_connector_config: ['credentials']\n      }\n    }\n\nOr combined to merge under a different root node in the connector config:\n\n    complete_oauth_output_root_path_in_connector_config=['credentials'],\n      complete_oauth_output_specification={\n        refresh_token: {\n          type: string\n        },\n        refreshed_at: {\n          type: string,\n          path_in_connector_config: ['audit_metadata', 'oauth']\n        }\n      }",
     )
-    output_specification: Optional[Dict[str, Any]] = Field(
+    complete_oauth_server_input_parameter_specification: Optional[Dict[str, Any]] = Field(
         None,
-        description="OAuth2 specific blob. Must be a valid JSON describing the fields to merge back to ConnectorSpecification.connectionSpecification using the special annotation 'connector_auth_root_path'.",
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations.\nMust be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the\nserver when using OAuth flow APIs.\n\nExamples:\n\n    complete_oauth_server_input_parameter_specification={\n      client_id: {\n        type: string\n      },\n      client_secret: {\n        type: string\n      }\n    }",
+    )
+    complete_oauth_server_output_parameter_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that\nalso need to be merged back into the connector configuration at runtime.\nThis is a subset configuration of `complete_oauth_server_input_parameter_specification` that filters fields out to retain only the ones that\nare necessary for the connector to function with OAuth.\nMust be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the\nconnector when using OAuth flow APIs.\nThese fields are to be merged back to `ConnectorSpecification.connectionSpecification`.\nFor each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,\nor it would fallback to `complete_oauth_output_root_path_in_connector_config`.\n\nExamples:\n\n      complete_oauth_output_root_path_in_connector_config=['credentials'],\n      complete_oauth_server_output_parameter_specification={\n        client_id: {\n          type: string\n        },\n        client_secret: {\n          type: string,\n          path_in_connector_config: ['credentials', 'secret']\n        }\n      }",
     )
 
 
@@ -188,7 +193,7 @@ class AdvancedAuth(BaseModel):
         None,
         description="Value of the predicate_key fields for the advanced auth to be applicable.",
     )
-    oauth2_specification: Optional[OAuth2ConfigSpecification] = None
+    oauth_config_specification: Optional[OAuthConfigSpecification] = None
 
 
 class ConnectorSpecification(BaseModel):
@@ -207,8 +212,11 @@ class ConnectorSpecification(BaseModel):
     supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
         None, description="List of destination sync modes supported by the connector"
     )
-    authSpecification: Optional[AuthSpecification] = Field(None, description="deprecated, switching to connection_auth instead")
-    advanced_auth: Optional[AdvancedAuth] = None
+    authSpecification: Optional[AuthSpecification] = Field(None, description="deprecated, switching to advanced_auth instead")
+    advanced_auth: Optional[AdvancedAuth] = Field(
+        None,
+        description="Additional and optional specification object to describe what an 'advanced' Auth flow would need to function.\n  - A connector should be able to fully function with the configuration as described by the ConnectorSpecification in a 'basic' mode.\n  - The 'advanced' mode provides easier UX for the user with UI improvements and automations. However, this requires further setup on the\n  server side by instance or workspace admins beforehand. The trade-off is that the user does not have to provide as many technical\n  inputs anymore and the auth process is faster and easier to complete.",
+    )
 
 
 class AirbyteCatalog(BaseModel):
