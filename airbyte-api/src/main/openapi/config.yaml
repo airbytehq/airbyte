@@ -3227,7 +3227,7 @@ components:
           items:
             $ref: "#/components/schemas/DbMigrationRead"
     # OAuth
-    AuthInputConfiguration:
+    OAuthInputConfiguration:
       description: The values required to configure OAuth flows. The schema for this must match the authSpecification schema.
     SourceOauthConsentRequest:
       type: object
@@ -3243,8 +3243,8 @@ components:
         redirectUrl:
           description: The url to redirect to after getting the user consent
           type: string
-        authInputConfiguration:
-          $ref: "#/components/schemas/AuthInputConfiguration"
+        oAuthInputConfiguration:
+          $ref: "#/components/schemas/OAuthInputConfiguration"
     DestinationOauthConsentRequest:
       type: object
       required:
@@ -3259,8 +3259,8 @@ components:
         redirectUrl:
           description: The url to redirect to after getting the user consent
           type: string
-        authInputConfiguration:
-          $ref: "#/components/schemas/AuthInputConfiguration"
+        oAuthInputConfiguration:
+          $ref: "#/components/schemas/OAuthInputConfiguration"
     OAuthConsentRead:
       type: object
       required:
@@ -3285,8 +3285,8 @@ components:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
-        authInputConfiguration:
-          $ref: "#/components/schemas/AuthInputConfiguration"
+        oAuthInputConfiguration:
+          $ref: "#/components/schemas/OAuthInputConfiguration"
     CompleteDestinationOAuthRequest:
       type: object
       required:
@@ -3304,8 +3304,8 @@ components:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
-        authInputConfiguration:
-          $ref: "#/components/schemas/AuthInputConfiguration"
+        oAuthInputConfiguration:
+          $ref: "#/components/schemas/OAuthInputConfiguration"
     CompleteOAuthResponse:
       type: object
       additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance
