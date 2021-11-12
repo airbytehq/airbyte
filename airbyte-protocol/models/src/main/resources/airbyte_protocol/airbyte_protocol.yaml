@@ -336,8 +336,8 @@ definitions:
           OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.
           Must be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification
           using special annotation 'path_in_connector_config'.
-          These are input values the user is entering through the UI to configure the connector, that are also shared
-          as requirements for the OAuth flow when interacting with the distant API OAuth urls.
+          These are input values the user is entering through the UI to authenticate to the connector, that might also shared
+          as inputs for syncing data via the connector.
 
           Examples:
 
@@ -417,7 +417,7 @@ definitions:
         description: |-
           OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations.
           Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
-          server when using OAuth flow APIs.
+          server when completing an OAuth flow (typically exchanging an auth code for refresh token).
 
           Examples:
 
