@@ -1413,8 +1413,31 @@ paths:
     post:
       tags:
         - web_backend
-      summary: Returns all connections for a workspace.
+      summary: Returns all non-deleted connections for a workspace.
       operationId: webBackendListConnectionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionReadList"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/connections/listall:
+    post:
+      tags:
+        - web_backend
+      summary: Returns all connections for a workspace.
+      operationId: webBackendListAllConnectionsForWorkspace
       requestBody:
         content:
           application/json:
