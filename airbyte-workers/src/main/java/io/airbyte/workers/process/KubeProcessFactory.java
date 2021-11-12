@@ -134,6 +134,9 @@ public class KubeProcessFactory implements ProcessFactory {
           WorkerUtils.DEFAULT_WORKER_POD_TOLERATIONS,
           WorkerUtils.DEFAULT_WORKER_POD_NODE_SELECTORS,
           allLabels,
+          WorkerUtils.JOB_SOCAT_IMAGE,
+          WorkerUtils.JOB_BUSYBOX_IMAGE,
+          WorkerUtils.JOB_CURL_IMAGE,
           args);
     } catch (final Exception e) {
       throw new WorkerException(e.getMessage(), e);

@@ -75,6 +75,12 @@ public interface Configs {
 
   Map<String, String> getWorkerNodeSelectors();
 
+  String getJobSocatImage();
+
+  String getJobBusyboxImage();
+
+  String getJobCurlImage();
+
   MaxWorkersConfig getMaxWorkers();
 
   String getTemporalHost();
