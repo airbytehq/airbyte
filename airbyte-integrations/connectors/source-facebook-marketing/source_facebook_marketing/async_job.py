@@ -53,7 +53,9 @@ class AsyncJob:
         if not self._job and not self.failed:
             raise RuntimeError(f"{self}: Incorrect usage of the restart - only failed jobs can be restarted")
 
+        self._job = None
         self._failed = False
+        self._start_time = None
         self._finish_time = None
         self.start()
         logger.info(f"{self}: restarted")
