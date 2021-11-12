@@ -115,7 +115,7 @@ public interface Configs {
 
   boolean getPublishMetrics();
 
-  boolean getVersion31ForceUpgrade();
+  boolean getVersion32ForceUpgrade();
 
   SecretPersistenceType getSecretPersistenceType();
 
