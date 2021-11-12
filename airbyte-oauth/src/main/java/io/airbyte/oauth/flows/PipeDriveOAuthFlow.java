@@ -18,20 +18,19 @@ import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 /**
- * Following docs from https://marketingapi.snapchat.com/docs/#authentication
+ * Following docs from https://pipedrive.readme.io/docs/marketplace-oauth-authorization
  */
-public class SnapchatMarketingOAuthFlow extends BaseOAuth2Flow {
+public class PipeDriveOAuthFlow extends BaseOAuth2Flow {
 
-  private static final String AUTHORIZE_URL = "https://accounts.snapchat.com/login/oauth2/authorize";
-  private static final String ACCESS_TOKEN_URL = "https://accounts.snapchat.com/login/oauth2/access_token";
-  private static final String SCOPES = "snapchat-marketing-api";
+  final String AUTHORIZE_URL = "https://oauth.pipedrive.com/oauth/authorize";
+  final String ACCESS_TOKEN_URL = "https://oauth.pipedrive.com/oauth/token";
 
-  public SnapchatMarketingOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
+  public PipeDriveOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
   @VisibleForTesting
-  SnapchatMarketingOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+  public PipeDriveOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
@@ -41,18 +40,11 @@ public class SnapchatMarketingOAuthFlow extends BaseOAuth2Flow {
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
-          .addParameter("response_type", "code")
-          .addParameter("scope", SCOPES)
           .addParameter("state", getState())
           .build().toString();
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
-  }
-
-  @Override
-  protected String getAccessTokenUrl() {
-    return ACCESS_TOKEN_URL;
   }
 
   @Override
@@ -67,8 +59,13 @@ public class SnapchatMarketingOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
+  protected String getAccessTokenUrl() {
+    return ACCESS_TOKEN_URL;
+  }
+
+  @Override
   protected List<String> getDefaultOAuthOutputPath() {
-    return List.of();
+    return List.of("authorization");
   }
 
 }
