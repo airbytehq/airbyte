@@ -70,7 +70,7 @@ public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
-    database.query(ctx -> ctx.fetch("SET @@sql_mode=''"));
+    database.query(ctx -> ctx.execute("SET @@sql_mode=''"));
 
     return database;
   }
