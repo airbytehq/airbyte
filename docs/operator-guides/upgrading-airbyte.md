@@ -14,7 +14,8 @@ If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes.md
 
 **If your current version of airbyte is < v0.31.0-alpha, you first need to upgrade to this version before upgrading to any later version.**
 
-The reason for this is that there are breaking changes made in v0.31.0-alpha, and the logic for these changes is removed in later versions, making it impossible to upgrade directly.
+The reason for this is that there are breaking changes made in v0.31.0-alpha, and the logic for these changes is removed in later versions, making it impossible to upgrade directly. 
+To upgrade to v0.31.0-alpha, follow the steps in the following sections, but replace the `docker pull` or `wget` commands with the following:
 
 1. If you are in a cloned Airbyte repo, v0.31.0-alpha can be pulled from GitHub with
 
