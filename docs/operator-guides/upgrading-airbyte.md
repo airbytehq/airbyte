@@ -23,7 +23,7 @@ To upgrade to v0.31.0-alpha, follow the steps in the following sections, but rep
    git checkout v0.31.0-alpha
    ```
 
-2. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/0623914f10663d50849db8422dbc0acde020716b/{.env,docker-compose.yaml}` to pull this version and overwrite both files.
+2. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/v0.31.0-alpha/{.env,docker-compose.yaml}` to pull this version and overwrite both files.
 
 As a warning, this upgrade requires specs to be retrieved for all connectors that currently exist in your database. So, if specs cannot be retrieved for any of your connector images, server startup will fail. In this case you must either fix the image so that spec retrieval is successful, or set the `VERSION_0_31_0_FORCE_UPGRADE` environment variable to `true`, which will cause the server to delete any connectors for which specs cannot be retrieved, as well as any connections built on top of them.
 
