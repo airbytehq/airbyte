@@ -26,7 +26,7 @@
         "type": "string",
         "description": "Please select type of schema 'fixed' or 'dynamic'. Fixed will use same schema for all forms and dynamic will change schema depending on the questions of the form",
         "enum": ["fixed", "dynamic"],
-        "examples": ["fixed or dynamic"]
+        "examples": ["Fixed or Dynamic"]
       }
     }
   }
