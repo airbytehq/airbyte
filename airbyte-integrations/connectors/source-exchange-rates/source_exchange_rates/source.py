@@ -23,11 +23,12 @@ class ExchangeRates(HttpStream):
     cursor_field = date_field_name
     primary_key = ""
 
-    def __init__(self, base: Optional[str], start_date: DateTime, access_key: str):
+    def __init__(self, base: Optional[str], start_date: DateTime, access_key: str, ignore_weekends: Optional[bool]):
         super().__init__()
         self._base = base
         self._start_date = start_date
         self.access_key = access_key
+        self.ignore_weekends = ignore_weekends
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -51,18 +52,20 @@ class ExchangeRates(HttpStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
-        start_date = pendulum.parse(stream_state.get(self.date_field_name, self._start_date))
-        return chunk_date_range(start_date)
+        start_date = pendulum.parse(stream_state.get(
+            self.date_field_name, self._start_date))
+        return chunk_date_range(start_date, self.ignore_weekends)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         current_stream_state = current_stream_state or {}
         current_stream_state[self.date_field_name] = max(
-            latest_record[self.date_field_name], current_stream_state.get(self.date_field_name, self._start_date)
+            latest_record[self.date_field_name], current_stream_state.get(
+                self.date_field_name, self._start_date)
         )
         return current_stream_state
 
 
-def chunk_date_range(start_date: DateTime) -> Iterable[Mapping[str, Any]]:
+def chunk_date_range(start_date: DateTime, ignore_weekends: bool) -> Iterable[Mapping[str, Any]]:
     """
     Returns a list of each day between the start date and now. Ignore weekends since exchanges don't run on weekends.
     The return value is a list of dicts {'date': date_string}.
@@ -71,7 +74,7 @@ def chunk_date_range(start_date: DateTime) -> Iterable[Mapping[str, Any]]:
     now = pendulum.now()
     while start_date < now:
         day_of_week = start_date.day_of_week
-        if day_of_week != pendulum.SATURDAY and day_of_week != pendulum.SUNDAY:
+        if day_of_week != pendulum.SATURDAY and day_of_week != pendulum.SUNDAY or not ignore_weekends:
             days.append({"date": start_date.to_date_string()})
         start_date = start_date.add(days=1)
 
@@ -86,7 +89,8 @@ class SourceExchangeRates(AbstractSource):
             if base is not None:
                 params["base"] = base
 
-            resp = requests.get(f"{ExchangeRates.url_base}{config['start_date']}", params=params)
+            resp = requests.get(
+                f"{ExchangeRates.url_base}{config['start_date']}", params=params)
             status = resp.status_code
             logger.info(f"Ping response code: {status}")
             if status == 200:
@@ -106,4 +110,4 @@ class SourceExchangeRates(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [ExchangeRates(config.get("base"), config["start_date"], config["access_key"])]
+        return [ExchangeRates(config.get("base"), config["start_date"], config["access_key"], config["ignore_weekends"])]
