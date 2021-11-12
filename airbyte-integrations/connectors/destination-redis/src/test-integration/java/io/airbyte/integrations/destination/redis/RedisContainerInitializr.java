@@ -27,7 +27,7 @@ class RedisContainerInitializr {
 
     public RedisContainer() {
       // latest docker release
-      super("redis:6.2.6");
+      super("redis:6.0");
     }
 
   }

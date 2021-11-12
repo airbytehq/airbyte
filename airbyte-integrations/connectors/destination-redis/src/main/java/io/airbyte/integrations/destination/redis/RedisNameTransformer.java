@@ -11,13 +11,13 @@ class RedisNameTransformer extends StandardNameTransformer {
 
   String keyName(String namespace, String stream) {
     namespace = namespace != null ? namespace : "";
-    var keyName = namespace + "_" + stream;
+    var keyName = namespace + ":" + stream;
     return Names.toAlphanumericAndUnderscore(keyName);
   }
 
   String tmpKeyName(String namespace, String stream) {
     namespace = namespace != null ? namespace : "";
-    var keyName = "tmp_" + namespace + "_" + stream;
+    var keyName = "tmp_" + namespace + ":" + stream;
     return Names.toAlphanumericAndUnderscore(keyName);
   }
 

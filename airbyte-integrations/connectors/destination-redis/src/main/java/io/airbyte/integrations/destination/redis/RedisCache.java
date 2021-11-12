@@ -16,20 +16,16 @@ public class RedisCache implements Closeable {
 
   private static final String PATTERN = ":[0-9]*";
 
-  private static final String DATA_KEY = JavaBaseConstants.COLUMN_NAME_DATA;
-
-  private static final String EMITTED_KEY = JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
-
   private final Jedis jedis;
 
   public RedisCache(RedisConfig redisConfig) {
     this.jedis = RedisPoolManager.initConnection(redisConfig);
   }
 
-  public void insert(String key, String data) {
+  public void insert(String key, Map<String, String> data) {
     var index = jedis.incr(key);
     var indexKey = generateIndexKey(key, index);
-    jedis.hmset(indexKey, Map.of(DATA_KEY, data, EMITTED_KEY, String.valueOf(Instant.now().toEpochMilli())));
+    jedis.hmset(indexKey, data);
   }
 
   public void rename(String key, String newkey) {
@@ -39,14 +35,14 @@ public class RedisCache implements Closeable {
     });
   }
 
-  public void delete(String keyPrefix) {
-    jedis.keys(keyPrefix + PATTERN).forEach(jedis::del);
+  public void delete(String key) {
+    jedis.keys(key + PATTERN).forEach(jedis::del);
     // reset index?
   }
 
-  public List<RedisRecord> getAll(String keyPrefix) {
-    return jedis.keys(keyPrefix + PATTERN).stream()
-        .map(k -> Tuple.of(k, jedis.hgetAll(k)))
+  public List<RedisRecord> getAll(String key) {
+    return jedis.keys(key + PATTERN).stream()
+        .map(k -> Tuple.of(k.substring(k.lastIndexOf(":") + 1), jedis.hgetAll(k)))
         .map(this::asRedisRecord)
         .collect(Collectors.toList());
   }
@@ -72,9 +68,9 @@ public class RedisCache implements Closeable {
     var key = record.value1();
     var value = record.value2();
     return new RedisRecord(
-        Long.parseLong(key.substring(key.lastIndexOf(":") + 1)),
-        value.get(DATA_KEY),
-        Instant.ofEpochMilli(Long.parseLong(value.get(EMITTED_KEY)))
+        Long.parseLong(key),
+        value.get(JavaBaseConstants.COLUMN_NAME_DATA),
+        Instant.ofEpochMilli(Long.parseLong(value.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)))
     );
   }
 

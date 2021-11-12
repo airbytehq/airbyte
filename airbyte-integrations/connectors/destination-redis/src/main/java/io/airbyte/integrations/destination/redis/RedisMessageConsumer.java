@@ -7,8 +7,10 @@ package io.airbyte.integrations.destination.redis;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.time.Instant;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -60,7 +62,12 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
       if (streamConfig == null) {
         throw new IllegalArgumentException("Unrecognized destination stream");
       }
-      var data = Jsons.serialize(messageRecord.getData());
+
+      var timestamp = Instant.now().toEpochMilli();
+      var data = Map.of(
+          JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(messageRecord.getData()),
+          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, String.valueOf(timestamp)
+      );
       redisCache.insert(streamConfig.getTmpKey(), data);
     } else if (message.getType() == AirbyteMessage.Type.STATE) {
       this.lastMessage = message;

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.TestInstance;
 
 class RedisCacheTest {
 
-  private static RedisContainerInitializr.RedisContainer redisContainer;
+ /* private static RedisContainerInitializr.RedisContainer redisContainer;
 
   private RedisCache redisCache;
 
@@ -91,5 +91,5 @@ class RedisCacheTest {
         .anyMatch(r -> r.getData().equals("{\"property\":\"data3\"}"))
         .anyMatch(r -> r.getData().equals("{\"property\":\"data4\"}"));
   }
-
+*/
 }
