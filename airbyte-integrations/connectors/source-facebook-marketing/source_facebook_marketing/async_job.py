@@ -14,7 +14,7 @@ from .common import JobTimeoutException, retry_pattern, JobException
 import logging
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("airbyte")
 
 
 class Status(Enum):

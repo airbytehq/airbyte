@@ -24,13 +24,9 @@ from source_facebook_marketing.api import API
 
 from .common import FacebookAPIException, batch, deep_merge, retry_pattern, JobException
 from .async_job import AsyncJob
-import logging
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
-
-logging.getLogger().setLevel(logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 def remove_params_from_url(url: str, params: List[str]) -> str:
     """

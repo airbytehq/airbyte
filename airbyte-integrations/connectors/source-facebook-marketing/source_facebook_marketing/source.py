@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 from datetime import datetime
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Type
 
@@ -36,8 +35,6 @@ from source_facebook_marketing.streams import (
     AdsInsightsRegion,
     Campaigns,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class InsightConfig(BaseModel):
