@@ -256,7 +256,8 @@ public class JobSubmitterTest {
   class OnlyOneJobIdRunning {
 
     /**
-     * See {@link JobSubmitter#attemptJobSubmit()} to understand why we need to test that only one job id can be successfully submited at once.
+     * See {@link JobSubmitter#attemptJobSubmit()} to understand why we need to test that only one job
+     * id can be successfully submited at once.
      */
     @Test
     public void testOnlyOneJobCanBeSubmittedAtOnce() throws Exception {
