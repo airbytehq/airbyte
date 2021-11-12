@@ -46,11 +46,13 @@ Verifies when a discover operation is run on the connector using the given confi
 ## Test Basic Read
 
 Configuring all streams in the input catalog to full refresh mode verifies that a read operation produces some RECORD messages.
+Each stream should have some data, if you can't guarantee this for particular streams - add them to the `empty_streams` list.
 | Input |  Type| Default | Note |
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
 | `configured_catalog_path` | string| `integration_tests/configured_catalog.json` |Path to configured catalog|
-| `validate_output_from_all_streams` | boolean | False | Verify that **all** streams have records|
+| `empty_streams` | array | [] |List of streams that might be empty|
+| `validate_schema` | boolean | True |Verify that structure and types of records matches the schema from discovery command|
 | `timeout_seconds` | int | 5*60 |Test execution timeout in seconds|
 | `expect_records` | object |None| Compare produced records with expected records, see details below|
 | `expect_records.path` | string | | File with expected records|
@@ -66,6 +68,18 @@ Configuring all streams in the input catalog to full refresh mode verifies that 
 ||x||
 |||x|
 ||||
+
+### Example of `expected_records.txt`:
+In general, the expected_records.json should contain the subset of output of the records of particular stream you need to test.
+The required fields are: `stream, data, emitted_at`
+
+```JSON
+{"stream": "my_stream", "data": {"field_1": "value0", "field_2": "value0", "field_3": null, "field_4": {"is_true": true}, "field_5": 123}, "emitted_at": 1626172757000}
+{"stream": "my_stream", "data": {"field_1": "value1", "field_2": "value1", "field_3": null, "field_4": {"is_true": false}, "field_5": 456}, "emitted_at": 1626172757000}
+{"stream": "my_stream", "data": {"field_1": "value2", "field_2": "value2", "field_3": null, "field_4": {"is_true": true}, "field_5": 678}, "emitted_at": 1626172757000}
+{"stream": "my_stream", "data": {"field_1": "value3", "field_2": "value3", "field_3": null, "field_4": {"is_true": false}, "field_5": 91011}, "emitted_at": 1626172757000}
+
+```
 
 ## Test Full Refresh sync
 ### TestSequentialReads

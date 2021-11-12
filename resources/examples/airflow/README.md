@@ -13,5 +13,20 @@ Simple enter that ID into your terminal and a connection will be set up in Airfl
 
 Trigger the DAG with the switch in the top right and you should be in business! If it doesn't automatically run, just hit the play button in the top right to kick off the sync.
 
+## Setting up Superset
+
+As the script has automatically set up a Postgres container for you, just enter these connection details to set up your destination:
+
+![](./assets/postgres_setup.png)
+
+Head over to http://localhost:8088 to get to the Superset UI. Enter `admin` as your username and `admin` as your password. Then head to the `Data` section in the top bar and navigate to `Databases`. Click `+DATABASE` and enter the following config:
+
+![](./assets/superset_database_setup.png)
+
+```
+docker exec airbyte-destination psql -U postgres -c "ALTER TABLE stargazers ADD COLUMN starred_ts timestamp;"
+docker exec airbyte-destination psql -U postgres -c "UPDATE stargazers SET starred_ts = starred_at::timestamptz;"
+```
+
 ## Cleaning Up
 Run `down.sh` to clean up the containers. Or run `docker-compose down -v` here and in the root directory, your call.

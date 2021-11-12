@@ -6,6 +6,7 @@ declare global {
     TRACKING_STRATEGY?: string;
     PAPERCUPS_STORYTIME?: string;
     FULLSTORY?: string;
+    OPENREPLAY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
@@ -16,6 +17,7 @@ declare global {
 type Config = {
   ui: {
     helpLink: string;
+    updateLink: string;
     slackLink: string;
     docsLink: string;
     configurationArchiveLink: string;
@@ -31,6 +33,9 @@ type Config = {
     baseUrl: string;
     enableStorytime: boolean;
   };
+  openreplay: {
+    projectKey: string;
+  };
   fullstory: Fullstory.SnippetOptions;
   apiUrl: string;
   healthCheckInterval: number;
@@ -44,8 +49,9 @@ const config: Config = {
   ui: {
     technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
     helpLink: "https://airbyte.io/community",
+    updateLink: `${BASE_DOCS_LINK}/upgrading-airbyte`,
     slackLink: "https://slack.airbyte.io",
-    docsLink: "https://docs.airbyte.io",
+    docsLink: BASE_DOCS_LINK,
     configurationArchiveLink: `${BASE_DOCS_LINK}/tutorials/upgrading-airbyte`,
     normalizationLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections#airbyte-basic-normalization`,
     namespaceLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces`,
@@ -64,6 +70,9 @@ const config: Config = {
     accountId: "74560291-451e-4ceb-a802-56706ece528b",
     baseUrl: "https://app.papercups.io",
     enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
+  },
+  openreplay: {
+    projectKey: window.OPENREPLAY !== "disabled" ? "6611843272536134" : "",
   },
   fullstory: {
     orgId: "13AXQ4",

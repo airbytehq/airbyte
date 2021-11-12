@@ -8,18 +8,18 @@
       "type": "string"
     },
     "groups": {
-      "type": "array",
+      "type": ["array", "object"],
       "items": {
         "type": "object",
         "properties": {
           "days": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "action_id": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "properties": {
-            "type": "array",
+            "type": ["array"],
             "items": {
               "type": "object"
             }
@@ -46,19 +46,19 @@
           "type": "string"
         },
         "first_name": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "email": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       }
     },
     "created_at": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "last_calculation": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "errors_calculating": {
       "type": "integer"

@@ -22,14 +22,20 @@ export const Header = styled(Row)`
   padding: 0;
 `;
 
-export const Cell = styled.div<{ flex?: number }>`
+export const Cell = styled.div<{
+  flex?: number;
+  light?: boolean;
+  lighter?: boolean;
+  ellipsis?: boolean;
+}>`
   flex: ${({ flex }) => flex || 1} 0 0;
-  &:last-child {
-    text-align: right;
-  }
-`;
+  padding-right: 10px;
+  word-break: break-word;
+  color: ${({ theme, light, lighter }) =>
+    light ? theme.greyColor40 : lighter ? theme.greyColor60 : "inherit"};
+  font-weight: ${({ light, lighter }) =>
+    light || lighter ? "normal" : "inherit"};
 
-export const LightCell = styled(Cell)`
-  color: ${({ theme }) => theme.greyColor60};
-  font-weight: normal;
+  overflow: ${({ ellipsis }) => (ellipsis ? "hidden" : "inherit")};
+  text-overflow: ${({ ellipsis }) => (ellipsis ? "ellipsis" : "inherit")};
 `;

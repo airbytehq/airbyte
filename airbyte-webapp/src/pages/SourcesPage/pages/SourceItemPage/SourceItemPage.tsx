@@ -1,16 +1,13 @@
 import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
 import config from "config";
 import { Routes } from "pages/routes";
 
-import { ImageBlock } from "components";
+import { DropDownRow, ImageBlock } from "components";
 import PageTitle from "components/PageTitle";
 import useRouter from "components/hooks/useRouterHook";
-import ContentCard from "components/ContentCard";
-import EmptyResource from "components/EmptyResourceBlock";
 import Breadcrumbs from "components/Breadcrumbs";
 import {
   ItemTabs,
@@ -31,10 +28,7 @@ import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationsDefinitionResource from "core/resources/DestinationDefinition";
 import { getIcon } from "utils/imageUtils";
 import HeadTitle from "components/HeadTitle";
-
-const Content = styled(ContentCard)`
-  margin: 0 32px 0 27px;
-`;
+import Placeholder, { ResourceTypes } from "components/Placeholder";
 
 const SourceItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();
@@ -86,7 +80,7 @@ const SourceItemPage: React.FC = () => {
           (dd) => dd.destinationDefinitionId === item.destinationDefinitionId
         );
         return {
-          text: item.name,
+          label: item.name,
           value: item.destinationId,
           img: <ImageBlock img={destinationDef?.icon} />,
         };
@@ -94,7 +88,7 @@ const SourceItemPage: React.FC = () => {
     [destinations, destinationDefinitions]
   );
 
-  const onSelect = (data: { value: string }) => {
+  const onSelect = (data: DropDownRow.IDataItem) => {
     if (data.value === "create-new-item") {
       push({
         pathname: `${Routes.Source}${Routes.ConnectionNew}`,
@@ -131,14 +125,7 @@ const SourceItemPage: React.FC = () => {
         {connectionsWithSource.length ? (
           <SourceConnectionTable connections={connectionsWithSource} />
         ) : (
-          <Content>
-            <EmptyResource
-              text={<FormattedMessage id="sources.noDestinations" />}
-              description={
-                <FormattedMessage id="sources.addDestinationReplicateData" />
-              }
-            />
-          </Content>
+          <Placeholder resource={ResourceTypes.Destinations} />
         )}
       </>
     );

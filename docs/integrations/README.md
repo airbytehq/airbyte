@@ -19,7 +19,9 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
 |[Braintree](./sources/braintree.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
+|[CockroachDB](./sources/cockroachdb.md)| Beta |
 |[Db2](./sources/db2.md)| Beta |
+|[Dixa](./sources/dixa.md) | Alpha |
 |[Drift](./sources/drift.md)| Beta |
 |[Exchange Rates API](./sources/exchangeratesapi.md)| Certified |
 |[Facebook Marketing](./sources/facebook-marketing.md)| Beta |
@@ -52,11 +54,12 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[MySQL](./sources/mysql.md)| Certified |
 |[Okta](./sources/okta.md)| Beta |
 |[Oracle DB](./sources/oracle.md)| Certified |
+|[PayPal Transaction](./sources/paypal-transaction.md)| Beta |
+|[Pipedrive](./sources/pipedrive.md)| Alpha |
 |[Plaid](./sources/plaid.md)| Alpha |
 |[PokéAPI](./sources/pokeapi.md)| Beta |
 |[Postgres](./sources/postgres.md)| Certified |
 |[PostHog](./sources/posthog.md)| Beta |
-|[CockroachDb](./sources/cockroachdb.md)| Beta |
 |[Quickbooks](./sources/quickbooks.md)| Beta |
 |[Recharge](./sources/recharge.md)| Beta |
 |[Recurly](./sources/recurly.md)| Beta |
@@ -67,11 +70,14 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Slack](./sources/slack.md)| Beta |
 |[Smartsheets](./sources/smartsheets.md)| Beta |
 |[Snowflake](./sources/snowflake.md)| Beta |
+|[Square](./sources/square.md)| Beta |
 |[Stripe](./sources/stripe.md)| Certified |
 |[SurveyMonkey](./sources/surveymonkey.md)| Beta |
 |[Tempo](./sources/tempo.md)| Beta |
 |[Twilio](./sources/twilio.md)| Beta |
+|[US Census](./sources/us-census.md)| Alpha |
 |[Zendesk Chat](./sources/zendesk-chat.md)| Certified |
+|[Zendesk Sunshine](./sources/zendesk-sunshine.md)| Beta |
 |[Zendesk Support](./sources/zendesk-support.md)| Certified |
 |[Zendesk Talk](./sources/zendesk-talk.md)| Certified |
 |[Zoom](./sources/zoom.md)| Beta |
@@ -80,7 +86,9 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | Connector | Grade |
 |----|----|
 |[BigQuery](./destinations/bigquery.md)| Certified |
+|[Google Cloud Storage (GCS)](./destinations/s3.md)| Alpha |
 |[Google Pubsub](./destinations/pubsub.md)| Alpha |
+|[Kafka](./destinations/kafka.md)| Alpha |
 |[Local CSV](./destinations/local-csv.md)| Certified |
 |[Local JSON](./destinations/local-json.md)| Certified |
 |[MeiliSearch](./destinations/meilisearch.md)| Beta |

@@ -16,7 +16,7 @@ const setColor = (props: IProps & { theme: Theme }) => {
     return props.theme.greyColor40;
   }
 
-  return "inhered";
+  return "inherit";
 };
 
 const Text = styled.div<IProps>`

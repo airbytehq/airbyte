@@ -228,3 +228,16 @@ class Trends(PosthogStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "insight/trend"
+
+
+class PingMe(PosthogStream):
+    """
+    Docs: https://posthog.com/docs/api/user
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return "users/@me"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        yield response_json

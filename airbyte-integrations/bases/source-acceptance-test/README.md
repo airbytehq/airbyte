@@ -21,7 +21,7 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
-      validate_output_from_all_streams: true
+      empty_streams: []
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"

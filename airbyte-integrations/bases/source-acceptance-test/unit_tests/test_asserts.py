@@ -89,13 +89,10 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
 
     records = [AirbyteRecordMessage(stream="my_stream", data=record, emitted_at=0) for record in records]
 
-    records_with_errors, record_errors = zip(*verify_records_schema(records, configured_catalog))
-    errors = [[error.message for error in errors] for errors in record_errors]
+    streams_with_errors = verify_records_schema(records, configured_catalog)
+    errors = [error.message for error in streams_with_errors["my_stream"].values()]
 
-    assert len(records_with_errors) == 3, "only 3 out of 4 records have errors"
-    assert records_with_errors[0] == records[0], "1st record should have errors"
-    assert records_with_errors[1] == records[1], "2nd record should have errors"
-    assert records_with_errors[2] == records[3], "4th record should have errors"
-    assert errors[0] == ["'text' is not of type 'number'", "123 is not of type 'null', 'string'"]
-    assert errors[1] == ["None is not of type 'number'", "None is not of type 'string'"]
-    assert errors[2] == ["'text' is not of type 'number'"]
+    assert "my_stream" in streams_with_errors
+    assert len(streams_with_errors) == 1, "only one stream"
+    assert len(streams_with_errors["my_stream"]) == 3, "only first error for each field"
+    assert errors == ["123 is not of type 'null', 'string'", "'text' is not of type 'number'", "None is not of type 'string'"]

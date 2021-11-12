@@ -2,7 +2,7 @@
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI)](https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml) [![License](https://img.shields.io/github/license/airbytehq/airbyte)](./LICENSE)
 
-![](docs/.gitbook/assets/airbyte_horizontal_color_white-background.svg)
+![](docs/.gitbook/assets/airbyte_new_logo.svg)
 
 **Data integration made simple, secure and extensible.**  
 The new open-source standard to sync data from applications, APIs & databases to warehouses, lakes & other destinations.

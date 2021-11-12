@@ -49,3 +49,8 @@ You should now have all the requirements needed to configure Oracle as a destina
 * **Username**
 * **Password**
 * **Database**
+
+## Changelog
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.1.2 | 2021-07-20 | [4874](https://github.com/airbytehq/airbyte/pull/4874) | Require `sid` instead of `database` in connector specification |

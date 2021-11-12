@@ -87,17 +87,13 @@ class SquareStream(HttpStream, ABC):
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
         yield from records
 
-    def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         try:
-            return super()._send_request(request)
+            return super()._send_request(request, request_kwargs)
         except requests.exceptions.HTTPError as e:
             square_exception = parse_square_error_response(e)
             if square_exception:
                 self.logger.error(str(square_exception))
-                # Exiting is made for not to have a huge traceback in the airbyte log.
-                # The explicit square error message already been out with the command above.
-                exit(1)
-
             raise e
 
 
@@ -310,6 +306,14 @@ class TeamMemberWages(SquareStreamPageParam):
         params_payload["limit"] = self.items_per_page_limit
         return params_payload
 
+    # This stream is tricky because once in a while it returns 404 error 'Not Found for url'.
+    # Thus the retry strategy was implemented.
+    def should_retry(self, response: requests.Response) -> bool:
+        return response.status_code == 404 or super().should_retry(response)
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        return 3
+
 
 class Customers(SquareStreamPageParam):
     """ Docs: https://developer.squareup.com/reference/square_2021-06-16/customers-api/list-customers """
@@ -367,7 +371,7 @@ class Orders(SquareStreamPageJson):
                 "No locations found. Orders cannot be extracted without locations. "
                 "Check https://developer.squareup.com/explorer/square/locations-api/list-locations"
             )
-            exit(1)
+            yield from []
 
         separated_locations = separate_items_by_count(location_ids, self.locations_per_requets)
         for location in separated_locations:

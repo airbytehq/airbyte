@@ -15,7 +15,9 @@
               "uniqueItems": true,
               "type": "array",
               "description": "The groups associated with the application role.",
-              "items": { "type": "string" }
+              "items": {
+                "type": "string"
+              }
             },
             "name": {
               "type": "string",
@@ -25,13 +27,18 @@
               "uniqueItems": true,
               "type": "array",
               "description": "The groups that are granted default access for this application role.",
-              "items": { "type": "string" }
+              "items": {
+                "type": "string"
+              }
             },
             "selectedByDefault": {
               "type": "boolean",
               "description": "Determines whether this application role should be selected by default on user creation."
             },
-            "defined": { "type": "boolean", "description": "Deprecated." },
+            "defined": {
+              "type": "boolean",
+              "description": "Deprecated."
+            },
             "numberOfSeats": {
               "type": "integer",
               "description": "The maximum count of users on your license.",
@@ -51,7 +58,9 @@
               "type": "string",
               "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
             },
-            "hasUnlimitedSeats": { "type": "boolean" },
+            "hasUnlimitedSeats": {
+              "type": "boolean"
+            },
             "platform": {
               "type": "boolean",
               "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -139,7 +148,9 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "description": { "type": "string" },
+            "description": {
+              "type": "string"
+            },
             "id": {
               "type": "string",
               "description": "The ID of the dashboard.",
@@ -266,7 +277,9 @@
                         "type": "string",
                         "description": "Expand options that include additional project details in the response.",
                         "readOnly": true,
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "self": {
                         "type": "string",
@@ -378,7 +391,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -398,8 +413,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -418,7 +437,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -433,7 +454,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups associated with the application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "name": {
                                       "type": "string",
@@ -443,7 +466,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups that are granted default access for this application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "selectedByDefault": {
                                       "type": "boolean",
@@ -472,7 +497,9 @@
                                       "type": "string",
                                       "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                                     },
-                                    "hasUnlimitedSeats": { "type": "boolean" },
+                                    "hasUnlimitedSeats": {
+                                      "type": "boolean"
+                                    },
                                     "platform": {
                                       "type": "boolean",
                                       "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -480,8 +507,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -496,7 +527,9 @@
                             "type": "string",
                             "description": "Expand options that include additional user details in the response.",
                             "readOnly": true,
-                            "xml": { "attribute": true }
+                            "xml": {
+                              "attribute": true
+                            }
                           }
                         }
                       },
@@ -621,7 +654,9 @@
                                     "size": {
                                       "type": "integer",
                                       "format": "int32",
-                                      "xml": { "attribute": true }
+                                      "xml": {
+                                        "attribute": true
+                                      }
                                     },
                                     "items": {
                                       "type": "array",
@@ -641,8 +676,12 @@
                                         }
                                       }
                                     },
-                                    "pagingCallback": { "type": "object" },
-                                    "callback": { "type": "object" },
+                                    "pagingCallback": {
+                                      "type": "object"
+                                    },
+                                    "callback": {
+                                      "type": "object"
+                                    },
                                     "max-results": {
                                       "type": "integer",
                                       "format": "int32",
@@ -661,7 +700,9 @@
                                     "size": {
                                       "type": "integer",
                                       "format": "int32",
-                                      "xml": { "attribute": true }
+                                      "xml": {
+                                        "attribute": true
+                                      }
                                     },
                                     "items": {
                                       "type": "array",
@@ -676,7 +717,9 @@
                                             "uniqueItems": true,
                                             "type": "array",
                                             "description": "The groups associated with the application role.",
-                                            "items": { "type": "string" }
+                                            "items": {
+                                              "type": "string"
+                                            }
                                           },
                                           "name": {
                                             "type": "string",
@@ -686,7 +729,9 @@
                                             "uniqueItems": true,
                                             "type": "array",
                                             "description": "The groups that are granted default access for this application role.",
-                                            "items": { "type": "string" }
+                                            "items": {
+                                              "type": "string"
+                                            }
                                           },
                                           "selectedByDefault": {
                                             "type": "boolean",
@@ -725,8 +770,12 @@
                                         }
                                       }
                                     },
-                                    "pagingCallback": { "type": "object" },
-                                    "callback": { "type": "object" },
+                                    "pagingCallback": {
+                                      "type": "object"
+                                    },
+                                    "callback": {
+                                      "type": "object"
+                                    },
                                     "max-results": {
                                       "type": "integer",
                                       "format": "int32",
@@ -741,7 +790,9 @@
                                   "type": "string",
                                   "description": "Expand options that include additional user details in the response.",
                                   "readOnly": true,
-                                  "xml": { "attribute": true }
+                                  "xml": {
+                                    "attribute": true
+                                  }
                                 }
                               }
                             },
@@ -860,7 +911,9 @@
                                     "size": {
                                       "type": "integer",
                                       "format": "int32",
-                                      "xml": { "attribute": true }
+                                      "xml": {
+                                        "attribute": true
+                                      }
                                     },
                                     "items": {
                                       "type": "array",
@@ -880,8 +933,12 @@
                                         }
                                       }
                                     },
-                                    "pagingCallback": { "type": "object" },
-                                    "callback": { "type": "object" },
+                                    "pagingCallback": {
+                                      "type": "object"
+                                    },
+                                    "callback": {
+                                      "type": "object"
+                                    },
                                     "max-results": {
                                       "type": "integer",
                                       "format": "int32",
@@ -900,7 +957,9 @@
                                     "size": {
                                       "type": "integer",
                                       "format": "int32",
-                                      "xml": { "attribute": true }
+                                      "xml": {
+                                        "attribute": true
+                                      }
                                     },
                                     "items": {
                                       "type": "array",
@@ -915,7 +974,9 @@
                                             "uniqueItems": true,
                                             "type": "array",
                                             "description": "The groups associated with the application role.",
-                                            "items": { "type": "string" }
+                                            "items": {
+                                              "type": "string"
+                                            }
                                           },
                                           "name": {
                                             "type": "string",
@@ -925,7 +986,9 @@
                                             "uniqueItems": true,
                                             "type": "array",
                                             "description": "The groups that are granted default access for this application role.",
-                                            "items": { "type": "string" }
+                                            "items": {
+                                              "type": "string"
+                                            }
                                           },
                                           "selectedByDefault": {
                                             "type": "boolean",
@@ -964,8 +1027,12 @@
                                         }
                                       }
                                     },
-                                    "pagingCallback": { "type": "object" },
-                                    "callback": { "type": "object" },
+                                    "pagingCallback": {
+                                      "type": "object"
+                                    },
+                                    "callback": {
+                                      "type": "object"
+                                    },
                                     "max-results": {
                                       "type": "integer",
                                       "format": "int32",
@@ -980,7 +1047,9 @@
                                   "type": "string",
                                   "description": "Expand options that include additional user details in the response.",
                                   "readOnly": true,
-                                  "xml": { "attribute": true }
+                                  "xml": {
+                                    "attribute": true
+                                  }
                                 }
                               }
                             },
@@ -1090,7 +1159,9 @@
                                     "size": {
                                       "type": "integer",
                                       "format": "int32",
-                                      "xml": { "attribute": true }
+                                      "xml": {
+                                        "attribute": true
+                                      }
                                     },
                                     "items": {
                                       "type": "array",
@@ -1110,8 +1181,12 @@
                                         }
                                       }
                                     },
-                                    "pagingCallback": { "type": "object" },
-                                    "callback": { "type": "object" },
+                                    "pagingCallback": {
+                                      "type": "object"
+                                    },
+                                    "callback": {
+                                      "type": "object"
+                                    },
                                     "max-results": {
                                       "type": "integer",
                                       "format": "int32",
@@ -1130,7 +1205,9 @@
                                     "size": {
                                       "type": "integer",
                                       "format": "int32",
-                                      "xml": { "attribute": true }
+                                      "xml": {
+                                        "attribute": true
+                                      }
                                     },
                                     "items": {
                                       "type": "array",
@@ -1145,7 +1222,9 @@
                                             "uniqueItems": true,
                                             "type": "array",
                                             "description": "The groups associated with the application role.",
-                                            "items": { "type": "string" }
+                                            "items": {
+                                              "type": "string"
+                                            }
                                           },
                                           "name": {
                                             "type": "string",
@@ -1155,7 +1234,9 @@
                                             "uniqueItems": true,
                                             "type": "array",
                                             "description": "The groups that are granted default access for this application role.",
-                                            "items": { "type": "string" }
+                                            "items": {
+                                              "type": "string"
+                                            }
                                           },
                                           "selectedByDefault": {
                                             "type": "boolean",
@@ -1194,8 +1275,12 @@
                                         }
                                       }
                                     },
-                                    "pagingCallback": { "type": "object" },
-                                    "callback": { "type": "object" },
+                                    "pagingCallback": {
+                                      "type": "object"
+                                    },
+                                    "callback": {
+                                      "type": "object"
+                                    },
                                     "max-results": {
                                       "type": "integer",
                                       "format": "int32",
@@ -1210,7 +1295,9 @@
                                   "type": "string",
                                   "description": "Expand options that include additional user details in the response.",
                                   "readOnly": true,
-                                  "xml": { "attribute": true }
+                                  "xml": {
+                                    "attribute": true
+                                  }
                                 }
                               }
                             },
@@ -1423,7 +1510,9 @@
                             "expand": {
                               "type": "string",
                               "description": "Use [expand](em>#expansion) to include additional information about version in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `operations` Returns the list of operations available for this version.\n *  `issuesstatus` Returns the count of issues in this version for each of the status categories *to do*, *in progress*, *done*, and *unmapped*. The *unmapped* property contains a count of issues with a status other than *to do*, *in progress*, and *done*.\n\nOptional for create and update.",
-                              "xml": { "attribute": true }
+                              "xml": {
+                                "attribute": true
+                              }
                             },
                             "self": {
                               "type": "string",
@@ -1498,12 +1587,24 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "id": { "type": "string" },
-                                  "styleClass": { "type": "string" },
-                                  "iconClass": { "type": "string" },
-                                  "label": { "type": "string" },
-                                  "title": { "type": "string" },
-                                  "href": { "type": "string" },
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "styleClass": {
+                                    "type": "string"
+                                  },
+                                  "iconClass": {
+                                    "type": "string"
+                                  },
+                                  "label": {
+                                    "type": "string"
+                                  },
+                                  "title": {
+                                    "type": "string"
+                                  },
+                                  "href": {
+                                    "type": "string"
+                                  },
                                   "weight": {
                                     "type": "integer",
                                     "format": "int32"
@@ -1649,8 +1750,13 @@
                             "items": {
                               "type": "object",
                               "properties": {
-                                "id": { "type": "integer", "format": "int64" },
-                                "name": { "type": "string" },
+                                "id": {
+                                  "type": "integer",
+                                  "format": "int64"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
                                 "aboveLevelId": {
                                   "type": "integer",
                                   "format": "int64"
@@ -1701,7 +1807,9 @@
                       },
                       "properties": {
                         "type": "object",
-                        "additionalProperties": { "readOnly": true },
+                        "additionalProperties": {
+                          "readOnly": true
+                        },
                         "description": "Map of project properties",
                         "readOnly": true
                       },
@@ -1837,7 +1945,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -1857,8 +1967,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -1877,7 +1991,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -1892,7 +2008,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups associated with the application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "name": {
                                       "type": "string",
@@ -1902,7 +2020,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups that are granted default access for this application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "selectedByDefault": {
                                       "type": "boolean",
@@ -1931,7 +2051,9 @@
                                       "type": "string",
                                       "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                                     },
-                                    "hasUnlimitedSeats": { "type": "boolean" },
+                                    "hasUnlimitedSeats": {
+                                      "type": "boolean"
+                                    },
                                     "platform": {
                                       "type": "boolean",
                                       "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -1939,8 +2061,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -1955,7 +2081,9 @@
                             "type": "string",
                             "description": "Expand options that include additional user details in the response.",
                             "readOnly": true,
-                            "xml": { "attribute": true }
+                            "xml": {
+                              "attribute": true
+                            }
                           }
                         }
                       },
@@ -2060,7 +2188,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -2080,8 +2210,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -2100,7 +2234,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -2115,7 +2251,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups associated with the application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "name": {
                                       "type": "string",
@@ -2125,7 +2263,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups that are granted default access for this application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "selectedByDefault": {
                                       "type": "boolean",
@@ -2154,7 +2294,9 @@
                                       "type": "string",
                                       "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                                     },
-                                    "hasUnlimitedSeats": { "type": "boolean" },
+                                    "hasUnlimitedSeats": {
+                                      "type": "boolean"
+                                    },
                                     "platform": {
                                       "type": "boolean",
                                       "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -2162,8 +2304,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -2178,7 +2324,9 @@
                             "type": "string",
                             "description": "Expand options that include additional user details in the response.",
                             "readOnly": true,
-                            "xml": { "attribute": true }
+                            "xml": {
+                              "attribute": true
+                            }
                           }
                         }
                       }
@@ -2555,7 +2703,9 @@
                     "size": {
                       "type": "integer",
                       "format": "int32",
-                      "xml": { "attribute": true }
+                      "xml": {
+                        "attribute": true
+                      }
                     },
                     "items": {
                       "type": "array",
@@ -2575,12 +2725,19 @@
                         }
                       }
                     },
-                    "pagingCallback": { "type": "object" },
-                    "callback": { "type": "object" },
+                    "pagingCallback": {
+                      "type": "object"
+                    },
+                    "callback": {
+                      "type": "object"
+                    },
                     "max-results": {
                       "type": "integer",
                       "format": "int32",
-                      "xml": { "name": "max-results", "attribute": true }
+                      "xml": {
+                        "name": "max-results",
+                        "attribute": true
+                      }
                     }
                   }
                 },
@@ -2592,7 +2749,9 @@
                     "size": {
                       "type": "integer",
                       "format": "int32",
-                      "xml": { "attribute": true }
+                      "xml": {
+                        "attribute": true
+                      }
                     },
                     "items": {
                       "type": "array",
@@ -2607,7 +2766,9 @@
                             "uniqueItems": true,
                             "type": "array",
                             "description": "The groups associated with the application role.",
-                            "items": { "type": "string" }
+                            "items": {
+                              "type": "string"
+                            }
                           },
                           "name": {
                             "type": "string",
@@ -2617,7 +2778,9 @@
                             "uniqueItems": true,
                             "type": "array",
                             "description": "The groups that are granted default access for this application role.",
-                            "items": { "type": "string" }
+                            "items": {
+                              "type": "string"
+                            }
                           },
                           "selectedByDefault": {
                             "type": "boolean",
@@ -2646,7 +2809,9 @@
                             "type": "string",
                             "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                           },
-                          "hasUnlimitedSeats": { "type": "boolean" },
+                          "hasUnlimitedSeats": {
+                            "type": "boolean"
+                          },
                           "platform": {
                             "type": "boolean",
                             "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -2654,12 +2819,19 @@
                         }
                       }
                     },
-                    "pagingCallback": { "type": "object" },
-                    "callback": { "type": "object" },
+                    "pagingCallback": {
+                      "type": "object"
+                    },
+                    "callback": {
+                      "type": "object"
+                    },
                     "max-results": {
                       "type": "integer",
                       "format": "int32",
-                      "xml": { "name": "max-results", "attribute": true }
+                      "xml": {
+                        "name": "max-results",
+                        "attribute": true
+                      }
                     }
                   }
                 },
@@ -2667,7 +2839,9 @@
                   "type": "string",
                   "description": "Expand options that include additional user details in the response.",
                   "readOnly": true,
-                  "xml": { "attribute": true }
+                  "xml": {
+                    "attribute": true
+                  }
                 }
               }
             },
@@ -2732,7 +2906,9 @@
                         "type": "string",
                         "description": "Expand options that include additional project details in the response.",
                         "readOnly": true,
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "self": {
                         "type": "string",
@@ -2844,7 +3020,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -2864,8 +3042,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -2884,7 +3066,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -2899,7 +3083,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups associated with the application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "name": {
                                       "type": "string",
@@ -2909,7 +3095,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups that are granted default access for this application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "selectedByDefault": {
                                       "type": "boolean",
@@ -2938,7 +3126,9 @@
                                       "type": "string",
                                       "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                                     },
-                                    "hasUnlimitedSeats": { "type": "boolean" },
+                                    "hasUnlimitedSeats": {
+                                      "type": "boolean"
+                                    },
                                     "platform": {
                                       "type": "boolean",
                                       "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -2946,8 +3136,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -2962,7 +3156,9 @@
                             "type": "string",
                             "description": "Expand options that include additional user details in the response.",
                             "readOnly": true,
-                            "xml": { "attribute": true }
+                            "xml": {
+                              "attribute": true
+                            }
                           }
                         }
                       },
@@ -3087,7 +3283,9 @@
                                     "size": {
                                       "type": "integer",
                                       "format": "int32",
-                                      "xml": { "attribute": true }
+                                      "xml": {
+                                        "attribute": true
+                                      }
                                     },
                                     "items": {
                                       "type": "array",
@@ -3107,8 +3305,12 @@
                                         }
                                       }
                                     },
-                                    "pagingCallback": { "type": "object" },
-                                    "callback": { "type": "object" },
+                                    "pagingCallback": {
+                                      "type": "object"
+                                    },
+                                    "callback": {
+                                      "type": "object"
+                                    },
                                     "max-results": {
                                       "type": "integer",
                                       "format": "int32",
@@ -3127,7 +3329,9 @@
                                     "size": {
                                       "type": "integer",
                                       "format": "int32",
-                                      "xml": { "attribute": true }
+                                      "xml": {
+                                        "attribute": true
+                                      }
                                     },
                                     "items": {
                                       "type": "array",
@@ -3142,7 +3346,9 @@
                                             "uniqueItems": true,
                                             "type": "array",
                                             "description": "The groups associated with the application role.",
-                                            "items": { "type": "string" }
+                                            "items": {
+                                              "type": "string"
+                                            }
                                           },
                                           "name": {
                                             "type": "string",
@@ -3152,7 +3358,9 @@
                                             "uniqueItems": true,
                                             "type": "array",
                                             "description": "The groups that are granted default access for this application role.",
-                                            "items": { "type": "string" }
+                                            "items": {
+                                              "type": "string"
+                                            }
                                           },
                                           "selectedByDefault": {
                                             "type": "boolean",
@@ -3191,8 +3399,12 @@
                                         }
                                       }
                                     },
-                                    "pagingCallback": { "type": "object" },
-                                    "callback": { "type": "object" },
+                                    "pagingCallback": {
+                                      "type": "object"
+                                    },
+                                    "callback": {
+                                      "type": "object"
+                                    },
                                     "max-results": {
                                       "type": "integer",
                                       "format": "int32",
@@ -3207,7 +3419,9 @@
                                   "type": "string",
                                   "description": "Expand options that include additional user details in the response.",
                                   "readOnly": true,
-                                  "xml": { "attribute": true }
+                                  "xml": {
+                                    "attribute": true
+                                  }
                                 }
                               }
                             },
@@ -3326,7 +3540,9 @@
                                     "size": {
                                       "type": "integer",
                                       "format": "int32",
-                                      "xml": { "attribute": true }
+                                      "xml": {
+                                        "attribute": true
+                                      }
                                     },
                                     "items": {
                                       "type": "array",
@@ -3346,8 +3562,12 @@
                                         }
                                       }
                                     },
-                                    "pagingCallback": { "type": "object" },
-                                    "callback": { "type": "object" },
+                                    "pagingCallback": {
+                                      "type": "object"
+                                    },
+                                    "callback": {
+                                      "type": "object"
+                                    },
                                     "max-results": {
                                       "type": "integer",
                                       "format": "int32",
@@ -3366,7 +3586,9 @@
                                     "size": {
                                       "type": "integer",
                                       "format": "int32",
-                                      "xml": { "attribute": true }
+                                      "xml": {
+                                        "attribute": true
+                                      }
                                     },
                                     "items": {
                                       "type": "array",
@@ -3381,7 +3603,9 @@
                                             "uniqueItems": true,
                                             "type": "array",
                                             "description": "The groups associated with the application role.",
-                                            "items": { "type": "string" }
+                                            "items": {
+                                              "type": "string"
+                                            }
                                           },
                                           "name": {
                                             "type": "string",
@@ -3391,7 +3615,9 @@
                                             "uniqueItems": true,
                                             "type": "array",
                                             "description": "The groups that are granted default access for this application role.",
-                                            "items": { "type": "string" }
+                                            "items": {
+                                              "type": "string"
+                                            }
                                           },
                                           "selectedByDefault": {
                                             "type": "boolean",
@@ -3430,8 +3656,12 @@
                                         }
                                       }
                                     },
-                                    "pagingCallback": { "type": "object" },
-                                    "callback": { "type": "object" },
+                                    "pagingCallback": {
+                                      "type": "object"
+                                    },
+                                    "callback": {
+                                      "type": "object"
+                                    },
                                     "max-results": {
                                       "type": "integer",
                                       "format": "int32",
@@ -3446,7 +3676,9 @@
                                   "type": "string",
                                   "description": "Expand options that include additional user details in the response.",
                                   "readOnly": true,
-                                  "xml": { "attribute": true }
+                                  "xml": {
+                                    "attribute": true
+                                  }
                                 }
                               }
                             },
@@ -3556,7 +3788,9 @@
                                     "size": {
                                       "type": "integer",
                                       "format": "int32",
-                                      "xml": { "attribute": true }
+                                      "xml": {
+                                        "attribute": true
+                                      }
                                     },
                                     "items": {
                                       "type": "array",
@@ -3576,8 +3810,12 @@
                                         }
                                       }
                                     },
-                                    "pagingCallback": { "type": "object" },
-                                    "callback": { "type": "object" },
+                                    "pagingCallback": {
+                                      "type": "object"
+                                    },
+                                    "callback": {
+                                      "type": "object"
+                                    },
                                     "max-results": {
                                       "type": "integer",
                                       "format": "int32",
@@ -3596,7 +3834,9 @@
                                     "size": {
                                       "type": "integer",
                                       "format": "int32",
-                                      "xml": { "attribute": true }
+                                      "xml": {
+                                        "attribute": true
+                                      }
                                     },
                                     "items": {
                                       "type": "array",
@@ -3611,7 +3851,9 @@
                                             "uniqueItems": true,
                                             "type": "array",
                                             "description": "The groups associated with the application role.",
-                                            "items": { "type": "string" }
+                                            "items": {
+                                              "type": "string"
+                                            }
                                           },
                                           "name": {
                                             "type": "string",
@@ -3621,7 +3863,9 @@
                                             "uniqueItems": true,
                                             "type": "array",
                                             "description": "The groups that are granted default access for this application role.",
-                                            "items": { "type": "string" }
+                                            "items": {
+                                              "type": "string"
+                                            }
                                           },
                                           "selectedByDefault": {
                                             "type": "boolean",
@@ -3660,8 +3904,12 @@
                                         }
                                       }
                                     },
-                                    "pagingCallback": { "type": "object" },
-                                    "callback": { "type": "object" },
+                                    "pagingCallback": {
+                                      "type": "object"
+                                    },
+                                    "callback": {
+                                      "type": "object"
+                                    },
                                     "max-results": {
                                       "type": "integer",
                                       "format": "int32",
@@ -3676,7 +3924,9 @@
                                   "type": "string",
                                   "description": "Expand options that include additional user details in the response.",
                                   "readOnly": true,
-                                  "xml": { "attribute": true }
+                                  "xml": {
+                                    "attribute": true
+                                  }
                                 }
                               }
                             },
@@ -3889,7 +4139,9 @@
                             "expand": {
                               "type": "string",
                               "description": "Use [expand](em>#expansion) to include additional information about version in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `operations` Returns the list of operations available for this version.\n *  `issuesstatus` Returns the count of issues in this version for each of the status categories *to do*, *in progress*, *done*, and *unmapped*. The *unmapped* property contains a count of issues with a status other than *to do*, *in progress*, and *done*.\n\nOptional for create and update.",
-                              "xml": { "attribute": true }
+                              "xml": {
+                                "attribute": true
+                              }
                             },
                             "self": {
                               "type": "string",
@@ -3964,12 +4216,24 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "id": { "type": "string" },
-                                  "styleClass": { "type": "string" },
-                                  "iconClass": { "type": "string" },
-                                  "label": { "type": "string" },
-                                  "title": { "type": "string" },
-                                  "href": { "type": "string" },
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "styleClass": {
+                                    "type": "string"
+                                  },
+                                  "iconClass": {
+                                    "type": "string"
+                                  },
+                                  "label": {
+                                    "type": "string"
+                                  },
+                                  "title": {
+                                    "type": "string"
+                                  },
+                                  "href": {
+                                    "type": "string"
+                                  },
                                   "weight": {
                                     "type": "integer",
                                     "format": "int32"
@@ -4115,8 +4379,13 @@
                             "items": {
                               "type": "object",
                               "properties": {
-                                "id": { "type": "integer", "format": "int64" },
-                                "name": { "type": "string" },
+                                "id": {
+                                  "type": "integer",
+                                  "format": "int64"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
                                 "aboveLevelId": {
                                   "type": "integer",
                                   "format": "int64"
@@ -4167,7 +4436,9 @@
                       },
                       "properties": {
                         "type": "object",
-                        "additionalProperties": { "readOnly": true },
+                        "additionalProperties": {
+                          "readOnly": true
+                        },
                         "description": "Map of project properties",
                         "readOnly": true
                       },
@@ -4303,7 +4574,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -4323,8 +4596,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -4343,7 +4620,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -4358,7 +4637,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups associated with the application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "name": {
                                       "type": "string",
@@ -4368,7 +4649,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups that are granted default access for this application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "selectedByDefault": {
                                       "type": "boolean",
@@ -4397,7 +4680,9 @@
                                       "type": "string",
                                       "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                                     },
-                                    "hasUnlimitedSeats": { "type": "boolean" },
+                                    "hasUnlimitedSeats": {
+                                      "type": "boolean"
+                                    },
                                     "platform": {
                                       "type": "boolean",
                                       "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -4405,8 +4690,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -4421,7 +4710,9 @@
                             "type": "string",
                             "description": "Expand options that include additional user details in the response.",
                             "readOnly": true,
-                            "xml": { "attribute": true }
+                            "xml": {
+                              "attribute": true
+                            }
                           }
                         }
                       },
@@ -4526,7 +4817,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -4546,8 +4839,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -4566,7 +4863,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -4581,7 +4880,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups associated with the application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "name": {
                                       "type": "string",
@@ -4591,7 +4892,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups that are granted default access for this application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "selectedByDefault": {
                                       "type": "boolean",
@@ -4620,7 +4923,9 @@
                                       "type": "string",
                                       "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                                     },
-                                    "hasUnlimitedSeats": { "type": "boolean" },
+                                    "hasUnlimitedSeats": {
+                                      "type": "boolean"
+                                    },
                                     "platform": {
                                       "type": "boolean",
                                       "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -4628,8 +4933,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -4644,7 +4953,9 @@
                             "type": "string",
                             "description": "Expand options that include additional user details in the response.",
                             "readOnly": true,
-                            "xml": { "attribute": true }
+                            "xml": {
+                              "attribute": true
+                            }
                           }
                         }
                       }
@@ -4993,7 +5304,9 @@
                           "size": {
                             "type": "integer",
                             "format": "int32",
-                            "xml": { "attribute": true }
+                            "xml": {
+                              "attribute": true
+                            }
                           },
                           "items": {
                             "type": "array",
@@ -5013,12 +5326,19 @@
                               }
                             }
                           },
-                          "pagingCallback": { "type": "object" },
-                          "callback": { "type": "object" },
+                          "pagingCallback": {
+                            "type": "object"
+                          },
+                          "callback": {
+                            "type": "object"
+                          },
                           "max-results": {
                             "type": "integer",
                             "format": "int32",
-                            "xml": { "name": "max-results", "attribute": true }
+                            "xml": {
+                              "name": "max-results",
+                              "attribute": true
+                            }
                           }
                         }
                       },
@@ -5030,7 +5350,9 @@
                           "size": {
                             "type": "integer",
                             "format": "int32",
-                            "xml": { "attribute": true }
+                            "xml": {
+                              "attribute": true
+                            }
                           },
                           "items": {
                             "type": "array",
@@ -5045,7 +5367,9 @@
                                   "uniqueItems": true,
                                   "type": "array",
                                   "description": "The groups associated with the application role.",
-                                  "items": { "type": "string" }
+                                  "items": {
+                                    "type": "string"
+                                  }
                                 },
                                 "name": {
                                   "type": "string",
@@ -5055,7 +5379,9 @@
                                   "uniqueItems": true,
                                   "type": "array",
                                   "description": "The groups that are granted default access for this application role.",
-                                  "items": { "type": "string" }
+                                  "items": {
+                                    "type": "string"
+                                  }
                                 },
                                 "selectedByDefault": {
                                   "type": "boolean",
@@ -5084,7 +5410,9 @@
                                   "type": "string",
                                   "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                                 },
-                                "hasUnlimitedSeats": { "type": "boolean" },
+                                "hasUnlimitedSeats": {
+                                  "type": "boolean"
+                                },
                                 "platform": {
                                   "type": "boolean",
                                   "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -5092,12 +5420,19 @@
                               }
                             }
                           },
-                          "pagingCallback": { "type": "object" },
-                          "callback": { "type": "object" },
+                          "pagingCallback": {
+                            "type": "object"
+                          },
+                          "callback": {
+                            "type": "object"
+                          },
                           "max-results": {
                             "type": "integer",
                             "format": "int32",
-                            "xml": { "name": "max-results", "attribute": true }
+                            "xml": {
+                              "name": "max-results",
+                              "attribute": true
+                            }
                           }
                         }
                       },
@@ -5105,7 +5440,9 @@
                         "type": "string",
                         "description": "Expand options that include additional user details in the response.",
                         "readOnly": true,
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -5173,7 +5510,9 @@
                   "type": "string",
                   "description": "Expand options that include additional project details in the response.",
                   "readOnly": true,
-                  "xml": { "attribute": true }
+                  "xml": {
+                    "attribute": true
+                  }
                 },
                 "self": {
                   "type": "string",
@@ -5285,7 +5624,9 @@
                         "size": {
                           "type": "integer",
                           "format": "int32",
-                          "xml": { "attribute": true }
+                          "xml": {
+                            "attribute": true
+                          }
                         },
                         "items": {
                           "type": "array",
@@ -5305,12 +5646,19 @@
                             }
                           }
                         },
-                        "pagingCallback": { "type": "object" },
-                        "callback": { "type": "object" },
+                        "pagingCallback": {
+                          "type": "object"
+                        },
+                        "callback": {
+                          "type": "object"
+                        },
                         "max-results": {
                           "type": "integer",
                           "format": "int32",
-                          "xml": { "name": "max-results", "attribute": true }
+                          "xml": {
+                            "name": "max-results",
+                            "attribute": true
+                          }
                         }
                       }
                     },
@@ -5322,7 +5670,9 @@
                         "size": {
                           "type": "integer",
                           "format": "int32",
-                          "xml": { "attribute": true }
+                          "xml": {
+                            "attribute": true
+                          }
                         },
                         "items": {
                           "type": "array",
@@ -5337,7 +5687,9 @@
                                 "uniqueItems": true,
                                 "type": "array",
                                 "description": "The groups associated with the application role.",
-                                "items": { "type": "string" }
+                                "items": {
+                                  "type": "string"
+                                }
                               },
                               "name": {
                                 "type": "string",
@@ -5347,7 +5699,9 @@
                                 "uniqueItems": true,
                                 "type": "array",
                                 "description": "The groups that are granted default access for this application role.",
-                                "items": { "type": "string" }
+                                "items": {
+                                  "type": "string"
+                                }
                               },
                               "selectedByDefault": {
                                 "type": "boolean",
@@ -5376,7 +5730,9 @@
                                 "type": "string",
                                 "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                               },
-                              "hasUnlimitedSeats": { "type": "boolean" },
+                              "hasUnlimitedSeats": {
+                                "type": "boolean"
+                              },
                               "platform": {
                                 "type": "boolean",
                                 "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -5384,12 +5740,19 @@
                             }
                           }
                         },
-                        "pagingCallback": { "type": "object" },
-                        "callback": { "type": "object" },
+                        "pagingCallback": {
+                          "type": "object"
+                        },
+                        "callback": {
+                          "type": "object"
+                        },
                         "max-results": {
                           "type": "integer",
                           "format": "int32",
-                          "xml": { "name": "max-results", "attribute": true }
+                          "xml": {
+                            "name": "max-results",
+                            "attribute": true
+                          }
                         }
                       }
                     },
@@ -5397,7 +5760,9 @@
                       "type": "string",
                       "description": "Expand options that include additional user details in the response.",
                       "readOnly": true,
-                      "xml": { "attribute": true }
+                      "xml": {
+                        "attribute": true
+                      }
                     }
                   }
                 },
@@ -5517,7 +5882,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -5537,8 +5904,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -5557,7 +5928,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -5572,7 +5945,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups associated with the application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "name": {
                                       "type": "string",
@@ -5582,7 +5957,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups that are granted default access for this application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "selectedByDefault": {
                                       "type": "boolean",
@@ -5611,7 +5988,9 @@
                                       "type": "string",
                                       "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                                     },
-                                    "hasUnlimitedSeats": { "type": "boolean" },
+                                    "hasUnlimitedSeats": {
+                                      "type": "boolean"
+                                    },
                                     "platform": {
                                       "type": "boolean",
                                       "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -5619,8 +5998,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -5635,7 +6018,9 @@
                             "type": "string",
                             "description": "Expand options that include additional user details in the response.",
                             "readOnly": true,
-                            "xml": { "attribute": true }
+                            "xml": {
+                              "attribute": true
+                            }
                           }
                         }
                       },
@@ -5749,7 +6134,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -5769,8 +6156,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -5789,7 +6180,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -5804,7 +6197,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups associated with the application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "name": {
                                       "type": "string",
@@ -5814,7 +6209,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups that are granted default access for this application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "selectedByDefault": {
                                       "type": "boolean",
@@ -5843,7 +6240,9 @@
                                       "type": "string",
                                       "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                                     },
-                                    "hasUnlimitedSeats": { "type": "boolean" },
+                                    "hasUnlimitedSeats": {
+                                      "type": "boolean"
+                                    },
                                     "platform": {
                                       "type": "boolean",
                                       "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -5851,8 +6250,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -5867,7 +6270,9 @@
                             "type": "string",
                             "description": "Expand options that include additional user details in the response.",
                             "readOnly": true,
-                            "xml": { "attribute": true }
+                            "xml": {
+                              "attribute": true
+                            }
                           }
                         }
                       },
@@ -5972,7 +6377,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -5992,8 +6399,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -6012,7 +6423,9 @@
                               "size": {
                                 "type": "integer",
                                 "format": "int32",
-                                "xml": { "attribute": true }
+                                "xml": {
+                                  "attribute": true
+                                }
                               },
                               "items": {
                                 "type": "array",
@@ -6027,7 +6440,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups associated with the application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "name": {
                                       "type": "string",
@@ -6037,7 +6452,9 @@
                                       "uniqueItems": true,
                                       "type": "array",
                                       "description": "The groups that are granted default access for this application role.",
-                                      "items": { "type": "string" }
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "selectedByDefault": {
                                       "type": "boolean",
@@ -6066,7 +6483,9 @@
                                       "type": "string",
                                       "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                                     },
-                                    "hasUnlimitedSeats": { "type": "boolean" },
+                                    "hasUnlimitedSeats": {
+                                      "type": "boolean"
+                                    },
                                     "platform": {
                                       "type": "boolean",
                                       "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -6074,8 +6493,12 @@
                                   }
                                 }
                               },
-                              "pagingCallback": { "type": "object" },
-                              "callback": { "type": "object" },
+                              "pagingCallback": {
+                                "type": "object"
+                              },
+                              "callback": {
+                                "type": "object"
+                              },
                               "max-results": {
                                 "type": "integer",
                                 "format": "int32",
@@ -6090,7 +6513,9 @@
                             "type": "string",
                             "description": "Expand options that include additional user details in the response.",
                             "readOnly": true,
-                            "xml": { "attribute": true }
+                            "xml": {
+                              "attribute": true
+                            }
                           }
                         }
                       },
@@ -6299,7 +6724,9 @@
                       "expand": {
                         "type": "string",
                         "description": "Use [expand](em>#expansion) to include additional information about version in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `operations` Returns the list of operations available for this version.\n *  `issuesstatus` Returns the count of issues in this version for each of the status categories *to do*, *in progress*, *done*, and *unmapped*. The *unmapped* property contains a count of issues with a status other than *to do*, *in progress*, and *done*.\n\nOptional for create and update.",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "self": {
                         "type": "string",
@@ -6374,13 +6801,28 @@
                         "items": {
                           "type": "object",
                           "properties": {
-                            "id": { "type": "string" },
-                            "styleClass": { "type": "string" },
-                            "iconClass": { "type": "string" },
-                            "label": { "type": "string" },
-                            "title": { "type": "string" },
-                            "href": { "type": "string" },
-                            "weight": { "type": "integer", "format": "int32" }
+                            "id": {
+                              "type": "string"
+                            },
+                            "styleClass": {
+                              "type": "string"
+                            },
+                            "iconClass": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "title": {
+                              "type": "string"
+                            },
+                            "href": {
+                              "type": "string"
+                            },
+                            "weight": {
+                              "type": "integer",
+                              "format": "int32"
+                            }
                           }
                         }
                       },
@@ -6522,8 +6964,13 @@
                       "items": {
                         "type": "object",
                         "properties": {
-                          "id": { "type": "integer", "format": "int64" },
-                          "name": { "type": "string" },
+                          "id": {
+                            "type": "integer",
+                            "format": "int64"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
                           "aboveLevelId": {
                             "type": "integer",
                             "format": "int64"
@@ -6536,10 +6983,16 @@
                             "type": "integer",
                             "format": "int64"
                           },
-                          "level": { "type": "integer", "format": "int32" },
+                          "level": {
+                            "type": "integer",
+                            "format": "int32"
+                          },
                           "issueTypeIds": {
                             "type": "array",
-                            "items": { "type": "integer", "format": "int64" }
+                            "items": {
+                              "type": "integer",
+                              "format": "int64"
+                            }
                           },
                           "externalUuid": {
                             "type": "string",
@@ -6568,7 +7021,9 @@
                 },
                 "properties": {
                   "type": "object",
-                  "additionalProperties": { "readOnly": true },
+                  "additionalProperties": {
+                    "readOnly": true
+                  },
                   "description": "Map of project properties",
                   "readOnly": true
                 },
@@ -6704,7 +7159,9 @@
                         "size": {
                           "type": "integer",
                           "format": "int32",
-                          "xml": { "attribute": true }
+                          "xml": {
+                            "attribute": true
+                          }
                         },
                         "items": {
                           "type": "array",
@@ -6724,12 +7181,19 @@
                             }
                           }
                         },
-                        "pagingCallback": { "type": "object" },
-                        "callback": { "type": "object" },
+                        "pagingCallback": {
+                          "type": "object"
+                        },
+                        "callback": {
+                          "type": "object"
+                        },
                         "max-results": {
                           "type": "integer",
                           "format": "int32",
-                          "xml": { "name": "max-results", "attribute": true }
+                          "xml": {
+                            "name": "max-results",
+                            "attribute": true
+                          }
                         }
                       }
                     },
@@ -6741,7 +7205,9 @@
                         "size": {
                           "type": "integer",
                           "format": "int32",
-                          "xml": { "attribute": true }
+                          "xml": {
+                            "attribute": true
+                          }
                         },
                         "items": {
                           "type": "array",
@@ -6756,7 +7222,9 @@
                                 "uniqueItems": true,
                                 "type": "array",
                                 "description": "The groups associated with the application role.",
-                                "items": { "type": "string" }
+                                "items": {
+                                  "type": "string"
+                                }
                               },
                               "name": {
                                 "type": "string",
@@ -6766,7 +7234,9 @@
                                 "uniqueItems": true,
                                 "type": "array",
                                 "description": "The groups that are granted default access for this application role.",
-                                "items": { "type": "string" }
+                                "items": {
+                                  "type": "string"
+                                }
                               },
                               "selectedByDefault": {
                                 "type": "boolean",
@@ -6795,7 +7265,9 @@
                                 "type": "string",
                                 "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                               },
-                              "hasUnlimitedSeats": { "type": "boolean" },
+                              "hasUnlimitedSeats": {
+                                "type": "boolean"
+                              },
                               "platform": {
                                 "type": "boolean",
                                 "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -6803,12 +7275,19 @@
                             }
                           }
                         },
-                        "pagingCallback": { "type": "object" },
-                        "callback": { "type": "object" },
+                        "pagingCallback": {
+                          "type": "object"
+                        },
+                        "callback": {
+                          "type": "object"
+                        },
                         "max-results": {
                           "type": "integer",
                           "format": "int32",
-                          "xml": { "name": "max-results", "attribute": true }
+                          "xml": {
+                            "name": "max-results",
+                            "attribute": true
+                          }
                         }
                       }
                     },
@@ -6816,7 +7295,9 @@
                       "type": "string",
                       "description": "Expand options that include additional user details in the response.",
                       "readOnly": true,
-                      "xml": { "attribute": true }
+                      "xml": {
+                        "attribute": true
+                      }
                     }
                   }
                 },
@@ -6921,7 +7402,9 @@
                         "size": {
                           "type": "integer",
                           "format": "int32",
-                          "xml": { "attribute": true }
+                          "xml": {
+                            "attribute": true
+                          }
                         },
                         "items": {
                           "type": "array",
@@ -6941,12 +7424,19 @@
                             }
                           }
                         },
-                        "pagingCallback": { "type": "object" },
-                        "callback": { "type": "object" },
+                        "pagingCallback": {
+                          "type": "object"
+                        },
+                        "callback": {
+                          "type": "object"
+                        },
                         "max-results": {
                           "type": "integer",
                           "format": "int32",
-                          "xml": { "name": "max-results", "attribute": true }
+                          "xml": {
+                            "name": "max-results",
+                            "attribute": true
+                          }
                         }
                       }
                     },
@@ -6958,7 +7448,9 @@
                         "size": {
                           "type": "integer",
                           "format": "int32",
-                          "xml": { "attribute": true }
+                          "xml": {
+                            "attribute": true
+                          }
                         },
                         "items": {
                           "type": "array",
@@ -6973,7 +7465,9 @@
                                 "uniqueItems": true,
                                 "type": "array",
                                 "description": "The groups associated with the application role.",
-                                "items": { "type": "string" }
+                                "items": {
+                                  "type": "string"
+                                }
                               },
                               "name": {
                                 "type": "string",
@@ -6983,7 +7477,9 @@
                                 "uniqueItems": true,
                                 "type": "array",
                                 "description": "The groups that are granted default access for this application role.",
-                                "items": { "type": "string" }
+                                "items": {
+                                  "type": "string"
+                                }
                               },
                               "selectedByDefault": {
                                 "type": "boolean",
@@ -7012,7 +7508,9 @@
                                 "type": "string",
                                 "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                               },
-                              "hasUnlimitedSeats": { "type": "boolean" },
+                              "hasUnlimitedSeats": {
+                                "type": "boolean"
+                              },
                               "platform": {
                                 "type": "boolean",
                                 "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -7020,12 +7518,19 @@
                             }
                           }
                         },
-                        "pagingCallback": { "type": "object" },
-                        "callback": { "type": "object" },
+                        "pagingCallback": {
+                          "type": "object"
+                        },
+                        "callback": {
+                          "type": "object"
+                        },
                         "max-results": {
                           "type": "integer",
                           "format": "int32",
-                          "xml": { "name": "max-results", "attribute": true }
+                          "xml": {
+                            "name": "max-results",
+                            "attribute": true
+                          }
                         }
                       }
                     },
@@ -7033,7 +7538,9 @@
                       "type": "string",
                       "description": "Expand options that include additional user details in the response.",
                       "readOnly": true,
-                      "xml": { "attribute": true }
+                      "xml": {
+                        "attribute": true
+                      }
                     }
                   }
                 }
@@ -7535,8 +8042,14 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "id": { "type": "string", "description": "The ID of the field." },
-            "key": { "type": "string", "description": "The key of the field." },
+            "id": {
+              "type": "string",
+              "description": "The ID of the field."
+            },
+            "key": {
+              "type": "string",
+              "description": "The key of the field."
+            },
             "name": {
               "type": "string",
               "description": "The name of the field."
@@ -7561,7 +8074,9 @@
               "uniqueItems": true,
               "type": "array",
               "description": "The names that can be used to reference the field in an advanced search. For more information, see [Advanced searching - fields reference](https://confluence.atlassian.com/x/gwORLQ).",
-              "items": { "type": "string" }
+              "items": {
+                "type": "string"
+              }
             },
             "scope": {
               "description": "The scope of the field.",
@@ -7698,7 +8213,9 @@
                 },
                 "configuration": {
                   "type": "object",
-                  "additionalProperties": { "readOnly": true },
+                  "additionalProperties": {
+                    "readOnly": true
+                  },
                   "description": "If the field is a custom field, the configuration of the field.",
                   "readOnly": true
                 }
@@ -7755,7 +8272,10 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "id": { "type": "string", "description": "The ID of the context." },
+            "id": {
+              "type": "string",
+              "description": "The ID of the context."
+            },
             "name": {
               "type": "string",
               "description": "The name of the context."
@@ -7793,7 +8313,9 @@
               "type": "array",
               "description": "The issue link type bean.",
               "readOnly": true,
-              "xml": { "name": "issueLinkTypes" },
+              "xml": {
+                "name": "issueLinkTypes"
+              },
               "items": {
                 "type": "object",
                 "properties": {
@@ -7873,7 +8395,9 @@
               "description": "The ID of the notification scheme.",
               "format": "int64"
             },
-            "self": { "type": "string" },
+            "self": {
+              "type": "string"
+            },
             "name": {
               "type": "string",
               "description": "The name of the notification scheme."
@@ -7994,7 +8518,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The names that can be used to reference the field in an advanced search. For more information, see [Advanced searching - fields reference](https://confluence.atlassian.com/x/gwORLQ).",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "scope": {
                               "description": "The scope of the field.",
@@ -8135,7 +8661,9 @@
                                 },
                                 "configuration": {
                                   "type": "object",
-                                  "additionalProperties": { "readOnly": true },
+                                  "additionalProperties": {
+                                    "readOnly": true
+                                  },
                                   "description": "If the field is a custom field, the configuration of the field.",
                                   "readOnly": true
                                 }
@@ -9045,7 +9573,9 @@
                       "size": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "items": {
                         "type": "array",
@@ -9065,12 +9595,19 @@
                           }
                         }
                       },
-                      "pagingCallback": { "type": "object" },
-                      "callback": { "type": "object" },
+                      "pagingCallback": {
+                        "type": "object"
+                      },
+                      "callback": {
+                        "type": "object"
+                      },
                       "max-results": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "name": "max-results", "attribute": true }
+                        "xml": {
+                          "name": "max-results",
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -9082,7 +9619,9 @@
                       "size": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "items": {
                         "type": "array",
@@ -9097,7 +9636,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The groups associated with the application role.",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "name": {
                               "type": "string",
@@ -9107,7 +9648,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The groups that are granted default access for this application role.",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "selectedByDefault": {
                               "type": "boolean",
@@ -9136,7 +9679,9 @@
                               "type": "string",
                               "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                             },
-                            "hasUnlimitedSeats": { "type": "boolean" },
+                            "hasUnlimitedSeats": {
+                              "type": "boolean"
+                            },
                             "platform": {
                               "type": "boolean",
                               "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -9144,12 +9689,19 @@
                           }
                         }
                       },
-                      "pagingCallback": { "type": "object" },
-                      "callback": { "type": "object" },
+                      "pagingCallback": {
+                        "type": "object"
+                      },
+                      "callback": {
+                        "type": "object"
+                      },
                       "max-results": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "name": "max-results", "attribute": true }
+                        "xml": {
+                          "name": "max-results",
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -9157,7 +9709,9 @@
                     "type": "string",
                     "description": "Expand options that include additional user details in the response.",
                     "readOnly": true,
-                    "xml": { "attribute": true }
+                    "xml": {
+                      "attribute": true
+                    }
                   }
                 }
               }
@@ -9555,7 +10109,10 @@
               "type": "string",
               "description": "The key of the application property. The ID and key are the same."
             },
-            "value": { "type": "string", "description": "The new value." },
+            "value": {
+              "type": "string",
+              "description": "The new value."
+            },
             "name": {
               "type": "string",
               "description": "The name of the application property."
@@ -9572,11 +10129,15 @@
               "type": "string",
               "description": "The default value of the application property."
             },
-            "example": { "type": "string" },
+            "example": {
+              "type": "string"
+            },
             "allowedValues": {
               "type": "array",
               "description": "The allowed values, if applicable.",
-              "items": { "type": "string" }
+              "items": {
+                "type": "string"
+              }
             }
           },
           "additionalProperties": false,
@@ -9593,10 +10154,28 @@
         "name": "labels",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "array",
-          "description": "The list of items.",
-          "readOnly": true,
-          "items": { "type": "string", "readOnly": true }
+          "type": ["object", "null"],
+          "properties": {
+            "id": {
+              "type": ["string", "null"]
+            },
+            "key": {
+              "type": ["string", "null"]
+            },
+            "value": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "desc": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            }
+          },
+          "additionalProperties": true
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
@@ -10297,7 +10876,9 @@
                       "size": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "items": {
                         "type": "array",
@@ -10317,12 +10898,19 @@
                           }
                         }
                       },
-                      "pagingCallback": { "type": "object" },
-                      "callback": { "type": "object" },
+                      "pagingCallback": {
+                        "type": "object"
+                      },
+                      "callback": {
+                        "type": "object"
+                      },
                       "max-results": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "name": "max-results", "attribute": true }
+                        "xml": {
+                          "name": "max-results",
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -10334,7 +10922,9 @@
                       "size": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "items": {
                         "type": "array",
@@ -10349,7 +10939,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The groups associated with the application role.",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "name": {
                               "type": "string",
@@ -10359,7 +10951,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The groups that are granted default access for this application role.",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "selectedByDefault": {
                               "type": "boolean",
@@ -10388,7 +10982,9 @@
                               "type": "string",
                               "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                             },
-                            "hasUnlimitedSeats": { "type": "boolean" },
+                            "hasUnlimitedSeats": {
+                              "type": "boolean"
+                            },
                             "platform": {
                               "type": "boolean",
                               "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -10396,12 +10992,19 @@
                           }
                         }
                       },
-                      "pagingCallback": { "type": "object" },
-                      "callback": { "type": "object" },
+                      "pagingCallback": {
+                        "type": "object"
+                      },
+                      "callback": {
+                        "type": "object"
+                      },
                       "max-results": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "name": "max-results", "attribute": true }
+                        "xml": {
+                          "name": "max-results",
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -10409,7 +11012,9 @@
                     "type": "string",
                     "description": "Expand options that include additional user details in the response.",
                     "readOnly": true,
-                    "xml": { "attribute": true }
+                    "xml": {
+                      "attribute": true
+                    }
                   }
                 }
               },
@@ -10508,7 +11113,9 @@
                       "size": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "items": {
                         "type": "array",
@@ -10528,12 +11135,19 @@
                           }
                         }
                       },
-                      "pagingCallback": { "type": "object" },
-                      "callback": { "type": "object" },
+                      "pagingCallback": {
+                        "type": "object"
+                      },
+                      "callback": {
+                        "type": "object"
+                      },
                       "max-results": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "name": "max-results", "attribute": true }
+                        "xml": {
+                          "name": "max-results",
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -10545,7 +11159,9 @@
                       "size": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "items": {
                         "type": "array",
@@ -10560,7 +11176,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The groups associated with the application role.",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "name": {
                               "type": "string",
@@ -10570,7 +11188,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The groups that are granted default access for this application role.",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "selectedByDefault": {
                               "type": "boolean",
@@ -10599,7 +11219,9 @@
                               "type": "string",
                               "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                             },
-                            "hasUnlimitedSeats": { "type": "boolean" },
+                            "hasUnlimitedSeats": {
+                              "type": "boolean"
+                            },
                             "platform": {
                               "type": "boolean",
                               "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -10607,12 +11229,19 @@
                           }
                         }
                       },
-                      "pagingCallback": { "type": "object" },
-                      "callback": { "type": "object" },
+                      "pagingCallback": {
+                        "type": "object"
+                      },
+                      "callback": {
+                        "type": "object"
+                      },
                       "max-results": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "name": "max-results", "attribute": true }
+                        "xml": {
+                          "name": "max-results",
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -10620,7 +11249,9 @@
                     "type": "string",
                     "description": "Expand options that include additional user details in the response.",
                     "readOnly": true,
-                    "xml": { "attribute": true }
+                    "xml": {
+                      "attribute": true
+                    }
                   }
                 }
               },
@@ -10718,7 +11349,9 @@
                       "size": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "items": {
                         "type": "array",
@@ -10738,12 +11371,19 @@
                           }
                         }
                       },
-                      "pagingCallback": { "type": "object" },
-                      "callback": { "type": "object" },
+                      "pagingCallback": {
+                        "type": "object"
+                      },
+                      "callback": {
+                        "type": "object"
+                      },
                       "max-results": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "name": "max-results", "attribute": true }
+                        "xml": {
+                          "name": "max-results",
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -10755,7 +11395,9 @@
                       "size": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "items": {
                         "type": "array",
@@ -10770,7 +11412,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The groups associated with the application role.",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "name": {
                               "type": "string",
@@ -10780,7 +11424,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The groups that are granted default access for this application role.",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "selectedByDefault": {
                               "type": "boolean",
@@ -10809,7 +11455,9 @@
                               "type": "string",
                               "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                             },
-                            "hasUnlimitedSeats": { "type": "boolean" },
+                            "hasUnlimitedSeats": {
+                              "type": "boolean"
+                            },
                             "platform": {
                               "type": "boolean",
                               "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -10817,12 +11465,19 @@
                           }
                         }
                       },
-                      "pagingCallback": { "type": "object" },
-                      "callback": { "type": "object" },
+                      "pagingCallback": {
+                        "type": "object"
+                      },
+                      "callback": {
+                        "type": "object"
+                      },
                       "max-results": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "name": "max-results", "attribute": true }
+                        "xml": {
+                          "name": "max-results",
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -10830,7 +11485,9 @@
                     "type": "string",
                     "description": "Expand options that include additional user details in the response.",
                     "readOnly": true,
-                    "xml": { "attribute": true }
+                    "xml": {
+                      "attribute": true
+                    }
                   }
                 }
               },
@@ -11013,7 +11670,9 @@
               "expand": {
                 "type": "string",
                 "description": "Use [expand](em>#expansion) to include additional information about version in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `operations` Returns the list of operations available for this version.\n *  `issuesstatus` Returns the count of issues in this version for each of the status categories *to do*, *in progress*, *done*, and *unmapped*. The *unmapped* property contains a count of issues with a status other than *to do*, *in progress*, and *done*.\n\nOptional for create and update.",
-                "xml": { "attribute": true }
+                "xml": {
+                  "attribute": true
+                }
               },
               "self": {
                 "type": "string",
@@ -11088,13 +11747,28 @@
                 "items": {
                   "type": "object",
                   "properties": {
-                    "id": { "type": "string" },
-                    "styleClass": { "type": "string" },
-                    "iconClass": { "type": "string" },
-                    "label": { "type": "string" },
-                    "title": { "type": "string" },
-                    "href": { "type": "string" },
-                    "weight": { "type": "integer", "format": "int32" }
+                    "id": {
+                      "type": "string"
+                    },
+                    "styleClass": {
+                      "type": "string"
+                    },
+                    "iconClass": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "href": {
+                      "type": "string"
+                    },
+                    "weight": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
                   }
                 }
               },
@@ -11130,7 +11804,9 @@
                 }
               }
             },
-            "xml": { "name": "version" }
+            "xml": {
+              "name": "version"
+            }
           }
         },
         "supported_sync_modes": ["full_refresh"],
@@ -11697,7 +12373,9 @@
               },
               "issueTypeMappings": {
                 "type": "object",
-                "additionalProperties": { "type": "string" },
+                "additionalProperties": {
+                  "type": "string"
+                },
                 "description": "The issue type to workflow mappings, where each mapping is an issue type ID and workflow name pair. Note that an issue type can only be mapped to one workflow in a workflow scheme."
               },
               "originalDefaultWorkflow": {
@@ -11707,7 +12385,10 @@
               },
               "originalIssueTypeMappings": {
                 "type": "object",
-                "additionalProperties": { "type": "string", "readOnly": true },
+                "additionalProperties": {
+                  "type": "string",
+                  "readOnly": true
+                },
                 "description": "For draft workflow schemes, this property is the issue type to workflow mappings for the original workflow scheme, where each mapping is an issue type ID and workflow name pair. Note that an issue type can only be mapped to one workflow in a workflow scheme.",
                 "readOnly": true
               },
@@ -11806,7 +12487,9 @@
                       "size": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "items": {
                         "type": "array",
@@ -11826,12 +12509,19 @@
                           }
                         }
                       },
-                      "pagingCallback": { "type": "object" },
-                      "callback": { "type": "object" },
+                      "pagingCallback": {
+                        "type": "object"
+                      },
+                      "callback": {
+                        "type": "object"
+                      },
                       "max-results": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "name": "max-results", "attribute": true }
+                        "xml": {
+                          "name": "max-results",
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -11843,7 +12533,9 @@
                       "size": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "items": {
                         "type": "array",
@@ -11858,7 +12550,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The groups associated with the application role.",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "name": {
                               "type": "string",
@@ -11868,7 +12562,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The groups that are granted default access for this application role.",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "selectedByDefault": {
                               "type": "boolean",
@@ -11897,7 +12593,9 @@
                               "type": "string",
                               "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                             },
-                            "hasUnlimitedSeats": { "type": "boolean" },
+                            "hasUnlimitedSeats": {
+                              "type": "boolean"
+                            },
                             "platform": {
                               "type": "boolean",
                               "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -11905,12 +12603,19 @@
                           }
                         }
                       },
-                      "pagingCallback": { "type": "object" },
-                      "callback": { "type": "object" },
+                      "pagingCallback": {
+                        "type": "object"
+                      },
+                      "callback": {
+                        "type": "object"
+                      },
                       "max-results": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "name": "max-results", "attribute": true }
+                        "xml": {
+                          "name": "max-results",
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -11918,7 +12623,9 @@
                     "type": "string",
                     "description": "Expand options that include additional user details in the response.",
                     "readOnly": true,
-                    "xml": { "attribute": true }
+                    "xml": {
+                      "attribute": true
+                    }
                   }
                 }
               },
@@ -11927,7 +12634,11 @@
                 "description": "The date-time that the draft workflow scheme was last modified. A modification is a change to the issue type-project mappings only. This property does not apply to non-draft workflows.",
                 "readOnly": true
               },
-              "self": { "type": "string", "format": "uri", "readOnly": true },
+              "self": {
+                "type": "string",
+                "format": "uri",
+                "readOnly": true
+              },
               "updateDraftIfNeeded": {
                 "type": "boolean",
                 "description": "Whether to create or update a draft workflow scheme when updating an active workflow scheme. An active workflow scheme is a workflow scheme that is used by at least one project. The following examples show how this property works:\n\n *  Update an active workflow scheme with `updateDraftIfNeeded` set to `true`: If a draft workflow scheme exists, it is updated. Otherwise, a draft workflow scheme is created.\n *  Update an active workflow scheme with `updateDraftIfNeeded` set to `false`: An error is returned, as active workflow schemes cannot be updated.\n *  Update an inactive workflow scheme with `updateDraftIfNeeded` set to `true`: The workflow scheme is updated, as inactive workflow schemes do not require drafts to update.\n\nDefaults to `false`."

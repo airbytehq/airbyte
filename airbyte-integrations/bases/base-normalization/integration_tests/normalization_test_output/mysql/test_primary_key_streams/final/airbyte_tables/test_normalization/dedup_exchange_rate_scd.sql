@@ -16,11 +16,11 @@ select
     `date` as _airbyte_start_at,
     lag(`date`) over (
         partition by id, currency, cast(nzd as char)
-        order by `date` desc, _airbyte_emitted_at desc
+        order by `date` is null asc, `date` desc, _airbyte_emitted_at desc
     ) as _airbyte_end_at,
     lag(`date`) over (
         partition by id, currency, cast(nzd as char)
-        order by `date` desc, _airbyte_emitted_at desc
+        order by `date` is null asc, `date` desc, _airbyte_emitted_at desc
     ) is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _airbyte_dedup_exchange_rate_hashid

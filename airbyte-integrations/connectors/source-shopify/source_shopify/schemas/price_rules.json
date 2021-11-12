@@ -51,7 +51,7 @@
     },
     "prerequisite_customer_ids": {
       "items": {
-        "type": ["null", "string"]
+        "type": ["null", "number"]
       },
       "type": ["null", "array"]
     },
@@ -80,7 +80,7 @@
     "prerequisite_subtotal_range": {
       "properties": {
         "greater_than_or_equal_to": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         }
       },
       "type": ["null", "object"]
@@ -128,7 +128,7 @@
       "type": ["null", "array"]
     },
     "value": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "value_type": {
       "type": ["null", "string"]

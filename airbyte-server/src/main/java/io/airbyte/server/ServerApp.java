@@ -34,8 +34,9 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -60,10 +61,14 @@ import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseFilter;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -89,13 +94,19 @@ public class ServerApp {
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
   private final Configs configs;
+  private final Set<ContainerRequestFilter> requestFilters;
+  private final Set<ContainerResponseFilter> responseFilters;
 
   public ServerApp(final ConfigRepository configRepository,
                    final JobPersistence jobPersistence,
-                   final Configs configs) {
+                   final Configs configs,
+                   final Set<ContainerRequestFilter> requestFilters,
+                   final Set<ContainerResponseFilter> responseFilters) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
     this.configs = configs;
+    this.requestFilters = requestFilters;
+    this.responseFilters = responseFilters;
   }
 
   public void start() throws Exception {
@@ -123,9 +134,6 @@ public class ServerApp {
 
     ResourceConfig rc =
         new ResourceConfig()
-            // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add auth.
-            // cors
-            .register(new CorsFilter())
             // request logging
             .register(new RequestLogger(mdc))
             // api
@@ -152,6 +160,10 @@ public class ServerApp {
             // https://stackoverflow.com/questions/35669774/jersey-custom-exception-mapper-for-invalid-json-string
             .register(JacksonJaxbJsonProvider.class);
 
+    // add filters
+    requestFilters.forEach(rc::register);
+    responseFilters.forEach(rc::register);
+
     ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
 
     handler.addServlet(configServlet, "/api/*");
@@ -164,35 +176,42 @@ public class ServerApp {
     server.join();
   }
 
-  private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) {
-    final StandardWorkspace workspace;
-    try {
-      workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
+  private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) throws InterruptedException {
+    StandardWorkspace workspace = null;
 
-      if (workspace.getCustomerId() == null) {
-        final UUID customerId = UUID.randomUUID();
-        LOGGER.info("customerId not set for workspace. Setting it to " + customerId);
-        workspace.setCustomerId(customerId);
+    // retry until the workspace is available / waits for file config initialization
+    while (workspace == null) {
+      try {
+        workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
 
-        configRepository.writeStandardWorkspace(workspace);
+        if (workspace.getCustomerId() == null) {
+          final UUID customerId = UUID.randomUUID();
+          LOGGER.info("customerId not set for workspace. Setting it to " + customerId);
+          workspace.setCustomerId(customerId);
+
+          configRepository.writeStandardWorkspace(workspace);
+        } else {
+          LOGGER.info("customerId already set for workspace: " + workspace.getCustomerId());
+        }
+      } catch (ConfigNotFoundException e) {
+        LOGGER.error("Could not find workspace with id: " + PersistenceConstants.DEFAULT_WORKSPACE_ID, e);
+        Thread.sleep(1000);
+      } catch (JsonValidationException | IOException e) {
+        throw new RuntimeException(e);
       }
-    } catch (ConfigNotFoundException e) {
-      throw new RuntimeException("could not find workspace with id: " + PersistenceConstants.DEFAULT_WORKSPACE_ID, e);
-    } catch (JsonValidationException | IOException e) {
-      throw new RuntimeException(e);
     }
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void runServer(final Set<ContainerRequestFilter> requestFilters,
+                               final Set<ContainerResponseFilter> responseFilters)
+      throws Exception {
     final Configs configs = new EnvConfigs();
 
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
 
-    final Path configRoot = configs.getConfigRoot();
-    LOGGER.info("configRoot = " + configRoot);
-
     LOGGER.info("Creating config repository...");
-    final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot));
+    final ConfigPersistence configPersistence = ConfigPersistenceBuilder.getAndInitializeDbPersistence(configs);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
 
     // hack: upon installation we need to assign a random customerId so that when
     // tracking we can associate all action with the correct anonymous id.
@@ -200,16 +219,18 @@ public class ServerApp {
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
+        WorkerEnvironment.DOCKER,
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
-    final Database database = Databases.createPostgresDatabaseWithRetry(
+    final Database jobDatabase = Databases.createPostgresDatabaseWithRetry(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
-        configs.getDatabaseUrl());
-    final JobPersistence jobPersistence = new DefaultJobPersistence(database);
+        configs.getDatabaseUrl(),
+        Databases.IS_JOB_DATABASE_READY);
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
     final String airbyteVersion = configs.getAirbyteVersion();
     if (jobPersistence.getVersion().isEmpty()) {
@@ -233,11 +254,15 @@ public class ServerApp {
 
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
-      new ServerApp(configRepository, jobPersistence, configs).start();
+      new ServerApp(configRepository, jobPersistence, configs, requestFilters, responseFilters).start();
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
     }
+  }
+
+  public static void main(String[] args) throws Exception {
+    runServer(Collections.emptySet(), Set.of(new CorsFilter()));
   }
 
   /**

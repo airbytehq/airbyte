@@ -1,4 +1,4 @@
-# Surveymonkey
+# SurveyMonkey
 
 ## Sync overview
 

@@ -24,12 +24,16 @@
 
 package io.airbyte.db;
 
+import static org.jooq.impl.DSL.select;
+
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import java.util.Optional;
+import java.util.function.Function;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -39,11 +43,42 @@ public class Databases {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Databases.class);
 
+  // The Job Database is initialized by SQL script, which writes a server UUID at the end.
+  // So this database is ready when the server UUID record is present.
+  public static final Function<Database, Boolean> IS_JOB_DATABASE_READY = database -> {
+    try {
+      Optional<String> uuid = ServerUuid.get(database);
+      return uuid.isPresent();
+    } catch (Exception e) {
+      return false;
+    }
+  };
+  public static final Function<Database, Boolean> IS_CONFIG_DATABASE_CONNECTED = database -> {
+    try {
+      LOGGER.info("Testing config database connection...");
+      return database.query(ctx -> ctx.fetchExists(select().from("information_schema.tables")));
+    } catch (Exception e) {
+      LOGGER.info("Unsuccessful connection to config database", e);
+      return false;
+    }
+  };
+  public static final Function<Database, Boolean> IS_CONFIG_DATABASE_LOADED_WITH_DATA = database -> {
+    try {
+      LOGGER.info("Testing if airbyte_configs has been created...");
+      return database.query(ctx -> ctx.fetchExists(select().from("airbyte_configs")));
+    } catch (Exception e) {
+      return false;
+    }
+  };
+
   public static Database createPostgresDatabase(String username, String password, String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
-  public static Database createPostgresDatabaseWithRetry(String username, String password, String jdbcConnectionString) {
+  public static Database createPostgresDatabaseWithRetry(String username,
+                                                         String password,
+                                                         String jdbcConnectionString,
+                                                         Function<Database, Boolean> isDbReady) {
     Database database = null;
 
     while (database == null) {
@@ -51,9 +86,10 @@ public class Databases {
 
       try {
         database = createPostgresDatabase(username, password, jdbcConnectionString);
-        Optional<String> uuid = ServerUuid.get(database);
-        if (uuid.isEmpty()) {
-          throw new Exception("Server UUID not available yet!");
+        if (!isDbReady.apply(database)) {
+          LOGGER.info("Database is not ready yet. Please wait a moment, it might still be initializing...");
+          database = null;
+          Exceptions.toRuntime(() -> Thread.sleep(5000));
         }
       } catch (Exception e) {
         // Ignore the exception because this likely means that the database server is still initializing.
@@ -69,6 +105,10 @@ public class Databases {
 
   public static JdbcDatabase createRedshiftDatabase(String username, String password, String jdbcConnectionString) {
     return createJdbcDatabase(username, password, jdbcConnectionString, "com.amazon.redshift.jdbc.Driver");
+  }
+
+  public static Database createMySqlDatabase(String username, String password, String jdbcConnectionString) {
+    return createDatabase(username, password, jdbcConnectionString, "com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
   }
 
   public static Database createSqlServerDatabase(String username, String password, String jdbcConnectionString) {
@@ -155,6 +195,10 @@ public class Databases {
     connectionPool.setUrl(jdbcConnectionString);
     connectionProperties.ifPresent(connectionPool::setConnectionProperties);
     return connectionPool;
+  }
+
+  public static BigQueryDatabase createBigQueryDatabase(final String projectId, final String jsonCreds) {
+    return new BigQueryDatabase(projectId, jsonCreds);
   }
 
 }

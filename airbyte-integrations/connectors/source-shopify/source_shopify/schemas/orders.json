@@ -536,7 +536,7 @@
       "type": ["null", "string"]
     },
     "user_id": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "billing_address": {
       "type": ["null", "object"],

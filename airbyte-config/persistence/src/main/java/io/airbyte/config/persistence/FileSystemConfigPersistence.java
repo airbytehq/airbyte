@@ -47,8 +47,9 @@ import org.slf4j.LoggerFactory;
 public class FileSystemConfigPersistence implements ConfigPersistence {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemConfigPersistence.class);
-  private static final String CONFIG_DIR = "config";
+  public static final String CONFIG_DIR = "config";
   private static final String TMP_DIR = "tmp_storage";
+  private static final int INTERVAL_WAITING_SECONDS = 3;
 
   private static final Object lock = new Object();
 
@@ -57,7 +58,18 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   // root for where configs are stored
   private final Path configRoot;
 
-  public static ConfigPersistence createWithValidation(final Path storageRoot) {
+  public static ConfigPersistence createWithValidation(final Path storageRoot) throws InterruptedException {
+    LOGGER.info("Constructing file system config persistence (root: {})", storageRoot);
+
+    Path configRoot = storageRoot.resolve(CONFIG_DIR);
+    int totalWaitingSeconds = 0;
+    while (!Files.exists(configRoot)) {
+      LOGGER.warn("Config volume is not ready yet (waiting time: {} s)", totalWaitingSeconds);
+      Thread.sleep(INTERVAL_WAITING_SECONDS * 1000);
+      totalWaitingSeconds += INTERVAL_WAITING_SECONDS;
+    }
+    LOGGER.info("Config volume is ready (waiting time: {} s)", totalWaitingSeconds);
+
     return new ValidatingConfigPersistence(new FileSystemConfigPersistence(storageRoot));
   }
 

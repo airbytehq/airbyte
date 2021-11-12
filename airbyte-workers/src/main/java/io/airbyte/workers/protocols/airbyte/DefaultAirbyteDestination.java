@@ -112,6 +112,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   @Override
   public void close() throws Exception {
     if (destinationProcess == null) {
+      LOGGER.debug("Destination process already exited");
       return;
     }
 

@@ -90,7 +90,6 @@ class DbtIntegrationTest(object):
         print("Starting localhost mysql container for tests")
         port = self.find_free_port()
         config = {
-            "type": "mysql",
             "host": "localhost",
             "port": port,
             "database": self.target_schema,
@@ -160,8 +159,14 @@ class DbtIntegrationTest(object):
         profiles_config = config_generator.read_json_config(f"../secrets/{destination_type.value.lower()}.json")
         # Adapt credential file to look like destination config.json
         if destination_type.value == DestinationType.BIGQUERY.value:
-            profiles_config["credentials_json"] = json.dumps(profiles_config)
-            profiles_config["dataset_id"] = self.target_schema
+            credentials = profiles_config
+            profiles_config = {
+                "credentials_json": json.dumps(credentials),
+                "dataset_id": self.target_schema,
+                "project_id": credentials["project_id"],
+            }
+        elif destination_type.value == DestinationType.MYSQL.value:
+            profiles_config["database"] = self.target_schema
         else:
             profiles_config["schema"] = self.target_schema
         profiles_yaml = config_generator.transform(destination_type, profiles_config)
@@ -251,6 +256,7 @@ class DbtIntegrationTest(object):
                         "PASS=",  # DBT Summary
                         "Nothing to do.",  # When no schema/data tests are setup
                         "Configuration paths exist in your dbt_project.yml",  # When no cte / view are generated
+                        "Error loading config file: .dockercfg: $HOME is not defined",  # ignore warning
                     ]:
                         if except_clause in str_line:
                             is_exception = True

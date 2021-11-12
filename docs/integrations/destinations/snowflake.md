@@ -186,3 +186,8 @@ The final query should show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an ema
 
 Finally, you need to add read/write permissions to your bucket with that email.
 
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.3.10 | July 12, 2021| [4713](https://github.com/airbytehq/airbyte/pull/4713)| Tag traffic with `airbyte` label to enable optimization opportunities from Snowflake |
+

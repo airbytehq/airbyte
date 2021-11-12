@@ -99,7 +99,7 @@ class DefaultNormalizationRunnerTest {
     runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
     runner.close();
 
-    verify(process).destroy();
+    verify(process).waitFor();
   }
 
   @Test

@@ -24,6 +24,9 @@
               "type": ["null", "string"]
             },
             "ts": {
+              "type": ["null", "string"]
+            },
+            "float_ts": {
               "type": ["null", "number"]
             },
             "team": {
@@ -66,9 +69,9 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["ts"]
+        "default_cursor_field": ["float_ts"]
       },
-      "cursor_field": ["ts"],
+      "cursor_field": ["float_ts"],
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
     }

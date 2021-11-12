@@ -25,6 +25,7 @@
 package io.airbyte.scheduler.app;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -36,7 +37,9 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -49,6 +52,9 @@ public class JobSubmitter implements Runnable {
   private final JobPersistence persistence;
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
   private final JobTracker jobTracker;
+
+  // See attemptJobSubmit() to understand the need for this Concurrent Set.
+  private final Set<Long> runningJobs = Sets.newConcurrentHashSet();
 
   public JobSubmitter(final ExecutorService threadPool,
                       final JobPersistence persistence,
@@ -67,16 +73,40 @@ public class JobSubmitter implements Runnable {
 
       final Optional<Job> nextJob = persistence.getNextJob();
 
-      nextJob.ifPresent(job -> {
-        trackSubmission(job);
-        submitJob(job);
-        LOGGER.info("Job-Submitter Summary. Submitted job with scope {}", job.getScope());
-      });
+      nextJob.ifPresent(attemptJobSubmit());
 
       LOGGER.debug("Completed Job-Submitter...");
     } catch (Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }
+  }
+
+  /**
+   * Since job submission and job execution happen in two separate thread pools, and job execution is
+   * what removes a job from the submission queue, it is possible for a job to be submitted multiple
+   * times.
+   *
+   * This synchronised block guarantees only a single thread can utilise the concurrent set to decide
+   * whether a job should be submitted. This job id is added here, and removed in the finish block of
+   * {@link #submitJob(Job)}.
+   *
+   * Since {@link JobPersistence#getNextJob()} returns the next queued job, this solution cause
+   * head-of-line blocking as the JobSubmitter tries to submit the same job. However, this suggests
+   * the Worker Pool needs more workers and is inevitable when dealing with pending jobs.
+   *
+   * See https://github.com/airbytehq/airbyte/issues/4378 for more info.
+   */
+  synchronized private Consumer<Job> attemptJobSubmit() {
+    return job -> {
+      if (!runningJobs.contains(job.getId())) {
+        runningJobs.add(job.getId());
+        trackSubmission(job);
+        submitJob(job);
+        LOGGER.info("Job-Submitter Summary. Submitted job with scope {}", job.getScope());
+      } else {
+        LOGGER.info("Attempting to submit already running job {}. There are probably too many queued jobs.", job.getId());
+      }
+    };
   }
 
   @VisibleForTesting
@@ -94,7 +124,6 @@ public class JobSubmitter implements Runnable {
           final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
           final long persistedAttemptId = persistence.createAttempt(job.getId(), logFilePath);
           assertSameIds(attemptNumber, persistedAttemptId);
-
           LogClientSingleton.setJobMdc(workerRun.getJobRoot());
         })
         .setOnSuccess(output -> {
@@ -114,7 +143,10 @@ public class JobSubmitter implements Runnable {
           persistence.failAttempt(job.getId(), attemptNumber);
           trackCompletion(job, io.airbyte.workers.JobStatus.FAILED);
         })
-        .setOnFinish(MDC::clear)
+        .setOnFinish(() -> {
+          runningJobs.remove(job.getId());
+          MDC.clear();
+        })
         .build());
   }
 

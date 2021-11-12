@@ -1,8 +1,11 @@
 import { SourceDefinition } from "core/resources/SourceDefinition";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import { ConnectorDefinition } from "./connector";
 
 export function isSourceDefinition(
-  item: SourceDefinition | DestinationDefinition
-): item is SourceDefinition {
-  return (item as SourceDefinition).sourceDefinitionId !== undefined;
+  connector: ConnectorDefinition
+): connector is SourceDefinition {
+  return (connector as SourceDefinition).sourceDefinitionId !== undefined;
 }
+
+// eslint-disable-next-line no-template-curly-in-string
+export const SOURCE_NAMESPACE_TAG = "${SOURCE_NAMESPACE}";

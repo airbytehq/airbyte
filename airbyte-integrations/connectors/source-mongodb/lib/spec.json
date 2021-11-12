@@ -46,7 +46,7 @@
       "auth_source": {
         "title": "Authentication source",
         "type": "string",
-        "description": "Authentication source where user information is stored",
+        "description": "Authentication source where user information is stored. See <a href=\"* [Authentication Source](https://docs.mongodb.com/manual/reference/connection-string/#mongodb-urioption-urioption.authSource)\"> the Mongo docs</a> for more info.",
         "default": "admin",
         "examples": ["admin"],
         "order": 5
@@ -54,7 +54,7 @@
       "replica_set": {
         "title": "Replica Set",
         "type": "string",
-        "description": "The name of the set to filter servers by, when connecting to a replica set (Under this condition, the 'TLS connection' value automatically becomes 'true')",
+        "description": "The name of the set to filter servers by, when connecting to a replica set (Under this condition, the 'TLS connection' value automatically becomes 'true'). See <a href=\"https://docs.mongodb.com/manual/reference/connection-string/#mongodb-urioption-urioption.replicaSet\"> the Mongo docs </a> for more info.",
         "default": "",
         "order": 6
       },

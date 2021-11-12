@@ -22,10 +22,10 @@
 # SOFTWARE.
 #
 
-
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -41,6 +41,7 @@ from .streams import (  # EventsSessions,
     InsightsPath,
     InsightsSessions,
     Persons,
+    PingMe,
     Trends,
 )
 
@@ -50,11 +51,13 @@ class SourcePosthog(AbstractSource):
         try:
             _ = pendulum.parse(config["start_date"], strict=True)
             authenticator = TokenAuthenticator(token=config["api_key"])
-            stream = Cohorts(authenticator=authenticator)
+            stream = PingMe(authenticator=authenticator)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             _ = next(records)
             return True, None
         except Exception as e:
+            if isinstance(e, requests.exceptions.HTTPError) and e.response.status_code == 401:
+                return False, f"Please check you api_key. Error: {repr(e)}"
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

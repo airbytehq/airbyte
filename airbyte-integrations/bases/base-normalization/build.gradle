@@ -12,8 +12,6 @@ dependencies {
 }
 
 installReqs.dependsOn(":airbyte-integrations:bases:airbyte-protocol:installReqs")
-
-project.task('integrationTest')
 integrationTest.dependsOn(build)
 
 task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs){
@@ -22,10 +20,10 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
 
     dependsOn ':airbyte-integrations:bases:base-normalization:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-mysql:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-mysql:airbyteDocker'
 }
 
 integrationTest.dependsOn("customIntegrationTestPython")

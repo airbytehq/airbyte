@@ -65,13 +65,14 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   }
 
   private JsonNode getConfig(MSSQLServerContainer<?> db) {
+
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("schema", "testSchema")
-        .put("ssl_method", "encrypted_trust_server_certificate")
+        .put("ssl_method", Jsons.jsonNode(ImmutableMap.of("ssl_method", "encrypted_trust_server_certificate")))
         .build());
   }
 

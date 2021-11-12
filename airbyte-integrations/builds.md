@@ -1,140 +1,154 @@
 # Build statuses
 
 # Sources 
- Amazon Seller Partner   [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-amazon-seller-partner%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-amazon-seller-partner)
+ Amazon Seller Partner   [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-amazon-seller-partner%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-amazon-seller-partner)
 
- Amplitude   [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-amplitude%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-amplitude)
+ Amplitude   [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-amplitude%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-amplitude)
 
- AppsFlyer   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appsflyer-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appsflyer-singer) 
+ AppsFlyer   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-appsflyer-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-appsflyer-singer) 
 
- App Store   [![source-appstore-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appstore-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appstore-singer)
+ App Store   [![source-appstore-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-appstore-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-appstore-singer)
 
- Asana   [![source-asana](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-asana%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-asana)
+ Asana   [![source-asana](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-asana%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-asana)
 
- AWS CloudTrail   [![source-aws-cloudtrail](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-aws-cloudtrail%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-aws-cloudtrail)
+ AWS CloudTrail   [![source-aws-cloudtrail](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-aws-cloudtrail%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-aws-cloudtrail)
 
- Braintree   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-braintree-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-braintree-singer) 
+ Braintree   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-braintree-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-braintree-singer)
 
- Drift   [![source-drift](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-drift%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-drift) 
+ Dixa   [![source-dixa](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-dixa%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-dixa)
 
- Exchange Rates API   [![source-exchangeratesapi-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-exchangeratesapi-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-exchangeratesapi-singer) 
+ Drift   [![source-drift](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-drift%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-drift) 
 
- Facebook Marketing   [![source-facebook-marketing](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-facebook-marketing%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-facebook-marketing) 
+ Exchange Rates API   [![source-exchangeratesapi-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-exchangeratesapi-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-exchangeratesapi-singer) 
 
- Files   [![source-file](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-file%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-file) 
+ Facebook Marketing   [![source-facebook-marketing](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-facebook-marketing%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-facebook-marketing) 
 
- Freshdesk   [![source-freshdesk](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-freshdesk%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-freshdesk) 
+ Files   [![source-file](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-file%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-file) 
 
- GitHub   [![source-github](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-github%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-github) 
+ Freshdesk   [![source-freshdesk](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-freshdesk%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-freshdesk) 
 
- GitLab   [![source-gitlab](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-gitlab%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-gitlab) 
+ GitHub   [![source-github](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-github%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-github) 
 
- Google Ads   [![source-google-ads](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-google-ads%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-google-ads) 
+ GitLab   [![source-gitlab](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-gitlab%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-gitlab) 
+
+ Google Ads   [![source-google-ads](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-google-ads%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-google-ads) 
  
- Google Adwords   [![source-google-adwords-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-google-adwords-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-google-adwords-singer) 
+ Google Adwords   [![source-google-adwords-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-google-adwords-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-google-adwords-singer) 
 
- Google Analytics   [![source-googleanalytics-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-googleanalytics-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-googleanalytics-singer) 
+ Google Analytics   [![source-googleanalytics-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-googleanalytics-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-googleanalytics-singer) 
 
- Google Sheets   [![source-google-sheets](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-google-sheets%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-google-sheets) 
+ Google Sheets   [![source-google-sheets](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-google-sheets%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-google-sheets) 
 
- Google Directory API   [![source-google-directory](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-google-directory%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-google-directory) 
+ Google Directory API   [![source-google-directory](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-google-directory%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-google-directory) 
 
- Google Workspace Admin   [![source-google-workspace-admin-reports](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-google-workspace-admin-reports%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-google-workspace-admin-reports) 
+ Google Workspace Admin   [![source-google-workspace-admin-reports](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-google-workspace-admin-reports%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-google-workspace-admin-reports) 
 
- Greenhouse   [![source-greenhouse](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-greenhouse%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-greenhouse) 
+ Greenhouse   [![source-greenhouse](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-greenhouse%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-greenhouse) 
 
- HTTP Request   [![source-http-request](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-http-request%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-http-request) 
+ HTTP Request   [![source-http-request](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-http-request%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-http-request) 
 
- Hubspot   [![source-hubspot-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-hubspot%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-hubspot) 
+ Hubspot   [![source-hubspot-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-hubspot%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-hubspot) 
 
- Klaviyo   [![source-klaviyo](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-klaviyo%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-klaviyo) 
+ Klaviyo   [![source-klaviyo](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-klaviyo%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-klaviyo) 
 
- IBM Db2   [![source-db2](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-db2%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-db2)
+ IBM Db2   [![source-db2](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-db2%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-db2)
 
- Instagram   [![source-instagram](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-instagram%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-instagram) 
+ Instagram   [![source-instagram](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-instagram%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-instagram) 
 
- Intercom   [![source-intercom-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-intercom-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-intercom-singer) 
+ Intercom   [![source-intercom](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-intercom-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-intercom) 
 
- Iterable   [![source-iterable](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-iterable%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-iterable) 
+ Iterable   [![source-iterable](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-iterable%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-iterable) 
 
- Jira   [![source-jira](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-jira%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-jira) 
+ Jira   [![source-jira](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-jira%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-jira) 
 
- Looker   [![source-looker](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-looker%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-looker) 
+ Looker   [![source-looker](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-looker%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-looker) 
 
- Mailchimp   [![source-mailchimp](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mailchimp%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mailchimp) 
+ Mailchimp   [![source-mailchimp](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mailchimp%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mailchimp) 
 
- Marketo   [![source-marketo-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-marketo-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-marketo-singer) 
+ Marketo   [![source-marketo-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-marketo-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-marketo-singer) 
 
- Microsoft SQL Server \(MSSQL\)   [![source-mssql](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mssql%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mssql) 
+ Microsoft SQL Server \(MSSQL\)   [![source-mssql](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mssql%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mssql) 
 
- Microsoft Teams   [![source-microsoft-teams](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-microsoft-teams%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-microsoft-teams) 
+ Microsoft Teams   [![source-microsoft-teams](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-microsoft-teams%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-microsoft-teams) 
 
- Mixpanel   [![source-mixpanel-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mixpanel-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mixpanel-singer) 
+ Mixpanel   [![source-mixpanel](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mixpanel%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mixpanel)
 
- Mongo DB   [![source-mongodb](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mongodb%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mongodb) 
+ Mixpanel Singer   [![source-mixpanel-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mixpanel-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mixpanel-singer) 
 
- MySQL   [![source-mysql](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mysql%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mysql) 
+ Mongo DB   [![source-mongodb](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mongodb%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mongodb) 
 
- Oracle DB   [![source-oracle](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-oracle%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-oracle) 
+ MySQL   [![source-mysql](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mysql%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mysql) 
 
- Paypal Transaction   [![paypal-transaction](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-paypal-transaction%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-paypal-transaction)
+ Oracle DB   [![source-oracle](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-oracle%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-oracle) 
 
- Plaid   [![source-plaid](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-plaid%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-plaid) 
+ Paypal Transaction   [![paypal-transaction](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-paypal-transaction%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-paypal-transaction)
 
- Postgres   [![source-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-postgres%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-postgres) 
+ Pipedrive   [![source-pipedrive](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-plaid%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-pipedrive) 
  
- CockroachDb   [![source-cockroachdb](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-cockroachdb%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-cockroachdb)
+ Plaid   [![source-plaid](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-plaid%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-plaid) 
 
- Quickbooks   [![source-quickbooks-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-quickbooks-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-quickbooks-singer) 
+ Postgres   [![source-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-postgres%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-postgres) 
+ 
+ CockroachDb   [![source-cockroachdb](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-cockroachdb%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-cockroachdb)
 
- Recharge   [![source-recharge](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-recharge%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-recharge) 
+ Quickbooks   [![source-quickbooks-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-quickbooks-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-quickbooks-singer) 
 
- Recurly   [![source-recurly](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-recurly%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-recurly) 
+ Recharge   [![source-recharge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-recharge%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-recharge) 
 
- Redshift   [![source-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-redshift%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-redshift) 
+ Recurly   [![source-recurly](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-recurly%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-recurly) 
 
- Salesforce   [![source-salesforce-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-salesforce-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-salesforce-singer) 
+ Redshift   [![source-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-redshift%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-redshift) 
 
- Sendgrid   [![source-sendgrid](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-sendgrid%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-sendgrid) 
+ Salesforce   [![source-salesforce-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-salesforce-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-salesforce-singer) 
 
- Shopify   [![source-shopify](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-shopify%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-shopify) 
+ Sendgrid   [![source-sendgrid](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-sendgrid%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-sendgrid) 
 
- Slack   [![source-slack-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-slack-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-slack-singer) 
+ Shopify   [![source-shopify](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-shopify%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-shopify) 
 
- Smartsheets   [![source-smartsheets](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-smartsheets%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-smartsheets) 
+ Slack   [![source-slack-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-slack-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-slack-singer) 
 
- Snowflake   [![source-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-snowflake%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-snowflake)
+ Smartsheets   [![source-smartsheets](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-smartsheets%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-smartsheets) 
 
- Square   [![source-square](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-square%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-square)
+ Snowflake   [![source-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-snowflake%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-snowflake)
 
- Stripe   [![source-stripe](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-stripe%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-stripe) 
+ Square   [![source-square](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-square%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-square)
 
- Tempo   [![source-tempo](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-tempo%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-tempo) 
+ Stripe   [![source-stripe](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-stripe%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-stripe) 
 
- Twilio   [![source-twilio](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-twilio%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-twilio) 
+ Tempo   [![source-tempo](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-tempo%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-tempo) 
 
- Zendesk Chat   [![source-zendesk-chat](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-zendesk-chat%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-zendesk-chat) 
+ Twilio   [![source-twilio](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-twilio%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-twilio) 
 
- Zendesk Support   [![source-zendesk-support-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-zendesk-support-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-zendesk-support-singer) 
+ Typeform   [![source-typeform](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-typeform%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-typeform)
 
- Zendesk Talk   [![source-zendesk-talk](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-zendesk-talk%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-zendesk-talk) 
+ US Census [![source-us-census](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-us-census%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/2Fsource-us-census)
 
- Zoom   [![source-zoom-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-zoom-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-zoom-singer) 
+ Zendesk Chat   [![source-zendesk-chat](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-chat%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-chat) 
+
+ Zendesk Support   [![source-zendesk-support-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-support-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-support-singer) 
+
+ Zendesk Talk   [![source-zendesk-talk](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-talk%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-talk) 
+
+ Zoom   [![source-zoom-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zoom-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zoom-singer) 
 
  
 # Destinations
- BigQuery   [![destination-bigquery](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-bigquery%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-bigquery) 
+ BigQuery   [![destination-bigquery](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-bigquery%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-bigquery) 
 
- Local CSV   [![destination-csv](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-csv%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-csv) 
+ Google Cloud Storage (GCS) [![destination-gcs](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-s3%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-gcs)
 
- Local JSON   [![destination-local-json](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-local-json%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-local-json) 
+ Google PubSub   [![destination-pubsub](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-pubsub%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-pubsub)
+ 
+ Kafka   [![destination-kafka](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-kafka%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-kafka)
 
- Postgres   [![destination-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-postgres%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-postgres) 
+ Local CSV   [![destination-csv](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-csv%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-csv) 
 
- Google PubSub   [![destination-pubsub](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-pubsub%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-pubsub)
+ Local JSON   [![destination-local-json](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-local-json%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-local-json) 
 
- Redshift   [![destination-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-redshift%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-redshift) 
+ Postgres   [![destination-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-postgres%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-postgres) 
 
- S3         [![destination-s3](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-s3%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-s3)
+ Redshift   [![destination-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-redshift%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-redshift) 
 
- Snowflake   [![destination-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-snowflake%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-snowflake) 
+ S3         [![destination-s3](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-s3%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-s3)
+
+ Snowflake   [![destination-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-snowflake%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-snowflake) 

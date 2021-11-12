@@ -88,6 +88,7 @@ Please follow the [Jira confluence for generating an API token](https://confluen
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.2.7 | 2021-07-19 | [#4817](https://github.com/airbytehq/airbyte/pull/4817) | Fixed `labels` schema properties issue. |
 | 0.2.6 | 2021-06-15 | [#4113](https://github.com/airbytehq/airbyte/pull/4113) | Fixed `user` stream with the correct endpoint and query param. |
 | 0.2.5 | 2021-06-09 | [#3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` in base Docker image for Kubernetes support. |
 | 0.2.4 | | | Implementing base_read acceptance test dived by stream groups. |

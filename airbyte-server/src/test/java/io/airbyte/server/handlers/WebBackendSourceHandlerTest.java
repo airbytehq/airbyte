@@ -42,9 +42,11 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
+import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,18 +58,22 @@ public class WebBackendSourceHandlerTest {
 
   private SourceHandler sourceHandler;
   private SchedulerHandler schedulerHandler;
+  private WorkspaceHelper workspaceHelper;
 
   private SourceRead sourceRead;
 
   @BeforeEach
-  public void setup() throws IOException {
+  public void setup() throws IOException, ExecutionException {
     sourceHandler = mock(SourceHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
-    wbSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler);
+    workspaceHelper = mock(WorkspaceHelper.class);
+    wbSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSource();
     SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
+
+    when(workspaceHelper.getWorkspaceForSourceId(sourceRead.getSourceId())).thenReturn(sourceRead.getWorkspaceId());
   }
 
   @Test
@@ -109,7 +115,8 @@ public class WebBackendSourceHandlerTest {
   }
 
   @Test
-  public void testRecreateDeletesNewCreatedSourceWhenFails() throws JsonValidationException, IOException, ConfigNotFoundException {
+  public void testRecreateDeletesNewCreatedSourceWhenFails()
+      throws JsonValidationException, IOException, ConfigNotFoundException, ExecutionException {
     SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setName(sourceRead.getName());
     sourceCreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
@@ -139,6 +146,44 @@ public class WebBackendSourceHandlerTest {
     Assertions.assertThrows(KnownException.class,
         () -> wbSourceHandler.webBackendRecreateSourceAndCheck(sourceRecreate));
     verify(sourceHandler, times(1)).deleteSource(Mockito.eq(newSourceId));
+  }
+
+  @Test
+  public void testUnmatchedWorkspaces() throws ExecutionException, IOException, JsonValidationException, ConfigNotFoundException {
+    when(workspaceHelper.getWorkspaceForSourceId(sourceRead.getSourceId())).thenReturn(UUID.randomUUID());
+
+    SourceCreate sourceCreate = new SourceCreate();
+    sourceCreate.setName(sourceRead.getName());
+    sourceCreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
+    sourceCreate.setWorkspaceId(sourceRead.getWorkspaceId());
+    sourceCreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
+
+    SourceRead newSource = SourceHelpers
+        .getSourceRead(SourceHelpers.generateSource(UUID.randomUUID()), SourceDefinitionHelpers.generateSource());
+
+    when(sourceHandler.createSource(sourceCreate)).thenReturn(newSource);
+
+    SourceIdRequestBody newSourceId = new SourceIdRequestBody();
+    newSourceId.setSourceId(newSource.getSourceId());
+
+    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
+    checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
+
+    when(schedulerHandler.checkSourceConnectionFromSourceId(newSourceId)).thenReturn(checkConnectionRead);
+
+    SourceRecreate sourceRecreate = new SourceRecreate();
+    sourceRecreate.setName(sourceRead.getName());
+    sourceRecreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
+    sourceRecreate.setWorkspaceId(sourceRead.getWorkspaceId());
+    sourceRecreate.setSourceId(sourceRead.getSourceId());
+    sourceRecreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
+
+    SourceIdRequestBody oldSourceIdBody = new SourceIdRequestBody();
+    oldSourceIdBody.setSourceId(sourceRead.getSourceId());
+
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      wbSourceHandler.webBackendRecreateSourceAndCheck(sourceRecreate);
+    });
   }
 
 }

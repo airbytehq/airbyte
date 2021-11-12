@@ -34,8 +34,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Whenever a new table is created in the Airbyte Database, we should also add a corresponding yaml
- * file to validate the content of the table when it is exported/imported in files.
+ * Whenever a new table is created in the Job Airbyte Database, we should also add a corresponding
+ * yaml file to validate the content of the table when it is exported/imported in files.
  *
  * This enum maps the table names to the yaml file where the Json Schema is stored.
  */

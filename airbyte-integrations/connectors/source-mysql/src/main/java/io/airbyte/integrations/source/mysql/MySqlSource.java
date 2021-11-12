@@ -24,8 +24,8 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.mysql.AirbyteFileOffsetBackingStore.initializeState;
-import static io.airbyte.integrations.source.mysql.AirbyteSchemaHistoryStorage.initializeDBHistory;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,38 +34,27 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.commons.util.CompositeIterator;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
-import io.debezium.engine.ChangeEvent;
 import java.sql.JDBCType;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +65,8 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
   public static final String MYSQL_CDC_OFFSET = "mysql_cdc_offset";
   public static final String MYSQL_DB_HISTORY = "mysql_db_history";
+  public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
+  public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
 
   public MySqlSource() {
     super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration());
@@ -231,69 +222,12 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
                                                                              Instant emittedAt) {
     JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
-      LOGGER.info("using CDC: {}", true);
-      // TODO: Figure out how to set the isCDC of stateManager to true. Its always false
-      final AirbyteFileOffsetBackingStore offsetManager = initializeState(stateManager);
-      AirbyteSchemaHistoryStorage schemaHistoryManager = initializeDBHistory(stateManager);
-      FilteredFileDatabaseHistory.setDatabaseName(sourceConfig.get("database").asText());
-      /**
-       * We use 10000 as capacity cause the default queue size and batch size of debezium is :
-       * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_BATCH_SIZE} is 2048
-       * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_QUEUE_SIZE} is 8192
-       */
-      final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(10000);
-      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(sourceConfig, catalog, offsetManager, schemaHistoryManager);
-      publisher.start(queue);
+      final AirbyteDebeziumHandler handler =
+          new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(),
+              catalog, true);
 
-      Optional<TargetFilePosition> targetFilePosition = TargetFilePosition
-          .targetFilePosition(database);
-
-      // handle state machine around pub/sub logic.
-      final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator(
-          queue,
-          targetFilePosition,
-          publisher::hasClosed,
-          publisher::close);
-
-      // convert to airbyte message.
-      final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators
-          .transform(
-              eventIterator,
-              (event) -> DebeziumEventUtils.toAirbyteMessage(event, emittedAt));
-
-      // our goal is to get the state at the time this supplier is called (i.e. after all message records
-      // have been produced)
-      final Supplier<AirbyteMessage> stateMessageSupplier = () -> {
-        Map<String, String> offset = offsetManager.readMap();
-        String dbHistory = schemaHistoryManager.read();
-
-        Map<String, Object> state = new HashMap<>();
-        state.put(MYSQL_CDC_OFFSET, offset);
-        state.put(MYSQL_DB_HISTORY, dbHistory);
-
-        final JsonNode asJson = Jsons.jsonNode(state);
-
-        LOGGER.info("debezium state: {}", asJson);
-
-        CdcState cdcState = new CdcState().withState(asJson);
-        stateManager.getCdcStateManager().setCdcState(cdcState);
-        final AirbyteStateMessage stateMessage = stateManager.emit();
-        return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
-
-      };
-
-      // wrap the supplier in an iterator so that we can concat it to the message iterator.
-      final Iterator<AirbyteMessage> stateMessageIterator = MoreIterators
-          .singletonIteratorFromSupplier(stateMessageSupplier);
-
-      // this structure guarantees that the debezium engine will be closed, before we attempt to emit the
-      // state file. we want this so that we have a guarantee that the debezium offset file (which we use
-      // to produce the state file) is up-to-date.
-      final CompositeIterator<AirbyteMessage> messageIteratorWithStateDecorator = AutoCloseableIterators
-          .concatWithEagerClose(messageIterator,
-              AutoCloseableIterators.fromIterator(stateMessageIterator));
-
-      return Collections.singletonList(messageIteratorWithStateDecorator);
+      return handler.getIncrementalIterators(new MySqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new MySqlCdcStateHandler(stateManager), new MySqlCdcConnectorMetadataInjector(), emittedAt);
     } else {
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,

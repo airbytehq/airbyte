@@ -64,22 +64,23 @@ class SourceGithub(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
         full_refresh_args = {"authenticator": authenticator, "repository": config["repository"]}
-        incremental_args = {"authenticator": authenticator, "repository": config["repository"], "start_date": config["start_date"]}
+        incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
+
         return [
             Assignees(**full_refresh_args),
-            Reviews(**full_refresh_args),
             Collaborators(**full_refresh_args),
-            Teams(**full_refresh_args),
-            IssueLabels(**full_refresh_args),
-            Releases(**incremental_args),
-            Events(**incremental_args),
             Comments(**incremental_args),
-            PullRequests(**incremental_args),
             CommitComments(**incremental_args),
-            IssueMilestones(**incremental_args),
             Commits(**incremental_args),
-            Stargazers(**incremental_args),
-            Projects(**incremental_args),
-            Issues(**incremental_args),
+            Events(**incremental_args),
             IssueEvents(**incremental_args),
+            IssueLabels(**full_refresh_args),
+            IssueMilestones(**incremental_args),
+            Issues(**incremental_args),
+            Projects(**incremental_args),
+            PullRequests(**incremental_args),
+            Releases(**incremental_args),
+            Reviews(**full_refresh_args),
+            Stargazers(**incremental_args),
+            Teams(**full_refresh_args),
         ]

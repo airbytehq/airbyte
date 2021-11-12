@@ -52,7 +52,7 @@ public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintVi
       props.add(new InvalidInputProperty()
           .propertyPath(cv.getPropertyPath().toString())
           .message(cv.getMessage())
-          .invalidValue(cv.getInvalidValue().toString()));
+          .invalidValue(cv.getInvalidValue() != null ? cv.getInvalidValue().toString() : "null"));
     }
     exceptionInfo.validationErrors(props);
     return exceptionInfo;

@@ -22,6 +22,7 @@
 # SOFTWARE.
 #
 
+import copy
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -53,6 +54,10 @@ class InstagramStream(Stream, ABC):
         non_object_fields = ["page_id", "business_account_id"]
         fields = list(self.get_json_schema().get("properties", {}).keys())
         return list(set(fields) - set(non_object_fields))
+
+    def upgrade_state_to_latest_format(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """Upgrade state to latest format and return new state object"""
+        return copy.deepcopy(state)
 
     def request_params(
         self,
@@ -238,7 +243,7 @@ class UserInsights(InstagramIncrementalStream):
             start_date = pendulum.parse(state_value) if state_value else self._start_date
             start_date = max(start_date, self._start_date, pendulum.now().subtract(days=self.buffer_days))
             for since in pendulum.period(start_date, self._end_date).range("days", self.days_increment):
-                until = min(since.add(days=self.days_increment), self._end_date)
+                until = since.add(days=self.days_increment)
                 self.logger.info(f"Reading insights between {since.date()} and {until.date()}")
                 yield {
                     **stream_slice,
@@ -259,17 +264,34 @@ class UserInsights(InstagramIncrementalStream):
             "until": stream_slice["until"],
         }
 
+    def _state_has_legacy_format(self, state: Mapping[str, Any]) -> bool:
+        """Tell if the format of state is outdated"""
+        for value in state.values():
+            if not isinstance(value, Mapping):
+                return True
+        return False
+
+    def upgrade_state_to_latest_format(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """Upgrade state to latest format and return new state object"""
+        if self._state_has_legacy_format(state):
+            self.logger.info(f"The {self.name} state has old format, converting...")
+            return {account_id: {self.cursor_field: str(cursor_value)} for account_id, cursor_value in state.items()}
+
+        return super().upgrade_state_to_latest_format(state)
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
         record_value = latest_record[self.cursor_field]
-        state_value = current_stream_state.get("business_account_id", {}).get(self.cursor_field) or record_value
+        account_id = latest_record.get("business_account_id")
+        state_value = current_stream_state.get(account_id, {}).get(self.cursor_field) or record_value
         max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
 
-        current_stream_state[latest_record["business_account_id"]] = {
+        new_stream_state = copy.deepcopy(current_stream_state)
+        new_stream_state[account_id] = {
             self.cursor_field: str(max_cursor),
         }
 
-        return current_stream_state
+        return new_stream_state
 
 
 class Media(InstagramStream):
@@ -356,8 +378,8 @@ class MediaInsights(Media):
             # An error might occur if the media was posted before the most recent time that
             # the user's account was converted to a business account from a personal account
             if error.api_error_subcode() == 2108006:
-                self.logger.error(f"Insights error for business_account_id {account_id}: {error.api_error_message()}")
-
+                details = error.body().get("error", {}).get("error_user_title") or error.api_error_message()
+                self.logger.error(f"Insights error for business_account_id {account_id}: {details}")
                 # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
                 # then no reason to make inquiries for each Media further, since they were published even earlier.
                 return None

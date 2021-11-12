@@ -12,6 +12,12 @@ tests:
   discovery:
     - config_path: "secrets/config.json"
   basic_read:
+    # TEST for the Labels stream
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/labels_catalog.json"
+      validate_output_from_all_streams: yes
+      expect_records:
+        path: "integration_tests/expected_label_records.txt"
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/issues_configured_catalog.json"
       validate_output_from_all_streams: yes

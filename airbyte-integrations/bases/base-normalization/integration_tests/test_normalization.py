@@ -74,6 +74,9 @@ def setup_test_path(request):
         ]
     ),
 )
+# Uncomment the following line as an example on how to run the test on a single destination...
+# @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.POSTGRES])
+# Run tests on all destinations:
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     print("Testing normalization")

@@ -39,40 +39,61 @@ class MyFacebookAdsApi(FacebookAdsApi):
     """Custom Facebook API class to intercept all API calls and handle call rate limits"""
 
     call_rate_threshold = 90  # maximum percentage of call limit utilization
-    pause_interval = pendulum.duration(minutes=1)  # default pause interval if reached or close to call rate limit
+    pause_interval_minimum = pendulum.duration(minutes=1)  # default pause interval if reached or close to call rate limit
 
     @staticmethod
     def parse_call_rate_header(headers):
-        call_count = 0
+        usage = 0
         pause_interval = pendulum.duration()
 
-        usage_header = headers.get("x-business-use-case-usage") or headers.get("x-app-usage") or headers.get("x-ad-account-usage")
-        if usage_header:
-            usage_header = json.loads(usage_header)
-            call_count = usage_header.get("call_count") or usage_header.get("acc_id_util_pct") or 0
-            pause_interval = pendulum.duration(minutes=usage_header.get("estimated_time_to_regain_access", 0))
+        usage_header_business = headers.get("x-business-use-case-usage")
+        usage_header_app = headers.get("x-app-usage")
+        usage_header_ad_account = headers.get("x-ad-account-usage")
 
-        return call_count, pause_interval
+        if usage_header_ad_account:
+            usage_header_ad_account_loaded = json.loads(usage_header_ad_account)
+            usage = max(usage, usage_header_ad_account_loaded.get("acc_id_util_pct"))
+
+        if usage_header_app:
+            usage_header_app_loaded = json.loads(usage_header_app)
+            usage = max(
+                usage,
+                usage_header_app_loaded.get("call_count"),
+                usage_header_app_loaded.get("total_time"),
+                usage_header_app_loaded.get("total_cputime"),
+            )
+
+        if usage_header_business:
+
+            usage_header_business_loaded = json.loads(usage_header_business)
+            for business_object_id in usage_header_business_loaded:
+                usage_limits = usage_header_business_loaded.get(business_object_id)[0]
+                usage = max(usage, usage_limits.get("call_count"), usage_limits.get("total_cputime"), usage_limits.get("total_time"))
+                pause_interval = max(pause_interval, pendulum.duration(minutes=usage_limits.get("estimated_time_to_regain_access", 0)))
+
+        return usage, pause_interval
 
     def handle_call_rate_limit(self, response, params):
         if "batch" in params:
-            max_call_count = 0
-            max_pause_interval = self.pause_interval
+            max_usage = 0
+            max_pause_interval = self.pause_interval_minimum
 
             for record in response.json():
                 headers = {header["name"].lower(): header["value"] for header in record["headers"]}
-                call_count, pause_interval = self.parse_call_rate_header(headers)
-                max_call_count = max(max_call_count, call_count)
+                usage, pause_interval = self.parse_call_rate_header(headers)
+                max_usage = max(max_usage, usage)
                 max_pause_interval = max(max_pause_interval, pause_interval)
 
-            if max_call_count > self.call_rate_threshold:
-                logger.warn(f"Utilization is too high ({max_call_count})%, pausing for {max_pause_interval}")
+            if max_usage > self.call_rate_threshold:
+                max_pause_interval = max(max_pause_interval, self.pause_interval_minimum)
+                logger.warn(f"Utilization is too high ({max_usage})%, pausing for {max_pause_interval}")
                 sleep(max_pause_interval.total_seconds())
         else:
             headers = response.headers()
-            call_count, pause_interval = self.parse_call_rate_header(headers)
-            if call_count > self.call_rate_threshold or pause_interval:
-                logger.warn(f"Utilization is too high ({call_count})%, pausing for {pause_interval}")
+            usage, pause_interval = self.parse_call_rate_header(headers)
+            if usage > self.call_rate_threshold or pause_interval:
+                pause_interval = max(pause_interval, self.pause_interval_minimum)
+                logger.warn(f"Utilization is too high ({usage})%, pausing for {pause_interval}")
                 sleep(pause_interval.total_seconds())
 
     def call(

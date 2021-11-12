@@ -59,6 +59,10 @@ public class SnowflakeDatabase {
     // allows queries to contain any number of statements.
     properties.put("MULTI_STATEMENT_COUNT", 0);
 
+    // https://docs.snowflake.com/en/user-guide/jdbc-parameters.html#application
+    // identify airbyte traffic to snowflake to enable partnership & optimization opportunities
+    properties.put("application", "airbyte");
+
     return DriverManager.getConnection(connectUrl, properties);
   }
 
