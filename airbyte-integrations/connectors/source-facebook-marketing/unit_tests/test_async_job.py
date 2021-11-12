@@ -58,7 +58,7 @@ class TestAsyncJob:
     def test_start_already_started(self, job):
         job.start()
 
-        with pytest.raises(RuntimeError, match=r""):
+        with pytest.raises(RuntimeError, match=r": Incorrect usage of start - the job already started, use restart instead"):
             job.start()
 
     def test_restart(self, failed_job, api, adreport):
@@ -66,15 +66,15 @@ class TestAsyncJob:
 
         assert not failed_job.failed, "restart should reset fail flag"
 
-    def test_restart_not_failed(self, job, api):
+    def test_restart_when_job_not_failed(self, job, api):
         job.start()
         assert not job.failed
 
-        with pytest.raises(RuntimeError, match=r": Incorrect usage of the restart - only failed jobs can be restarted"):
+        with pytest.raises(RuntimeError, match=r": Incorrect usage of restart - only failed jobs can be restarted"):
             job.restart()
 
-    def test_restart_not_started(self, job):
-        with pytest.raises(RuntimeError, match=r": Incorrect usage of the restart - only failed jobs can be restarted"):
+    def test_restart_when_job_not_started(self, job):
+        with pytest.raises(RuntimeError, match=r": Incorrect usage of restart - only failed jobs can be restarted"):
             job.restart()
 
     def test_elapsed_time(self, job, api, adreport):
@@ -94,7 +94,7 @@ class TestAsyncJob:
         assert elapsed_2 == elapsed_1, "should not change after job completed"
 
     def test_completed_without_start(self, job, api, adreport):
-        with pytest.raises(RuntimeError, match=r"Incorrect usage of the _update_job - the job is not started"):
+        with pytest.raises(RuntimeError, match=r"Incorrect usage of the method - the job is not started"):
             _ = job.completed
 
         assert not job.failed
@@ -104,8 +104,8 @@ class TestAsyncJob:
         adreport["async_status"] = Status.COMPLETED.value
         adreport["async_percent_completion"] = 0
 
-        assert job.completed
-        assert not job.failed
+        assert job.completed, "should return True if the job was completed"
+        assert not job.failed, "failed should be set to False"
 
     def test_completed_failed(self, failed_job, api, adreport):
         with pytest.raises(JobException, match=r"failed after \d* seconds."):
@@ -123,7 +123,7 @@ class TestAsyncJob:
         mocker.patch.object(job, 'MAX_WAIT_TO_FINISH', pendulum.duration())
         mocker.patch.object(job, 'MAX_WAIT_TO_START', pendulum.duration())
 
-        with pytest.raises(JobTimeoutException):
+        with pytest.raises(JobTimeoutException, match=r" did not finish after \d* seconds."):
             _ = job.completed
 
     def test_completed_timeout_not_started(self, job, adreport, mocker):
@@ -133,14 +133,14 @@ class TestAsyncJob:
         mocker.patch.object(job, 'MAX_WAIT_TO_FINISH', pendulum.duration())
         mocker.patch.object(job, 'MAX_WAIT_TO_START', pendulum.duration())
 
-        with pytest.raises(JobTimeoutException):
+        with pytest.raises(JobTimeoutException, match=r" did not start after \d* seconds."):
             _ = job.completed
 
     def test_failed_no(self, job):
-        assert not job.failed
+        assert not job.failed, "should return False for active job"
 
     def test_failed_yes(self, failed_job):
-        assert failed_job.failed
+        assert failed_job.failed, "should return True if the job previously failed"
 
     def test_str(self, api, adreport):
         job = AsyncJob(api=api, params={"time_range": 123, "breakdowns": [10, 20]})
@@ -153,4 +153,12 @@ class TestAsyncJob:
         result = job.get_result()
 
         adreport.get_result.assert_called_once()
-        assert result == adreport.get_result.return_value
+        assert result == adreport.get_result.return_value, "should return result from job"
+
+    def test_get_result_when_job_is_not_started(self, job):
+        with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started of failed"):
+            job.get_result()
+
+    def test_get_result_when_job_is_failed(self, failed_job):
+        with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started of failed"):
+            failed_job.get_result()

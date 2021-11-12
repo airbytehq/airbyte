@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Status(Enum):
-    """ Timeframes categories
+    """ Async job statuses
     """
 
     COMPLETED = "Job Completed"
@@ -29,7 +29,6 @@ class Status(Enum):
 
 class AsyncJob:
     """ AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job
-
     """
     MAX_WAIT_TO_START = pendulum.duration(minutes=5)
     MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
@@ -37,8 +36,8 @@ class AsyncJob:
     def __init__(self, api: API, params: Mapping[str, Any]):
         """ Initialize
 
-        :param api:
-        :param params:
+        :param api: Facebook Api wrapper
+        :param params: job params, required to start/restart job
         """
         self._params = params
         self._api = api
@@ -51,7 +50,7 @@ class AsyncJob:
     def start(self):
         """ Start remote job"""
         if self._job:
-            raise RuntimeError(f"{self}: Incorrect usage of the start - the job already started, use restart instead")
+            raise RuntimeError(f"{self}: Incorrect usage of start - the job already started, use restart instead")
 
         self._job = self._api.account.get_insights(params=self._params, is_async=True)
         self._start_time = pendulum.now()
@@ -63,7 +62,7 @@ class AsyncJob:
     def restart(self):
         """ Restart failed job"""
         if not self._job or not self.failed:
-            raise RuntimeError(f"{self}: Incorrect usage of the restart - only failed jobs can be restarted")
+            raise RuntimeError(f"{self}: Incorrect usage of restart - only failed jobs can be restarted")
 
         self._job = None
         self._failed = False
@@ -96,15 +95,21 @@ class AsyncJob:
 
     @property
     def failed(self) -> bool:
+        """Tell if the job previously failed"""
         return self._failed
 
     @backoff_policy
     def _update_job(self):
         if not self._job:
-            raise RuntimeError(f"{self}: Incorrect usage of the _update_job - the job is not started")
+            raise RuntimeError(f"{self}: Incorrect usage of the method - the job is not started")
         self._job = self._job.api_get()
 
     def _check_status(self) -> bool:
+        """Perform status check
+
+        :return: True if the job is completed, False - if the job is still running
+        :raises: errors if job failed or timed out
+        """
         self._update_job()
         job_progress_pct = self._job["async_percent_completion"]
         logger.info(f"{self} is {job_progress_pct}% complete ({self._job['async_status']})")
@@ -132,9 +137,13 @@ class AsyncJob:
 
     @backoff_policy
     def get_result(self) -> Any:
+        """Retrieve result of the finished job."""
+        if not self._job or self.failed:
+            raise RuntimeError(f"{self}: Incorrect usage of get_result - the job is not started of failed")
         return self._job.get_result()
 
     def __str__(self) -> str:
+        """String representation of the job wrapper."""
         job_id = self._job["report_run_id"] if self._job else '<None>'
         time_range = self._params["time_range"]
         breakdowns = self._params["breakdowns"]
