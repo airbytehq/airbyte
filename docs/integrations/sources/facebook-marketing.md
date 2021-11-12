@@ -96,6 +96,7 @@ As a summary, custom insights allows to replicate only some fields, resulting in
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.25  | 2021-11-12 | [7904](https://github.com/airbytehq/airbyte/pull/7904) | Implement retry logic for async jobs |
 | 0.2.24  | 2021-11-09 | [7744](https://github.com/airbytehq/airbyte/pull/7744) | Fix fail when async job takes too long |
 | 0.2.23  | 2021-11-08 | [7734](https://github.com/airbytehq/airbyte/pull/7734) | Resolve $ref field for discover schema |
 | 0.2.22  | 2021-11-05 | [7605](https://github.com/airbytehq/airbyte/pull/7605) | Add job retry logics to AdsInsights stream |
