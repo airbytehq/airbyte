@@ -358,62 +358,24 @@ definitions:
             }
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
-      complete_oauth_output_root_path_in_connector_config:
-        description: |-
-          Json Path describing where in 'ConnectorSpecification.connectionSpecification' outputs should be written to.
-          This can be overridden by annotation `path_in_connector_config`, otherwise all outputs should be written at the same root node located
-          at this path.
-
-          Examples:
-
-            if oauth properties were contained inside the top level, complete_oauth_output_root_path_in_connector_config=[]
-            If they were nested inside another object {'credentials': {'refresh_token', 'app_id' etc...}, complete_oauth_output_root_path_in_connector_config=['credentials']
-            If they were inside a oneOf {'switch': {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=['switch']
-        type: array
-        items:
-          type: string
       complete_oauth_output_specification:
         description: |-
           OAuth specific blob. This is a Json Schema used to validate Json configurations produced by the OAuth flows as they are
           returned by the distant OAuth APIs.
           Must be a valid JSON describing the fields to merge back to `ConnectorSpecification.connectionSpecification`.
           For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,
-          or it would fallback to `complete_oauth_output_root_path_in_connector_config`.
 
           Examples:
 
-              complete_oauth_output_root_path_in_connector_config=['credentials'],
-              complete_oauth_output_specification={
-                refresh_token: {
-                  type: string
-                }
-              }
-
-          is similar to:
-
-              complete_oauth_output_root_path_in_connector_config=[],
               complete_oauth_output_specification={
                 refresh_token: {
                   type: string,
-                  path_in_connector_config: ['credentials']
+                  path_in_connector_config: ['credentials', 'refresh_token']
                 }
               }
-
-          Or combined to merge under a different root node in the connector config:
-
-              complete_oauth_output_root_path_in_connector_config=['credentials'],
-                complete_oauth_output_specification={
-                  refresh_token: {
-                    type: string
-                  },
-                  refreshed_at: {
-                    type: string,
-                    path_in_connector_config: ['audit_metadata', 'oauth']
-                  }
-                }
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
-      complete_oauth_server_input_parameter_specification:
+      complete_oauth_server_input_specification:
         description: |-
           OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations.
           Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
@@ -421,7 +383,7 @@ definitions:
 
           Examples:
 
-              complete_oauth_server_input_parameter_specification={
+              complete_oauth_server_input_specification={
                 client_id: {
                   type: string
                 },
@@ -431,28 +393,28 @@ definitions:
               }
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
-      complete_oauth_server_output_parameter_specification:
+      complete_oauth_server_output_specification:
         description: |-
           OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that
           also need to be merged back into the connector configuration at runtime.
-          This is a subset configuration of `complete_oauth_server_input_parameter_specification` that filters fields out to retain only the ones that
-          are necessary for the connector to function with OAuth.
+          This is a subset configuration of `complete_oauth_server_input_specification` that filters fields out to retain only the ones that
+          are necessary for the connector to function with OAuth. (some fields could be used during oauth flows but not needed afterwards, therefore
+          they would be listed in the `complete_oauth_server_input_specification` but not `complete_oauth_server_output_specification`)
           Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
           connector when using OAuth flow APIs.
           These fields are to be merged back to `ConnectorSpecification.connectionSpecification`.
           For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,
-          or it would fallback to `complete_oauth_output_root_path_in_connector_config`.
 
           Examples:
 
-                complete_oauth_output_root_path_in_connector_config=['credentials'],
-                complete_oauth_server_output_parameter_specification={
+                complete_oauth_server_output_specification={
                   client_id: {
-                    type: string
+                    type: string,
+                    path_in_connector_config: ['credentials', 'client_id']
                   },
                   client_secret: {
                     type: string,
-                    path_in_connector_config: ['credentials', 'secret']
+                    path_in_connector_config: ['credentials', 'client_secret']
                   }
                 }
         type: object
