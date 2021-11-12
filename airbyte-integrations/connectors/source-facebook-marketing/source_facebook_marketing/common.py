@@ -24,10 +24,10 @@ class FacebookAPIException(Exception):
 
 
 class JobException(Exception):
-    """Job failed after FB exception"""
+    """Scheduled job failed"""
 
 
-class JobTimeoutException(Exception):
+class JobTimeoutException(JobException):
     """Scheduled job timed out"""
 
 
