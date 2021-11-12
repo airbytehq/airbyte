@@ -2,6 +2,6 @@
   "sourceDefinitionId": "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b",
   "name": "Snapchat Marketing",
   "dockerRepository": "airbyte/source-snapchat-marketing",
-  "dockerImageTag": "0.1.1",
+  "dockerImageTag": "0.1.2",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/snapchat-marketing"
 }
