@@ -55,3 +55,9 @@ class CsvFormat(BaseModel):
         description="Optionally add a valid JSON string here to provide additional <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html#pyarrow.csv.ReadOptions\" target=\"_blank\">Pyarrow ReadOptions</a>. Specify 'column_names' here if your CSV doesn't have header, or if you want to use custom column names. 'block_size' and 'encoding' are already used above, specify them again here will override the values above.",
         examples=['{"column_names": ["column1", "column2"]}'],
     )
+    infer_datatypes: Optional[bool] = Field(
+        default=True,
+        description="Configures whether an scheme for the source should be inferred from the current data or not."
+                    "If set to false and a custom_schema is set, then the custom_schema is used"
+                    "If a custom_schema is not set, and this is set to false, then all fields will be read as strings"
+    )

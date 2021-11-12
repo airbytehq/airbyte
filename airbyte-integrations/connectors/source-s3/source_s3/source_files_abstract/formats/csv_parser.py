@@ -4,11 +4,13 @@
 
 import json
 import multiprocessing as mp
+import pprint
 from typing import Any, BinaryIO, Iterator, Mapping, Optional, TextIO, Tuple, Union
 
 import dill
+import pyarrow
 import pyarrow as pa
-from pyarrow import csv as pa_csv
+from pyarrow import csv as pa_csv, DataType, string
 
 from .abstract_file_parser import AbstractFileParser
 
@@ -137,10 +139,19 @@ class CsvParser(AbstractFileParser):
         # and so we can't multiprocess with the actual fileobject on Windows systems
         # we're reading block_size*2 bytes here, which we can then pass in and infer schema from block_size bytes
         # the *2 is to give us a buffer as pyarrow figures out where lines actually end so it gets schema correct
-        file_sample = file.read(self._read_options()["block_size"] * 2)
-        schema_dict = self._run_in_external_process(
-            infer_schema_process, 4, 60, file_sample, self._read_options(), self._parse_options(), self._convert_options()
-        )
+        if self._format.get("infer_datatypes", True):
+            self.logger.debug("inferring schema")
+            file_sample = file.read(self._read_options()["block_size"] * 2)
+            schema_dict = self._run_in_external_process(
+                infer_schema_process, 4, 60, file_sample, self._read_options(), self._parse_options(), self._convert_options()
+            )
+        else:
+            self.logger.debug("infer_datatypes is False, skipping infer_schema")
+            encoding = self._format.get("encoding", "UTF-8")
+            delimiter = self._format.get("delimiter", ",")
+            field_names = file.readline().decode(encoding).strip().split(delimiter)
+            schema_dict = {field_name.strip(): pyarrow.string() for field_name in field_names}
+            pprint.pprint(schema_dict)
         return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
 
     def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
