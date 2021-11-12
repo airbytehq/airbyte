@@ -1,14 +1,15 @@
 # Postgres
 
-## Overview
+## Features
 
-The Airbyte Postgres destination allows you to sync data to Postgres.
+| Feature | Supported?\(Yes/No\) | Notes |
+| :--- | :--- | :--- |
+| Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
+| Incremental - Deduped History | Yes |  |
+| Namespaces | Yes |  |
 
-This Postgres destination is based on the [Singer Postgres Target](https://github.com/datamill-co/target-postgres).
-
-### Sync overview
-
-#### Output schema
+#### Output Schema
 
 Each stream will be output into its own table in Postgres. Each table will contain 3 columns:
 
@@ -16,37 +17,43 @@ Each stream will be output into its own table in Postgres. Each table will conta
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Postgres is `TIMESTAMP WITH TIME ZONE`.
 * `_airbyte_data`: a json blob representing with the event data. The column type in Postgres is `JSONB`.
 
-#### Features
+## Getting Started \(Airbyte Cloud\)
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Namespaces | Yes |  |
+Airbyte Cloud only supports connecting to your Postgres instance with SSL or TLS encryption. TLS is used by default. Other than that, you can proceed with the open-source instructions below.
 
-## Getting started
+## Getting Started \(Airbyte Open-Source\)
 
-### Requirements
+#### Requirements
 
 To use the Postgres destination, you'll need:
 
 * A Postgres server version 9.4 or above
 
-### Setup guide
-
-#### Network Access
+#### Configure Network Access
 
 Make sure your Postgres database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
 
 #### **Permissions**
 
-You need a Postgres user that can create tables and write rows. We highly recommend creating an Airbyte-specific user for this purpose.
+You need a Postgres user with the following permissions: 
+
+* can create tables and write rows. 
+* can create schemas e.g: 
+
+You can create such a user by runnig: 
+
+```
+CREATE USER airbyte_user PASSWORD <password>;
+GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
+```
+
+You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
 
 #### Target Database
 
 You will need to choose an existing database or create a new database that will be used to store synced data from Airbyte.
 
-### Setup the Postgres destination in Airbyte
+### Setup the Postgres Destination in Airbyte
 
 You should now have all the requirements needed to configure Postgres as a destination in the UI. You'll need the following information to configure the Postgres destination:
 
@@ -54,11 +61,10 @@ You should now have all the requirements needed to configure Postgres as a desti
 * **Port**
 * **Username**
 * **Password**
-* **Schema**
+* **Default Schema Name**
 * **Database**
-  * This database needs to exist within the schema provided.
 
-## Notes about Postgres Naming Conventions
+## Naming Conventions
 
 From [Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
 
@@ -73,4 +79,12 @@ From [Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-s
 * If you want to write portable applications you are advised to always quote a particular name or never quote it.
 
 Therefore, Airbyte Postgres destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
+
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.3.12 | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |  
+| 0.3.11 | 2021-09-07 | [\#5743](https://github.com/airbytehq/airbyte/pull/5743) | Add SSH Tunnel support |
+| 0.3.10 | 2021-08-11 | [\#5336](https://github.com/airbytehq/airbyte/pull/5336) | 🐛 Destination Postgres: fix \u0000\(NULL\) value processing |
 

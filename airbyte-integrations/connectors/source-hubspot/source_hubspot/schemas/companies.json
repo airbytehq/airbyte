@@ -1,33 +1,26 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
-    "portalId": {
-      "type": ["null", "integer"]
-    },
-    "companyId": {
-      "type": "integer"
-    },
-    "isDeleted": {
-      "type": ["null", "boolean"]
-    },
-    "additionalDomains": {
-      "type": ["null", "array"]
-    },
-    "stateChanges": {
-      "type": ["null", "array"]
-    },
-    "mergeAudits": {
-      "type": ["null", "array"]
-    },
-    "contacts": {
-      "type": ["null", "array"]
+    "id": {
+      "type": ["null", "string"]
     },
     "createdAt": {
-      "type": "string"
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updatedAt": {
-      "type": "string"
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "contacts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

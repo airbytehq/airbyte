@@ -1,30 +1,11 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.version;
 
 import com.google.common.base.Preconditions;
+import java.util.Objects;
 
 /**
  * The AirbyteVersion identifies the version of the database used internally by Airbyte services.
@@ -56,7 +37,14 @@ public class AirbyteVersion {
     }
   }
 
-  public String getVersion() {
+  public AirbyteVersion(final String major, final String minor, final String patch) {
+    this.version = String.format("%s.%s.%s", major, minor, patch);
+    this.major = major;
+    this.minor = minor;
+    this.patch = patch;
+  }
+
+  public String serialize() {
     return version;
   }
 
@@ -80,11 +68,32 @@ public class AirbyteVersion {
   public int compatibleVersionCompareTo(final AirbyteVersion another) {
     if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION))
       return 0;
-    final int majorDiff = major.compareTo(another.major);
+    final int majorDiff = compareVersion(major, another.major);
     if (majorDiff != 0) {
       return majorDiff;
     }
-    return minor.compareTo(another.minor);
+    return compareVersion(minor, another.minor);
+  }
+
+  /**
+   * @return true if this is greater than other. otherwise false.
+   */
+  public boolean greaterThan(final AirbyteVersion other) {
+    return patchVersionCompareTo(other) > 0;
+  }
+
+  /**
+   * @return true if this is greater than or equal toother. otherwise false.
+   */
+  public boolean greaterThanOrEqualTo(final AirbyteVersion other) {
+    return patchVersionCompareTo(other) >= 0;
+  }
+
+  /**
+   * @return true if this is less than other. otherwise false.
+   */
+  public boolean lessThan(final AirbyteVersion other) {
+    return patchVersionCompareTo(other) < 0;
   }
 
   /**
@@ -94,36 +103,45 @@ public class AirbyteVersion {
     if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION)) {
       return 0;
     }
-    final int majorDiff = major.compareTo(another.major);
+    final int majorDiff = compareVersion(major, another.major);
     if (majorDiff != 0) {
       return majorDiff;
     }
-    final int minorDiff = minor.compareTo(another.minor);
+    final int minorDiff = compareVersion(minor, another.minor);
     if (minorDiff != 0) {
       return minorDiff;
     }
-    return patch.compareTo(another.patch);
+    return compareVersion(patch, another.patch);
   }
 
-  public static void assertIsCompatible(final String version1, final String version2) throws IllegalStateException {
+  public boolean isDev() {
+    return version.equals(DEV_VERSION);
+  }
+
+  /**
+   * Version string needs to be converted to integer for comparison, because string comparison does
+   * not handle version string with different digits correctly. For example:
+   * {@code "11".compare("3") < 0}, while {@code Integer.compare(11, 3) > 0}.
+   */
+  private static int compareVersion(final String v1, final String v2) {
+    return Integer.compare(Integer.parseInt(v1), Integer.parseInt(v2));
+  }
+
+  public static void assertIsCompatible(final AirbyteVersion version1, final AirbyteVersion version2) throws IllegalStateException {
     if (!isCompatible(version1, version2)) {
       throw new IllegalStateException(getErrorMessage(version1, version2));
     }
   }
 
-  public static String getErrorMessage(final String version1, final String version2) {
-    final String cleanVersion1 = version1.replace("\n", "").strip();
-    final String cleanVersion2 = version2.replace("\n", "").strip();
+  public static String getErrorMessage(final AirbyteVersion version1, final AirbyteVersion version2) {
     return String.format(
         "Version mismatch between %s and %s.\n" +
             "Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/operator-guides/upgrading-airbyte",
-        cleanVersion1, cleanVersion2);
+        version1.serialize(), version2.serialize());
   }
 
-  public static boolean isCompatible(final String v1, final String v2) {
-    final AirbyteVersion version1 = new AirbyteVersion(v1);
-    final AirbyteVersion version2 = new AirbyteVersion(v2);
-    return version1.compatibleVersionCompareTo(version2) == 0;
+  public static boolean isCompatible(final AirbyteVersion v1, final AirbyteVersion v2) {
+    return v1.compatibleVersionCompareTo(v2) == 0;
   }
 
   @Override
@@ -136,17 +154,35 @@ public class AirbyteVersion {
         '}';
   }
 
-  public static AirbyteVersion versionWithoutPatch(AirbyteVersion airbyteVersion) {
-    String versionWithoutPatch = "" + airbyteVersion.getMajorVersion()
+  public static AirbyteVersion versionWithoutPatch(final AirbyteVersion airbyteVersion) {
+    final String versionWithoutPatch = "" + airbyteVersion.getMajorVersion()
         + "."
         + airbyteVersion.getMinorVersion()
         + ".0-"
-        + airbyteVersion.getVersion().replace("\n", "").strip().split("-")[1];
+        + airbyteVersion.serialize().replace("\n", "").strip().split("-")[1];
     return new AirbyteVersion(versionWithoutPatch);
   }
 
-  public static AirbyteVersion versionWithoutPatch(String airbyteVersion) {
+  public static AirbyteVersion versionWithoutPatch(final String airbyteVersion) {
     return versionWithoutPatch(new AirbyteVersion(airbyteVersion));
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final AirbyteVersion that = (AirbyteVersion) o;
+    return Objects.equals(version, that.version) && Objects.equals(major, that.major) && Objects.equals(minor, that.minor)
+        && Objects.equals(patch, that.patch);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(version, major, minor, patch);
   }
 
 }

@@ -1,46 +1,31 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
+
+import static org.junit.Assert.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
@@ -88,6 +73,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("sid", ORACLE_DB.getSid())
         .put("username", ORACLE_DB.getUsername())
         .put("password", ORACLE_DB.getPassword())
+        .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
         .build());
 
     // Because Oracle doesn't let me create database easily I need to clean up
@@ -110,15 +96,16 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   void cleanUpTables() throws SQLException {
-    Connection conn = DriverManager.getConnection(
+    final Connection conn = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
         ORACLE_DB.getPassword());
-    for (String schemaName : TEST_SCHEMAS) {
-      ResultSet resultSet = conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
+    for (final String schemaName : TEST_SCHEMAS) {
+      final ResultSet resultSet =
+          conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
-        String tableName = resultSet.getString("TABLE_NAME");
-        String tableNameProcessed = tableName.contains(" ") ? SourceJdbcUtils
+        final String tableName = resultSet.getString("TABLE_NAME");
+        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations
             .enquoteIdentifier(conn, tableName) : tableName;
         conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
       }
@@ -134,7 +121,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getSource() {
+  public AbstractJdbcSource getJdbcSource() {
     return new OracleSource();
   }
 
@@ -158,7 +145,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // In Oracle, `CREATE USER` creates a schema.
     // See https://www.oratable.com/oracle-user-schema-difference/
     if (supportsSchemas()) {
-      for (String schemaName : TEST_SCHEMAS) {
+      for (final String schemaName : TEST_SCHEMAS) {
         executeOracleStatement(
             String.format(
                 "CREATE USER %s IDENTIFIED BY password DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS",
@@ -167,21 +154,21 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
   }
 
-  public void executeOracleStatement(String query) throws SQLException {
-    Connection conn = DriverManager.getConnection(
-        ORACLE_DB.getJdbcUrl(),
-        ORACLE_DB.getUsername(),
-        ORACLE_DB.getPassword());
-    try (Statement stmt = conn.createStatement()) {
+  public void executeOracleStatement(final String query) {
+    try (
+        final Connection conn = DriverManager.getConnection(
+            ORACLE_DB.getJdbcUrl(),
+            ORACLE_DB.getUsername(),
+            ORACLE_DB.getPassword());
+        final Statement stmt = conn.createStatement()) {
       stmt.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       logSQLException(e);
     }
-    conn.close();
   }
 
-  public static void logSQLException(SQLException ex) {
-    for (Throwable e : ex) {
+  public static void logSQLException(final SQLException ex) {
+    for (final Throwable e : ex) {
       if (e instanceof SQLException) {
         if (ignoreSQLException(((SQLException) e).getSQLState()) == false) {
           e.printStackTrace(System.err);
@@ -198,7 +185,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
   }
 
-  public static boolean ignoreSQLException(String sqlState) {
+  public static boolean ignoreSQLException(final String sqlState) {
     // This only ignore cases where other databases won't raise errors
     // Drop table, schema etc or try to recreate a table;
     if (sqlState == null) {
@@ -219,6 +206,14 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
 
     return false;
+  }
+
+  @Test
+  void testSpec() throws Exception {
+    final ConnectorSpecification actual = source.spec();
+    final ConnectorSpecification expected = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+
+    assertEquals(expected, actual);
   }
 
 }

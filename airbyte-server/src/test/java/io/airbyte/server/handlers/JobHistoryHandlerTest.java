@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -42,9 +22,11 @@ import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.LogRead;
 import io.airbyte.api.model.Pagination;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.helpers.LogConfiguration;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -84,7 +66,7 @@ public class JobHistoryHandlerTest {
   private JobPersistence jobPersistence;
   private JobHistoryHandler jobHistoryHandler;
 
-  private static JobRead toJobInfo(Job job) {
+  private static JobRead toJobInfo(final Job job) {
     return new JobRead().id(job.getId())
         .configId(job.getScope())
         .status(Enums.convertTo(job.getStatus(), io.airbyte.api.model.JobStatus.class))
@@ -94,14 +76,14 @@ public class JobHistoryHandlerTest {
 
   }
 
-  private static List<AttemptInfoRead> toAttemptInfoList(List<Attempt> attempts) {
+  private static List<AttemptInfoRead> toAttemptInfoList(final List<Attempt> attempts) {
     final List<AttemptRead> attemptReads = attempts.stream().map(JobHistoryHandlerTest::toAttemptRead).collect(Collectors.toList());
 
     final Function<AttemptRead, AttemptInfoRead> toAttemptInfoRead = (AttemptRead a) -> new AttemptInfoRead().attempt(a).logs(EMPTY_LOG_READ);
     return attemptReads.stream().map(toAttemptInfoRead).collect(Collectors.toList());
   }
 
-  private static AttemptRead toAttemptRead(Attempt a) {
+  private static AttemptRead toAttemptRead(final Attempt a) {
     return new AttemptRead()
         .id(a.getId())
         .status(Enums.convertTo(a.getStatus(), io.airbyte.api.model.AttemptStatus.class))
@@ -110,7 +92,7 @@ public class JobHistoryHandlerTest {
         .endedAt(a.getEndedAtInSecond().orElse(null));
   }
 
-  private static Attempt createSuccessfulAttempt(long jobId, long timestamps) {
+  private static Attempt createSuccessfulAttempt(final long jobId, final long timestamps) {
     return new Attempt(ATTEMPT_ID, jobId, LOG_PATH, null, AttemptStatus.SUCCEEDED, timestamps, timestamps, timestamps);
   }
 
@@ -121,7 +103,7 @@ public class JobHistoryHandlerTest {
         CREATED_AT);
 
     jobPersistence = mock(JobPersistence.class);
-    jobHistoryHandler = new JobHistoryHandler(jobPersistence);
+    jobHistoryHandler = new JobHistoryHandler(jobPersistence, WorkerEnvironment.DOCKER, LogConfiguration.EMPTY);
   }
 
   @Nested

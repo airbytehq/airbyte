@@ -38,6 +38,9 @@
     "street": {
       "type": ["null", "string"]
     },
+    "street_secondary": {
+      "type": ["null", "string"]
+    },
     "validated": {
       "type": ["null", "boolean"]
     },

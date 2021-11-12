@@ -117,8 +117,7 @@
             "type": ["null", "string"]
           }
         },
-        "type": ["null", "object"],
-        "additionalProperties": false
+        "type": ["null", "object"]
       },
       "type": ["null", "array"]
     },
@@ -156,8 +155,7 @@
           "type": ["null", "string"]
         }
       },
-      "type": ["null", "object"],
-      "additionalProperties": false
+      "type": ["null", "object"]
     },
     "user_id": {
       "type": ["null", "string"]

@@ -77,7 +77,7 @@
       "type": ["null", "string"]
     },
     "updated": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "url": {
       "type": ["null", "string"]

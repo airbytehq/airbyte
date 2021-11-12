@@ -356,8 +356,7 @@
                 "type": ["null", "string"]
               },
               "created": {
-                "type": ["null", "string"],
-                "format": "date-time"
+                "type": ["null", "integer"]
               },
               "address_state": {
                 "type": ["null", "string"]
@@ -654,8 +653,7 @@
               "type": ["null", "string"]
             },
             "created": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "integer"]
             },
             "address_state": {
               "type": ["null", "string"]
@@ -824,8 +822,7 @@
       "type": ["null", "object"],
       "properties": {
         "end": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "coupon": {
           "type": ["null", "object"],
@@ -875,11 +872,10 @@
               "type": ["null", "string"]
             },
             "percent_off": {
-              "type": ["null", "integer"]
+              "type": ["null", "number"]
             },
             "created": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "integer"]
             }
           }
         },
@@ -887,8 +883,7 @@
           "type": ["null", "string"]
         },
         "start": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "object": {
           "type": ["null", "string"]
@@ -921,10 +916,6 @@
     },
     "tax_info": {
       "type": ["null", "string"]
-    },
-    "updated": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   }
 }

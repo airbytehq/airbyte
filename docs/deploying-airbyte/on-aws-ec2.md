@@ -15,7 +15,7 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 ![](../.gitbook/assets/aws_ec2_ami.png)
 
 * Select instance type
-  * For testing out Airbyte, a `t2.medium` instance is likely sufficient.
+  * For testing out Airbyte, a `t2.medium` instance is likely sufficient. Airbyte uses a lot of disk space with images and logs, so make sure to provision at least 30GBs of disk per node.
   * For long-running Airbyte installations, we recommend a `t2.large` instance.
 
 ![](../.gitbook/assets/aws_ec2_instance_type.png)
@@ -122,6 +122,10 @@ ssh -i $SSH_KEY -L 8000:localhost:8000 -N -f ec2-user@$INSTANCE_IP
 ```
 
 * Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!
+
+## Pushing Airbyte logs to CloudWatch
+
+If you want to get your logs from your Airbyte Docker containers in CloudWatch, simply follow [this](https://aws.amazon.com/pt/premiumsupport/knowledge-center/cloudwatch-docker-container-logs-proxy/) guide to do so.
 
 ## Troubleshooting
 

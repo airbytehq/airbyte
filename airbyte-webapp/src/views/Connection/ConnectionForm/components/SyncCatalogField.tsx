@@ -20,7 +20,8 @@ const TreeViewContainer = styled.div`
   margin-bottom: 29px;
   border-radius: 4px;
   max-height: 600px;
-  overflow-y: overlay;
+  overflow-y: auto;
+  -webkit-overlay: true;
 `;
 
 const SchemaHeader = styled(Header)`
@@ -169,10 +170,10 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
           <SelectAll>
             <CheckBox onChange={onCheckAll} checked={hasSelectedItem} />
           </SelectAll>
-          <FormattedMessage id="form.sourceNamespace" />
+          <FormattedMessage id="form.sourceStreamName" />
         </NamespaceTitleCell>
         <Cell lighter>
-          <FormattedMessage id="form.sourceStreamName" />
+          <FormattedMessage id="form.sourceNamespace" />
         </Cell>
         <Cell lighter>
           <FormattedMessage id="form.destinationNamespace" />

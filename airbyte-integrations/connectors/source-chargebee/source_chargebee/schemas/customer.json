@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string",
+      "type": ["string", "null"],
       "maxLength": 50
     },
     "first_name": {
@@ -32,14 +32,11 @@
       "maxLength": 20
     },
     "auto_collection": {
-      "type": ["array", "null"],
-      "enum": ["on", "off"],
-      "items": {
-        "type": "string"
-      }
+      "type": ["string", "null"],
+      "enum": ["on", "off"]
     },
     "offline_payment_method": {
-      "type": ["array", "null"],
+      "type": ["string", "null"],
       "enum": [
         "no_preference",
         "cash",
@@ -47,49 +44,44 @@
         "bank_tranksfer",
         "ach_credit",
         "sepa_credit"
-      ],
-      "items": {
-        "type": ["string"]
-      }
+      ]
     },
     "net_term_days": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "vat_number_validated_time": {
       "type": ["integer", "null"]
     },
     "vat_number_status": {
-      "type": ["array", "null"],
-      "enum": ["valid", "invalid", "not_validated", "undetermined"],
-      "items": {
-        "type": ["string"]
-      }
+      "type": ["string", "null"],
+      "enum": ["valid", "invalid", "not_validated", "undetermined"]
     },
     "allow_direct_debit": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "is_location_valid": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "created_at": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "created_from_ip": {
       "type": ["string", "null"],
       "maxLength": 50
     },
     "exemption_details": {
-      "type": "object"
-    },
-    "taxability": {
       "type": ["array", "null"],
-      "enum": ["taxable", "exempt"],
       "items": {
-        "type": ["string"]
+        "type": ["object", "null"],
+        "properties": {}
       }
     },
+    "taxability": {
+      "type": ["string", "null"],
+      "enum": ["taxable", "exempt"]
+    },
     "entity_code": {
-      "type": ["array", "null"],
+      "type": ["string", "null"],
       "enum": [
         "a",
         "b",
@@ -110,17 +102,14 @@
         "r",
         "med1",
         "med2"
-      ],
-      "items": {
-        "type": ["string"]
-      }
+      ]
     },
     "exempt_number": {
       "type": ["string", "null"],
       "maxLength": 100
     },
     "resource_version": {
-      "type": ["number", "null"]
+      "type": ["integer", "null"]
     },
     "updated_at": {
       "type": ["integer", "null"]
@@ -135,14 +124,11 @@
       "minimum": 1
     },
     "billing_date_mode": {
-      "type": ["array", "null"],
-      "enum": ["using_default", "manually_set"],
-      "items": {
-        "type": ["string"]
-      }
+      "type": ["string", "null"],
+      "enum": ["using_default", "manually_set"]
     },
     "billing_day_of_week": {
-      "type": ["array", "null"],
+      "type": ["string", "null"],
       "enum": [
         "sunday",
         "monday",
@@ -151,34 +137,22 @@
         "thursday",
         "friday",
         "saturday"
-      ],
-      "items": {
-        "type": ["string"]
-      }
+      ]
     },
     "billing_day_of_week_mode": {
-      "type": ["array", "null"],
-      "enum": ["using_default", "manually_set"],
-      "items": {
-        "type": ["string"]
-      }
+      "type": ["string", "null"],
+      "enum": ["using_default", "manually_set"]
     },
     "pii_cleared": {
-      "type": ["array", "null"],
-      "enum": ["active", "scheduled_for_clear", "cleared"],
-      "items": {
-        "type": ["string"]
-      }
+      "type": ["string", "null"],
+      "enum": ["active", "scheduled_for_clear", "cleared"]
     },
     "auto_close_invoices": {
       "type": ["boolean", "null"]
     },
     "fraud_flag": {
-      "type": ["array", "null"],
-      "enum": ["safe", "suspicious", "fraudulent"],
-      "items": {
-        "type": ["string"]
-      }
+      "type": ["string", "null"],
+      "enum": ["safe", "suspicious", "fraudulent"]
     },
     "primary_payment_source_id": {
       "type": ["string", "null"],
@@ -197,23 +171,23 @@
       "maxLength": 3
     },
     "promotional_credits": {
-      "type": "integer",
+      "type": ["integer", "null"],
       "minimum": 0
     },
     "unbilled_charges": {
-      "type": "integer",
+      "type": ["integer", "null"],
       "minimum": 0
     },
     "refundable_credits": {
-      "type": "integer",
+      "type": ["integer", "null"],
       "minimum": 0
     },
     "excess_payments": {
-      "type": "integer",
+      "type": ["integer", "null"],
       "minimum": 0
     },
     "deleted": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "registered_for_gst": {
       "type": ["boolean", "null"]
@@ -222,11 +196,8 @@
       "type": ["boolean", "null"]
     },
     "customer_type": {
-      "type": ["array", "null"],
-      "enum": ["residential", "business", "senior_citizen", "industrial"],
-      "items": {
-        "type": ["string"]
-      }
+      "type": ["string", "null"],
+      "enum": ["residential", "business", "senior_citizen", "industrial"]
     },
     "business_customer_without_vat_number": {
       "type": ["boolean", "null"]
@@ -243,7 +214,7 @@
       "maxLength": 10
     },
     "billing_address": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "first_name": {
           "type": ["string", "null"],
@@ -255,7 +226,6 @@
         },
         "email": {
           "type": ["string", "null"],
-          "format": "email",
           "maxLength": 70
         },
         "company": {
@@ -268,7 +238,7 @@
         },
         "line1": {
           "type": ["string", "null"],
-          "maxLength": 180
+          "maxLength": 150
         },
         "line2": {
           "type": ["string", "null"],
@@ -299,27 +269,56 @@
           "maxLength": 20
         },
         "validation_status": {
-          "type": "array",
-          "enum": ["not_validated", "valid", "partially_valid", "invalid"],
-          "items": {
-            "type": "string"
-          }
+          "type": ["string", "null"],
+          "enum": ["not_validated", "valid", "partially_valid", "invalid"]
         }
       }
     },
     "referral_urls": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "string"
+        "type": ["object", "null"],
+        "properties": {
+          "external_customer_id": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          },
+          "referral_sharing_url": {
+            "type": ["string", "null"],
+            "maxLength": 50
+          },
+          "created_at": {
+            "type": ["integer", "null"]
+          },
+          "updated_at": {
+            "type": ["integer", "null"]
+          },
+          "referral_campaign_id": {
+            "type": ["string", "null"],
+            "maxLength": 50
+          },
+          "referral_account_id": {
+            "type": ["string", "null"],
+            "maxLength": 50
+          },
+          "referral_external_campaign_id": {
+            "type": ["string", "null"],
+            "maxLength": 50
+          },
+          "referral_system": {
+            "type": ["string", "null"],
+            "enum": ["referral_candy", "referral_saasquatch", "friendbuy"]
+          }
+        }
       }
     },
     "contacts": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": "string",
+            "type": ["string", "null"],
             "maxLength": 150
           },
           "first_name": {
@@ -332,7 +331,6 @@
           },
           "email": {
             "type": ["string", "null"],
-            "format": "email",
             "maxLength": 70
           },
           "phone": {
@@ -356,10 +354,10 @@
       }
     },
     "payment_method": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "type": {
-          "type": "array",
+          "type": ["string", "null"],
           "enum": [
             "card",
             "paypal_express_checkout",
@@ -376,13 +374,10 @@
             "bancontact",
             "giropay",
             "dotpay"
-          ],
-          "items": {
-            "type": "string"
-          }
+          ]
         },
         "gateway": {
-          "type": "array",
+          "type": ["string", "null"],
           "enum": [
             "chargebee",
             "stripe",
@@ -423,30 +418,24 @@
             "ingenico_direct",
             "exact",
             "not_applicable"
-          ],
-          "items": {
-            "type": "string"
-          }
+          ]
         },
         "gateway_account_id": {
           "type": ["string", "null"],
           "maxLength": 50
         },
         "status": {
-          "type": "array",
+          "type": ["string", "null"],
           "enum": [
             "valid",
             "expiring",
             "expired",
             "invalid",
             "pending_verification"
-          ],
-          "items": {
-            "type": "string"
-          }
+          ]
         },
         "reference_id": {
-          "type": "string",
+          "type": ["string", "null"],
           "maxLength": 200
         }
       }
@@ -454,26 +443,26 @@
     "balances": {
       "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "promotional_credits": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "minimum": 0
           },
           "excess_payments": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "minimum": 0
           },
           "refundable_credits": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "minimum": 0
           },
           "unbilled_charges": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "minimum": 0
           },
           "currency_code": {
-            "type": "string",
+            "type": ["string", "null"],
             "maxLength": 3
           }
         }
@@ -486,7 +475,7 @@
           "type": ["string", "null"],
           "maxLength": 50
         },
-        "parent_owner_id": {
+        "payment_owner_id": {
           "type": ["string", "null"],
           "maxLength": 50
         },
@@ -497,63 +486,56 @@
       }
     },
     "parent_account_access": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "portal_edit_child_subscriptions": {
-          "type": ["array", "null"],
-          "enum": ["yes", "view_only", "no"],
-          "items": {
-            "type": "string"
-          }
+          "type": ["string", "null"],
+          "enum": ["yes", "view_only", "no"]
         },
         "portal_download_child_invoices": {
-          "type": ["array", "null"],
-          "enum": ["yes", "view_only", "no"],
-          "items": {
-            "type": "string"
-          }
+          "type": ["string", "null"],
+          "enum": ["yes", "view_only", "no"]
         },
         "send_subscription_emails": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "send_invoice_emails": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "send_payment_emails": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         }
       }
+    },
+    "child_account_access": {
+      "type": ["object", "null"],
+      "properties": {
+        "portal_edit_child_subscriptions": {
+          "type": ["string", "null"],
+          "enum": ["yes", "view_only"]
+        },
+        "portal_download_child_invoices": {
+          "type": ["string", "null"],
+          "enum": ["yes", "view_only", "no"]
+        },
+        "send_subscription_emails": {
+          "type": ["boolean", "null"]
+        },
+        "send_invoice_emails": {
+          "type": ["boolean", "null"]
+        },
+        "send_payment_emails": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "card_status": {
+      "type": ["string", "null"]
     },
 
-    "child_account_access": {
-      "type": "object",
-      "properties": {
-        "portal_edit_child_subscriptions": {
-          "type": ["array", "null"],
-          "enum": ["yes", "view_only", "no"],
-          "items": {
-            "type": "string"
-          }
-        },
-        "portal_download_child_invoices": {
-          "type": ["array", "null"],
-          "enum": ["yes", "view_only", "no"],
-          "items": {
-            "type": "string"
-          }
-        },
-        "send_subscription_emails": {
-          "type": "boolean"
-        },
-        "send_invoice_emails": {
-          "type": "boolean"
-        },
-        "send_payment_emails": {
-          "type": "boolean"
-        }
-      }
-    },
-    "card_status": { "type": "string" },
-    "meta_data": { "type": "string" }
+    "meta_data": {
+      "type": ["object", "null"],
+      "properties": {}
+    }
   }
 }

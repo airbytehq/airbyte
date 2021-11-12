@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -100,7 +80,9 @@ class SingerSource(Source):
 
     def _discover_internal(self, logger: AirbyteLogger, config_path: str) -> Catalogs:
         cmd = self.discover_cmd(logger, config_path)
-        catalogs = SingerHelper.get_catalogs(logger, cmd, self.get_sync_mode_overrides(), self.get_excluded_streams())
+        catalogs = SingerHelper.get_catalogs(
+            logger, cmd, self.get_sync_mode_overrides(), self.get_primary_key_overrides(), self.get_excluded_streams()
+        )
         return catalogs
 
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
@@ -144,6 +126,14 @@ class SingerSource(Source):
         If a SyncModeInfo field is not set, it will not be overridden in the output catalog.
 
         :return: A dict from stream name to the sync modes that should be applied to this stream.
+        """
+        return {}
+
+    def get_primary_key_overrides(self) -> Dict[str, List[str]]:
+        """
+        Similar to get_sync_mode_overrides but for primary keys.
+
+        :return: A dict from stream name to the list of primary key fields for the stream.
         """
         return {}
 

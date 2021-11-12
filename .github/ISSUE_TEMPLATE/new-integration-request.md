@@ -12,9 +12,10 @@ assignees: ''
 * Do you need a specific version of the underlying data source e.g: you specifically need support for an older version of the API or DB? 
 
 ## Describe the context around this new connector
-* Which team in your company wants this integration, what for? This helps us understand the use case.
+* Why do you need this integration? How does your team intend to use the data? This helps us understand the use case.
 * How often do you want to run syncs?
 * If this is an API source connector, which entities/endpoints do you need supported?
+* If the connector is for a paid service, can we name you as a mutual user when we subscribe for an account? Which company should we name? 
 
 ## Describe the alternative you are considering or using
 What are you considering doing if you don’t have this integration through Airbyte?

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -63,35 +43,35 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
   /**
    * Convert json_schema to a map from field name to field types.
    */
-  private static Map<String, String> getFieldTypes(JsonNode streamSchema) {
-    Map<String, String> fieldTypes = new HashMap<>();
-    JsonNode fieldDefinitions = streamSchema.get("properties");
-    Iterator<Entry<String, JsonNode>> iterator = fieldDefinitions.fields();
+  private static Map<String, String> getFieldTypes(final JsonNode streamSchema) {
+    final Map<String, String> fieldTypes = new HashMap<>();
+    final JsonNode fieldDefinitions = streamSchema.get("properties");
+    final Iterator<Entry<String, JsonNode>> iterator = fieldDefinitions.fields();
     while (iterator.hasNext()) {
-      Map.Entry<String, JsonNode> entry = iterator.next();
+      final Map.Entry<String, JsonNode> entry = iterator.next();
       fieldTypes.put(entry.getKey(), entry.getValue().get("type").asText());
     }
     return fieldTypes;
   }
 
-  private static JsonNode getJsonNode(Map<String, String> input, Map<String, String> fieldTypes) {
-    ObjectNode json = MAPPER.createObjectNode();
+  private static JsonNode getJsonNode(final Map<String, String> input, final Map<String, String> fieldTypes) {
+    final ObjectNode json = MAPPER.createObjectNode();
 
     if (input.containsKey(JavaBaseConstants.COLUMN_NAME_DATA)) {
       return Jsons.deserialize(input.get(JavaBaseConstants.COLUMN_NAME_DATA));
     }
 
-    for (Map.Entry<String, String> entry : input.entrySet()) {
-      String key = entry.getKey();
+    for (final Map.Entry<String, String> entry : input.entrySet()) {
+      final String key = entry.getKey();
       if (key.equals(JavaBaseConstants.COLUMN_NAME_AB_ID) || key
           .equals(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)) {
         continue;
       }
-      String value = entry.getValue();
+      final String value = entry.getValue();
       if (value == null || value.equals("")) {
         continue;
       }
-      String type = fieldTypes.get(key);
+      final String type = fieldTypes.get(key);
       switch (type) {
         case "boolean" -> json.put(key, Boolean.valueOf(value));
         case "integer" -> json.put(key, Integer.valueOf(value));
@@ -103,20 +83,20 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws IOException {
-    List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
+    final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
 
-    Map<String, String> fieldTypes = getFieldTypes(streamSchema);
-    List<JsonNode> jsonRecords = new LinkedList<>();
+    final Map<String, String> fieldTypes = getFieldTypes(streamSchema);
+    final List<JsonNode> jsonRecords = new LinkedList<>();
 
-    for (S3ObjectSummary objectSummary : objectSummaries) {
-      S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      try (Reader in = new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8)) {
-        Iterable<CSVRecord> records = CSVFormat.DEFAULT
+    for (final S3ObjectSummary objectSummary : objectSummaries) {
+      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      try (final Reader in = new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8)) {
+        final Iterable<CSVRecord> records = CSVFormat.DEFAULT
             .withQuoteMode(QuoteMode.NON_NUMERIC)
             .withFirstRecordAsHeader()
             .parse(in);

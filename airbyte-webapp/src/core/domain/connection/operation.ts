@@ -1,6 +1,7 @@
 export interface Operation {
   name: string;
   id?: string;
+  workspaceId: string;
   operatorConfiguration:
     | DbtOperationConfiguration
     | NormalizationOperationConfiguration;

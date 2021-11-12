@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.app;
@@ -58,7 +38,7 @@ class ScheduleJobPredicateTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   public void setup() {
-    Supplier<Instant> timeSupplier = mock(Supplier.class);
+    final Supplier<Instant> timeSupplier = mock(Supplier.class);
     scheduleJobPredicate = new ScheduleJobPredicate(timeSupplier);
     job = mock(Job.class);
     when(job.getId()).thenReturn(10L);
@@ -91,7 +71,7 @@ class ScheduleJobPredicateTest {
   @EnumSource(value = JobStatus.class,
               mode = Mode.EXCLUDE,
               names = {"PENDING", "RUNNING", "INCOMPLETE"})
-  public void testShouldScheduleBasedOnPreviousJobStatus(JobStatus status) {
+  public void testShouldScheduleBasedOnPreviousJobStatus(final JobStatus status) {
     when(job.getStatus()).thenReturn(status);
     when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(2)).getEpochSecond()));
 
@@ -102,7 +82,7 @@ class ScheduleJobPredicateTest {
   @EnumSource(value = JobStatus.class,
               mode = Mode.EXCLUDE,
               names = {"FAILED", "SUCCEEDED", "CANCELLED"})
-  public void testScheduleShouldNotScheduleBasedOnPreviousJobStatus(JobStatus status) {
+  public void testScheduleShouldNotScheduleBasedOnPreviousJobStatus(final JobStatus status) {
     when(job.getStatus()).thenReturn(status);
     when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(2)).getEpochSecond()));
 

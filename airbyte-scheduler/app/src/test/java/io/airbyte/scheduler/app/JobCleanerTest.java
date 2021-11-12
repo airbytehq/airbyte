@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.app;
@@ -122,7 +102,7 @@ class JobCleanerTest {
     createFile(folder.resolve("2"), "F", 1, 20);
 
     final JobPersistence jobPersistence = mock(JobPersistence.class);
-    Job job2 = mock(Job.class);
+    final Job job2 = mock(Job.class);
     when(job2.getId()).thenReturn(2L);
     when(jobPersistence.listJobsWithStatus(JobStatus.RUNNING)).thenReturn(List.of(job2));
 
@@ -138,25 +118,25 @@ class JobCleanerTest {
     assertEquals(expected, after);
   }
 
-  private void createFile(Path subdirectory, String filename, int sizeMb, int daysAgo) throws IOException {
-    long lastModified = JobCleaner.getDateFromDaysAgo(daysAgo).getTime();
-    File subdirFile = subdirectory.toFile();
+  private void createFile(final Path subdirectory, final String filename, final int sizeMb, final int daysAgo) throws IOException {
+    final long lastModified = JobCleaner.getDateFromDaysAgo(daysAgo).getTime();
+    final File subdirFile = subdirectory.toFile();
     if (!subdirFile.exists()) {
       subdirFile.mkdir();
       subdirFile.setLastModified(lastModified);
     }
 
-    File file = subdirectory.resolve(filename).toFile();
+    final File file = subdirectory.resolve(filename).toFile();
     file.createNewFile();
 
-    RandomAccessFile raf = new RandomAccessFile(file, "rw");
+    final RandomAccessFile raf = new RandomAccessFile(file, "rw");
     raf.setLength(sizeMb * 1024 * 1024);
     raf.close();
 
     file.setLastModified(lastModified);
   }
 
-  private Set<String> listFiles(Path dir) throws IOException {
+  private Set<String> listFiles(final Path dir) throws IOException {
     return Files.walk(dir).map(Path::toString).map(x -> x.replace(folder.toString(), "")).collect(Collectors.toSet());
   }
 

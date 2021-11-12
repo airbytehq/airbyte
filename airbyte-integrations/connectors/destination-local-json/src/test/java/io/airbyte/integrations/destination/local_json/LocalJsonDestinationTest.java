@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.local_json;
@@ -108,7 +88,7 @@ class LocalJsonDestinationTest {
   }
 
   private LocalJsonDestination getDestination() {
-    LocalJsonDestination result = spy(LocalJsonDestination.class);
+    final LocalJsonDestination result = spy(LocalJsonDestination.class);
     doReturn(destinationPath).when(result).getDestinationPath(any());
     return result;
   }
@@ -133,7 +113,7 @@ class LocalJsonDestinationTest {
   void testCheckFailure() throws IOException {
     final Path looksLikeADirectoryButIsAFile = destinationPath.resolve("file");
     FileUtils.touch(looksLikeADirectoryButIsAFile.toFile());
-    LocalJsonDestination destination = spy(LocalJsonDestination.class);
+    final LocalJsonDestination destination = spy(LocalJsonDestination.class);
     doReturn(looksLikeADirectoryButIsAFile).when(destination).getDestinationPath(any());
     final JsonNode config = Jsons.jsonNode(ImmutableMap.of(LocalJsonDestination.DESTINATION_PATH_FIELD, looksLikeADirectoryButIsAFile.toString()));
     final AirbyteConnectionStatus actual = destination.check(config);
@@ -211,7 +191,7 @@ class LocalJsonDestinationTest {
     assertEquals(Collections.emptySet(), actualFilenames);
   }
 
-  private Stream<JsonNode> toJson(Path path) throws IOException {
+  private Stream<JsonNode> toJson(final Path path) throws IOException {
     return Files.readAllLines(path).stream()
         .map(Jsons::deserialize);
   }

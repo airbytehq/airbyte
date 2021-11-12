@@ -2,13 +2,13 @@ import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
 class DestinationDefinitionService extends AirbyteRequestService {
-  get url() {
+  get url(): string {
     return "destination_definitions";
   }
 
   public update(body: DestinationDefinition): Promise<DestinationDefinition> {
-    return this.fetch(`${this.url}/update`, body) as any;
+    return this.fetch<DestinationDefinition>(`${this.url}/update`, body);
   }
 }
 
-export const destinationDefinitionService = new DestinationDefinitionService();
+export { DestinationDefinitionService };

@@ -1,11 +1,12 @@
-FROM openjdk:14.0.2-slim AS migrate
+ARG JDK_VERSION=14.0.2
+FROM openjdk:${JDK_VERSION}-slim AS migrate
 
 ENV APPLICATION airbyte-migration
 
 WORKDIR /app
 
 # Move and run scheduler
-COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+COPY bin/${APPLICATION}-0.31.0-alpha.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 

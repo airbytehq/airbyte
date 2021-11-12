@@ -1,6 +1,6 @@
 # CDK Speedrun (HTTP API Source Creation [Any%](https://en.wikipedia.org/wiki/Speedrun#:~:text=Any%25%2C%20or%20fastest%20completion%2C,the%20game%20to%20its%20fullest.&text=Specific%20requirements%20for%20a%20100,different%20depending%20on%20the%20game.) Route)
 
-This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial.](../../cdk-tutorial-python-http.md)
+This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial](https://docs.airbyte.io/connector-development/tutorials/cdk-tutorial-python-http).
 
 # Dependencies
 
@@ -121,7 +121,7 @@ In your `source.py` file, add this `ExchangeRates` class. This stream represents
 from airbyte_cdk.sources.streams.http import HttpStream
 
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.exchangeratesapi.io/"
 
     # Set this as a noop.
     primary_key = None
@@ -153,7 +153,7 @@ python main.py discover --config sample_files/config.json
 Update your `ExchangeRates` class to implement the required functions as follows:
 ```python
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.exchangeratesapi.io/"
 
     primary_key = None
 

@@ -8,7 +8,24 @@ This tutorial will describe how to determine if you need to run this upgrade pro
 
 Airbyte intelligently performs upgrades automatically based off of your version defined in your `.env` file and will handle data migration for you.
 
-If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes.md), you will need to use one of the two processes defined [here](https://docs.airbyte.io/upgrading-airbyte#upgrading-k-8-s) that differ based on your Airbyte version. 
+If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes.md), you will need to use one of the two processes defined [here](https://docs.airbyte.io/upgrading-airbyte#upgrading-k-8-s) that differ based on your Airbyte version.
+
+## Mandatory Intermediate Upgrade
+
+**If your current version of airbyte is < v0.32.0-alpha, you first need to upgrade to this version before upgrading to any later version.**
+
+The reason for this is that there are breaking changes made in v0.32.0-alpha, and the logic for these changes is removed in later versions, making it impossible to upgrade directly. 
+To upgrade to v0.32.0-alpha, follow the steps in the following sections, but replace the `docker pull` or `wget` commands with the following:
+
+1. If you are in a cloned Airbyte repo, v0.32.0-alpha can be pulled from GitHub with
+
+   ``` 
+   git checkout v0.32.0-alpha
+   ```
+
+2. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/v0.32.0-alpha/{.env,docker-compose.yaml}` to pull this version and overwrite both files.
+
+As a warning, this upgrade requires specs to be retrieved for all connectors that currently exist in your database. So, if specs cannot be retrieved for any of your connector images, server startup will fail. In this case you must either fix the image so that spec retrieval is successful, or set the `VERSION_0_32_0_FORCE_UPGRADE` environment variable to `true`, which will cause the server to delete any connectors for which specs cannot be retrieved, as well as any connections built on top of them.
 
 ## Upgrading on Docker
 
@@ -35,12 +52,12 @@ If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes.md
 If you did not start Airbyte from the root of the Airbyte monorepo, you may run into issues where existing orphaned Airbyte configurations will prevent you from upgrading with the automatic process. To fix this, we will need to globally remove these lost Airbyte configurations. You can do this with `docker volume rm $(docker volume ls -q | grep airbyte)`.
 
 {% hint style="danger" %}
-This will completely reset your Airbyte instance back to scratch and you will lose all data.
+This will completely reset your Airbyte deployment back to scratch and you will lose all data.
 {% endhint %}
 
-## Upgrading on K8s (0.27.0-alpha and above)
+## Upgrading on K8s \(0.27.0-alpha and above\)
 
-If you are upgrading from (i.e. your current version of Airbyte is) Airbyte version **0.27.0-alpha or above** on Kubernetes :
+If you are upgrading from \(i.e. your current version of Airbyte is\) Airbyte version **0.27.0-alpha or above** on Kubernetes :
 
 1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
 
@@ -48,7 +65,7 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
    kubectl delete deployments airbyte-db airbyte-scheduler airbyte-server airbyte-temporal airbyte-webapp --namespace=<yournamespace or default>
    ```
 
-2. Upgrade the kube instance to new version.
+2. Upgrade the kube deployment to new version.
 
    i. If you are running Airbyte from a cloned version of the Airbyte GitHub repo and want to use the current most recent stable version, just `git pull`.
 
@@ -57,13 +74,14 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
    ```bash
    kubectl apply -k kube/overlays/stable
    ```
-   After 2-5 minutes, `kubectl get pods | grep airbyte` should show `Running` as the status for all the core Airbyte pods. This may take longer
-   on Kubernetes clusters with slow internet connections.
+
+   After 2-5 minutes, `kubectl get pods | grep airbyte` should show `Running` as the status for all the core Airbyte pods. This may take longer on Kubernetes clusters with slow internet connections.
 
    Run `kubectl port-forward svc/airbyte-webapp-svc 8000:80` to allow access to the UI/API.
 
-## Upgrading on K8s (0.26.4-alpha and below)
-If you are upgrading from  (i.e. your current version of Airbyte is) Airbyte version **before 0.27.0-alpha** on Kubernetes we **do not** support automatic migration. Please follow the following steps to upgrade your Airbyte Kubernetes deployment.
+## Upgrading on K8s \(0.26.4-alpha and below\)
+
+If you are upgrading from \(i.e. your current version of Airbyte is\) Airbyte version **before 0.27.0-alpha** on Kubernetes we **do not** support automatic migration. Please follow the following steps to upgrade your Airbyte Kubernetes deployment.
 
 1. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a compressed back-up archive \(gzipped tarball\) of all of your Airbyte configuration data and sync history locally.
 
@@ -81,7 +99,7 @@ If you are upgrading from  (i.e. your current version of Airbyte is) Airbyte ver
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.27.4-alpha --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.31.0-alpha --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```
@@ -96,13 +114,14 @@ If you are upgrading from  (i.e. your current version of Airbyte is) Airbyte ver
    # Careful, this is deleting data!
    kubectl delete -k kube/overlays/stable
    ```
-4. Follow **Step 2** in the `Upgrading on Docker` section to check out the most recent version of Airbyte. Although it is possible to
-   migrate by changing the `.env` file in the kube overlay directory, this is not recommended as it does not capture any changes to the Kubernetes manifests.
 
+4. Follow **Step 2** in the `Upgrading on Docker` section to check out the most recent version of Airbyte. Although it is possible to migrate by changing the `.env` file in the kube overlay directory, this is not recommended as it does not capture any changes to the Kubernetes manifests.
 5. Bring Airbyte back up.
+
    ```bash
    kubectl apply -k kube/overlays/stable
    ```
+
 6. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab and click on Import. Upload your migrated archive.
 
 If you prefer to import and export your data via API instead the UI, follow these instructions:
@@ -124,3 +143,4 @@ Here is an example of what this request might look like assuming that the migrat
 ```bash
 curl -H "Content-Type: application/x-gzip" -X POST localhost:8000/api/v1/deployment/import --data-binary @/tmp/airbyte_archive_migrated.tar.gz
 ```
+

@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { useResource } from "rest-hooks";
 
-import useRouter from "components/hooks/useRouterHook";
-import config from "config";
+import useRouter from "hooks/useRouter";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import useDestination from "components/hooks/services/useDestinationHook";
+import useDestination from "hooks/services/useDestinationHook";
 
 // TODO: create separate component for source and destinations forms
 import DestinationForm from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
 import { ConnectionConfiguration } from "core/domain/connection";
+import useWorkspace from "hooks/services/useWorkspace";
 
 type IProps = {
   afterSubmit: () => void;
@@ -16,13 +16,14 @@ type IProps = {
 
 const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
+  const { workspace } = useWorkspace();
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState(null);
 
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
   const { createDestination } = useDestination();
@@ -32,10 +33,11 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
+    setErrorStatusRequest(null);
+
     const connector = destinationDefinitions.find(
       (item) => item.destinationDefinitionId === values.serviceType
     );
-    setErrorStatusRequest(null);
     try {
       const result = await createDestination({
         values,
@@ -44,13 +46,13 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
       setSuccessRequest(true);
       setTimeout(() => {
         setSuccessRequest(false);
-        afterSubmit();
         push({
           state: {
             ...(location.state as Record<string, unknown>),
             destinationId: result.destinationId,
           },
         });
+        afterSubmit();
       }, 2000);
     } catch (e) {
       setErrorStatusRequest(e);

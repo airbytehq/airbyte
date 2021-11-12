@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
@@ -107,9 +87,9 @@ public class TemporalUtilsTest {
 
   @Test
   public void testWaitForTemporalServerAndLogThrowsException() {
-    WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
-    DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
-    NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
+    final WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
+    final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
+    final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
 
     when(namespaceInfo.getName()).thenReturn("default");
     when(describeNamespaceResponse.getNamespaceInfo()).thenReturn(namespaceInfo);
@@ -139,7 +119,7 @@ public class TemporalUtilsTest {
       private final Activity1 activity2 = Workflow.newActivityStub(Activity1.class, options);
 
       @Override
-      public String run(String arg) {
+      public String run(final String arg) {
         LOGGER.info("workflow before activity 1");
         activity1.activity();
         LOGGER.info("workflow before activity 2");
@@ -166,7 +146,7 @@ public class TemporalUtilsTest {
 
       private final VoidCallable callable;
 
-      public Activity1Impl(VoidCallable callable) {
+      public Activity1Impl(final VoidCallable callable) {
         this.callable = callable;
       }
 
@@ -174,7 +154,7 @@ public class TemporalUtilsTest {
         LOGGER.info("before: {}", ACTIVITY1);
         try {
           callable.call();
-        } catch (Exception e) {
+        } catch (final Exception e) {
           throw new RuntimeException(e);
         }
         LOGGER.info("before: {}", ACTIVITY1);

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -70,7 +50,6 @@ class OracleSourceTest {
 
   private static OracleContainer ORACLE_DB;
 
-  private static OracleContainer container;
   private static JsonNode config;
 
   @BeforeAll
@@ -87,9 +66,10 @@ class OracleSourceTest {
         .put("sid", ORACLE_DB.getSid())
         .put("username", ORACLE_DB.getUsername())
         .put("password", ORACLE_DB.getPassword())
+        .put("schemas", List.of("TEST"))
         .build());
 
-    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
             config.get("host").asText(),
@@ -107,17 +87,7 @@ class OracleSourceTest {
     database.close();
   }
 
-  private JdbcDatabase getDatabaseFromConfig(JsonNode config) {
-    return Databases.createJdbcDatabase(config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver");
-  }
-
-  private JsonNode getConfig(OracleContainer oracleDb) {
+  private JsonNode getConfig(final OracleContainer oracleDb) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", oracleDb.getHost())
         .put("port", oracleDb.getFirstMappedPort())
@@ -132,8 +102,8 @@ class OracleSourceTest {
     ORACLE_DB.close();
   }
 
-  private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
-    for (AirbyteMessage actualMessage : messages) {
+  private static void setEmittedAtToNull(final Iterable<AirbyteMessage> messages) {
+    for (final AirbyteMessage actualMessage : messages) {
       if (actualMessage.getRecord() != null) {
         actualMessage.getRecord().setEmittedAt(null);
       }
@@ -142,17 +112,17 @@ class OracleSourceTest {
 
   @Test
   void testReadSuccess() throws Exception {
-    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new OracleSource().read(getConfig(ORACLE_DB), CONFIGURED_CATALOG, null));
+    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new OracleSource().read(config, CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
 
     assertEquals(ASCII_MESSAGES, actualMessages);
   }
 
-  private static AirbyteMessage createRecord(String stream, Map<Object, Object> data) {
+  private static AirbyteMessage createRecord(final String stream, final Map<Object, Object> data) {
     return new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream));
   }
 
-  private static Map<Object, Object> map(Object... entries) {
+  private static Map<Object, Object> map(final Object... entries) {
     if (entries.length % 2 != 0) {
       throw new IllegalArgumentException("Entries must have even length");
     }

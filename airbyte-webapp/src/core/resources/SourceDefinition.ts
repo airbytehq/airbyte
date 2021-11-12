@@ -1,6 +1,7 @@
 import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
-import { sourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import BaseResource from "./BaseResource";
+import { getService } from "core/servicesProvider";
+import { SourceDefinitionService } from "../domain/connector/SourceDefinitionService";
 
 export interface SourceDefinition {
   sourceDefinitionId: string;
@@ -80,7 +81,9 @@ export default class SourceDefinitionResource
         _: Readonly<Record<string, unknown>>,
         body: SourceDefinition
       ): Promise<SourceDefinition> {
-        return sourceDefinitionService.update(body);
+        return getService<SourceDefinitionService>(
+          "SourceDefinitionService"
+        ).update(body);
       },
       schema: this,
     };

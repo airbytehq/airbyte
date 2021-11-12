@@ -1,0 +1,28 @@
+{
+  "properties": {
+    "default": {
+      "type": ["null", "boolean"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "group_id": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "id": {
+      "type": ["null", "integer"]
+    }
+  },
+  "type": ["null", "object"]
+}

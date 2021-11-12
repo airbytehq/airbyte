@@ -3,37 +3,7 @@
     {
       "stream": {
         "name": "object_types",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "key": {
-              "type": "string"
-            },
-            "schema": {
-              "type": "object",
-              "properties": {
-                "properties": {
-                  "type": "object"
-                },
-                "required": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "additionalProperties": {
-                  "type": "boolean"
-                }
-              }
-            },
-            "created_at": {
-              "type": "string"
-            },
-            "updated_at": {
-              "type": "string"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": []
@@ -45,29 +15,7 @@
     {
       "stream": {
         "name": "object_records",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string"
-            },
-            "id": {
-              "type": "string"
-            },
-            "external_id": {
-              "type": "string"
-            },
-            "attributes": {
-              "type": "object"
-            },
-            "created_at": {
-              "type": "string"
-            },
-            "updated_at": {
-              "type": "string"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -79,26 +27,7 @@
     {
       "stream": {
         "name": "relationship_types",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "key": {
-              "type": "string"
-            },
-            "source": {
-              "type": "string"
-            },
-            "target": {
-              "type": "string"
-            },
-            "created_at": {
-              "type": "string"
-            },
-            "updated_at": {
-              "type": "string"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": []
@@ -110,26 +39,7 @@
     {
       "stream": {
         "name": "relationship_records",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "relationship_type": {
-              "type": "string"
-            },
-            "source": {
-              "type": "string"
-            },
-            "target": {
-              "type": "string"
-            },
-            "created_at": {
-              "type": "string"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": []
@@ -141,70 +51,7 @@
     {
       "stream": {
         "name": "object_type_policies",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "object_type": {
-              "type": "string"
-            },
-            "rbac": {
-              "type": "object",
-              "properties": {
-                "admin": {
-                  "type": "object",
-                  "properties": {
-                    "create": {
-                      "type": "boolean"
-                    },
-                    "read": {
-                      "type": "boolean"
-                    },
-                    "update": {
-                      "type": "boolean"
-                    },
-                    "delete": {
-                      "type": "boolean"
-                    }
-                  }
-                },
-                "agent": {
-                  "type": "object",
-                  "properties": {
-                    "create": {
-                      "type": "boolean"
-                    },
-                    "read": {
-                      "type": "boolean"
-                    },
-                    "update": {
-                      "type": "boolean"
-                    },
-                    "delete": {
-                      "type": "boolean"
-                    }
-                  }
-                },
-                "end_user": {
-                  "type": "object",
-                  "properties": {
-                    "create": {
-                      "type": "boolean"
-                    },
-                    "read": {
-                      "type": "boolean"
-                    },
-                    "update": {
-                      "type": "boolean"
-                    },
-                    "delete": {
-                      "type": "boolean"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": []
@@ -216,20 +63,7 @@
     {
       "stream": {
         "name": "limits",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "key": {
-              "type": "string"
-            },
-            "limit": {
-              "type": "integer"
-            },
-            "count": {
-              "type": "integer"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": []

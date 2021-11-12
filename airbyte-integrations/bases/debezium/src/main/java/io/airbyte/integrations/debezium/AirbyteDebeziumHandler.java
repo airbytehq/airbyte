@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.debezium;
@@ -72,11 +52,11 @@ public class AirbyteDebeziumHandler {
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
 
-  public AirbyteDebeziumHandler(JsonNode config,
-                                CdcTargetPosition targetPosition,
-                                Properties connectorProperties,
-                                ConfiguredAirbyteCatalog catalog,
-                                boolean trackSchemaHistory) {
+  public AirbyteDebeziumHandler(final JsonNode config,
+                                final CdcTargetPosition targetPosition,
+                                final Properties connectorProperties,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final boolean trackSchemaHistory) {
     this.config = config;
     this.targetPosition = targetPosition;
     this.connectorProperties = connectorProperties;
@@ -85,10 +65,10 @@ public class AirbyteDebeziumHandler {
     this.queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(CdcSavedInfoFetcher cdcSavedInfoFetcher,
-                                                                             CdcStateHandler cdcStateHandler,
-                                                                             CdcMetadataInjector cdcMetadataInjector,
-                                                                             Instant emittedAt) {
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final CdcSavedInfoFetcher cdcSavedInfoFetcher,
+                                                                             final CdcStateHandler cdcStateHandler,
+                                                                             final CdcMetadataInjector cdcMetadataInjector,
+                                                                             final Instant emittedAt) {
     LOGGER.info("using CDC: {}", true);
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset());
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
@@ -112,8 +92,8 @@ public class AirbyteDebeziumHandler {
     // our goal is to get the state at the time this supplier is called (i.e. after all message records
     // have been produced)
     final Supplier<AirbyteMessage> stateMessageSupplier = () -> {
-      Map<String, String> offset = offsetManager.read();
-      String dbHistory = trackSchemaHistory ? schemaHistoryManager
+      final Map<String, String> offset = offsetManager.read();
+      final String dbHistory = trackSchemaHistory ? schemaHistoryManager
           .orElseThrow(() -> new RuntimeException("Schema History Tracking is true but manager is not initialised")).read() : null;
 
       return cdcStateHandler.saveState(offset, dbHistory);
@@ -131,7 +111,7 @@ public class AirbyteDebeziumHandler {
     return Collections.singletonList(messageIteratorWithStateDecorator);
   }
 
-  private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(CdcSavedInfoFetcher cdcSavedInfoFetcher) {
+  private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {
     if (trackSchemaHistory) {
       FilteredFileDatabaseHistory.setDatabaseName(config.get("database").asText());
       return Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(cdcSavedInfoFetcher.getSavedSchemaHistory()));

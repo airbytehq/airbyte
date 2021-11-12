@@ -1,14 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
-    "portalId": {
-      "type": ["null", "integer"]
+    "id": {
+      "type": ["null", "string"]
     },
-    "ownerId": {
-      "type": ["null", "integer"]
-    },
-    "type": {
+    "email": {
       "type": ["null", "string"]
     },
     "firstName": {
@@ -17,54 +14,33 @@
     "lastName": {
       "type": ["null", "string"]
     },
-    "email": {
-      "type": ["null", "string"]
+    "userId": {
+      "type": ["null", "integer"]
     },
     "createdAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "signature": {
-      "type": ["null", "string"]
-    },
     "updatedAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "hasContactsAccess": {
+    "archived": {
       "type": ["null", "boolean"]
     },
-    "isActive": {
-      "type": ["null", "boolean"]
-    },
-    "activeUserId": {
-      "type": ["null", "integer"]
-    },
-    "userIdIncludingInactive": {
-      "type": ["null", "integer"]
-    },
-    "remoteList": {
-      "type": "array",
+    "teams": {
+      "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": ["null", "integer"]
-          },
-          "portalId": {
-            "type": ["null", "integer"]
-          },
-          "ownerId": {
-            "type": ["null", "integer"]
-          },
-          "remoteId": {
             "type": ["null", "string"]
           },
-          "remoteType": {
+          "name": {
             "type": ["null", "string"]
           },
-          "active": {
-            "type": ["null", "boolean"]
+          "membership": {
+            "type": ["null", "string"]
           }
         }
       }

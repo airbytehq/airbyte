@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.migrate;
@@ -64,17 +44,17 @@ public class Migrate {
   private final JsonSchemaValidator jsonSchemaValidator;
   private final List<Migration> migrations;
 
-  public Migrate(Path migrateRoot) {
+  public Migrate(final Path migrateRoot) {
     this(migrateRoot, Migrations.MIGRATIONS);
   }
 
-  public Migrate(Path migrateRoot, List<Migration> migrations) {
+  public Migrate(final Path migrateRoot, final List<Migration> migrations) {
     this.migrateRoot = migrateRoot;
     this.jsonSchemaValidator = new JsonSchemaValidator();
     this.migrations = migrations;
   }
 
-  public void run(MigrateConfig migrateConfig) throws IOException {
+  public void run(final MigrateConfig migrateConfig) throws IOException {
     // ensure migration root exists
     Files.createDirectories(migrateRoot);
     final Path initialInputPath = migrateConfig.getInputPath();
@@ -123,7 +103,7 @@ public class Migrate {
     LOGGER.info("Migrations complete. Now on version: {}", targetVersion);
   }
 
-  private Path runMigration(Migration migration, Path migrationInputRoot) throws IOException {
+  private Path runMigration(final Migration migration, final Path migrationInputRoot) throws IOException {
     final Path tmpOutputDir = Files.createDirectories(migrateRoot.resolve(migration.getVersion()));
 
     // create a map of each input resource path to the input stream.
@@ -135,7 +115,7 @@ public class Migrate {
                 .peek(r -> {
                   try {
                     jsonSchemaValidator.ensure(migration.getInputSchema().get(entry.getKey()), r);
-                  } catch (JsonValidationException e) {
+                  } catch (final JsonValidationException e) {
                     throw new IllegalArgumentException(
                         String.format("Input data schema does not match declared input schema %s.", entry.getKey().getName()), e);
                   }
@@ -156,20 +136,26 @@ public class Migrate {
     return tmpOutputDir;
   }
 
-  private Map<ResourceId, AutoCloseableIterator<JsonNode>> createInputStreams(Migration migration, Path migrationInputRoot) {
+  private Map<ResourceId, AutoCloseableIterator<JsonNode>> createInputStreams(final Migration migration, final Path migrationInputRoot) {
     final Map<ResourceId, AutoCloseableIterator<JsonNode>> resourceIdToInputStreams = MoreMaps.merge(
         createInputStreamsForResourceType(migrationInputRoot, ResourceType.CONFIG),
         createInputStreamsForResourceType(migrationInputRoot, ResourceType.JOB));
 
-    try {
-      MoreSets.assertEqualsVerbose(migration.getInputSchema().keySet(), resourceIdToInputStreams.keySet());
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Input record resources do not match declared schema resources", e);
+    System.out.println("\n\nschema = \n" + migration.getInputSchema().keySet().stream().map(ResourceId::getName).collect(Collectors.joining("\n")));
+    System.out.println("\n\nrecords = \n" + resourceIdToInputStreams.keySet().stream().map(ResourceId::getName).collect(Collectors.joining("\n")));
+    if (!migration.getInputSchema().keySet().containsAll(resourceIdToInputStreams.keySet())) {
+      try {
+        // we know something is wrong. check equality to get a full log message of the total difference.
+        MoreSets.assertEqualsVerbose(migration.getInputSchema().keySet(), resourceIdToInputStreams.keySet());
+      } catch (final IllegalArgumentException e) {
+        throw new IllegalArgumentException("Input records contain resource not declared in schema resources", e);
+      }
     }
     return resourceIdToInputStreams;
   }
 
-  private Map<ResourceId, AutoCloseableIterator<JsonNode>> createInputStreamsForResourceType(Path migrationInputRoot, ResourceType resourceType) {
+  private Map<ResourceId, AutoCloseableIterator<JsonNode>> createInputStreamsForResourceType(final Path migrationInputRoot,
+                                                                                             final ResourceType resourceType) {
     final List<Path> inputFilePaths = FileUtils.listFiles(migrationInputRoot.resolve(resourceType.getDirectoryName()).toFile(), null, false)
         .stream()
         .map(File::toPath)
@@ -178,17 +164,17 @@ public class Migrate {
     final Map<ResourceId, AutoCloseableIterator<JsonNode>> inputData = new HashMap<>();
     for (final Path absolutePath : inputFilePaths) {
       final ResourceId resourceId = ResourceId.fromRecordFilePath(resourceType, absolutePath);
-      AutoCloseableIterator<JsonNode> recordInputStream = Yamls.deserializeArray(IOs.inputStream(absolutePath));
+      final AutoCloseableIterator<JsonNode> recordInputStream = Yamls.deserializeArray(IOs.inputStream(absolutePath));
       inputData.put(resourceId, recordInputStream);
     }
 
     return inputData;
   }
 
-  private Map<ResourceId, RecordConsumer> createOutputStreams(Migration migration, Path outputDir) throws IOException {
+  private Map<ResourceId, RecordConsumer> createOutputStreams(final Migration migration, final Path outputDir) throws IOException {
     final Map<ResourceId, RecordConsumer> pathToOutputStream = new HashMap<>();
 
-    for (Map.Entry<ResourceId, JsonNode> entry : migration.getOutputSchema().entrySet()) {
+    for (final Map.Entry<ResourceId, JsonNode> entry : migration.getOutputSchema().entrySet()) {
       final ResourceId resourceId = entry.getKey();
       final JsonNode schema = entry.getValue();
       final Path absolutePath = outputDir.resolve(resourceId.getResourceRelativePath());
@@ -202,12 +188,12 @@ public class Migrate {
     return pathToOutputStream;
   }
 
-  private static String getCurrentVersion(Path path) {
+  private static String getCurrentVersion(final Path path) {
     return IOs.readFile(path.resolve(VERSION_FILE_NAME)).trim();
   }
 
   @VisibleForTesting
-  static int getPreviousMigration(List<AirbyteVersion> migrationVersions, AirbyteVersion currentVersion) {
+  static int getPreviousMigration(final List<AirbyteVersion> migrationVersions, final AirbyteVersion currentVersion) {
     for (int i = 0; i < migrationVersions.size(); i++) {
       final AirbyteVersion migrationVersion = migrationVersions.get(i);
       if (migrationVersion.patchVersionCompareTo(currentVersion) == 0) {

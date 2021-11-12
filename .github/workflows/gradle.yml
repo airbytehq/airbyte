@@ -10,38 +10,42 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-connectors-base-build-runner:
     name: "Connectors Base: Start Build EC2 Runner"
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Start EC2 Runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.2.1
-        with:
-          mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-04bd6e81239f4f3fb
-          ec2-instance-type: c5.2xlarge
-          subnet-id: subnet-0469a9e68a379c1d3
-          security-group-id: sg-0793f3c9413f21970
-  build-connectors-base:
-    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-connectors-base-build-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-connectors-base-build-runner.outputs.label }} # run the job on the newly created runner
-    name: "Connectors Base: Build"
+
+  ensure-images-exist:
+    name: "Ensure all required Docker images exist on Dockerhub"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
       - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh connectors
+        run: ./tools/bin/check_images_exist.sh all
+
+  build-connectors-base:
+    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
+    needs: start-connectors-base-build-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-connectors-base-build-runner.outputs.label }} # run the job on the newly created runner
+    name: "Connectors Base: Build"
+    timeout-minutes: 90
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
 
       - name: Pip Caching
         uses: actions/cache@v2
@@ -77,7 +81,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
+          node-version: '16.13.0'
 
       - uses: actions/setup-python@v2
         with:
@@ -85,6 +89,15 @@ jobs:
 
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
 
       - name: Generate Template scaffold
         run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
@@ -96,7 +109,7 @@ jobs:
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
 
       - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
+        run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
@@ -120,6 +133,7 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   stop-connectors-base-build-runner:
     name: "Connectors Base: Stop Build EC2 Runner"
+    timeout-minutes: 10
     needs:
       - start-connectors-base-build-runner # required to get output from the start-runner job
       - build-connectors-base # required to wait when the main job is done
@@ -133,7 +147,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.2.1
+        uses: machulav/ec2-github-runner@v2.3.0
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -144,47 +158,30 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-platform-build-runner:
     name: "Platform: Start Build EC2 Runner"
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Start EC2 Runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.2.1
-        with:
-          mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-04bd6e81239f4f3fb
-          ec2-instance-type: c5.2xlarge
-          subnet-id: subnet-0469a9e68a379c1d3
-          security-group-id: sg-0793f3c9413f21970
   platform-build:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-platform-build-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-platform-build-runner.outputs.label }} # run the job on the newly created runner
     name: "Platform: Build"
+    timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
-
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh platform
-
-      - name: Pip Caching
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/pip
-          key: ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-
 
       - name: Npm Caching
         uses: actions/cache@v2
@@ -196,14 +193,14 @@ jobs:
             ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
 
       # this intentionally does not use restore-keys so we don't mess with gradle caching
-      - name: Gradle and Python Caching
+      - name: Gradle Caching
         uses: actions/cache@v2
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
             **/.venv
-          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}
 
       - uses: actions/setup-java@v1
         with:
@@ -211,26 +208,28 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
+          node-version: '16.13.0'
 
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
 
       - name: Format
         run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
 
       - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
+        run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Build
-        run: SUB_BUILD=PLATFORM ./gradlew build --scan
+        run: SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
 
-      - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
+      - name: Test if Seed spec is updated
+        run: SUB_BUILD=PLATFORM ./gradlew format && git --no-pager diff && test -z "$(git --no-pager diff)"
 
       # todo (cgardens) - scope by platform.
       - name: Check documentation
@@ -241,30 +240,11 @@ jobs:
       #      - name: Get Docker Space
       #        run: docker run --rm busybox df -h
 
-      - name: Image Cleanup
-        run: ./tools/bin/clean_images.sh
-
-      - name: Build Platform Docker Images
-        if: success() && github.ref == 'refs/heads/master'
-        run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
-        env:
-          GIT_REVISION: ${{ github.sha }}
-
-      # make sure these always run before pushing platform docker images
       - name: Run End-to-End Acceptance Tests
-        if: success() && github.ref == 'refs/heads/master'
         run: ./tools/bin/acceptance_test.sh
 
       - name: Automatic Migration Acceptance Test
         run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
-
-      - name: Push Platform Docker Images
-        if: success() && github.ref == 'refs/heads/master'
-        run: |
-          docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          VERSION=dev docker-compose -f docker-compose.build.yaml push
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
@@ -288,6 +268,7 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
+    timeout-minutes: 10
     needs:
       - start-platform-build-runner # required to get output from the start-runner job
       - platform-build # required to wait when the main job is done
@@ -301,7 +282,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.2.1
+        uses: machulav/ec2-github-runner@v2.3.0
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -313,31 +294,26 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-frontend-test-runner:
     name: Start Frontend Test EC2 Runner
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Start EC2 Runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.2.1
-        with:
-          mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-04bd6e81239f4f3fb
-          ec2-instance-type: c5.2xlarge
-          subnet-id: subnet-0469a9e68a379c1d3
-          security-group-id: sg-0793f3c9413f21970
   frontend-test:
     needs: start-frontend-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-frontend-test-runner.outputs.label }} # run the job on the newly created runner
     name: Run Frontend Test
+    timeout-minutes: 120
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -348,26 +324,29 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+          node-version: '16.13.0'
 
       - name: Install Cypress Test Dependencies
         run: sudo apt-get update && sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
 
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon composebuild --scan
+        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon assemble --scan
 
       - name: Run End-to-End Frontend Tests
         run: ./tools/bin/e2e_test.sh
   # In case of self-hosted EC2 errors, remove this block.
   stop-frontend-test-runner:
     name: Stop Frontend Test EC2 Runner
+    timeout-minutes: 10
     needs:
       - start-frontend-test-runner # required to get output from the start-runner job
       - frontend-test # required to wait when the main job is done
@@ -381,7 +360,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.2.1
+        uses: machulav/ec2-github-runner@v2.3.0
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -393,32 +372,29 @@ jobs:
   # Docker acceptance tests run as part of the build job.
   start-kube-acceptance-test-runner:
     name: Start Kube Acceptance Test EC2 Runner
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
         with:
+          ec2-image-id: ami-0d4083c04fde515c4
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Start EC2 runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.2.1
-        with:
-          mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-04bd6e81239f4f3fb
-          ec2-instance-type: c5.2xlarge
-          subnet-id: subnet-0469a9e68a379c1d3
-          security-group-id: sg-0793f3c9413f21970
   kube-acceptance-test:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
+    environment: more-secrets
     name: Acceptance Tests (Kube)
+    timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -429,34 +405,70 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+          node-version: '16.13.0'
 
       - name: Fix EC-2 Runner
         run: |
           mkdir -p /home/runner
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
 
       - name: Install socat (required for port forwarding)
         run: |
           sudo apt-get update
           sudo apt-get install socat
 
+      - name: Create cluster config file
+        run: |
+          cat > /tmp/kind-config.yaml <<EOF
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+          - role: worker
+          - role: worker
+          EOF
+
+      - name: Check Docker System Info
+        run: docker system info
+
       - name: KIND Kubernetes Cluster Setup
-        uses: helm/kind-action@v1.1.0
+        uses: helm/kind-action@v1.2.0
+        with:
+          node_image: kindest/node:v1.21.2
+          config: /tmp/kind-config.yaml
         # In case of self-hosted EC2 errors, remove this env block.
         env:
           USER: root
           HOME: /home/runner
           CHANGE_MINIKUBE_NONE_USER: true
 
+      - name: Describe kube nodes
+        run: kubectl describe nodes
+        env:
+          USER: root
+          HOME: /home/runner
+
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
+        run: SUB_BUILD=PLATFORM ./gradlew assemble --scan
+
+      - name: Run Kubernetes End-to-End Acceptance Tests
+        env:
+          USER: root
+          HOME: /home/runner
+          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
+          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
+          SECRET_STORE_FOR_CONFIGS: ${{ secrets.SECRET_STORE_FOR_CONFIGS }}
+        run: |
+          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
 
       - name: Run Logging Tests
         run: ./tools/bin/cloud_storage_logging_test.sh
@@ -464,16 +476,26 @@ jobs:
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
-      - name: Run Kubernetes End-to-End Acceptance Tests
+      - name: Show Disk Usage
+        run: |
+          df -h
+          docker system df
+
+      - name: Run GCP End-to-End Acceptance Tests
         env:
           USER: root
           HOME: /home/runner
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
+          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
+          SECRET_STORE_FOR_CONFIGS: ${{ secrets.SECRET_STORE_FOR_CONFIGS }}
         run: |
-          IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
+          CI=true ./tools/bin/gcp_acceptance_tests.sh
+
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
     name: Stop Kube Acceptance Test EC2 Runner
+    timeout-minutes: 10
     needs:
       - start-kube-acceptance-test-runner # required to get output from the start-runner job
       - kube-acceptance-test # required to wait when the main job is done
@@ -487,7 +509,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.2.1
+        uses: machulav/ec2-github-runner@v2.3.0
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}

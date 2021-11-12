@@ -1,4 +1,3 @@
-
 {"stream": "labels", "data": {"id": "jira.issuenav.criteria.autoupdate", "key": "jira.issuenav.criteria.autoupdate", "value": "true", "name": "Auto Update Criteria", "desc": "Turn on to update search results automatically", "type": "boolean"}, "emitted_at": 1626682849000}
 {"stream": "labels", "data": {"id": "jira.clone.prefix", "key": "jira.clone.prefix", "value": "CLONE -", "name": "The prefix added to the Summary field of cloned issues", "type": "string"}, "emitted_at": 1626682849000}
 {"stream": "labels", "data": {"id": "jira.date.picker.java.format", "key": "jira.date.picker.java.format", "value": "d/MMM/yy", "name": "Date Picker Format (Java)", "desc": "This part is only for the Java (server side) generated dates. Note that this should correspond to the javascript date picker format (jira.date.picker.javascript.format) setting.", "type": "string"}, "emitted_at": 1626682849000}

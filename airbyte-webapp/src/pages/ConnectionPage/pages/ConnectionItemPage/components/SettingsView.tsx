@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,7 +9,7 @@ import ContentCard from "components/ContentCard";
 import useConnection, {
   useConnectionLoad,
   ValuesProps,
-} from "components/hooks/services/useConnectionHook";
+} from "hooks/services/useConnectionHook";
 import DeleteBlock from "components/DeleteBlock";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import ResetDataModal from "components/ResetDataModal";
@@ -94,15 +94,8 @@ const SettingsView: React.FC<IProps> = ({
     resetConnection,
   } = useConnection();
 
-  const onDelete = useCallback(() => deleteConnection({ connectionId }), [
-    deleteConnection,
-    connectionId,
-  ]);
-
-  const onReset = useCallback(() => resetConnection(connectionId), [
-    resetConnection,
-    connectionId,
-  ]);
+  const onDelete = () => deleteConnection({ connectionId });
+  const onReset = () => resetConnection(connectionId);
 
   const {
     connection: initialConnection,

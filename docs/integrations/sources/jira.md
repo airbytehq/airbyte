@@ -1,12 +1,21 @@
 # Jira
 
-## Overview
+## Features
 
-The Jira source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+| Feature | Supported? |  |
+| :--- | :--- | :--- |
+| Full Refresh Sync | Yes |  |
+| Incremental Sync | Yes | Only Issues |
+| Replicate Incremental Deletes | Coming soon |  |
+| SSL connection | Yes |  |
 
-### Output schema
+## Troubleshooting
 
-Several output streams are available from this source:
+Check out common troubleshooting issues for the Jira connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-jira).
+
+## Supported Tables
+
+This source is capable of syncing the following tables and their data:
 
 * [Application roles](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-application-roles/#api-rest-api-3-applicationrole-get)
 * [Avatars](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-avatars/#api-rest-api-3-avatar-type-system-get)
@@ -58,21 +67,7 @@ Several output streams are available from this source:
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
-### Features
-
-| Feature | Supported? |  |
-| :--- | :--- | :--- 
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes | Only Issues and Issue worklogs |
-| Replicate Incremental Deletes | Coming soon | |
-| SSL connection | Yes |  |
-| Namespaces | No |  |
-
-### Performance considerations
-
-The Jira connector should not run into Jira API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-
-## Getting started
+## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
 
 ### Requirements
 
@@ -80,16 +75,25 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 * Jira Email
 * Jira Domain
 
-### Setup guide
-
 Please follow the [Jira confluence for generating an API token](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
+
+## Rate Limiting & Performance
+
+The Jira connector should not run into Jira API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## CHANGELOG
 
 | Version | Date | Pull Request | Subject |
-| :--- | :---  | :--- | :--- |
-| 0.2.7 | 2021-07-19 | [#4817](https://github.com/airbytehq/airbyte/pull/4817) | Fixed `labels` schema properties issue. |
-| 0.2.6 | 2021-06-15 | [#4113](https://github.com/airbytehq/airbyte/pull/4113) | Fixed `user` stream with the correct endpoint and query param. |
-| 0.2.5 | 2021-06-09 | [#3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` in base Docker image for Kubernetes support. |
-| 0.2.4 | | | Implementing base_read acceptance test dived by stream groups. |
-| 0.2.3 | | | Implementing incremental sync. Migrated to airbyte-cdk. Adding all available entities in Jira Cloud. |
+| :--- | :--- | :--- | :--- |
+| 0.2.14 | 2021-10-27 | [\#7408](https://github.com/airbytehq/airbyte/pull/7408) | Fix normalization step error. Fix schemas. Fix `acceptance-test-config.yml`. Fix `streams.py`. |
+| 0.2.13 | 2021-10-20 | [\#7222](https://github.com/airbytehq/airbyte/pull/7222) | Source Jira: Make recently added configs optional for backwards compatibility |
+| 0.2.12 | 2021-10-19 | [\#6621](https://github.com/airbytehq/airbyte/pull/6621) | Add Board, Epic, and Sprint streams |
+| 0.2.11 | 2021-09-02 | [\#6523](https://github.com/airbytehq/airbyte/pull/6523) | Add cache and more streams \(boards and sprints\) |
+| 0.2.9 | 2021-07-28 | [\#5426](https://github.com/airbytehq/airbyte/pull/5426) | Changed cursor field from fields.created to fields.updated for Issues stream. Made Issues worklogs stream full refresh. |
+| 0.2.8 | 2021-07-28 | [\#4947](https://github.com/airbytehq/airbyte/pull/4947) | Source Jira: fixing schemas accordinately to response. |
+| 0.2.7 | 2021-07-19 | [\#4817](https://github.com/airbytehq/airbyte/pull/4817) | Fixed `labels` schema properties issue. |
+| 0.2.6 | 2021-06-15 | [\#4113](https://github.com/airbytehq/airbyte/pull/4113) | Fixed `user` stream with the correct endpoint and query param. |
+| 0.2.5 | 2021-06-09 | [\#3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` in base Docker image for Kubernetes support. |
+| 0.2.4 |  |  | Implementing base\_read acceptance test dived by stream groups. |
+| 0.2.3 |  |  | Implementing incremental sync. Migrated to airbyte-cdk. Adding all available entities in Jira Cloud. |
+

@@ -1,6 +1,7 @@
 import { Multiselect as ReactMultiselect } from "react-widgets";
 import styled from "styled-components";
 import { MultiselectProps as WidgetMultiselectProps } from "react-widgets/lib/Multiselect";
+import "react-widgets/dist/css/react-widgets.css";
 
 type MultiselectProps = {
   disabled?: boolean;

@@ -35,21 +35,42 @@ configurations {
 }
 
 dependencies {
+    implementation project(':airbyte-api')
+
+    implementation 'org.testcontainers:testcontainers:1.15.3'
+
     acceptanceTestsImplementation project(':airbyte-api')
     acceptanceTestsImplementation project(':airbyte-commons')
     acceptanceTestsImplementation project(':airbyte-config:persistence')
-    acceptanceTestsImplementation project(':airbyte-db')
+    acceptanceTestsImplementation project(':airbyte-db:lib')
+    acceptanceTestsImplementation project(':airbyte-tests')
     acceptanceTestsImplementation project(':airbyte-test-utils')
 
+    acceptanceTestsImplementation 'com.fasterxml.jackson.core:jackson-databind'
+    acceptanceTestsImplementation 'io.github.cdimascio:java-dotenv:3.0.0'
     acceptanceTestsImplementation 'org.apache.commons:commons-csv:1.4'
-    acceptanceTestsImplementation "org.testcontainers:postgresql:1.15.1"
-    acceptanceTestsImplementation "org.postgresql:postgresql:42.2.18"
-    acceptanceTestsImplementation "com.fasterxml.jackson.core:jackson-databind"
+    acceptanceTestsImplementation 'org.testcontainers:postgresql:1.15.3'
+    acceptanceTestsImplementation 'org.postgresql:postgresql:42.2.18'
 
     automaticMigrationAcceptanceTestImplementation project(':airbyte-api')
     automaticMigrationAcceptanceTestImplementation project(':airbyte-commons')
-    automaticMigrationAcceptanceTestImplementation "org.testcontainers:testcontainers:1.15.3"
+    automaticMigrationAcceptanceTestImplementation project(':airbyte-tests')
+
+    automaticMigrationAcceptanceTestImplementation 'org.testcontainers:testcontainers:1.15.3'
 }
+
+// test should run using the current version of the docker compose configuration.
+task copyComposeFileForAcceptanceTests(type: Copy) {
+    from "${rootDir}/docker-compose.yaml"
+    into "${sourceSets.acceptanceTests.output.resourcesDir}"
+}
+task copyComposeFileForMigrationAcceptanceTests(type: Copy) {
+    from "${rootDir}/docker-compose.yaml"
+    into "${sourceSets.automaticMigrationAcceptanceTest.output.resourcesDir}"
+}
+
+assemble.dependsOn(project.tasks.copyComposeFileForAcceptanceTests)
+assemble.dependsOn(project.tasks.copyComposeFileForMigrationAcceptanceTests)
 
 task acceptanceTests(type: Test) {
     testClassesDirs += sourceSets.acceptanceTests.output.classesDirs
@@ -61,12 +82,6 @@ task acceptanceTests(type: Test) {
         exceptionFormat "full"
     }
     mustRunAfter test
-
-    dependsOn ':airbyte-integrations:connectors:source-postgres:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
-    // for checkpointing tests
-    dependsOn ':airbyte-integrations:connectors:source-e2e-test:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-e2e-test:airbyteDocker'
 }
 
 task automaticMigrationAcceptanceTest(type: Test) {
@@ -79,4 +94,8 @@ task automaticMigrationAcceptanceTest(type: Test) {
         exceptionFormat "full"
     }
     mustRunAfter test
+}
+
+tasks.withType(Copy) {
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
 }

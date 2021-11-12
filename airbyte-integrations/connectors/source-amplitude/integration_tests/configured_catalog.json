@@ -3,60 +3,7 @@
     {
       "stream": {
         "name": "cohorts",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "appId": {
-              "type": ["null", "integer"]
-            },
-            "archived": {
-              "type": ["null", "boolean"]
-            },
-            "definition": {
-              "type": ["null", "object"]
-            },
-            "description": {
-              "type": ["null", "string"]
-            },
-            "finished": {
-              "type": ["null", "boolean"]
-            },
-            "id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "owners": {
-              "type": ["null", "object"]
-            },
-            "published": {
-              "type": ["null", "boolean"]
-            },
-            "size": {
-              "type": ["null", "integer"]
-            },
-            "type": {
-              "type": ["null", "string"]
-            },
-            "lastMod": {
-              "type": ["null", "integer"]
-            },
-            "lastComputed": {
-              "type": ["null", "integer"]
-            },
-            "hidden": {
-              "type": ["null", "boolean"]
-            },
-            "is_predictive": {
-              "type": ["null", "boolean"]
-            },
-            "is_official_content": {
-              "type": ["null", "boolean"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
@@ -66,25 +13,7 @@
     {
       "stream": {
         "name": "annotations",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "details": {
-              "type": ["null", "string"]
-            },
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "label": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
@@ -94,166 +23,7 @@
     {
       "stream": {
         "name": "events",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "server_received_time": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "app": {
-              "type": ["null", "integer"]
-            },
-            "device_carrier": {
-              "type": ["null", "string"]
-            },
-            "$schema": {
-              "type": ["null", "integer"]
-            },
-            "city": {
-              "type": ["null", "string"]
-            },
-            "user_id": {
-              "type": ["null", "string"]
-            },
-            "uuid": {
-              "type": ["null", "string"]
-            },
-            "event_time": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "platform": {
-              "type": ["null", "string"]
-            },
-            "os_version": {
-              "type": ["null", "string"]
-            },
-            "amplitude_id": {
-              "type": ["null", "integer"]
-            },
-            "processed_time": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "user_creation_time": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "version_name": {
-              "type": ["null", "string"]
-            },
-            "ip_address": {
-              "type": ["null", "string"]
-            },
-            "paying": {
-              "type": ["null", "boolean"]
-            },
-            "dma": {
-              "type": ["null", "string"]
-            },
-            "group_properties": {
-              "type": ["null", "object"]
-            },
-            "user_properties": {
-              "type": ["null", "object"]
-            },
-            "client_upload_time": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "$insert_id": {
-              "type": ["null", "string"]
-            },
-            "event_type": {
-              "type": ["null", "string"]
-            },
-            "library": {
-              "type": ["null", "string"]
-            },
-            "amplitude_attribution_ids": {
-              "type": ["null", "string"]
-            },
-            "device_type": {
-              "type": ["null", "string"]
-            },
-            "device_manufacturer": {
-              "type": ["null", "string"]
-            },
-            "start_version": {
-              "type": ["null", "string"]
-            },
-            "location_lng": {
-              "type": ["null", "number"]
-            },
-            "server_upload_time": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "event_id": {
-              "type": ["null", "integer"]
-            },
-            "location_lat": {
-              "type": ["null", "number"]
-            },
-            "os_name": {
-              "type": ["null", "string"]
-            },
-            "amplitude_event_type": {
-              "type": ["null", "string"]
-            },
-            "device_brand": {
-              "type": ["null", "string"]
-            },
-            "groups": {
-              "type": ["null", "object"]
-            },
-            "event_properties": {
-              "type": ["null", "object"]
-            },
-            "data": {
-              "type": ["null", "object"]
-            },
-            "device_id": {
-              "type": ["null", "string"]
-            },
-            "language": {
-              "type": ["null", "string"]
-            },
-            "device_model": {
-              "type": ["null", "string"]
-            },
-            "country": {
-              "type": ["null", "string"]
-            },
-            "region": {
-              "type": ["null", "string"]
-            },
-            "is_attribution_event": {
-              "type": ["null", "boolean"]
-            },
-            "adid": {
-              "type": ["null", "string"]
-            },
-            "session_id": {
-              "type": ["null", "number"]
-            },
-            "device_family": {
-              "type": ["null", "string"]
-            },
-            "sample_rate": {
-              "type": ["null"]
-            },
-            "idfa": {
-              "type": ["null", "string"]
-            },
-            "client_event_time": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["event_time"],
@@ -266,19 +36,7 @@
     {
       "stream": {
         "name": "active_users",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "statistics": {
-              "type": ["null", "object"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date"],
@@ -291,19 +49,7 @@
     {
       "stream": {
         "name": "average_session_length",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "length": {
-              "type": ["null", "number"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date"],

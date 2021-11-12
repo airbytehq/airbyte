@@ -9,7 +9,7 @@
     "title": "Postgres Destination Spec",
     "type": "object",
     "required": ["host", "port", "username", "database", "schema"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "host": {
         "title": "Host",

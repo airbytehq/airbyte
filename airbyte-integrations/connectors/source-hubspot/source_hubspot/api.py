@@ -1,44 +1,73 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 import sys
 import time
+import urllib.parse
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
-from functools import partial
+from functools import lru_cache, partial
 from http import HTTPStatus
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
 import pendulum as pendulum
 import requests
-from base_python.entrypoint import logger
+from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
+
+# The value is obtained experimentally, HubSpot allows the URL length up to ~16300 symbols,
+# so it was decided to limit the length of the `properties` parameter to 15000 characters.
+PROPERTIES_PARAM_MAX_LENGTH = 15000
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
+
+VALID_JSON_SCHEMA_TYPES = {
+    "string",
+    "integer",
+    "number",
+    "boolean",
+    "object",
+    "array",
+}
+
+KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
+    "bool": ("boolean", None),
+    "enumeration": ("string", None),
+    "date": ("string", "date-time"),
+    "date-time": ("string", "date-time"),
+    "datetime": ("string", "date-time"),
+    "json": ("string", None),
+    "phone_number": ("string", None),
+}
+
+CUSTOM_FIELD_TYPE_TO_VALUE = {
+    bool: "boolean",
+    str: "string",
+    float: "number",
+    int: "integer",
+}
+
+CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
+
+
+def split_properties(properties_list: List[str]) -> Iterator[Tuple[str]]:
+    summary_length = 0
+    local_properties = []
+    for property_ in properties_list:
+        if len(property_) + summary_length + len(urllib.parse.quote(",")) >= PROPERTIES_PARAM_MAX_LENGTH:
+            yield local_properties
+            local_properties = []
+            summary_length = 0
+
+        local_properties.append(property_)
+        summary_length += len(property_) + len(urllib.parse.quote(","))
+
+    if local_properties:
+        yield local_properties
 
 
 def retry_connection_handler(**kwargs):
@@ -70,7 +99,7 @@ def retry_after_handler(**kwargs):
     def sleep_on_ratelimit(_details):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, HubspotRateLimited):
-            # Hubspot API does not always return Retry-After value for 429 HTTP error
+            # HubSpot API does not always return Retry-After value for 429 HTTP error
             retry_after = int(exc.response.headers.get("Retry-After", 3))
             logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
@@ -90,64 +119,31 @@ def retry_after_handler(**kwargs):
 
 
 class API:
-    """Hubspot API interface, authorize, retrieve and post, supports backoff logic"""
+    """HubSpot API interface, authorize, retrieve and post, supports backoff logic"""
 
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
 
     def __init__(self, credentials: Mapping[str, Any]):
-        self._credentials = {**credentials}
         self._session = requests.Session()
+        credentials_title = credentials.get("credentials_title")
+
+        if credentials_title == "OAuth Credentials":
+            self._session.auth = Oauth2Authenticator(
+                token_refresh_endpoint=self.BASE_URL + "/oauth/v1/token",
+                client_id=credentials["client_id"],
+                client_secret=credentials["client_secret"],
+                refresh_token=credentials["refresh_token"],
+            )
+        elif credentials_title == "API Key Credentials":
+            self._session.params["hapikey"] = credentials.get("api_key")
+        else:
+            raise Exception("No supported `credentials_title` specified. See spec.json for references")
+
         self._session.headers = {
             "Content-Type": "application/json",
             "User-Agent": self.USER_AGENT,
         }
-
-    def _acquire_access_token_from_refresh_token(self):
-        payload = {
-            "grant_type": "refresh_token",
-            "redirect_uri": self._credentials["redirect_uri"],
-            "refresh_token": self._credentials["refresh_token"],
-            "client_id": self._credentials["client_id"],
-            "client_secret": self._credentials["client_secret"],
-        }
-
-        resp = requests.post(self.BASE_URL + "/oauth/v1/token", data=payload)
-        if resp.status_code == HTTPStatus.FORBIDDEN:
-            raise HubspotInvalidAuth(resp.content, response=resp)
-
-        resp.raise_for_status()
-        auth = resp.json()
-        self._credentials["access_token"] = auth["access_token"]
-        self._credentials["refresh_token"] = auth["refresh_token"]
-        self._credentials["token_expires"] = datetime.utcnow() + timedelta(seconds=auth["expires_in"] - 600)
-        logger.info(f"Token refreshed. Expires at {self._credentials['token_expires']}")
-
-    @property
-    def api_key(self) -> Optional[str]:
-        """Get API Key if set"""
-        return self._credentials.get("api_key")
-
-    @property
-    def access_token(self) -> Optional[str]:
-        """Get Access Token if set, refreshes token if needed"""
-        if not self._credentials.get("access_token"):
-            return None
-
-        if self._credentials["token_expires"] is None or self._credentials["token_expires"] < datetime.utcnow():
-            self._acquire_access_token_from_refresh_token()
-        return self._credentials.get("access_token")
-
-    def _add_auth(self, params: Mapping[str, Any] = None) -> Mapping[str, Any]:
-        """Add auth info to request params/header"""
-        params = params or {}
-
-        if self.access_token:
-            self._session.headers["Authorization"] = f"Bearer {self.access_token}"
-        else:
-            params["hapikey"] = self.api_key
-
-        return params
 
     @staticmethod
     def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
@@ -157,7 +153,8 @@ class API:
             message = response.json().get("message")
 
         if response.status_code == HTTPStatus.FORBIDDEN:
-            raise HubspotAccessDenied(message, response=response)
+            """ Once hit the forbidden endpoint, we return the error message from response. """
+            pass
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
             raise HubspotInvalidAuth(message, response=response)
         elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
@@ -176,12 +173,14 @@ class API:
 
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(max_tries=3)
-    def get(self, url: str, params=None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
-        response = self._session.get(self.BASE_URL + url, params=self._add_auth(params))
+    def get(self, url: str, params: MutableMapping[str, Any] = None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
+        response = self._session.get(self.BASE_URL + url, params=params)
         return self._parse_and_handle_errors(response)
 
-    def post(self, url: str, data: Mapping[str, Any], params=None) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
-        response = self._session.post(self.BASE_URL + url, params=self._add_auth(params), json=data)
+    def post(
+        self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
+    ) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
+        response = self._session.post(self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response)
 
 
@@ -199,6 +198,7 @@ class Stream(ABC):
     page_field = "offset"
     limit_field = "limit"
     limit = 100
+    offset = 0
 
     @property
     @abstractmethod
@@ -230,9 +230,75 @@ class Stream(ABC):
                         record["properties"].pop(key)
             yield record
 
+    @staticmethod
+    def _cast_value(declared_field_types: List, field_name: str, field_value: Any, declared_format: str = None) -> Any:
+        """
+        Convert record's received value according to its declared catalog json schema type / format / attribute name.
+        :param declared_field_types type from catalog schema
+        :param field_name value's attribute name
+        :param field_value actual value to cast
+        :param declared_format format field value from catalog schema
+        :return Converted value for record
+        """
+
+        if "null" in declared_field_types:
+            if field_value is None:
+                return field_value
+            # Sometime hubspot output empty string on field with format set.
+            # Set it to null to avoid errors on destination' normalization stage.
+            if declared_format and field_value == "":
+                return None
+
+        actual_field_type = type(field_value)
+        actual_field_type_name = CUSTOM_FIELD_TYPE_TO_VALUE.get(actual_field_type)
+        if actual_field_type_name in declared_field_types:
+            return field_value
+
+        target_type_name = next(filter(lambda t: t != "null", declared_field_types))
+        target_type = CUSTOM_FIELD_VALUE_TO_TYPE.get(target_type_name)
+
+        if target_type_name == "number":
+            # do not cast numeric IDs into float, use integer instead
+            target_type = int if field_name.endswith("_id") else target_type
+
+        if target_type_name != "string" and field_value == "":
+            # do not cast empty strings, return None instead to be properly casted.
+            field_value = None
+            return field_value
+
+        try:
+            casted_value = target_type(field_value)
+        except ValueError:
+            logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
+            return field_value
+
+        return casted_value
+
+    def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
+
+        if self.entity not in {"contact", "engagement", "product", "quote", "ticket", "company", "deal", "line_item"}:
+            return record
+
+        if not record.get("properties"):
+            return record
+
+        properties = properties or self.properties
+
+        for field_name, field_value in record["properties"].items():
+            declared_field_types = properties[field_name].get("type", [])
+            if not isinstance(declared_field_types, Iterable):
+                declared_field_types = [declared_field_types]
+            format = properties[field_name].get("format")
+            record["properties"][field_name] = self._cast_value(
+                declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format
+            )
+
+        return record
+
     def _transform(self, records: Iterable) -> Iterable:
         """Preprocess record before emitting"""
         for record in records:
+            record = self._cast_record_fields_if_needed(record)
             if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
                 record[self.updated_at_field] = record[self.created_at_field]
             yield record
@@ -258,42 +324,111 @@ class Stream(ABC):
             yield record
 
     def _read(self, getter: Callable, params: MutableMapping[str, Any] = None) -> Iterator:
+        next_page_token = None
         while True:
-            response = getter(params=params)
-            if isinstance(response, Mapping):
-                if response.get(self.data_field) is None:
-                    raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
+            if next_page_token:
+                params.update(next_page_token)
 
-                yield from response[self.data_field]
+            properties_list = list(self.properties.keys())
+            if properties_list:
+                # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
+                #  We will need to fix this code when the HubSpot developers add the ability to use a special parameter to get all properties for an entity.
+                #  According to HubSpot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
+                #  and the official documentation, this does not exist at the moment.
+                stream_records = {}
 
-                # pagination
-                if "paging" in response:  # APIv3 pagination
-                    if "next" in response["paging"]:
-                        params["after"] = response["paging"]["next"]["after"]
-                    else:
-                        break
-                else:
-                    if not response.get(self.more_key, False):
-                        break
-                    if self.page_field in response:
-                        params[self.page_filter] = response[self.page_field]
+                for properties in split_properties(properties_list):
+                    params.update({"properties": ",".join(properties)})
+                    response = getter(params=params)
+                    for record in self._transform(self.parse_response(response)):
+                        if record["id"] not in stream_records:
+                            stream_records[record["id"]] = record
+                        elif stream_records[record["id"]].get("properties"):
+                            stream_records[record["id"]]["properties"].update(record.get("properties", {}))
+
+                yield from [value for key, value in stream_records.items()]
             else:
-                response = list(response)
-                yield from response
+                response = getter(params=params)
+                yield from self._transform(self.parse_response(response))
 
-                # pagination
-                if len(response) < self.limit:
-                    break
-                else:
-                    params[self.page_filter] = params.get(self.page_filter, 0) + self.limit
+            next_page_token = self.next_page_token(response)
+            if not next_page_token:
+                break
 
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
-        default_params = {self.limit_field: self.limit, "properties": ",".join(self.properties.keys())}
+        default_params = {self.limit_field: self.limit}
         params = {**default_params, **params} if params else {**default_params}
+        yield from self._filter_dynamic_fields(self._filter_old_records(self._read(getter, params)))
 
-        yield from self._filter_dynamic_fields(self._filter_old_records(self._transform(self._read(getter, params))))
+    def parse_response(self, response: Union[Mapping[str, Any], List[dict]]) -> Iterator:
+        if isinstance(response, Mapping):
+            if response.get("status", None) == "error":
+                """
+                When the API Key doen't have the permissions to access the endpoint,
+                we break the read, skip this stream and log warning message for the user.
+
+                Example:
+
+                response.json() = {
+                    'status': 'error',
+                    'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
+                    'correlationId': '111111-2222-3333-4444-55555555555'}
+                """
+                logger.warning(f"Stream `{self.entity}` cannot be procced. {response.get('message')}")
+                return
+
+            if response.get(self.data_field) is None:
+                """
+                When the response doen't have the stream's data, raise an exception.
+                """
+                raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
+
+            yield from response[self.data_field]
+
+        else:
+            response = list(response)
+            yield from response
+
+    def next_page_token(self, response: Union[Mapping[str, Any], List[dict]]) -> Optional[Mapping[str, Union[int, str]]]:
+        if isinstance(response, Mapping):
+            if "paging" in response:  # APIv3 pagination
+                if "next" in response["paging"]:
+                    return {"after": response["paging"]["next"]["after"]}
+            else:
+                if not response.get(self.more_key, False):
+                    return
+                if self.page_field in response:
+                    return {self.page_filter: response[self.page_field]}
+        else:
+            if len(response) >= self.limit:
+                self.offset += self.limit
+                return {self.page_filter: self.offset}
+
+    @staticmethod
+    def _get_field_props(field_type: str) -> Mapping[str, List[str]]:
+
+        if field_type in VALID_JSON_SCHEMA_TYPES:
+            return {
+                "type": ["null", field_type],
+            }
+
+        converted_type, field_format = KNOWN_CONVERTIBLE_SCHEMA_TYPES.get(field_type) or (None, None)
+
+        if not converted_type:
+            converted_type = "string"
+            logger.warn(f"Unsupported type {field_type} found")
+
+        field_props = {
+            "type": ["null", converted_type or field_type],
+        }
+
+        if field_format:
+            field_props["format"] = field_format
+
+        return field_props
 
     @property
+    @lru_cache()
     def properties(self) -> Mapping[str, Any]:
         """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
         if not self.entity:
@@ -302,10 +437,7 @@ class Stream(ABC):
         props = {}
         data = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
-            field_type = row["type"]
-            if field_type in ["enumeration", "date", "date-time"]:
-                field_type = "string"
-            props[row["name"]] = {"type": field_type}
+            props[row["name"]] = self._get_field_props(row["type"])
 
         return props
 
@@ -356,7 +488,7 @@ class IncrementalStream(Stream, ABC):
                 self._start_date = self._state
 
     def read_chunked(
-        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.Interval = pendulum.interval(days=1)
+        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.duration = pendulum.duration(days=1)
     ) -> Iterator:
         params = {**params} if params else {}
         now_ts = int(pendulum.now().timestamp() * 1000)
@@ -392,7 +524,9 @@ class CRMObjectStream(Stream):
         """Entity URL"""
         return f"/crm/v3/objects/{self.entity}"
 
-    def __init__(self, entity: str = None, associations: List[str] = None, include_archived_only: bool = False, **kwargs):
+    def __init__(
+        self, entity: Optional[str] = None, associations: Optional[List[str]] = None, include_archived_only: bool = False, **kwargs
+    ):
         super().__init__(**kwargs)
         self.entity = entity or self.entity
         self.associations = associations or self.associations
@@ -554,15 +688,27 @@ class EngagementStream(Stream):
 
 
 class FormStream(Stream):
-    """Marketing Forms, API v2
+    """Marketing Forms, API v3
     by default non-marketing forms are filtered out of this endpoint
     Docs: https://developers.hubspot.com/docs/api/marketing/forms
     """
 
     entity = "form"
-    url = "/forms/v2/forms"
+    url = "/marketing/v3/forms"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+
+
+class MarketingEmailStream(Stream):
+    """Marketing Email, API v1
+    Docs: https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-emails
+    """
+
+    url = "/marketing-emails/v1/emails/with-statistics"
+    data_field = "objects"
+    limit = 250
+    updated_at_field = "updated"
+    created_at_field = "created"
 
 
 class OwnerStream(Stream):

@@ -1,28 +1,8 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
+import copy
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -33,9 +13,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from pendulum import DateTime, Period
-from slack_sdk import WebClient
 
 
 class SlackStream(HttpStream, ABC):
@@ -43,9 +22,16 @@ class SlackStream(HttpStream, ABC):
     primary_key = "id"
     page_size = 100
 
+    @property
+    def max_retries(self) -> int:
+        # Slack's rate limiting can be unpredictable so we increase the max number of retries by a lot before failing
+        return 20
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # Slack uses a cursor-based pagination strategy.
-        # Extract the cursor from the response if it exists and return it in a format that can be used to update request parameters
+        """Slack uses a cursor-based pagination strategy.
+        Extract the cursor from the response if it exists and return it in a format
+        that can be used to update request parameters"""
+
         json_response = response.json()
         next_cursor = json_response.get("response_metadata", {}).get("next_cursor")
         if next_cursor:
@@ -73,11 +59,17 @@ class SlackStream(HttpStream, ABC):
         yield from json_response.get(self.data_field, [])
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        # This method is called if we run into the rate limit. Slack puts the retry time in the `Retry-After` response header so we
-        # we return that value. If the response is anything other than a 429 (e.g: 5XX) fall back on default retry behavior.
-        # https://api.slack.com/docs/rate-limits#web
-        if response.status_code == 429:
-            return int(response.headers.get("Retry-After", 0))
+        """This method is called if we run into the rate limit.
+        Slack puts the retry time in the `Retry-After` response header so we
+        we return that value. If the response is anything other than a 429 (e.g: 5XX)
+        fall back on default retry behavior.
+        Rate Limits Docs: https://api.slack.com/docs/rate-limits#web"""
+
+        if "Retry-After" in response.headers:
+            return int(response.headers["Retry-After"])
+        else:
+            self.logger.info("Retry-after header not found. Using default backoff value")
+            return 5
 
     @property
     @abstractmethod
@@ -114,7 +106,7 @@ class ChannelMembers(SlackStream):
             yield {"member_id": member_id, "channel_id": stream_slice["channel_id"]}
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        channels_stream = Channels(authenticator=self.authenticator)
+        channels_stream = Channels(authenticator=self._session.auth)
         for channel_record in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"channel_id": channel_record["id"]}
 
@@ -132,6 +124,7 @@ def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1)) -
     Yields a list of the beginning and ending timestamps of each day between the start date and now.
     The return value is a pendulum.period
     """
+
     now = pendulum.now()
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date <= now:
@@ -147,7 +140,16 @@ class IncrementalMessageStream(SlackStream, ABC):
 
     def __init__(self, default_start_date: DateTime, **kwargs):
         self._start_ts = default_start_date.timestamp()
+        self.set_sub_primary_key()
         super().__init__(**kwargs)
+
+    def set_sub_primary_key(self):
+        if isinstance(self.primary_key, list):
+            for index, value in enumerate(self.primary_key):
+                setattr(self, f"sub_primary_key_{index + 1}", value)
+        else:
+            logger = AirbyteLogger()
+            logger.error("Failed during setting sub primary keys. Primary key should be list.")
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
@@ -156,8 +158,8 @@ class IncrementalMessageStream(SlackStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
-            record[self.primary_key[0]] = stream_slice.get("channel", "")
-            record[self.cursor_field] = float(record[self.primary_key[1]])
+            record[self.sub_primary_key_1] = stream_slice.get("channel", "")
+            record[self.cursor_field] = float(record[self.sub_primary_key_2])
             yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -185,7 +187,7 @@ class ChannelMessages(IncrementalMessageStream):
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         else:
             # if channel is not provided, then get channels and read accordingly
-            channels = Channels(authenticator=self.authenticator)
+            channels = Channels(authenticator=self._session.auth)
             for channel_record in channels.read_records(sync_mode=SyncMode.full_refresh):
                 stream_slice["channel"] = channel_record["id"]
                 yield from super().read_records(stream_slice=stream_slice, **kwargs)
@@ -218,22 +220,39 @@ class Threads(IncrementalMessageStream):
         """
 
         stream_state = stream_state or {}
-        channels_stream = Channels(authenticator=self.authenticator)
+        channels_stream = Channels(authenticator=self._session.auth)
+
         if self.cursor_field in stream_state:
             # Since new messages can be posted to threads continuously after the parent message has been posted, we get messages from the latest date
-            # found in the state minus 7 days to pick up any new messages in threads.
+            # found in the state minus X days to pick up any new messages in threads.
             # If there is state always use lookback
             messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window
         else:
             # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages from the default start date
             messages_start_date = pendulum.from_timestamp(self._start_ts)
-        messages_stream = ChannelMessages(authenticator=self.authenticator, default_start_date=messages_start_date)
+
+        messages_stream = ChannelMessages(authenticator=self._session.auth, default_start_date=messages_start_date)
+
         for message_chunk in messages_stream.stream_slices(stream_state={self.cursor_field: messages_start_date.timestamp()}):
             self.logger.info(f"Syncing replies {message_chunk}")
+
             for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
                 message_chunk["channel"] = channel["id"]
+
                 for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
-                    yield {"channel": channel["id"], self.cursor_field: message[self.primary_key]}
+                    yield {"channel": channel["id"], self.sub_primary_key_2: message[self.sub_primary_key_2]}
+
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Filtering already readed records for incremental sync. Copied state value to X after the last sync
+        to really 100% make sure no one can edit the state during the run.
+        """
+
+        initial_state = copy.deepcopy(stream_state) or {}
+
+        for record in super().read_records(stream_state=stream_state, **kwargs):
+            if record.get(self.cursor_field, 0) >= initial_state.get(self.cursor_field, 0):
+                yield record
 
 
 class JoinChannelsStream(HttpStream):
@@ -256,7 +275,7 @@ class JoinChannelsStream(HttpStream):
         return "conversations.join"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        channels_stream = Channels(authenticator=self.authenticator)
+        channels_stream = Channels(authenticator=self._session.auth)
         for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"channel": channel["id"], "channel_name": channel["name"]}
 
@@ -265,16 +284,41 @@ class JoinChannelsStream(HttpStream):
 
 
 class SourceSlack(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        slack_client = WebClient(token=config["api_token"])
-        users = slack_client.users_list(limit=1).get("members", [])
-        if len(users) > 0:
-            return True, None
+    def _get_authenticator(self, config: Mapping[str, Any]):
+        # Added to maintain backward compatibility with previous versions
+        if "api_token" in config:
+            return TokenAuthenticator(config["api_token"])
+
+        credentials = config.get("credentials")
+        credentials_title = credentials.get("option_title")
+        if credentials_title == "Default OAuth2.0 authorization":
+            # We can get `refresh_token` only if the token rotation function is enabled for the Slack Oauth Application.
+            # If it is disabled, then we use the generated `access_token`, which acts without expiration.
+            # https://api.slack.com/authentication/rotation
+            if credentials.get("refresh_token", "").strip():
+                return Oauth2Authenticator(
+                    token_refresh_endpoint="https://slack.com/api/oauth.v2.access",
+                    client_id=credentials["client_id"],
+                    client_secret=credentials["client_secret"],
+                    refresh_token=credentials["refresh_token"],
+                )
+            return TokenAuthenticator(credentials["access_token"])
+        elif credentials_title == "API Token Credentials":
+            return TokenAuthenticator(credentials["api_token"])
         else:
-            return False, "There are no users in the given Slack instance"
+            raise Exception(f"No supported option_title: {credentials_title} specified. See spec.json for references")
+
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        try:
+            authenticator = self._get_authenticator(config)
+            users_stream = Users(authenticator=authenticator)
+            next(users_stream.read_records(SyncMode.full_refresh))
+            return True, None
+        except Exception:
+            return False, "There are no users in the given Slack instance or your token is incorrect"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = TokenAuthenticator(config["api_token"])
+        authenticator = self._get_authenticator(config)
         default_start_date = pendulum.parse(config["start_date"])
         threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
 

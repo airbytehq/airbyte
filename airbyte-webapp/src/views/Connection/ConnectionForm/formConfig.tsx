@@ -9,7 +9,7 @@ import {
   SyncSchema,
   SyncSchemaStream,
 } from "core/domain/catalog";
-import { ValuesProps } from "components/hooks/services/useConnectionHook";
+import { ValuesProps } from "hooks/services/useConnectionHook";
 import {
   Normalization,
   NormalizationType,
@@ -19,10 +19,11 @@ import {
 } from "core/domain/connection/operation";
 import { DropDownRow } from "components";
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { DestinationDefinitionSpecification } from "core/resources/DestinationDefinitionSpecification";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
+import useWorkspace from "hooks/services/useWorkspace";
+import { DestinationDefinitionSpecification } from "core/domain/connector";
 
 type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;
@@ -43,16 +44,21 @@ const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
   [SyncMode.Incremental, DestinationSyncMode.Dedupted],
 ];
 
-const DEFAULT_TRANSFORMATION: Transformation = {
-  name: "My dbt transformations",
-  operatorConfiguration: {
-    operatorType: OperatorType.Dbt,
-    dbt: {
-      dockerImage: "fishtownanalytics/dbt:0.19.1",
-      dbtArguments: "run",
+function useDefaultTransformation(): Transformation {
+  const { workspace } = useWorkspace();
+
+  return {
+    name: "My dbt transformations",
+    workspaceId: workspace.workspaceId,
+    operatorConfiguration: {
+      operatorType: OperatorType.Dbt,
+      dbt: {
+        dockerImage: "fishtownanalytics/dbt:0.19.1",
+        dbtArguments: "run",
+      },
     },
-  },
-};
+  };
+}
 
 const connectionValidationSchema = yup
   .object({
@@ -135,13 +141,15 @@ const connectionValidationSchema = yup
  * Always puts normalization as first operation
  * @param values
  * @param initialOperations
+ * @param workspaceId
  */
 function mapFormPropsToOperation(
   values: {
     transformations?: Transformation[];
     normalization?: NormalizationType;
   },
-  initialOperations: Operation[] = []
+  initialOperations: Operation[] = [],
+  workspaceId: string
 ): Operation[] {
   const newOperations: Operation[] = [];
 
@@ -157,6 +165,7 @@ function mapFormPropsToOperation(
       } else {
         newOperations.push({
           name: "Normalization",
+          workspaceId,
           operatorConfiguration: {
             operatorType: OperatorType.Normalization,
             normalization: {
@@ -306,7 +315,7 @@ const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
                 }
               ),
       })),
-    []
+    [formatMessage]
   );
 };
 
@@ -317,5 +326,5 @@ export {
   useFrequencyDropdownData,
   mapFormPropsToOperation,
   SUPPORTED_MODES,
-  DEFAULT_TRANSFORMATION,
+  useDefaultTransformation,
 };

@@ -3,14 +3,14 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useAsyncFn } from "react-use";
 
-import { Button, LoadingButton } from "components";
-import ContentCard from "components/ContentCard";
-import config from "config";
-import Link from "components/Link";
-import DeploymentService from "core/resources/DeploymentService";
+import { useConfig } from "config";
+
+import { Button, ContentCard, Link, LoadingButton } from "components";
+import HeadTitle from "components/HeadTitle";
+import { DeploymentService } from "core/resources/DeploymentService";
 import ImportConfigurationModal from "./components/ImportConfigurationModal";
 import LogsContent from "./components/LogsContent";
-import HeadTitle from "components/HeadTitle";
+import { useServicesProvider } from "core/servicesProvider";
 
 const Content = styled.div`
   max-width: 813px;
@@ -45,39 +45,51 @@ const Warning = styled.div`
 `;
 
 const ConfigurationsPage: React.FC = () => {
+  const config = useConfig();
+  const { getService } = useServicesProvider();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const [{ loading }, onImport] = useAsyncFn(async (fileBlob: Blob) => {
-    try {
-      const reader = new FileReader();
-      reader.readAsArrayBuffer(fileBlob);
+  const [{ loading }, onImport] = useAsyncFn(
+    async (fileBlob: Blob) => {
+      try {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(fileBlob);
 
-      return new Promise((resolve, reject) => {
-        reader.onloadend = async (e) => {
-          // setError("");
-          // setIsLoading(true);
-          const file = e?.target?.result;
-          if (!file) {
-            throw new Error("No file");
-          }
-          try {
-            await DeploymentService.importDeployment(file);
+        return new Promise((resolve, reject) => {
+          reader.onloadend = async (e) => {
+            // setError("");
+            // setIsLoading(true);
+            const file = e?.target?.result;
+            if (!file) {
+              throw new Error("No file");
+            }
+            try {
+              const deploymentService = getService<DeploymentService>(
+                "DeploymentService"
+              );
+              await deploymentService.importDeployment(file);
 
-            window.location.reload();
-            resolve(true);
-          } catch (e) {
-            reject(e);
-          }
-        };
-      });
-    } catch (e) {
-      setError(e);
-    }
-  });
+              window.location.reload();
+              resolve(true);
+            } catch (e) {
+              reject(e);
+            }
+          };
+        });
+      } catch (e) {
+        setError(e);
+      }
+    },
+    [getService]
+  );
 
   const [{ loading: loadingExport }, onExport] = useAsyncFn(async () => {
-    const file = await DeploymentService.exportDeployment();
+    const deploymentService = getService<DeploymentService>(
+      "DeploymentService"
+    );
+
+    const file = await deploymentService.exportDeployment();
     window.location.assign(file);
   }, []);
 

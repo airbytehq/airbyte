@@ -3,15 +3,7 @@
     {
       "stream": {
         "name": "table_name",
-        "json_schema": {
-          "properties": {
-            "column_name": {
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "additionalProperties": false
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "default_cursor_field": ["column_name"]

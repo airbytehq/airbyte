@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-mixpanel:dev
 tests:
@@ -11,13 +11,15 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+      timeout_seconds: 60
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      validate_output_from_all_streams: yes
+      timeout_seconds: 3600
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 3600
   incremental:
     # incremental streams Funnels, Revenue, Export
     # Funnels - fails because it has complex state, like {'funnel_idX': {'date': 'dateX'}}
@@ -30,4 +32,5 @@ tests:
       cursor_paths:
         revenue: ["date"]
         export: ["date"]
+      timeout_seconds: 3600
 

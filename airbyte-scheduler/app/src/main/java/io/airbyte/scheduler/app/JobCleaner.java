@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.app;
@@ -62,9 +42,9 @@ public class JobCleaner implements Runnable {
 
   private final WorkspaceRetentionConfig config;
 
-  public JobCleaner(WorkspaceRetentionConfig config,
-                    Path workspaceRoot,
-                    JobPersistence jobPersistence) {
+  public JobCleaner(final WorkspaceRetentionConfig config,
+                    final Path workspaceRoot,
+                    final JobPersistence jobPersistence) {
     this.config = config;
     this.workspaceRoot = workspaceRoot;
     this.jobPersistence = jobPersistence;
@@ -75,7 +55,7 @@ public class JobCleaner implements Runnable {
     try {
       deleteOldFiles();
       deleteOnSize();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -90,7 +70,7 @@ public class JobCleaner implements Runnable {
           LOGGER.info("Deleting old file: " + file.toString());
           FileUtils.deleteQuietly(file);
 
-          File parentDir = file.getParentFile();
+          final File parentDir = file.getParentFile();
           if (parentDir.isDirectory() && parentDir.listFiles().length == 0) {
             FileUtils.deleteQuietly(parentDir);
           }
@@ -98,11 +78,11 @@ public class JobCleaner implements Runnable {
   }
 
   private void deleteOnSize() throws IOException {
-    Set<String> nonTerminalJobIds = new HashSet<>();
-    Sets.SetView<JobStatus> nonTerminalStatuses = Sets.difference(Set.of(JobStatus.values()), JobStatus.TERMINAL_STATUSES);
+    final Set<String> nonTerminalJobIds = new HashSet<>();
+    final Sets.SetView<JobStatus> nonTerminalStatuses = Sets.difference(Set.of(JobStatus.values()), JobStatus.TERMINAL_STATUSES);
 
-    for (JobStatus nonTerminalStatus : nonTerminalStatuses) {
-      Set<String> jobIds = jobPersistence.listJobsWithStatus(nonTerminalStatus)
+    for (final JobStatus nonTerminalStatus : nonTerminalStatuses) {
+      final Set<String> jobIds = jobPersistence.listJobsWithStatus(nonTerminalStatus)
           .stream()
           .map(Job::getId)
           .map(String::valueOf)
@@ -114,7 +94,7 @@ public class JobCleaner implements Runnable {
     final Date youngestAllowed = getDateFromDaysAgo(config.getMinDays());
 
     final long workspaceBytes = FileUtils.sizeOfDirectory(workspaceRoot.toFile());
-    AtomicLong deletedBytes = new AtomicLong(0);
+    final AtomicLong deletedBytes = new AtomicLong(0);
     final AgeFileFilter ageFilter = new AgeFileFilter(youngestAllowed);
     Files.walk(workspaceRoot)
         .map(Path::toFile)
@@ -134,18 +114,18 @@ public class JobCleaner implements Runnable {
         })
         .filter(ageFilter::accept)
         .sorted((o1, o2) -> {
-          FileTime ft1 = getFileTime(o1);
-          FileTime ft2 = getFileTime(o2);
+          final FileTime ft1 = getFileTime(o1);
+          final FileTime ft2 = getFileTime(o2);
           return ft1.compareTo(ft2);
         })
         .forEach(fileToDelete -> {
           if (workspaceBytes - deletedBytes.get() > config.getMaxSizeMb() * 1024 * 1024) {
-            long sizeToDelete = fileToDelete.length();
+            final long sizeToDelete = fileToDelete.length();
             deletedBytes.addAndGet(sizeToDelete);
             LOGGER.info("Deleting: " + fileToDelete.toString());
             FileUtils.deleteQuietly(fileToDelete);
 
-            File parentDir = fileToDelete.getParentFile();
+            final File parentDir = fileToDelete.getParentFile();
             if (parentDir.isDirectory() && parentDir.listFiles().length == 0) {
               FileUtils.deleteQuietly(parentDir);
             }
@@ -153,14 +133,14 @@ public class JobCleaner implements Runnable {
         });
   }
 
-  protected static Date getDateFromDaysAgo(long daysAgo) {
+  protected static Date getDateFromDaysAgo(final long daysAgo) {
     return Date.from(LocalDateTime.now().minusDays(daysAgo).toInstant(OffsetDateTime.now().getOffset()));
   }
 
-  private static FileTime getFileTime(File file) {
+  private static FileTime getFileTime(final File file) {
     try {
       return Files.readAttributes(file.toPath(), BasicFileAttributes.class).creationTime();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
