@@ -55,7 +55,10 @@ class CsvParser(AbstractFileParser):
         build ConvertOptions object like: pa.csv.ConvertOptions(**self._convert_options())
         :param json_schema: if this is passed in, pyarrow will attempt to enforce this schema on read, defaults to None
         """
-        check_utf8 = True if self._format.get("encoding", "utf8").lower().replace("-", "") == "utf8" else False
+        check_utf8 = (
+            self._format.get("encoding", "utf8").lower().replace("-", "") == "utf8"
+        )
+
         convert_schema = self.json_schema_to_pyarrow_schema(json_schema) if json_schema is not None else None
         return {
             **{"check_utf8": check_utf8, "column_types": convert_schema},
