@@ -65,7 +65,7 @@ class SalesforceStream(HttpStream, ABC):
             selected_properties = {
                 key: value
                 for key, value in selected_properties.items()
-                if not (("format" in value and value["format"] == "base64") or "object" in value["type"])
+                if value.get("format") != "base64" and "object" not in value["type"]
             }
 
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
@@ -247,7 +247,7 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
             selected_properties = {
                 key: value
                 for key, value in selected_properties.items()
-                if not (("format" in value and value["format"] == "base64") or "object" in value["type"])
+                if value.get("format") != "base64" and "object" not in value["type"]
             }
 
         stream_date = stream_state.get(self.cursor_field)
