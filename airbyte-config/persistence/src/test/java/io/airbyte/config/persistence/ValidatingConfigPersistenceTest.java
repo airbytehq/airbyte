@@ -65,10 +65,14 @@ class ValidatingConfigPersistenceTest {
 
   @Test
   void testWriteConfigsSuccess() throws IOException, JsonValidationException {
-    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>() {{
-      put(UUID_1.toString(), SOURCE_1);
-      put(UUID_2.toString(), SOURCE_2);
-    }};
+    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>() {
+
+      {
+        put(UUID_1.toString(), SOURCE_1);
+        put(UUID_2.toString(), SOURCE_2);
+      }
+
+    };
 
     configPersistence.writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionById);
     verify(decoratedConfigPersistence).writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
@@ -87,10 +91,14 @@ class ValidatingConfigPersistenceTest {
   void testWriteConfigsFailure() throws JsonValidationException {
     doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
 
-    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>() {{
-      put(UUID_1.toString(), SOURCE_1);
-      put(UUID_2.toString(), SOURCE_2);
-    }};
+    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>() {
+
+      {
+        put(UUID_1.toString(), SOURCE_1);
+        put(UUID_2.toString(), SOURCE_2);
+      }
+
+    };
 
     assertThrows(JsonValidationException.class,
         () -> configPersistence.writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionById));

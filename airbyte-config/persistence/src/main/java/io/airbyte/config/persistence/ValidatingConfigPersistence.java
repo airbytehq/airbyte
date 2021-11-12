@@ -60,9 +60,13 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws JsonValidationException, IOException {
-    final Map<String, T> configIdToConfig = new HashMap<>() {{
-      put(configId, config);
-    }};
+    final Map<String, T> configIdToConfig = new HashMap<>() {
+
+      {
+        put(configId, config);
+      }
+
+    };
     writeConfigs(configType, configIdToConfig);
   }
 

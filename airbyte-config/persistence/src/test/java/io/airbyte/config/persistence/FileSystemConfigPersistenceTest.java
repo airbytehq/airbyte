@@ -62,10 +62,14 @@ class FileSystemConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest 
 
   @Test
   void testReadWriteConfigs() throws IOException, JsonValidationException, ConfigNotFoundException {
-    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>() {{
-      put(UUID_1.toString(), SOURCE_1);
-      put(UUID_2.toString(), SOURCE_2);
-    }};
+    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>() {
+
+      {
+        put(UUID_1.toString(), SOURCE_1);
+        put(UUID_2.toString(), SOURCE_2);
+      }
+
+    };
 
     configPersistence.writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionById);
 
