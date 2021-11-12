@@ -12,7 +12,7 @@ from source_mailgun.source import MailgunStream
 @pytest.fixture
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(MailgunStream, "path", "v0/example_endpoint")
+    mocker.patch.object(MailgunStream, "path", "v3/events")
     mocker.patch.object(MailgunStream, "primary_key", "test_primary_key")
     mocker.patch.object(MailgunStream, "__abstractmethods__", set())
 
