@@ -39,7 +39,7 @@ class AsyncJob:
     def start(self):
         """ Start remote job"""
         if self._job:
-            raise RuntimeError("Incorrect usage of method - the job already started, use restart instead")
+            raise RuntimeError(f"{self}: Incorrect usage of the start - the job already started, use restart instead")
 
         self._job = self._api.account.get_insights(params=self._params, is_async=True)
         self._start_time = pendulum.now()
@@ -51,11 +51,12 @@ class AsyncJob:
     def restart(self):
         """ Restart failed job"""
         if not self._job and not self.failed:
-            raise RuntimeError("Incorrect usage of method - only failed jobs can be restarted")
+            raise RuntimeError(f"{self}: Incorrect usage of the restart - only failed jobs can be restarted")
 
         self._failed = False
         self._finish_time = None
         self.start()
+        logger.info(f"{self}: restarted")
 
     @property
     def elapsed_time(self):
@@ -84,29 +85,31 @@ class AsyncJob:
         return self._failed
 
     @backoff_policy
+    def _update_job(self):
+        self._job = self._job.api_get()
+
     def _check_status(self) -> bool:
-        job = self._job.api_get()
-        job_progress_pct = job["async_percent_completion"]
-        logger.info(f"{self} is {job_progress_pct}% complete ({job['async_status']})")
+        self._update_job()
+        job_progress_pct = self._job["async_percent_completion"]
+        logger.info(f"{self} is {job_progress_pct}% complete ({self._job['async_status']})")
         runtime = self.elapsed_time
 
-        if job["async_status"] == "Job Completed":
+        if self._job["async_status"] == "Job Completed":
             self._finish_time = pendulum.now()
             return True
-        elif job["async_status"] == "Job Failed":
-            raise JobException(f"AdReportRun {job} failed after {runtime.in_seconds()} seconds.")
-        elif job["async_status"] == "Job Skipped":
-            raise JobException(f"AdReportRun {job} skipped after {runtime.in_seconds()} seconds.")
-        self._job = job
+        elif self._job["async_status"] == "Job Failed":
+            raise JobException(f"{self._job} failed after {runtime.in_seconds()} seconds.")
+        elif self._job["async_status"] == "Job Skipped":
+            raise JobException(f"{self._job} skipped after {runtime.in_seconds()} seconds.")
 
         if runtime > self.MAX_WAIT_TO_START and self._job["async_percent_completion"] == 0:
             raise JobTimeoutException(
-                f"AdReportRun {job} did not start after {runtime.in_seconds()} seconds."
+                f"{self._job} did not start after {runtime.in_seconds()} seconds."
                 f" This is an intermittent error which may be fixed by retrying the job. Aborting."
             )
         elif runtime > self.MAX_WAIT_TO_FINISH:
             raise JobTimeoutException(
-                f"AdReportRun {job} did not finish after {runtime.in_seconds()} seconds."
+                f"{self._job} did not finish after {runtime.in_seconds()} seconds."
                 f" This is an intermittent error which may be fixed by retrying the job. Aborting."
             )
         return False

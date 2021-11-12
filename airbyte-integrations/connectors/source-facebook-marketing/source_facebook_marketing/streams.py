@@ -347,7 +347,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         date_ranges = list(self._date_ranges(stream_state=stream_state))
         for params in date_ranges:
             params = deep_merge(params, self.request_params(stream_state=stream_state))
-            running_jobs.append(AsyncJob(api=self._api, params=params))
+            job = AsyncJob(api=self._api, params=params)
+            job.start()
+            running_jobs.append(job)
             if len(running_jobs) >= self.MAX_ASYNC_JOBS:
                 yield {"job": running_jobs.popleft()}
 
@@ -358,12 +360,11 @@ class AdsInsights(FBMarketingIncrementalStream):
     def wait_for_job(self, job: AsyncJob) -> AsyncJob:
         if job.failed:
             job.restart()
-            logger.info(f"Restart the job {job}")
 
         factor = 2
         sleep_seconds = factor
         while not job.completed:
-            self.logger.info(f"Sleeping {sleep_seconds} seconds while waiting for {job} to complete")
+            self.logger.info(f"{job}: sleeping {sleep_seconds} seconds while waiting for completion")
             time.sleep(sleep_seconds)
             if sleep_seconds < self.MAX_ASYNC_SLEEP.in_seconds():
                 sleep_seconds *= factor
