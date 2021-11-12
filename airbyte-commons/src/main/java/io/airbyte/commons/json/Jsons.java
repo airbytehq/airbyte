@@ -20,6 +20,7 @@ import com.google.common.base.Strings;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.stream.MoreStreams;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -202,16 +203,17 @@ public class Jsons {
   }
 
   private static ObjectNode flattenConfig(final ObjectNode flatConfig, final ObjectNode configToFlatten) {
+    final List<String> keysToFlatten = new ArrayList<>();
     for (final String key : Jsons.keys(configToFlatten)) {
       if (configToFlatten.get(key).getNodeType() == OBJECT) {
-        flattenConfig(flatConfig, (ObjectNode) configToFlatten.get(key));
-      } else {
-        if (flatConfig.has(key)) {
-          LOGGER.warn(String.format("Config's key '%s' already exists", key));
-        }
+        keysToFlatten.add(key);
+      } else if (!flatConfig.has(key)) {
         flatConfig.set(key, configToFlatten.get(key));
+      } else {
+        LOGGER.warn(String.format("Config's key '%s' already exists", key));
       }
     }
+    keysToFlatten.forEach(key -> flattenConfig(flatConfig, (ObjectNode) configToFlatten.get(key)));
     return flatConfig;
   }
 
