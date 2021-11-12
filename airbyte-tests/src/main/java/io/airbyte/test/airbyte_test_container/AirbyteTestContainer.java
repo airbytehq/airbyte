@@ -128,7 +128,7 @@ public class AirbyteTestContainer {
         lastException = e;
         LOGGER.info("airbyte not ready yet. attempt: {}", i);
       }
-      if (i == 10) {
+      if (i == 20) {
         throw new IllegalStateException("Airbyte took too long to start. Including last exception.", lastException);
       }
       Thread.sleep(5000);
