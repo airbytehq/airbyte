@@ -169,7 +169,7 @@ public class JsonToAvroSchemaConverter {
       return AdditionalPropertyField.FIELD_SCHEMA;
     }
 
-    final Schema fieldSchema;
+    Schema fieldSchema;
     switch (fieldType) {
       case STRING, NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case COMBINED -> {
@@ -180,10 +180,15 @@ public class JsonToAvroSchemaConverter {
       case ARRAY -> {
         final JsonNode items = fieldDefinition.get("items");
         Preconditions.checkNotNull(items, "Array field %s misses the items property.", fieldName);
-
-        if (items.isObject()) {
+        Optional<JsonNode> combinedRestriction = getCombinedRestriction(items);
+        if (combinedRestriction.isPresent()){
+          final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items);
+          arrayElementTypes.add(0, NULL_SCHEMA);
+          fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
+        }
+        if (combinedRestriction.isEmpty() && items.isObject()) {
           fieldSchema = Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
-        } else if (items.isArray()) {
+        } else if (combinedRestriction.isEmpty() && items.isArray()) {
           final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items);
           arrayElementTypes.add(0, NULL_SCHEMA);
           fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));

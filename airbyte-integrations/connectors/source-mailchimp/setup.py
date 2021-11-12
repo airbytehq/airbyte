@@ -16,6 +16,6 @@ setup(
         "mailchimp3==3.0.14",
         "pytest~=6.1",
     ],
-    package_data={"": ["*.json", "schemas/*.json"]},
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={"tests": ["pytest~=6.1"]},
 )
