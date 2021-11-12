@@ -123,7 +123,7 @@ class FileStream(Stream, ABC):
         """
 
     @abstractmethod
-    def filepath_iterator() -> Iterator[str]:
+    def filepath_iterator(self) -> Iterator[str]:
         """
         Provider-specific method to iterate through bucket/container/etc. and yield each full filepath.
         This should supply the 'url' to use in StorageFile(). This is possibly better described as blob or file path.
