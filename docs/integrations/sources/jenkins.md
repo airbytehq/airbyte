@@ -12,8 +12,12 @@ columns you set up for replication, every time a sync is run.
 
 Several output streams are available from this source:
 
-* [Builds](TODO) \(Incremental\)
-* [Jobs](TODO)
+* [Builds](https://your.jenkins.url/job/$JOB_NAME/$BUILD_NUMBER/api/json?pretty=true) \(Incremental\)
+* [Jobs](https://your.jenkins.url/job/$JOB_NAME/api/json?pretty=true)
+
+In the above links, replace `your.jenkins.url` with the url of your Jenkins
+instance, and replace any environment variables with an existing Jenkins job or
+build id.
 
 If there are more endpoints you'd like Faros AI to support, please [create an
 issue.](https://github.com/faros-ai/airbyte-connectors/issues/new)
@@ -45,7 +49,7 @@ rate limit issues that are not automatically retried successfully.
 ### Setup guide
 
 Login to your Jenkins server in your browser and go to
-`$JENKINS_SERVER_URL/me/configure` to generate your API token.
+`https://your.jenkins.url/me/configure` to generate your API token.
 
 ## Changelog
 
