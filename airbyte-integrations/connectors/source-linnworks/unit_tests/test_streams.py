@@ -49,13 +49,6 @@ def test_parse_response(patch_base_class, requests_mock):
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
-def test_request_headers(patch_base_class):
-    stream = LinnworksStream()
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {}
-    assert stream.request_headers(**inputs) == expected_headers
-
-
 def test_http_method(patch_base_class):
     stream = LinnworksStream()
     expected_method = "POST"
