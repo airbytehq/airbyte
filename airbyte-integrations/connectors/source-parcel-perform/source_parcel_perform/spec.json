@@ -1,0 +1,27 @@
+{
+  "documentationUrl": "https://developers.parcelperform.com/docs/api-guides-reference/docs/overview.md",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Parcelperform Spec",
+    "type": "object",
+    "required": ["client_id", "client_secret", "start_date"],
+    "additionalProperties": false,
+    "properties": {
+      "client_id": {
+        "type" : "string",
+        "description" : "Parcel Perform client id",
+        "airbyte_secret" : true
+      },
+      "client_secret": {
+        "type": "string",
+        "description": "Parcel Perform client secret",
+        "airbyte_secret" : true
+      },
+      "start_date" : {
+        "type" :"string",
+        "description" : "Date from which to start fetching updates from YYYY-MM-DDTHH:MM:SS",
+        "airbyte_secret" : false
+      }
+    }
+  }
+}
