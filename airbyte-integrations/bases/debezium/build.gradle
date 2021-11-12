@@ -9,11 +9,11 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-db:lib')
 
-    implementation 'io.debezium:debezium-api:1.4.2.Final'
-    implementation 'io.debezium:debezium-embedded:1.4.2.Final'
-    implementation 'io.debezium:debezium-connector-mysql:1.4.2.Final'
-    implementation 'io.debezium:debezium-connector-postgres:1.4.2.Final'
-    implementation 'io.debezium:debezium-connector-sqlserver:1.4.2.Final'
+    implementation 'io.debezium:debezium-api:1.7.1.Final'
+    implementation 'io.debezium:debezium-embedded:1.7.1.Final'
+    implementation 'io.debezium:debezium-connector-mysql:1.7.1.Final'
+    implementation 'io.debezium:debezium-connector-postgres:1.7.1.Final'
+    implementation 'io.debezium:debezium-connector-sqlserver:1.7.1.Final'
 
     testFixturesImplementation project(':airbyte-db:lib')
     testFixturesImplementation project(':airbyte-integrations:bases:base-java')
