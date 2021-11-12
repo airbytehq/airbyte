@@ -7,7 +7,6 @@ import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import StepsMenu from "components/StepsMenu";
 import { FormPageContent } from "components/ConnectorBlocks";
-import CreateEntityView from "./components/CreateEntityView";
 import SourceForm from "./components/SourceForm";
 import DestinationForm from "./components/DestinationForm";
 import ConnectionBlock from "components/ConnectionBlock";
@@ -36,12 +35,19 @@ export enum EntityStepsTypes {
 }
 
 const CreationFormPage: React.FC<IProps> = ({ type }) => {
-  const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_ENTITY);
-  const [currentEntityStep, setCurrentEntityStep] = useState(
-    EntityStepsTypes.SOURCE
+  const { location, push } = useRouter();
+  const hasConnectors =
+    location.state?.sourceId && location.state?.destinationId;
+  const [currentStep, setCurrentStep] = useState(
+    hasConnectors ? StepsTypes.CREATE_CONNECTION : StepsTypes.CREATE_ENTITY
   );
 
-  const { location, push } = useRouter();
+  const [currentEntityStep, setCurrentEntityStep] = useState(
+    location.state?.sourceId
+      ? EntityStepsTypes.DESTINATION
+      : EntityStepsTypes.SOURCE
+  );
+
   const source = useResource(
     SourceResource.detailShape(),
     location.state?.sourceId
@@ -82,43 +88,20 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
       currentStep === StepsTypes.CREATE_CONNECTOR
     ) {
       if (currentEntityStep === EntityStepsTypes.SOURCE) {
-        if (location.state?.sourceId) {
-          return (
-            <CreateEntityView
-              type="source"
-              afterSuccess={() => {
-                setCurrentEntityStep(EntityStepsTypes.DESTINATION);
-                if (type === "connection") {
-                  setCurrentStep(StepsTypes.CREATE_CONNECTOR);
-                }
-              }}
-            />
-          );
-        }
-
         return (
           <SourceForm
             afterSubmit={() => {
-              setCurrentEntityStep(EntityStepsTypes.DESTINATION);
               if (type === "connection") {
+                setCurrentEntityStep(EntityStepsTypes.DESTINATION);
                 setCurrentStep(StepsTypes.CREATE_CONNECTOR);
+              } else {
+                setCurrentEntityStep(EntityStepsTypes.CONNECTION);
+                setCurrentStep(StepsTypes.CREATE_CONNECTION);
               }
             }}
           />
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
-        if (location.state?.destinationId) {
-          return (
-            <CreateEntityView
-              type="destination"
-              afterSuccess={() => {
-                setCurrentEntityStep(EntityStepsTypes.CONNECTION);
-                setCurrentStep(StepsTypes.CREATE_CONNECTION);
-              }}
-            />
-          );
-        }
-
         return (
           <DestinationForm
             afterSubmit={() => {
