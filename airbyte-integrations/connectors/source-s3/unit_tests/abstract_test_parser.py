@@ -29,13 +29,6 @@ class AbstractTestParser(ABC):
             else:
                 inferred_schema = test_file["AbstractFileParser"].get_inferred_schema(f)
                 expected_schema = test_file["inferred_schema"]
-                if inferred_schema != expected_schema:
-                    import dumper
-                    self.logger.debug("Expected")
-                    self.logger.debug(dumper.dump(expected_schema))
-                    self.logger.debug("Result")
-                    self.logger.debug(dumper.dump(inferred_schema))
-                    assert False, "Inferred schema does not match expected"
                 assert inferred_schema == expected_schema
 
     def test_stream_records(self, test_file):

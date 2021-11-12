@@ -297,6 +297,27 @@ test_files = [
         "line_checks": {},
         "fails": [],
     },
+{
+        # tests if infer_datatype parameter set to false disables data type inference on schema
+        "test_alias": "infer_datatype set to false with custom delimiter and quote",
+        "AbstractFileParser": CsvParser(
+            format={"filetype": "csv", "infer_datatypes": False, "quote_char": "|", "delimiter":";",
+                    "newlines_in_values": True}
+        ),
+        "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/infer_schema_test_quote_delim.csv"),
+        "num_records": 18,
+        "inferred_schema": {
+            "pk": "string",
+            "full_name": "string",
+            "street_address": "string",
+            "customer_code": "string",
+            "email": "string",
+            "dob": "string"
+        },
+        "line_checks": {},
+        "fails": [],
+    },
+
 ]
 
 

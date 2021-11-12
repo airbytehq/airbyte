@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
+import csv
 import json
 import multiprocessing as mp
 import pprint
@@ -149,7 +149,9 @@ class CsvParser(AbstractFileParser):
             self.logger.debug("infer_datatypes is False, skipping infer_schema")
             encoding = self._format.get("encoding", "UTF-8")
             delimiter = self._format.get("delimiter", ",")
-            field_names = file.readline().decode(encoding).strip().split(delimiter)
+            quote_char = self._format.get("quote_char")
+            reader = csv.reader([file.readline().decode(encoding)], delimiter=delimiter, quotechar=quote_char)
+            field_names = next(reader)
             schema_dict = {field_name.strip(): pyarrow.string() for field_name in field_names}
             pprint.pprint(schema_dict)
         return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
