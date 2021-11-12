@@ -69,7 +69,7 @@ def test_backoff_time(patch_base_class, requests_mock, header_name, header_value
     assert result == expected
 
 
-def test_stock_locations(mocker):
+def test_stock_locations_read_records(mocker):
     fake_stock_locations = [
         {"StockLocationId": 1},
         {"StockLocationId": 2},
