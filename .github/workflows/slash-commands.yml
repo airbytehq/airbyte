@@ -17,6 +17,7 @@ jobs:
           token: ${{ secrets.SLASH_COMMAND_PAT }}
           commands: |
             test
+            test-performance
             publish
             publish-cdk
             gke-kube-test
