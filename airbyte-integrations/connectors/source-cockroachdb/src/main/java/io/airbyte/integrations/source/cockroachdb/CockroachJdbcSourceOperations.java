@@ -53,9 +53,15 @@ public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
   private void putCockroachSpecialDataType(ResultSet resultSet, int index, ObjectNode node) throws SQLException {
     String columnType = resultSet.getMetaData().getColumnTypeName(index);
     String columnName = resultSet.getMetaData().getColumnName(index);
-    if ("numeric".equalsIgnoreCase(columnType)) {
-      final double value = resultSet.getDouble(index);
-      node.put(columnName, value);
+    try {
+      if ("numeric".equalsIgnoreCase(columnType)) {
+          final double value = resultSet.getDouble(index);
+          node.put(columnName, value);
+      } else {
+        node.put(columnName, (Double) null);
+      }
+    } catch (final SQLException e) {
+      node.put(columnName, (Double) null);
     }
   }
 }

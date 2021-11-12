@@ -302,6 +302,8 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
+    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
+    // Time (04:05:06) would be represented like "1970-01-01T04:05:06Z"
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
@@ -311,6 +313,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addNullExpectedValue()
             .build());
 
+    //  Time (04:05:06) would be represented like "1970-01-01T04:05:06Z"
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timetz")
