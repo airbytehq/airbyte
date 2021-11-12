@@ -125,7 +125,7 @@ class TypeTransformer:
         :original_validator: native jsonschema validator callback.
         """
 
-        def normalizator(validator_instance: Callable, val: Any, instance: Any, schema: Dict[str, Any]):
+        def normalizator(validator_instance: Callable, property_value: Any, instance: Any, schema: Dict[str, Any]):
             """
             Jsonschema validator callable it uses for validating instance. We
             override default Draft7Validator to perform value transformation
@@ -144,19 +144,19 @@ class TypeTransformer:
                     return resolved
                 return subschema
 
-            if schema_key == "type" and instance is not None:
-                if "object" in val and isinstance(instance, dict):
-                    for k, subschema in schema.get("properties", {}).items():
-                        if k in instance:
-                            subschema = resolve(subschema)
-                            instance[k] = self.__normalize(instance[k], subschema)
-                elif "array" in val and isinstance(instance, list):
-                    subschema = schema.get("items", {})
-                    subschema = resolve(subschema)
-                    for index, item in enumerate(instance):
-                        instance[index] = self.__normalize(item, subschema)
+            # Transform object and array values before running json schema type checking for each element.
+            if schema_key == "properties":
+                for k, subschema in property_value.items():
+                    if k in (instance or {}):
+                        subschema = resolve(subschema)
+                        instance[k] = self.__normalize(instance[k], subschema)
+            elif schema_key == "items":
+                subschema = resolve(property_value)
+                for index, item in enumerate((instance or [])):
+                    instance[index] = self.__normalize(item, subschema)
+
             # Running native jsonschema traverse algorithm after field normalization is done.
-            yield from original_validator(validator_instance, val, instance, schema)
+            yield from original_validator(validator_instance, property_value, instance, schema)
 
         return normalizator
 
