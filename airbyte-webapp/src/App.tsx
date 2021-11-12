@@ -80,12 +80,7 @@ const services = {
 
 const AppServices: React.FC = ({ children }) => (
   <ServicesProvider inject={services}>
-    <ConfigServiceProvider
-      defaultConfig={defaultConfig}
-      providers={configProviders}
-    >
-      <ServiceOverrides>{children}</ServiceOverrides>
-    </ConfigServiceProvider>
+    <ServiceOverrides>{children}</ServiceOverrides>
   </ServicesProvider>
 );
 
@@ -101,19 +96,24 @@ const App: React.FC = () => {
         <I18NProvider>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ApiErrorBoundary>
-                <FeatureService features={Features}>
-                  <NotificationService>
-                    <AppServices>
-                      <AnalyticsInitializer>
-                        <OnboardingServiceProvider>
-                          <Routing />
-                        </OnboardingServiceProvider>
-                      </AnalyticsInitializer>
-                    </AppServices>
-                  </NotificationService>
-                </FeatureService>
-              </ApiErrorBoundary>
+              <ConfigServiceProvider
+                defaultConfig={defaultConfig}
+                providers={configProviders}
+              >
+                <ApiErrorBoundary>
+                  <FeatureService features={Features}>
+                    <NotificationService>
+                      <AppServices>
+                        <AnalyticsInitializer>
+                          <OnboardingServiceProvider>
+                            <Routing />
+                          </OnboardingServiceProvider>
+                        </AnalyticsInitializer>
+                      </AppServices>
+                    </NotificationService>
+                  </FeatureService>
+                </ApiErrorBoundary>
+              </ConfigServiceProvider>
             </Suspense>
           </StoreProvider>
         </I18NProvider>

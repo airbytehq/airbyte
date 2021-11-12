@@ -15,7 +15,7 @@ const configContext = React.createContext<ConfigContext | null>(null);
 export function useConfig<T extends Config>(): T {
   const configService = useContext(configContext);
 
-  if (!configService) {
+  if (configService === null) {
     throw new Error("useConfig must be used within a ConfigProvider");
   }
 

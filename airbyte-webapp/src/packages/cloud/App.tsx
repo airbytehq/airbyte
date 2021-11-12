@@ -18,6 +18,7 @@ import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
 import { AppServicesProvider } from "./services/AppServicesProvider";
 import { IntercomProvider } from "./services/IntercomProvider";
+import { ConfigProvider } from "./services/ConfigProvider";
 
 const messages = Object.assign({}, en, cloudLocales);
 
@@ -55,21 +56,23 @@ const App: React.FC = () => {
         <I18NProvider>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ApiErrorBoundary>
-                <NotificationServiceProvider>
-                  <FeatureService features={Features}>
-                    <AppServicesProvider>
-                      <AuthenticationProvider>
-                        <IntercomProvider>
-                          <AnalyticsInitializer>
-                            <Routing />
-                          </AnalyticsInitializer>
-                        </IntercomProvider>
-                      </AuthenticationProvider>
-                    </AppServicesProvider>
-                  </FeatureService>
-                </NotificationServiceProvider>
-              </ApiErrorBoundary>
+              <ConfigProvider>
+                <ApiErrorBoundary>
+                  <NotificationServiceProvider>
+                    <FeatureService features={Features}>
+                      <AppServicesProvider>
+                        <AuthenticationProvider>
+                          <IntercomProvider>
+                            <AnalyticsInitializer>
+                              <Routing />
+                            </AnalyticsInitializer>
+                          </IntercomProvider>
+                        </AuthenticationProvider>
+                      </AppServicesProvider>
+                    </FeatureService>
+                  </NotificationServiceProvider>
+                </ApiErrorBoundary>
+              </ConfigProvider>
             </Suspense>
           </StoreProvider>
         </I18NProvider>
