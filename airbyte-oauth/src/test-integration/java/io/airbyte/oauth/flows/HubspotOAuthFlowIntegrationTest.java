@@ -31,6 +31,10 @@ public class HubspotOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
     return Path.of("secrets/hubspot.json");
   }
 
+  protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
+    return new HubspotOAuthFlow(configRepository, httpClient);
+  }
+
   @Override
   protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
     return new HubspotOAuthFlow(configRepository, httpClient);

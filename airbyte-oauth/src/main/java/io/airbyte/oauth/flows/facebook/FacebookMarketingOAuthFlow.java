@@ -13,7 +13,7 @@ public class FacebookMarketingOAuthFlow extends FacebookOAuthFlow {
 
   private static final String SCOPES = "ads_management,ads_read,read_insights";
 
-  public FacebookMarketingOAuthFlow(final ConfigRepository configRepository, HttpClient httpClient) {
+  public FacebookMarketingOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
