@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from enum import Enum
 from typing import Any, Mapping
 
 import backoff
@@ -14,6 +15,17 @@ import logging
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 logger = logging.getLogger(__name__)
+
+
+class Status(Enum):
+    """ Timeframes categories
+    """
+
+    COMPLETED = "Job Completed"
+    FAILED = "Job Failed"
+    SKIPPED = "Job Skipped"
+    STARTED = "Job Started"
+
 
 class AsyncJob:
     """ AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job
@@ -50,7 +62,7 @@ class AsyncJob:
 
     def restart(self):
         """ Restart failed job"""
-        if not self._job and not self.failed:
+        if not self._job or not self.failed:
             raise RuntimeError(f"{self}: Incorrect usage of the restart - only failed jobs can be restarted")
 
         self._job = None
@@ -88,6 +100,8 @@ class AsyncJob:
 
     @backoff_policy
     def _update_job(self):
+        if not self._job:
+            raise RuntimeError(f"{self}: Incorrect usage of the _update_job - the job is not started")
         self._job = self._job.api_get()
 
     def _check_status(self) -> bool:
@@ -96,12 +110,12 @@ class AsyncJob:
         logger.info(f"{self} is {job_progress_pct}% complete ({self._job['async_status']})")
         runtime = self.elapsed_time
 
-        if self._job["async_status"] == "Job Completed":
+        if self._job["async_status"] == Status.COMPLETED.value:
             self._finish_time = pendulum.now()
             return True
-        elif self._job["async_status"] == "Job Failed":
+        elif self._job["async_status"] == Status.FAILED.value:
             raise JobException(f"{self._job} failed after {runtime.in_seconds()} seconds.")
-        elif self._job["async_status"] == "Job Skipped":
+        elif self._job["async_status"] == Status.SKIPPED.value:
             raise JobException(f"{self._job} skipped after {runtime.in_seconds()} seconds.")
 
         if runtime > self.MAX_WAIT_TO_START and self._job["async_percent_completion"] == 0:
