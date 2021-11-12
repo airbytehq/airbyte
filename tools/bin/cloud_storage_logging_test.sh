@@ -32,8 +32,8 @@ export S3_LOG_BUCKET_REGION=us-west-2
 export S3_MINIO_ENDPOINT=
 export S3_PATH_STYLE_ACCESS=
 
-export GOOGLE_APPLICATION_CREDENTIALS=
-export GCP_STORAGE_BUCKET=
+#export GOOGLE_APPLICATION_CREDENTIALS=
+#export GCP_STORAGE_BUCKET=
 
 echo "Running logging to S3 test.."
 SUB_BUILD=PLATFORM ./gradlew  :airbyte-config:models:log4j2IntegrationTest --scan --rerun-tasks -i
