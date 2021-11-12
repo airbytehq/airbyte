@@ -13,13 +13,6 @@ dependencies {
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-json-validation')
     implementation 'com.google.cloud:google-cloud-secretmanager:1.7.2'
-
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
-
     testImplementation "org.testcontainers:postgresql:1.15.3"
     integrationTestJavaImplementation project(':airbyte-config:persistence')
-
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 }
