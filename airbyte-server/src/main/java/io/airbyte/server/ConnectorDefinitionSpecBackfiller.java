@@ -38,11 +38,11 @@ import org.slf4j.LoggerFactory;
 public class ConnectorDefinitionSpecBackfiller {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorDefinitionSpecBackfiller.class);
-  private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.31.0-alpha");
+  private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.32.0-alpha");
 
   /**
    * Check that each spec in the database has a spec. If it doesn't, add it. If it can't be added,
-   * delete the connector definition or fail according to the VERSION_0_31_0_FORCE_UPGRADE env var.
+   * delete the connector definition or fail according to the VERSION_0_32_0_FORCE_UPGRADE env var.
    * The goal is to try to end up in a state where all definitions in the db contain specs, or fail
    * otherwise.
    *
@@ -114,9 +114,9 @@ public class ConnectorDefinitionSpecBackfiller {
             sourceDef.getDockerRepository(),
             sourceDef.getDockerImageTag(),
             connectorReposInUse.contains(sourceDef.getDockerRepository()),
-            configs.getVersion31ForceUpgrade(),
+            configs.getVersion32ForceUpgrade(),
             logRead.toString());
-        if (configs.getVersion31ForceUpgrade()) {
+        if (configs.getVersion32ForceUpgrade()) {
           LOGGER.info(
               "migrateAllDefinitionsToContainSpec - Force upgrade set to true. Deleting Source Definition {} and any associated connections/syncs...",
               sourceDef.getName());
@@ -175,9 +175,9 @@ public class ConnectorDefinitionSpecBackfiller {
             destDef.getDockerRepository(),
             destDef.getDockerImageTag(),
             connectorReposInUse.contains(destDef.getDockerRepository()),
-            configs.getVersion31ForceUpgrade(),
+            configs.getVersion32ForceUpgrade(),
             logRead.toString());
-        if (configs.getVersion31ForceUpgrade()) {
+        if (configs.getVersion32ForceUpgrade()) {
           LOGGER.info(
               "migrateAllDefinitionsToContainSpec - Force upgrade set to true. Deleting Destination Definition {} and any associated connections/syncs...",
               destDef.getName());
@@ -188,13 +188,13 @@ public class ConnectorDefinitionSpecBackfiller {
       }
     }
 
-    if (failedBackfillImages.size() > 0 && !configs.getVersion31ForceUpgrade()) {
+    if (failedBackfillImages.size() > 0 && !configs.getVersion32ForceUpgrade()) {
       final String attentionBanner = MoreResources.readResource("banner/attention-banner.txt");
       LOGGER.error(attentionBanner);
       final String errorMessage = String.format(
           "Specs could not be retrieved for the following connector images: %s. Upgrading to version %s "
               + "requires specs to be retrieved for all connector definitions, so you must either fix the images or restart the deployment with "
-              + "the VERSION_0_31_0_FORCE_UPGRADE environment variable set to true, which will cause any connector definitions for which specs "
+              + "the VERSION_0_32_0_FORCE_UPGRADE environment variable set to true, which will cause any connector definitions for which specs "
               + "cannot be retrieved to be deleted, as well as their associated connections/syncs.",
           failedBackfillImages.toString(),
           VERSION_BREAK);

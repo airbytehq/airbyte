@@ -74,7 +74,7 @@ public class EnvConfigs implements Configs {
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   private static final String JOBS_IMAGE_PULL_SECRET = "JOBS_IMAGE_PULL_SECRET";
   private static final String PUBLISH_METRICS = "PUBLISH_METRICS";
-  private static final String VERSION_0_31_0_FORCE_UPGRADE = "VERSION_0_31_0_FORCE_UPGRADE";
+  private static final String VERSION_0_32_0_FORCE_UPGRADE = "VERSION_0_32_0_FORCE_UPGRADE";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
@@ -458,8 +458,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public boolean getVersion31ForceUpgrade() {
-    return getEnvOrDefault(VERSION_0_31_0_FORCE_UPGRADE, false);
+  public boolean getVersion32ForceUpgrade() {
+    return getEnvOrDefault(VERSION_0_32_0_FORCE_UPGRADE, false);
   }
 
   @Override

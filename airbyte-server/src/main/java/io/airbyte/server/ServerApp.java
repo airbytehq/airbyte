@@ -71,7 +71,7 @@ public class ServerApp implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
-  private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.31.0-alpha");
+  private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.32.0-alpha");
 
   /**
    * We can't support automatic migration for kube before this version because we had a bug in kube
