@@ -84,7 +84,8 @@ public class WorkspacesHandler {
         .withSecurityUpdates(securityUpdates != null ? securityUpdates : false)
         .withDisplaySetupWizard(displaySetupWizard != null ? displaySetupWizard : false)
         .withTombstone(false)
-        .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()));
+        .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()))
+        .withFirstCompletedSync(false);
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
