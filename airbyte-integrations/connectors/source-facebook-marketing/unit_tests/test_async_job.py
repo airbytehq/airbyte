@@ -5,8 +5,8 @@ import time
 
 import pendulum
 import pytest
-from source_facebook_marketing.async_job import AsyncJob, Status
 from source_facebook_marketing.api import API
+from source_facebook_marketing.async_job import AsyncJob, Status
 from source_facebook_marketing.common import JobException, JobTimeoutException
 
 
@@ -38,6 +38,7 @@ def failed_job_fixture(job, adreport):
         pass
 
     return job
+
 
 @pytest.fixture(name="api")
 def api_fixture(mocker, adreport):
@@ -120,8 +121,8 @@ class TestAsyncJob:
         job.start()
         adreport["async_status"] = Status.STARTED.value
         adreport["async_percent_completion"] = 1
-        mocker.patch.object(job, 'MAX_WAIT_TO_FINISH', pendulum.duration())
-        mocker.patch.object(job, 'MAX_WAIT_TO_START', pendulum.duration())
+        mocker.patch.object(job, "MAX_WAIT_TO_FINISH", pendulum.duration())
+        mocker.patch.object(job, "MAX_WAIT_TO_START", pendulum.duration())
 
         with pytest.raises(JobTimeoutException, match=r" did not finish after \d* seconds."):
             _ = job.completed
@@ -130,8 +131,8 @@ class TestAsyncJob:
         job.start()
         adreport["async_status"] = Status.STARTED.value
         adreport["async_percent_completion"] = 0
-        mocker.patch.object(job, 'MAX_WAIT_TO_FINISH', pendulum.duration())
-        mocker.patch.object(job, 'MAX_WAIT_TO_START', pendulum.duration())
+        mocker.patch.object(job, "MAX_WAIT_TO_FINISH", pendulum.duration())
+        mocker.patch.object(job, "MAX_WAIT_TO_START", pendulum.duration())
 
         with pytest.raises(JobTimeoutException, match=r" did not start after \d* seconds."):
             _ = job.completed
