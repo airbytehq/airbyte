@@ -22,7 +22,6 @@ import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -84,8 +83,8 @@ class WebBackendSourcesHandlerTest {
                 .build()))));
     final SourceCreate expectedSourceCreate = Jsons.clone(sourceCreate);
     ((ObjectNode) expectedSourceCreate.getConnectionConfiguration())
-        .put("api_secret", OAuthConfigSupplier.SECRET_MASK)
-        .put("api_client", OAuthConfigSupplier.SECRET_MASK);
+        .put("api_secret", Jsons.SECRET_MASK)
+        .put("api_client", Jsons.SECRET_MASK);
     webBackendSourcesHandler.webBackendCreateSource(Jsons.clone(sourceCreate));
     verify(sourceHandler).createSource(expectedSourceCreate);
     assertNoTracking();

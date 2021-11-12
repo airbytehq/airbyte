@@ -124,7 +124,7 @@ public class TrelloOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected List<String> getDefaultOAuthOutputPath() {
+  public List<String> getDefaultOAuthOutputPath() {
     return List.of();
   }
 

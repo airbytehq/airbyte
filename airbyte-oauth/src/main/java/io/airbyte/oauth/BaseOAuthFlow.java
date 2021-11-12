@@ -120,6 +120,6 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
    * This function should be redefined in each OAuthFlow implementation to isolate such "hardcoded"
    * values.
    */
-  protected abstract List<String> getDefaultOAuthOutputPath();
+  public abstract List<String> getDefaultOAuthOutputPath();
 
 }

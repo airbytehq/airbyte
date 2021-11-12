@@ -2,23 +2,24 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.oauth.flows;
+package io.airbyte.oauth.flows.facebook;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.flows.BaseOAuthFlowTest;
 import java.util.List;
 import java.util.Map;
 
-public class SurveymonkeyOAuthFlowTest extends BaseOAuthFlowTest {
+public class InstagramOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
-    return new SurveymonkeyOAuthFlow(getConfigRepository(), getHttpClient(), this::getConstantState);
+    return new InstagramOAuthFlow(getConfigRepository(), getHttpClient(), this::getConstantState);
   }
 
   @Override
   protected String getExpectedConsentUrl() {
-    return "https://api.surveymonkey.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state";
+    return "https://www.facebook.com/v12.0/dialog/oauth?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&state=state&scope=ads_management%2Cinstagram_basic%2Cinstagram_manage_insights%2Cread_insights";
   }
 
   @Override
