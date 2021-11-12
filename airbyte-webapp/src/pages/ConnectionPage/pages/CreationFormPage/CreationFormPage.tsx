@@ -2,22 +2,27 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
+import { Routes } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import StepsMenu from "components/StepsMenu";
+import { LoadingPage } from "components";
 import { FormPageContent } from "components/ConnectorBlocks";
+import ConnectionBlock from "components/ConnectionBlock";
+import HeadTitle from "components/HeadTitle";
 import ExistingEntityForm from "./components/ExistingEntityForm";
 import SourceForm from "./components/SourceForm";
 import DestinationForm from "./components/DestinationForm";
-import ConnectionBlock from "components/ConnectionBlock";
-import { Routes } from "../../../routes";
 import CreateConnectionContent from "components/CreateConnectionContent";
-import SourceResource from "core/resources/Source";
-import DestinationResource from "core/resources/Destination";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import HeadTitle from "components/HeadTitle";
+import SourceResource, { Source } from "core/resources/Source";
+import DestinationResource, { Destination } from "core/resources/Destination";
+import DestinationDefinitionResource, {
+  DestinationDefinition,
+} from "core/resources/DestinationDefinition";
+import SourceDefinitionResource, {
+  SourceDefinition,
+} from "core/resources/SourceDefinition";
 
 type IProps = {
   type: "source" | "destination" | "connection";
@@ -35,19 +40,13 @@ export enum EntityStepsTypes {
   CONNECTION = "connection",
 }
 
-const CreationFormPage: React.FC<IProps> = ({ type }) => {
-  const { location, push } = useRouter();
-  const hasConnectors =
-    location.state?.sourceId && location.state?.destinationId;
-  const [currentStep, setCurrentStep] = useState(
-    hasConnectors ? StepsTypes.CREATE_CONNECTION : StepsTypes.CREATE_ENTITY
-  );
-
-  const [currentEntityStep, setCurrentEntityStep] = useState(
-    location.state?.sourceId
-      ? EntityStepsTypes.DESTINATION
-      : EntityStepsTypes.SOURCE
-  );
+function usePreloadData(): {
+  sourceDefinition?: SourceDefinition;
+  destination?: Destination;
+  source?: Source;
+  destinationDefinition?: DestinationDefinition;
+} {
+  const { location } = useRouter();
 
   const source = useResource(
     SourceResource.detailShape(),
@@ -83,6 +82,30 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         }
       : null
   );
+
+  return { source, sourceDefinition, destination, destinationDefinition };
+}
+
+const CreationFormPage: React.FC<IProps> = ({ type }) => {
+  const { location, push } = useRouter();
+  const hasConnectors =
+    location.state?.sourceId && location.state?.destinationId;
+  const [currentStep, setCurrentStep] = useState(
+    hasConnectors ? StepsTypes.CREATE_CONNECTION : StepsTypes.CREATE_ENTITY
+  );
+
+  const [currentEntityStep, setCurrentEntityStep] = useState(
+    location.state?.sourceId
+      ? EntityStepsTypes.DESTINATION
+      : EntityStepsTypes.SOURCE
+  );
+
+  const {
+    destinationDefinition,
+    sourceDefinition,
+    source,
+    destination,
+  } = usePreloadData();
 
   const onSelectExistingSource = (id: string) => {
     push({
@@ -135,31 +158,22 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
         return (
-          <DestinationForm
-            afterSubmit={() => {
-              setCurrentEntityStep(EntityStepsTypes.CONNECTION);
-              setCurrentStep(StepsTypes.CREATE_CONNECTION);
-            }}
-          />
+          <>
+            {type === "connection" && (
+              <ExistingEntityForm
+                type="destination"
+                onSubmit={onSelectExistingDestination}
+              />
+            )}
+            <DestinationForm
+              afterSubmit={() => {
+                setCurrentEntityStep(EntityStepsTypes.CONNECTION);
+                setCurrentStep(StepsTypes.CREATE_CONNECTION);
+              }}
+            />
+          </>
         );
       }
-
-      return (
-        <>
-          {type === "connection" && (
-            <ExistingEntityForm
-              type="destination"
-              onSubmit={onSelectExistingDestination}
-            />
-          )}
-          <DestinationForm
-            afterSubmit={() => {
-              setCurrentEntityStep(EntityStepsTypes.CONNECTION);
-              setCurrentStep(StepsTypes.CREATE_CONNECTION);
-            }}
-          />
-        </>
-      );
     }
 
     const afterSubmitConnection = () => {
@@ -176,10 +190,15 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
       }
     };
 
+    if (!source || !destination) {
+      console.error("unexpected state met");
+      return <LoadingPage />;
+    }
+
     return (
       <CreateConnectionContent
-        source={source!}
-        destination={destination!}
+        source={source}
+        destination={destination}
         afterSubmitConnection={afterSubmitConnection}
       />
     );
@@ -217,7 +236,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
           },
         ];
 
-  const titleId = () => {
+  const titleId = (() => {
     switch (type) {
       case "connection":
         return "connection.newConnectionTitle";
@@ -226,15 +245,15 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
       case "source":
         return "sources.newSourceTitle";
     }
-  };
+  })();
 
   return (
     <MainPageWithScroll
-      headTitle={<HeadTitle titles={[{ id: titleId() }]} />}
+      headTitle={<HeadTitle titles={[{ id: titleId }]} />}
       pageTitle={
         <PageTitle
           withLine
-          title={<FormattedMessage id={titleId()} />}
+          title={<FormattedMessage id={titleId} />}
           middleComponent={
             <StepsMenu lightMode data={steps} activeStep={currentStep} />
           }
