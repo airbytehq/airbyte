@@ -145,7 +145,7 @@ class TestAsyncJob:
     def test_str(self, api, adreport):
         job = AsyncJob(api=api, params={"time_range": 123, "breakdowns": [10, 20]})
 
-        assert str(job) == f"AdReportRun(id=<None>, time_range=123, breakdowns=[10, 20]"
+        assert str(job) == "AdReportRun(id=<None>, time_range=123, breakdowns=[10, 20]"
 
     def test_get_result(self, job, adreport):
         job.start()

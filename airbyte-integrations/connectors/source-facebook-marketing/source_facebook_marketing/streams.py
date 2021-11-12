@@ -22,8 +22,8 @@ from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, Facebook
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
 
-from .common import FacebookAPIException, batch, deep_merge, retry_pattern, JobException
 from .async_job import AsyncJob
+from .common import FacebookAPIException, JobException, batch, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
@@ -352,7 +352,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         while running_jobs:
             yield {"job": running_jobs.popleft()}
 
-    @retry_pattern(backoff.expo, JobException , max_tries=10, factor=5)
+    @retry_pattern(backoff.expo, JobException, max_tries=10, factor=5)
     def wait_for_job(self, job: AsyncJob) -> AsyncJob:
         if job.failed:
             job.restart()

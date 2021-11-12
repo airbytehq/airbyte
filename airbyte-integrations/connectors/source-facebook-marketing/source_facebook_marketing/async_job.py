@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from enum import Enum
 from typing import Any, Mapping
 
@@ -10,16 +11,14 @@ import pendulum
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
 
-from .common import JobTimeoutException, retry_pattern, JobException
-import logging
+from .common import JobException, JobTimeoutException, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 logger = logging.getLogger("airbyte")
 
 
 class Status(Enum):
-    """ Async job statuses
-    """
+    """Async job statuses"""
 
     COMPLETED = "Job Completed"
     FAILED = "Job Failed"
@@ -28,13 +27,13 @@ class Status(Enum):
 
 
 class AsyncJob:
-    """ AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job
-    """
+    """AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job"""
+
     MAX_WAIT_TO_START = pendulum.duration(minutes=5)
     MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
 
     def __init__(self, api: API, params: Mapping[str, Any]):
-        """ Initialize
+        """Initialize
 
         :param api: Facebook Api wrapper
         :param params: job params, required to start/restart job
@@ -48,7 +47,7 @@ class AsyncJob:
 
     @backoff_policy
     def start(self):
-        """ Start remote job"""
+        """Start remote job"""
         if self._job:
             raise RuntimeError(f"{self}: Incorrect usage of start - the job already started, use restart instead")
 
@@ -60,7 +59,7 @@ class AsyncJob:
         logger.info(f"Created AdReportRun: {job_id} to sync insights {time_range} with breakdown {breakdowns}")
 
     def restart(self):
-        """ Restart failed job"""
+        """Restart failed job"""
         if not self._job or not self.failed:
             raise RuntimeError(f"{self}: Incorrect usage of restart - only failed jobs can be restarted")
 
@@ -82,7 +81,7 @@ class AsyncJob:
 
     @property
     def completed(self) -> bool:
-        """ Check job status and return True if it is completed successfully
+        """Check job status and return True if it is completed successfully
 
         :return: True if completed successfully, False - if task still running
         :raises: JobException in case job failed to start, failed or timed out
@@ -144,7 +143,7 @@ class AsyncJob:
 
     def __str__(self) -> str:
         """String representation of the job wrapper."""
-        job_id = self._job["report_run_id"] if self._job else '<None>'
+        job_id = self._job["report_run_id"] if self._job else "<None>"
         time_range = self._params["time_range"]
         breakdowns = self._params["breakdowns"]
         return f"AdReportRun(id={job_id}, time_range={time_range}, breakdowns={breakdowns}"
