@@ -236,7 +236,12 @@ public class ConnectionsHandler {
 
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-      return listConnectionsForWorkspace(workspaceIdRequestBody, false);
+    return listConnectionsForWorkspace(workspaceIdRequestBody, false);
+  }
+
+  public ConnectionReadList listAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return listConnectionsForWorkspace(workspaceIdRequestBody, true);
   }
 
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody, final boolean includeDeleted)
