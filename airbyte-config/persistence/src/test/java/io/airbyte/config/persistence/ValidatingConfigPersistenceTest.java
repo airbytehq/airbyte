@@ -20,7 +20,9 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,10 +64,36 @@ class ValidatingConfigPersistenceTest {
   }
 
   @Test
+  void testWriteConfigsSuccess() throws IOException, JsonValidationException {
+    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>() {{
+      put(UUID_1.toString(), SOURCE_1);
+      put(UUID_2.toString(), SOURCE_2);
+    }};
+
+    configPersistence.writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionById);
+    verify(decoratedConfigPersistence).writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
+  }
+
+  @Test
   void testWriteConfigFailure() throws JsonValidationException {
     doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
     assertThrows(JsonValidationException.class,
         () -> configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1));
+
+    verifyNoInteractions(decoratedConfigPersistence);
+  }
+
+  @Test
+  void testWriteConfigsFailure() throws JsonValidationException {
+    doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
+
+    final Map<String, StandardSourceDefinition> sourceDefinitionById = new HashMap<>() {{
+      put(UUID_1.toString(), SOURCE_1);
+      put(UUID_2.toString(), SOURCE_2);
+    }};
+
+    assertThrows(JsonValidationException.class,
+        () -> configPersistence.writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionById));
 
     verifyNoInteractions(decoratedConfigPersistence);
   }

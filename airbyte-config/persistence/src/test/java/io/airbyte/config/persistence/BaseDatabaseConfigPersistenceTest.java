@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.Record1;
@@ -92,8 +93,8 @@ public abstract class BaseDatabaseConfigPersistenceTest {
   protected static void writeDestinations(final ConfigPersistence configPersistence, final List<StandardDestinationDefinition> destinations)
       throws Exception {
     final Map<String, StandardDestinationDefinition> destinationsByID = destinations.stream()
-        .collect
-    configPersistence.writeConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(), destinations);
+        .collect(Collectors.toMap(destinationDefinition -> destinationDefinition.getDestinationDefinitionId().toString(), Function.identity()));
+    configPersistence.writeConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationsByID);
   }
 
   protected static void deleteDestination(final ConfigPersistence configPersistence, final StandardDestinationDefinition destination)
