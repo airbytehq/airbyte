@@ -50,7 +50,7 @@ services:
       context: airbyte-migration
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
-  airbyte-temporal:
+  temporal:
     image: airbyte/temporal:${VERSION}
     build:
       dockerfile: Dockerfile
