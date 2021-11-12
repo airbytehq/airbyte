@@ -57,7 +57,7 @@ public class OAuthHandler {
     final StandardSourceDefinition sourceDefinition =
         configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation =
-        oAuthImplementationFactory.create(sourceDefinition, sourceDefinitionIdRequestBody.getWorkspaceId());
+        oAuthImplementationFactory.create(sourceDefinition);
     final ImmutableMap<String, Object> metadata = generateSourceMetadata(sourceDefinitionIdRequestBody.getSourceDefinitionId());
     final OAuthConsentRead result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
         sourceDefinitionIdRequestBody.getWorkspaceId(),
@@ -76,7 +76,7 @@ public class OAuthHandler {
     final StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation =
-        oAuthImplementationFactory.create(destinationDefinition, destinationDefinitionIdRequestBody.getWorkspaceId());
+        oAuthImplementationFactory.create(destinationDefinition);
     final ImmutableMap<String, Object> metadata = generateDestinationMetadata(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
     final OAuthConsentRead result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
         destinationDefinitionIdRequestBody.getWorkspaceId(),
@@ -93,8 +93,7 @@ public class OAuthHandler {
   public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest oauthSourceRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(oauthSourceRequestBody.getSourceDefinitionId());
-    final OAuthFlowImplementation oAuthFlowImplementation =
-        oAuthImplementationFactory.create(sourceDefinition, oauthSourceRequestBody.getWorkspaceId());
+    final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
     final ConnectorSpecification spec = specFetcher.getSpec(sourceDefinition);
     final ImmutableMap<String, Object> metadata = generateSourceMetadata(oauthSourceRequestBody.getSourceDefinitionId());
     final Map<String, Object> result;
@@ -126,8 +125,7 @@ public class OAuthHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinition(oauthDestinationRequestBody.getDestinationDefinitionId());
-    final OAuthFlowImplementation oAuthFlowImplementation =
-        oAuthImplementationFactory.create(destinationDefinition, oauthDestinationRequestBody.getWorkspaceId());
+    final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
     final ConnectorSpecification spec = specFetcher.getSpec(destinationDefinition);
     final ImmutableMap<String, Object> metadata = generateDestinationMetadata(oauthDestinationRequestBody.getDestinationDefinitionId());
     final Map<String, Object> result;
