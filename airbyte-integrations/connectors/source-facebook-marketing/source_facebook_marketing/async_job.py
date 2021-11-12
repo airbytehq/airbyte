@@ -16,6 +16,9 @@ backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, 
 logger = logging.getLogger(__name__)
 
 class AsyncJob:
+    """ AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job
+
+    """
     MAX_WAIT_TO_START = pendulum.duration(minutes=5)
     MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
 
@@ -46,6 +49,7 @@ class AsyncJob:
         logger.info(f"Created AdReportRun: {job_id} to sync insights {time_range} with breakdown {breakdowns}")
 
     def restart(self):
+        """ Restart failed job"""
         if not self._job and not self.failed:
             raise RuntimeError("Incorrect usage of method - only failed jobs can be restarted")
 
@@ -55,6 +59,7 @@ class AsyncJob:
 
     @property
     def elapsed_time(self):
+        """Elapsed time since the job start"""
         if not self._start_time:
             return None
 
@@ -62,7 +67,12 @@ class AsyncJob:
         return end_time - self._start_time
 
     @property
-    def completed(self):
+    def completed(self) -> bool:
+        """ Check job status and return True if it is completed successfully
+
+        :return: True if completed successfully, False - if task still running
+        :raises: JobException in case job failed to start, failed or timed out
+        """
         try:
             return self._check_status()
         except JobException:
@@ -70,11 +80,11 @@ class AsyncJob:
             raise
 
     @property
-    def failed(self):
+    def failed(self) -> bool:
         return self._failed
 
     @backoff_policy
-    def _check_status(self):
+    def _check_status(self) -> bool:
         job = self._job.api_get()
         job_progress_pct = job["async_percent_completion"]
         logger.info(f"{self} is {job_progress_pct}% complete ({job['async_status']})")
@@ -102,10 +112,10 @@ class AsyncJob:
         return False
 
     @backoff_policy
-    def get_result(self):
+    def get_result(self) -> Any:
         return self._job.get_result()
 
-    def __str__(self):
+    def __str__(self) -> str:
         job_id = self._job["report_run_id"] if self._job else '<None>'
         time_range = self._params["time_range"]
         breakdowns = self._params["breakdowns"]
