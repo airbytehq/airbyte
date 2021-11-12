@@ -55,8 +55,8 @@ public class CockroachJdbcSourceOperations extends JdbcSourceOperations {
     String columnName = resultSet.getMetaData().getColumnName(index);
     try {
       if ("numeric".equalsIgnoreCase(columnType)) {
-          final double value = resultSet.getDouble(index);
-          node.put(columnName, value);
+        final double value = resultSet.getDouble(index);
+        node.put(columnName, value);
       } else {
         node.put(columnName, (Double) null);
       }
