@@ -16,7 +16,7 @@ FACEBOOK_RATE_LIMIT_ERROR_CODES = (4, 17, 32, 613, 80000, 80001, 80002, 80003, 8
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
 DEFAULT_SLEEP_INTERVAL = pendulum.duration(minutes=1)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("airbyte")
 
 
 class FacebookAPIException(Exception):
@@ -24,10 +24,10 @@ class FacebookAPIException(Exception):
 
 
 class JobException(Exception):
-    """Job failed after FB exception"""
+    """Scheduled job failed"""
 
 
-class JobTimeoutException(Exception):
+class JobTimeoutException(JobException):
     """Scheduled job timed out"""
 
 

@@ -14,7 +14,7 @@ from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.common import FacebookAPIException
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("airbyte")
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
@@ -68,14 +68,14 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
             if max_usage > self.call_rate_threshold:
                 max_pause_interval = max(max_pause_interval, self.pause_interval_minimum)
-                logger.warn(f"Utilization is too high ({max_usage})%, pausing for {max_pause_interval}")
+                logger.warning(f"Utilization is too high ({max_usage})%, pausing for {max_pause_interval}")
                 sleep(max_pause_interval.total_seconds())
         else:
             headers = response.headers()
             usage, pause_interval = self.parse_call_rate_header(headers)
             if usage > self.call_rate_threshold or pause_interval:
                 pause_interval = max(pause_interval, self.pause_interval_minimum)
-                logger.warn(f"Utilization is too high ({usage})%, pausing for {pause_interval}")
+                logger.warning(f"Utilization is too high ({usage})%, pausing for {pause_interval}")
                 sleep(pause_interval.total_seconds())
 
     def call(
