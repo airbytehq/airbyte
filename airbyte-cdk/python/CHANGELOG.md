@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.35
+Fix false warnings on record transform.
+
 ## 0.1.34
 Fix logging inside source and streams
 
