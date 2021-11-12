@@ -52,15 +52,13 @@ class ExchangeRates(HttpStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
-        start_date = pendulum.parse(stream_state.get(
-            self.date_field_name, self._start_date))
+        start_date = pendulum.parse(stream_state.get(self.date_field_name, self._start_date))
         return chunk_date_range(start_date, self.ignore_weekends)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         current_stream_state = current_stream_state or {}
         current_stream_state[self.date_field_name] = max(
-            latest_record[self.date_field_name], current_stream_state.get(
-                self.date_field_name, self._start_date)
+            latest_record[self.date_field_name], current_stream_state.get(self.date_field_name, self._start_date)
         )
         return current_stream_state
 
@@ -89,8 +87,7 @@ class SourceExchangeRates(AbstractSource):
             if base is not None:
                 params["base"] = base
 
-            resp = requests.get(
-                f"{ExchangeRates.url_base}{config['start_date']}", params=params)
+            resp = requests.get(f"{ExchangeRates.url_base}{config['start_date']}", params=params)
             status = resp.status_code
             logger.info(f"Ping response code: {status}")
             if status == 200:
