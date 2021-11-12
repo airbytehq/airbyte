@@ -10,6 +10,23 @@ Airbyte intelligently performs upgrades automatically based off of your version 
 
 If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes.md), you will need to use one of the two processes defined [here](https://docs.airbyte.io/upgrading-airbyte#upgrading-k-8-s) that differ based on your Airbyte version.
 
+## Mandatory Intermediate Upgrade
+
+**If your current version of airbyte is < v0.31.0-alpha, you first need to upgrade to this version before upgrading to any later version.**
+
+The reason for this is that there are breaking changes made in v0.31.0-alpha, and the logic for these changes is removed in later versions, making it impossible to upgrade directly. 
+To upgrade to v0.31.0-alpha, follow the steps in the following sections, but replace the `docker pull` or `wget` commands with the following:
+
+1. If you are in a cloned Airbyte repo, v0.31.0-alpha can be pulled from GitHub with
+
+   ``` 
+   git checkout v0.31.0-alpha
+   ```
+
+2. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/0623914f10663d50849db8422dbc0acde020716b/{.env,docker-compose.yaml}` to pull this version and overwrite both files.
+
+As a warning, this upgrade requires specs to be retrieved for all connectors that currently exist in your database. So, if specs cannot be retrieved for any of your connector images, server startup will fail. In this case you must either fix the image so that spec retrieval is successful, or set the `VERSION_0_31_0_FORCE_UPGRADE` environment variable to `true`, which will cause the server to delete any connectors for which specs cannot be retrieved, as well as any connections built on top of them.
+
 ## Upgrading on Docker
 
 1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
