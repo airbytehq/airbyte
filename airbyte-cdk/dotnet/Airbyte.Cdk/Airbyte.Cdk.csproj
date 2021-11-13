@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <StartupObject />
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Destinations\utils\" />
+    <Folder Include="Destinations\streams\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="Flurl.Http" Version="3.2.0" />
+    <PackageReference Include="JsonCons.JsonPath" Version="1.1.0" />
+    <PackageReference Include="JsonSchema.Net" Version="1.11.3" />
+    <PackageReference Include="Polly" Version="7.2.2" />
+  </ItemGroup>
+
+</Project>
