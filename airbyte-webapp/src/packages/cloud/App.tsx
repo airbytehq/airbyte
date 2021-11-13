@@ -17,7 +17,7 @@ import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
 import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
 import { AppServicesProvider } from "./services/AppServicesProvider";
-import { IntercomProvider } from "./services/IntercomProvider";
+import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
 import { ConfigProvider } from "./services/ConfigProvider";
 
 const messages = Object.assign({}, en, cloudLocales);

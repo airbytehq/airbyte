@@ -1,39 +1,45 @@
 import React, { useEffect } from "react";
 
 import { useConfig } from "config";
-import AnalyticsServiceProvider, { useAnalytics } from "hooks/useAnalytics";
+import AnalyticsServiceProvider, {
+  useAnalyticsService,
+} from "hooks/services/Analytics/useAnalyticsService";
 import useSegment from "hooks/useSegment";
 import { useGetService } from "core/servicesProvider";
 
-function WithAnalytics({ customerId }: { customerId: string }) {
+const InitialIdentify: React.FC<{ customerId: string }> = ({
+  customerId,
+}: {
+  customerId: string;
+}) => {
   const config = useConfig();
 
   // segment section
   useSegment(config.segment.enabled ? config.segment.token : "");
-  const analyticsService = useAnalytics();
-  useEffect(() => {
-    analyticsService.identify(customerId);
-  }, [analyticsService, customerId]);
+  const analyticsService = useAnalyticsService();
+
+  useEffect(() => analyticsService.identify(customerId), [
+    analyticsService,
+    customerId,
+  ]);
 
   return null;
-}
+};
 
-const AnalyticsInitializer: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => {
-  const customerIdProvider = useGetService<
-    () => { userId: string; workspaceId: string }
-  >("useCustomerIdProvider");
+const AnalyticsInitializer: React.FC = ({ children }) => {
+  const customerIdProvider = useGetService<() => string>(
+    "useCustomerIdProvider"
+  );
 
-  const { userId, workspaceId } = customerIdProvider();
+  const userId = customerIdProvider();
   const config = useConfig();
 
   return (
     <AnalyticsServiceProvider
-      context={{ userId, workspaceId }}
+      initialContext={{ userId }}
       version={config.version}
     >
-      <WithAnalytics customerId={userId} />
+      <InitialIdentify customerId={userId} />
       {children}
     </AnalyticsServiceProvider>
   );

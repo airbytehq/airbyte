@@ -32,10 +32,7 @@ import {
 function useCustomerIdProvider() {
   const workspace = useCurrentWorkspace();
 
-  return {
-    userId: workspace.customerId,
-    workspaceId: workspace.workspaceId,
-  };
+  return workspace.customerId;
 }
 
 const Features: Feature[] = [
