@@ -1,5 +1,5 @@
 {{ config(
-    cluster_by = ["_AIRBYTE_ACTIVE_ROW", "_AIRBYTE_UNIQUE_KEY", "_AIRBYTE_EMITTED_AT"],
+    cluster_by = ["_AIRBYTE_ACTIVE_ROW", "_AIRBYTE_UNIQUE_KEY_SCD", "_AIRBYTE_EMITTED_AT"],
     unique_key = "_AIRBYTE_UNIQUE_KEY_SCD",
     schema = "TEST_NORMALIZATION",
     tags = [ "top-level" ]
@@ -63,13 +63,13 @@ scd_data as (
             DATE desc,
             _AIRBYTE_EMITTED_AT desc
       ) as _AIRBYTE_END_AT,
-      case when lag(DATE) over (
+      case when row_number() over (
         partition by ID
         order by
             DATE is null asc,
             DATE desc,
             _AIRBYTE_EMITTED_AT desc
-      ) is null  then 1 else 0 end as _AIRBYTE_ACTIVE_ROW,
+      ) = 1 then 1 else 0 end as _AIRBYTE_ACTIVE_ROW,
       _AIRBYTE_AB_ID,
       _AIRBYTE_EMITTED_AT,
       _AIRBYTE_NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_HASHID

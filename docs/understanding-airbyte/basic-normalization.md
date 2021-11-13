@@ -348,13 +348,14 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- | :--- |
+| 0.30.32-alpha | 0.1.59 | 2021-11-08 | [\#7669](https://github.com/airbytehq/airbyte/pull/7169) | Fix nested incremental dbt |
 | 0.30.24-alpha | 0.1.57 | 2021-10-26 | [\#7162](https://github.com/airbytehq/airbyte/pull/7162) | Implement incremental dbt updates |
 | 0.30.16-alpha | 0.1.52 | 2021-10-07 | [\#6379](https://github.com/airbytehq/airbyte/pull/6379) | Handle empty string for date and date-time format |
-| 0.30.16-alpha | 0.1.51 | 2021-10-08 | [\#6799](https://github.com/airbytehq/airbyte/pull/6799) | Added support for ad\_cdc\_log\_pos while normalization |
-| 0.30.16-alpha | 0.1.50 | 2021-10-07 | [\#6079](https://github.com/airbytehq/airbyte/pull/6079) | Added support for MS SQL Server normalization |
-| 0.30.16-alpha | 0.1.49 | 2021-10-06 | [\#6709](https://github.com/airbytehq/airbyte/pull/6709) | Forward destination dataset location to dbt profiles |
+|  | 0.1.51 | 2021-10-08 | [\#6799](https://github.com/airbytehq/airbyte/pull/6799) | Added support for ad\_cdc\_log\_pos while normalization |
+|  | 0.1.50 | 2021-10-07 | [\#6079](https://github.com/airbytehq/airbyte/pull/6079) | Added support for MS SQL Server normalization |
+|  | 0.1.49 | 2021-10-06 | [\#6709](https://github.com/airbytehq/airbyte/pull/6709) | Forward destination dataset location to dbt profiles |
 | 0.29.17-alpha | 0.1.47 | 2021-09-20 | [\#6317](https://github.com/airbytehq/airbyte/pull/6317) | MySQL: updated MySQL normalization with using SSH tunnel |
-| 0.29.17-alpha | 0.1.45 | 2021-09-18 | [\#6052](https://github.com/airbytehq/airbyte/pull/6052) | Snowflake: accept any date-time format |
+|  | 0.1.45 | 2021-09-18 | [\#6052](https://github.com/airbytehq/airbyte/pull/6052) | Snowflake: accept any date-time format |
 | 0.29.8-alpha | 0.1.40 | 2021-08-18 | [\#5433](https://github.com/airbytehq/airbyte/pull/5433) | Allow optional credentials\_json for BigQuery |
 | 0.29.5-alpha | 0.1.39 | 2021-08-11 | [\#4557](https://github.com/airbytehq/airbyte/pull/4557) | Handle date times and solve conflict name btw stream/field |
 | 0.28.2-alpha | 0.1.38 | 2021-07-28 | [\#5027](https://github.com/airbytehq/airbyte/pull/5027) | Handle quotes in column names when parsing JSON blob |
