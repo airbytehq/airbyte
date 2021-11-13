@@ -130,10 +130,23 @@ Once you've finished iterating on the changes to a connector as specified in its
 ## Using credentials in CI
 
 In order to run integration tests in CI, you'll often need to inject credentials into CI. There are a few steps for doing this:
+1. **Place the credentials into Google Secret Manager(GSM)**: Airbyte uses a project 'Google Secret Manager' service as the source of truth for all CI secrets. Place the credentials **exactly as they should be used by the connector** into a GSM secret [here](https://console.cloud.google.com/security/secret-manager?referrer=search&orgonly=true&project=dataline-integration-testing&supportedpurview=organizationId) i.e.: it should basically be a copy paste of the `config.json` passed into a connector via the `--config` flag. We use the following naming pattern: `SECRET_<capital source OR destination name>_CREDS` e.g: `SECRET_SOURCE-S3_CREDS` or `SECRET_DESTINATION-SNOWFLAKE_CREDS`.
+2. **Add the GSM secret's labels**:
+    * `connector` (required) -- unique connector's name or set of connectors' names with '_' as delimiter i.e.: `connector=source-s3`, `connector=destination-snowflake`
+    * `filename` (optional) -- custom target secret file. Unfortunately Google doesn't use '.' into labels' values and so Airbyte CI scripts will add '.json' to the end automatically. By default secrets will be saved to `./secrets/config.json` i.e: `filename=config_auth` => `secrets/config_auth.json`
+3. That should be it.
 
-1. **Place the credentials into Lastpass**: Airbyte uses a shared Lastpass account as the source of truth for all secrets. Place the credentials **exactly as they should be used by the connector** into a secure note i.e: it should basically be a copy paste of the `config.json` passed into a connector via the `--config` flag. We use the following naming pattern: `<source OR destination> <name> creds` e.g: `source google adwords creds` or `destination snowflake creds`.
-2. **Add the credentials to Github Secrets**: To inject credentials into a CI workflow, the first step is to add it to Github Secrets, specifically within the ["more-secrets" environment](https://github.com/airbytehq/airbyte/settings/environments/276695501/edit). Admin access to the Airbyte repo is required to do this. All Airbyte engineers have admin access and should be able to do this themselves. External contributors or contractors will need to request this from their team lead or project manager who should have admin access. Follow the same naming pattern as all the other secrets e.g: if you are placing credentials for source google adwords, name the secret `SOURCE_GOOGLE_ADWORDS_CREDS`. After doing this step, the secret will be available in the relevant Github workflows using the workflow secrets syntax. 
-3. **Inject the credentials into test and publish CI workflows**: edit the files `.github/workflows/publish-command.yml` and `.github/workflows/test-command.yml` to inject the secret into the CI run. This will make these secrets available to the `/test` and `/publish` commands.
-4. **During CI, write the secret from env variables to the connector directory**: edit `tools/bin/ci_credentials.sh` to write the secret into the `secrets/` directory of the relevant connector.  
-5. That should be it.
+#### Access CI secrets on GSM
+Access to GSM storage is limited to Airbyte employees. To give an employee permissions to the project:
+1. Go to the permissions' [page](https://console.cloud.google.com/iam-admin/iam?project=dataline-integration-testing)
+2. Add a new principal to `dataline-integration-testing`:
+- input their login email
+- select the role `Development_CI_Secrets`
+3. Save
+
+#### How to migrate to the new secrets' logic:
+1. Create all necessary secrets according to the instructions above
+2. Remove all lines with old connector's Github secrets from this file: tools/bin/ci_credentials.sh
+3. Remove all old secrets from Github repository secrets.
+4. That should be it.
 
