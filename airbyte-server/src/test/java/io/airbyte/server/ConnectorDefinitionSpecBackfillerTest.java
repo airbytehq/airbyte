@@ -187,7 +187,7 @@ class ConnectorDefinitionSpecBackfillerTest {
     when(schedulerClient.createGetSpecJob(DEST_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG)).thenReturn(failureDestResponse);
 
     // do not force upgrade, should fail with an error instead
-    when(configs.getVersion31ForceUpgrade()).thenReturn(false);
+    when(configs.getVersion32ForceUpgrade()).thenReturn(false);
 
     assertThatThrownBy(() -> ConnectorDefinitionSpecBackfiller.migrateAllDefinitionsToContainSpec(
         configRepository,
@@ -236,7 +236,7 @@ class ConnectorDefinitionSpecBackfillerTest {
     when(schedulerClient.createGetSpecJob(DEST_DOCKER_REPO + ":" + DOCKER_IMAGE_TAG)).thenReturn(failureDestResponse);
 
     // force upgrade, specs should be deleted
-    when(configs.getVersion31ForceUpgrade()).thenReturn(true);
+    when(configs.getVersion32ForceUpgrade()).thenReturn(true);
 
     ConnectorDefinitionSpecBackfiller.migrateAllDefinitionsToContainSpec(
         configRepository,
