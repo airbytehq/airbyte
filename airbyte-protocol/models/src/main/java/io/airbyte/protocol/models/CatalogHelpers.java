@@ -9,7 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
