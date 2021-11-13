@@ -1,7 +1,5 @@
-import { useFormikContext } from "formik";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useAsyncFn } from "react-use";
-import merge from "lodash.merge";
 
 import {
   ConnectorDefinitionSpecification,
@@ -18,6 +16,7 @@ import { useGetService } from "core/servicesProvider";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import useRouter from "../useRouter";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 export function useConnectorAuth() {
   const { workspaceId } = useCurrentWorkspace();
@@ -37,7 +36,8 @@ export function useConnectorAuth() {
 
   return {
     getConsentUrl: async (
-      connector: ConnectorDefinitionSpecification
+      connector: ConnectorDefinitionSpecification,
+      inputParams: Record<string, unknown>
     ): Promise<{
       payload: SourceGetConsentPayload | DestinationGetConsentPayload;
       consentUrl: string;
@@ -47,15 +47,16 @@ export function useConnectorAuth() {
           workspaceId,
           sourceDefinitionId: ConnectorSpecification.id(connector),
           redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+          inputParams,
         };
         const response = await sourceAuthService.getConsentUrl(payload);
-
         return { consentUrl: response.consentUrl, payload };
       } else {
         const payload = {
           workspaceId,
           destinationDefinitionId: ConnectorSpecification.id(connector),
           redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+          inputParams,
         };
         const response = await destinationAuthService.getConsentUrl(payload);
 
@@ -99,27 +100,36 @@ function openWindow(url: string): void {
 }
 
 export function useRunOauthFlow(
-  connector: ConnectorDefinitionSpecification
+  connector: ConnectorDefinitionSpecification,
+  onDone?: (values: {
+    connectionConfiguration: ConnectionConfiguration;
+  }) => void
 ): {
   loading: boolean;
   done?: boolean;
-  run: () => void;
+  run: (oauthInputParams: Record<string, unknown>) => void;
 } {
-  const { values, setValues } = useFormikContext();
   const { getConsentUrl, completeOauthRequest } = useConnectorAuth();
+
   const param = useRef<
     SourceGetConsentPayload | DestinationGetConsentPayload
   >();
 
-  const [{ loading }, onStartOauth] = useAsyncFn(async () => {
-    const consentRequestInProgress = await getConsentUrl(connector);
+  const [{ loading }, onStartOauth] = useAsyncFn(
+    async (oauthInputParams: Record<string, unknown>) => {
+      const consentRequestInProgress = await getConsentUrl(
+        connector,
+        oauthInputParams
+      );
 
-    param.current = consentRequestInProgress.payload;
-    openWindow(consentRequestInProgress.consentUrl);
-  }, [connector]);
+      param.current = consentRequestInProgress.payload;
+      openWindow(consentRequestInProgress.consentUrl);
+    },
+    [connector]
+  );
 
   const [{ loading: loadingCompleteOauth, value }, completeOauth] = useAsyncFn(
-    async (queryParams: Record<string, unknown>) => {
+    async (queryParams: Record<string, unknown>): Promise<boolean> => {
       const oauthStartedPayload = param.current;
 
       if (oauthStartedPayload) {
@@ -128,13 +138,12 @@ export function useRunOauthFlow(
           queryParams
         );
 
-        setValues(merge(values, { connectionConfiguration }));
-        return true;
+        onDone?.({ connectionConfiguration });
       }
 
-      return false;
+      return !!oauthStartedPayload;
     },
-    [connector, values]
+    [connector]
   );
 
   const onOathGranted = useCallback(

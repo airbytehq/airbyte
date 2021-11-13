@@ -30,7 +30,8 @@ import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
  * The main function of this class is to convert a JsonSchema to Avro schema. It can also
  * standardize schema names, and keep track of a mapping from the original names to the standardized
  * ones, which is needed for unit tests.
- * <p/>
+ * <p>
+ * </p>
  * For limitations of this converter, see the README of this connector:
  * https://docs.airbyte.io/integrations/destinations/s3#avro
  */
