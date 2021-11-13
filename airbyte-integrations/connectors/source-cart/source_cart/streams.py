@@ -138,3 +138,9 @@ class Products(IncrementalCartStream):
     """
     Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get
     """
+
+
+class Addresses(IncrementalCartStream):
+    """
+    Docs: https://developers.cart.com/docs/rest-api/b3A6MjMzMTc3Njc-get-addresses
+    """
