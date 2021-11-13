@@ -9,7 +9,8 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "requests_mock==1.8.0",
+    "pytest-mock~=3.6",
+    "requests_mock~=1.8",
 ]
 
 setup(
@@ -18,6 +19,9 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS + TEST_REQUIREMENTS,
+    install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
 )

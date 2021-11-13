@@ -26,7 +26,7 @@ class IncrementalStream(ZendeskTalkIncrementalStream):
 
 
 class SingleRecordStream(ZendeskTalkSingleRecordStream):
-    data_field = None
+    data_field = "results"
 
     def path(self, **kwargs) -> str:
         return "/test_path"
@@ -68,6 +68,7 @@ class TestZendeskTalkStream:
     def test_backoff_time_without_header(self, mocker):
         stream = NonIncrementalStream(subdomain='mydomain', authenticator=mocker.Mock())
         response = mocker.Mock(spec=requests.Response)
+        response.headers = {}
 
         result = stream.backoff_time(response)
 
@@ -80,7 +81,7 @@ class TestZendeskTalkStream:
 
         result = stream.next_page_token(response)
 
-        assert result == {"param1": 20, "param2": "value"}, "should return all params from the next_url"
+        assert result == {"param1": ['20'], "param2": ["value"]}, "should return all params from the next_url"
 
     def test_next_page_token_end(self, mocker):
         stream = NonIncrementalStream(subdomain='mydomain', authenticator=mocker.Mock())
@@ -109,6 +110,7 @@ class TestZendeskTalkStream:
 
     def test_parse_response_from_root(self, mocker):
         stream = NonIncrementalStream(subdomain='mydomain', authenticator=mocker.Mock())
+        stream.data_field = None
         response = mocker.Mock(spec=requests.Response)
         response.json.return_value = [{"record1"}, {"record2"}, {"record3"}]
 
@@ -135,7 +137,7 @@ class TestZendeskTalkIncrementalStream:
 
         new_state = stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
 
-        assert new_state == {stream.cursor_field}
+        assert new_state == {stream.cursor_field: "2020-03-03T01:00:00Z"}
 
     def test_get_updated_state_desc_order(self, mocker):
         start_date = pendulum.now()
@@ -172,14 +174,14 @@ class TestZendeskTalkIncrementalStream:
         stream = IncrementalStream(subdomain='mydomain', authenticator=mocker.Mock(), start_date=start_date)
 
         result = stream.request_params(stream_state={})
-        assert result == {stream.filter_param: start_date.timestamp()}, "should fallback to start_date"
+        assert result == {stream.filter_param: int(start_date.timestamp())}, "should fallback to start_date"
 
     def test_request_params_first_page_with_state(self, mocker):
         start_date = pendulum.now()
         stream = IncrementalStream(subdomain='mydomain', authenticator=mocker.Mock(), start_date=start_date)
 
         result = stream.request_params(stream_state={stream.cursor_field: "2020-03-03T03:00:00Z"})
-        assert result == {stream.filter_param: start_date.timestamp()}, "pick always bigger timestamp"
+        assert result == {stream.filter_param: int(start_date.timestamp())}, "pick always bigger timestamp"
 
     def test_request_params_pagination(self, mocker):
         start_date = pendulum.now()
@@ -194,19 +196,19 @@ class TestZendeskTalkIncrementalStream:
     def test_next_page_token(self, mocker):
         start_date = pendulum.now()
         stream = IncrementalStream(subdomain='mydomain', authenticator=mocker.Mock(), start_date=start_date)
-        response = mocker.Mock(spec=requests.Response)
+        response = mocker.Mock(spec=requests.Response, request=mocker.Mock(spec=requests.Request))
         response.json.return_value = {"next_page": f"https://some.url.com?param1=20&{stream.filter_param}=value1"}
-        response.request.url = {"next_page": f"https://some.url.com?param1=30&{stream.filter_param}=value2"}
+        response.request.url = f"https://some.url.com?param1=30&{stream.filter_param}=value2"
 
         result = stream.next_page_token(response)
-        assert result == {"param1": 20, stream.filter_param: "value1"}, "take page token from next_page"
+        assert result == {"param1": ['20'], stream.filter_param: ["value1"]}, "take page token from next_page"
 
     def test_next_page_token_empty_response(self, mocker):
         start_date = pendulum.now()
         stream = IncrementalStream(subdomain='mydomain', authenticator=mocker.Mock(), start_date=start_date)
-        response = mocker.Mock(spec=requests.Response)
+        response = mocker.Mock(spec=requests.Response, request=mocker.Mock(spec=requests.Request))
         response.json.return_value = {"next_page": None}
-        response.request.url = {"next_page": f"https://some.url.com?param1=30&{stream.filter_param}=value2"}
+        response.request.url = f"https://some.url.com?param1=30&{stream.filter_param}=value2"
 
         result = stream.next_page_token(response)
         assert result is None, "stop pagination if next page points to the current"
@@ -214,9 +216,9 @@ class TestZendeskTalkIncrementalStream:
     def test_next_page_token_last_page(self, mocker):
         start_date = pendulum.now()
         stream = IncrementalStream(subdomain='mydomain', authenticator=mocker.Mock(), start_date=start_date)
-        response = mocker.Mock(spec=requests.Response)
+        response = mocker.Mock(spec=requests.Response, request=mocker.Mock(spec=requests.Request))
         response.json.return_value = {"next_page": f"https://some.url.com?param1=20&{stream.filter_param}=value"}
-        response.request.url = {"next_page": f"https://some.url.com?param1=30&{stream.filter_param}=value"}
+        response.request.url = f"https://some.url.com?param1=30&{stream.filter_param}=value"
 
         result = stream.next_page_token(response)
         assert result is None, "stop pagination if next page points to the current"
@@ -230,8 +232,8 @@ class TestSingleRecordZendeskTalkStream:
 
         result = list(stream.parse_response(response=response))
 
-        assert result == {
+        assert result == [{
             "field1": "value",
             "field2": 3,
-            stream.primary_key: now().timestamp()
-        }
+            stream.primary_key: int(now().timestamp())
+        }]

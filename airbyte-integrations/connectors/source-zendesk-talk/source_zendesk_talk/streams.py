@@ -117,7 +117,7 @@ class ZendeskTalkIncrementalStream(ZendeskTalkStream, ABC):
             stream_state = stream_state or {}
             state_str = stream_state.get(self.cursor_field, stream_state.get(self.legacy_cursor_field))
             state = pendulum.parse(state_str) if state_str else self._start_date
-            params[self.filter_param] = int(max(state, self._start_date).timestamp())
+            params[self.filter_param] = max(state, self._start_date).int_timestamp
 
         return params
 
@@ -149,7 +149,7 @@ class ZendeskTalkSingleRecordStream(ZendeskTalkStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
-            record["current_timestamp"] = pendulum.now().timestamp()
+            record["current_timestamp"] = pendulum.now().int_timestamp
             yield record
 
 
