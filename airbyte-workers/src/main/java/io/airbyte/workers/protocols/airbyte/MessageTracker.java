@@ -15,13 +15,33 @@ import java.util.function.Consumer;
  */
 public interface MessageTracker extends Consumer<AirbyteMessage> {
 
+  /**
+   * Accepts an AirbyteMessage and tracks any metadata about it that is required by the Platform.
+   *
+   * @param message message to derive metadata from.
+   */
   @Override
   void accept(AirbyteMessage message);
 
+  /**
+   * Gets the records replicated.
+   *
+   * @return total records that passed from Source to Destination.
+   */
   long getRecordCount();
 
+  /**
+   * Gets the bytes replicated.
+   *
+   * @return total bytes that passed from Source to Destination.
+   */
   long getBytesCount();
 
+  /**
+   * Get the current state of the stream.
+   *
+   * @return returns the last StateMessage that was accepted. If no StateMessage was accepted, empty.
+   */
   Optional<State> getOutputState();
 
 }
