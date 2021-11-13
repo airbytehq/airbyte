@@ -45,6 +45,7 @@ class ZendeskTalkStream(HttpStream, ABC):
         delay_time = response.headers.get("Retry-After")
         if delay_time:
             return int(delay_time)
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
