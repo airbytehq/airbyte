@@ -10,7 +10,7 @@ public enum JsonSchemaPrimitive {
 
   STRING_DATE(ImmutableMap.of("type", "string", "format", "date")),
   STRING_TIME(ImmutableMap.of("type", "string", "format", "time")),
-  STRING_TIMESTAMP(ImmutableMap.of("type", "string", "format", "date-time")),
+  STRING_DATETIME(ImmutableMap.of("type", "string", "format", "date-time")),
   STRING(ImmutableMap.of("type", "string")),
   NUMBER(ImmutableMap.of("type", "number")),
   OBJECT(ImmutableMap.of("type", "object")),

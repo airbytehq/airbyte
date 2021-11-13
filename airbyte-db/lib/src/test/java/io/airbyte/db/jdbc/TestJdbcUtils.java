@@ -271,7 +271,7 @@ public class TestJdbcUtils {
         .put("varchar", JsonSchemaPrimitive.STRING)
         .put("date", JsonSchemaPrimitive.STRING_DATE)
         .put("time", JsonSchemaPrimitive.STRING_TIME)
-        .put("timestamp", JsonSchemaPrimitive.STRING_TIMESTAMP)
+        .put("timestamp", JsonSchemaPrimitive.STRING_DATETIME)
         .put("binary1", JsonSchemaPrimitive.STRING)
         .build();
 

@@ -91,9 +91,9 @@ public abstract class JdbcSourceAcceptanceTest {
   public static Number ID_VALUE_5 = 5;
 
   public static String DROP_SCHEMA_QUERY = "DROP SCHEMA IF EXISTS %s CASCADE";
-  public static String COLUMN_CLAUSE_WITH_PK = "id INTEGER, name VARCHAR(200), updated_at DATE";
-  public static String COLUMN_CLAUSE_WITHOUT_PK = "id INTEGER, name VARCHAR(200), updated_at DATE";
-  public static String COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE";
+  public static String COLUMN_CLAUSE_WITH_PK = "id INTEGER, name VARCHAR(200), updated_at TIMESTAMP";
+  public static String COLUMN_CLAUSE_WITHOUT_PK = "id INTEGER, name VARCHAR(200), updated_at TIMESTAMP";
+  public static String COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200), last_name VARCHAR(200), updated_at TIMESTAMP";
 
   public JsonNode config;
   public JdbcDatabase database;
@@ -803,7 +803,7 @@ public abstract class JdbcSourceAcceptanceTest {
             defaultNamespace,
             Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
             Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
+            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING_DATETIME))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
@@ -811,7 +811,7 @@ public abstract class JdbcSourceAcceptanceTest {
             defaultNamespace,
             Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
             Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
+            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING_DATETIME))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
@@ -819,7 +819,7 @@ public abstract class JdbcSourceAcceptanceTest {
             defaultNamespace,
             Field.of(COL_FIRST_NAME, JsonSchemaPrimitive.STRING),
             Field.of(COL_LAST_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
+            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING_DATETIME))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));

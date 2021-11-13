@@ -319,7 +319,7 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
       case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> JsonSchemaPrimitive.STRING;
       case DATE -> JsonSchemaPrimitive.STRING_DATE;
       case TIME -> JsonSchemaPrimitive.STRING_TIME;
-      case TIMESTAMP -> JsonSchemaPrimitive.STRING_TIMESTAMP;
+      case TIMESTAMP -> JsonSchemaPrimitive.STRING_DATETIME;
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaPrimitive.STRING;
       // since column types aren't necessarily meaningful to Airbyte, liberally convert all unrecgonised
       // types to String
