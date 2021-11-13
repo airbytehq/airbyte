@@ -18,7 +18,7 @@ public class DataTypeEnumTest {
   @Test
   void testConversionFromJsonSchemaPrimitiveToDataType() {
     assertEquals(5, DataType.class.getEnumConstants().length);
-    assertEquals(6, JsonSchemaPrimitive.class.getEnumConstants().length);
+    assertEquals(9, JsonSchemaPrimitive.class.getEnumConstants().length);
 
     assertEquals(DataType.STRING, DataType.fromValue(JsonSchemaPrimitive.STRING.toString().toLowerCase()));
     assertEquals(DataType.NUMBER, DataType.fromValue(JsonSchemaPrimitive.NUMBER.toString().toLowerCase()));
