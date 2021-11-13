@@ -31,7 +31,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteSource.class);
 
-  private static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
+  private static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.SECONDS);
   private static final Duration CHECK_HEARTBEAT_DURATION = Duration.of(10, ChronoUnit.SECONDS);
   // todo (cgardens) - keep the graceful shutdown consistent with current behavior for release. make
   // sure everything is working well before we reduce this to something more reasonable.
@@ -64,6 +64,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   @Override
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
+    LOGGER.info("Source was started with HEARTBEAT_FRESH_DURATION set to {}", HEARTBEAT_FRESH_DURATION);
+
     Preconditions.checkState(sourceProcess == null);
 
     sourceProcess = integrationLauncher.read(jobRoot,
@@ -104,6 +106,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   @Override
   public void close() throws Exception {
+    LOGGER.info("close() was called!!!");
+
     if (sourceProcess == null) {
       LOGGER.debug("Source process already exited");
       return;
