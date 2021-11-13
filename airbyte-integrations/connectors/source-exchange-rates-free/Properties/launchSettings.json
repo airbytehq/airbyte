@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "source_exchange_rates": {
+      "commandName": "Project",
+      "commandLineArgs": "read -c read --config \"config.json\" --catalog \"catalog.json\"",
+      "environmentVariables": {
+        "AIRBYTE_IMPL_MODULE": "ExchangeRates",
+        "AIRBYTE_IMPL_PATH": "C:\\Users\\menno\\Documents\\GitHub\\airbyte\\airbyte-integrations\\connectors\\source-exchange-rates-free\\bin\\Debug\\net5.0\\source_exchange_rates.dll"
+      }
+    }
+  }
+}

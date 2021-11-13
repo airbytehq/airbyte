@@ -1,0 +1,1042 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "motd": {
+      "type": "object",
+      "properties": {
+        "msg": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "msg",
+        "url"
+      ]
+    },
+    "success": {
+      "type": "boolean"
+    },
+    "rates": {
+      "type": "object",
+      "properties": {
+        "AT": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "BE": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "BG": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "CY": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "CZ": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "DE": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "DK": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "EE": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "EL": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "ES": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "FI": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "FR": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "HR": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "HU": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "IE": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "IT": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "LT": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "LU": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "LV": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "MT": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "NL": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "PL": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "PT": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "RO": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "SE": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "SI": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        },
+        "SK": {
+          "type": "object",
+          "properties": {
+            "country_name": {
+              "type": "string"
+            },
+            "standard_rate": {
+              "type": "integer"
+            },
+            "reduced_rates": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "super_reduced_rates": {
+              "type": "array",
+              "items": {}
+            },
+            "parking_rates": {
+              "type": "array",
+              "items": {}
+            }
+          },
+          "required": [
+            "country_name",
+            "standard_rate",
+            "reduced_rates",
+            "super_reduced_rates",
+            "parking_rates"
+          ]
+        }
+      }
+    }
+  },
+  "required": [
+    "motd",
+    "success",
+    "rates"
+  ]
+}
