@@ -50,7 +50,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   @Override
   protected boolean supportsDBT() {
-    return true;
+    return false;
   }
 
   @Override

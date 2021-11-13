@@ -48,7 +48,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
 
   @Override
   protected boolean supportsDBT() {
-    return true;
+    return false;
   }
 
   @Override

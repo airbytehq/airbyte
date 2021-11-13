@@ -40,7 +40,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected boolean supportsDBT() {
-    return true;
+    return false;
   }
 
   @Override
