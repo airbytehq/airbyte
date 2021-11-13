@@ -22,7 +22,7 @@
         "type": "string"
       },
       "start_date": {
-        "title": "Start Date",
+        "title": "Replication Start Date",
         "description": "The date from which you'd like to replicate data for Zendesk Talk API, in the format YYYY-MM-DDT00:00:00Z.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": [

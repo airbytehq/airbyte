@@ -144,6 +144,15 @@ class ZendeskTalkIncrementalStream(ZendeskTalkStream, ABC):
         return None
 
 
+class ZendeskTalkSingleRecordStream(ZendeskTalkStream, ABC):
+    primary_key = "current_timestamp"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
+            record["current_timestamp"] = pendulum.now().timestamp()
+            yield record
+
+
 class PhoneNumbers(ZendeskTalkStream):
     """Phone Numbers
     Docs: https://developer.zendesk.com/api-reference/voice/talk-api/phone_numbers/#list-phone-numbers
@@ -233,13 +242,12 @@ class IVRRoutes(IVRs):
                     yield {"ivr_id": ivr["id"], "ivr_menu_id": menu["id"], **route}
 
 
-class AccountOverview(ZendeskTalkStream):
+class AccountOverview(ZendeskTalkSingleRecordStream):
     """Account Overview
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/stats#show-account-overview
     """
 
     data_field = "account_overview"
-    primary_key = None  # the stream contains only single record
 
     def path(self, **kwargs) -> str:
         return "/stats/account_overview"
@@ -257,25 +265,23 @@ class AgentsActivity(ZendeskTalkStream):
         return "/stats/agents_activity"
 
 
-class AgentsOverview(ZendeskTalkStream):
+class AgentsOverview(ZendeskTalkSingleRecordStream):
     """Agents Overview
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/stats#show-agents-overview
     """
 
     data_field = "agents_overview"
-    primary_key = None  # the stream contains only single record
 
     def path(self, **kwargs) -> str:
         return "/stats/agents_overview"
 
 
-class CurrentQueueActivity(ZendeskTalkStream):
+class CurrentQueueActivity(ZendeskTalkSingleRecordStream):
     """Current Queue Activity
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/stats#show-current-queue-activity
     """
 
     data_field = "current_queue_activity"
-    primary_key = None  # the stream contains only single record
 
     def path(self, **kwargs) -> str:
         return "/stats/current_queue_activity"

@@ -40,9 +40,10 @@ class ConnectorConfig(BaseModel):
     )
     email: str = Field(description="The user email for your Zendesk account.")
     start_date: datetime = Field(
-        description="The date from which you'd like to replicate data for Zendesk Talk API, in the format YYYY-MM-DDT00:00:00Z.",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        examples=["2017-01-25T00:00:00Z"],
+        title="Replication Start Date",
+        description="The date/datetime from which you'd like to replicate data for Zendesk Talk API, in the format YYYY-MM-DDT00:00:00Z. The time part is optional.",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$",
+        examples=["2017-01-25T00:00:00Z", "2017-01-25"],
     )
 
 
