@@ -19,3 +19,8 @@ tests:
       future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     - config_path: "secrets/config.json"
+      # Statistics streams (with single record) have artificial PK that changes everytime
+      ignored_fields:
+        "account_overview": ["current_timestamp"]
+        "agents_overview": ["current_timestamp"]
+        "current_queue_activity": ["current_timestamp"]
