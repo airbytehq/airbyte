@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "books",
+        "name": "Test",
         "json_schema": {
           "properties": {
             "data": {
