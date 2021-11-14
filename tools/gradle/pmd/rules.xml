@@ -13,6 +13,11 @@
     <rule ref="category/java/bestpractices.xml/AbstractClassWithoutAbstractMethod" />
     <rule ref="category/java/bestpractices.xml/UseCollectionIsEmpty" />
     <rule ref="category/java/bestpractices.xml/SystemPrintln" />
+    <rule ref="category/java/documentation.xml/CommentRequired">
+        <properties>
+            <property name="classCommentRequirement" value="Required" />
+        </properties>
+    </rule>
 <!--    <rule ref="category/java/codestyle.xml/LocalVariableCouldBeFinal" />-->
 <!--    <rule ref="category/java/codestyle.xml/MethodArgumentCouldBeFinal" />-->
 </ruleset>
