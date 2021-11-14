@@ -6,6 +6,7 @@ package io.airbyte.db.jdbc;
 
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.db.JdbcCompatibleSourceOperations;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -35,7 +36,7 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
   public StreamingJdbcDatabase(final DataSource dataSource,
                                final JdbcDatabase database,
                                final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
-                               final JdbcSourceOperations sourceOperations) {
+                               final JdbcCompatibleSourceOperations<?> sourceOperations) {
     super(sourceOperations);
     this.dataSource = dataSource;
     this.database = database;

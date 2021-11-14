@@ -239,6 +239,14 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
     addDataTypeTestData(
         TestDataHolder.builder()
+            .sourceType("year")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("null", "1997")
+            .addExpectedValues(null, "1997")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
             .sourceType("varchar")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("varchar(256) character set cp1251")

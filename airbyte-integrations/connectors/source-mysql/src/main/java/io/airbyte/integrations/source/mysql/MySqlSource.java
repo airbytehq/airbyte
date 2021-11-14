@@ -11,6 +11,7 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.mysql.cj.MysqlType;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -19,7 +20,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcCompatibleSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -39,7 +40,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySqlSource extends AbstractJdbcSource implements Source {
+public class MySqlSource extends AbstractJdbcCompatibleSource<MysqlType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
 
@@ -152,6 +153,23 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     return checkOperations;
   }
 
+  // TODO: update this method to return mysql specific type
+  @Override
+  public MysqlType getFieldType(final JsonNode field) {
+    JDBCType jdbcType;
+    try {
+      jdbcType = JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
+    } catch (final IllegalArgumentException ex) {
+      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
+          field.get(INTERNAL_COLUMN_NAME),
+          field.get(INTERNAL_SCHEMA_NAME),
+          field.get(INTERNAL_TABLE_NAME),
+          field.get(INTERNAL_COLUMN_TYPE)));
+      jdbcType = JDBCType.VARCHAR;
+    }
+    return MysqlType.getByJdbcType(jdbcType.getVendorTypeNumber());
+  }
+
   @Override
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     final AirbyteCatalog catalog = super.discover(config);
@@ -214,7 +232,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();

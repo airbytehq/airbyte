@@ -7,6 +7,7 @@ package io.airbyte.db.jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.SqlDatabase;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -21,9 +22,9 @@ import java.util.stream.Stream;
  */
 public abstract class JdbcDatabase extends SqlDatabase {
 
-  protected final JdbcSourceOperations sourceOperations;
+  protected final JdbcCompatibleSourceOperations<?> sourceOperations;
 
-  public JdbcDatabase(final JdbcSourceOperations sourceOperations) {
+  public JdbcDatabase(final JdbcCompatibleSourceOperations<?> sourceOperations) {
     this.sourceOperations = sourceOperations;
   }
 

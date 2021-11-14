@@ -24,6 +24,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcCompatibleSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
@@ -131,7 +132,7 @@ public abstract class JdbcSourceAcceptanceTest {
    *
    * @return abstract jdbc source
    */
-  public abstract AbstractJdbcSource getJdbcSource();
+  public abstract AbstractJdbcCompatibleSource<?> getJdbcSource();
 
   /**
    * In some cases the Source that is being tested may be an AbstractJdbcSource, but because it is
