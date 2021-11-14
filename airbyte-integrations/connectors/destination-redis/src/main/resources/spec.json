@@ -45,9 +45,7 @@
         "type": "string",
         "default": "hash",
         "description": "Redis cache type to store data in.",
-        "enum": [
-          "hash"
-        ],
+        "enum": ["hash"],
         "order": 5
       }
     }

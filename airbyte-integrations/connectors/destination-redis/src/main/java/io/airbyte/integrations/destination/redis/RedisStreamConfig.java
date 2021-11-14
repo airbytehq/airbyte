@@ -40,4 +40,5 @@ public class RedisStreamConfig {
         ", destinationSyncMode=" + destinationSyncMode +
         '}';
   }
+
 }

@@ -65,4 +65,5 @@ class RedisConfig {
         ", cacheType=" + cacheType +
         '}';
   }
+
 }
