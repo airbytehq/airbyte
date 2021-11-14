@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.redis;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.time.Instant;
@@ -38,7 +37,7 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
                               Consumer<AirbyteMessage> outputRecordCollector) {
     this.configuredCatalog = configuredCatalog;
     this.outputRecordCollector = outputRecordCollector;
-    this.redisCache = new RedisCache(redisConfig);
+    this.redisCache = RedisCacheFactory.newInstance(redisConfig);
     this.nameTransformer = new RedisNameTransformer();
   }
 
@@ -63,12 +62,8 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
         throw new IllegalArgumentException("Unrecognized destination stream");
       }
 
-      var timestamp = Instant.now().toEpochMilli();
-      var data = Map.of(
-          JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(messageRecord.getData()),
-          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, String.valueOf(timestamp)
-      );
-      redisCache.insert(streamConfig.getTmpKey(), data);
+      var timestamp = Instant.ofEpochMilli(messageRecord.getEmittedAt());
+      redisCache.insert(streamConfig.getTmpKey(), timestamp, Jsons.serialize(messageRecord.getData()));
     } else if (message.getType() == AirbyteMessage.Type.STATE) {
       this.lastMessage = message;
     } else {
@@ -82,13 +77,8 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
       redisStreams.forEach((k, v) -> {
         try {
           switch (v.getDestinationSyncMode()) {
-            case APPEND -> {
-              redisCache.rename(v.getTmpKey(), v.getKey());
-            }
-            case OVERWRITE -> {
-              redisCache.delete(v.getKey());
-              redisCache.rename(v.getTmpKey(), v.getKey());
-            }
+            case APPEND -> redisCache.copy(v.getTmpKey(), v.getKey(), false);
+            case OVERWRITE -> redisCache.copy(v.getTmpKey(), v.getKey(), true);
             default -> throw new UnsupportedOperationException("Unsupported destination sync mode");
           }
         } catch (Exception e) {
@@ -96,6 +86,12 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
         }
       });
       outputRecordCollector.accept(lastMessage);
+    }
+
+    try {
+      redisStreams.forEach((k, v) -> redisCache.delete(v.getTmpKey()));
+    } catch (Exception e) {
+      LOGGER.error("Error while deleting tmp keys: ", e);
     }
 
     redisCache.close();

@@ -4,21 +4,16 @@
 
 package io.airbyte.integrations.destination.redis;
 
-import io.airbyte.commons.text.Names;
-import io.airbyte.integrations.destination.StandardNameTransformer;
+class RedisNameTransformer {
 
-class RedisNameTransformer extends StandardNameTransformer {
+    String keyName(String namespace, String stream) {
+        namespace = namespace != null ? namespace : "";
+        return namespace + ":" + stream;
+    }
 
-  String keyName(String namespace, String stream) {
-    namespace = namespace != null ? namespace : "";
-    var keyName = namespace + ":" + stream;
-    return Names.toAlphanumericAndUnderscore(keyName);
-  }
-
-  String tmpKeyName(String namespace, String stream) {
-    namespace = namespace != null ? namespace : "";
-    var keyName = "tmp_" + namespace + ":" + stream;
-    return Names.toAlphanumericAndUnderscore(keyName);
-  }
+    String tmpKeyName(String namespace, String stream) {
+        namespace = namespace != null ? namespace : "";
+        return "tmp:" + namespace + ":" + stream;
+    }
 
 }

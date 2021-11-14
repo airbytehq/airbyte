@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Redis Destination Spec",
     "type": "object",
-    "required": ["host", "port", "username", "password"],
+    "required": ["host", "port", "username", "password", "cache_type"],
     "additionalProperties": false,
     "properties": {
       "host": {
@@ -39,6 +39,16 @@
         "type": "string",
         "airbyte_secret": true,
         "order": 4
+      },
+      "cache_type": {
+        "title": "Cache type",
+        "type": "string",
+        "default": "hash",
+        "description": "Redis cache type to store data in.",
+        "enum": [
+          "hash"
+        ],
+        "order": 5
       }
     }
   }

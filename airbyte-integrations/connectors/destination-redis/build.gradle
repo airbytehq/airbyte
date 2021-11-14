@@ -21,6 +21,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/redis.clients/jedis
     implementation "redis.clients:jedis:${redisDriver}"
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0'
+
 
     // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation "org.assertj:assertj-core:${assertVersion}"

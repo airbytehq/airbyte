@@ -21,12 +21,12 @@ class RedisConfigTest {
 
   @Test
   void testConfig() {
-
     assertThat(redisConfig)
         .hasFieldOrPropertyWithValue("username", "default")
         .hasFieldOrPropertyWithValue("password", "pw")
         .hasFieldOrPropertyWithValue("host", "127.0.0.1")
-        .hasFieldOrPropertyWithValue("port", 6379);
+        .hasFieldOrPropertyWithValue("port", 6379)
+        .hasFieldOrPropertyWithValue("cacheType", RedisCache.CacheType.HASH);
 
   }
 

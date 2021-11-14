@@ -4,15 +4,29 @@
 
 package io.airbyte.integrations.destination.redis;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 
 public class RedisRecord {
 
-  private final Long id;
+  public static final String ID_PROPERTY = "_airbyte_ab_id";
 
-  private final String data;
+  public static final String DATA_PROPERTY = "_airbyte_data";
 
-  private final Instant timestamp;
+  public static final String TIMESTAMP_PROPERTY = "_airbyte_emitted_at";
+
+  @JsonProperty(ID_PROPERTY)
+  private Long id;
+
+  @JsonProperty(DATA_PROPERTY)
+  private String data;
+
+  @JsonProperty(TIMESTAMP_PROPERTY)
+  private Instant timestamp;
+
+  public RedisRecord() {
+
+  }
 
   public RedisRecord(Long id, String data, Instant timestamp) {
     this.id = id;

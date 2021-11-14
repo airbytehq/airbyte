@@ -30,7 +30,7 @@ class RedisDestination extends BaseConnector implements Destination {
 
     RedisCache redisCache = null;
     try {
-      redisCache = new RedisCache(redisConfig);
+      redisCache = RedisCacheFactory.newInstance(redisConfig);
       // check connection and write permissions
       redisCache.ping("Connection check");
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);

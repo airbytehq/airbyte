@@ -20,6 +20,7 @@ class RedisDataFactory {
         .put("port", port)
         .put("username", "default")
         .put("password", "pw")
+        .put("cache_type", "hash")
         .build());
   }
 

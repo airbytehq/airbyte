@@ -37,13 +37,13 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
         redisContainer.getHost(),
         redisContainer.getFirstMappedPort());
     var redisConfig = new RedisConfig(configJson);
-    redisCache = new RedisCache(redisConfig);
+    redisCache = new RedisHCache(redisConfig);
     redisNameTransformer = new RedisNameTransformer();
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    redisCache.flush();
+    redisCache.flushAll();
   }
 
   @Override
@@ -77,7 +77,6 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
     return redisCache.getAll(key).stream()
         .sorted(Comparator.comparing(RedisRecord::getTimestamp))
         .map(RedisRecord::getData)
-        //.peek(System.out::println)
         .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }
