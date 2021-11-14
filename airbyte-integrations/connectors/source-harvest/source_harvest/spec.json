@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Harvest Spec",
     "type": "object",
-    "required": ["api_token", "account_id", "replication_start_date"],
+    "required": ["account_id", "replication_start_date"],
     "additionalProperties": false,
     "properties": {
       "api_token": {
@@ -25,9 +25,42 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-25T00:00:00Z"],
         "type": "string"
+      },
+      "credentials": {
+        "type": "object",
+        "title": "Authenticate via Harvest (OAuth 2.0)",
+        "required": ["client_id", "client_secret", "refresh_token"],
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "title": "Client ID",
+            "type": "string",
+            "description": "The Client ID of your application"
+          },
+          "client_secret": {
+            "title": "Client Secret",
+            "type": "string",
+            "description": "The client secret of your application",
+            "airbyte_secret": true
+          },
+          "refresh_token": {
+            "title": "Refresh Token",
+            "type": "string",
+            "description": "A refresh token generated using the above client ID and secret",
+            "airbyte_secret": true
+          }
+        }
       }
     }
   },
   "supportsIncremental": true,
-  "supported_destination_sync_modes": ["append"]
+  "supported_destination_sync_modes": ["append"],
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials"],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"]]
+    }
+  }
 }
