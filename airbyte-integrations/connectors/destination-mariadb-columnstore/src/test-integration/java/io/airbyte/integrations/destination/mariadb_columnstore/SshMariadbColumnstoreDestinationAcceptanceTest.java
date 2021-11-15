@@ -85,12 +85,6 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
-    /*
-     * JdbcDatabase database = getDatabase(getConfig()); return
-     * database.query(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-     * JavaBaseConstants.COLUMN_NAME_EMITTED_AT)) .collect(Collectors.toList());
-     */
-
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
@@ -115,14 +109,6 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
             config.get("port").asText(),
             config.get("database").asText()));
   }
-
-  /*
-   * private static JdbcDatabase getDatabase(final JsonNode config) { return
-   * Databases.createJdbcDatabase( config.get("username").asText(), config.has("password") ?
-   * config.get("password").asText() : null, String.format("jdbc:mariadb://%s:%s/%s",
-   * config.get("host").asText(), config.get("port").asText(), config.get("database").asText()),
-   * MariadbColumnstoreDestination.DRIVER_CLASS); }
-   */
 
   @Override
   protected List<String> resolveIdentifier(final String identifier) {
