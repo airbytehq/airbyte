@@ -41,7 +41,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
       if (param.isPresent()) {
         // TODO: if we write a flyway migration to flatten persisted configs in db, we don't need to flatten
         // here see https://github.com/airbytehq/airbyte/issues/7624
-        return Jsons.flattenConfig(param.get().getConfiguration());
+        return MoreOAuthParameters.flattenOAuthConfig(param.get().getConfiguration());
       } else {
         throw new ConfigNotFoundException(ConfigSchema.SOURCE_OAUTH_PARAM, "Undefined OAuth Parameter.");
       }
@@ -58,7 +58,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
       if (param.isPresent()) {
         // TODO: if we write a flyway migration to flatten persisted configs in db, we don't need to flatten
         // here see https://github.com/airbytehq/airbyte/issues/7624
-        return Jsons.flattenConfig(param.get().getConfiguration());
+        return MoreOAuthParameters.flattenOAuthConfig(param.get().getConfiguration());
       } else {
         throw new ConfigNotFoundException(ConfigSchema.DESTINATION_OAUTH_PARAM, "Undefined OAuth Parameter.");
       }
@@ -109,7 +109,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     Map<String, Object> result = new HashMap<>(oauthOutput);
     // inject masked params outputs
     for (final String key : Jsons.keys(oAuthParamConfig)) {
-      result.put(key, Jsons.SECRET_MASK);
+      result.put(key, MoreOAuthParameters.SECRET_MASK);
     }
     for (final String node : outputPath) {
       result = Map.of(node, result);
@@ -128,8 +128,8 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
     final Builder<String, Object> outputs = ImmutableMap.builder();
     // inject masked params outputs
     for (final String key : Jsons.keys(oAuthParamConfig)) {
-      if (oAuthConfigSpecification.getCompleteOauthServerOutputParameterSpecification().has(key)) {
-        outputs.put(key, Jsons.SECRET_MASK);
+      if (oAuthConfigSpecification.getCompleteOauthServerOutputSpecification().has(key)) {
+        outputs.put(key, MoreOAuthParameters.SECRET_MASK);
       }
     }
     // collect oauth result outputs

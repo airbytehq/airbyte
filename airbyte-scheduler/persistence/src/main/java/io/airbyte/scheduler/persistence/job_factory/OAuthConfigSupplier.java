@@ -8,13 +8,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.MoreOAuthParameters;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.job_tracker.TrackingMetadata;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -32,6 +32,10 @@ public class OAuthConfigSupplier {
     this.trackingClient = trackingClient;
   }
 
+  public static boolean hasOAuthConfigSpecification(final ConnectorSpecification spec) {
+    return spec != null && spec.getAdvancedAuth() != null && spec.getAdvancedAuth().getOauthConfigSpecification() != null;
+  }
+
   public JsonNode injectSourceOAuthParameters(final UUID sourceDefinitionId, final UUID workspaceId, final JsonNode sourceConnectorConfig)
       throws IOException {
     try {
@@ -43,12 +47,12 @@ public class OAuthConfigSupplier {
               sourceOAuthParameter -> {
                 if (maskSecrets) {
                   // when maskSecrets = true, no real oauth injections is happening, only masked values
-                  Jsons.mergeJsons(
+                  MoreOAuthParameters.mergeJsons(
                       (ObjectNode) sourceConnectorConfig,
                       (ObjectNode) sourceOAuthParameter.getConfiguration(),
-                      Jsons.getSecretMask());
+                      MoreOAuthParameters.getSecretMask());
                 } else {
-                  Jsons.mergeJsons((ObjectNode) sourceConnectorConfig, (ObjectNode) sourceOAuthParameter.getConfiguration());
+                  MoreOAuthParameters.mergeJsons((ObjectNode) sourceConnectorConfig, (ObjectNode) sourceOAuthParameter.getConfiguration());
                   Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
                 }
               });
@@ -68,12 +72,12 @@ public class OAuthConfigSupplier {
           .ifPresent(destinationOAuthParameter -> {
             if (maskSecrets) {
               // when maskSecrets = true, no real oauth injections is happening, only masked values
-              Jsons.mergeJsons(
+              MoreOAuthParameters.mergeJsons(
                   (ObjectNode) destinationConnectorConfig,
                   (ObjectNode) destinationOAuthParameter.getConfiguration(),
-                  Jsons.getSecretMask());
+                  MoreOAuthParameters.getSecretMask());
             } else {
-              Jsons.mergeJsons((ObjectNode) destinationConnectorConfig, (ObjectNode) destinationOAuthParameter.getConfiguration());
+              MoreOAuthParameters.mergeJsons((ObjectNode) destinationConnectorConfig, (ObjectNode) destinationOAuthParameter.getConfiguration());
               Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
             }
           });

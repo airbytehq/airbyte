@@ -19,6 +19,7 @@ import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.MoreOAuthParameters;
 import io.airbyte.protocol.models.OAuthConfigSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -96,8 +97,8 @@ public abstract class BaseOAuthFlowTest {
   protected Map<String, String> getExpectedOutput() {
     return Map.of(
         "refresh_token", "refresh_token_response",
-        "client_id", Jsons.SECRET_MASK,
-        "client_secret", Jsons.SECRET_MASK);
+        "client_id", MoreOAuthParameters.SECRET_MASK,
+        "client_secret", MoreOAuthParameters.SECRET_MASK);
   }
 
   /**
@@ -137,19 +138,19 @@ public abstract class BaseOAuthFlowTest {
   protected Map<String, String> getExpectedFilteredOutput() {
     return Map.of(
         "refresh_token", "refresh_token_response",
-        "client_id", Jsons.SECRET_MASK);
+        "client_id", MoreOAuthParameters.SECRET_MASK);
   }
 
   private OAuthConfigSpecification getoAuthConfigSpecification() {
     return new OAuthConfigSpecification()
         .withCompleteOauthOutputSpecification(getOutputOAuthSpecification())
-        .withCompleteOauthServerOutputParameterSpecification(getOutputOAuthParameterSpecification());
+        .withCompleteOauthServerOutputSpecification(getOutputOAuthParameterSpecification());
   }
 
   private OAuthConfigSpecification getEmptyOAuthConfigSpecification() {
     return new OAuthConfigSpecification()
         .withCompleteOauthOutputSpecification(Jsons.emptyObject())
-        .withCompleteOauthServerOutputParameterSpecification(Jsons.emptyObject());
+        .withCompleteOauthServerOutputSpecification(Jsons.emptyObject());
   }
 
   protected String getConstantState() {

@@ -19,6 +19,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.oauth.MoreOAuthParameters;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
@@ -84,8 +85,8 @@ public class TrelloOAuthFlowTest {
     final Map<String, String> expectedParams = Map.of(
         "key", "test_client_id",
         "token", "test_token",
-        "client_id", Jsons.SECRET_MASK,
-        "client_secret", Jsons.SECRET_MASK);
+        "client_id", MoreOAuthParameters.SECRET_MASK,
+        "client_secret", MoreOAuthParameters.SECRET_MASK);
     final Map<String, Object> queryParams = Map.of("oauth_token", "token", "oauth_verifier", "verifier");
     final Map<String, Object> actualParams =
         trelloOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);

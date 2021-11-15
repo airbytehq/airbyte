@@ -22,6 +22,7 @@ import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.oauth.MoreOAuthParameters;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
@@ -138,7 +139,7 @@ public class OAuthConfigSupplierTest {
     final JsonNode actualConfig = maskingSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
     final ObjectNode expectedConfig = ((ObjectNode) Jsons.clone(config));
     for (final String key : oauthParameters.keySet()) {
-      expectedConfig.set(key, Jsons.getSecretMask());
+      expectedConfig.set(key, MoreOAuthParameters.getSecretMask());
     }
     assertEquals(expectedConfig, actualConfig);
     assertNoTracking();

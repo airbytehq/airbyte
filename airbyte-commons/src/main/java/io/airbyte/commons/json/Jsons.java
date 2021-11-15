@@ -4,8 +4,6 @@
 
 package io.airbyte.commons.json;
 
-import static com.fasterxml.jackson.databind.node.JsonNodeType.OBJECT;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
@@ -16,11 +14,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.stream.MoreStreams;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,13 +26,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Jsons {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(Jsons.class);
-  public static final String SECRET_MASK = "******";
 
   // Object Mapper is thread-safe
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
@@ -198,25 +189,6 @@ public class Jsons {
     return optional.map(JsonNode::asInt).orElse(0);
   }
 
-  public static JsonNode flattenConfig(final JsonNode config) {
-    return flattenConfig((ObjectNode) Jsons.emptyObject(), (ObjectNode) config);
-  }
-
-  private static ObjectNode flattenConfig(final ObjectNode flatConfig, final ObjectNode configToFlatten) {
-    final List<String> keysToFlatten = new ArrayList<>();
-    for (final String key : Jsons.keys(configToFlatten)) {
-      if (configToFlatten.get(key).getNodeType() == OBJECT) {
-        keysToFlatten.add(key);
-      } else if (!flatConfig.has(key)) {
-        flatConfig.set(key, configToFlatten.get(key));
-      } else {
-        LOGGER.warn(String.format("Config's key '%s' already exists", key));
-      }
-    }
-    keysToFlatten.forEach(key -> flattenConfig(flatConfig, (ObjectNode) configToFlatten.get(key)));
-    return flatConfig;
-  }
-
   /**
    * By the Jackson DefaultPrettyPrinter prints objects with an extra space as follows: {"name" :
    * "airbyte"}. We prefer {"name": "airbyte"}.
@@ -238,47 +210,6 @@ public class Jsons {
       return this;
     }
 
-  }
-
-  public static JsonNode mergeJsons(final ObjectNode mainConfig, final ObjectNode fromConfig) {
-    return mergeJsons(mainConfig, fromConfig, null);
-  }
-
-  public static JsonNode mergeJsons(final ObjectNode mainConfig, final ObjectNode fromConfig, final JsonNode maskedValue) {
-    for (final String key : Jsons.keys(fromConfig)) {
-      if (fromConfig.get(key).getNodeType() == OBJECT) {
-        // nested objects are merged rather than overwrite the contents of the equivalent object in config
-        if (mainConfig.get(key) == null) {
-          mergeJsons(mainConfig.putObject(key), (ObjectNode) fromConfig.get(key), maskedValue);
-        } else if (mainConfig.get(key).getNodeType() == OBJECT) {
-          mergeJsons((ObjectNode) mainConfig.get(key), (ObjectNode) fromConfig.get(key), maskedValue);
-        } else {
-          throw new IllegalStateException("Can't merge an object node into a non-object node!");
-        }
-      } else {
-        if (maskedValue != null && !maskedValue.isNull()) {
-          LOGGER.debug(String.format("Masking instance wide parameter %s in config", key));
-          mainConfig.set(key, maskedValue);
-        } else {
-          if (!mainConfig.has(key) || isSecretMask(mainConfig.get(key).asText())) {
-            LOGGER.debug(String.format("injecting instance wide parameter %s into config", key));
-            mainConfig.set(key, fromConfig.get(key));
-          }
-        }
-      }
-    }
-    return mainConfig;
-  }
-
-  public static JsonNode getSecretMask() {
-    // TODO secrets should be masked with the correct type
-    // https://github.com/airbytehq/airbyte/issues/5990
-    // In the short-term this is not world-ending as all secret fields are currently strings
-    return Jsons.jsonNode(SECRET_MASK);
-  }
-
-  private static boolean isSecretMask(final String input) {
-    return Strings.isNullOrEmpty(input.replaceAll("\\*", ""));
   }
 
 }

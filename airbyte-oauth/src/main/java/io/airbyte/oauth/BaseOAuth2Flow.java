@@ -116,7 +116,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return formatOAuthOutput(
         oAuthParamConfig,
-        internalCompleteOAuthFlow(
+        completeOAuthFlow(
             getClientIdUnsafe(oAuthParamConfig),
             getClientSecretUnsafe(oAuthParamConfig),
             extractCodeParameter(queryParams),
@@ -135,7 +135,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return formatOAuthOutput(
         oAuthParamConfig,
-        internalCompleteOAuthFlow(
+        completeOAuthFlow(
             getClientIdUnsafe(oAuthParamConfig),
             getClientSecretUnsafe(oAuthParamConfig),
             extractCodeParameter(queryParams),
@@ -155,7 +155,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, sourceDefinitionId);
     return formatOAuthOutput(
         oAuthParamConfig,
-        internalCompleteOAuthFlow(
+        completeOAuthFlow(
             getClientIdUnsafe(oAuthParamConfig),
             getClientSecretUnsafe(oAuthParamConfig),
             extractCodeParameter(queryParams),
@@ -175,7 +175,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return formatOAuthOutput(
         oAuthParamConfig,
-        internalCompleteOAuthFlow(
+        completeOAuthFlow(
             getClientIdUnsafe(oAuthParamConfig),
             getClientSecretUnsafe(oAuthParamConfig),
             extractCodeParameter(queryParams),
@@ -184,11 +184,11 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
         oAuthConfigSpecification);
   }
 
-  protected Map<String, Object> internalCompleteOAuthFlow(final String clientId,
-                                                          final String clientSecret,
-                                                          final String authCode,
-                                                          final String redirectUrl,
-                                                          final JsonNode oAuthParamConfig)
+  protected Map<String, Object> completeOAuthFlow(final String clientId,
+                                                  final String clientSecret,
+                                                  final String authCode,
+                                                  final String redirectUrl,
+                                                  final JsonNode oAuthParamConfig)
       throws IOException {
     final var accessTokenUrl = getAccessTokenUrl();
     final HttpRequest request = HttpRequest.newBuilder()

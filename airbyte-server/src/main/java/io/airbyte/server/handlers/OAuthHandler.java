@@ -23,6 +23,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.oauth.OAuthImplementationFactory;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.TrackingMetadata;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
@@ -97,7 +98,7 @@ public class OAuthHandler {
     final ConnectorSpecification spec = specFetcher.getSpec(sourceDefinition);
     final ImmutableMap<String, Object> metadata = generateSourceMetadata(oauthSourceRequestBody.getSourceDefinitionId());
     final Map<String, Object> result;
-    if (spec != null && spec.getAdvancedAuth() != null && spec.getAdvancedAuth().getOauthConfigSpecification() != null) {
+    if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
       result = oAuthFlowImplementation.completeSourceOAuth(
           oauthSourceRequestBody.getWorkspaceId(),
           oauthSourceRequestBody.getSourceDefinitionId(),
@@ -129,7 +130,7 @@ public class OAuthHandler {
     final ConnectorSpecification spec = specFetcher.getSpec(destinationDefinition);
     final ImmutableMap<String, Object> metadata = generateDestinationMetadata(oauthDestinationRequestBody.getDestinationDefinitionId());
     final Map<String, Object> result;
-    if (spec != null && spec.getAdvancedAuth() != null && spec.getAdvancedAuth().getOauthConfigSpecification() != null) {
+    if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
       result = oAuthFlowImplementation.completeDestinationOAuth(
           oauthDestinationRequestBody.getWorkspaceId(),
           oauthDestinationRequestBody.getDestinationDefinitionId(),
