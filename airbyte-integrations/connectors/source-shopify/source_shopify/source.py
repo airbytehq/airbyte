@@ -343,7 +343,7 @@ class Locations(ShopifyStream):
 class InventoryItems(IncrementalShopifyStream):
 
     data_field = "inventory_items"
-    cursor_field = "created_at"
+    cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
