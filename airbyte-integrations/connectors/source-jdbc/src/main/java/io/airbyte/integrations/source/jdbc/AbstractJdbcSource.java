@@ -53,6 +53,8 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   private static final String JDBC_COLUMN_TABLE_NAME = "TABLE_NAME";
   private static final String JDBC_COLUMN_COLUMN_NAME = "COLUMN_NAME";
   private static final String JDBC_COLUMN_DATA_TYPE = "DATA_TYPE";
+  private static final String GRANTEE = "GRANTEE";
+  private static final String PRIVILEGE = "PRIVILEGE";
 
   private static final String INTERNAL_SCHEMA_NAME = "schemaName";
   private static final String INTERNAL_TABLE_NAME = "tableName";
@@ -112,6 +114,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   @Override
   protected List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database, final String schema) throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
+    Set<String> tablesWithSelectGrantPrivilege = getTablesWithSelectGrantPrivilegeForCurrentDbUser(database, schema);
     return database.bufferedResultSetQuery(
         conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
@@ -124,7 +127,8 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
             .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
             .build()))
         .stream()
-        .filter(t -> !internalSchemas.contains(t.get(INTERNAL_SCHEMA_NAME).asText()))
+        .filter(t -> tablesWithSelectGrantPrivilege.contains(t.get(INTERNAL_TABLE_NAME).asText()) &&
+            !internalSchemas.contains(t.get(INTERNAL_SCHEMA_NAME).asText()))
         // group by schema and table name to handle the case where a table with the same name exists in
         // multiple schemas.
         .collect(Collectors.groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
@@ -151,6 +155,23 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
                 .collect(Collectors.toList()))
             .build())
         .collect(Collectors.toList());
+  }
+
+  private Set<String> getTablesWithSelectGrantPrivilegeForCurrentDbUser(JdbcDatabase database, String schema) throws SQLException {
+    return database.bufferedResultSetQuery(
+            conn -> conn.getMetaData().getTablePrivileges(getCatalog(database), schema, null),
+            resultSet ->
+                Jsons.jsonNode(ImmutableMap.<String, Object>builder()
+                    .put(GRANTEE, resultSet.getString(GRANTEE))
+                    .put(JDBC_COLUMN_TABLE_NAME, resultSet.getString(JDBC_COLUMN_TABLE_NAME))
+                    .put(PRIVILEGE, resultSet.getString(PRIVILEGE))
+                    .build()))
+        .stream()
+        .filter(jsonNode ->
+            jsonNode.get(GRANTEE).equals(database.getDatabaseConfig().get("username"))
+                && jsonNode.get(PRIVILEGE).asText().equals("SELECT"))
+        .map(jsonNode -> jsonNode.get(JDBC_COLUMN_TABLE_NAME).asText())
+        .collect(Collectors.toSet());
   }
 
   @Override
