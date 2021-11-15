@@ -8,7 +8,6 @@ import json
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
 from source_linnworks.streams import IncrementalLinnworksStream, ProcessedOrders
 
 
