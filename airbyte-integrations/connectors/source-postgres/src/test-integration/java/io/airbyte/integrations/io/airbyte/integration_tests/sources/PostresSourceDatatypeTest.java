@@ -54,13 +54,13 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         "org.postgresql.Driver",
         SQLDialect.POSTGRES);
 
-    database.query(ctx -> ctx.fetch("CREATE SCHEMA TEST;"));
-    database.query(ctx -> ctx.fetch("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');"));
-    database.query(ctx -> ctx.fetch("CREATE TYPE inventory_item AS (\n"
-        + "    name            text,\n"
-        + "    supplier_id     integer,\n"
-        + "    price           numeric\n"
-        + ");"));
+    database.query(ctx -> {
+      ctx.execute("CREATE SCHEMA TEST;");
+      ctx.execute("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');");
+      ctx.execute("CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);");
+      ctx.execute("SET lc_monetary TO 'en_US.utf8';");
+      return null;
+    });
 
     return database;
   }
@@ -294,17 +294,13 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 "08:00:2b:01:02:03:04:07")
             .build());
 
-    // The Money type fails when amount is > 1,000. in JdbcUtils-> rowToJson as r.getObject(i);
-    // Bad value for type double : 1,000.01
-    // The reason is that in jdbc implementation money type is tried to get as Double (jdbc
-    // implementation)
     // Max values for Money type: "-92233720368547758.08", "92233720368547758.07"
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("money")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'999.99'")
-            .addExpectedValues(null, "999.99")
+            .addInsertValues("null", "'999.99'", "'1001.01'", "'-92233720368547758.08'", "'92233720368547758.07'")
+            .addExpectedValues(null, "$999.99", "$1,001.01", "-$92,233,720,368,547,758.08", "$92,233,720,368,547,758.07")
             .build());
 
     // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
