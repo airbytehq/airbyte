@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class SunshineStream(HttpStream, ABC):
-    primary_key = "id"
+    primary_key = None
     data_field = "data"
     page_size = 100
 

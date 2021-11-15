@@ -4,18 +4,9 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Zendesk Sunshine Spec",
     "type": "object",
-    "required": ["api_token", "email", "start_date", "subdomain"],
-    "additionalProperties": false,
+    "required": ["start_date", "subdomain"],
+    "additionalProperties": true,
     "properties": {
-      "api_token": {
-        "type": "string",
-        "airbyte_secret": true,
-        "description": "API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk_sunshine\">docs</a> for information on how to generate this key."
-      },
-      "email": {
-        "type": "string",
-        "description": "The user email for your Zendesk account"
-      },
       "subdomain": {
         "type": "string",
         "description": "The subdomain for your Zendesk Account"
@@ -25,8 +16,79 @@
         "type": "string",
         "description": "The date from which you'd like to replicate the data",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "examples": "2021-01-01T00:00:00.000000Z"
+        "examples": ["2021-01-01T00:00:00.000000Z"]
+      },
+      "credentials": {
+        "title": "Authorization Method",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "OAuth2.0",
+            "required": ["access_token"],
+            "properties": {
+              "auth_method": {
+                "type": "string",
+                "const": "oauth2.0",
+                "enum": ["oauth2.0"],
+                "default": "oauth2.0",
+                "order": 0
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "The Client ID of your OAuth application.",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "The Client Secret of your OAuth application.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "Long-term access Token for making authenticated requests.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "API Token",
+            "required": ["api_token", "email"],
+            "properties": {
+              "auth_method": {
+                "type": "string",
+                "const": "api_token",
+                "enum": ["api_token"],
+                "default": "api_token",
+                "order": 1
+              },
+              "api_token": {
+                "type": "string",
+                "title": "API Token",
+                "description": "API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk_sunshine\">docs</a> for information on how to generate this key.",
+                "airbyte_secret": true
+              },
+              "email": {
+                "type": "string",
+                "title": "Email",
+                "description": "The user email for your Zendesk account"
+              }
+            }
+          }
+        ]
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials", "0"],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["access_token"]]
     }
   }
 }

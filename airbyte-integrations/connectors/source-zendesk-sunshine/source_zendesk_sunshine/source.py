@@ -12,6 +12,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from requests.auth import AuthBase
 
 from .streams import Limits, ObjectRecords, ObjectTypePolicies, ObjectTypes, RelationshipRecords, RelationshipTypes
 
@@ -23,11 +24,37 @@ class Base64HttpAuthenticator(TokenAuthenticator):
         super().__init__(token=b64_encoded, auth_method=auth_method, **kwargs)
 
 
+class ZendeskSunshineAuthenticator:
+    """Provides the authentication capabilities for both old and new methods."""
+
+    @staticmethod
+    def get_auth(config: Mapping[str, Any]) -> AuthBase:
+        credentials = config.get("credentials", {})
+        auth_method = credentials.get("auth_method")
+
+        if auth_method == "api_token" or not credentials:
+            api_token = credentials.get("api_token") or config.get("api_token")
+            if not api_token:
+                raise Exception("No api_token in creds")
+            email = credentials.get("email") or config.get("email")
+            if not email:
+                raise Exception("No email in creds")
+            auth = Base64HttpAuthenticator(auth=(f"{email}/token", api_token))
+
+        elif auth_method == "oauth2.0":
+            auth = TokenAuthenticator(token=credentials["access_token"])
+
+        else:
+            raise Exception(f"Invalid auth method: {auth_method}")
+
+        return auth
+
+
 class SourceZendeskSunshine(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             pendulum.parse(config["start_date"], strict=True)
-            authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
+            authenticator = ZendeskSunshineAuthenticator.get_auth(config)
             stream = Limits(authenticator=authenticator, subdomain=config["subdomain"], start_date=pendulum.parse(config["start_date"]))
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
@@ -47,7 +74,7 @@ class SourceZendeskSunshine(AbstractSource):
         After this time is passed we have no data. It will require permanent population, to pass
         the test criteria `stream should contain at least 1 record)
         """
-        authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
+        authenticator = ZendeskSunshineAuthenticator.get_auth(config)
         args = {"authenticator": authenticator, "subdomain": config["subdomain"], "start_date": config["start_date"]}
         return [
             ObjectTypes(**args),
