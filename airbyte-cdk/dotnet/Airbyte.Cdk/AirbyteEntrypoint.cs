@@ -82,7 +82,7 @@ namespace Airbyte.Cdk
         private static async Task Launch()
         {
             var spec = Connector.Spec();
-            
+
             switch (Options.Command.ToLowerInvariant())
             {
                 case "spec":
@@ -117,12 +117,12 @@ namespace Airbyte.Cdk
                         Task.Run(async () =>
                         {
                             var writer = readerChannel.Writer;
-                            var source = GetSource();
-                            var state = GetState(source, readOptions);
-                            var config = GetConfig(spec);
-                            var catalog = GetCatalog();
                             try
                             {
+                                var source = GetSource();
+                                var state = GetState(source, readOptions);
+                                var config = GetConfig(spec);
+                                var catalog = GetCatalog();
                                 await source.Read(Logger, writer, config, catalog, state);
                             }
                             catch (Exception e)
