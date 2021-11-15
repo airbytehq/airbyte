@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
+import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 import { useServiceForm } from "../serviceFormContext";
-import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
 
 const AuthSectionRow = styled.div`
   display: flex;
@@ -23,11 +23,11 @@ const SuccessMessage = styled.div`
 export const AuthButton: React.FC = () => {
   const { selectedService, selectedConnector } = useServiceForm();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { loading, done, run } = useFormikOauthAdapter(selectedConnector!);
+  const { loading, done, run } = useRunOauthFlow(selectedConnector!);
 
   return (
     <AuthSectionRow>
-      <Button isLoading={loading} type="button" onClick={() => run()}>
+      <Button isLoading={loading} type="button" onClick={run}>
         {done ? (
           <>
             <FormattedMessage id="connectorForm.reauthenticate" />
