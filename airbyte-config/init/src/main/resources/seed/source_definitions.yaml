@@ -25,7 +25,7 @@
 - name: Apify Dataset
   sourceDefinitionId: 47f17145-fe20-4ef5-a548-e29b048adf84
   dockerRepository: airbyte/source-apify-dataset
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/apify-dataset
   sourceType: api
 - name: Appstore
@@ -50,7 +50,7 @@
 - name: BigCommerce
   sourceDefinitionId: 59c5501b-9f95-411e-9269-7143c939adbd
   dockerRepository: airbyte/source-bigcommerce
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/bigcommerce
   sourceType: api
 - name: BigQuery
@@ -75,7 +75,7 @@
 - name: Cart.com
   sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
   dockerRepository: airbyte/source-cart
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/cart
   sourceType: api
 - name: Chargebee
@@ -99,7 +99,7 @@
 - name: Cockroachdb
   sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   dockerRepository: airbyte/source-cockroachdb
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/cockroachdb
   sourceType: database
 - name: Commercetools
@@ -117,7 +117,7 @@
 - name: Dixa
   sourceDefinitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
   dockerRepository: airbyte/source-dixa
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/dixa
   sourceType: api
 - name: Drift
@@ -130,14 +130,14 @@
 - name: Exchange Rates Api
   sourceDefinitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
   dockerRepository: airbyte/source-exchange-rates
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
   icon: exchangeratesapi.svg
   sourceType: api
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.22
+  dockerImageTag: 0.2.25
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -178,7 +178,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -239,17 +239,17 @@
   dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/harvest
   sourceType: api
-- name: Hubspot
+- name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.24
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
 - name: IBM Db2
   sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
   dockerRepository: airbyte/source-db2
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/db2
   sourceType: database
 - name: Instagram
@@ -261,14 +261,14 @@
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/intercom
   icon: intercom.svg
   sourceType: api
 - name: Iterable
   sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
   dockerRepository: airbyte/source-iterable
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/iterable
   sourceType: api
 - name: Jira
@@ -299,7 +299,7 @@
 - name: LinkedIn Ads
   sourceDefinitionId: 137ece28-5434-455c-8f34-69dc3782f451
   dockerRepository: airbyte/source-linkedin-ads
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/linkedin-ads
   sourceType: api
 - name: Looker
@@ -326,7 +326,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.3.6
+  dockerImageTag: 0.3.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -340,7 +340,7 @@
 - name: Mixpanel
   sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
   dockerRepository: airbyte/source-mixpanel
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/mixpanel
   icon: mixpanel.svg
   sourceType: api
@@ -373,7 +373,7 @@
 - name: OneSignal
   sourceDefinitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
   dockerRepository: airbyte/source-onesignal
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
   sourceType: api
 - name: Oracle DB
@@ -385,7 +385,7 @@
 - name: Paypal Transaction
   sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
   dockerRepository: airbyte/source-paypal-transaction
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/paypal-transaction
   sourceType: api
 - name: Paystack
@@ -474,7 +474,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.io/integrations/sources/s3
   sourceType: file
 - name: SalesLoft
@@ -506,26 +506,26 @@
 - name: Short.io
   sourceDefinitionId: 2fed2292-5586-480c-af92-9944e39fe12d
   dockerRepository: airbyte/source-shortio
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/shortio
   sourceType: api
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/slack
   icon: slack.svg
   sourceType: api
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/smartsheets
   sourceType: api
 - name: Snapchat Marketing
   sourceDefinitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
   dockerRepository: airbyte/source-snapchat-marketing
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/snapchat-marketing
   sourceType: api
 - name: Snowflake
@@ -537,7 +537,7 @@
 - name: Square
   sourceDefinitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
   dockerRepository: airbyte/source-square
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/square
   sourceType: api
 - sourceDefinitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
@@ -567,13 +567,13 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/tiktok-marketing
   sourceType: api
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/trello
   sourceType: api
 - name: Twilio
@@ -591,7 +591,7 @@
 - name: US Census
   sourceDefinitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
   dockerRepository: airbyte/source-us-census
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/us-census
   sourceType: api
 - name: Zendesk Chat
@@ -617,7 +617,7 @@
 - name: Zendesk Talk
   sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   dockerRepository: airbyte/source-zendesk-talk
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-talk
   sourceType: api
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
@@ -638,3 +638,9 @@
   dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/zuora
   sourceType: api
+- name: Azure Table Storage
+  sourceDefinitionId: 798ae795-5189-42b6-b64e-3cb91db93338
+  dockerRepository: airbyte/source-azure-table
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/azure-table
+  sourceType: database
