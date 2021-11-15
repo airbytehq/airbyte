@@ -12,7 +12,7 @@ namespace Airbyte.Cdk
         /// <param name="config"></param>
         /// <param name="tempdir"></param>
         /// <returns></returns>
-        public virtual JsonDocument Configure(JsonDocument config, string tempdir)
+        public virtual JsonElement Configure(JsonElement config, string tempdir)
         {
             var configpath = Path.Join(tempdir, "config.json");
             WriteConfig(config, configpath);
@@ -29,12 +29,12 @@ namespace Airbyte.Cdk
             if (!File.Exists(filepath))
                 throw new FileNotFoundException("Unable to find spec.json");
             var rawspec = ReadConfig(filepath);
-            return JsonSerializer.Deserialize<ConnectorSpecification>(rawspec.RootElement.GetRawText());
+            return JsonSerializer.Deserialize<ConnectorSpecification>(rawspec.GetRawText());
         }
 
-        public static void WriteConfig(JsonDocument config, string configpath) => File.WriteAllText(configpath, config.RootElement.GetRawText());
+        public static void WriteConfig(JsonElement config, string configpath) => File.WriteAllText(configpath, config.GetRawText());
 
-        public static JsonDocument ReadConfig(string configpath) => JsonDocument.Parse(File.ReadAllText(configpath));
+        public static JsonElement ReadConfig(string configpath) => JsonDocument.Parse(File.ReadAllText(configpath)).RootElement.Clone();
 
         /// <summary>
         /// Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect to the Stripe API.
@@ -42,6 +42,6 @@ namespace Airbyte.Cdk
         /// <param name="logger"></param>
         /// <param name="config"></param>
         /// <returns></returns>
-        public abstract AirbyteConnectionStatus Check(AirbyteLogger logger, JsonDocument config);
+        public abstract AirbyteConnectionStatus Check(AirbyteLogger logger, JsonElement config);
     }
 }

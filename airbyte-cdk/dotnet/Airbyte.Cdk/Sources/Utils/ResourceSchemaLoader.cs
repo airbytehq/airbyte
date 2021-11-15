@@ -8,7 +8,7 @@ namespace Airbyte.Cdk.Sources.Utils
 {
     public class ResourceSchemaLoader
     {
-        public static bool TryCheckConfigAgainstSpecOrExit(JsonDocument config, ConnectorSpecification spec,
+        public static bool TryCheckConfigAgainstSpecOrExit(JsonElement config, ConnectorSpecification spec,
             out Exception exc)
             => VerifySchema(config, JsonSchema.FromText(spec.ConnectionSpecification.RootElement.GetRawText()), out exc);
 
@@ -30,8 +30,5 @@ namespace Airbyte.Cdk.Sources.Utils
             exc = !result.IsValid ? new Exception(result.Message) : null;
             return result.IsValid;
         }
-
-        public static bool VerifySchema(JsonDocument jsonDocument, JsonSchema schema, out Exception exc)
-            => VerifySchema(jsonDocument.RootElement, schema, out exc);
     }
 }

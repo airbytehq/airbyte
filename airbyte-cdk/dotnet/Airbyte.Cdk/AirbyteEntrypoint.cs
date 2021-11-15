@@ -2,8 +2,11 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Unicode;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Airbyte.Cdk.Destinations;
@@ -15,9 +18,6 @@ using Type = Airbyte.Cdk.Models.Type;
 
 namespace Airbyte.Cdk
 {
-    /// <summary>
-    /// TODO: I guess the CDK only works for source connectors, for now
-    /// </summary>
     public class AirbyteEntrypoint
     {
         static Connector Connector { get; set; }
@@ -33,6 +33,9 @@ namespace Airbyte.Cdk
 
         public static async Task Main(string[] args)
         {
+            Console.OutputEncoding = Encoding.UTF8;
+            Console.InputEncoding = Encoding.UTF8;
+
             Parser.Default.ParseArguments<ReadOptions, WriteOptions>(args)
                 .WithParsed<ReadOptions>(options => Options = options)
                 .WithParsed<WriteOptions>(options => Options = options)
@@ -65,21 +68,21 @@ namespace Airbyte.Cdk
         private static Source GetSource()
         {
             if (Connector is not Source source)
-                throw new Exception($"Could instantiate Source as current type ({Connector.GetType().Name}) is not implementing {nameof(Source)}");
+                throw new Exception($"Could not instantiate Source as current type ({Connector.GetType().Name}) is not implementing {nameof(Source)}");
             return source;
         }
 
         private static Destination GetDestination()
         {
             if (Connector is not Destination destination)
-                throw new Exception($"Could instantiate Destination as current type ({Connector.GetType().Name}) is not implementing {nameof(Destination)}");
+                throw new Exception($"Could not instantiate Destination as current type ({Connector.GetType().Name}) is not implementing {nameof(Destination)}");
             return destination;
         }
 
         private static async Task Launch()
         {
             var spec = Connector.Spec();
-
+            
             switch (Options.Command.ToLowerInvariant())
             {
                 case "spec":
@@ -186,11 +189,16 @@ namespace Airbyte.Cdk
             return false;
         }
 
-        private static JsonDocument GetConfig(ConnectorSpecification spec)
+        private static JsonElement GetConfig(ConnectorSpecification spec)
         {
-            var toreturn = string.IsNullOrWhiteSpace(Options.Config) ? throw new Exception("Config is undefined!")
+            var contents = string.IsNullOrWhiteSpace(Options.Config) ? throw new Exception("Config is undefined!")
                 : !TryGetPath(Options.Config, out var filepath) ? throw new FileNotFoundException("Could not find config file: " + filepath)
-                : File.ReadAllText(filepath).AsJsonDocument();
+                : File.ReadAllText(filepath);
+
+            if (string.IsNullOrWhiteSpace(contents))
+                throw new Exception("Config file is empty!");
+
+            var toreturn = contents.AsJsonElement();
 
             if (!ResourceSchemaLoader.TryCheckConfigAgainstSpecOrExit(toreturn, spec, out var exc))
                 throw new Exception($"Config does not match spec schema: {exc.Message}");
@@ -217,7 +225,7 @@ namespace Airbyte.Cdk
             else throw new FileNotFoundException("Cannot find catalog file: " + filepath);
         }
 
-        private static JsonDocument GetState(Source source, ReadOptions readoptions)
+        private static JsonElement GetState(Source source, ReadOptions readoptions)
         {
             if (TryGetPath(readoptions.State, out var filepath))
                 Logger.Info($"Found state file at location: {filepath}");
@@ -225,28 +233,33 @@ namespace Airbyte.Cdk
                 Logger.Warn($"Could not find state file, config reported state file location: {readoptions.State}");
 
             var contents = source.ReadState(filepath);
-            Logger.Debug($"State file contents: {contents.RootElement.GetRawText()}");
+            Logger.Debug($"State file contents: {contents.GetRawText()}");
             return contents;
         }
 
         public static bool TryGetPath(string filename, out string filepath)
         {
             filepath = string.Empty;
+            if (string.IsNullOrWhiteSpace(filename))
+                return false;
             foreach (var path in new[] { Path.Join(Path.GetDirectoryName(AirbyteImplPath), filename), filename, Path.Join(Directory.GetCurrentDirectory(), filename) })
-            {
                 if (File.Exists(path))
+                {
                     filepath = path;
-            }
+                    break;
+                }
 
             return !string.IsNullOrWhiteSpace(filepath);
         }
 
-        public static void ToConsole<T>(T item) where T : AirbyteMessage => Console.WriteLine(JsonSerializer.Serialize(item, new JsonSerializerOptions
-        {
-            WriteIndented = false,
-            IgnoreNullValues = true,
-            Converters = { new JsonStringEnumConverter() }
-        }));
+        public static void ToConsole<T>(T item) where T : AirbyteMessage =>
+            Console.WriteLine(Encoding.UTF8.GetString(JsonSerializer.SerializeToUtf8Bytes(item, new JsonSerializerOptions
+            {
+                WriteIndented = false,
+                IgnoreNullValues = true,
+                Converters = { new JsonStringEnumConverter() },
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+            })));
 
     }
 }

@@ -21,11 +21,11 @@ namespace Airbyte.Cdk.Tests.Sources
         {
             Exception noexc = null;
             Mock.Setup(
-                    (source => source.CheckConnection(It.IsAny<AirbyteLogger>(), It.IsAny<JsonDocument>(), out noexc)))
+                    (source => source.CheckConnection(It.IsAny<AirbyteLogger>(), It.IsAny<JsonElement>(), out noexc)))
                 .Returns(true);
             Mock.CallBase = true;
 
-            var result = Mock.Object.Check(Logger.Object, null);
+            var result = Mock.Object.Check(Logger.Object, "".AsJsonElement());
 
             result.Should().NotBeNull();
             result.Status.Should().Be(Status.SUCCEEDED);
@@ -37,11 +37,11 @@ namespace Airbyte.Cdk.Tests.Sources
             string exceptionmessage = "Cannot execute due to incorrect code!";
             Exception exception = new Exception(exceptionmessage);
             Mock.Setup(
-                    (source => source.CheckConnection(It.IsAny<AirbyteLogger>(), It.IsAny<JsonDocument>(), out exception)))
+                    (source => source.CheckConnection(It.IsAny<AirbyteLogger>(), It.IsAny<JsonElement>(), out exception)))
                 .Returns(false);
             Mock.CallBase = true;
 
-            var result = Mock.Object.Check(Logger.Object, null);
+            var result = Mock.Object.Check(Logger.Object,"".AsJsonElement());
 
             result.Should().NotBeNull();
             result.Status.Should().Be(Status.FAILED);
@@ -55,7 +55,7 @@ namespace Airbyte.Cdk.Tests.Sources
             var airbytestream_1 = new AirbyteStream
             {
                 Name = "1",
-                JsonSchema = "{}".AsJsonDocument(),
+                JsonSchema = "{}".AsJsonElement(),
                 SupportedSyncModes = new[] { SyncMode.full_refresh, SyncMode.incremental },
                 DefaultCursorField = new[] { "cursor" },
                 SourceDefinedCursor = true
@@ -64,7 +64,7 @@ namespace Airbyte.Cdk.Tests.Sources
             var airbytestream_2 = new AirbyteStream
             {
                 Name = "2",
-                JsonSchema = "{}".AsJsonDocument(),
+                JsonSchema = "{}".AsJsonElement(),
                 SupportedSyncModes = new[] { SyncMode.full_refresh }
             };
 
@@ -80,10 +80,10 @@ namespace Airbyte.Cdk.Tests.Sources
             };
 
             var returns = new[] { stream1.Object, stream2.Object };
-            Mock.Setup(source => source.Streams(It.IsAny<JsonDocument>())).Returns(returns);
+            Mock.Setup(source => source.Streams(It.IsAny<JsonElement>())).Returns(returns);
             Mock.CallBase = true;
 
-            var result = Mock.Object.Discover(Logger.Object, null);
+            var result = Mock.Object.Discover(Logger.Object, "".AsJsonElement());
 
             result.Should().NotBeNull();
             result.Streams.Length.Should().Be(expectedresult.Streams.Length);
@@ -136,12 +136,12 @@ namespace Airbyte.Cdk.Tests.Sources
 
     public class MockSource : AbstractSource
     {
-        public override bool CheckConnection(AirbyteLogger logger, JsonDocument config, out Exception exc)
+        public override bool CheckConnection(AirbyteLogger logger, JsonElement config, out Exception exc)
         {
             throw new NotImplementedException();
         }
 
-        public override Stream[] Streams(JsonDocument config)
+        public override Stream[] Streams(JsonElement config)
         {
             throw new NotImplementedException();
         }

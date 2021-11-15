@@ -4,11 +4,11 @@ namespace Airbyte.Cdk.Sources.Utils
 {
     public static class JsonDocumentExtensions
     {
-        public static T ToType<T>(this JsonDocument json)
+        public static T ToType<T>(this JsonElement json)
         {
             try
             {
-                return JsonSerializer.Deserialize<T>(json.RootElement.GetRawText());
+                return JsonSerializer.Deserialize<T>(json.GetRawText());
             }
             catch
             {
@@ -18,10 +18,10 @@ namespace Airbyte.Cdk.Sources.Utils
             return default;
         }
 
-        public static JsonDocument AsJsonDocument(this object obj) => 
-            JsonDocument.Parse(JsonSerializer.Serialize(obj));
+        public static JsonElement AsJsonElement(this object obj) =>
+            JsonDocument.Parse(JsonSerializer.Serialize(obj)).RootElement.Clone();
 
-        public static JsonDocument AsJsonDocument(this string str) =>
-            JsonDocument.Parse(str);
+        public static JsonElement AsJsonElement(this string str) =>
+            (string.IsNullOrWhiteSpace(str) ? JsonDocument.Parse("{}") : JsonDocument.Parse(str)).RootElement.Clone();
     }
 }

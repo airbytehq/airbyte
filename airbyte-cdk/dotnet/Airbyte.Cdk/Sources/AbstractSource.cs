@@ -21,9 +21,9 @@ namespace Airbyte.Cdk.Sources
 
         protected ChannelWriter<AirbyteMessage> Channel { get; private set; }
 
-        protected JsonDocument Config { get; private set; }
+        protected JsonElement Config { get; private set; }
 
-        protected JsonDocument State { get; private set; }
+        protected JsonElement State { get; private set; }
 
         protected ConfiguredAirbyteCatalog Catalog { get; private set; }
 
@@ -34,14 +34,14 @@ namespace Airbyte.Cdk.Sources
         /// <param name="config">The user-provided configuration as specified by the source's spec. This usually contains information required to check connection e.g. tokens, secrets and keys etc.</param>
         /// <returns>A Dictionary of (boolean, error). If boolean is true, then the connection check is successful and we can connect to the underlying data
         /// source using the provided configuration.</returns>
-        public abstract bool CheckConnection(AirbyteLogger logger, JsonDocument config, out Exception exc);
+        public abstract bool CheckConnection(AirbyteLogger logger, JsonElement config, out Exception exc);
 
         /// <summary>
         /// An array of the streams in this source connector.
         /// </summary>
         /// <param name="config">The user-provided configuration as specified by the source's spec. Any stream construction related operation should happen here.</param>
         /// <returns></returns>
-        public abstract Stream[] Streams(JsonDocument config);
+        public abstract Stream[] Streams(JsonElement config);
 
         public string Name
         {
@@ -54,7 +54,7 @@ namespace Airbyte.Cdk.Sources
         /// <param name="logger"></param>
         /// <param name="config"></param>
         /// <returns></returns>
-        public override AirbyteCatalog Discover(AirbyteLogger logger, JsonDocument config)
+        public override AirbyteCatalog Discover(AirbyteLogger logger, JsonElement config)
             => new() { Streams = Streams(config).Select(x => x.AsAirbyteStream()).ToArray() };
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Airbyte.Cdk.Sources
         /// <param name="logger"></param>
         /// <param name="config"></param>
         /// <returns></returns>
-        public override AirbyteConnectionStatus Check(AirbyteLogger logger, JsonDocument config)
+        public override AirbyteConnectionStatus Check(AirbyteLogger logger, JsonElement config)
         {
             try
             {
@@ -87,8 +87,8 @@ namespace Airbyte.Cdk.Sources
         /// <param name="state"></param>
         /// <returns></returns>
         public override async Task Read(AirbyteLogger logger, ChannelWriter<AirbyteMessage> channel,
-            JsonDocument config,
-            ConfiguredAirbyteCatalog catalog, JsonDocument state = null)
+            JsonElement config,
+            ConfiguredAirbyteCatalog catalog, JsonElement state)
         {
             //Set values
             Logger = logger;
@@ -121,7 +121,7 @@ namespace Airbyte.Cdk.Sources
 
         private async Task ReadStream(AirbyteLogger logger, Stream streaminstance, ConfiguredAirbyteStream configuredstream)
         {
-            if (Config.RootElement.TryGetProperty("_page_size", out var pagesizeElement) &&
+            if (Config.TryGetProperty("_page_size", out var pagesizeElement) &&
                 streaminstance is HttpStream stream && pagesizeElement.TryGetInt32(out int pagesize))
             {
                 Logger.Info($"Setting page size for {Name} to {pagesize}");
@@ -129,31 +129,31 @@ namespace Airbyte.Cdk.Sources
             }
 
             long recordcount;
-            long? recordlimit = Config.RootElement.TryGetProperty("_limit", out var limitElement) && limitElement.TryGetInt64(out var limit) ? limit : null;
+            long? recordlimit = Config.TryGetProperty("_limit", out var limitElement) && limitElement.TryGetInt64(out var limit) ? limit : null;
             Logger.Info($"Syncing stream: {streaminstance.Name}");
 
             var streamname = configuredstream.Stream.Name;
-            if (State.RootElement.TryGetProperty(streamname, out var stateElement))
+            if (State.TryGetProperty(streamname, out var stateElement))
                 Logger.Info($"Setting state of {streamname} stream to {stateElement}");
             else
-                stateElement = "{}".AsJsonDocument().RootElement;
+                stateElement = "{}".AsJsonElement();
 
             if (configuredstream.SyncMode == SyncMode.incremental && streaminstance.SupportsIncremental)
-                recordcount = await ReadIncremental(logger, streaminstance, configuredstream, stateElement.AsJsonDocument(), recordlimit);
+                recordcount = await ReadIncremental(logger, streaminstance, configuredstream, stateElement, recordlimit);
             else
-                recordcount = await streaminstance.ReadRecords(logger, SyncMode.full_refresh, Channel, recordlimit,
-                    configuredstream.CursorField, null, stateElement.AsJsonDocument());
+                recordcount = await streaminstance.ReadRecords(logger, SyncMode.full_refresh, Channel, stateElement, recordlimit,
+                    configuredstream.CursorField, null);
 
             Logger.Info($"Read {recordcount} records from {streaminstance.Name} stream");
         }
 
-        private async Task<long> ReadIncremental(AirbyteLogger logger, Stream streaminstance, ConfiguredAirbyteStream configuredstream, JsonDocument stateElement, long? recordlimit = null)
+        private async Task<long> ReadIncremental(AirbyteLogger logger, Stream streaminstance, ConfiguredAirbyteStream configuredstream, JsonElement stateElement, long? recordlimit = null)
         {
             var slices = streaminstance.StreamSlices(SyncMode.incremental, configuredstream.CursorField, stateElement);
-            return await streaminstance.ReadRecords(logger, SyncMode.incremental, Channel, recordlimit, null, slices, stateElement);
+            return await streaminstance.ReadRecords(logger, SyncMode.incremental, Channel, stateElement, recordlimit, null, slices);
         }
 
-        public static AirbyteMessage AsAirbyteMessage(string streamname, JsonDocument data) => new()
+        public static AirbyteMessage AsAirbyteMessage(string streamname, JsonElement data) => new()
         {
             Type = Type.RECORD,
             Record = new()

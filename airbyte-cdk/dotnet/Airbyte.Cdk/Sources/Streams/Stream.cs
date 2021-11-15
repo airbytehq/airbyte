@@ -54,9 +54,10 @@ namespace Airbyte.Cdk.Sources.Streams
         /// <param name="streamstate"></param>
         /// <returns></returns>
         public abstract Task<long> ReadRecords(AirbyteLogger logger, SyncMode syncMode, ChannelWriter<AirbyteMessage> streamchannel,
+            JsonElement streamstate,
             long? recordlimit = null,
             string[] cursorfield = null,
-            Dictionary<string, object> streamslice = null, JsonDocument streamstate = null);
+            Dictionary<string, object> streamslice = null);
 
         /// <summary>
         /// The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
@@ -77,12 +78,12 @@ namespace Airbyte.Cdk.Sources.Streams
         /// <param name="currentstreamstate"></param>
         /// <param name="latestrecord"></param>
         /// <returns></returns>
-        public virtual JsonDocument GetUpdatedState(JsonDocument currentstreamstate,
-            JsonDocument latestrecord) => JsonDocument.Parse("{}");
+        public virtual JsonElement GetUpdatedState(JsonElement currentstreamstate,
+            JsonElement latestrecord) => "{}".AsJsonElement();
 
         public virtual AirbyteStream AsAirbyteStream()
         {
-            var stream = new AirbyteStream { Name = Name, JsonSchema = GetJsonSchema().AsJsonDocument(), SupportedSyncModes = new[] { SyncMode.full_refresh } };
+            var stream = new AirbyteStream { Name = Name, JsonSchema = GetJsonSchema().AsJsonElement(), SupportedSyncModes = new[] { SyncMode.full_refresh } };
 
             if (SupportsIncremental)
             {
@@ -108,6 +109,6 @@ namespace Airbyte.Cdk.Sources.Streams
         /// <param name="streamstate"></param>
         /// <returns></returns>
         public virtual Dictionary<string, object> StreamSlices(SyncMode syncmode, string[] cursorfield,
-            JsonDocument streamstate) => new();
+            JsonElement streamstate) => new();
     }
 }

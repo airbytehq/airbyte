@@ -14,10 +14,10 @@ namespace Airbyte.Cdk.Tests
         {
             var jsonobject = "{\"bogus\": \"json\"}";
 
-            var result = jsonobject.AsJsonDocument();
+            var result = jsonobject.AsJsonElement();
 
-            result.RootElement.GetRawText().Should().Be(jsonobject, "the raw text should stay the same");
-            result.RootElement.ValueKind.Should().Be(JsonValueKind.Object, "we provided a json object");
+            result.GetRawText().Should().Be(jsonobject, "the raw text should stay the same");
+            result.ValueKind.Should().Be(JsonValueKind.Object, "we provided a json object");
         }
 
         [Fact]
@@ -25,9 +25,9 @@ namespace Airbyte.Cdk.Tests
         {
             var jsonobject = new AirbyteRecordMessage();
 
-            var result = jsonobject.AsJsonDocument();
+            var result = jsonobject.AsJsonElement();
 
-            result.RootElement.ValueKind.Should().Be(JsonValueKind.Object, "we provided a json object");
+            result.ValueKind.Should().Be(JsonValueKind.Object, "we provided a json object");
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace Airbyte.Cdk.Tests
                 {"world", 2},
                 {"!", 3}
             };
-            var jsonDocument = input.AsJsonDocument();
+            var jsonDocument = input.AsJsonElement();
 
             var result = jsonDocument.ToType<Dictionary<string, int>>();
 

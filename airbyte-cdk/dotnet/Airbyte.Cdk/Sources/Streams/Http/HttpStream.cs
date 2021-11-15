@@ -7,6 +7,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Airbyte.Cdk.Models;
 using Airbyte.Cdk.Sources.Streams.Http.Auth;
+using Airbyte.Cdk.Sources.Utils;
 using Flurl;
 using Flurl.Http;
 using Polly;
@@ -90,7 +91,7 @@ namespace Airbyte.Cdk.Sources.Streams.Http
         /// <param name="streamslice"></param>
         /// <param name="nextpagetoken"></param>
         /// <returns></returns>
-        public virtual string Path(JsonDocument streamstate = null, Dictionary<string, object> streamslice = null,
+        public virtual string Path(JsonElement streamstate, Dictionary<string, object> streamslice = null,
             Dictionary<string, object> nextpagetoken = null) => Name.ToLower();
 
         /// <summary>
@@ -101,7 +102,7 @@ namespace Airbyte.Cdk.Sources.Streams.Http
         /// <param name="streamslice"></param>
         /// <param name="nextpagetoken"></param>
         /// <returns></returns>
-        public virtual Dictionary<string, object> RequestParams(JsonDocument streamstate,
+        public virtual Dictionary<string, object> RequestParams(JsonElement streamstate,
             Dictionary<string, object> streamslice = null,
             Dictionary<string, object> nextpagetoken = null) => new();
 
@@ -112,7 +113,7 @@ namespace Airbyte.Cdk.Sources.Streams.Http
         /// <param name="streamslice"></param>
         /// <param name="nextpagetoken"></param>
         /// <returns></returns>
-        public virtual Dictionary<string, object> RequestHeaders(JsonDocument streamstate,
+        public virtual Dictionary<string, object> RequestHeaders(JsonElement streamstate,
             Dictionary<string, object> streamslice = null,
             Dictionary<string, object> nextpagetoken = null) => new();
 
@@ -129,7 +130,7 @@ namespace Airbyte.Cdk.Sources.Streams.Http
         /// <param name="streamslice"></param>
         /// <param name="nextpagetoken"></param>
         /// <returns></returns>
-        public virtual string RequestBodyData(JsonDocument streamstate,
+        public virtual string RequestBodyData(JsonElement streamstate,
             Dictionary<string, object> streamslice = null,
             Dictionary<string, object> nextpagetoken = null) => string.Empty;
 
@@ -141,7 +142,7 @@ namespace Airbyte.Cdk.Sources.Streams.Http
         /// <param name="streamslice"></param>
         /// <param name="nextpagetoken"></param>
         /// <returns></returns>
-        public virtual string RequestBodyJson(JsonDocument streamstate,
+        public virtual string RequestBodyJson(JsonElement streamstate,
             Dictionary<string, object> streamslice = null,
             Dictionary<string, object> nextpagetoken = null) => string.Empty;
 
@@ -154,7 +155,7 @@ namespace Airbyte.Cdk.Sources.Streams.Http
         /// <param name="streamslice"></param>
         /// <param name="nextpagetoken"></param>
         /// <returns></returns>
-        public abstract IEnumerable<JsonDocument> ParseResponse(IFlurlResponse response, JsonDocument streamstate,
+        public abstract IEnumerable<JsonElement> ParseResponse(IFlurlResponse response, JsonElement streamstate,
             Dictionary<string, object> streamslice = null,
             Dictionary<string, object> nextpagetoken = null);
 
@@ -263,21 +264,20 @@ namespace Airbyte.Cdk.Sources.Streams.Http
         /// <param name="streamslice"></param>
         /// <param name="streamstate"></param>
         /// <returns></returns>
-        public override async Task<long> ReadRecords(AirbyteLogger logger, SyncMode syncMode, ChannelWriter<AirbyteMessage> streamchannel,
+        public override async Task<long> ReadRecords(AirbyteLogger logger, SyncMode syncMode, ChannelWriter<AirbyteMessage> streamchannel, JsonElement streamstate,
             long? recordlimit = null, string[] cursorfield = null,
-            Dictionary<string, object> streamslice = null, JsonDocument streamstate = null)
+            Dictionary<string, object> streamslice = null)
         {
             SyncMode = syncMode;
             Logger = logger;
             bool paginationcompleted = false;
-            streamstate ??= JsonDocument.Parse("{}");
             Dictionary<string, object> nextpagetoken = null;
             long recordcount = 0;
             bool Limitreached() => recordlimit.HasValue && recordcount >= recordlimit.Value;
-            async Task UpdateState(JsonDocument lastrecord)
+            async Task UpdateState(JsonElement lastrecord)
             {
                 var updatedstate = GetUpdatedState(streamstate, lastrecord);
-                Logger.Info($"Setting state of {Name} stream to {updatedstate.RootElement.GetRawText()}");
+                Logger.Info($"Setting state of {Name} stream to {updatedstate.GetRawText()}");
                 await streamchannel.WriteAsync(new AirbyteMessage
                 {
                     Type = Type.STATE,
@@ -297,7 +297,7 @@ namespace Airbyte.Cdk.Sources.Streams.Http
                 var requestjson = RequestBodyJson(streamstate, streamslice, nextpagetoken);
                 var requestBodyData = RequestBodyData(streamstate, streamslice, nextpagetoken);
                 (IFlurlRequest request, IFlurlResponse response) result = await Send(path, requestheaders, parameters, requestjson, requestBodyData);
-                JsonDocument _lastitem = null;
+                JsonElement _lastitem = "{}".AsJsonElement();
 
                 foreach (var item in ParseResponse(result.response, streamstate, streamslice, nextpagetoken))
                 {

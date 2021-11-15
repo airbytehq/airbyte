@@ -9,6 +9,7 @@ namespace Airbyte.Cdk.Models
         /// The state data
         /// </summary>
         [JsonPropertyName("data")]
-        public JsonDocument Data { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public JsonElement Data { get; set; }
     }
 }

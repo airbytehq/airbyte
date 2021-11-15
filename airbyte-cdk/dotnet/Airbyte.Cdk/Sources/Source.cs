@@ -13,10 +13,10 @@ namespace Airbyte.Cdk.Sources
         /// </summary>
         /// <param name="statepath"></param>
         /// <returns></returns>
-        public virtual JsonDocument ReadState(string statepath) =>
+        public virtual JsonElement ReadState(string statepath) =>
             string.IsNullOrWhiteSpace(statepath) || !File.Exists(statepath)
-                ? JsonDocument.Parse("{}")
-                : JsonDocument.Parse(File.ReadAllText(statepath));
+                ? JsonDocument.Parse("{}").RootElement.Clone()
+                : JsonDocument.Parse(File.ReadAllText(statepath)).RootElement.Clone();
 
         /// <summary>
         /// Can be overridden to change an input catalog
@@ -35,8 +35,8 @@ namespace Airbyte.Cdk.Sources
         /// <param name="catalog"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        public abstract Task Read(AirbyteLogger logger, ChannelWriter<AirbyteMessage> channel, JsonDocument config,
-            ConfiguredAirbyteCatalog catalog, JsonDocument state = null);
+        public abstract Task Read(AirbyteLogger logger, ChannelWriter<AirbyteMessage> channel, JsonElement config,
+            ConfiguredAirbyteCatalog catalog, JsonElement state);
 
         /// <summary>
         /// Returns an AirbyteCatalog representing the available streams and fields in this integration. For example, given valid credentials to a
@@ -45,6 +45,6 @@ namespace Airbyte.Cdk.Sources
         /// <param name="logger"></param>
         /// <param name="config"></param>
         /// <returns></returns>
-        public abstract AirbyteCatalog Discover(AirbyteLogger logger, JsonDocument config);
+        public abstract AirbyteCatalog Discover(AirbyteLogger logger, JsonElement config);
     }
 }

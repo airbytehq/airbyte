@@ -68,7 +68,7 @@ namespace Airbyte.Cdk.Sources.Streams.Http.Auth
             if (Scopes.Any())
                 payload["scopes"] = Scopes;
 
-            return payload.AsJsonDocument().RootElement.GetRawText();
+            return payload.AsJsonElement().GetRawText();
         }
 
         public virtual (string, DateTime) RefreshAccessToken()

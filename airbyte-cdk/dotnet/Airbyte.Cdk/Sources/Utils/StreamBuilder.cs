@@ -28,7 +28,7 @@ namespace Airbyte.Cdk.Sources.Utils
 
         private readonly IEnumerable<DynamicProperty> _properties = new List<DynamicProperty>();
 
-        private readonly AuthBase _authentication = null;
+        private readonly AuthBase _authentication;
 
         public FluentStreamBuilder()
         {
@@ -80,9 +80,9 @@ namespace Airbyte.Cdk.Sources.Utils
         /// Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
         /// Defaults to {UrlBase}/{Name} where Name is the name of this stream
         /// </summary>
-        /// <param name="func">Input: JsonDocument StreamState, Dictionary<string, object> StreamSlice, Dictionary<string, object> nextpagetoken | Output string subpath for the request</param>
+        /// <param name="func">Input: JsonElement StreamState, Dictionary<string, object> StreamSlice, Dictionary<string, object> nextpagetoken | Output string subpath for the request</param>
         /// <returns></returns>
-        public FluentStreamBuilder Path(Func<JsonDocument, Dictionary<string, object>?,
+        public FluentStreamBuilder Path(Func<JsonElement, Dictionary<string, object>?,
             Dictionary<string, object>?, string> func) =>
             AddFunc(func, nameof(Path));
 
@@ -90,10 +90,10 @@ namespace Airbyte.Cdk.Sources.Utils
         /// Parses the raw response object into a list of records.
         /// By default, this returns an iterable containing the input. Override to parse differently.
         /// </summary>
-        /// <param name="func">Input: IFlurlResponse response to parse, JsonDocument streamstate, Dictionary<string, object> streamslice, Dictionary<string, object> nextpagetoken | Output IEnumerable<JsonDocument> records</param>
+        /// <param name="func">Input: IFlurlResponse response to parse, JsonElement streamstate, Dictionary<string, object> streamslice, Dictionary<string, object> nextpagetoken | Output IEnumerable<JsonElement> records</param>
         public FluentStreamBuilder ParseResponse(
-            Func<IFlurlResponse, JsonDocument, Dictionary<string, object>?,
-                Dictionary<string, object>?, IEnumerable<JsonDocument>> func) =>
+            Func<IFlurlResponse, JsonElement, Dictionary<string, object>?,
+                Dictionary<string, object>?, IEnumerable<JsonElement>> func) =>
             AddFunc(func, nameof(ParseResponse));
 
         /// <summary>
@@ -115,16 +115,16 @@ namespace Airbyte.Cdk.Sources.Utils
         /// {'name': 'octavia', 'created_at': 20 } then this method would return {'created_at': 20}
         /// to indicate state should be updated to this object.
         /// </summary>
-        /// <param name="func">Input: JsonDocument currentstreamstate, JsonDocument latestrecord | Output: JsonDocument</param>
+        /// <param name="func">Input: JsonElement currentstreamstate, JsonElement latestrecord | Output: JsonElement</param>
         /// <returns></returns>
         public FluentStreamBuilder GetUpdatedState(
-            Func<JsonDocument, JsonDocument, JsonDocument> func) =>
+            Func<JsonElement, JsonElement, JsonElement> func) =>
             AddFunc(func, nameof(GetUpdatedState));
 
         /// <summary>
         /// This method should be overridden by subclasses to read records based on the inputs
         /// </summary>
-        /// <param name="func">Input: SyncMode syncmode, ChannelWriter<AirbyteMessage> streamchannel, long? recordlimit, Dictionary<string, object[]> cursorfield, Dictionary<string, object> streamslice, JsonDocument streamstate | Output Task<long></long></param>
+        /// <param name="func">Input: SyncMode syncmode, ChannelWriter<AirbyteMessage> streamchannel, long? recordlimit, Dictionary<string, object[]> cursorfield, Dictionary<string, object> streamslice, JsonElement streamstate | Output Task<long></long></param>
         /// <returns></returns>
         public FluentStreamBuilder ReadRecords(
             Func<AirbyteLogger, SyncMode, ChannelWriter<AirbyteMessage>, long?, string[],
@@ -140,30 +140,30 @@ namespace Airbyte.Cdk.Sources.Utils
         /// 
         /// At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         /// </summary>
-        /// <param name="func">Input: JsonDocument streamstate, Dictionary<string, object> streamslice, Dictionary<string, object> nextpagetoken | Output: string</param>
+        /// <param name="func">Input: JsonElement streamstate, Dictionary<string, object> streamslice, Dictionary<string, object> nextpagetoken | Output: string</param>
         /// <returns></returns>
         public FluentStreamBuilder RequestBodyData(
-            Func<JsonDocument, Dictionary<string, object>, Dictionary<string, object>, string> func) =>
+            Func<JsonElement, Dictionary<string, object>, Dictionary<string, object>, string> func) =>
             AddFunc(func, nameof(RequestBodyData));
 
         /// <summary>
         /// Override when creating POST/PUT/PATCH requests to populate the body of the request with a JSON payload.
         /// At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         /// </summary>
-        /// <param name="func">Input: JsonDocument streamstate, Dictionary<string, object> streamslice, Dictionary<string, object> nextpagetoken | Output: string</param>
+        /// <param name="func">Input: JsonElement streamstate, Dictionary<string, object> streamslice, Dictionary<string, object> nextpagetoken | Output: string</param>
         /// <returns></returns>
         public FluentStreamBuilder RequestBodyJson(
-            Func<JsonDocument, Dictionary<string, object>, Dictionary<string, object>, string> func) =>
+            Func<JsonElement, Dictionary<string, object>, Dictionary<string, object>, string> func) =>
             AddFunc(func, nameof(RequestBodyJson));
 
         /// <summary>
         /// Override when creating POST/PUT/PATCH requests to populate the body of the request with a JSON payload.
         /// At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         /// </summary>
-        /// <param name="func">Input: JsonDocument streamstate, Dictionary<string, object> streamslice, Dictionary<string, object> nextpagetoken | Output: Dictionary<string, object></param>
+        /// <param name="func">Input: JsonElement streamstate, Dictionary<string, object> streamslice, Dictionary<string, object> nextpagetoken | Output: Dictionary<string, object></param>
         /// <returns></returns>
         public FluentStreamBuilder RequestHeaders(
-            Func<JsonDocument, Dictionary<string, object>, Dictionary<string, object>,
+            Func<JsonElement, Dictionary<string, object>, Dictionary<string, object>,
                 Dictionary<string, object>> func) =>
             AddFunc(func, nameof(RequestHeaders));
 
@@ -171,17 +171,17 @@ namespace Airbyte.Cdk.Sources.Utils
         /// Override this method to define the query parameters that should be set on an outgoing HTTP request given the inputs.
         /// E.g: you might want to define query parameters for paging if next_page_token is not None.
         /// </summary>
-        /// <param name="func">Input: JsonDocument streamstate, Dictionary<string, object> streamslice, Dictionary<string, object> nextpagetoken | Output: Dictionary<string, object></param>
+        /// <param name="func">Input: JsonElement streamstate, Dictionary<string, object> streamslice, Dictionary<string, object> nextpagetoken | Output: Dictionary<string, object></param>
         /// <returns></returns>
         public FluentStreamBuilder RequestParams(
-            Func<JsonDocument, Dictionary<string, object>, Dictionary<string, object>,
+            Func<JsonElement, Dictionary<string, object>, Dictionary<string, object>,
                 Dictionary<string, object>> func) =>
             AddFunc(func, nameof(RequestParams));
 
         /// <summary>
         /// Override to define the slices for this stream. See the stream slicing section of the docs for more information.
         /// </summary>
-        /// <param name="func">Input: SyncMode syncmode, string[] cursorfield, JsonDocument streamstate | Output: Dictionary<string, object></param>
+        /// <param name="func">Input: SyncMode syncmode, string[] cursorfield, JsonElement streamstate | Output: Dictionary<string, object></param>
         /// <returns></returns>
         public FluentStreamBuilder StreamSlices(
             Func<SyncMode, string[], Dictionary<string, object>, Dictionary<string, object>>
@@ -195,10 +195,12 @@ namespace Airbyte.Cdk.Sources.Utils
         /// <returns></returns>
         public FluentStreamBuilder ParseResponseArray(string path) => ParseResponse((response, _, _, _) =>
         {
-            var responseobject = response.GetStringAsync().Result.AsJsonDocument();
-            List<JsonDocument> toreturn = new List<JsonDocument>();
-            foreach (var item in JsonSelector.Select(responseobject.RootElement, path))
-                toreturn.Add(item.AsJsonDocument());
+            var responseobject = response.GetStringAsync().Result.AsJsonElement();
+            List<JsonElement> toreturn = new List<JsonElement>();
+            foreach (var item in JsonSelector.Select(responseobject, path))
+                if(item.ValueKind == JsonValueKind.Array)
+                    foreach (var subobject in item.EnumerateArray())
+                        toreturn.Add(subobject);
 
             return toreturn;
         });
@@ -210,12 +212,12 @@ namespace Airbyte.Cdk.Sources.Utils
         /// <returns></returns>
         public FluentStreamBuilder ParseResponseObject(string path) => ParseResponse((response, _, _, _) =>
         {
-            var responseobject = response.GetStringAsync().Result.AsJsonDocument();
-            List<JsonDocument> toreturn = new List<JsonDocument>();
-            foreach (var item in JsonSelector.Select(responseobject.RootElement, path))
-                toreturn.Add(item.AsJsonDocument());
+            var responseobject = response.GetStringAsync().Result.AsJsonElement();
+            List<JsonElement> toreturn = new List<JsonElement>();
+            foreach (var item in JsonSelector.Select(responseobject, path))
+                toreturn.Add(item);
 
-            return new[] { toreturn.FirstOrDefault() };
+            return toreturn.Count > 0 ? new[] { toreturn.First() } : Array.Empty<JsonElement>();
         });
 
         /// <summary>
@@ -297,8 +299,8 @@ namespace Airbyte.Cdk.Sources.Utils
         /// <param name="currentitems"></param>
         /// <returns></returns>
         public FluentStreamBuilder CacheResultsForStream(string stream, string jsonpath,
-            Func<JsonDocument[], List<JsonDocument>, List<JsonDocument>> currentitems) =>
-            AddFunc(new Func<Tuple<string, string, Func<JsonDocument[], List<JsonDocument>, List<JsonDocument>>>>(() => Tuple.Create(stream, jsonpath, currentitems)), "CachedFor" + "_" + stream);
+            Func<JsonElement[], List<JsonElement>, List<JsonElement>> currentitems) =>
+            AddFunc(new Func<Tuple<string, string, Func<JsonElement[], List<JsonElement>, List<JsonElement>>>>(() => Tuple.Create(stream, jsonpath, currentitems)), "CachedFor" + "_" + stream);
 
         private FluentStreamBuilder AddProperty<T>(T value, string signature) =>
         new(Name, _methods, new List<DynamicProperty>(_properties.Where(x => x.Signature != signature))
@@ -332,7 +334,7 @@ namespace Airbyte.Cdk.Sources.Utils
         /// <summary>
         /// Receives any dependent elements from this stream
         /// </summary>
-        public Dictionary<string, IReadOnlyList<JsonDocument>> CachedElements { get; } = new();
+        public Dictionary<string, IReadOnlyList<JsonElement>> CachedElements { get; } = new();
 
         /// <summary>
         /// Streams the current stream is dependent on
@@ -355,7 +357,7 @@ namespace Airbyte.Cdk.Sources.Utils
                 var current = _methods.ToList();
                 current.Add(new DynamicMethod
                 {
-                    Body = new Func<JsonDocument?, Dictionary<string, object>?, Dictionary<string, object>?, string>((_, _, _) => Name),
+                    Body = new Func<JsonElement, Dictionary<string, object>?, Dictionary<string, object>?, string>((_, _, _) => Name),
                     Signature = nameof(Path)
                 });
                 _methods = current;
@@ -373,10 +375,10 @@ namespace Airbyte.Cdk.Sources.Utils
             }
         }
 
-        private IEnumerable<Tuple<string, string, Func<JsonDocument[], List<JsonDocument>, List<JsonDocument>>>>
+        private IEnumerable<Tuple<string, string, Func<JsonElement[], List<JsonElement>, List<JsonElement>>>>
             GetCachedFor() => _methods.Where(x => x.Signature.StartsWith("CachedFor")).Select(x =>
             x.Body as Func<Tuple<string, string,
-                Func<JsonDocument[], List<JsonDocument>, List<JsonDocument>>>>).Select(x => x());
+                Func<JsonElement[], List<JsonElement>, List<JsonElement>>>>).Select(x => x());
 
         public override bool SourceDefinedCursor
         {
@@ -457,39 +459,39 @@ namespace Airbyte.Cdk.Sources.Utils
                 ? func.Invoke(request, response)
                 : throw new NotImplementedException();
 
-        public override string Path(JsonDocument streamstate = null,
+        public override string Path(JsonElement streamstate,
             Dictionary<string, object> streamslice = null, Dictionary<string, object> nextpagetoken = null) =>
             TryGetMethod<
-                Func<JsonDocument?, Dictionary<string, object>?, Dictionary<string, object>?, String>>(
+                Func<JsonElement, Dictionary<string, object>?, Dictionary<string, object>?, String>>(
                 nameof(Path), out var func)
                 ? func.Invoke(streamstate, streamslice, nextpagetoken)
                 : throw new NotImplementedException();
 
-        public override IEnumerable<JsonDocument> ParseResponse(IFlurlResponse response,
-            JsonDocument streamstate, Dictionary<string, object> streamslice = null,
+        public override IEnumerable<JsonElement> ParseResponse(IFlurlResponse response,
+            JsonElement streamstate, Dictionary<string, object> streamslice = null,
             Dictionary<string, object> nextpagetoken = null)
         {
-            var results = TryGetMethod<Func<IFlurlResponse, JsonDocument, Dictionary<string, object>?,
-                Dictionary<string, object>?, IEnumerable<JsonDocument>>>(nameof(ParseResponse), out var func)
+            var results = TryGetMethod<Func<IFlurlResponse, JsonElement, Dictionary<string, object>?,
+                Dictionary<string, object>?, IEnumerable<JsonElement>>>(nameof(ParseResponse), out var func)
                 ? func.Invoke(response, streamstate, streamslice, nextpagetoken)
                 : throw new NotImplementedException();
 
             //Set dependent items
-            var jsonDocuments = results as JsonDocument[] ?? results.ToArray();
+            var jsonElements = results as JsonElement[] ?? results.ToArray();
             foreach (var dependent in GetCachedFor())
-                foreach (var recordDocument in jsonDocuments)
+                foreach (var recordEelement in jsonElements)
                 {
                     string stream = dependent.Item1;
                     if (!CachedElements.ContainsKey(stream))
-                        CachedElements.Add(stream, new List<JsonDocument>());
+                        CachedElements.Add(stream, new List<JsonElement>());
 
                     CachedElements[dependent.Item1] =
-                        dependent.Item3(JsonSelector.Select(recordDocument.RootElement, dependent.Item2).Select(x => x.AsJsonDocument()).ToArray(),
+                        dependent.Item3(JsonSelector.Select(recordEelement, dependent.Item2).ToArray(),
                             CachedElements[dependent.Item1].ToList());
                 }
 
             //Send back the results
-            return jsonDocuments;
+            return jsonElements;
         }
 
         public override bool ShouldRetry(FlurlHttpException exc) =>
@@ -502,53 +504,53 @@ namespace Airbyte.Cdk.Sources.Utils
                 ? func.Invoke()
                 : base.GetJsonSchema();
 
-        public override JsonDocument GetUpdatedState(JsonDocument currentstreamstate,
-            JsonDocument latestrecord) =>
-            TryGetMethod<Func<JsonDocument, JsonDocument, JsonDocument>>(
+        public override JsonElement GetUpdatedState(JsonElement currentstreamstate,
+            JsonElement latestrecord) =>
+            TryGetMethod<Func<JsonElement, JsonElement, JsonElement>>(
                 nameof(GetUpdatedState), out var func)
                 ? func.Invoke(currentstreamstate, latestrecord)
                 : base.GetUpdatedState(currentstreamstate, latestrecord);
 
         public override Task<long> ReadRecords(AirbyteLogger logger, SyncMode syncMode, ChannelWriter<AirbyteMessage> streamchannel,
+            JsonElement streamstate,
             long? recordlimit = null,
-            string[] cursorfield = null, Dictionary<string, object> streamslice = null,
-            JsonDocument streamstate = null) =>
-            TryGetMethod<Func<AirbyteLogger, SyncMode, ChannelWriter<AirbyteMessage>, long?, string[],
-                Dictionary<string, object>, JsonDocument, Task<long>>>(nameof(ReadRecords), out var func)
-                ? func.Invoke(logger, syncMode, streamchannel, recordlimit, cursorfield, streamslice, streamstate)
-                : base.ReadRecords(logger, syncMode, streamchannel, recordlimit, cursorfield, streamslice, streamstate);
+            string[] cursorfield = null, Dictionary<string, object> streamslice = null) =>
+            TryGetMethod<Func<AirbyteLogger, SyncMode, ChannelWriter<AirbyteMessage>, JsonElement, long?, string[],
+                Dictionary<string, object>, Task<long>>>(nameof(ReadRecords), out var func)
+                ? func.Invoke(logger, syncMode, streamchannel, streamstate, recordlimit, cursorfield, streamslice)
+                : base.ReadRecords(logger, syncMode, streamchannel, streamstate, recordlimit, cursorfield, streamslice);
 
-        public override string RequestBodyData(JsonDocument streamstate,
+        public override string RequestBodyData(JsonElement streamstate,
             Dictionary<string, object> streamslice = null, Dictionary<string, object> nextpagetoken = null) =>
-            TryGetMethod<Func<JsonDocument, Dictionary<string, object>, Dictionary<string, object>,
+            TryGetMethod<Func<JsonElement, Dictionary<string, object>, Dictionary<string, object>,
                 string>>(nameof(RequestBodyData), out var func)
                 ? func.Invoke(streamstate, streamslice, nextpagetoken)
                 : base.RequestBodyData(streamstate, streamslice, nextpagetoken);
 
-        public override string RequestBodyJson(JsonDocument streamstate,
+        public override string RequestBodyJson(JsonElement streamstate,
             Dictionary<string, object> streamslice = null, Dictionary<string, object> nextpagetoken = null) =>
-            TryGetMethod<Func<JsonDocument, Dictionary<string, object>, Dictionary<string, object>,
+            TryGetMethod<Func<JsonElement, Dictionary<string, object>, Dictionary<string, object>,
                 string>>(nameof(RequestBodyJson), out var func)
                 ? func.Invoke(streamstate, streamslice, nextpagetoken)
                 : base.RequestBodyJson(streamstate, streamslice, nextpagetoken);
 
-        public override Dictionary<string, object> RequestHeaders(JsonDocument streamstate,
+        public override Dictionary<string, object> RequestHeaders(JsonElement streamstate,
             Dictionary<string, object> streamslice = null, Dictionary<string, object> nextpagetoken = null) =>
-            TryGetMethod<Func<JsonDocument, Dictionary<string, object>, Dictionary<string, object>,
+            TryGetMethod<Func<JsonElement, Dictionary<string, object>, Dictionary<string, object>,
                 Dictionary<string, object>>>(nameof(RequestHeaders), out var func)
                 ? func.Invoke(streamstate, streamslice, nextpagetoken)
                 : base.RequestHeaders(streamstate, streamslice, nextpagetoken);
 
-        public override Dictionary<string, object> RequestParams(JsonDocument streamstate,
+        public override Dictionary<string, object> RequestParams(JsonElement streamstate,
             Dictionary<string, object> streamslice = null, Dictionary<string, object> nextpagetoken = null) =>
-            TryGetMethod<Func<JsonDocument, Dictionary<string, object>, Dictionary<string, object>,
+            TryGetMethod<Func<JsonElement, Dictionary<string, object>, Dictionary<string, object>,
                 Dictionary<string, object>>>(nameof(RequestParams), out var func)
                 ? func.Invoke(streamstate, streamslice, nextpagetoken)
                 : base.RequestParams(streamstate, streamslice, nextpagetoken);
 
         public override Dictionary<string, object> StreamSlices(SyncMode syncmode,
-            string[] cursorfield, JsonDocument streamstate) =>
-            TryGetMethod<Func<SyncMode, string[], JsonDocument,
+            string[] cursorfield, JsonElement streamstate) =>
+            TryGetMethod<Func<SyncMode, string[], JsonElement,
                 Dictionary<string, object>>>(nameof(StreamSlices), out var func)
                 ? func.Invoke(syncmode, cursorfield, streamstate)
                 : base.StreamSlices(syncmode, cursorfield, streamstate);

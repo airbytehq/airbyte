@@ -18,7 +18,7 @@ namespace Airbyte.Cdk.Tests
 
             var result = Connector.ReadConfig(filepath);
 
-            result.RootElement.GetRawText().Should().Be(testfile, "output should match input");
+            result.GetRawText().Should().Be(testfile, "output should match input");
         }
 
         [Fact]
@@ -27,7 +27,7 @@ namespace Airbyte.Cdk.Tests
             var testfile = "{\"bogus\": \"file\"}";
             string filepath = "TestWriteConfig";
             
-            Connector.WriteConfig(testfile.AsJsonDocument(), filepath);
+            Connector.WriteConfig(testfile.AsJsonElement(), filepath);
 
             var result = File.ReadAllText(filepath);
 

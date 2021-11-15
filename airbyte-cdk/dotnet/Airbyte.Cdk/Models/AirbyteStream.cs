@@ -16,7 +16,8 @@ namespace Airbyte.Cdk.Models
         /// Stream schema using Json Schema specs.
         /// </summary>
         [JsonPropertyName("json_schema")]
-        public JsonDocument JsonSchema { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public JsonElement JsonSchema { get; set; }
 
         [JsonPropertyName("supported_sync_modes")]
         public SyncMode[]? SupportedSyncModes { get; set; }
