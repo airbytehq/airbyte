@@ -877,7 +877,7 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/connections/listall:
+  /v1/connections/list_all:
     post:
       tags:
         - connection
