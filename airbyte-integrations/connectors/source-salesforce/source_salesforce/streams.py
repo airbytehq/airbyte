@@ -3,7 +3,6 @@
 #
 
 import csv
-import json
 import time
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -12,6 +11,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
@@ -21,6 +21,8 @@ from .rate_limiting import default_backoff_handler
 class SalesforceStream(HttpStream, ABC):
 
     page_size = 2000
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, sf_api: Salesforce, pk: str, stream_name: str, schema: dict = None, **kwargs):
         super().__init__(**kwargs)
@@ -63,7 +65,7 @@ class SalesforceStream(HttpStream, ABC):
             selected_properties = {
                 key: value
                 for key, value in selected_properties.items()
-                if not (("format" in value and value["format"] == "base64") or ("object" in value["type"] and len(value["type"]) < 3))
+                if value.get("format") != "base64" and "object" not in value["type"]
             }
 
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
@@ -102,6 +104,18 @@ class BulkSalesforceStream(SalesforceStream):
 
     def path(self, **kwargs) -> str:
         return f"/services/data/{self.sf_api.version}/jobs/query"
+
+    transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
+
+    @transformer.registerCustomTransform
+    def transform_empty_string_to_none(instance, schema):
+        """
+        BULK API returns a `csv` file, where all values are initially as string type.
+        This custom transformer replaces empty lines with `None` value.
+        """
+        if isinstance(instance, str) and not instance.strip():
+            instance = None
+        return instance
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, json: dict = None):
@@ -168,46 +182,6 @@ class BulkSalesforceStream(SalesforceStream):
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "
 
-    def transform(self, record: dict, schema: dict = None):
-        """
-        BULK API always returns a CSV file, where all values are string. This function changes the data type according to the schema.
-        """
-        if not schema:
-            schema = self.get_json_schema().get("properties", {})
-
-        def transform_types(field_types: list = None):
-            """
-            Convert Jsonschema data types to Python data types.
-            """
-            convert_types_map = {"boolean": bool, "string": str, "number": float, "integer": int, "object": dict, "array": list}
-            return [convert_types_map[field_type] for field_type in field_types if field_type != "null"]
-
-        for key, value in record.items():
-            if key not in schema:
-                continue
-
-            if value is None or isinstance(value, str) and value.strip() == "":
-                record[key] = None
-            else:
-                types = transform_types(schema[key]["type"])
-                if len(types) != 1:
-                    continue
-
-                if types[0] == bool:
-                    record[key] = True if isinstance(value, str) and value.lower() == "true" else False
-                elif types[0] == dict:
-                    try:
-                        record[key] = json.loads(value)
-                    except Exception:
-                        record[key] = None
-                        continue
-                else:
-                    record[key] = types[0](value)
-
-                if isinstance(record[key], dict):
-                    self.transform(record[key], schema[key].get("properties", {}))
-        return record
-
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -231,7 +205,7 @@ class BulkSalesforceStream(SalesforceStream):
             if job_status == "JobComplete":
                 count = 0
                 for count, record in self.download_data(url=job_full_url):
-                    yield self.transform(record)
+                    yield record
 
                 if count == self.page_size:
                     next_page_token = self.next_page_token(record)
@@ -273,7 +247,7 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
             selected_properties = {
                 key: value
                 for key, value in selected_properties.items()
-                if not (("format" in value and value["format"] == "base64") or ("object" in value["type"] and len(value["type"]) < 3))
+                if value.get("format") != "base64" and "object" not in value["type"]
             }
 
         stream_date = stream_state.get(self.cursor_field)
