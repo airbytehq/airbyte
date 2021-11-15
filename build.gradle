@@ -177,7 +177,7 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
-    docs/contributing-to-airbyte/developing-locally.md
+
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
 
