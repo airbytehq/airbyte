@@ -107,4 +107,4 @@ class SourceExchangeRates(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [ExchangeRates(config.get("base"), config["start_date"], config["access_key"], config["ignore_weekends"])]
+        return [ExchangeRates(config.get("base"), config["start_date"], config["access_key"], config.get("ignore_weekends", True))]
