@@ -42,7 +42,7 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void startTracked() throws Exception {
+  protected void startTracked() {
     this.redisStreams = configuredCatalog.getStreams().stream()
         .collect(Collectors.toUnmodifiableMap(
             AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam,
