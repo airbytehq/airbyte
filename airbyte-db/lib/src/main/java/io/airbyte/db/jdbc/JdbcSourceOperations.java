@@ -37,8 +37,8 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
       case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
       case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
-      case REAL -> putReal(json, columnName, resultSet, colIndex);
-      case NUMERIC, DECIMAL -> putNumber(json, columnName, resultSet, colIndex);
+      case REAL -> putFloat(json, columnName, resultSet, colIndex);
+      case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
       case CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
       case DATE -> putDate(json, columnName, resultSet, colIndex);
       case TIME -> putTime(json, columnName, resultSet, colIndex);

@@ -197,6 +197,11 @@ public class MySqlSource extends AbstractJdbcCompatibleSource<MysqlType> impleme
     // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
     jdbcUrl.append("?useCursorFetch=true");
     jdbcUrl.append("&zeroDateTimeBehavior=convertToNull");
+    // ensure the return tinyint(1) is boolean
+    jdbcUrl.append("&tinyInt1isBit=true");
+    // ensure the return year value is a Date; see the rationale
+    // in the setJsonField method in MySqlSourceOperations.java
+    jdbcUrl.append("&yearIsDateType=true");
     if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
       jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
     }

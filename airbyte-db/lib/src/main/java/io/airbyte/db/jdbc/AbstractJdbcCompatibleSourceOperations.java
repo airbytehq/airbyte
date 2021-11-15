@@ -118,11 +118,11 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getDouble(index), Double::isFinite));
   }
 
-  protected void putReal(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putFloat(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getFloat(index), Float::isFinite));
   }
 
-  protected void putNumber(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putBigDecimal(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getBigDecimal(index)));
   }
 
