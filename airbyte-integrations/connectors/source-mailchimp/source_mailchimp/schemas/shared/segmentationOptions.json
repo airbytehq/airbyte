@@ -18,10 +18,7 @@
       "type": "string",
       "title": "Match Type",
       "description": "Segment match type.",
-      "enum": [
-        "any",
-        "all"
-      ]
+      "enum": ["any", "all"]
     },
     "conditions": {
       "$ref": "segmentCondition.json"

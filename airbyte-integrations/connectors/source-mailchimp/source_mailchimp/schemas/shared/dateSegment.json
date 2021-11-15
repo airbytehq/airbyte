@@ -2,26 +2,16 @@
   "type": "object",
   "title": "Date Segment",
   "description": "Segment by a specific date field.",
-  "required": [
-    "field",
-    "op",
-    "value"
-  ],
+  "required": ["field", "op", "value"],
   "properties": {
     "condition_type": {
       "type": "string",
       "x-value": "Date",
-      "enum": [
-        "Date"
-      ]
+      "enum": ["Date"]
     },
     "field": {
       "type": "string",
-      "enum": [
-        "timestamp_opt",
-        "info_changed",
-        "ecomm_date"
-      ],
+      "enum": ["timestamp_opt", "info_changed", "ecomm_date"],
       "title": "Segment Field",
       "description": "The type of date field to segment on: The opt-in time for a signup, the date the subscriber was last updated, or the date of their last ecomm purchase.",
       "example": "timestamp_opt"

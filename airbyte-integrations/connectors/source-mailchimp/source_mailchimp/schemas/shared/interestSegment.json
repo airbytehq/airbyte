@@ -6,9 +6,7 @@
     "condition_type": {
       "type": "string",
       "x-value": "Interests",
-      "enum": [
-        "Interests"
-      ]
+      "enum": ["Interests"]
     },
     "field": {
       "type": "string",
@@ -33,11 +31,7 @@
       "description": "An array containing strings, each representing a group id.",
       "items": {
         "type": "string",
-        "example": [
-          "44401",
-          "44405",
-          "44409"
-        ]
+        "example": ["44401", "44405", "44409"]
       }
     }
   }

@@ -4,13 +4,18 @@
 
 package io.airbyte.integrations.destination.s3.avro;
 
+import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -170,24 +175,16 @@ public class JsonToAvroSchemaConverter {
       case STRING, NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case COMBINED -> {
         final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
-        final List<Schema> unionTypes = getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get(),true);
+        final List<Schema> unionTypes = getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get(), true);
         fieldSchema = Schema.createUnion(unionTypes);
       }
       case ARRAY -> {
         final JsonNode items = fieldDefinition.get("items");
         Preconditions.checkNotNull(items, "Array field %s misses the items property.", fieldName);
-        Optional<JsonNode> combinedRestriction = getCombinedRestriction(items);
-//        if (combinedRestriction.isPresent()){
-//          final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items);
-//          arrayElementTypes.add(0, NULL_SCHEMA);
-//          fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
-//        }
         if (items.isObject()) {
-//        if (combinedRestriction.isEmpty() && items.isObject()) {
           fieldSchema = Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
         } else if (items.isArray()) {
-//        } else if (combinedRestriction.isEmpty() && items.isArray()) {
-          final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items,false);
+          final List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items, false);
           arrayElementTypes.add(0, NULL_SCHEMA);
           fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
         } else {
@@ -203,20 +200,21 @@ public class JsonToAvroSchemaConverter {
   }
 
   List<Schema> getSchemasFromTypes(final String fieldName, final ArrayNode types, boolean combined) {
-    List<JsonNode> jsonNodes = MoreIterators.toList(types.elements());
-    return jsonNodes
-        .stream()
-        .flatMap(definition -> {
-          List<JsonSchemaType> nonNullTypes = getNonNullTypes(fieldName, definition);
-          return nonNullTypes.stream().flatMap(type -> {
-            final Schema singleFieldSchema = getSingleFieldType(combined?fieldName+ UUID.randomUUID().toString():fieldName, type, definition);
-            if (singleFieldSchema.isUnion()) {
-              return singleFieldSchema.getTypes().stream();
-            } else {
-              return Stream.of(singleFieldSchema);
-            }
-          });
-        })
+    return StreamUtils
+        .zipWithIndex(MoreIterators.toList(types.elements())
+            .stream())
+        .flatMap(definition -> getNonNullTypes(fieldName, definition.getValue()).stream()
+            .flatMap(type -> {
+              final Schema singleFieldSchema = getSingleFieldType(combined
+                  // avro schema allows only unique names of records in case of union
+                  ? fieldName.concat("_").concat(String.valueOf(definition.getIndex()))
+                  : fieldName, type, definition.getValue());
+              if (singleFieldSchema.isUnion()) {
+                return singleFieldSchema.getTypes().stream();
+              } else {
+                return Stream.of(singleFieldSchema);
+              }
+            }))
         .distinct()
         .collect(Collectors.toList());
   }

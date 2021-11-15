@@ -2,24 +2,16 @@
   "type": "object",
   "title": "Email Segment",
   "description": "Segment by email address.",
-  "required": [
-    "field",
-    "op"
-  ],
+  "required": ["field", "op"],
   "properties": {
     "condition_type": {
       "type": "string",
       "x-value": "EmailAddress",
-      "enum": [
-        "EmailAddress"
-      ]
+      "enum": ["EmailAddress"]
     },
     "field": {
       "type": "string",
-      "enum": [
-        "merge0",
-        "EMAIL"
-      ],
+      "enum": ["merge0", "EMAIL"],
       "title": "Segment Field",
       "description": "Segmenting based off of a subscriber's email address.",
       "example": "EMAIL"

@@ -2,32 +2,23 @@
   "type": "object",
   "title": "Unknown Location-Based Segment",
   "description": "Segment members whose location information is unknown.",
-  "required": [
-    "field",
-    "op"
-  ],
+  "required": ["field", "op"],
   "properties": {
     "condition_type": {
       "type": "string",
       "x-value": "IPGeoUnknown",
-      "enum": [
-        "IPGeoUnknown"
-      ]
+      "enum": ["IPGeoUnknown"]
     },
     "field": {
       "type": "string",
-      "enum": [
-        "ipgeo"
-      ],
+      "enum": ["ipgeo"],
       "title": "Segment Field",
       "description": "Segmenting subscribers who are within a specific location.",
       "example": "ipgeo"
     },
     "op": {
       "type": "string",
-      "enum": [
-        "ipgeounknown"
-      ],
+      "enum": ["ipgeounknown"],
       "title": "Segment Operator",
       "description": "Segment members for which location information is unknown.",
       "example": "ipgeounknown"

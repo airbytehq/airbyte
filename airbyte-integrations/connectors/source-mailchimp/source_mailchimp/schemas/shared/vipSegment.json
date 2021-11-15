@@ -2,33 +2,23 @@
   "type": "object",
   "title": "VIP Segment",
   "description": "Segment by VIP status.",
-  "required": [
-    "field",
-    "op"
-  ],
+  "required": ["field", "op"],
   "properties": {
     "condition_type": {
       "type": "string",
       "x-value": "VIP",
-      "enum": [
-        "VIP"
-      ]
+      "enum": ["VIP"]
     },
     "field": {
       "type": "string",
-      "enum": [
-        "gmonkey"
-      ],
+      "enum": ["gmonkey"],
       "title": "Segment Field",
       "description": "Segment by VIP status.",
       "example": "gmonkey"
     },
     "op": {
       "type": "string",
-      "enum": [
-        "member",
-        "notmember"
-      ],
+      "enum": ["member", "notmember"],
       "title": "Segment Operator",
       "description": "Whether the member is or is not marked as VIP.",
       "example": "member"

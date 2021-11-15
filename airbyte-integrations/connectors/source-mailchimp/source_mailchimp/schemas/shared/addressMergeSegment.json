@@ -2,17 +2,12 @@
   "type": "object",
   "title": "Address Merge Field Segment",
   "description": "Segment by an address-type merge field.",
-  "required": [
-    "field",
-    "op"
-  ],
+  "required": ["field", "op"],
   "properties": {
     "condition_type": {
       "type": "string",
       "x-value": "AddressMerge",
-      "enum": [
-        "AddressMerge"
-      ]
+      "enum": ["AddressMerge"]
     },
     "field": {
       "type": "string",
@@ -22,12 +17,7 @@
     },
     "op": {
       "type": "string",
-      "enum": [
-        "contains",
-        "notcontain",
-        "blank",
-        "blank_not"
-      ],
+      "enum": ["contains", "notcontain", "blank", "blank_not"],
       "title": "Segment Operator",
       "description": "Whether the member's address merge field contains/does not contain a value or is/is not blank.",
       "example": "contains"

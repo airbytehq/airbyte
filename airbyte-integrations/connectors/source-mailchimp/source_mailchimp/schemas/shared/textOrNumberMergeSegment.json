@@ -2,17 +2,12 @@
   "type": "object",
   "title": "Text or Number Merge Field Segment",
   "description": "Segment by a given text or number merge field.",
-  "required": [
-    "field",
-    "op"
-  ],
+  "required": ["field", "op"],
   "properties": {
     "condition_type": {
       "type": "string",
       "x-value": "TextMerge",
-      "enum": [
-        "TextMerge"
-      ]
+      "enum": ["TextMerge"]
     },
     "field": {
       "type": "string",

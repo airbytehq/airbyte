@@ -2,18 +2,12 @@
   "type": "object",
   "title": "Ecommerce Number Segment",
   "description": "Segment by average spent total, number of orders, total number of products purchased, or average number of products per order.",
-  "required": [
-    "field",
-    "op",
-    "value"
-  ],
+  "required": ["field", "op", "value"],
   "properties": {
     "condition_type": {
       "type": "string",
       "x-value": "EcommNumber",
-      "enum": [
-        "EcommNumber"
-      ]
+      "enum": ["EcommNumber"]
     },
     "field": {
       "type": "string",
@@ -29,12 +23,7 @@
     },
     "op": {
       "type": "string",
-      "enum": [
-        "is",
-        "not",
-        "greater",
-        "less"
-      ],
+      "enum": ["is", "not", "greater", "less"],
       "title": "Segment Operator",
       "description": "Members who have spent exactly, have not spent exactly, spent more, or spent less than the segment value.",
       "example": "greater"

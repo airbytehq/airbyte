@@ -2,37 +2,23 @@
   "type": "object",
   "title": "Geolocation Segment",
   "description": "Segment by a specific geographic region.",
-  "required": [
-    "field",
-    "op",
-    "value",
-    "addr",
-    "lat",
-    "lng"
-  ],
+  "required": ["field", "op", "value", "addr", "lat", "lng"],
   "properties": {
     "condition_type": {
       "type": "string",
       "x-value": "IPGeoIn",
-      "enum": [
-        "IPGeoIn"
-      ]
+      "enum": ["IPGeoIn"]
     },
     "field": {
       "type": "string",
-      "enum": [
-        "ipgeo"
-      ],
+      "enum": ["ipgeo"],
       "title": "Segment Field",
       "description": "Segmenting subscribers who are within a specific location.",
       "example": "ipgeo"
     },
     "op": {
       "type": "string",
-      "enum": [
-        "ipgeoin",
-        "ipgeonotin"
-      ],
+      "enum": ["ipgeoin", "ipgeonotin"],
       "title": "Segment Operator",
       "description": "Segment members who are within a specific geographic region.",
       "example": "ipgeoin"

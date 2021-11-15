@@ -6,25 +6,18 @@
     "condition_type": {
       "type": "string",
       "x-value": "EcommPurchased",
-      "enum": [
-        "EcommPurchased"
-      ]
+      "enum": ["EcommPurchased"]
     },
     "field": {
       "type": "string",
-      "enum": [
-        "ecomm_purchased"
-      ],
+      "enum": ["ecomm_purchased"],
       "title": "Segment Field",
       "description": "Segment by whether someone has purchased anything.",
       "example": "ecomm_purchased"
     },
     "op": {
       "type": "string",
-      "enum": [
-        "member",
-        "notmember"
-      ],
+      "enum": ["member", "notmember"],
       "title": "Segment Operator",
       "description": "Members who have have ('member') or have not ('notmember') purchased.",
       "example": "member"

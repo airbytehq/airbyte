@@ -2,24 +2,16 @@
   "type": "object",
   "title": "Goal Activity Segment",
   "description": "Segment by Goal activity.",
-  "required": [
-    "field",
-    "op",
-    "value"
-  ],
+  "required": ["field", "op", "value"],
   "properties": {
     "condition_type": {
       "type": "string",
       "x-value": "GoalActivity",
-      "enum": [
-        "GoalActivity"
-      ]
+      "enum": ["GoalActivity"]
     },
     "field": {
       "type": "string",
-      "enum": [
-        "goal"
-      ],
+      "enum": ["goal"],
       "title": "Segment Field",
       "description": "Segment by Goal activity.",
       "example": "goal"

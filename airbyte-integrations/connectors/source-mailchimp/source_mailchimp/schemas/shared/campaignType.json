@@ -2,11 +2,5 @@
   "type": "string",
   "title": "Campaign Type",
   "description": "There are four types of [campaigns](https://mailchimp.com/help/getting-started-with-campaigns/) you can create in Mailchimp. A/B Split campaigns have been deprecated and variate campaigns should be used instead.",
-  "enum": [
-    "regular",
-    "plaintext",
-    "absplit",
-    "rss",
-    "variate"
-  ]
+  "enum": ["regular", "plaintext", "absplit", "rss", "variate"]
 }

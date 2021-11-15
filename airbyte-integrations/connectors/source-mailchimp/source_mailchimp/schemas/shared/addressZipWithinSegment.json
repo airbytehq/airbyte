@@ -2,19 +2,12 @@
   "type": "object",
   "title": "Address/Zip Merge Field Segment",
   "description": "Segment by an address-type merge field within a given distance.",
-  "required": [
-    "field",
-    "op",
-    "value",
-    "extra"
-  ],
+  "required": ["field", "op", "value", "extra"],
   "properties": {
     "condition_type": {
       "type": "string",
       "x-value": "ZipMerge",
-      "enum": [
-        "ZipMerge"
-      ]
+      "enum": ["ZipMerge"]
     },
     "field": {
       "type": "string",
@@ -24,9 +17,7 @@
     },
     "op": {
       "type": "string",
-      "enum": [
-        "geoin"
-      ],
+      "enum": ["geoin"],
       "title": "Segment Operator",
       "description": "Whether the member's address merge field is within a given distance from a city or zip.",
       "example": "geoin"
