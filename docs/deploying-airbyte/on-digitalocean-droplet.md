@@ -1,4 +1,4 @@
-# On Digital Ocean \(Ubuntu\)
+# On Digital Ocean \(Droplet\)
 
 {% hint style="info" %}
 The instructions have been tested on `Digital Ocean Droplet ($5)`
