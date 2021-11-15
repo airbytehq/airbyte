@@ -226,7 +226,7 @@ jobs:
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Build
-        run: SUB_BUILD=PLATFORM ./gradlew build --scan
+        run: SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
 
       - name: Test if Seed spec is updated
         run: SUB_BUILD=PLATFORM ./gradlew format && git --no-pager diff && test -z "$(git --no-pager diff)"
