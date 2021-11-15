@@ -5,9 +5,9 @@
 
 import sys
 
-from base_python.entrypoint import launch
-from source_zendesk_talk import SourceZendeskTalk
+from airbyte_cdk.entrypoint import launch
+from source_azure_table import SourceAzureTable
 
 if __name__ == "__main__":
-    source = SourceZendeskTalk()
+    source = SourceAzureTable()
     launch(source, sys.argv[1:])
