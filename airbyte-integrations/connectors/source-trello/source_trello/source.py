@@ -85,7 +85,7 @@ class IncrementalTrelloStream(TrelloStream, ABC):
 
 class Boards(TrelloStream):
     """Return list of all boards.
-    API Docs: https://developers.intercom.com/intercom-api-reference/reference#list-attached-segments-1
+    API Docs: https://developer.atlassian.com/cloud/trello/rest/api-group-members/#api-members-id-boards-get
     Endpoint: https://api.trello.com/1/members/me/boards
     """
 
