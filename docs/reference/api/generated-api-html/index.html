@@ -2530,6 +2530,12 @@ font-style: italic;
   "supportedDestinationSyncModes" : [ null, null ],
   "supportsDbt" : true,
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "advancedAuth" : {
+    "predicateValue" : "predicateValue",
+    "oauthConfigSpecification" : { },
+    "predicateKey" : [ "predicateKey", "predicateKey" ],
+    "authFlowType" : "oauth1.0"
+  },
   "authSpecification" : {
     "auth_type" : "oauth2.0",
     "oauth2Specification" : {
@@ -4956,6 +4962,12 @@ font-style: italic;
     }
   },
   "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "advancedAuth" : {
+    "predicateValue" : "predicateValue",
+    "oauthConfigSpecification" : { },
+    "predicateKey" : [ "predicateKey", "predicateKey" ],
+    "authFlowType" : "oauth1.0"
+  },
   "authSpecification" : {
     "auth_type" : "oauth2.0",
     "oauth2Specification" : {
@@ -6583,6 +6595,7 @@ font-style: italic;
 
   <h3>Table of Contents</h3>
   <ol>
+    <li><a href="#AdvancedAuth"><code>AdvancedAuth</code> - </a></li>
     <li><a href="#AirbyteCatalog"><code>AirbyteCatalog</code> - </a></li>
     <li><a href="#AirbyteStream"><code>AirbyteStream</code> - </a></li>
     <li><a href="#AirbyteStreamAndConfiguration"><code>AirbyteStreamAndConfiguration</code> - </a></li>
@@ -6648,6 +6661,7 @@ font-style: italic;
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
     <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
     <li><a href="#OAuth2Specification"><code>OAuth2Specification</code> - </a></li>
+    <li><a href="#OAuthConfigSpecification"><code>OAuthConfigSpecification</code> - </a></li>
     <li><a href="#OAuthConsentRead"><code>OAuthConsentRead</code> - </a></li>
     <li><a href="#OperationCreate"><code>OperationCreate</code> - </a></li>
     <li><a href="#OperationIdRequestBody"><code>OperationIdRequestBody</code> - </a></li>
@@ -6696,6 +6710,18 @@ font-style: italic;
     <li><a href="#WorkspaceUpdate"><code>WorkspaceUpdate</code> - </a></li>
   </ol>
 
+  <div class="model">
+    <h3><a name="AdvancedAuth"><code>AdvancedAuth</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">authFlowType (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">oauth1.0</div><div class="param-enum">oauth2.0</div>
+<div class="param">predicateKey (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable. </div>
+<div class="param">predicateValue (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Value of the predicate_key fields for the advanced auth to be applicable. </div>
+<div class="param">oauthConfigSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfigSpecification">OAuthConfigSpecification</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
   <div class="model">
     <h3><a name="AirbyteCatalog"><code>AirbyteCatalog</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'>describes the available schema (catalog).</div>
@@ -6802,6 +6828,7 @@ font-style: italic;
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given. </div>
 <div class="param">queryParams (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span> The query parameters present in the redirect URL after a user granted consent e.g auth code </div>
+<div class="param">oAuthInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -6812,6 +6839,7 @@ font-style: italic;
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> When completing OAuth flow to gain an access token, some API sometimes requires to verify that the app re-send the redirectUrl that was used when consent was given. </div>
 <div class="param">queryParams (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">map[String, Object]</a></span> The query parameters present in the redirect URL after a user granted consent e.g auth code </div>
+<div class="param">oAuthInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -7030,6 +7058,7 @@ font-style: italic;
 <div class="param">documentationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">connectionSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionSpecification">DestinationDefinitionSpecification</a></span>  </div>
 <div class="param">authSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#AuthSpecification">AuthSpecification</a></span>  </div>
+<div class="param">advancedAuth (optional)</div><div class="param-desc"><span class="param-type"><a href="#AdvancedAuth">AdvancedAuth</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
 <div class="param">supportedDestinationSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSyncMode">array[DestinationSyncMode]</a></span>  </div>
 <div class="param">supportsDbt (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
@@ -7058,6 +7087,7 @@ font-style: italic;
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The url to redirect to after getting the user consent </div>
+<div class="param">oAuthInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -7300,6 +7330,16 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="OAuthConfigSpecification"><code>OAuthConfigSpecification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">oauthUserInputFromConnectorConfigSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
+<div class="param">completeOAuthOutputSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
+<div class="param">completeOAuthServerInputSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
+<div class="param">completeOAuthServerOutputSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="OAuthConsentRead"><code>OAuthConsentRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -7493,6 +7533,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">documentationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">connectionSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionSpecification">SourceDefinitionSpecification</a></span>  </div>
 <div class="param">authSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#AuthSpecification">AuthSpecification</a></span>  </div>
+<div class="param">advancedAuth (optional)</div><div class="param-desc"><span class="param-type"><a href="#AdvancedAuth">AdvancedAuth</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -7526,6 +7567,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">redirectUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The url to redirect to after getting the user consent </div>
+<div class="param">oAuthInputConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuthConfiguration">OAuthConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
