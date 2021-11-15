@@ -1,0 +1,35 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Azure Data Table Spec",
+    "type": "object",
+    "required": ["storage_account_name", "storage_access_key"],
+    "additionalProperties": false,
+    "properties": {
+      "storage_account_name": {
+        "title": "Account Name",
+        "type": "string",
+        "description": "The name of your storage account.",
+        "order": 0,
+        "airbyte_secret": false
+      },
+      "storage_access_key": {
+        "title": "Access Key",
+        "type": "string",
+        "description": "The access key to your storage account. Read more about access keys here - https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal#view-account-access-keys",
+        "order": 1,
+        "airbyte_secret": true
+      },
+      "storage_endpoint_suffix": {
+        "title": "Endpoint Suffix",
+        "type": "string",
+        "description": "The Table service account URL suffix. Read more about suffixes here - https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string#create-a-connection-string-with-an-endpoint-suffix",
+        "order": 2,
+        "default": "core.windows.net",
+        "examples": ["core.windows.net", "core.chinacloudapi.cn"],
+        "airbyte_secret": false
+      }
+    }
+  }
+}
