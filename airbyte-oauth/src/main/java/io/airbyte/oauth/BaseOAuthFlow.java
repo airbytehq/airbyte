@@ -8,12 +8,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.OAuthConfigSpecification;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.HashMap;
@@ -124,21 +126,29 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
    */
   protected Map<String, Object> formatOAuthOutput(final JsonNode oAuthParamConfig,
                                                   final Map<String, Object> completeOAuthFlow,
-                                                  final OAuthConfigSpecification oAuthConfigSpecification) {
-    final Builder<String, Object> outputs = ImmutableMap.builder();
-    // inject masked params outputs
+                                                  final OAuthConfigSpecification oAuthConfigSpecification)
+      throws JsonValidationException {
+    final JsonSchemaValidator validator = new JsonSchemaValidator();
+
+    final Builder<String, Object> oAuthServerOutputBuilder = ImmutableMap.builder();
     for (final String key : Jsons.keys(oAuthParamConfig)) {
       if (oAuthConfigSpecification.getCompleteOauthServerOutputSpecification().has(key)) {
-        outputs.put(key, MoreOAuthParameters.SECRET_MASK);
+        oAuthServerOutputBuilder.put(key, MoreOAuthParameters.SECRET_MASK);
       }
     }
-    // collect oauth result outputs
+    final Map<String, Object> oAuthServerOutputs = oAuthServerOutputBuilder.build();
+    validator.ensure(oAuthConfigSpecification.getCompleteOauthServerOutputSpecification(), Jsons.jsonNode(oAuthServerOutputs));
+
+    final Builder<String, Object> oAuthBuilder = ImmutableMap.builder();
     for (final String key : completeOAuthFlow.keySet()) {
       if (oAuthConfigSpecification.getCompleteOauthOutputSpecification().has(key)) {
-        outputs.put(key, completeOAuthFlow.get(key));
+        oAuthBuilder.put(key, completeOAuthFlow.get(key));
       }
     }
-    return outputs.build();
+    final Map<String, Object> oAuthOutputs = oAuthBuilder.build();
+    validator.ensure(oAuthConfigSpecification.getCompleteOauthOutputSpecification(), Jsons.jsonNode(oAuthOutputs));
+
+    return MoreMaps.merge(oAuthServerOutputs, oAuthOutputs);
   }
 
   /**

@@ -243,7 +243,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  public void testEmptyOutputCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
+  public void testEmptyOutputCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final Map<String, String> returnedCredentials = getExpectedOutput();
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
@@ -256,7 +256,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  public void testEmptyOutputCompleteDestinationOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
+  public void testEmptyOutputCompleteDestinationOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final Map<String, String> returnedCredentials = getExpectedOutput();
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
@@ -269,7 +269,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  public void testEmptyInputCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
+  public void testEmptyInputCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final Map<String, String> returnedCredentials = getExpectedOutput();
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
@@ -284,7 +284,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  public void testEmptyInputCompleteDestinationOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
+  public void testEmptyInputCompleteDestinationOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final Map<String, String> returnedCredentials = getExpectedOutput();
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
@@ -299,7 +299,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  public void testCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
+  public void testCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final Map<String, String> returnedCredentials = getExpectedOutput();
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
@@ -314,7 +314,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  public void testCompleteDestinationOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
+  public void testCompleteDestinationOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final Map<String, String> returnedCredentials = getExpectedOutput();
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));

@@ -17,6 +17,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuthFlow;
 import io.airbyte.protocol.models.OAuthConfigSpecification;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.List;
@@ -60,10 +61,30 @@ public class TrelloOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
+  public String getSourceConsentUrl(final UUID workspaceId,
+                                    final UUID sourceDefinitionId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration,
+                                    final OAuthConfigSpecification oauthConfigSpecification)
+      throws IOException, ConfigNotFoundException {
+    return getSourceConsentUrl(workspaceId, sourceDefinitionId, redirectUrl);
+  }
+
+  @Override
   public String getDestinationConsentUrl(final UUID workspaceId, final UUID destinationDefinitionId, final String redirectUrl)
       throws IOException, ConfigNotFoundException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return getConsentUrl(oAuthParamConfig, redirectUrl);
+  }
+
+  @Override
+  public String getDestinationConsentUrl(final UUID workspaceId,
+                                         final UUID destinationDefinitionId,
+                                         final String redirectUrl,
+                                         final JsonNode inputOAuthConfiguration,
+                                         final OAuthConfigSpecification oauthConfigSpecification)
+      throws IOException, ConfigNotFoundException {
+    return getDestinationConsentUrl(workspaceId, destinationDefinitionId, redirectUrl);
   }
 
   private String getConsentUrl(final JsonNode oAuthParamConfig, final String redirectUrl) throws IOException, ConfigNotFoundException {
@@ -113,7 +134,7 @@ public class TrelloOAuthFlow extends BaseOAuthFlow {
                                                  final String redirectUrl,
                                                  final JsonNode inputOAuthConfiguration,
                                                  final OAuthConfigSpecification oAuthConfigSpecification)
-      throws IOException, ConfigNotFoundException {
+      throws IOException, ConfigNotFoundException, JsonValidationException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, sourceDefinitionId);
     return formatOAuthOutput(oAuthParamConfig, internalCompleteOAuth(oAuthParamConfig, queryParams), oAuthConfigSpecification);
   }
@@ -125,7 +146,7 @@ public class TrelloOAuthFlow extends BaseOAuthFlow {
                                                       final String redirectUrl,
                                                       final JsonNode inputOAuthConfiguration,
                                                       final OAuthConfigSpecification oAuthConfigSpecification)
-      throws IOException, ConfigNotFoundException {
+      throws IOException, ConfigNotFoundException, JsonValidationException {
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
     return formatOAuthOutput(oAuthParamConfig, internalCompleteOAuth(oAuthParamConfig, queryParams), oAuthConfigSpecification);
   }
