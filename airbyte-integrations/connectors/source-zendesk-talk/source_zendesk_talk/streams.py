@@ -19,18 +19,18 @@ class ZendeskTalkStream(HttpStream, ABC):
     primary_key = "id"
 
     def __init__(self, subdomain: str, **kwargs):
-        """ Constructor, accepts subdomain to calculate correct url"""
+        """Constructor, accepts subdomain to calculate correct url"""
         super().__init__(**kwargs)
         self._subdomain = subdomain
 
     @property
     @abstractmethod
     def data_field(self) -> str:
-        """ Specifies root object name in a stream response"""
+        """Specifies root object name in a stream response"""
 
     @property
     def url_base(self) -> str:
-        """ API base url based on configured subdomain"""
+        """API base url based on configured subdomain"""
         return f"https://{self._subdomain}.zendesk.com/api/v2/channels/voice"
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
@@ -75,7 +75,7 @@ class ZendeskTalkStream(HttpStream, ABC):
         return dict(next_page_token or {})
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """ Simply parse json and iterates over root object"""
+        """Simply parse json and iterates over root object"""
         response_json = response.json()
         if self.data_field:
             response_json = response_json[self.data_field]
@@ -110,7 +110,7 @@ class ZendeskTalkIncrementalStream(ZendeskTalkStream, ABC):
         return {self.cursor_field: new_cursor_value}
 
     def request_params(self, stream_state=None, **kwargs):
-        """ Add incremental parameters"""
+        """Add incremental parameters"""
         params = super().request_params(stream_state=stream_state, **kwargs)
 
         if self.filter_param not in params:
@@ -220,7 +220,7 @@ class IVRMenus(IVRs):
     name = "ivr_menus"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """ Simply parse json and iterates over root object"""
+        """Simply parse json and iterates over root object"""
         ivrs = super().parse_response(response=response, **kwargs)
         for ivr in ivrs:
             for menu in ivr["menus"]:
@@ -235,7 +235,7 @@ class IVRRoutes(IVRs):
     name = "ivr_routes"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """ Simply parse json and iterates over root object"""
+        """Simply parse json and iterates over root object"""
         ivrs = super().parse_response(response=response, **kwargs)
         for ivr in ivrs:
             for menu in ivr["menus"]:
@@ -310,4 +310,3 @@ class CallLegs(ZendeskTalkIncrementalStream):
 
     def path(self, **kwargs) -> str:
         return "/stats/incremental/legs"
-
