@@ -44,6 +44,7 @@ export class DestinationResource extends BaseResource implements Destination {
     };
   }
 
+  // TODO: remove?
   static recreateShape<T extends typeof Resource>(
     this: T
   ): MutateShape<SchemaDetail<Destination>> {
@@ -74,11 +75,7 @@ export class DestinationResource extends BaseResource implements Destination {
         _: Readonly<Record<string, string>>,
         body: Readonly<Record<string, unknown>>
       ): Promise<Destination> =>
-        await this.fetch(
-          "post",
-          `${super.rootUrl()}web_backend/destinations/create`,
-          body
-        ),
+        await this.fetch("post", `${super.rootUrl()}destinations/create`, body),
     };
   }
 }

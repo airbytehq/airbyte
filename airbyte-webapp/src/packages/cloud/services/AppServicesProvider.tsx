@@ -9,11 +9,9 @@ import {
   useInjectServices,
 } from "core/servicesProvider";
 import { useApiServices } from "core/defaultServices";
-import { ConfigProvider } from "./ConfigProvider";
 import { FirebaseSdkProvider } from "./FirebaseSdkProvider";
 
 import { useWorkspaceService } from "./workspaces/WorkspacesService";
-import { useAuthService } from "./auth/AuthService";
 import WorkspaceResource, { Workspace } from "core/resources/Workspace";
 import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
 import { useConfig } from "./config";
@@ -21,12 +19,7 @@ import { UserService } from "packages/cloud/lib/domain/users";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { LoadingPage } from "components";
 
-export const useCustomerIdProvider = (): string => {
-  const { user } = useAuthService();
-  return user?.userId ?? "";
-};
-
-export const useCurrentWorkspaceProvider = (): Workspace => {
+const useCurrentWorkspaceProvider = (): Workspace => {
   const { currentWorkspaceId } = useWorkspaceService();
   const workspace = useResource(WorkspaceResource.detailShape(), {
     workspaceId: currentWorkspaceId || null,
@@ -35,26 +28,21 @@ export const useCurrentWorkspaceProvider = (): Workspace => {
   return workspace;
 };
 
+const services = {
+  currentWorkspaceProvider: useCurrentWorkspaceProvider,
+};
+
 /**
  * This Provider is main services entrypoint
  * It initializes all required services for app to work
  * and also adds all overrides of hooks/services
  */
 const AppServicesProvider: React.FC = ({ children }) => {
-  const services = useMemo(
-    () => ({
-      currentWorkspaceProvider: useCurrentWorkspaceProvider,
-      useCustomerIdProvider: useCustomerIdProvider,
-    }),
-    []
-  );
   return (
     <ServicesProvider inject={services}>
-      <ConfigProvider>
-        <FirebaseSdkProvider>
-          <ServiceOverrides>{children}</ServiceOverrides>
-        </FirebaseSdkProvider>
-      </ConfigProvider>
+      <FirebaseSdkProvider>
+        <ServiceOverrides>{children}</ServiceOverrides>
+      </FirebaseSdkProvider>
     </ServicesProvider>
   );
 };
