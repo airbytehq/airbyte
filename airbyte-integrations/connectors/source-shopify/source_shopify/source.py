@@ -340,15 +340,6 @@ class Locations(ShopifyStream):
         return f"{self.data_field}.json"
 
 
-class InventoryItems(IncrementalShopifyStream):
-
-    data_field = "inventory_items"
-    cursor_field = "updated_at"
-
-    def path(self, **kwargs) -> str:
-        return f"{self.data_field}.json"
-
-
 class InventoryLevels(ChildSubstream):
     parent_stream_class: object = Locations
     slice_key = "location_id"
@@ -372,6 +363,27 @@ class InventoryLevels(ChildSubstream):
             generate_key,
             records_stream,
         )
+
+
+class InventoryItems(ChildSubstream):
+
+    parent_stream_class: object = Products
+    cursor_field = "updated_at"
+    slice_key = "id"
+    record_field_name = "variants"
+
+    data_field = "inventory_item"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        item_id = stream_slice[self.slice_key][0]["inventory_item_id"]
+        return f"inventory_items/{item_id}.json"
+
+    # super parse_response expects a json array but in this instance we only have a single object
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = response.json()
+        record = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+
+        yield self._transformer.transform(record)
 
 
 class FulfillmentOrders(ChildSubstream):
