@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.jdbc;
 
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -18,6 +21,7 @@ import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
@@ -32,7 +36,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -60,6 +66,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   private static final String INTERNAL_TABLE_NAME = "tableName";
   private static final String INTERNAL_COLUMN_NAME = "columnName";
   private static final String INTERNAL_COLUMN_TYPE = "columnType";
+  public static final String BLANK_STRING = "";
 
   private final String driverClass;
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
@@ -114,7 +121,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   @Override
   protected List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database, final String schema) throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
-    Set<String> tablesWithSelectGrantPrivilege = getTablesWithSelectGrantPrivilegeForCurrentDbUser(database, schema);
+    Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getTablesWithSelectGrantPrivilegeForCurrentDbUser(database, schema);
     return database.bufferedResultSetQuery(
         conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
@@ -127,11 +134,10 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
             .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
             .build()))
         .stream()
-        .filter(t -> tablesWithSelectGrantPrivilege.contains(t.get(INTERNAL_TABLE_NAME).asText()) &&
-            !internalSchemas.contains(t.get(INTERNAL_SCHEMA_NAME).asText()))
+        .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
         // group by schema and table name to handle the case where a table with the same name exists in
         // multiple schemas.
-        .collect(Collectors.groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
+        .collect(groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
         .values()
         .stream()
         .map(fields -> TableInfo.<CommonField<JDBCType>>builder()
@@ -152,26 +158,42 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
                   }
                   return new CommonField<JDBCType>(f.get(INTERNAL_COLUMN_NAME).asText(), jdbcType) {};
                 })
-                .collect(Collectors.toList()))
+                .collect(toList()))
             .build())
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 
-  private Set<String> getTablesWithSelectGrantPrivilegeForCurrentDbUser(JdbcDatabase database, String schema) throws SQLException {
+  private Predicate<JsonNode> excludeNotAccessibleTables(Set<String> internalSchemas, Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
+    return t ->
+        tablesWithSelectGrantPrivilege.stream()
+            .anyMatch(e -> e.getSchemaName().equals(t.get(INTERNAL_SCHEMA_NAME).asText()))
+        && tablesWithSelectGrantPrivilege.stream()
+            .anyMatch(e -> e.getTableName().equals(t.get(INTERNAL_TABLE_NAME).asText()))
+        && !internalSchemas.contains(t.get(INTERNAL_SCHEMA_NAME).asText());
+  }
+
+  /**
+   * @param database - The database where from privileges for tables will be consumed
+   * @param schema - The schema where from privileges for tables will be consumed
+   * @return Set with privileges for tables for current DB-session user
+   * @throws SQLException
+   */
+  protected Set<JdbcPrivilegeDto> getTablesWithSelectGrantPrivilegeForCurrentDbUser(JdbcDatabase database, String schema) throws SQLException {
     return database.bufferedResultSetQuery(
             conn -> conn.getMetaData().getTablePrivileges(getCatalog(database), schema, null),
             resultSet ->
-                Jsons.jsonNode(ImmutableMap.<String, Object>builder()
-                    .put(GRANTEE, resultSet.getString(GRANTEE))
-                    .put(JDBC_COLUMN_TABLE_NAME, resultSet.getString(JDBC_COLUMN_TABLE_NAME))
-                    .put(PRIVILEGE, resultSet.getString(PRIVILEGE))
-                    .build()))
+                JdbcPrivilegeDto.builder()
+                    .grantee(ofNullable(resultSet.getString(GRANTEE)).orElse(BLANK_STRING))
+                    // we need the schema as different schemas could have tables with the same names
+                    .schemaName(ofNullable(resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)).orElse(BLANK_STRING))
+                    .tableName(ofNullable(resultSet.getString(JDBC_COLUMN_TABLE_NAME)).orElse(BLANK_STRING))
+                    .privilege(ofNullable(resultSet.getString(PRIVILEGE)).orElse(BLANK_STRING))
+                    .build())
         .stream()
-        .filter(jsonNode ->
-            jsonNode.get(GRANTEE).equals(database.getDatabaseConfig().get("username"))
-                && jsonNode.get(PRIVILEGE).asText().equals("SELECT"))
-        .map(jsonNode -> jsonNode.get(JDBC_COLUMN_TABLE_NAME).asText())
-        .collect(Collectors.toSet());
+        .filter(jdbcPrivilegeDto ->
+            jdbcPrivilegeDto.getGrantee().equals(database.getDatabaseConfig().get("username").asText())
+                && "SELECT".equals(jdbcPrivilegeDto.getPrivilege()))
+        .collect(toSet());
   }
 
   @Override
@@ -189,7 +211,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
                                                           final List<TableInfo<CommonField<JDBCType>>> tableInfos) {
     LOGGER.info("Discover primary keys for tables: " + tableInfos.stream().map(tab -> tab.getName()).collect(
-        Collectors.toSet()));
+        toSet()));
     try {
       // Get all primary keys without specifying a table name
       final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
@@ -209,7 +231,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
     }
     // Get primary keys one table at a time
     return tableInfos.stream()
-        .collect(Collectors.toMap(
+        .collect(toMap(
             tableInfo -> sourceOperations
                 .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
