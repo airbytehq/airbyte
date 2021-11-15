@@ -1,0 +1,24 @@
+{
+    "properties": {
+        "id": {
+            "type": "integer"
+        },
+        "_self": {
+            "type": "string"
+        },
+        "name": {
+            "type": ["string", "null"]
+        },
+        "order": {
+            "type": "integer"
+        },
+        "created": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "modified": {
+            "type": "string",
+            "format": "date-time"
+        }
+    }
+}
