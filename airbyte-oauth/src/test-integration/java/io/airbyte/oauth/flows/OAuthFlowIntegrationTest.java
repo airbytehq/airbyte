@@ -60,7 +60,6 @@ public abstract class OAuthFlowIntegrationTest {
     httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     flow = this.getFlowImplementation(configRepository, httpClient);
 
-    System.out.println(getServerListeningPort());
     server = HttpServer.create(new InetSocketAddress(getServerListeningPort()), 0);
     server.setExecutor(null); // creates a default executor
     server.start();
