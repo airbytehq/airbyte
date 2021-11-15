@@ -270,6 +270,8 @@ subprojects {
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
+
+    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 }
 
 task('generate') {
