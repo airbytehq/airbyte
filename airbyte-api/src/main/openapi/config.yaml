@@ -3242,7 +3242,7 @@ components:
       properties:
         authFlowType:
           type: string
-          enum: [ "oauth1.0", "oauth2.0" ]
+          enum: ["oauth1.0", "oauth2.0"]
         predicateKey:
           description: Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.
           type: array
