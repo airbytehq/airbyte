@@ -1,8 +1,6 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-# Reader uses azure data table python package(https://pypi.org/project/azure-data-tables/) to interact with table services
-#  
 
 import re
 from typing import Dict, Iterable, List
@@ -15,8 +13,8 @@ from . import constants
 
 
 class Reader:
-    """ 
-    This reader reads data from given table 
+    """
+    This reader reads data from given table
 
     Attributes
     ----------
@@ -30,11 +28,11 @@ class Reader:
         The Table service account URL suffix. Read more about suffixes here - https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string#create-a-connection-string-with-an-endpoint-suffix
     connection_string: str
         storage account connection string created using above params. Read more about connection string here - https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string#configure-a-connection-string-for-an-azure-storage-account
-    
+
     Methods
     -------
     get_table_service()
-        Returns azure table service client from connection string. 
+        Returns azure table service client from connection string.
 
     get_table_client(table_name: str)
         Returns azure table client from connection string.
@@ -50,7 +48,7 @@ class Reader:
         ----------
         config : dict
             Airbyte's configuration obect
-        
+
         """
         self.logger = logger
         self.account_name = config[constants.azure_storage_account_name_key_name]
@@ -63,9 +61,9 @@ class Reader:
 
     def get_table_service(self) -> TableServiceClient:
         """
-        Returns azure table service client from connection string. 
+        Returns azure table service client from connection string.
         Table service client facilitate interaction with tables. Please read more here - https://docs.microsoft.com/en-us/rest/api/storageservices/operations-on-tables
-        
+
         """
         try:
             return TableServiceClient.from_connection_string(conn_str=self.connection_string)
@@ -81,7 +79,7 @@ class Reader:
         ----------
         table_name : str
             table name for which you would like create table client for.
-        
+
         """
         try:
             if not table_name:
@@ -110,7 +108,7 @@ class Reader:
 
     @property
     def get_typed_schema(self) -> object:
-        """ Static schema for tables """
+        """Static schema for tables"""
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
