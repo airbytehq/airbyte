@@ -6,8 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from airbyte_cdk.models.airbyte_protocol import SyncMode
-from source_linnworks.streams import LinnworksStream, Location, StockItems, StockLocations
+from source_linnworks.streams import LinnworksStream, StockItems, StockLocationDetails
 
 
 @pytest.fixture
@@ -68,22 +67,22 @@ def test_backoff_time(patch_base_class, requests_mock, header_name, header_value
     assert result == expected
 
 
-def test_stock_locations_read_records(mocker):
-    fake_stock_locations = [
-        {"StockLocationId": 1},
-        {"StockLocationId": 2},
-    ]
+@pytest.mark.parametrize(
+    ("stream_slice", "expected"),
+    [
+        (None, "'NoneType' object is not subscriptable"),
+        ({"parent": {"StockLocationId": 42}}, {"pkStockLocationId ": 42}),
+    ],
+)
+def test_stock_locations_details_request_params(mocker, stream_slice, expected):
+    source = StockLocationDetails()
 
-    mocker.patch.object(LinnworksStream, "read_records", lambda *args: iter(fake_stock_locations))
-    mocker.patch.object(Location, "read_records", lambda *args: iter([{"FakeLocationFor": args[-1]}]))
-
-    source = StockLocations()
-    records = source.read_records(SyncMode.full_refresh)
-
-    assert list(records) == [
-        {"StockLocationId": 1, "location": {"FakeLocationFor": {"pkStockLocationId": 1}}},
-        {"StockLocationId": 2, "location": {"FakeLocationFor": {"pkStockLocationId": 2}}},
-    ]
+    if stream_slice:
+        records = source.request_params(None, stream_slice)
+        assert records == expected
+    else:
+        with pytest.raises(TypeError, match=expected):
+            source.request_params(None, stream_slice)
 
 
 @pytest.mark.parametrize(
