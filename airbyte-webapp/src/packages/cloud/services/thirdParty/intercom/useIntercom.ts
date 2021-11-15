@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useIntercom as useIntercomProvider } from "react-use-intercom";
 
-import { useCurrentUser } from "./auth/AuthService";
+import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 
 export const useIntercom = (): void => {
   const user = useCurrentUser();
