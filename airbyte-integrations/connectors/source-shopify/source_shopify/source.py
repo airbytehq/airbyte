@@ -173,7 +173,7 @@ class ChildSubstream(IncrementalShopifyStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
-        """ Reading child streams records for each `id` """
+        """Reading child streams records for each `id`"""
 
         self.logger.info(f"Reading {self.name} for {self.slice_key}: {stream_slice.get(self.slice_key)}")
         records = super().read_records(stream_slice=stream_slice, **kwargs)

@@ -14,7 +14,7 @@ from .abstract_file_parser import AbstractFileParser
 
 
 def multiprocess_queuer(func, queue: mp.Queue, *args, **kwargs):
-    """ this is our multiprocesser helper function, lives at top-level to be Windows-compatible """
+    """this is our multiprocesser helper function, lives at top-level to be Windows-compatible"""
     queue.put(dill.loads(func)(*args, **kwargs))
 
 

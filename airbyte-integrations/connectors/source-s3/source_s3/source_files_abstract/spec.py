@@ -90,7 +90,7 @@ class SourceFilesAbstractSpec(BaseModel):
 
     @classmethod
     def schema(cls) -> dict:
-        """ we're overriding the schema classmethod to enable some post-processing """
+        """we're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema()
         cls.check_provider_added(schema)
         schema = cls.change_format_to_oneOf(schema)

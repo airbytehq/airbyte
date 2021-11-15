@@ -37,7 +37,7 @@ default_stream_slices_return_value = [None]
 
 
 class SnapchatMarketingException(Exception):
-    """ Just for formatting the exception as SnapchatMarketing"""
+    """Just for formatting the exception as SnapchatMarketing"""
 
 
 def get_depend_on_ids(depends_on_stream, depends_on_stream_config: Mapping, slice_key_name: str) -> List:
@@ -117,7 +117,7 @@ class SnapchatMarketingStream(HttpStream, ABC):
 
     @property
     def response_root_name(self):
-        """ Using the class name in lower to set the root node for response parsing """
+        """Using the class name in lower to set the root node for response parsing"""
         return self.name
 
     @property
@@ -259,14 +259,14 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
 
 
 class Organizations(SnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#organizations """
+    """Docs: https://marketingapi.snapchat.com/docs/#organizations"""
 
     def path(self, **kwargs) -> str:
         return "me/organizations"
 
 
 class Adaccounts(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-accounts """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-accounts"""
 
     depends_on_stream = Organizations
     slice_key_name = "organization_id"
@@ -276,13 +276,13 @@ class Adaccounts(IncrementalSnapchatMarketingStream):
 
 
 class Creatives(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-creatives """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-creatives"""
 
     depends_on_stream = Adaccounts
 
 
 class Media(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-media """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-media"""
 
     depends_on_stream = Adaccounts
 
@@ -292,25 +292,25 @@ class Media(IncrementalSnapchatMarketingStream):
 
 
 class Campaigns(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-campaigns """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-campaigns"""
 
     depends_on_stream = Adaccounts
 
 
 class Ads(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ads-under-an-ad-account """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-ads-under-an-ad-account"""
 
     depends_on_stream = Adaccounts
 
 
 class Adsquads(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-squads-under-an-ad-account """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-squads-under-an-ad-account"""
 
     depends_on_stream = Adaccounts
 
 
 class Segments(IncrementalSnapchatMarketingStream):
-    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-audience-segments """
+    """Docs: https://marketingapi.snapchat.com/docs/#get-all-audience-segments"""
 
     depends_on_stream = Adaccounts
 
