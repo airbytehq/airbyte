@@ -31,6 +31,13 @@
             "required": ["client_id", "client_secret", "refresh_token"],
             "additionalProperties": false,
             "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "enum": ["Client"],
+                "default": "Client",
+                "order": 0
+              },
               "client_id": {
                 "title": "Client ID",
                 "type": "string",
@@ -56,6 +63,13 @@
             "required": ["api_token"],
             "additionalProperties": false,
             "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Token",
+                "enum": ["Token"],
+                "default": "Token",
+                "order": 0
+              },
               "api_token": {
                 "title": "Personal Access Token",
                 "description": "Log into Harvest and then create new <a href=\"https://id.getharvest.com/developers\"> personal access token</a>.",
