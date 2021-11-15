@@ -5,6 +5,7 @@
 package io.airbyte.oauth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -23,13 +24,22 @@ public class MoreOAuthParametersTest {
     final JsonNode nestedConfig = Jsons.jsonNode(Map.of(
         "field", "value1",
         "top-level", Map.of(
-            "nested_field", "value2",
-            "field", "value3")));
+            "nested_field", "value2")));
     final JsonNode expectedConfig = Jsons.jsonNode(Map.of(
         "field", "value1",
         "nested_field", "value2"));
     final JsonNode actualConfig = MoreOAuthParameters.flattenOAuthConfig(nestedConfig);
     assertEquals(expectedConfig, actualConfig);
+  }
+
+  @Test
+  void testFailureFlattenConfig() {
+    final JsonNode nestedConfig = Jsons.jsonNode(Map.of(
+        "field", "value1",
+        "top-level", Map.of(
+            "nested_field", "value2",
+            "field", "value3")));
+    assertThrows(IllegalStateException.class, () -> MoreOAuthParameters.flattenOAuthConfig(nestedConfig));
   }
 
   private void maskAllValues(final ObjectNode node) {
