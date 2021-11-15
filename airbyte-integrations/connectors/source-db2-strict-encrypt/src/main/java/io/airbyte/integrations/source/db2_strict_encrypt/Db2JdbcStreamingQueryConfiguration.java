@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.db2;
+package io.airbyte.integrations.source.db2_strict_encrypt;
 
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import java.sql.Connection;

@@ -42,7 +42,6 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-        JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_AB_ID);
   }
 

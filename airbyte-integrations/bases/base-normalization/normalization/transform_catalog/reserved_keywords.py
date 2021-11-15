@@ -2533,7 +2533,9 @@ MSSQL = {
     "REGR_SYY",
 }
 
-CLICKHOUSE = {}
+# In ClickHouse, keywords are not reserved.
+# Ref: https://clickhouse.com/docs/en/sql-reference/syntax/#syntax-keywords
+CLICKHOUSE = set()
 
 RESERVED_KEYWORDS = {
     DestinationType.BIGQUERY.value: BIGQUERY,
