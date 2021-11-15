@@ -31,8 +31,7 @@ jobs:
         with:
           args: >-
             {\"channel\": \"C02MG7B7MT6\", \"blocks\":[
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"Succeeded! :white_check_mark:\n\n\n\"}},
-            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"Succeeded! :white_check_mark:\n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\":octavia-rocket: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-rocket:\"}},
             {\"type\":\"divider\"}]}
 
@@ -46,7 +45,6 @@ jobs:
           args: >-
             {\"channel\": \"C02MG7B7MT6\", \"blocks\":[
             {\"type\":\"divider\"},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"Failed! :bangbang:\n\n\n\"}},
-            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"Failed! :bangbang:\n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\":octavia-rocket: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-rocket:\"}},
             {\"type\":\"divider\"}]}
