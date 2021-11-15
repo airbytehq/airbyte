@@ -21,8 +21,6 @@ import org.apache.http.client.utils.URIBuilder;
  * Following docs from https://marketingapi.snapchat.com/docs/#authentication
  */
 public class SnapchatMarketingOAuthFlow extends BaseOAuth2Flow {
-  // Clickable link for IDE
-  // https://help.salesforce.com/s/articleView?language=en_US&id=sf.remoteaccess_oauth_web_server_flow.htm
 
   private static final String AUTHORIZE_URL = "https://accounts.snapchat.com/login/oauth2/authorize";
   private static final String ACCESS_TOKEN_URL = "https://accounts.snapchat.com/login/oauth2/access_token";
@@ -69,7 +67,7 @@ public class SnapchatMarketingOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected List<String> getDefaultOAuthOutputPath() {
+  public List<String> getDefaultOAuthOutputPath() {
     return List.of();
   }
 
