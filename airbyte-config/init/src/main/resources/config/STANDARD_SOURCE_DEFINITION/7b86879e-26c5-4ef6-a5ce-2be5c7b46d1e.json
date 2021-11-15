@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "7b86879e-26c5-4ef6-a5ce-2be5c7b46d1e",
+  "name": "Linnworks",
+  "dockerRepository": "airbyte/source-linnworks",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/linnworks"
+}
