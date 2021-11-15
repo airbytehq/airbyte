@@ -18,7 +18,7 @@ WHERE
             ) counts ON
             jobs.scope = counts.scope
         WHERE
-            -- job must be at least MINIMUM_AGE_IN_DAYS old or connection has more than EXCESSIVE_NUMBER_OF_JOBS 
+            /* job must be at least MINIMUM_AGE_IN_DAYS old or connection has more than EXCESSIVE_NUMBER_OF_JOBS */
 (
                 jobs.created_at <(
                     TO_TIMESTAMP(
@@ -29,7 +29,7 @@ WHERE
                 OR counts.jobCount >?
             )
             AND jobs.id NOT IN(
-                -- cannot be the most recent job with saved state 
+                /* cannot be the most recent job with saved state */
  SELECT
                     job_id AS latest_job_id_with_state
                 FROM
@@ -69,7 +69,7 @@ WHERE
                     stateRecency = 1
             )
             AND jobs.id NOT IN(
-                -- cannot be one of the last MINIMUM_RECENCY jobs for that connection/scope
+                /* cannot be one of the last MINIMUM_RECENCY jobs for that connection/scope */
  SELECT
                     id
                 FROM
