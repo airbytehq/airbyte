@@ -1494,48 +1494,6 @@ paths:
                 $ref: "#/components/schemas/WebBackendConnectionReadList"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/sources/create:
-    post:
-      tags:
-        - web_backend
-      summary: Create a source
-      operationId: webBackendCreateSource
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SourceCreate"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SourceRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/destinations/create:
-    post:
-      tags:
-        - web_backend
-      summary: Create a destination
-      operationId: webBackendCreateDestination
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DestinationCreate"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DestinationRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/list:
     post:
       tags:
