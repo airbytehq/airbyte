@@ -51,8 +51,8 @@ from .auth import HarvestOauth2Authenticator, HarvestTokenAuthenticator
 class SourceHarvest(AbstractSource):
     @staticmethod
     def get_authenticator(config):
-        credentials = config.get("credentials")
-        if credentials:
+        credentials = config.get("credentials", {})
+        if credentials and "client_id" in credentials:
             return HarvestOauth2Authenticator(
                 token_refresh_endpoint="https://id.getharvest.com/api/v2/oauth2/token",
                 client_id=credentials.get("client_id"),
@@ -60,7 +60,11 @@ class SourceHarvest(AbstractSource):
                 refresh_token=credentials.get("refresh_token"),
                 account_id=config["account_id"],
             )
-        return HarvestTokenAuthenticator(token=config["api_token"], account_id=config["account_id"])
+
+        api_token = credentials.get("api_token", config.get("api_token"))
+        if not api_token:
+            raise Exception("Config validation error: 'api_token' is a required property")
+        return HarvestTokenAuthenticator(token=api_token, account_id=config["account_id"])
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:

@@ -5,14 +5,8 @@
     "title": "Harvest Spec",
     "type": "object",
     "required": ["account_id", "replication_start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
-      "api_token": {
-        "title": "API Token",
-        "description": "Harvest API Token.",
-        "airbyte_secret": true,
-        "type": "string"
-      },
       "account_id": {
         "title": "Account ID",
         "description": "Harvest account ID. Required for all Harvest requests in pair with API Key",
@@ -27,29 +21,50 @@
         "type": "string"
       },
       "credentials": {
+        "title": "Authentication mechanism",
+        "description": "Choose how to authenticate to Harvest",
         "type": "object",
-        "title": "Authenticate via Harvest (OAuth 2.0)",
-        "required": ["client_id", "client_secret", "refresh_token"],
-        "additionalProperties": false,
-        "properties": {
-          "client_id": {
-            "title": "Client ID",
-            "type": "string",
-            "description": "The Client ID of your application"
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Authenticate via Harvest (Oauth)",
+            "required": ["client_id", "client_secret", "refresh_token"],
+            "additionalProperties": false,
+            "properties": {
+              "client_id": {
+                "title": "Client ID",
+                "type": "string",
+                "description": "The Client ID of your application"
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "The client secret of your application",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "title": "Refresh Token",
+                "type": "string",
+                "description": "A refresh token generated using the above client ID and secret",
+                "airbyte_secret": true
+              }
+            }
           },
-          "client_secret": {
-            "title": "Client Secret",
-            "type": "string",
-            "description": "The client secret of your application",
-            "airbyte_secret": true
-          },
-          "refresh_token": {
-            "title": "Refresh Token",
-            "type": "string",
-            "description": "A refresh token generated using the above client ID and secret",
-            "airbyte_secret": true
+          {
+            "type": "object",
+            "title": "Authenticate with Personal Access Token",
+            "required": ["api_token"],
+            "additionalProperties": false,
+            "properties": {
+              "api_token": {
+                "title": "Personal Access Token",
+                "description": "Log into Harvest and then create new <a href=\"https://id.getharvest.com/developers\"> personal access token</a>.",
+                "type": "string",
+                "airbyte_secret": true
+              }
+            }
           }
-        }
+        ]
       }
     }
   },
@@ -58,7 +73,7 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": ["credentials"],
+      "rootObject": ["credentials", 0],
       "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
       "oauthFlowOutputParameters": [["refresh_token"]]
     }
