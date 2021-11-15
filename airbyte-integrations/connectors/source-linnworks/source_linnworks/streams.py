@@ -4,15 +4,14 @@
 
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
-from airbyte_cdk.sources.streams.http.http import HttpSubStream
 
 import pendulum
 import requests
-from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.http import HttpSubStream
 from requests.auth import AuthBase
 
 
