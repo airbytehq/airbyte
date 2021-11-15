@@ -340,6 +340,15 @@ class Locations(ShopifyStream):
         return f"{self.data_field}.json"
 
 
+class InventoryItems(IncrementalShopifyStream):
+
+    data_field = "inventory_items"
+    cursor_field = "created_at"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
 class InventoryLevels(ChildSubstream):
     parent_stream_class: object = Locations
     slice_key = "location_id"
@@ -435,6 +444,7 @@ class SourceShopify(AbstractSource):
             PriceRules(config),
             DiscountCodes(config),
             Locations(config),
+            InventoryItems(config),
             InventoryLevels(config),
             FulfillmentOrders(config),
             Fulfillments(config),
