@@ -1,19 +1,17 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
-
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urljoin
 
 import requests
-from airbyte_cdk.models import SyncMode
+from pydantic import HttpUrl
+from requests.auth import HTTPBasicAuth
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from requests.auth import HTTPBasicAuth
-
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -32,29 +30,33 @@ There are additional required TODOs in the files within the integration_tests fo
 
 # Basic full refresh stream
 class MailgunStream(HttpStream, ABC):
-
     # TODO: Support regions (EU and US) for domains
     url_base = "https://api.mailgun.net/v3/"
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    primary_key = None
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, HttpUrl]]:
         """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
         :param response: the most recent response from the API
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
-        return None
+        next_page: Optional[HttpUrl] = response.json().get('paging', {}).get('next')
+        return {"url": next_page} if next_page and self._pre_parse_response(response) else None
+
+    def path(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Optional[Mapping[str, HttpUrl]] = None,
+    ) -> str:
+        # TODO: Requires improve URL creation in the CDK by using urllib.parse.urljoin
+        #  (airbyte_cdk.sources.streams.http.http._create_prepared_request)
+        return next_page_token["url"] if next_page_token else ""
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -62,41 +64,31 @@ class MailgunStream(HttpStream, ABC):
         """
         :return an iterable containing each record in the response
         """
-        yield {}
+        yield from self._pre_parse_response(response)
+
+    @staticmethod
+    def _pre_parse_response(response: requests.Response) -> List:
+        return response.json()['items']
 
 
 class Domains(MailgunStream):
-
     primary_key = "name"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        # return super().path(*args, **kwargs) or "domains"  # TODO: Requires the CDK update (see MailgunStream.path())
+        path: str = "domains"
+        if next_page_token:
+            token: str = next_page_token['url'].rpartition('/')[2]
+            path = f"{path}/{token}"
 
-        return "domains"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [response.json()]
+        return path
 
 
 # Basic incremental stream
 class IncrementalMailgunStream(MailgunStream, ABC):
 
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
-
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
-        return []
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+            Mapping[str, Any]:
         """
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
@@ -105,7 +97,6 @@ class IncrementalMailgunStream(MailgunStream, ABC):
 
 
 class Events(IncrementalMailgunStream):
-
     # TODO: Event Polling. See https://documentation.mailgun.com/en/latest/api-events.html#event-polling
 
     cursor_field = "timestamp"
@@ -114,10 +105,11 @@ class Events(IncrementalMailgunStream):
 
     def __init__(self, config: Mapping[str, Any], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.begin = config['begin']
+        self.begin = config.get('begin', 0)
         self.ascending = config.get('ascending', True)
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+            Mapping[str, Any]:
         if current_stream_state is not None and 'begin' in current_stream_state:
             current_parsed_timestamp = current_stream_state['begin']
             latest_record_timestamp = latest_record['timestamp']
@@ -125,36 +117,30 @@ class Events(IncrementalMailgunStream):
         else:
             return {'begin': self.begin}
 
-    def path(self, **kwargs) -> str:
-        return "events"
+    def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        # return super().path(*args, **kwargs) or "events"  # TODO: Requires the CDK update (see MailgunStream.path())
+        path: str = "events"
+        if next_page_token:
+            token: str = next_page_token['url'].rpartition('/')[2]
+            path = f"{path}/{token}"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [response.json()]
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            yield from record["items"]
+        return path
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params.update({
-            "begin": stream_state["begin"],
-            "ascending": "yes" if self.ascending else "no"
+            "begin": stream_state.get("begin", self.begin),
+            "ascending": "yes" if self.ascending else "no",
         })
         return params
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         """
-        Override default stream_slices CDK method to provide date_slices as a list of one slice with such format:
-        {"begin": 1636411500.861427}
+        Override default stream_slices CDK method to provide date_slices as a list of a single slice with such format:
+        [{"begin": 1636411500.861427}]
         """
         return [stream_state]
 

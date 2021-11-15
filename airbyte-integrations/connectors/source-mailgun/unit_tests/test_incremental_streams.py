@@ -1,59 +1,79 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
+import pytest as pytest
 
 from airbyte_cdk.models import SyncMode
-from pytest import fixture
-from source_mailgun.source import IncrementalMailgunStream
+from source_mailgun.source import Domains, Events, IncrementalMailgunStream
+from . import TEST_CONFIG
 
 
-@fixture
-def patch_incremental_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(IncrementalMailgunStream, "path", "v0/example_endpoint")
-    mocker.patch.object(IncrementalMailgunStream, "primary_key", "test_primary_key")
-    mocker.patch.object(IncrementalMailgunStream, "__abstractmethods__", set())
+@pytest.mark.parametrize(
+    "stream, cursor_field",
+    [
+        (IncrementalMailgunStream(), []),
+        (Domains(), []),
+        (Events(TEST_CONFIG), "timestamp"),
+    ]
+)
+def test_cursor_field(stream, cursor_field):
+    assert stream.cursor_field == cursor_field
 
 
-def test_cursor_field(patch_incremental_base_class):
-    stream = IncrementalMailgunStream()
-    # TODO: replace this with your expected cursor field
-    expected_cursor_field = []
-    assert stream.cursor_field == expected_cursor_field
+@pytest.mark.parametrize(
+    "stream, current_stream_state, latest_record, expected_state",
+    [
+        (IncrementalMailgunStream(), None, None, {}),
 
-
-def test_get_updated_state(patch_incremental_base_class):
-    stream = IncrementalMailgunStream()
-    # TODO: replace this with your input parameters
-    inputs = {"current_stream_state": None, "latest_record": None}
-    # TODO: replace this with your expected updated stream state
-    expected_state = {}
+        (Events(TEST_CONFIG), None, None, {"begin": 0}),
+        (Events(TEST_CONFIG), {"begin": 1000}, {"timestamp": 2000}, {"begin": 2000}),
+        (Events(TEST_CONFIG), {"begin": 2000}, {"timestamp": 1000}, {"begin": 2000}),
+    ]
+)
+def test_get_updated_state(stream, current_stream_state, latest_record, expected_state):
+    inputs = {"current_stream_state": current_stream_state, "latest_record": latest_record}
     assert stream.get_updated_state(**inputs) == expected_state
 
 
-def test_stream_slices(patch_incremental_base_class):
-    stream = IncrementalMailgunStream()
-    # TODO: replace this with your input parameters
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    # TODO: replace this with your expected stream slices list
-    expected_stream_slice = [None]
+@pytest.mark.parametrize(
+    "stream, inputs, expected_stream_slice",
+    [
+        (IncrementalMailgunStream(), {"sync_mode": SyncMode.incremental}, [None]),
+        (Events(TEST_CONFIG), {"stream_state": {"begin": 1000}}, [{"begin": 1000}]),
+    ]
+)
+def test_stream_slices(stream, inputs, expected_stream_slice):
     assert stream.stream_slices(**inputs) == expected_stream_slice
 
 
-def test_supports_incremental(patch_incremental_base_class, mocker):
-    mocker.patch.object(IncrementalMailgunStream, "cursor_field", "dummy_field")
-    stream = IncrementalMailgunStream()
-    assert stream.supports_incremental
+@pytest.mark.parametrize(
+    "stream, support_incremental",
+    [
+        (Domains(), False),
+        (Events(TEST_CONFIG), True),
+    ]
+)
+def test_supports_incremental(stream, support_incremental):
+    assert stream.supports_incremental == support_incremental
 
 
-def test_source_defined_cursor(patch_incremental_base_class):
-    stream = IncrementalMailgunStream()
-    assert stream.source_defined_cursor
+@pytest.mark.parametrize(
+    "stream, source_defined_cursor",
+    [
+        (Domains(), True),
+        (Events(TEST_CONFIG), True),
+    ]
+)
+def test_source_defined_cursor(stream, source_defined_cursor):
+    assert stream.source_defined_cursor == source_defined_cursor
 
 
-def test_stream_checkpoint_interval(patch_incremental_base_class):
-    stream = IncrementalMailgunStream()
-    # TODO: replace this with your expected checkpoint interval
-    expected_checkpoint_interval = None
-    assert stream.state_checkpoint_interval == expected_checkpoint_interval
+@pytest.mark.parametrize(
+    "stream, state_checkpoint_interval",
+    [
+        (Domains(), None),
+        (Events(TEST_CONFIG), None),
+    ]
+)
+def test_stream_checkpoint_interval(stream, state_checkpoint_interval):
+    assert stream.state_checkpoint_interval == state_checkpoint_interval
