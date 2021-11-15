@@ -153,7 +153,8 @@ public class ServerApp implements ServerRunnable {
         .withSlug(workspaceId.toString())
         .withInitialSetupComplete(false)
         .withDisplaySetupWizard(true)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withFirstCompletedSync(false);
     configRepository.writeStandardWorkspace(workspace);
     TrackingClientSingleton.get().identify(workspaceId);
   }
