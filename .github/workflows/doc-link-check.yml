@@ -3,6 +3,7 @@
 name: Doc Link Checker
 
 on:
+  push:
   workflow_dispatch:
   schedule:
     - cron:  '0 18 * * *'
@@ -17,7 +18,7 @@ jobs:
       - uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
           use-quiet-mode: 'yes'
-          check-modified-files-only: 'no'
+          check-modified-files-only: 'yes'
           config-file: .github/workflows/doc-link-check.json
 
       # posts to #_doc_link_checker
