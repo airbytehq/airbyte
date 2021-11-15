@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.8
+Include `requester` and `stats` fields in `tickets` stream
+
 ## 0.2.7
 Add start_date parameter to specification from which to start pulling data.
 
