@@ -317,7 +317,7 @@ definitions:
         properties:
           auth_flow_type:
             type: string
-            enum: ["oauth1.0", "oauth2.0"] # Future auth types should be added here
+            enum: ["oauth2.0", "oauth1.0"] # Future auth types should be added here
           predicate_key:
             description: Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.
             type: array
