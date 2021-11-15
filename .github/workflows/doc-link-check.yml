@@ -3,9 +3,9 @@
 name: Doc Link Checker
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 18 * * *'
 
 jobs:
   markdown-link-check:
@@ -15,15 +15,37 @@ jobs:
       - uses: actions/checkout@master
       # check all files on master
       - uses: gaurav-nelson/github-action-markdown-link-check@v1
-        if: github.ref == 'refs/heads/master'
         with:
           use-quiet-mode: 'yes'
           check-modified-files-only: 'no'
           config-file: .github/workflows/doc-link-check.json
-#      # check changed files for branches
-#      - uses: gaurav-nelson/github-action-markdown-link-check@v1
-#        if: github.ref != 'refs/heads/master'
-#        with:
-#          use-quiet-mode: 'yes'
-#          check-modified-files-only: 'yes'
-#          config-file: .github/workflows/doc-link-check.json
+
+      # posts to #_doc_link_checker
+      - name: Publish Success to Slack
+        if: success()
+        uses: abinoda/slack-action@master
+        env:
+          SLACK_BOT_TOKEN: ${{ inputs.slackbot_token }}
+        with:
+          args: >-
+            {\"channel\": \"C02MG7B7MT6\", \"blocks\":[
+            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Doc Link Checker* ran successfully! :white_check_mark:\n\n\"}},
+            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\":octavia-rocket: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-rocket:\"}},
+            {\"type\":\"divider\"}]}
+
+      # posts to #_doc_link_checker
+      - name: Publish Failure to Slack
+        if: failure()
+        uses: abinoda/slack-action@master
+        env:
+          SLACK_BOT_TOKEN: ${{ inputs.slackbot_token }}
+        with:
+          args: >-
+            {\"channel\": \"C02MG7B7MT6\", \"blocks\":[
+            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Doc Link Checker* failed! :bangbang:\n\n\"}},
+            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\":octavia-rocket: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-rocket:\"}},
+            {\"type\":\"divider\"}]}
