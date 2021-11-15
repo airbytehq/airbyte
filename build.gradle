@@ -132,7 +132,7 @@ def Task getDockerBuildTask(String artifactName, String projectDir) {
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
         def postgresImage = System.getenv('POSTGRES_IMAGE') ?: 'postgres:13-alpine'
-        def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
+        def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
         def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
 
         inputDir = file("$projectDir/build/docker")
@@ -177,9 +177,9 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
-
-    sourceCompatibility = JavaVersion.VERSION_14
-    targetCompatibility = JavaVersion.VERSION_14
+    docs/contributing-to-airbyte/developing-locally.md
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     repositories {
         mavenCentral()
