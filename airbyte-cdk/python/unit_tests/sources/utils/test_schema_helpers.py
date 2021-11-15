@@ -96,9 +96,8 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "obj": {"$ref": "#/definitions/shared_schema_"},
+                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
             },
-            "definitions": {"shared_schema_": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}},
         }
 
         partial_schema = {
@@ -123,10 +122,9 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "one_of": {"oneOf": [{"type": "string"}, {"$ref": "#/definitions/shared_schema_type_one"}]},
-                "obj": {"$ref": "#/definitions/shared_schema_type_one"},
+                "one_of": {"oneOf": [{"type": "string"}, {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}]},
+                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
             },
-            "definitions": {"shared_schema_type_one": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}},
         }
         partial_schema = {
             "type": ["null", "object"],

@@ -27,13 +27,7 @@ class MixpanelStream(HttpStream, ABC):
       A maximum of 5 concurrent queries
       400 queries per hour.
 
-    API Rate Limit Handler:
-    If total number of planned requests is lower than it is allowed per hour
-    then
-        reset reqs_per_hour_limit and send requests with small delay (1 reqs/sec)
-        because API endpoint accept requests bursts up to 3 reqs/sec
-    else
-        send requests with planned delay: 3600/reqs_per_hour_limit seconds
+    API Rate Limit Handler: after each request freeze for the time period: 3600/reqs_per_hour_limit seconds
     """
 
     @property
@@ -82,7 +76,7 @@ class MixpanelStream(HttpStream, ABC):
                 self.logger.error(f"Stream {self.name}: {e.response.status_code} {e.response.reason} - {error_message}")
             raise e
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         if self.data_field is not None:
             data = json_response.get(self.data_field, [])
@@ -93,6 +87,11 @@ class MixpanelStream(HttpStream, ABC):
 
         for record in data:
             yield record
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+
+        # parse the whole response
+        yield from self.process_response(response, **kwargs)
 
         # wait for X seconds to match API limitations
         time.sleep(3600 / self.reqs_per_hour_limit)
@@ -190,10 +189,6 @@ class DateSlicesMixin:
             # add 1 additional day because date range is inclusive
             start_date = end_date + timedelta(days=1)
 
-        # reset reqs_per_hour_limit if we expect less requests (1 req per stream) than it is allowed by API reqs_per_hour_limit
-        if len(date_slices) < self.reqs_per_hour_limit:
-            self.reqs_per_hour_limit = 3600  # 1 query per sec
-
         return date_slices
 
     def request_params(
@@ -269,9 +264,6 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
             for date_slice in date_slices:
                 stream_slices.append({**funnel_slice, **date_slice})
 
-        # reset reqs_per_hour_limit if we expect less requests (1 req per stream) than it is allowed by API reqs_per_hour_limit
-        if len(stream_slices) < self.reqs_per_hour_limit:
-            self.reqs_per_hour_limit = 3600  # queries per hour (1 query per sec)
         return stream_slices
 
     def request_params(
@@ -288,7 +280,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         params["unit"] = "day"
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         response.json() example:
         {
@@ -368,7 +360,7 @@ class EngageSchema(MixpanelStream):
     def path(self, **kwargs) -> str:
         return "engage/properties"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         response.json() example:
         {
@@ -444,7 +436,7 @@ class Engage(MixpanelStream):
             self._total = None
             return None
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         {
             "page": 0
@@ -523,7 +515,9 @@ class Engage(MixpanelStream):
                 # from API: '$browser'
                 # to stream: 'browser'
                 property_name = property_name[1:]
-            schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
+            # Do not overwrite 'standard' hard-coded properties, add 'custom' properties
+            if property_name not in schema["properties"]:
+                schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
 
         return schema
 
@@ -591,7 +585,7 @@ class Revenue(DateSlicesMixin, IncrementalMixpanelStream):
     def path(self, **kwargs) -> str:
         return "engage/revenue"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         response.json() example:
         {
@@ -634,7 +628,7 @@ class ExportSchema(MixpanelStream):
     def path(self, **kwargs) -> str:
         return "events/properties/top"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[str]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[str]:
         """
         response.json() example:
         {
@@ -691,7 +685,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     def path(self, **kwargs) -> str:
         return "export"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """Export API return response.text in JSONL format but each line is a valid JSON object
         Raw item example:
             {
@@ -736,9 +730,6 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 item["time"] = datetime.fromtimestamp(int(item["time"])).isoformat()
 
             yield item
-
-        # wait for X seconds to meet API limitation
-        time.sleep(3600 / self.reqs_per_hour_limit)
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
@@ -821,9 +812,7 @@ class SourceMixpanel(AbstractSource):
         start_date = config.get("start_date")
         if start_date and isinstance(start_date, str):
             start_date = pendulum.parse(config["start_date"]).date()
-        year_ago = now - timedelta(days=365)
-        # start_date can't be older than 1 year ago
-        config["start_date"] = start_date if start_date and start_date >= year_ago else year_ago  # set to 1 year ago by default
+        config["start_date"] = start_date or now - timedelta(days=365)
 
         end_date = config.get("end_date")
         if end_date and isinstance(end_date, str):

@@ -5,6 +5,7 @@
 package io.airbyte.config;
 
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.helpers.LogConfigs;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,12 @@ public interface Configs {
 
   Map<String, String> getWorkerNodeSelectors();
 
+  String getJobSocatImage();
+
+  String getJobBusyboxImage();
+
+  String getJobCurlImage();
+
   MaxWorkersConfig getMaxWorkers();
 
   String getTemporalHost();
@@ -96,6 +103,8 @@ public interface Configs {
   String getMemoryLimit();
 
   // Logging
+  LogConfigs getLogConfigs();
+
   String getS3LogBucket();
 
   String getS3LogBucketRegion();
@@ -111,6 +120,8 @@ public interface Configs {
   String getGoogleApplicationCredentials();
 
   boolean getPublishMetrics();
+
+  boolean getVersion32ForceUpgrade();
 
   SecretPersistenceType getSecretPersistenceType();
 

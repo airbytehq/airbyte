@@ -3,6 +3,6 @@
   "name": "Google Analytics v4",
   "dockerRepository": "airbyte/source-google-analytics-v4",
   "dockerImageTag": "0.1.9",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/source-google-analytics-v4",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-analytics-v4",
   "icon": "google-analytics.svg"
 }
