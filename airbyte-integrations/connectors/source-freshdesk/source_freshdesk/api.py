@@ -264,11 +264,7 @@ class TicketsAPI(IncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        includes = [
-            "description",
-            "requester",
-            "stats"
-        ]
+        includes = ["description", "requester", "stats"]
         params = {"include": ",".join(includes)}
         yield from self.read(partial(self._api_get, url="tickets"), params=params)
 
