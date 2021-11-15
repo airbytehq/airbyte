@@ -5,7 +5,6 @@ import {
   Route,
   Switch,
 } from "react-router-dom";
-import { useAsync } from "react-use";
 
 import SourcesPage from "pages/SourcesPage";
 import DestinationPage from "pages/DestinationPage";
@@ -27,15 +26,18 @@ import {
 import OnboardingPage from "pages/OnboardingPage";
 import { CreditsPage } from "packages/cloud/views/credits";
 import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
-import useRouter from "hooks/useRouter";
 import { TrackPageAnalytics } from "hooks/services/Analytics/TrackPageAnalytics";
 import useWorkspace from "hooks/services/useWorkspace";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useConfig } from "./services/config";
 import useFullStory from "./services/thirdParty/fullstory/useFullStory";
-import { useRegisterAnalyticsValues } from "hooks/services/Analytics/useAnalyticsService";
-import { CloudSettingsPage } from "./CloudSettingsPage";
+import {
+  useAnalyticsIdentifyUser,
+  useAnalyticsRegisterValues,
+} from "hooks/services/Analytics/useAnalyticsService";
+import { CloudSettingsPage } from "./views/CloudSettingsPage";
+import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -73,11 +75,6 @@ export enum Routes {
   FirebaseAction = "/verify-email",
 }
 
-export enum FirebaseActionMode {
-  VERIFY_EMAIL = "verifyEmail",
-  RESET_PASSWORD = "resetPassword",
-}
-
 const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
   currentWorkspaceId,
 }) => {
@@ -91,7 +88,7 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
     }),
     [workspace]
   );
-  useRegisterAnalyticsValues(analyticsContext);
+  useAnalyticsRegisterValues(analyticsContext);
 
   const mainRedirect = workspace.displaySetupWizard
     ? Routes.Onboarding
@@ -161,15 +158,6 @@ const MainViewRoutes = () => {
   );
 };
 
-const FirebaseActionRoute: React.FC = () => {
-  const { query } = useRouter<{ oobCode: string }>();
-  const { verifyEmail } = useAuthService();
-
-  useAsync(async () => await verifyEmail(query.oobCode), []);
-
-  return <LoadingPage />;
-};
-
 export const Routing: React.FC = () => {
   const { user, inited, emailVerified } = useAuthService();
   const config = useConfig();
@@ -184,7 +172,8 @@ export const Routing: React.FC = () => {
         : null,
     [user]
   );
-  useRegisterAnalyticsValues(analyticsContext);
+  useAnalyticsRegisterValues(analyticsContext);
+  useAnalyticsIdentifyUser(user?.userId);
 
   return (
     <Router>
@@ -200,7 +189,7 @@ export const Routing: React.FC = () => {
             {user && !emailVerified && (
               <Switch>
                 <Route path={Routes.FirebaseAction}>
-                  <FirebaseActionRoute />
+                  <VerifyEmailAction />
                 </Route>
                 <Route path={Routes.ConfirmVerifyEmail}>
                   <ConfirmEmailPage />

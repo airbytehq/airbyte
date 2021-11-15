@@ -10,10 +10,10 @@ import {
 import SettingsPage from "pages/SettingsPage";
 import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
 import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
-import { Routes } from "./routes";
-import { AccountSettingsView } from "./views/users/AccountSettingsView";
-import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView";
-import { UsersSettingsView } from "./views/users/UsersSettingsView";
+import { Routes } from "../routes";
+import { AccountSettingsView } from "./users/AccountSettingsView";
+import { WorkspaceSettingsView } from "./workspaces/WorkspaceSettingsView";
+import { UsersSettingsView } from "./users/UsersSettingsView";
 
 export const CloudSettingsPage: React.FC = () => {
   const { countNewSourceVersion, countNewDestinationVersion } = useConnector();

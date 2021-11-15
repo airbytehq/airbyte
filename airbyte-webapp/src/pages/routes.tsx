@@ -22,9 +22,11 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import { useWorkspace } from "hooks/services/useWorkspace";
 import { useNotificationService } from "hooks/services/Notification";
 import { useApiHealthPoll } from "hooks/services/Health";
-import { useRegisterAnalyticsValues } from "hooks/services/Analytics/useAnalyticsService";
-
-import { TrackPageAnalytics } from "hooks/services/Analytics";
+import {
+  useAnalyticsIdentifyUser,
+  useAnalyticsRegisterValues,
+  TrackPageAnalytics,
+} from "hooks/services/Analytics";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -125,7 +127,8 @@ export const Routing: React.FC = () => {
     }),
     [workspace.workspaceId, workspace.customerId]
   );
-  useRegisterAnalyticsValues(analyticsContext);
+  useAnalyticsRegisterValues(analyticsContext);
+  useAnalyticsIdentifyUser(workspace.workspaceId);
 
   return (
     <Router>

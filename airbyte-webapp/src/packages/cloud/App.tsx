@@ -13,7 +13,7 @@ import { Routing } from "packages/cloud/routes";
 import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
-import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
 import { AppServicesProvider } from "./services/AppServicesProvider";
@@ -57,21 +57,21 @@ const App: React.FC = () => {
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
               <ConfigProvider>
-                <ApiErrorBoundary>
-                  <NotificationServiceProvider>
-                    <FeatureService features={Features}>
-                      <AppServicesProvider>
-                        <AuthenticationProvider>
-                          <IntercomProvider>
-                            <AnalyticsInitializer>
+                <AnalyticsProvider>
+                  <ApiErrorBoundary>
+                    <NotificationServiceProvider>
+                      <FeatureService features={Features}>
+                        <AppServicesProvider>
+                          <AuthenticationProvider>
+                            <IntercomProvider>
                               <Routing />
-                            </AnalyticsInitializer>
-                          </IntercomProvider>
-                        </AuthenticationProvider>
-                      </AppServicesProvider>
-                    </FeatureService>
-                  </NotificationServiceProvider>
-                </ApiErrorBoundary>
+                            </IntercomProvider>
+                          </AuthenticationProvider>
+                        </AppServicesProvider>
+                      </FeatureService>
+                    </NotificationServiceProvider>
+                  </ApiErrorBoundary>
+                </AnalyticsProvider>
               </ConfigProvider>
             </Suspense>
           </StoreProvider>

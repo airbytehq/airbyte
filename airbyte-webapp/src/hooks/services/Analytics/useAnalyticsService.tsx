@@ -72,7 +72,17 @@ export const useAnalytics = (): AnalyticsServiceProviderValue => {
   return analyticsContext;
 };
 
-export const useRegisterAnalyticsValues = (
+export const useAnalyticsIdentifyUser = (userId?: string): void => {
+  const analyticsService = useAnalyticsService();
+
+  useEffect(() => {
+    if (userId) {
+      analyticsService.identify(userId);
+    }
+  }, [userId]);
+};
+
+export const useAnalyticsRegisterValues = (
   props?: AnalyticsContext | null
 ): void => {
   const { addContextProps, removeContextProps } = useAnalytics();

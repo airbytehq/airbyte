@@ -12,19 +12,12 @@ import { useApiServices } from "core/defaultServices";
 import { FirebaseSdkProvider } from "./FirebaseSdkProvider";
 
 import { useWorkspaceService } from "./workspaces/WorkspacesService";
-import { useAuthService } from "./auth/AuthService";
 import WorkspaceResource, { Workspace } from "core/resources/Workspace";
 import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
 import { useConfig } from "./config";
 import { UserService } from "packages/cloud/lib/domain/users";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { LoadingPage } from "components";
-
-const useCustomerIdProvider = (): string => {
-  const { user } = useAuthService();
-
-  return user?.userId ?? "";
-};
 
 const useCurrentWorkspaceProvider = (): Workspace => {
   const { currentWorkspaceId } = useWorkspaceService();
@@ -37,7 +30,6 @@ const useCurrentWorkspaceProvider = (): Workspace => {
 
 const services = {
   currentWorkspaceProvider: useCurrentWorkspaceProvider,
-  useCustomerIdProvider: useCustomerIdProvider,
 };
 
 /**
