@@ -26,7 +26,7 @@ jobs:
         if: success()
         uses: abinoda/slack-action@master
         env:
-          SLACK_BOT_TOKEN: ${{ inputs.slackbot_token }}
+          SLACK_BOT_TOKEN: ${{ secrets.DOC_LINK_CHECKER_BOT_TOKEN }}
         with:
           args: >-
             {\"channel\": \"C02MG7B7MT6\", \"blocks\":[
@@ -41,7 +41,7 @@ jobs:
         if: failure()
         uses: abinoda/slack-action@master
         env:
-          SLACK_BOT_TOKEN: ${{ inputs.slackbot_token }}
+          SLACK_BOT_TOKEN: ${{ secrets.DOC_LINK_CHECKER_BOT_TOKEN }}
         with:
           args: >-
             {\"channel\": \"C02MG7B7MT6\", \"blocks\":[
