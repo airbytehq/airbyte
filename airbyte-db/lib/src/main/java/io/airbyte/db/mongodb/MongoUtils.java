@@ -14,13 +14,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -195,15 +192,16 @@ public class MongoUtils {
 
   private static List<String> getFieldsName(MongoCollection<Document> collection) {
     AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
-            new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$$ROOT"))),
-            new Document("$unwind", "$arrayofkeyvalue"),
-            new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))
-    ));
-    return  (List) output.cursor().next().get("allkeys");
+        new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$$ROOT"))),
+        new Document("$unwind", "$arrayofkeyvalue"),
+        new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
+    return (List) output.cursor().next().get("allkeys");
   }
 
-  private static void addUniqueType(Map<String, BsonType> map, MongoCollection<Document> collection,
-                                    String fieldName, Set<String> types) {
+  private static void addUniqueType(Map<String, BsonType> map,
+                                    MongoCollection<Document> collection,
+                                    String fieldName,
+                                    Set<String> types) {
     if (types.size() != 1) {
       map.put(fieldName + AIRBYTE_SUFFIX, BsonType.STRING);
     } else {
@@ -226,7 +224,7 @@ public class MongoUtils {
   private static Set<String> getTypes(MongoCollection<Document> collection, String fieldName) {
     var searchField = "$" + fieldName;
     var docTypes = collection.aggregate(Arrays.asList(
-            new Document("$project", new Document(TYPE, new Document("$type", searchField))))).cursor();
+        new Document("$project", new Document(TYPE, new Document("$type", searchField))))).cursor();
     Set<String> types = new HashSet<>();
     while (docTypes.hasNext()) {
       types.add(String.valueOf(docTypes.next().get(TYPE)));
