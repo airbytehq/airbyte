@@ -1432,7 +1432,7 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/connections/listall:
+  /v1/web_backend/connections/list_all:
     post:
       tags:
         - web_backend
