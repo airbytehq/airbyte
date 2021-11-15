@@ -121,7 +121,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             defaultNamespace,
             Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
             Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING_DATE))
+            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
@@ -129,7 +129,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             defaultNamespace,
             Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
             Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING_DATE),
+            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING),
             Field.of(COL_ROW_ID, JsonSchemaPrimitive.NUMBER))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))),
@@ -138,7 +138,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             defaultNamespace,
             Field.of(COL_FIRST_NAME, JsonSchemaPrimitive.STRING),
             Field.of(COL_LAST_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING_DATE))
+            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
