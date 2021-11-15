@@ -9,7 +9,6 @@ import {
   useInjectServices,
 } from "core/servicesProvider";
 import { useApiServices } from "core/defaultServices";
-import { ConfigProvider } from "./ConfigProvider";
 import { FirebaseSdkProvider } from "./FirebaseSdkProvider";
 
 import { useWorkspaceService } from "./workspaces/WorkspacesService";
@@ -50,11 +49,9 @@ const AppServicesProvider: React.FC = ({ children }) => {
   );
   return (
     <ServicesProvider inject={services}>
-      <ConfigProvider>
-        <FirebaseSdkProvider>
-          <ServiceOverrides>{children}</ServiceOverrides>
-        </FirebaseSdkProvider>
-      </ConfigProvider>
+      <FirebaseSdkProvider>
+        <ServiceOverrides>{children}</ServiceOverrides>
+      </FirebaseSdkProvider>
     </ServicesProvider>
   );
 };

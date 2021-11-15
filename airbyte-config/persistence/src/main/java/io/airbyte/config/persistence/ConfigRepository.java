@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -150,6 +151,17 @@ public class ConfigRepository {
     }
   }
 
+  public void deleteSourceDefinitionAndAssociations(final UUID sourceDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    deleteConnectorDefinitionAndAssociations(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        ConfigSchema.SOURCE_CONNECTION,
+        SourceConnection.class,
+        SourceConnection::getSourceId,
+        SourceConnection::getSourceDefinitionId,
+        sourceDefinitionId);
+  }
+
   public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefinitionId.toString(),
@@ -194,6 +206,44 @@ public class ConfigRepository {
     }
   }
 
+  public void deleteDestinationDefinitionAndAssociations(final UUID destinationDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    deleteConnectorDefinitionAndAssociations(
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        ConfigSchema.DESTINATION_CONNECTION,
+        DestinationConnection.class,
+        DestinationConnection::getDestinationId,
+        DestinationConnection::getDestinationDefinitionId,
+        destinationDefinitionId);
+  }
+
+  private <T> void deleteConnectorDefinitionAndAssociations(
+                                                            final ConfigSchema definitionType,
+                                                            final ConfigSchema connectorType,
+                                                            final Class<T> connectorClass,
+                                                            final Function<T, UUID> connectorIdGetter,
+                                                            final Function<T, UUID> connectorDefinitionIdGetter,
+                                                            final UUID definitionId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final Set<T> connectors = persistence.listConfigs(connectorType, connectorClass)
+        .stream()
+        .filter(connector -> connectorDefinitionIdGetter.apply(connector).equals(definitionId))
+        .collect(Collectors.toSet());
+    for (final T connector : connectors) {
+      final Set<StandardSync> syncs = persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class)
+          .stream()
+          .filter(sync -> sync.getSourceId().equals(connectorIdGetter.apply(connector))
+              || sync.getDestinationId().equals(connectorIdGetter.apply(connector)))
+          .collect(Collectors.toSet());
+
+      for (final StandardSync sync : syncs) {
+        persistence.deleteConfig(ConfigSchema.STANDARD_SYNC, sync.getConnectionId().toString());
+      }
+      persistence.deleteConfig(connectorType, connectorIdGetter.apply(connector).toString());
+    }
+    persistence.deleteConfig(definitionType, definitionId.toString());
+  }
+
   public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
     return persistence.getConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString(), SourceConnection.class);
   }
@@ -229,7 +279,6 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param workspaceId workspace id for the config
    * @param fullConfig full config
    * @param spec connector specification
@@ -240,7 +289,6 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param workspaceId workspace id for the config
    * @param oldConfig old full config
    * @param fullConfig new full config
@@ -279,7 +327,6 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param fullConfig full config
    * @param spec connector specification
    * @return partial config
@@ -469,7 +516,8 @@ public class ConfigRepository {
   public static Map<AirbyteConfig, Stream<?>> deserialize(final Map<String, Stream<JsonNode>> configurations) {
     final Map<AirbyteConfig, Stream<?>> deserialized = new LinkedHashMap<AirbyteConfig, Stream<?>>();
     for (final String configSchemaName : configurations.keySet()) {
-      deserialized.put(ConfigSchema.valueOf(configSchemaName),
+      deserialized.put(
+          ConfigSchema.valueOf(configSchemaName),
           configurations.get(configSchemaName).map(jsonNode -> Jsons.object(jsonNode, ConfigSchema.valueOf(configSchemaName).getClassName())));
     }
     return deserialized;

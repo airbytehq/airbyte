@@ -90,6 +90,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     });
   }
 
+  public Set<String> getInUseConnectorDockerImageNames() throws IOException {
+    return database.transaction(this::getConnectorRepositoriesInUse);
+  }
+
   public ValidatingConfigPersistence withValidation() {
     return new ValidatingConfigPersistence(this);
   }
@@ -131,7 +135,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .orderBy(AIRBYTE_CONFIGS.CONFIG_TYPE, AIRBYTE_CONFIGS.CONFIG_ID)
         .fetch());
     return results.stream()
-        .map(record -> new ConfigWithMetadata<>(record.get(AIRBYTE_CONFIGS.CONFIG_ID),
+        .map(record -> new ConfigWithMetadata<>(
+            record.get(AIRBYTE_CONFIGS.CONFIG_ID),
             record.get(AIRBYTE_CONFIGS.CONFIG_TYPE),
             record.get(AIRBYTE_CONFIGS.CREATED_AT).toInstant(),
             record.get(AIRBYTE_CONFIGS.UPDATED_AT).toInstant(),
