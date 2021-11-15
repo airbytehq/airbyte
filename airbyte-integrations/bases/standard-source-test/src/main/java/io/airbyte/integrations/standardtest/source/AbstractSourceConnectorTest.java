@@ -16,6 +16,8 @@ import io.airbyte.config.State;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
@@ -32,6 +34,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -153,6 +157,33 @@ public abstract class AbstractSourceConnectorTest {
     source.close();
 
     return messages;
+  }
+
+  protected Map<String, Integer> runReadVerifyNumberOfReceivedMsgs(final ConfiguredAirbyteCatalog catalog,
+                                                                   final JsonNode state,
+                                                                   final Map<String, Integer> mapOfExpectedRecordsCount)
+      throws Exception {
+
+    final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()
+        .withSourceConnectionConfiguration(getConfig())
+        .withState(state == null ? null : new State().withState(state))
+        .withCatalog(catalog);
+
+    final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
+    source.start(sourceConfig, jobRoot);
+
+    while (!source.isFinished()) {
+      Optional<AirbyteMessage> airbyteMessageOptional = source.attemptRead();
+      if (airbyteMessageOptional.isPresent() && airbyteMessageOptional.get().getType().equals(Type.RECORD)) {
+        AirbyteMessage airbyteMessage = airbyteMessageOptional.get();
+        AirbyteRecordMessage record = airbyteMessage.getRecord();
+
+        final String streamName = record.getStream();
+        mapOfExpectedRecordsCount.put(streamName, mapOfExpectedRecordsCount.get(streamName) - 1);
+      }
+    }
+    source.close();
+    return mapOfExpectedRecordsCount;
   }
 
 }
