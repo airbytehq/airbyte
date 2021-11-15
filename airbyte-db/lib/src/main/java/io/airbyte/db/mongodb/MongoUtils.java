@@ -94,7 +94,7 @@ public class MongoUtils {
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       readDocument(reader, objectNode, columnNames);
     } catch (final Exception e) {
-      LOGGER.error("Exception while parsing BsonDocument: ", e.getMessage());
+      LOGGER.error("Exception while parsing BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
     }
   }
@@ -240,7 +240,7 @@ public class MongoUtils {
     try {
       return document.toBsonDocument();
     } catch (final Exception e) {
-      LOGGER.error("Exception while converting Document to BsonDocument: ", e.getMessage());
+      LOGGER.error("Exception while converting Document to BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
     }
   }
