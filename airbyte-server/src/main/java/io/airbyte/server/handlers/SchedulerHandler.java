@@ -7,6 +7,7 @@ package io.airbyte.server.handlers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.AdvancedAuth;
 import io.airbyte.api.model.AuthSpecification;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.CheckConnectionRead.StatusEnum;
@@ -264,9 +265,10 @@ public class SchedulerHandler {
         .sourceDefinitionId(sourceDefinitionId);
 
     final Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
-    if (authSpec.isPresent()) {
-      specRead.setAuthSpecification(authSpec.get());
-    }
+    authSpec.ifPresent(specRead::setAuthSpecification);
+
+    final Optional<AdvancedAuth> advancedAuth = OauthModelConverter.getAdvancedAuth(spec);
+    advancedAuth.ifPresent(specRead::setAdvancedAuth);
 
     return specRead;
   }
@@ -289,9 +291,10 @@ public class SchedulerHandler {
         .destinationDefinitionId(destinationDefinitionId);
 
     final Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
-    if (authSpec.isPresent()) {
-      specRead.setAuthSpecification(authSpec.get());
-    }
+    authSpec.ifPresent(specRead::setAuthSpecification);
+
+    final Optional<AdvancedAuth> advancedAuth = OauthModelConverter.getAdvancedAuth(spec);
+    advancedAuth.ifPresent(specRead::setAdvancedAuth);
 
     return specRead;
   }
