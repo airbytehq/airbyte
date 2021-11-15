@@ -76,5 +76,5 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2021-11-15 | [\#pr-num](https://github.com/airbytehq/airbyte/pull/pr-num) | Added MariaDB ColumnStore destination. |
+| 0.1.0 | 2021-11-15 | [\#7961](https://github.com/airbytehq/airbyte/pull/7961) | Added MariaDB ColumnStore destination. |
 
