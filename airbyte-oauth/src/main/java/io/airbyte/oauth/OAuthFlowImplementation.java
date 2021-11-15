@@ -13,9 +13,25 @@ import java.util.UUID;
 
 public interface OAuthFlowImplementation {
 
+  @Deprecated
   String getSourceConsentUrl(UUID workspaceId, UUID sourceDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException;
 
+  String getSourceConsentUrl(UUID workspaceId,
+                             UUID sourceDefinitionId,
+                             String redirectUrl,
+                             JsonNode inputOAuthConfiguration,
+                             OAuthConfigSpecification oauthConfigSpecification)
+      throws IOException, ConfigNotFoundException;
+
+  @Deprecated
   String getDestinationConsentUrl(UUID workspaceId, UUID destinationDefinitionId, String redirectUrl) throws IOException, ConfigNotFoundException;
+
+  String getDestinationConsentUrl(UUID workspaceId,
+                                  UUID destinationDefinitionId,
+                                  String redirectUrl,
+                                  JsonNode inputOAuthConfiguration,
+                                  OAuthConfigSpecification oauthConfigSpecification)
+      throws IOException, ConfigNotFoundException;
 
   @Deprecated
   Map<String, Object> completeSourceOAuth(UUID workspaceId, UUID sourceDefinitionId, Map<String, Object> queryParams, String redirectUrl)
