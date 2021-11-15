@@ -72,7 +72,7 @@ class SourceTiktokMarketingSpec(BaseModel):
 
     @classmethod
     def schema(cls) -> dict:
-        """ we're overriding the schema classmethod to enable some post-processing """
+        """we're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema()
         schema = cls.change_format_to_oneOf(schema, "environment")
         return cls.resolve_refs(schema)
