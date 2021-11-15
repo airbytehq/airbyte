@@ -60,6 +60,7 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws JsonValidationException, IOException {
+
     final Map<String, T> configIdToConfig = new HashMap<>() {
 
       {
@@ -67,6 +68,7 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
       }
 
     };
+
     writeConfigs(configType, configIdToConfig);
   }
 
@@ -74,7 +76,7 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs)
       throws IOException, JsonValidationException {
     for (final Map.Entry<String, T> config : configs.entrySet()) {
-      validateJson(Jsons.jsonNode(config), configType);
+      validateJson(Jsons.jsonNode(config.getValue()), configType);
       decoratedPersistence.writeConfig(configType, config.getKey(), config.getValue());
     }
   }

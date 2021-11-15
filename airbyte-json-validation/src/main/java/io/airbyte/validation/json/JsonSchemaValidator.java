@@ -66,10 +66,9 @@ public class JsonSchemaValidator {
     }
 
     throw new JsonValidationException(String.format(
-        "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s \nObject: %s",
+        "json schema validation failed when comparing the data to the json schema. \nErrors: %s \nSchema: \n%s",
         Strings.join(validationMessages, ", "),
-        schemaJson.toPrettyString(),
-        objectJson.toPrettyString()));
+        schemaJson.toPrettyString()));
   }
 
   public void ensureAsRuntime(final JsonNode schemaJson, final JsonNode objectJson) {
@@ -90,8 +89,8 @@ public class JsonSchemaValidator {
   }
 
   /**
-   * Get JsonNode for an object defined as the main object in a JsonSchema file. Able to create the
-   * JsonNode even if the the JsonSchema refers to objects in other files.
+   * Get JsonNode for an object defined as the main object in a JsonSchema file. Able to create the JsonNode even if the the JsonSchema refers to
+   * objects in other files.
    *
    * @param schemaFile - the schema file
    * @return schema object processed from across all dependency files.
@@ -105,12 +104,12 @@ public class JsonSchemaValidator {
   }
 
   /**
-   * Get JsonNode for an object defined in the "definitions" section of a JsonSchema file. Able to
-   * create the JsonNode even if the the JsonSchema refers to objects in other files.
+   * Get JsonNode for an object defined in the "definitions" section of a JsonSchema file. Able to create the JsonNode even if the the JsonSchema
+   * refers to objects in other files.
    *
-   * @param schemaFile - the schema file
-   * @param definitionStructName - get the schema from a struct defined in the "definitions" section
-   *        of a JsonSchema file (instead of the main object in that file).
+   * @param schemaFile           - the schema file
+   * @param definitionStructName - get the schema from a struct defined in the "definitions" section of a JsonSchema file (instead of the main object
+   *                             in that file).
    * @return schema object processed from across all dependency files.
    */
   public static JsonNode getSchema(final File schemaFile, final String definitionStructName) {
