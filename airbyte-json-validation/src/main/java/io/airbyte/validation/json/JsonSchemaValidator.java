@@ -89,8 +89,8 @@ public class JsonSchemaValidator {
   }
 
   /**
-   * Get JsonNode for an object defined as the main object in a JsonSchema file. Able to create the JsonNode even if the the JsonSchema refers to
-   * objects in other files.
+   * Get JsonNode for an object defined as the main object in a JsonSchema file. Able to create the
+   * JsonNode even if the the JsonSchema refers to objects in other files.
    *
    * @param schemaFile - the schema file
    * @return schema object processed from across all dependency files.
@@ -104,12 +104,12 @@ public class JsonSchemaValidator {
   }
 
   /**
-   * Get JsonNode for an object defined in the "definitions" section of a JsonSchema file. Able to create the JsonNode even if the the JsonSchema
-   * refers to objects in other files.
+   * Get JsonNode for an object defined in the "definitions" section of a JsonSchema file. Able to
+   * create the JsonNode even if the the JsonSchema refers to objects in other files.
    *
-   * @param schemaFile           - the schema file
-   * @param definitionStructName - get the schema from a struct defined in the "definitions" section of a JsonSchema file (instead of the main object
-   *                             in that file).
+   * @param schemaFile - the schema file
+   * @param definitionStructName - get the schema from a struct defined in the "definitions" section
+   *        of a JsonSchema file (instead of the main object in that file).
    * @return schema object processed from across all dependency files.
    */
   public static JsonNode getSchema(final File schemaFile, final String definitionStructName) {
