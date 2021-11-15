@@ -51,10 +51,19 @@ GRANT ROLE 'AIRBYTE_ROLE' TO USER 'AIRBYTE_USER'
 
 Your database user should now be ready for use with Airbyte.
 
+#### 3. Create SSL connection.
+
+To set up an SSL connection, you need to use a client certificate. Add it to the "SSL PEM file" field and the connector will automatically add it to the secret keystore. 
+You can also enter your own password for the keystore, but if you don't, the password will be generated automatically.
+
+**Note.** Unfortunately SSL and SSH are incompatible because SSH changes the visible name of the target.
+
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.3 | 2021-11-05 | [7670](https://github.com/airbytehq/airbyte/pull/7670) | Updated unique DB2 types transformation |
+| 0.1.2 | 2021-10-25 | [7355](https://github.com/airbytehq/airbyte/pull/7355) | Added ssl support |
 | 0.1.1 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
 | 0.1.0 | 2021-06-22 | [4197](https://github.com/airbytehq/airbyte/pull/4197) | New Source: IBM DB2 |
 

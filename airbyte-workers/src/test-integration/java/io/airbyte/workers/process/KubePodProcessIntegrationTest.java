@@ -27,13 +27,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 // requires kube running locally to run. If using Minikube it requires MINIKUBE=true
+// Must have a timeout on this class because it tests child processes that may misbehave; otherwise
+// this can hang forever during failures.
+@Timeout(value = 5,
+         unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
@@ -210,6 +216,6 @@ public class KubePodProcessIntegrationTest {
     } catch (final UnknownHostException e) {
       throw new RuntimeException(e);
     }
-  };
+  }
 
 }

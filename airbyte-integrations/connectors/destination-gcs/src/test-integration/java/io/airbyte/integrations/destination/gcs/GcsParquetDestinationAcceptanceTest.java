@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.gcs.parquet.GcsParquetWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import java.io.IOException;
@@ -22,11 +23,8 @@ import org.apache.avro.generic.GenericData;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.avro.AvroReadSupport;
 import org.apache.parquet.hadoop.ParquetReader;
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
-
-  private final JsonAvroConverter converter = new JsonAvroConverter();
 
   protected GcsParquetDestinationAcceptanceTest() {
     super(S3Format.PARQUET);
@@ -63,7 +61,7 @@ public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanc
         final ObjectReader jsonReader = MAPPER.reader();
         GenericData.Record record;
         while ((record = parquetReader.read()) != null) {
-          final byte[] jsonBytes = converter.convertToJson(record);
+          final byte[] jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record);
           JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
           jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
           jsonRecords.add(AvroRecordHelper.pruneAirbyteJson(jsonRecord));

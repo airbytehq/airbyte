@@ -1,4 +1,4 @@
-# Hubspot
+# HubSpot
 
 ## Features
 
@@ -11,7 +11,7 @@
 
 ## Troubleshooting
 
-Check out common troubleshooting issues for the Hubspot connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-hubspot).
+Check out common troubleshooting issues for the HubSpot connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-hubspot).
 
 ## Supported Tables
 
@@ -35,25 +35,25 @@ This source is capable of syncing the following tables and their data:
 * [Tickets](https://developers.hubspot.com/docs/api/crm/tickets)
 * [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows)
 
-**Note**: Hubspot API currently only supports `quotes` endpoint using API Key, using Oauth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)). 
+**Note**: HubSpot API currently only supports `quotes` endpoint using API Key, using Oauth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
 
 ## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
 
 #### Requirements
 
-* Hubspot Account
+* HubSpot Account
 * Api credentials
 * If using Oauth, [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the streams you want to sync
 
 {% hint style="info" %}
-Hubspot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
+HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
 {% endhint %}
 
 This connector supports only authentication with API Key. To obtain API key for the account go to settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an api key you can use that. Otherwise generated a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
 
 ## Rate Limiting & Performance
 
-The connector is restricted by normal Hubspot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
+The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
 
 When connector reads the stream using `API Key` that doesn't have neccessary permissions to read particular stream, like `workflows`, which requires to be enabled in order to be processed, the log message returned to the output and sync operation goes on with other streams available.
 
@@ -96,6 +96,12 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.24 | 2021-11-09 | [7683](https://github.com/airbytehq/airbyte/pull/7683) | bugfix 'Hubspot' -> 'HubSpot' |
+| 0.1.23 | 2021-11-08 | [7730](https://github.com/airbytehq/airbyte/pull/7730) | Fix oAuth flow schema|
+| 0.1.22 | 2021-11-03 | [7562](https://github.com/airbytehq/airbyte/pull/7562) | Migrate Hubspot source to CDK structure |
+| 0.1.21 | 2021-10-27 | [7405](https://github.com/airbytehq/airbyte/pull/7405) | Change of package `import` from `urllib` to `urllib.parse` |
+| 0.1.20 | 2021-10-26 | [7393](https://github.com/airbytehq/airbyte/pull/7393) | Hotfix for `split_properties` function, add the length of separator symbol `,`(`%2C` in HTTP format) to the checking of the summary URL length |
+| 0.1.19 | 2021-10-26 | [6954](https://github.com/airbytehq/airbyte/pull/6954) | Fix issue with getting `414` HTTP error for streams |
 | 0.1.18 | 2021-10-18 | [5840](https://github.com/airbytehq/airbyte/pull/5840) | Add new marketing emails (with statistics) stream |
 | 0.1.17 | 2021-10-14 | [6995](https://github.com/airbytehq/airbyte/pull/6995) | Update `discover` method: disable `quotes` stream when using OAuth config  |
 | 0.1.16 | 2021-09-27 | [6465](https://github.com/airbytehq/airbyte/pull/6465) | Implement OAuth support. Use CDK authenticator instead of connector specific authenticator |
@@ -108,3 +114,4 @@ If you are using Oauth, most of the streams require the appropriate [scopes](htt
 | 0.1.9 | 2021-08-11 | [5334](https://github.com/airbytehq/airbyte/pull/5334) | Fix empty strings inside float datatype |
 | 0.1.8 | 2021-08-06 | [5250](https://github.com/airbytehq/airbyte/pull/5250) | Fix issue with printing exceptions |
 | 0.1.7 | 2021-07-27 | [4913](https://github.com/airbytehq/airbyte/pull/4913) | Update fields schema |
+

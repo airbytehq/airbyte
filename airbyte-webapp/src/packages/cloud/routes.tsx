@@ -45,6 +45,8 @@ import { WithPageAnalytics } from "pages/withPageAnalytics";
 import useWorkspace from "../../hooks/services/useWorkspace";
 import { CompleteOauthRequest } from "../../pages/CompleteOauthRequest";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
+import { useConfig } from "./services/config";
+import useFullStory from "./services/useFullStory";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -225,6 +227,8 @@ const FirebaseActionRoute: React.FC = () => {
 
 export const Routing: React.FC = () => {
   const { user, inited, emailVerified } = useAuthService();
+  const config = useConfig();
+  useFullStory(config.fullstory, config.fullstory.enabled);
 
   return (
     <Router>
