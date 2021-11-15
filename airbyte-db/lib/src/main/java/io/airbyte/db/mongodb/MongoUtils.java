@@ -205,9 +205,10 @@ public class MongoUtils {
     if (types.size() != 1) {
       map.put(fieldName + AIRBYTE_SUFFIX, BsonType.STRING);
     } else {
-      var a = collection.find(new Document(fieldName, new Document("$type", types.stream().findFirst().get()))).first();
-      var b = toBsonDocument(a);
-      try (final BsonReader reader = new BsonDocumentReader(b)) {
+      var document = collection.find(new Document(fieldName,
+                      new Document("$type", types.stream().findFirst().get()))).first();
+      var bsonDoc = toBsonDocument(document);
+      try (final BsonReader reader = new BsonDocumentReader(bsonDoc)) {
         reader.readStartDocument();
         while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
           if (reader.readName().equals(fieldName)) {
@@ -223,13 +224,15 @@ public class MongoUtils {
 
   private static Set<String> getTypes(MongoCollection<Document> collection, String fieldName) {
     var searchField = "$" + fieldName;
-    var docTypes = collection.aggregate(Arrays.asList(
-        new Document("$project", new Document(TYPE, new Document("$type", searchField))))).cursor();
+    var docTypes = collection.aggregate(List.of(
+            new Document("$project", new Document(TYPE, new Document("$type", searchField))))).cursor();
     Set<String> types = new HashSet<>();
     while (docTypes.hasNext()) {
-      types.add(String.valueOf(docTypes.next().get(TYPE)));
+      var type = String.valueOf(docTypes.next().get(TYPE));
+      if (!MISSING_TYPE.equals(type)) {
+        types.add(type);
+      }
     }
-    types.remove(MISSING_TYPE);
     if (types.size() > 1) {
       types.remove(NULL_TYPE);
     }
