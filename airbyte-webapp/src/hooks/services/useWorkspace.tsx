@@ -5,7 +5,7 @@ import NotificationsResource, {
   Notifications,
 } from "core/resources/Notifications";
 import { useGetService } from "core/servicesProvider";
-import { useAnalytics } from "../useAnalytics";
+import { useAnalyticsService } from "./Analytics/useAnalyticsService";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
 
@@ -60,7 +60,7 @@ const useWorkspace = (): {
   const tryWebhookUrl = useFetcher(NotificationsResource.tryShape());
   const workspace = useCurrentWorkspace();
 
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const finishOnboarding = async (skipStep?: string) => {
     if (skipStep) {

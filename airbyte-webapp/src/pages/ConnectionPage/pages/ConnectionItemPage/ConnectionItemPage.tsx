@@ -17,7 +17,7 @@ import { Routes } from "../../../routes";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { equal } from "utils/objects";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 type ConnectionItemPageProps = {
   currentStep: "status" | "settings";
@@ -27,7 +27,7 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   currentStep,
 }) => {
   const { query, push } = useRouter<{ id: string }>();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
   const connection = useResource(ConnectionResource.detailShape(), {
     connectionId: query.id,
   });

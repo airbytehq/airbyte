@@ -20,7 +20,7 @@ import { Routes } from "pages/routes";
 import { Destination } from "core/resources/Destination";
 import useWorkspace from "./useWorkspace";
 import { Operation } from "core/domain/connection/operation";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import useRouter from "hooks/useRouter";
 import { useGetService } from "core/servicesProvider";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
@@ -108,7 +108,7 @@ const useConnection = (): {
 } => {
   const { push } = useRouter();
   const { workspace } = useWorkspace();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
   const updateConnectionResource = useFetcher(ConnectionResource.updateShape());

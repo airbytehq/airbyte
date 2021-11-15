@@ -23,7 +23,7 @@ import WelcomeStep from "./components/WelcomeStep";
 import FinalStep from "./components/FinalStep";
 import LetterLine from "./components/LetterLine";
 import { StepType } from "./types";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import StepsCounter from "./components/StepsCounter";
 import LoadingPage from "components/LoadingPage";
 import useWorkspace from "hooks/services/useWorkspace";
@@ -60,7 +60,7 @@ const ScreenContent = styled.div`
 `;
 
 const OnboardingPage: React.FC = () => {
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
   const { push } = useRouterHook();
 
   useEffect(() => {

@@ -11,7 +11,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
 
 import useRouter from "hooks/useRouter";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { SourceDefinitionSpecification } from "core/domain/connector";
 
 type ValuesProps = {
@@ -73,7 +73,7 @@ const useSource = (): SourceService => {
   const { push } = useRouter();
   const { workspace } = useWorkspace();
   const createSourcesImplementation = useFetcher(SourceResource.createShape());
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const sourceCheckConnectionShape = useFetcher(
     SchedulerResource.sourceCheckConnectionShape()

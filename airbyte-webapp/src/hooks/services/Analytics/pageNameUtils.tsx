@@ -1,10 +1,6 @@
-import React, { useEffect } from "react";
+import { Routes } from "pages/routes";
 
-import useRouter from "hooks/useRouter";
-import { useAnalytics } from "hooks/useAnalytics";
-import { Routes } from "./routes";
-
-const getPageName = (pathname: string) => {
+const getPageName = (pathname: string): string => {
   const itemSourcePageRegex = new RegExp(`${Routes.Source}/.*`);
   const itemDestinationPageRegex = new RegExp(`${Routes.Destination}/.*`);
   const itemSourceToDestinationPageRegex = new RegExp(
@@ -60,15 +56,4 @@ const getPageName = (pathname: string) => {
   return "";
 };
 
-export const WithPageAnalytics: React.FC = () => {
-  const { pathname } = useRouter();
-  const analyticsService = useAnalytics();
-  useEffect(() => {
-    const pageName = getPageName(pathname);
-    if (pageName) {
-      analyticsService.page(pageName);
-    }
-  }, [analyticsService, pathname]);
-
-  return null;
-};
+export { getPageName };

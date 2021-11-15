@@ -12,7 +12,7 @@ import { JobsLogItem } from "components/JobItem";
 import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
 
@@ -39,7 +39,7 @@ const SourceStep: React.FC<IProps> = ({
   afterSelectConnector,
 }) => {
   const [sourceDefinitionId, setSourceDefinitionId] = useState("");
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const {
     sourceDefinitionSpecification,

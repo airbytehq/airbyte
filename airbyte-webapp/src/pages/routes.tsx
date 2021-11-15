@@ -17,12 +17,16 @@ import ConnectionPage from "./ConnectionPage";
 import SettingsPage from "./SettingsPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "views/layout/MainView";
+import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
 import { useWorkspace } from "hooks/services/useWorkspace";
-import { useNotificationService } from "hooks/services/Notification/NotificationService";
+import { useNotificationService } from "hooks/services/Notification";
 import { useApiHealthPoll } from "hooks/services/Health";
-import { WithPageAnalytics } from "./withPageAnalytics";
-import { CompleteOauthRequest } from "./CompleteOauthRequest";
+import {
+  useAnalyticsIdentifyUser,
+  useAnalyticsRegisterValues,
+  TrackPageAnalytics,
+} from "hooks/services/Analytics";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -116,6 +120,16 @@ export const Routing: React.FC = () => {
 
   const { workspace } = useWorkspace();
 
+  const analyticsContext = useMemo(
+    () => ({
+      workspaceId: workspace.workspaceId,
+      customerId: workspace.customerId,
+    }),
+    [workspace.workspaceId, workspace.customerId]
+  );
+  useAnalyticsRegisterValues(analyticsContext);
+  useAnalyticsIdentifyUser(workspace.workspaceId);
+
   return (
     <Router>
       <Suspense fallback={<LoadingPage />}>
@@ -123,7 +137,7 @@ export const Routing: React.FC = () => {
           <PreferencesRoutes />
         ) : (
           <>
-            <WithPageAnalytics />
+            <TrackPageAnalytics />
             <MainViewRoutes />
           </>
         )}
