@@ -1,8 +1,7 @@
 *
 !Dockerfile
 !Dockerfile.test
-!package.json
-!spec.json
-!source.js
+!main.py
+!source_plaid
+!setup.py
 !secrets
-!fullrefresh_configured_catalog.json

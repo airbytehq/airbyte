@@ -1,0 +1,96 @@
+{
+    "streams": [
+      {
+        "stream": {
+          "name": "balance",
+          "supported_sync_modes": ["full_refresh"],
+          "source_defined_cursor": true,
+          "json_schema": {
+            "required": ["account_id", "available", "current"],
+            "properties": {
+              "account_id": {
+                "type": "string"
+              },
+              "available": {
+                "type": "number"
+              },
+              "current": {
+                "type": "number"
+              },
+              "iso_currency_code": {
+                "type": ["string", "null"]
+              },
+              "limit": {
+                "type": ["number", "null"]
+              },
+              "unofficial_currency_code": {
+                "type": ["string", "null"]
+              }
+            }
+          }
+        }
+      },
+      {
+          "stream": {
+              "name": "transaction",
+              "supported_sync_modes": ["full_refresh", "incremental"],
+              "source_defined_cursor": true,
+              "json_schema": {
+                  "type": "object",
+                  "required": ["account_id", "amount", "iso_currency_code", "name", 
+                    "transaction_id", "category", "date", "transaction_type"],
+                  "properties": {
+                    "account_id": {"type": "string"},
+                    "amount": {"type": "number"},
+                    "category": {"type": "array", "items": "string"},
+                    "category_id": {"type": "string"},
+                    "date": {"type": "string"},
+                    "iso_currency_code": {"type": "string"},
+                    "name": {"type": "string"},
+                    "payment_channel": {"type": "string"},
+                    "pending": {"type": "boolean"},
+                    "transaction_id": {"type": "string"},
+                    "transaction_type": {"type": "string"},
+                    "location": {
+                        "type": "object", 
+                        "properties": {
+                            "address": "string",
+                            "city": "string",
+                            "country": "string",
+                            "lat": "number",
+                            "lon": "number",
+                            "postal_code": "string",
+                            "region": "string",
+                            "store_number": "string"
+                        }
+                    },
+                    "payment_meta": {
+                        "type": "object",
+                        "properties": {
+                            "by_order_of": {"type": "string"},
+                            "payee": {"type": "string"},
+                            "payer": {"type": "string"},
+                            "payment_method": {"type": "string"},
+                            "payment_processor": {"type": "string"},
+                            "ppd_id": {"type": "string"},
+                            "reason": {"type": "string"},
+                            "reference_number": {"type": "string"}
+                        }
+                    },
+                    "account_owner": {"type": "string"},
+                    "authorized_date": {"type": "string"},
+                    "authorized_datetime": {"type": "string"},
+                    "check_number": {"type": "string"},
+                    "datetime": {"type": "string"},
+                    "merchant_name": {"type": "string"},
+                    "pending_transaction_id": {"type": "string"},
+                    "personal_finance_category": {"type": "string"},
+                    "transaction_code": {"type": "string"},
+                    "unofficial_currency_code": {"type": "string"}
+                }
+              }
+          }
+      }
+    ]
+  }
+  
