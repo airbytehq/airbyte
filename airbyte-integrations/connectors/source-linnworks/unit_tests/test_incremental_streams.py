@@ -65,13 +65,6 @@ def test_get_updated_state(patch_incremental_base_class, inputs, expected_state)
     assert stream.get_updated_state(**inputs) == expected_state
 
 
-def test_stream_slices(patch_incremental_base_class):
-    stream = IncrementalLinnworksStream()
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    expected_stream_slice = [None]
-    assert stream.stream_slices(**inputs) == expected_stream_slice
-
-
 def test_supports_incremental(patch_incremental_base_class, mocker):
     mocker.patch.object(IncrementalLinnworksStream, "cursor_field", "dummy_field")
     stream = IncrementalLinnworksStream()

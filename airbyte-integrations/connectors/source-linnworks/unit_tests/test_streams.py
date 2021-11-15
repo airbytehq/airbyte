@@ -49,33 +49,10 @@ def test_parse_response(patch_base_class, requests_mock):
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
-def test_request_headers(patch_base_class):
-    stream = LinnworksStream()
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {}
-    assert stream.request_headers(**inputs) == expected_headers
-
-
 def test_http_method(patch_base_class):
     stream = LinnworksStream()
     expected_method = "POST"
     assert stream.http_method == expected_method
-
-
-@pytest.mark.parametrize(
-    ("http_status", "should_retry"),
-    [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
-    ],
-)
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
-    response_mock.status_code = http_status
-    stream = LinnworksStream()
-    assert stream.should_retry(response_mock) == should_retry
 
 
 @pytest.mark.parametrize(
@@ -92,7 +69,7 @@ def test_backoff_time(patch_base_class, requests_mock, header_name, header_value
     assert result == expected
 
 
-def test_stock_locations(mocker):
+def test_stock_locations_read_records(mocker):
     fake_stock_locations = [
         {"StockLocationId": 1},
         {"StockLocationId": 2},
