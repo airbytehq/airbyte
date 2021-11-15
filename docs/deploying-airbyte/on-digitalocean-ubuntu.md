@@ -46,10 +46,14 @@ Note: The following commands will be entered either on your local terminal or in
 
 ```bash
 # In your ssh session on the instance terminal
-sudo yum update -y
-sudo yum install -y docker
-sudo service docker start
-sudo usermod -a -G docker $USER
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+sudo apt install docker-ce
+sudo systemctl status docker
+sudo usermod -aG docker ${USER}
+su - ${USER}
 ```
 
 * Install `docker-compose`
