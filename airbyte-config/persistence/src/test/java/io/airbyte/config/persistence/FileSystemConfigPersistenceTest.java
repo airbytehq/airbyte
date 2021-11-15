@@ -22,7 +22,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class FileSystemConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
+class FileSystemConfigPersistenceTest {
 
   public static final UUID UUID_1 = new UUID(0, 1);
   public static final StandardSourceDefinition SOURCE_1 = new StandardSourceDefinition();
