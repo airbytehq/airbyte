@@ -18,11 +18,13 @@ import io.airbyte.protocol.models.OAuthConfigSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 
 /**
  * Abstract Class implementing common base methods for managing oAuth config (instance-wide) and
@@ -30,6 +32,7 @@ import java.util.UUID;
  */
 public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
 
+  public static final String PROPERTIES = "properties";
   private final ConfigRepository configRepository;
 
   public BaseOAuthFlow(final ConfigRepository configRepository) {
@@ -109,7 +112,6 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
                                                   final Map<String, Object> oauthOutput,
                                                   final List<String> outputPath) {
     Map<String, Object> result = new HashMap<>(oauthOutput);
-    // inject masked params outputs
     for (final String key : Jsons.keys(oAuthParamConfig)) {
       result.put(key, MoreOAuthParameters.SECRET_MASK);
     }
@@ -130,25 +132,38 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
       throws JsonValidationException {
     final JsonSchemaValidator validator = new JsonSchemaValidator();
 
-    final Builder<String, Object> oAuthServerOutputBuilder = ImmutableMap.builder();
-    for (final String key : Jsons.keys(oAuthParamConfig)) {
-      if (oAuthConfigSpecification.getCompleteOauthServerOutputSpecification().has(key)) {
-        oAuthServerOutputBuilder.put(key, MoreOAuthParameters.SECRET_MASK);
-      }
-    }
-    final Map<String, Object> oAuthServerOutputs = oAuthServerOutputBuilder.build();
-    validator.ensure(oAuthConfigSpecification.getCompleteOauthServerOutputSpecification(), Jsons.jsonNode(oAuthServerOutputs));
+    final Map<String, Object> oAuthOutputs = formatOAuthOutput(
+        validator,
+        oAuthConfigSpecification.getCompleteOauthOutputSpecification(),
+        completeOAuthFlow.keySet(),
+        (resultMap, key) -> resultMap.put(key, completeOAuthFlow.get(key)));
 
-    final Builder<String, Object> oAuthBuilder = ImmutableMap.builder();
-    for (final String key : completeOAuthFlow.keySet()) {
-      if (oAuthConfigSpecification.getCompleteOauthOutputSpecification().has(key)) {
-        oAuthBuilder.put(key, completeOAuthFlow.get(key));
-      }
-    }
-    final Map<String, Object> oAuthOutputs = oAuthBuilder.build();
-    validator.ensure(oAuthConfigSpecification.getCompleteOauthOutputSpecification(), Jsons.jsonNode(oAuthOutputs));
+    final Map<String, Object> oAuthServerOutputs = formatOAuthOutput(
+        validator,
+        oAuthConfigSpecification.getCompleteOauthServerOutputSpecification(),
+        Jsons.keys(oAuthParamConfig),
+        (resultMap, key) -> resultMap.put(key, MoreOAuthParameters.SECRET_MASK));
 
     return MoreMaps.merge(oAuthServerOutputs, oAuthOutputs);
+  }
+
+  private static Map<String, Object> formatOAuthOutput(final JsonSchemaValidator validator,
+                                                       final JsonNode outputSchema,
+                                                       final Collection<String> keys,
+                                                       final BiConsumer<Builder<String, Object>, String> replacement)
+      throws JsonValidationException {
+    Map<String, Object> result = Map.of();
+    if (outputSchema != null && outputSchema.has(PROPERTIES)) {
+      final Builder<String, Object> mapBuilder = ImmutableMap.builder();
+      for (final String key : keys) {
+        if (outputSchema.get(PROPERTIES).has(key)) {
+          replacement.accept(mapBuilder, key);
+        }
+      }
+      result = mapBuilder.build();
+      validator.ensure(outputSchema, Jsons.jsonNode(result));
+    }
+    return result;
   }
 
   /**

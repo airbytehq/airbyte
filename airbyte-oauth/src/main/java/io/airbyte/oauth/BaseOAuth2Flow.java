@@ -175,7 +175,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
                                                  final OAuthConfigSpecification oAuthConfigSpecification)
       throws IOException, ConfigNotFoundException, JsonValidationException {
     validateInputOAuthConfiguration(oAuthConfigSpecification, inputOAuthConfiguration);
-    final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, sourceDefinitionId);
+    final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return formatOAuthOutput(
         oAuthParamConfig,
         completeOAuthFlow(

@@ -104,9 +104,8 @@ public abstract class BaseOAuthFlowTest {
    *
    * @return the output specification used to identify what the oauth flow should be returning
    */
-  protected JsonNode getOutputOAuthSpecification() {
-    return Jsons.jsonNode(Map.of(
-        "refresh_token", Map.of("type", "String")));
+  protected JsonNode getCompleteOAuthOutputSpecification() {
+    return getJsonSchema(Map.of("refresh_token", Map.of("type", "string")));
   }
 
   /**
@@ -124,9 +123,8 @@ public abstract class BaseOAuthFlowTest {
   /**
    * @return the output specification used to filter what the oauth flow should be returning
    */
-  protected JsonNode getOutputOAuthParameterSpecification() {
-    return Jsons.jsonNode(Map.of(
-        "client_id", Map.of("type", "String")));
+  protected JsonNode getCompleteOAuthServerOutputSpecification() {
+    return getJsonSchema(Map.of("client_id", Map.of("type", "string")));
   }
 
   /**
@@ -139,10 +137,10 @@ public abstract class BaseOAuthFlowTest {
   }
 
   /**
-   * Redefine if the OAuth implementation flow has a dependency on input values from connector config.
+   * @return if the OAuth implementation flow has a dependency on input values from connector config.
    */
   protected boolean hasDependencyOnConnectorConfigValues() {
-    return false;
+    return !getInputOAuthConfiguration().isEmpty();
   }
 
   /**
@@ -156,6 +154,16 @@ public abstract class BaseOAuthFlowTest {
   }
 
   /**
+   * If the OAuth implementation flow has a dependency on input values from connector config, this
+   * method should be redefined.
+   *
+   * @return the input configuration sent to oauth flow (values from connector config)
+   */
+  protected JsonNode getUserInputFromConnectorConfigSpecification() {
+    return getJsonSchema(Map.of());
+  }
+
+  /**
    * @return the instance wide config params for this oauth flow
    */
   protected JsonNode getOAuthParamConfig() {
@@ -165,10 +173,18 @@ public abstract class BaseOAuthFlowTest {
         .build());
   }
 
+  protected static JsonNode getJsonSchema(final Map<String, Object> properties) {
+    return Jsons.jsonNode(Map.of(
+        "type", "object",
+        "additionalProperties", "false",
+        "properties", properties));
+  }
+
   private OAuthConfigSpecification getoAuthConfigSpecification() {
     return new OAuthConfigSpecification()
-        .withCompleteOauthOutputSpecification(getOutputOAuthSpecification())
-        .withCompleteOauthServerOutputSpecification(getOutputOAuthParameterSpecification());
+        .withOauthUserInputFromConnectorConfigSpecification(getUserInputFromConnectorConfigSpecification())
+        .withCompleteOauthOutputSpecification(getCompleteOAuthOutputSpecification())
+        .withCompleteOauthServerOutputSpecification(getCompleteOAuthServerOutputSpecification());
   }
 
   private OAuthConfigSpecification getEmptyOAuthConfigSpecification() {
@@ -184,6 +200,19 @@ public abstract class BaseOAuthFlowTest {
   @Test
   public void testGetDefaultOutputPath() {
     assertEquals(getExpectedOutputPath(), oauthFlow.getDefaultOAuthOutputPath());
+  }
+
+  @Test
+  public void testValidateInputOAuthConfigurationFailure() {
+    final JsonNode invalidInputOAuthConfiguration = Jsons.jsonNode(Map.of("UnexpectedRandomField", 42));
+    assertThrows(JsonValidationException.class,
+        () -> oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, invalidInputOAuthConfiguration, getoAuthConfigSpecification()));
+    assertThrows(JsonValidationException.class, () -> oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL,
+        invalidInputOAuthConfiguration, getoAuthConfigSpecification()));
+    assertThrows(JsonValidationException.class, () -> oauthFlow.completeSourceOAuth(workspaceId, definitionId, Map.of(), REDIRECT_URL,
+        invalidInputOAuthConfiguration, getoAuthConfigSpecification()));
+    assertThrows(JsonValidationException.class, () -> oauthFlow.completeDestinationOAuth(workspaceId, definitionId, Map.of(), REDIRECT_URL,
+        invalidInputOAuthConfiguration, getoAuthConfigSpecification()));
   }
 
   @Test
@@ -392,6 +421,23 @@ public abstract class BaseOAuthFlowTest {
     assertEquals(expectedOutput.size(), actualQueryParams.size(),
         String.format("Expected %s values but got\n\t%s\ninstead of\n\t%s", expectedOutput.size(), actualQueryParams, expectedOutput));
     expectedOutput.forEach((key, value) -> assertEquals(value, actualQueryParams.get(key)));
+  }
+
+  @Test
+  public void testValidateOAuthOutputFailure() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
+    final Map<String, String> returnedCredentials = getExpectedOutput();
+    final HttpResponse response = mock(HttpResponse.class);
+    when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
+    when(httpClient.send(any(), any())).thenReturn(response);
+    final Map<String, Object> queryParams = Map.of("code", "test_code");
+    final OAuthConfigSpecification oAuthConfigSpecification = getoAuthConfigSpecification()
+        // change property types to induce json validation errors.
+        .withCompleteOauthServerOutputSpecification(getJsonSchema(Map.of("client_id", Map.of("type", "integer"))))
+        .withCompleteOauthOutputSpecification(getJsonSchema(Map.of("refresh_token", Map.of("type", "integer"))));
+    assertThrows(JsonValidationException.class, () -> oauthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL,
+        getInputOAuthConfiguration(), oAuthConfigSpecification));
+    assertThrows(JsonValidationException.class, () -> oauthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL,
+        getInputOAuthConfiguration(), oAuthConfigSpecification));
   }
 
 }
