@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "assets": {
-      "type": ["array", "object"],
+      "type": ["null", "array", "object"],
       "properties": {
         "id": { "type": ["null", "integer"] }
       }
