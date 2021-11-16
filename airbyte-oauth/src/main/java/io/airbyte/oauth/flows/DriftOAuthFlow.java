@@ -9,7 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -23,16 +23,16 @@ import org.apache.http.client.utils.URIBuilder;
  * Following docs from
  * https://devdocs.drift.com/docs/authentication-and-scopes#1-direct-the-user-to-the-drift-oauth-url-
  */
-public class DriftOAuthFlow extends BaseOAuthFlow {
+public class DriftOAuthFlow extends BaseOAuth2Flow {
 
   private static final String ACCESS_TOKEN_URL = "https://driftapi.com/oauth2/token";
 
-  public DriftOAuthFlow(ConfigRepository configRepository) {
-    super(configRepository);
+  public DriftOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
-  DriftOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+  DriftOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 

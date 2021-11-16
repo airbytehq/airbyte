@@ -55,7 +55,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-snapchat-marketing", new SnapchatMarketingOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-drift", new DriftOAuthFlow(configRepository))
+        .put("airbyte/source-drift", new DriftOAuthFlow(configRepository, httpClient))
         .build();
   }
 
