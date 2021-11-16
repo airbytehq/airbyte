@@ -1,0 +1,88 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "name": "hardware",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "example": 1,
+            "default": 0
+        },
+        "name": {
+            "type": "string",
+            "example": "Lebsack and Sons"
+        },
+        "image": {},
+        "created_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-11-22 05:28:00"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "Wed Nov 22, 2017 5:28AM"
+                }
+            }
+        },
+        "updated_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-11-22 05:28:00"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "Wed Nov 22, 2017 5:28AM"
+                }
+            }
+        },
+        "assets_count": {
+            "type": "integer",
+            "example": 0,
+            "default": 0
+        },
+        "licenses_count": {
+            "type": "integer",
+            "example": 0,
+            "default": 0
+        },
+        "accessories_count": {
+            "type": "integer",
+            "example": 0,
+            "default": 0
+        },
+        "consumables_count": {
+            "type": "integer",
+            "example": 0,
+            "default": 0
+        },
+        "components_count": {
+            "type": "integer",
+            "example": 0,
+            "default": 0
+        },
+        "users_count": {
+            "type": "integer",
+            "example": 13,
+            "default": 0
+        },
+        "available_actions": {
+            "type": "object",
+            "properties": {
+                "update": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                },
+                "delete": {
+                    "type": "boolean",
+                    "example": true,
+                    "default": true
+                }
+            }
+        }
+    }
+}

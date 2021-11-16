@@ -87,8 +87,7 @@ class SnipeitStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {}
-
+        yield from response.json().get("rows", [])
 
 class Hardware(SnipeitStream):
     primary_key = "id"
@@ -96,22 +95,31 @@ class Hardware(SnipeitStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         return "hardware/"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        whole_response: dict = response.json()
-        results = whole_response["rows"]
-        for rec in results:
-            yield rec
+class Companies(SnipeitStream):
+    primary_key = "id"
 
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "companies/"
+
+class Locations(SnipeitStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "locations/"
+
+class Accessories(SnipeitStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "accessories/"
 
 # Source
 class SourceSnipeit(AbstractSource):
@@ -132,7 +140,7 @@ class SourceSnipeit(AbstractSource):
         elif token == "":
             return False, "Token cannot be an empty string! Check config and try again."
         else:
-            return True
+            return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -143,4 +151,4 @@ class SourceSnipeit(AbstractSource):
         # TODO remove the authenticator if not required.
         access_jwt = config.get("access_token")
         auth = TokenAuthenticator(token=access_jwt)  # Oauth2Authenticator is also available if you need oauth support
-        return [Hardware(authenticator=auth)]
+        return [Hardware(authenticator=auth), Companies(authenticator=auth), Locations(authenticator=auth)]
