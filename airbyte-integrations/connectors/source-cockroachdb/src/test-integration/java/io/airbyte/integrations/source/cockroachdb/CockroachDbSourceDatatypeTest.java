@@ -88,16 +88,14 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("{sky,road,car}", null)
             .build());
 
-    // TODO https://github.com/airbytehq/airbyte/issues/4408
-    // BIT type is currently parsed as a Boolean which is incorrect
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("bit")
-    // .fullSourceDataType("BIT(3)")
-    // .airbyteType(JsonSchemaPrimitive.NUMBER)
-    // .addInsertValues("B'101'")
-    // //.addExpectedValues("101")
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("bit")
+            .fullSourceDataType("BIT(3)")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("B'101'")
+            .addExpectedValues("101")
+            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -203,39 +201,32 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
                 "            ", null)
             .build());
 
-    // TODO https://github.com/airbytehq/airbyte/issues/4408
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it doesnt
-    // suppose to handle BC dates
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'1999-01-08'", "null") // "'199-10-10 BC'"
-            .addExpectedValues("1999-01-08T00:00:00Z", null) // , "199-10-10 BC")
+            .addInsertValues("'1999-01-08'", "null")
+            .addExpectedValues("1999-01-08T00:00:00Z", null)
             .build());
 
-    // TODO https://github.com/airbytehq/airbyte/issues/4408
-    // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
-    // JdbcUtils -> setJsonField contains:
-    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float8")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'123'", "'1234567890.1234567'", "null")
-            .addExpectedValues("123.0", "1.2345678901234567E9", null)
+            .addInsertValues("'123'", "'1234567890.1234567'", "null", "'infinity'",
+                "'+infinity'", "'+inf'", "'inf'", "'-inf'", "'-infinity'", "'nan'")
+            .addExpectedValues("123.0", "1.2345678901234567E9", null,
+                "Infinity", "Infinity", "Infinity", "Infinity", "-Infinity", "-Infinity", "NaN")
             .build());
 
-    // TODO https://github.com/airbytehq/airbyte/issues/4408
-    // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
-    // JdbcUtils -> setJsonField contains:
-    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'123'", "'1234567890.1234567'", "null")
-            .addExpectedValues("123.0", "1.2345678901234567E9", null)
+            .addInsertValues("'123'", "'1234567890.1234567'", "null", "'infinity'",
+                "'+infinity'", "'+inf'", "'inf'", "'-inf'", "'-infinity'", "'nan'")
+            .addExpectedValues("123.0", "1.2345678901234567E9", null, "Infinity",
+                "Infinity", "Infinity", "Infinity", "-Infinity", "-Infinity", "NaN")
             .build());
 
     addDataTypeTestData(
@@ -286,16 +277,12 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("99999", null)
             .build());
 
-    // TODO https://github.com/airbytehq/airbyte/issues/4408
-    // The decimal type in CockroachDB may contain 'Nan', inf, infinity, +inf, +infinity, -inf,
-    // -infinity types, but in JdbcUtils-> rowToJson we try to map it like this, so it fails
-    // case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("99999", "5.1", "0", "null")
-            .addExpectedValues("99999", "5.1", "0", null)
+            .addInsertValues("'+inf'", "999", "'-inf'", "'+infinity'", "'-infinity'", "'nan'")
+            .addExpectedValues("Infinity", "999", "-Infinity", "Infinity", "-Infinity", "NaN")
             .build());
 
     addDataTypeTestData(
@@ -315,25 +302,24 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
-    // TODO https://github.com/airbytehq/airbyte/issues/4408
     // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
-    // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
+    // Time (04:05:06) would be represented like "1970-01-01T04:05:06Z"
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
+            .addInsertValues("'04:05:06'", null)
+            .addExpectedValues("1970-01-01T04:05:06Z")
             .addNullExpectedValue()
             .build());
 
-    // https://github.com/airbytehq/airbyte/issues/4408
-    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
-    // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
+    // Time (04:05:06) would be represented like "1970-01-01T04:05:06Z"
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timetz")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
+            .addInsertValues("'04:05:06Z'", null)
+            .addExpectedValues("1970-01-01T04:05:06Z")
             .addNullExpectedValue()
             .build());
 

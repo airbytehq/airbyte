@@ -76,7 +76,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
   }
 
   @Override
-  public void close(boolean hasFailed) {
+  public void close(final boolean hasFailed) {
     fieldsWithRefDefinition.clear();
     super.close(hasFailed);
   }
@@ -86,7 +86,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     if (fields == null) {
       return root;
     }
-    List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(fields);
+    final List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(fields);
     if (!dateTimeFields.isEmpty()) {
       BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) root);
     }

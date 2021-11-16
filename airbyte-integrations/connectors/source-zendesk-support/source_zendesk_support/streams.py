@@ -26,7 +26,7 @@ class SourceZendeskException(Exception):
 
 
 class SourceZendeskSupportStream(HttpStream, ABC):
-    """"Basic Zendesk class"""
+    """ "Basic Zendesk class"""
 
     primary_key = "id"
 
@@ -321,7 +321,7 @@ class IncrementalUnsortedPageStream(IncrementalUnsortedStream, ABC):
 
 
 class FullRefreshStream(IncrementalUnsortedPageStream, ABC):
-    """"Stream for endpoints where there are not any created_at or updated_at fields"""
+    """ "Stream for endpoints where there are not any created_at or updated_at fields"""
 
     # reset to default value
     cursor_field = SourceZendeskSupportStream.cursor_field

@@ -19,7 +19,7 @@ import { useDiscoverSchema } from "hooks/services/useSchemaHook";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { IDataItem } from "components/base/DropDown/components/Option";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -51,7 +51,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   noTitles,
 }) => {
   const { createConnection } = useConnection();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: source.sourceDefinitionId,
