@@ -3,10 +3,11 @@
 ## Overview
 
 The Jenkins source is maintained by [Faros
-AI](https://github.com/faros-ai/airbyte-connectors/tree/main/sources/jenkins-source)
-and supports both Full Refresh and Incremental syncs. You can choose if this
-connector will copy only the new or updated data, or all rows in the tables and
-columns you set up for replication, every time a sync is run.
+AI](https://github.com/faros-ai/airbyte-connectors/tree/main/sources/jenkins-source).
+Please file any support requests on that repo to minimize response time from the
+maintainers. The source supports both Full Refresh and Incremental syncs. You
+can choose if this source will copy only the new or updated data, or all rows
+in the tables and columns you set up for replication, every time a sync is run.
 
 ### Output schema
 
