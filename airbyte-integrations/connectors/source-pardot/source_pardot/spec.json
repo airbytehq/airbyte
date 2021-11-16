@@ -13,8 +13,8 @@
     "additionalProperties": false,
     "properties": {
       "pardot_business_unit_id": {
-        "type": "string",
-        "description": "Pardot Business ID, can be found at Setup > Pardot > Pardot Account Setup"
+        "description": "Pardot Business ID, can be found at Setup > Pardot > Pardot Account Setup",
+        "type": "string"
       },
       "client_id": {
         "description": "The Consumer Key that can be found when viewing your app in Salesforce",
