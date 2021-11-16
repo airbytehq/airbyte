@@ -48,6 +48,7 @@
     * [ClickHouse](integrations/sources/clickhouse.md)
     * [Close.com](integrations/sources/close-com.md)
     * [CockroachDB](integrations/sources/cockroachdb.md)
+    * [Confluence](integrations/sources/confluence.md)
     * [Db2](integrations/sources/db2.md)
     * [Dixa](integrations/sources/dixa.md)
     * [Drift](integrations/sources/drift.md)
@@ -57,6 +58,8 @@
     * [Facebook Pages](integrations/sources/facebook-pages.md)
     * [Files](integrations/sources/file.md)
     * [Freshdesk](integrations/sources/freshdesk.md)
+    * [Freshsales](integrations/sources/freshsales.md)
+    * [Freshservice](integrations/sources/freshservice.md)
     * [GitHub](integrations/sources/github.md)
     * [GitLab](integrations/sources/gitlab.md)
     * [Google Ads](integrations/sources/google-ads.md)
@@ -90,6 +93,7 @@
     * [Microsoft SQL Server \(MSSQL\)](integrations/sources/mssql.md)
     * [Microsoft Teams](integrations/sources/microsoft-teams.md)
     * [Mixpanel](integrations/sources/mixpanel.md)
+    * [Monday](integrations/sources/monday.md)
     * [Mongo DB](integrations/sources/mongodb-v2.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Okta](integrations/sources/okta.md)
@@ -166,7 +170,11 @@
     * [Redshift](integrations/destinations/redshift.md)
     * [S3](integrations/destinations/s3.md)
     * [Snowflake](integrations/destinations/snowflake.md)
+<<<<<<< HEAD
     * [Cassandra](integrations/destinations/cassandra.md)
+=======
+    * [Scylla](integrations/destinations/scylla.md)
+>>>>>>> b92e2f803bb0610d05681ac0c4aec8e8fdee6e42
   * [Custom or New Connector](integrations/custom-connectors.md)
 * [Connector Development](connector-development/README.md)
   * [Tutorials](connector-development/tutorials/README.md)
