@@ -33,9 +33,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
   private static final Duration CHECK_HEARTBEAT_DURATION = Duration.of(10, ChronoUnit.SECONDS);
-  // todo (cgardens) - keep the graceful shutdown consistent with current behavior for release. make
-  // sure everything is working well before we reduce this to something more reasonable.
-  private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(10, ChronoUnit.HOURS);
+  private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(5, ChronoUnit.MINUTES);
   private static final Duration FORCED_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
 
   private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
