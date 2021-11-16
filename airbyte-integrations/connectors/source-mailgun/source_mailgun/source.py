@@ -89,10 +89,6 @@ class IncrementalMailgunStream(MailgunStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
             Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
         return {}
 
 
@@ -105,17 +101,17 @@ class Events(IncrementalMailgunStream):
 
     def __init__(self, config: Mapping[str, Any], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.begin = config.get('begin', 0)
+        self.timestamp = config.get('timestamp', 0)
         self.ascending = config.get('ascending', True)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
             Mapping[str, Any]:
-        if current_stream_state is not None and 'begin' in current_stream_state:
-            current_parsed_timestamp = current_stream_state['begin']
+        if current_stream_state is not None and 'timestamp' in current_stream_state:
+            current_parsed_timestamp = current_stream_state['timestamp']
             latest_record_timestamp = latest_record['timestamp']
-            return {'begin': max(current_parsed_timestamp, latest_record_timestamp)}
+            return {'timestamp': max(current_parsed_timestamp, latest_record_timestamp)}
         else:
-            return {'begin': self.begin}
+            return {'timestamp': self.timestamp}
 
     def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         # return super().path(*args, **kwargs) or "events"  # TODO: Requires the CDK update (see MailgunStream.path())
@@ -132,7 +128,7 @@ class Events(IncrementalMailgunStream):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params.update({
-            "begin": stream_state.get("begin", self.begin),
+            "begin": stream_state.get("timestamp", self.timestamp),
             "ascending": "yes" if self.ascending else "no",
         })
         return params
@@ -140,7 +136,7 @@ class Events(IncrementalMailgunStream):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         """
         Override default stream_slices CDK method to provide date_slices as a list of a single slice with such format:
-        [{"begin": 1636411500.861427}]
+        [{"timestamp": 1636411500.861427}]
         """
         return [stream_state]
 

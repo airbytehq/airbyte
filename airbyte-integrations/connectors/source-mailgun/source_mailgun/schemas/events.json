@@ -17,10 +17,7 @@
       "type": "string"
     },
     "flags": {
-      "type": ["null", "object"],
-      "properties": {
-        "type": "boolean"
-      }
+      "type": ["null", "object"]
     },
     "geolocation": {
       "type": ["null", "object"]
@@ -71,7 +68,7 @@
       "type":  "number"
     },
     "user-variables": {
-      "type":  "array"
+      "type":  "object"
     }
   }
 }

@@ -33,7 +33,7 @@ def test_path(stream, stream_slice, stream_state, next_page_token, expected):
     "stream,stream_slice,stream_state,next_page_token,expected",
     [
         (Domains(), None, None, None, {}),
-        (Events(TEST_CONFIG), None, {"begin": 1609452000.0}, None, {"ascending": "yes", "begin": 1609452000.0}),
+        (Events(TEST_CONFIG), None, {"timestamp": 1609452000.0}, None, {"ascending": "yes", "begin": 1609452000.0}),
     ]
 )
 def test_request_params(stream, stream_slice, stream_state, next_page_token, expected):

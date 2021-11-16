@@ -25,9 +25,9 @@ def test_cursor_field(stream, cursor_field):
     [
         (IncrementalMailgunStream(), None, None, {}),
 
-        (Events(TEST_CONFIG), None, None, {"begin": 0}),
-        (Events(TEST_CONFIG), {"begin": 1000}, {"timestamp": 2000}, {"begin": 2000}),
-        (Events(TEST_CONFIG), {"begin": 2000}, {"timestamp": 1000}, {"begin": 2000}),
+        (Events(TEST_CONFIG), None, None, {"timestamp": 0}),
+        (Events(TEST_CONFIG), {"timestamp": 1000}, {"timestamp": 2000}, {"timestamp": 2000}),
+        (Events(TEST_CONFIG), {"timestamp": 2000}, {"timestamp": 1000}, {"timestamp": 2000}),
     ]
 )
 def test_get_updated_state(stream, current_stream_state, latest_record, expected_state):
@@ -39,7 +39,7 @@ def test_get_updated_state(stream, current_stream_state, latest_record, expected
     "stream, inputs, expected_stream_slice",
     [
         (IncrementalMailgunStream(), {"sync_mode": SyncMode.incremental}, [None]),
-        (Events(TEST_CONFIG), {"stream_state": {"begin": 1000}}, [{"begin": 1000}]),
+        (Events(TEST_CONFIG), {"stream_state": {"timestamp": 1000}}, [{"timestamp": 1000}]),
     ]
 )
 def test_stream_slices(stream, inputs, expected_stream_slice):
