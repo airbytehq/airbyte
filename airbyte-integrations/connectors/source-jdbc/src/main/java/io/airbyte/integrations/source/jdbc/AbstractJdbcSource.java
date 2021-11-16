@@ -4,8 +4,10 @@
 
 package io.airbyte.integrations.source.jdbc;
 
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -36,10 +38,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -55,12 +55,12 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
   private static final String JDBC_COLUMN_DATABASE_NAME = "TABLE_CAT";
-  private static final String JDBC_COLUMN_SCHEMA_NAME = "TABLE_SCHEM";
-  private static final String JDBC_COLUMN_TABLE_NAME = "TABLE_NAME";
-  private static final String JDBC_COLUMN_COLUMN_NAME = "COLUMN_NAME";
+  protected static final String JDBC_COLUMN_SCHEMA_NAME = "TABLE_SCHEM";
+  protected static final String JDBC_COLUMN_TABLE_NAME = "TABLE_NAME";
+  protected static final String JDBC_COLUMN_COLUMN_NAME = "COLUMN_NAME";
   private static final String JDBC_COLUMN_DATA_TYPE = "DATA_TYPE";
-  private static final String GRANTEE = "GRANTEE";
-  private static final String PRIVILEGE = "PRIVILEGE";
+  protected static final String GRANTEE = "GRANTEE";
+  protected static final String PRIVILEGE = "PRIVILEGE";
 
   private static final String INTERNAL_SCHEMA_NAME = "schemaName";
   private static final String INTERNAL_TABLE_NAME = "tableName";
@@ -114,14 +114,14 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
     return result;
   }
 
-  private String getCatalog(final SqlDatabase database) {
+  protected String getCatalog(final SqlDatabase database) {
     return (database.getSourceConfig().has("database") ? database.getSourceConfig().get("database").asText() : null);
   }
 
   @Override
   protected List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database, final String schema) throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
-    Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getTablesWithSelectGrantPrivilegeForCurrentDbUser(database, schema);
+    Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
     return database.bufferedResultSetQuery(
         conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
@@ -164,36 +164,16 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   }
 
   private Predicate<JsonNode> excludeNotAccessibleTables(Set<String> internalSchemas, Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
-    return t ->
-        tablesWithSelectGrantPrivilege.stream()
-            .anyMatch(e -> e.getSchemaName().equals(t.get(INTERNAL_SCHEMA_NAME).asText()))
-        && tablesWithSelectGrantPrivilege.stream()
-            .anyMatch(e -> e.getTableName().equals(t.get(INTERNAL_TABLE_NAME).asText()))
-        && !internalSchemas.contains(t.get(INTERNAL_SCHEMA_NAME).asText());
-  }
-
-  /**
-   * @param database - The database where from privileges for tables will be consumed
-   * @param schema - The schema where from privileges for tables will be consumed
-   * @return Set with privileges for tables for current DB-session user
-   * @throws SQLException
-   */
-  protected Set<JdbcPrivilegeDto> getTablesWithSelectGrantPrivilegeForCurrentDbUser(JdbcDatabase database, String schema) throws SQLException {
-    return database.bufferedResultSetQuery(
-            conn -> conn.getMetaData().getTablePrivileges(getCatalog(database), schema, null),
-            resultSet ->
-                JdbcPrivilegeDto.builder()
-                    .grantee(ofNullable(resultSet.getString(GRANTEE)).orElse(BLANK_STRING))
-                    // we need the schema as different schemas could have tables with the same names
-                    .schemaName(ofNullable(resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)).orElse(BLANK_STRING))
-                    .tableName(ofNullable(resultSet.getString(JDBC_COLUMN_TABLE_NAME)).orElse(BLANK_STRING))
-                    .privilege(ofNullable(resultSet.getString(PRIVILEGE)).orElse(BLANK_STRING))
-                    .build())
-        .stream()
-        .filter(jdbcPrivilegeDto ->
-            jdbcPrivilegeDto.getGrantee().equals(database.getDatabaseConfig().get("username").asText())
-                && "SELECT".equals(jdbcPrivilegeDto.getPrivilege()))
-        .collect(toSet());
+    return jsonNode -> {
+      if (tablesWithSelectGrantPrivilege.isEmpty()) {
+        return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
+      }
+      return tablesWithSelectGrantPrivilege.stream()
+          .anyMatch(e -> e.getSchemaName().equals(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
+          && tablesWithSelectGrantPrivilege.stream()
+          .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
+          && !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
+    };
   }
 
   @Override
