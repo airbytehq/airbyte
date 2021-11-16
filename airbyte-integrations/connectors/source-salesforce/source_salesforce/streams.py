@@ -3,7 +3,6 @@
 #
 
 import csv
-import json
 import math
 import time
 from abc import ABC
