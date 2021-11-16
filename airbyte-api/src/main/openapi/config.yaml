@@ -1577,7 +1577,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthCheckRead"
       # This route is unsecured for external monitoring.
-      security: [ ]
+      security: []
   /v1/logs/get:
     post:
       tags:
@@ -1970,7 +1970,7 @@ components:
       properties:
         auth_type:
           type: string
-          enum: [ "oauth2.0" ] # Future auth types should be added here
+          enum: ["oauth2.0"] # Future auth types should be added here
         oauth2Specification:
           "$ref": "#/components/schemas/OAuth2Specification"
     OAuth2Specification:
@@ -1992,7 +1992,7 @@ components:
             If they were inside a oneOf {'switch': {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=['switch', 0]
             "
           type: array
-          items: { } # <--- using generic any type. Build fails with oneOf (https://github.com/OpenAPITools/openapi-generator/issues/6161)
+          items: {} # <--- using generic any type. Build fails with oneOf (https://github.com/OpenAPITools/openapi-generator/issues/6161)
           example:
             - path
             - 1
@@ -3211,7 +3211,7 @@ components:
       properties:
         authFlowType:
           type: string
-          enum: [ "oauth2.0", "oauth1.0" ]
+          enum: ["oauth2.0", "oauth1.0"]
         predicateKey:
           description: Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.
           type: array
@@ -3623,4 +3623,4 @@ components:
           schema:
             $ref: "#/components/schemas/KnownExceptionInfo"
 security:
-  - { }
+  - {}
