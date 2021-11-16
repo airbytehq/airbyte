@@ -142,6 +142,9 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
         validator,
         oAuthConfigSpecification.getCompleteOauthServerOutputSpecification(),
         Jsons.keys(oAuthParamConfig),
+        // TODO secrets should be masked with the correct type
+        // https://github.com/airbytehq/airbyte/issues/5990
+        // In the short-term this is not world-ending as all secret fields are currently strings
         (resultMap, key) -> resultMap.put(key, MoreOAuthParameters.SECRET_MASK));
 
     return MoreMaps.merge(oAuthServerOutputs, oAuthOutputs);
