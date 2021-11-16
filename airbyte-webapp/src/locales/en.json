@@ -112,6 +112,12 @@
   "connectionForm.syncType.destination": "Dest",
   "connectionForm.primaryKey.searchPlaceholder": "search key fields by name",
   "connectionForm.cursor.searchPlaceholder": "search cursor fields by name",
+  "connectionForm.destinationExisting": "Select an existing destination",
+  "connectionForm.sourceExisting": "Select an existing source",
+  "connectionForm.sourceUse": "Use existing source",
+  "connectionForm.destinationUse": "Use existing destination",
+  "connectionForm.sourceTitle": "Source",
+  "connectionForm.destinationTitle": "Destination",
 
   "connectorForm.authenticate": "Authenticate your {connector} account",
   "connectorForm.authenticate.succeeded": "Authentication succeeded!",

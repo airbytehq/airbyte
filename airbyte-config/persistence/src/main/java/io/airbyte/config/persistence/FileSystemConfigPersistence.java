@@ -80,7 +80,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(AirbyteConfig configType, Class<T> clazz)
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
       throws JsonValidationException, IOException {
     throw new UnsupportedOperationException("File Persistence doesn't support metadata");
   }

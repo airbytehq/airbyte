@@ -28,9 +28,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The base implementation takes care of the following:
+ * <ul>
  * <li>Create shared instance variables.</li>
  * <li>Create the bucket and prepare the bucket path.</li>
  * <li>Log and close the write.</li>
+ * </ul>
  */
 public abstract class BaseS3Writer implements S3Writer {
 
@@ -57,8 +59,10 @@ public abstract class BaseS3Writer implements S3Writer {
   }
 
   /**
+   * <ul>
    * <li>1. Create bucket if necessary.</li>
    * <li>2. Under OVERWRITE mode, delete all objects with the output prefix.</li>
+   * </ul>
    */
   @Override
   public void initialize() {

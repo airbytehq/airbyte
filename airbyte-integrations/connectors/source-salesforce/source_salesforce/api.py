@@ -315,7 +315,11 @@ class Salesforce:
         elif sf_type == "boolean":
             property_schema["type"] = ["boolean", "null"]
         elif sf_type in LOOSE_TYPES:
-            property_schema["type"] = ["string", "integer", "number", "boolean", "array", "object", "null"]
+            """
+            LOOSE_TYPES can return data of completely different types (more than 99% of them are `strings`),
+            and in order to avoid conflicts in schemas and destinations, we cast this data to the `string` type.
+            """
+            property_schema["type"] = ["string", "null"]
         elif sf_type == "location":
             property_schema = {
                 "type": ["object", "null"],
