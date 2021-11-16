@@ -1872,6 +1872,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+    WorkspaceGiveFeedback:
+      type: object
+      required:
+        - workspaceId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     # SLUG
     SlugRequestBody:
       type: object
