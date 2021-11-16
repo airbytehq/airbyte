@@ -5,9 +5,12 @@
 package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,7 +39,6 @@ import org.junit.jupiter.api.Test;
 class ConfigRepositoryTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
-
   private ConfigPersistence configPersistence;
   private ConfigRepository configRepository;
 
@@ -45,7 +47,7 @@ class ConfigRepositoryTest {
     configPersistence = mock(ConfigPersistence.class);
     final var secretPersistence = new MemorySecretPersistence();
     configRepository =
-        new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence));
+        spy(new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence)));
   }
 
   @AfterEach
@@ -175,6 +177,19 @@ class ConfigRepositoryTest {
     verify(configPersistence, never()).deleteConfig(
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         destDefToStay.getDestinationDefinitionId().toString());
+  }
+
+  @Test
+  public void testUpdateFeedback() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(false);
+    doReturn(workspace)
+        .when(configRepository)
+        .getStandardWorkspace(WORKSPACE_ID, false);
+
+    configRepository.setFeedback(WORKSPACE_ID);
+
+    assertTrue(workspace.getFeedbackDone());
+    verify(configPersistence).writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
 }
