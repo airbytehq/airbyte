@@ -3,7 +3,7 @@ package io.airbyte.integrations.source.jdbc.dto;
 import com.google.common.base.Objects;
 
 /**
- * The class to Encapsulate the JDBC table with DB privileges
+ * The class to store values from privileges table
  */
 public class JdbcPrivilegeDto {
 
