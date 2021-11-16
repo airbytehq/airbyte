@@ -61,7 +61,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
       final Optional<DestinationOAuthParameter> param = MoreOAuthParameters.getDestinationOAuthParameter(
           configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId);
       if (param.isPresent()) {
-        // TODO: if we write a flyway migration to flatten persisted configs in db, we don't need to flatten
+        // TODO: if we write a migration to flatten persisted configs in db, we don't need to flatten
         // here see https://github.com/airbytehq/airbyte/issues/7624
         return MoreOAuthParameters.flattenOAuthConfig(param.get().getConfiguration());
       } else {

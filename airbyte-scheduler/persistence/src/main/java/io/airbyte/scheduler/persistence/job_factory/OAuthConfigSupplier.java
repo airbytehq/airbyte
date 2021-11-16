@@ -92,6 +92,9 @@ public class OAuthConfigSupplier {
       if (!checkOAuthPredicate(spec.getAdvancedAuth().getPredicateKey(), spec.getAdvancedAuth().getPredicateValue(), connectorConfig)) {
         return false;
       }
+      // TODO: if we write a migration to flatten persisted configs in db, we don't need to flatten
+      // here see https://github.com/airbytehq/airbyte/issues/7624
+      final JsonNode flatOAuthParameters = MoreOAuthParameters.flattenOAuthConfig(oAuthParameters);
       final JsonNode outputSpec = spec.getAdvancedAuth().getOauthConfigSpecification().getCompleteOauthServerOutputSpecification();
       boolean result = false;
       for (final String key : Jsons.keys(outputSpec)) {
@@ -105,7 +108,7 @@ public class OAuthConfigSupplier {
               propertyPath.add(arrayNode.get(i).asText());
             }
             if (propertyPath.size() > 0) {
-              Jsons.replaceNestedValue(connectorConfig, propertyPath, oAuthParameters.get(key));
+              Jsons.replaceNestedValue(connectorConfig, propertyPath, flatOAuthParameters.get(key));
               result = true;
             } else {
               LOGGER.error(String.format("In %s's advanced_auth spec, completeOAuthServerOutputSpecification includes an invalid empty %s for %s",

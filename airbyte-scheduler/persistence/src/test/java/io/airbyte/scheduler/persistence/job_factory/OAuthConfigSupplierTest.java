@@ -35,6 +35,9 @@ import org.junit.jupiter.api.Test;
 
 public class OAuthConfigSupplierTest {
 
+  public static final String API_CLIENT = "api_client";
+  public static final String CREDENTIALS = "credentials";
+
   private ConfigRepository configRepository;
   private TrackingClient trackingClient;
   private OAuthConfigSupplier oAuthConfigSupplier;
@@ -53,13 +56,13 @@ public class OAuthConfigSupplierTest {
         .withSpec(new ConnectorSpecification()
             .withAdvancedAuth(new AdvancedAuth()
                 .withAuthFlowType(AuthFlowType.OAUTH_2_0)
-                .withPredicateKey(List.of("credentials", "auth_type"))
+                .withPredicateKey(List.of(CREDENTIALS, "auth_type"))
                 .withPredicateValue("oauth")
                 .withOauthConfigSpecification(new OAuthConfigSpecification()
                     .withCompleteOauthServerOutputSpecification(Jsons.jsonNode(Map.of(
-                        "api_client", Map.of(
+                        API_CLIENT, Map.of(
                             "type", "string",
-                            OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of("credentials", "api_client")))))))));
+                            OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of(CREDENTIALS, API_CLIENT)))))))));
   }
 
   @Test
@@ -84,9 +87,9 @@ public class OAuthConfigSupplierTest {
                 .withPredicateValue("oauth")
                 .withOauthConfigSpecification(new OAuthConfigSpecification()
                     .withCompleteOauthServerOutputSpecification(Jsons.jsonNode(Map.of(
-                        "api_client", Map.of(
+                        API_CLIENT, Map.of(
                             "type", "string",
-                            OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of("credentials", "api_client")))))))));
+                            OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of(CREDENTIALS, API_CLIENT)))))))));
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, String> oauthParameters = generateOAuthParameters();
@@ -115,13 +118,13 @@ public class OAuthConfigSupplierTest {
         .withSpec(new ConnectorSpecification()
             .withAdvancedAuth(new AdvancedAuth()
                 .withAuthFlowType(AuthFlowType.OAUTH_2_0)
-                .withPredicateKey(List.of("credentials", "auth_type"))
+                .withPredicateKey(List.of(CREDENTIALS, "auth_type"))
                 .withPredicateValue("wrong_auth_type")
                 .withOauthConfigSpecification(new OAuthConfigSpecification()
                     .withCompleteOauthServerOutputSpecification(Jsons.jsonNode(Map.of(
-                        "api_client", Map.of(
+                        API_CLIENT, Map.of(
                             "type", "string",
-                            OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of("credentials", "api_client")))))))));
+                            OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of(CREDENTIALS, API_CLIENT)))))))));
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, String> oauthParameters = generateOAuthParameters();
@@ -158,7 +161,7 @@ public class OAuthConfigSupplierTest {
             .withWorkspaceId(null)
             .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
     final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
-    final JsonNode expectedConfig = getExpectedNode(oauthParameters);
+    final JsonNode expectedConfig = getExpectedNode(oauthParameters.get(API_CLIENT));
     assertEquals(expectedConfig, actualConfig);
     assertTracking(workspaceId);
   }
@@ -174,9 +177,9 @@ public class OAuthConfigSupplierTest {
                 .withAuthFlowType(AuthFlowType.OAUTH_2_0)
                 .withOauthConfigSpecification(new OAuthConfigSpecification()
                     .withCompleteOauthServerOutputSpecification(Jsons.jsonNode(Map.of(
-                        "api_client", Map.of(
+                        API_CLIENT, Map.of(
                             "type", "string",
-                            OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of("credentials", "api_client")))))))));
+                            OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of(CREDENTIALS, API_CLIENT)))))))));
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, String> oauthParameters = generateOAuthParameters();
@@ -192,7 +195,7 @@ public class OAuthConfigSupplierTest {
             .withWorkspaceId(null)
             .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
     final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
-    final JsonNode expectedConfig = getExpectedNode(oauthParameters);
+    final JsonNode expectedConfig = getExpectedNode(oauthParameters.get(API_CLIENT));
     assertEquals(expectedConfig, actualConfig);
     assertTracking(workspaceId);
   }
@@ -206,13 +209,13 @@ public class OAuthConfigSupplierTest {
         .withSpec(new ConnectorSpecification()
             .withAdvancedAuth(new AdvancedAuth()
                 .withAuthFlowType(AuthFlowType.OAUTH_2_0)
-                .withPredicateKey(List.of("credentials", "auth_type"))
+                .withPredicateKey(List.of(CREDENTIALS, "auth_type"))
                 .withPredicateValue("")
                 .withOauthConfigSpecification(new OAuthConfigSpecification()
                     .withCompleteOauthServerOutputSpecification(Jsons.jsonNode(Map.of(
-                        "api_client", Map.of(
+                        API_CLIENT, Map.of(
                             "type", "string",
-                            OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of("credentials", "api_client")))))))));
+                            OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of(CREDENTIALS, API_CLIENT)))))))));
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, String> oauthParameters = generateOAuthParameters();
@@ -228,7 +231,7 @@ public class OAuthConfigSupplierTest {
             .withWorkspaceId(null)
             .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
     final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
-    final JsonNode expectedConfig = getExpectedNode(oauthParameters);
+    final JsonNode expectedConfig = getExpectedNode(oauthParameters.get(API_CLIENT));
     assertEquals(expectedConfig, actualConfig);
     assertTracking(workspaceId);
   }
@@ -281,7 +284,59 @@ public class OAuthConfigSupplierTest {
             .withWorkspaceId(workspaceId)
             .withConfiguration(Jsons.jsonNode(oauthParameters))));
     final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
-    final JsonNode expectedConfig = getExpectedNode(oauthParameters);
+    final JsonNode expectedConfig = getExpectedNode(oauthParameters.get(API_CLIENT));
+    assertEquals(expectedConfig, actualConfig);
+    assertTracking(workspaceId);
+  }
+
+  @Test
+  public void testOAuthFullInjectionBecauseNoOAuthSpecNestedParameters() throws JsonValidationException, IOException, ConfigNotFoundException {
+    // Until https://github.com/airbytehq/airbyte/issues/7624 is solved, we need to handle nested oauth parameters
+    final JsonNode config = generateJsonConfig();
+    final UUID workspaceId = UUID.randomUUID();
+    final Map<String, Object> oauthParameters = generateNestedOAuthParameters();
+    when(configRepository.getStandardSourceDefinition(any()))
+        .thenReturn(new StandardSourceDefinition()
+            .withSourceDefinitionId(sourceDefinitionId)
+            .withName("test")
+            .withDockerImageTag("dev")
+            .withSpec(null));
+    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
+        new SourceOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withSourceDefinitionId(sourceDefinitionId)
+            .withWorkspaceId(null)
+            .withConfiguration(Jsons.jsonNode(oauthParameters))));
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final JsonNode expectedConfig = Jsons.jsonNode(Map.of(
+        "fieldName", "fieldValue",
+        CREDENTIALS, Map.of(
+            "api_secret", "123",
+            "auth_type", "oauth",
+            API_CLIENT, ((Map<String, String>) oauthParameters.get(CREDENTIALS)).get(API_CLIENT))));
+    assertEquals(expectedConfig, actualConfig);
+    assertTracking(workspaceId);
+  }
+
+  @Test
+  public void testOAuthInjectionNestedParameters() throws JsonValidationException, IOException {
+    // Until https://github.com/airbytehq/airbyte/issues/7624 is solved, we need to handle nested oauth parameters
+    final JsonNode config = generateJsonConfig();
+    final UUID workspaceId = UUID.randomUUID();
+    final Map<String, Object> oauthParameters = generateNestedOAuthParameters();
+    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
+        new SourceOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withSourceDefinitionId(sourceDefinitionId)
+            .withWorkspaceId(null)
+            .withConfiguration(Jsons.jsonNode(oauthParameters)),
+        new SourceOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withSourceDefinitionId(UUID.randomUUID())
+            .withWorkspaceId(null)
+            .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final JsonNode expectedConfig = getExpectedNode((String) ((Map<String, Object>) oauthParameters.get(CREDENTIALS)).get(API_CLIENT));
     assertEquals(expectedConfig, actualConfig);
     assertTracking(workspaceId);
   }
@@ -290,7 +345,7 @@ public class OAuthConfigSupplierTest {
     return (ObjectNode) Jsons.jsonNode(
         Map.of(
             "fieldName", "fieldValue",
-            "credentials", Map.of(
+            CREDENTIALS, Map.of(
                 "api_secret", "123",
                 "auth_type", "oauth")));
   }
@@ -298,17 +353,21 @@ public class OAuthConfigSupplierTest {
   private static Map<String, String> generateOAuthParameters() {
     return Map.of(
         "api_secret", "mysecret",
-        "api_client", UUID.randomUUID().toString());
+        API_CLIENT, UUID.randomUUID().toString());
   }
 
-  private static JsonNode getExpectedNode(final Map<String, String> oauthParameters) {
+  private static Map<String, Object> generateNestedOAuthParameters() {
+    return Map.of(CREDENTIALS, generateOAuthParameters());
+  }
+
+  private static JsonNode getExpectedNode(final String apiClient) {
     return Jsons.jsonNode(
         Map.of(
             "fieldName", "fieldValue",
-            "credentials", Map.of(
+            CREDENTIALS, Map.of(
                 "api_secret", "123",
                 "auth_type", "oauth",
-                "api_client", oauthParameters.get("api_client"))));
+                API_CLIENT, apiClient)));
   }
 
   private void assertNoTracking() {
