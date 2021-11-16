@@ -145,6 +145,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final Path workspaceRoot;
+  private final ConfigRepository configRepository;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
@@ -211,6 +212,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
+    this.configRepository = configRepository;
   }
 
   // WORKSPACE
@@ -250,7 +252,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public void updateWorkspaceFeedback(final WorkspaceGiveFeedback workspaceGiveFeedback) {
-    // TODO: bmoric Implement
+    execute(() -> {
+      workspacesHandler.setFeedbackDone(workspaceGiveFeedback);
+      return null;
+    });
   }
 
   @Override
