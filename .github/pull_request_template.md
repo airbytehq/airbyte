@@ -10,7 +10,7 @@
 2. `y.python`
 
 ## 🚨 User Impact 🚨
-Are there any breaking changes? 
+Are there any breaking changes? If yes, please make sure to include it here and in any changelogs with the 🚨🚨 emoji
 What is the end result perceived by the user?
 
 ## Pre-merge Checklist
