@@ -189,7 +189,6 @@ class Salesforce:
         self.instance_url = None
         self.session = requests.Session()
         self.is_sandbox = is_sandbox is True or (isinstance(is_sandbox, str) and is_sandbox.lower() == "true")
-        print(self.is_sandbox)
         self.start_date = start_date
 
     def _get_standard_headers(self):
