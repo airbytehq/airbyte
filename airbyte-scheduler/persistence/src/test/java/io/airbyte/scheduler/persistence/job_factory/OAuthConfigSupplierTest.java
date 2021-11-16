@@ -291,7 +291,8 @@ public class OAuthConfigSupplierTest {
 
   @Test
   public void testOAuthFullInjectionBecauseNoOAuthSpecNestedParameters() throws JsonValidationException, IOException, ConfigNotFoundException {
-    // Until https://github.com/airbytehq/airbyte/issues/7624 is solved, we need to handle nested oauth parameters
+    // Until https://github.com/airbytehq/airbyte/issues/7624 is solved, we need to handle nested oauth
+    // parameters
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, Object> oauthParameters = generateNestedOAuthParameters();
@@ -320,7 +321,8 @@ public class OAuthConfigSupplierTest {
 
   @Test
   public void testOAuthInjectionNestedParameters() throws JsonValidationException, IOException {
-    // Until https://github.com/airbytehq/airbyte/issues/7624 is solved, we need to handle nested oauth parameters
+    // Until https://github.com/airbytehq/airbyte/issues/7624 is solved, we need to handle nested oauth
+    // parameters
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, Object> oauthParameters = generateNestedOAuthParameters();
