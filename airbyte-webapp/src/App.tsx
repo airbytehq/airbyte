@@ -12,11 +12,8 @@ import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
 import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import NotificationService from "hooks/services/Notification";
-import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import {
-  useCurrentWorkspace,
-  usePickFirstWorkspace,
-} from "hooks/services/useWorkspace";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
+import { usePickFirstWorkspace } from "hooks/services/useWorkspace";
 import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { ServicesProvider } from "core/servicesProvider";
@@ -28,12 +25,6 @@ import {
   defaultConfig,
   ValueProvider,
 } from "./config";
-
-function useCustomerIdProvider() {
-  const workspace = useCurrentWorkspace();
-
-  return workspace.customerId;
-}
 
 const Features: Feature[] = [
   {
@@ -75,17 +66,11 @@ const configProviders: ValueProvider<Config> = [
 
 const services = {
   currentWorkspaceProvider: usePickFirstWorkspace,
-  useCustomerIdProvider: useCustomerIdProvider,
 };
 
 const AppServices: React.FC = ({ children }) => (
   <ServicesProvider inject={services}>
-    <ConfigServiceProvider
-      defaultConfig={defaultConfig}
-      providers={configProviders}
-    >
-      <ServiceOverrides>{children}</ServiceOverrides>
-    </ConfigServiceProvider>
+    <ServiceOverrides>{children}</ServiceOverrides>
   </ServicesProvider>
 );
 
@@ -101,19 +86,24 @@ const App: React.FC = () => {
         <I18NProvider>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ApiErrorBoundary>
-                <FeatureService features={Features}>
-                  <NotificationService>
-                    <AppServices>
-                      <AnalyticsInitializer>
-                        <OnboardingServiceProvider>
-                          <Routing />
-                        </OnboardingServiceProvider>
-                      </AnalyticsInitializer>
-                    </AppServices>
-                  </NotificationService>
-                </FeatureService>
-              </ApiErrorBoundary>
+              <ConfigServiceProvider
+                defaultConfig={defaultConfig}
+                providers={configProviders}
+              >
+                <AnalyticsProvider>
+                  <ApiErrorBoundary>
+                    <FeatureService features={Features}>
+                      <NotificationService>
+                        <AppServices>
+                          <OnboardingServiceProvider>
+                            <Routing />
+                          </OnboardingServiceProvider>
+                        </AppServices>
+                      </NotificationService>
+                    </FeatureService>
+                  </ApiErrorBoundary>
+                </AnalyticsProvider>
+              </ConfigServiceProvider>
             </Suspense>
           </StoreProvider>
         </I18NProvider>
