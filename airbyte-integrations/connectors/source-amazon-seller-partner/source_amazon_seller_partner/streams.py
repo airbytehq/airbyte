@@ -341,6 +341,14 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 
+class SellerFeedbackReports(ReportsAmazonSPStream):
+    """
+    Field definition:
+    """
+
+    name = "GET_SELLER_FEEDBACK_DATA"
+
+
 class Orders(IncrementalAmazonSPStream):
     """
     API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md

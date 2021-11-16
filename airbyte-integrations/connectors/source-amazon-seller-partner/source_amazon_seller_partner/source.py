@@ -24,6 +24,7 @@ from source_amazon_seller_partner.streams import (
     Orders,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
+    SellerFeedbackReports,
 )
 
 
