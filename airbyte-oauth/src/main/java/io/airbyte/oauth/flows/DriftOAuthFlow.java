@@ -20,7 +20,8 @@ import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 /**
- * Following docs from https://devdocs.drift.com/docs/authentication-and-scopes#1-direct-the-user-to-the-drift-oauth-url-
+ * Following docs from
+ * https://devdocs.drift.com/docs/authentication-and-scopes#1-direct-the-user-to-the-drift-oauth-url-
  */
 public class DriftOAuthFlow extends BaseOAuthFlow {
 
