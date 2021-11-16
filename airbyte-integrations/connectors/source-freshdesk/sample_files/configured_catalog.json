@@ -647,6 +647,12 @@
             },
             "description_text": {
               "type": "string"
+            },
+            "requester": {
+              "type": "object"
+            },
+            "stats": {
+              "type": "object"
             }
           }
         },

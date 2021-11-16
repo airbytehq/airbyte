@@ -37,6 +37,9 @@ public class WorkerUtils {
   public static final Map<String, String> DEFAULT_WORKER_POD_NODE_SELECTORS = CONFIGS.getWorkerNodeSelectors();
   public static final String DEFAULT_JOBS_IMAGE_PULL_SECRET = CONFIGS.getJobsImagePullSecret();
   public static final String DEFAULT_JOB_IMAGE_PULL_POLICY = CONFIGS.getJobImagePullPolicy();
+  public static final String JOB_SOCAT_IMAGE = CONFIGS.getJobSocatImage();
+  public static final String JOB_BUSYBOX_IMAGE = CONFIGS.getJobBusyboxImage();
+  public static final String JOB_CURL_IMAGE = CONFIGS.getJobCurlImage();
 
   public static void gentleClose(final Process process, final long timeout, final TimeUnit timeUnit) {
     if (process == null) {

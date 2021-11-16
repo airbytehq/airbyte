@@ -194,7 +194,9 @@ const SideBar: React.FC = () => {
               location.pathname.startsWith(Routes.Settings)
             }
           >
-            <NotificationIndicator />
+            <React.Suspense fallback={null}>
+              <NotificationIndicator />
+            </React.Suspense>
             <SettingsIcon />
             <Text>
               <FormattedMessage id="sidebar.settings" />

@@ -33,11 +33,11 @@ class LinkedinAdsStream(HttpStream, ABC):
 
     @property
     def accounts(self):
-        """ Property to return the list of the user Account Ids from input """
+        """Property to return the list of the user Account Ids from input"""
         return ",".join(map(str, self.config.get("account_ids")))
 
     def path(self, **kwargs) -> str:
-        """ Returns the API endpoint path for stream, from `endpoint` class attribute. """
+        """Returns the API endpoint path for stream, from `endpoint` class attribute."""
         return self.endpoint
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -112,11 +112,11 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
 
     @abstractproperty
     def parent_stream(self) -> object:
-        """ Defines the parrent stream for slicing, the class object should be provided. """
+        """Defines the parrent stream for slicing, the class object should be provided."""
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        """ Define the checkpoint from the records output size. """
+        """Define the checkpoint from the records output size."""
         return super().records_limit
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -146,7 +146,7 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
         return params
 
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
-        """ For the streams that provide the cursor_field `lastModified`, we filter out the old records. """
+        """For the streams that provide the cursor_field `lastModified`, we filter out the old records."""
         if stream_state:
             for record in records_slice:
                 if record[self.cursor_field] >= stream_state.get(self.cursor_field):
@@ -248,7 +248,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream):
 
     @property
     def base_analytics_params(self) -> MutableMapping[str, Any]:
-        """ Define the base parameters for analytics streams """
+        """Define the base parameters for analytics streams"""
         return {"q": "analytics", "pivot": self.pivot_by, "timeGranularity": "DAILY"}
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:

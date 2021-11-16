@@ -13,6 +13,8 @@ import io.airbyte.oauth.flows.GithubOAuthFlow;
 import io.airbyte.oauth.flows.HubspotOAuthFlow;
 import io.airbyte.oauth.flows.IntercomOAuthFlow;
 import io.airbyte.oauth.flows.LinkedinAdsOAuthFlow;
+import io.airbyte.oauth.flows.PipeDriveOAuthFlow;
+import io.airbyte.oauth.flows.QuickbooksOAuthFlow;
 import io.airbyte.oauth.flows.SalesforceOAuthFlow;
 import io.airbyte.oauth.flows.SlackOAuthFlow;
 import io.airbyte.oauth.flows.SnapchatMarketingOAuthFlow;
@@ -46,6 +48,8 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-intercom", new IntercomOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-instagram", new InstagramOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-pipedrive", new PipeDriveOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-quickbooks", new QuickbooksOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-linkedin-ads", new LinkedinAdsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-slack", new SlackOAuthFlow(configRepository, httpClient))
@@ -55,18 +59,15 @@ public class OAuthImplementationFactory {
         .build();
   }
 
-  public OAuthFlowImplementation create(final StandardSourceDefinition sourceDefinition, final UUID workspaceId) {
-    final String imageName = sourceDefinition.getDockerRepository();
-    if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
-      return OAUTH_FLOW_MAPPING.get(imageName);
-    } else {
-      throw new IllegalStateException(
-          String.format("Requested OAuth implementation for %s, but it is not included in the oauth mapping.", imageName));
-    }
+  public OAuthFlowImplementation create(final StandardSourceDefinition sourceDefinition) {
+    return create(sourceDefinition.getDockerRepository());
   }
 
-  public OAuthFlowImplementation create(final StandardDestinationDefinition destinationDefinition, final UUID workspaceId) {
-    final String imageName = destinationDefinition.getDockerRepository();
+  public OAuthFlowImplementation create(final StandardDestinationDefinition destinationDefinition) {
+    return create(destinationDefinition.getDockerRepository());
+  }
+
+  private OAuthFlowImplementation create(final String imageName) {
     if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
       return OAUTH_FLOW_MAPPING.get(imageName);
     } else {
