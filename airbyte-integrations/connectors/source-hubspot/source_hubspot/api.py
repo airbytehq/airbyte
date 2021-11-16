@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from functools import lru_cache, partial
 from http import HTTPStatus
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from uuid import uuid4
 
 import backoff
 import pendulum as pendulum
@@ -700,6 +701,34 @@ class FormStream(Stream):
     url = "/marketing/v3/forms"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+
+
+class FormSubmissionStream(Stream):
+    """Marketing Forms, API v1
+    This endpoint requires the forms scope.
+    Docs: https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form
+    """
+
+    url = "/form-integrations/v1/submissions/forms"
+    limit = 50
+    updated_at_field = "updatedAt"
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in super()._transform(records):
+            keys = record.keys()
+            if "id" not in keys:
+                record["id"] = uuid4()
+            if "updatedAt" not in keys:
+                record["updatedAt"] = record["submittedAt"]
+
+            yield record
+
+    def list(self, fields) -> Iterable:
+        for form in self.read(getter=partial(self._api.get, url="/marketing/v3/forms")):
+            for submission in self.read(getter=partial(self._api.get, url=f"{self.url}/{form['id']}")):
+                del submission["id"]
+                del submission["updatedAt"]
+                yield submission
 
 
 class MarketingEmailStream(Stream):
