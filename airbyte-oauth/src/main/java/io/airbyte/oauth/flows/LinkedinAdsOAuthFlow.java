@@ -22,7 +22,7 @@ public class LinkedinAdsOAuthFlow extends BaseOAuth2Flow {
 
   private static final String AUTHORIZE_URL = "https://www.linkedin.com/oauth/v2/authorization";
   private static final String ACCESS_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken";
-  private static final String SCOPES = "r_ads_reporting r_ads r_basicprofile r_organization_social";
+  private static final String SCOPES = "r_ads_reporting r_emailaddress r_liteprofile r_ads r_basicprofile r_organization_social";
 
   public LinkedinAdsOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
     super(configRepository, httpClient);

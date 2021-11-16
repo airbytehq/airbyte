@@ -32,7 +32,7 @@
             "title": "oAuth2.0",
             "required": ["client_id", "client_secret", "refresh_token"],
             "properties": {
-              "credentials": {
+              "auth_method": {
                 "type": "string",
                 "const": "oAuth2.0"
               },
@@ -58,7 +58,7 @@
             "type": "object",
             "required": ["access_token"],
             "properties": {
-              "credentials": {
+              "auth_method": {
                 "type": "string",
                 "const": "access_token"
               },

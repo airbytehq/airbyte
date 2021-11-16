@@ -312,7 +312,7 @@ class SourceLinkedinAds(AbstractSource):
         2) refresh token (TTL = 1 year) which can be converted to access tokens
            Every new refresh revokes all previous access tokens q
         """
-        auth_method = config.get("credentials", {}).get("credentials")
+        auth_method = config.get("credentials", {}).get("auth_method")
         if not auth_method or auth_method == "access_token":
             # support of backward compatibility with old exists configs
             access_token = config["credentials"]["access_token"] if auth_method else config["access_token"]
