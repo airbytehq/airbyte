@@ -71,26 +71,23 @@ public abstract class BaseOAuthFlowTest {
   }
 
   /**
+   * This should be implemented for the particular oauth flow implementation
+   *
    * @return the oauth flow implementation to test
    */
   protected abstract BaseOAuthFlow getOAuthFlow();
 
   /**
+   * This should be implemented for the particular oauth flow implementation
+   *
    * @return the expected consent URL
    */
   protected abstract String getExpectedConsentUrl();
 
   /**
-   * @return the instance wide config params for this oauth flow
-   */
-  protected JsonNode getOAuthParamConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("client_id", "test_client_id")
-        .put("client_secret", "test_client_secret")
-        .build());
-  }
-
-  /**
+   * Redefine if the oauth flow implementation does not return `refresh_token`. (maybe for example
+   * using `access_token` like in the `GithubOAuthFlowTest` instead?)
+   *
    * @return the full output expected to be returned by this oauth flow + all its instance wide
    *         variables
    */
@@ -102,26 +99,26 @@ public abstract class BaseOAuthFlowTest {
   }
 
   /**
-   * @return the backward compatible path that is used in the deprecated oauth flows (should match
-   *         getDefaultOAuthOutputPath())
-   */
-  protected List<String> getExpectedOutputPath() {
-    return List.of("credentials");
-  }
-
-  /**
-   * @return the input configuration sent to oauth flow (values from connector config)
-   */
-  protected JsonNode getInputOAuthConfiguration() {
-    return Jsons.emptyObject();
-  }
-
-  /**
-   * @return the output specification used to filter what the oauth flow should be returning
+   * Redefine if the oauth flow implementation does not return `refresh_token`. (maybe for example
+   * using `access_token` like in the `GithubOAuthFlowTest` instead?)
+   *
+   * @return the output specification used to identify what the oauth flow should be returning
    */
   protected JsonNode getOutputOAuthSpecification() {
     return Jsons.jsonNode(Map.of(
         "refresh_token", Map.of("type", "String")));
+  }
+
+  /**
+   * Redefine if the oauth flow implementation does not return `refresh_token`. (maybe for example
+   * using `access_token` like in the `GithubOAuthFlowTest` instead?)
+   *
+   * @return the filtered outputs once it is filtered by the output specifications
+   */
+  protected Map<String, String> getExpectedFilteredOutput() {
+    return Map.of(
+        "refresh_token", "refresh_token_response",
+        "client_id", MoreOAuthParameters.SECRET_MASK);
   }
 
   /**
@@ -133,12 +130,39 @@ public abstract class BaseOAuthFlowTest {
   }
 
   /**
-   * @return the fitlered outputs once it is filtered by the output specifications
+   * Redefine to match the oauth implementation flow getDefaultOAuthOutputPath()
+   *
+   * @return the backward compatible path that is used in the deprecated oauth flows.
    */
-  protected Map<String, String> getExpectedFilteredOutput() {
-    return Map.of(
-        "refresh_token", "refresh_token_response",
-        "client_id", MoreOAuthParameters.SECRET_MASK);
+  protected List<String> getExpectedOutputPath() {
+    return List.of("credentials");
+  }
+
+  /**
+   * Redefine if the OAuth implementation flow has a dependency on input values from connector config.
+   */
+  protected boolean hasDependencyOnConnectorConfigValues() {
+    return false;
+  }
+
+  /**
+   * If the OAuth implementation flow has a dependency on input values from connector config, this
+   * method should be redefined.
+   *
+   * @return the input configuration sent to oauth flow (values from connector config)
+   */
+  protected JsonNode getInputOAuthConfiguration() {
+    return Jsons.emptyObject();
+  }
+
+  /**
+   * @return the instance wide config params for this oauth flow
+   */
+  protected JsonNode getOAuthParamConfig() {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("client_id", "test_client_id")
+        .put("client_secret", "test_client_secret")
+        .build());
   }
 
   private OAuthConfigSpecification getoAuthConfigSpecification() {
@@ -167,9 +191,10 @@ public abstract class BaseOAuthFlowTest {
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of());
     when(configRepository.listDestinationOAuthParam()).thenReturn(List.of());
     assertThrows(ConfigNotFoundException.class,
-        () -> oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null));
+        () -> oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, getInputOAuthConfiguration(), getoAuthConfigSpecification()));
     assertThrows(ConfigNotFoundException.class,
-        () -> oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null));
+        () -> oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, getInputOAuthConfiguration(),
+            getoAuthConfigSpecification()));
   }
 
   @Test
@@ -185,20 +210,45 @@ public abstract class BaseOAuthFlowTest {
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.emptyObject())));
     assertThrows(IllegalArgumentException.class,
-        () -> oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null));
+        () -> oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, getInputOAuthConfiguration(), getoAuthConfigSpecification()));
     assertThrows(IllegalArgumentException.class,
-        () -> oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null));
+        () -> oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, getInputOAuthConfiguration(),
+            getoAuthConfigSpecification()));
+  }
+
+  @Test
+  public void testGetSourceConsentUrlEmptyOAuthSpec() throws IOException, ConfigNotFoundException, JsonValidationException {
+    if (hasDependencyOnConnectorConfigValues()) {
+      assertThrows(IOException.class, () -> oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null),
+          "OAuth Flow Implementations with dependencies on connector config can't be supported without OAuthConfigSpecifications");
+    } else {
+      final String consentUrl = oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
+      assertEquals(getExpectedConsentUrl(), consentUrl);
+    }
+  }
+
+  @Test
+  public void testGetDestinationConsentUrlEmptyOAuthSpec() throws IOException, ConfigNotFoundException, JsonValidationException {
+    if (hasDependencyOnConnectorConfigValues()) {
+      assertThrows(IOException.class, () -> oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null),
+          "OAuth Flow Implementations with dependencies on connector config can't be supported without OAuthConfigSpecifications");
+    } else {
+      final String consentUrl = oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
+      assertEquals(getExpectedConsentUrl(), consentUrl);
+    }
   }
 
   @Test
   public void testGetSourceConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
-    final String consentUrl = oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
+    final String consentUrl =
+        oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, getInputOAuthConfiguration(), getoAuthConfigSpecification());
     assertEquals(getExpectedConsentUrl(), consentUrl);
   }
 
   @Test
   public void testGetDestinationConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
-    final String consentUrl = oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
+    final String consentUrl =
+        oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, getInputOAuthConfiguration(), getoAuthConfigSpecification());
     assertEquals(getExpectedConsentUrl(), consentUrl);
   }
 
@@ -215,16 +265,22 @@ public abstract class BaseOAuthFlowTest {
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
-    Map<String, Object> actualRawQueryParams = oauthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    for (final String node : getExpectedOutputPath()) {
-      assertNotNull(actualRawQueryParams.get(node));
-      actualRawQueryParams = (Map<String, Object>) actualRawQueryParams.get(node);
+
+    if (hasDependencyOnConnectorConfigValues()) {
+      assertThrows(IOException.class, () -> oauthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL),
+          "OAuth Flow Implementations with dependencies on connector config can't be supported in the deprecated APIs");
+    } else {
+      Map<String, Object> actualRawQueryParams = oauthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+      for (final String node : getExpectedOutputPath()) {
+        assertNotNull(actualRawQueryParams.get(node));
+        actualRawQueryParams = (Map<String, Object>) actualRawQueryParams.get(node);
+      }
+      final Map<String, String> expectedOutput = returnedCredentials;
+      final Map<String, Object> actualQueryParams = actualRawQueryParams;
+      assertEquals(expectedOutput.size(), actualQueryParams.size(),
+          String.format("Expected %s values but got\n\t%s\ninstead of\n\t%s", expectedOutput.size(), actualQueryParams, expectedOutput));
+      expectedOutput.forEach((key, value) -> assertEquals(value, actualQueryParams.get(key)));
     }
-    final Map<String, String> expectedOutput = returnedCredentials;
-    final Map<String, Object> actualQueryParams = actualRawQueryParams;
-    assertEquals(expectedOutput.size(), actualQueryParams.size(),
-        String.format("Expected %s values but got\n\t%s\ninstead of\n\t%s", expectedOutput.size(), actualQueryParams, expectedOutput));
-    expectedOutput.forEach((key, value) -> assertEquals(value, actualQueryParams.get(key)));
   }
 
   @Test
@@ -234,16 +290,22 @@ public abstract class BaseOAuthFlowTest {
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
     when(httpClient.send(any(), any())).thenReturn(response);
     final Map<String, Object> queryParams = Map.of("code", "test_code");
-    Map<String, Object> actualRawQueryParams = oauthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    for (final String node : getExpectedOutputPath()) {
-      assertNotNull(actualRawQueryParams.get(node));
-      actualRawQueryParams = (Map<String, Object>) actualRawQueryParams.get(node);
+
+    if (hasDependencyOnConnectorConfigValues()) {
+      assertThrows(IOException.class, () -> oauthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL),
+          "OAuth Flow Implementations with dependencies on connector config can't be supported in the deprecated APIs");
+    } else {
+      Map<String, Object> actualRawQueryParams = oauthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+      for (final String node : getExpectedOutputPath()) {
+        assertNotNull(actualRawQueryParams.get(node));
+        actualRawQueryParams = (Map<String, Object>) actualRawQueryParams.get(node);
+      }
+      final Map<String, String> expectedOutput = returnedCredentials;
+      final Map<String, Object> actualQueryParams = actualRawQueryParams;
+      assertEquals(expectedOutput.size(), actualQueryParams.size(),
+          String.format("Expected %s values but got\n\t%s\ninstead of\n\t%s", expectedOutput.size(), actualQueryParams, expectedOutput));
+      expectedOutput.forEach((key, value) -> assertEquals(value, actualQueryParams.get(key)));
     }
-    final Map<String, String> expectedOutput = returnedCredentials;
-    final Map<String, Object> actualQueryParams = actualRawQueryParams;
-    assertEquals(expectedOutput.size(), actualQueryParams.size(),
-        String.format("Expected %s values but got\n\t%s\ninstead of\n\t%s", expectedOutput.size(), actualQueryParams, expectedOutput));
-    expectedOutput.forEach((key, value) -> assertEquals(value, actualQueryParams.get(key)));
   }
 
   @Test
