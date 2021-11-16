@@ -106,6 +106,7 @@ public class WorkerUtils {
           LOGGER.debug("Gently closing process {} with heartbeat..", process.info().commandLine().get());
         }
 
+        LOGGER.info("process is still alive and heartbeat is still beating. Waiting {} seconds", checkHeartbeatDuration.toSeconds());
         process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (final InterruptedException e) {
         LOGGER.error("Exception while waiting for process to finish", e);
@@ -118,6 +119,7 @@ public class WorkerUtils {
           LOGGER.debug("Gently closing process {} without heartbeat..", process.info().commandLine().get());
         }
 
+        LOGGER.info("process is still alive but heartbeat is NOT beating. Waiting {} hours", gracefulShutdownDuration.toHours());
         process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (final InterruptedException e) {
         LOGGER.error("Exception during grace period for process to finish. This can happen when cancelling jobs.");
@@ -130,6 +132,7 @@ public class WorkerUtils {
         LOGGER.debug("Force shutdown process {}..", process.info().commandLine().get());
       }
 
+      LOGGER.info("forcing shutdown of process");
       forceShutdown.accept(process, forcedShutdownDuration);
     }
   }

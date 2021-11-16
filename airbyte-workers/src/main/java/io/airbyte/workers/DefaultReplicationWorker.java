@@ -206,6 +206,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
         destination.notifyEndOfStream();
       } catch (final Exception e) {
+        LOGGER.error("Exception was thrown in getReplicationRunnable!", e);
         if (!cancelled.get()) {
           // Although this thread is closed first, it races with the source's closure and can attempt one
           // final read after the source is closed before it's terminated.

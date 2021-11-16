@@ -23,6 +23,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -97,6 +98,10 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   @Override
   public void close() throws Exception {
+    LOGGER.info("close() was called on destination!!!");
+
+    LOGGER.info("destination currentThread stackTrace: {}", Arrays.toString(Thread.currentThread().getStackTrace()));
+
     if (destinationProcess == null) {
       LOGGER.debug("Destination process already exited");
       return;
