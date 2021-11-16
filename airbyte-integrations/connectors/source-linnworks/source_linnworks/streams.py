@@ -10,7 +10,7 @@ from urllib.parse import parse_qsl, urlparse
 import pendulum
 import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from requests.auth import AuthBase
 
@@ -187,6 +187,7 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
     primary_key = "nOrderId"
     cursor_field = "dReceivedDate"
     page_size = 500
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "/api/ProcessedOrders/SearchProcessedOrders"
@@ -237,3 +238,36 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in self.paged_result(response)["Data"]:
             yield record
+
+
+class ProcessedOrderDetails(HttpSubStream, LinnworksStream):
+    # https://apps.linnworks.net/Api/Method/Orders-GetOrdersById
+    # Response: List<OrderDetails> https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-OrderManagement-ClassBase-OrderDetails
+    # Allows 250 calls per minute
+    primary_key = "NumOrderId"
+    page_size = 100
+
+    def __init__(self, **kwargs):
+        super().__init__(ProcessedOrders(**kwargs), **kwargs)
+
+    def path(self, **kwargs) -> str:
+        return "/api/Orders/GetOrdersById"
+
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        buffer = []
+        for slice in HttpSubStream.stream_slices(self, **kwargs):
+            buffer.append(slice["parent"]["pkOrderID"])
+            if len(buffer) == self.page_size:
+                yield buffer
+                buffer = []
+        if len(buffer) > 0:
+            yield buffer
+
+
+    def request_body_data(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            "pkOrderIds": json.dumps(stream_slice, separators=(",", ":")),
+        }
