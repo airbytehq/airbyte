@@ -224,6 +224,7 @@ font-style: italic;
   <li><a href="#deleteConnection"><code><span class="http-method">post</span> /v1/connections/delete</code></a></li>
   <li><a href="#getConnection"><code><span class="http-method">post</span> /v1/connections/get</code></a></li>
   <li><a href="#getState"><code><span class="http-method">post</span> /v1/state/get</code></a></li>
+  <li><a href="#listAllConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/connections/list_all</code></a></li>
   <li><a href="#listConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/connections/list</code></a></li>
   <li><a href="#resetConnection"><code><span class="http-method">post</span> /v1/connections/reset</code></a></li>
   <li><a href="#searchConnections"><code><span class="http-method">post</span> /v1/connections/search</code></a></li>
@@ -340,6 +341,7 @@ font-style: italic;
   <ul>
   <li><a href="#webBackendCreateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/create</code></a></li>
   <li><a href="#webBackendGetConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/get</code></a></li>
+  <li><a href="#webBackendListAllConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list_all</code></a></li>
   <li><a href="#webBackendListConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list</code></a></li>
   <li><a href="#webBackendSearchConnections"><code><span class="http-method">post</span> /v1/web_backend/connections/search</code></a></li>
   <li><a href="#webBackendUpdateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/update</code></a></li>
@@ -664,6 +666,166 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#ConnectionState">ConnectionState</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listAllConnectionsForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connections/list_all</code></pre></div>
+    <div class="method-summary">Returns all connections for a workspace, including deleted connections. (<span class="nickname">listAllConnectionsForWorkspace</span>)</div>
+    <div class="method-notes">List connections for workspace, including deleted connections.</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectionReadList">ConnectionReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "connections" : [ {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "resourceRequirements" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "schedule" : {
+      "units" : 0,
+      "timeUnit" : "minutes"
+    },
+    "prefix" : "prefix",
+    "name" : "name",
+    "syncCatalog" : {
+      "streams" : [ {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      }, {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      } ]
+    },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
+    "operationIds" : [ null, null ],
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "resourceRequirements" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "schedule" : {
+      "units" : 0,
+      "timeUnit" : "minutes"
+    },
+    "prefix" : "prefix",
+    "name" : "name",
+    "syncCatalog" : {
+      "streams" : [ {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      }, {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      } ]
+    },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
+    "operationIds" : [ null, null ],
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectionReadList">ConnectionReadList</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -5323,11 +5485,277 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="webBackendListAllConnectionsForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/list_all</code></pre></div>
+    <div class="method-summary">Returns all connections for a workspace. (<span class="nickname">webBackendListAllConnectionsForWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "connections" : [ {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "latestSyncJobCreatedAt" : 0,
+    "prefix" : "prefix",
+    "destination" : {
+      "connectionConfiguration" : {
+        "user" : "charles"
+      },
+      "destinationName" : "destinationName",
+      "name" : "name",
+      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "isSyncing" : true,
+    "source" : {
+      "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "connectionConfiguration" : {
+        "user" : "charles"
+      },
+      "name" : "name",
+      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "sourceName" : "sourceName",
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "resourceRequirements" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "schedule" : {
+      "units" : 0,
+      "timeUnit" : "minutes"
+    },
+    "operations" : [ {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    }, {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    } ],
+    "name" : "name",
+    "syncCatalog" : {
+      "streams" : [ {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      }, {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      } ]
+    },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
+    "operationIds" : [ null, null ]
+  }, {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "latestSyncJobCreatedAt" : 0,
+    "prefix" : "prefix",
+    "destination" : {
+      "connectionConfiguration" : {
+        "user" : "charles"
+      },
+      "destinationName" : "destinationName",
+      "name" : "name",
+      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "isSyncing" : true,
+    "source" : {
+      "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "connectionConfiguration" : {
+        "user" : "charles"
+      },
+      "name" : "name",
+      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "sourceName" : "sourceName",
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    },
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "resourceRequirements" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "schedule" : {
+      "units" : 0,
+      "timeUnit" : "minutes"
+    },
+    "operations" : [ {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    }, {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    } ],
+    "name" : "name",
+    "syncCatalog" : {
+      "streams" : [ {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      }, {
+        "stream" : {
+          "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+          "supportedSyncModes" : [ null, null ],
+          "sourceDefinedCursor" : true,
+          "name" : "name",
+          "namespace" : "namespace",
+          "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+        },
+        "config" : {
+          "aliasName" : "aliasName",
+          "cursorField" : [ "cursorField", "cursorField" ],
+          "selected" : true,
+          "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+        }
+      } ]
+    },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
+    "operationIds" : [ null, null ]
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="webBackendListConnectionsForWorkspace"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/list</code></pre></div>
-    <div class="method-summary">Returns all connections for a workspace. (<span class="nickname">webBackendListConnectionsForWorkspace</span>)</div>
+    <div class="method-summary">Returns all non-deleted connections for a workspace. (<span class="nickname">webBackendListConnectionsForWorkspace</span>)</div>
     <div class="method-notes"></div>
 
 

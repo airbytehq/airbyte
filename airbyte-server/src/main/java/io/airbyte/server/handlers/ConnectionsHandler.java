@@ -236,10 +236,20 @@ public class ConnectionsHandler {
 
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
+    return listConnectionsForWorkspace(workspaceIdRequestBody, false);
+  }
+
+  public ConnectionReadList listAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return listConnectionsForWorkspace(workspaceIdRequestBody, true);
+  }
+
+  public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody, final boolean includeDeleted)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
     for (final StandardSync standardSync : configRepository.listStandardSyncs()) {
-      if (standardSync.getStatus() == StandardSync.Status.DEPRECATED) {
+      if (standardSync.getStatus() == StandardSync.Status.DEPRECATED && !includeDeleted) {
         continue;
       }
       if (!isStandardSyncInWorkspace(workspaceIdRequestBody.getWorkspaceId(), standardSync)) {
