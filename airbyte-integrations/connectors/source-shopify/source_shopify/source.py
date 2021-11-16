@@ -372,18 +372,11 @@ class InventoryItems(ChildSubstream):
     slice_key = "id"
     record_field_name = "variants"
 
-    data_field = "inventory_item"
+    data_field = "inventory_items"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        item_id = stream_slice[self.slice_key][0]["inventory_item_id"]
-        return f"inventory_items/{item_id}.json"
-
-    # super parse_response expects a json array but in this instance we only have a single object
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        json_response = response.json()
-        record = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-
-        yield self._transformer.transform(record)
+        ids = ",".join(str(x["inventory_item_id"]) for x in stream_slice[self.slice_key])
+        return f"inventory_items.json?ids={ids}"
 
 
 class FulfillmentOrders(ChildSubstream):
