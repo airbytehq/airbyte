@@ -8,6 +8,10 @@ from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuth
 
 
 class HarvestMixin:
+    """
+    Mixin class for providing additional HTTP header for specifying account ID
+    https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/
+    """
     def __init__(self, *, account_id: str, account_id_header: str = "Harvest-Account-ID", **kwargs):
         super().__init__(**kwargs)
         self.account_id = account_id
@@ -18,8 +22,14 @@ class HarvestMixin:
 
 
 class HarvestTokenAuthenticator(HarvestMixin, TokenAuthenticator):
-    pass
+    """
+    Auth class for Personal Access Token
+    https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens
+    """
 
 
 class HarvestOauth2Authenticator(HarvestMixin, Oauth2Authenticator):
-    pass
+    """
+    Auth class for OAuth2
+    https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#for-server-side-applications
+    """
