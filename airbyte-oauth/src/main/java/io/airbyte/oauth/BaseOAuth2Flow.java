@@ -77,14 +77,6 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   }
 
   @Override
-  @Deprecated
-  public String getSourceConsentUrl(final UUID workspaceId, final UUID sourceDefinitionId, final String redirectUrl)
-      throws IOException, ConfigNotFoundException {
-    final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
-    return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl, Jsons.emptyObject());
-  }
-
-  @Override
   public String getSourceConsentUrl(final UUID workspaceId,
                                     final UUID sourceDefinitionId,
                                     final String redirectUrl,
@@ -94,14 +86,6 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     validateInputOAuthConfiguration(oAuthConfigSpecification, inputOAuthConfiguration);
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
     return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl, inputOAuthConfiguration);
-  }
-
-  @Override
-  @Deprecated
-  public String getDestinationConsentUrl(final UUID workspaceId, final UUID destinationDefinitionId, final String redirectUrl)
-      throws IOException, ConfigNotFoundException {
-    final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
-    return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl, Jsons.emptyObject());
   }
 
   @Override
@@ -302,7 +286,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
 
   private static void validateInputOAuthConfiguration(final OAuthConfigSpecification oauthConfigSpecification, final JsonNode inputOAuthConfiguration)
       throws JsonValidationException {
-    if (oauthConfigSpecification.getOauthUserInputFromConnectorConfigSpecification() != null) {
+    if (oauthConfigSpecification != null && oauthConfigSpecification.getOauthUserInputFromConnectorConfigSpecification() != null) {
       final JsonSchemaValidator validator = new JsonSchemaValidator();
       validator.ensure(oauthConfigSpecification.getOauthUserInputFromConnectorConfigSpecification(), inputOAuthConfiguration);
     }

@@ -166,8 +166,10 @@ public abstract class BaseOAuthFlowTest {
   public void testGetConsentUrlEmptyOAuthParameters() throws JsonValidationException, IOException {
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of());
     when(configRepository.listDestinationOAuthParam()).thenReturn(List.of());
-    assertThrows(ConfigNotFoundException.class, () -> oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
-    assertThrows(ConfigNotFoundException.class, () -> oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(ConfigNotFoundException.class,
+        () -> oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null));
+    assertThrows(ConfigNotFoundException.class,
+        () -> oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null));
   }
 
   @Test
@@ -182,19 +184,21 @@ public abstract class BaseOAuthFlowTest {
         .withDestinationDefinitionId(definitionId)
         .withWorkspaceId(workspaceId)
         .withConfiguration(Jsons.emptyObject())));
-    assertThrows(IllegalArgumentException.class, () -> oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL));
-    assertThrows(IllegalArgumentException.class, () -> oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL));
+    assertThrows(IllegalArgumentException.class,
+        () -> oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null));
+    assertThrows(IllegalArgumentException.class,
+        () -> oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null));
   }
 
   @Test
-  public void testGetSourceConsentUrl() throws IOException, ConfigNotFoundException {
-    final String consentUrl = oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+  public void testGetSourceConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
+    final String consentUrl = oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     assertEquals(getExpectedConsentUrl(), consentUrl);
   }
 
   @Test
-  public void testGetDestinationConsentUrl() throws IOException, ConfigNotFoundException {
-    final String consentUrl = oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+  public void testGetDestinationConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
+    final String consentUrl = oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     assertEquals(getExpectedConsentUrl(), consentUrl);
   }
 

@@ -69,11 +69,10 @@ public class OAuthHandler {
           sourceDefinitionIdRequestBody.getoAuthInputConfiguration(),
           spec.getAdvancedAuth().getOauthConfigSpecification()));
     } else {
-      // deprecated but this path is kept for connectors that don't define OAuth Spec yet
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
           sourceDefinitionIdRequestBody.getWorkspaceId(),
           sourceDefinitionIdRequestBody.getSourceDefinitionId(),
-          sourceDefinitionIdRequestBody.getRedirectUrl()));
+          sourceDefinitionIdRequestBody.getRedirectUrl(), Jsons.emptyObject(), null));
     }
     try {
       trackingClient.track(sourceDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
@@ -99,11 +98,10 @@ public class OAuthHandler {
           destinationDefinitionIdRequestBody.getoAuthInputConfiguration(),
           spec.getAdvancedAuth().getOauthConfigSpecification()));
     } else {
-      // deprecated but this path is kept for connectors that don't define OAuth Spec yet
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
           destinationDefinitionIdRequestBody.getWorkspaceId(),
           destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
-          destinationDefinitionIdRequestBody.getRedirectUrl()));
+          destinationDefinitionIdRequestBody.getRedirectUrl(), Jsons.emptyObject(), null));
     }
     try {
       trackingClient.track(destinationDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
