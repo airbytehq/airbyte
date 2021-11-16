@@ -3,6 +3,7 @@
 #
 
 import csv
+import json
 import math
 import time
 from abc import ABC
@@ -241,6 +242,7 @@ class BulkSalesforceStream(SalesforceStream):
             job_full_url = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
             if not job_full_url:
                 return
+
             count = 0
             for count, record in self.download_data(url=job_full_url):
                 yield record
@@ -254,6 +256,7 @@ class BulkSalesforceStream(SalesforceStream):
             if not next_page_token:
                 # not found a next page data.
                 break
+
 
 
 class IncrementalSalesforceStream(SalesforceStream, ABC):
