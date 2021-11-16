@@ -37,7 +37,7 @@ from source_facebook_marketing.streams import (
     Campaigns,
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("airbyte")
 
 
 class InsightConfig(BaseModel):

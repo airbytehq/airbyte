@@ -12,6 +12,8 @@ import io.airbyte.oauth.flows.AsanaOAuthFlow;
 import io.airbyte.oauth.flows.GithubOAuthFlow;
 import io.airbyte.oauth.flows.HubspotOAuthFlow;
 import io.airbyte.oauth.flows.IntercomOAuthFlow;
+import io.airbyte.oauth.flows.PipeDriveOAuthFlow;
+import io.airbyte.oauth.flows.QuickbooksOAuthFlow;
 import io.airbyte.oauth.flows.SalesforceOAuthFlow;
 import io.airbyte.oauth.flows.SlackOAuthFlow;
 import io.airbyte.oauth.flows.SnapchatMarketingOAuthFlow;
@@ -26,7 +28,6 @@ import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSheetsOAuthFlow;
 import java.net.http.HttpClient;
 import java.util.Map;
-import java.util.UUID;
 
 public class OAuthImplementationFactory {
 
@@ -34,6 +35,7 @@ public class OAuthImplementationFactory {
 
   public OAuthImplementationFactory(final ConfigRepository configRepository, final HttpClient httpClient) {
     OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
+        // These are listed in alphabetical order below to facilitate manual look-up:
         .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-facebook-pages", new FacebookPagesOAuthFlow(configRepository, httpClient))
@@ -45,6 +47,8 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-intercom", new IntercomOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-instagram", new InstagramOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-pipedrive", new PipeDriveOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-quickbooks", new QuickbooksOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-slack", new SlackOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-snapchat-marketing", new SnapchatMarketingOAuthFlow(configRepository, httpClient))
@@ -53,18 +57,15 @@ public class OAuthImplementationFactory {
         .build();
   }
 
-  public OAuthFlowImplementation create(final StandardSourceDefinition sourceDefinition, final UUID workspaceId) {
-    final String imageName = sourceDefinition.getDockerRepository();
-    if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
-      return OAUTH_FLOW_MAPPING.get(imageName);
-    } else {
-      throw new IllegalStateException(
-          String.format("Requested OAuth implementation for %s, but it is not included in the oauth mapping.", imageName));
-    }
+  public OAuthFlowImplementation create(final StandardSourceDefinition sourceDefinition) {
+    return create(sourceDefinition.getDockerRepository());
   }
 
-  public OAuthFlowImplementation create(final StandardDestinationDefinition destinationDefinition, final UUID workspaceId) {
-    final String imageName = destinationDefinition.getDockerRepository();
+  public OAuthFlowImplementation create(final StandardDestinationDefinition destinationDefinition) {
+    return create(destinationDefinition.getDockerRepository());
+  }
+
+  private OAuthFlowImplementation create(final String imageName) {
     if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
       return OAUTH_FLOW_MAPPING.get(imageName);
     } else {

@@ -1,6 +1,6 @@
-import { ConfigProvider } from "config/types";
-import { CloudConfig } from "./types";
-import { isDefined } from "../../../../utils/common";
+import type { ConfigProvider } from "config/types";
+import type { CloudConfig } from "./types";
+import { isDefined } from "utils/common";
 
 const CONFIG_PATH = "/config.json";
 
