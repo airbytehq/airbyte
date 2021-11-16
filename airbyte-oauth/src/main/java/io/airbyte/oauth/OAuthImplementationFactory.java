@@ -17,6 +17,7 @@ import io.airbyte.oauth.flows.SlackOAuthFlow;
 import io.airbyte.oauth.flows.SnapchatMarketingOAuthFlow;
 import io.airbyte.oauth.flows.SurveymonkeyOAuthFlow;
 import io.airbyte.oauth.flows.TrelloOAuthFlow;
+import io.airbyte.oauth.flows.TypeformOAuthFlow;
 import io.airbyte.oauth.flows.facebook.FacebookMarketingOAuthFlow;
 import io.airbyte.oauth.flows.facebook.FacebookPagesOAuthFlow;
 import io.airbyte.oauth.flows.facebook.InstagramOAuthFlow;
@@ -50,6 +51,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-snapchat-marketing", new SnapchatMarketingOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-typeform", new TypeformOAuthFlow(configRepository, httpClient))
         .build();
   }
 

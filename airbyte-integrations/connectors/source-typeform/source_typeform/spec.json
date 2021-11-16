@@ -28,5 +28,13 @@
         "uniqueItems": true
       }
     }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [],
+      "oauthFlowInitParameters": [],
+      "oauthFlowOutputParameters": [["token"]]
+    }
   }
 }
