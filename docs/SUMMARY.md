@@ -172,7 +172,7 @@
     * [Snowflake](integrations/destinations/snowflake.md)
     * [Cassandra](integrations/destinations/cassandra.md)
     * [Scylla](integrations/destinations/scylla.md)
-* [Custom or New Connector](integrations/custom-connectors.md)
+    * [Custom or New Connector](integrations/custom-connectors.md)
 * [Connector Development](connector-development/README.md)
   * [Tutorials](connector-development/tutorials/README.md)
     * [Python CDK Speedrun: Creating a Source](connector-development/tutorials/cdk-speedrun.md)
