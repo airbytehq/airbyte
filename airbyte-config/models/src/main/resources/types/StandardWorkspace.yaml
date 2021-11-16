@@ -45,5 +45,5 @@ properties:
       "$ref": Notification.yaml
   firstCompletedSync:
     type: boolean
-  answeredSurvey:
+  feedbackDone:
     type: boolean
