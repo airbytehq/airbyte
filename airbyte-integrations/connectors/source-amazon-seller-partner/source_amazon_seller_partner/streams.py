@@ -342,10 +342,6 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
 
 
 class SellerFeedbackReports(ReportsAmazonSPStream):
-    """
-    Field definition:
-    """
-
     name = "GET_SELLER_FEEDBACK_DATA"
 
 
