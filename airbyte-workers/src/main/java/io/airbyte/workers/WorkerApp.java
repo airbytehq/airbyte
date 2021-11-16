@@ -29,11 +29,7 @@ import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
-import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
-import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
-import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
-import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
-import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
+import io.airbyte.workers.temporal.sync.*;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -136,13 +132,19 @@ public class WorkerApp {
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
-        new ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-            databasePassword, databaseUrl, airbyteVersion),
         new NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
             databasePassword, databaseUrl, airbyteVersion),
         new DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
             databasePassword, databaseUrl, airbyteVersion),
         new PersistStateActivityImpl(workspaceRoot, configRepository));
+
+    final Worker replicationOrchestratorWorker =
+        factory.newWorker(TemporalJobType.REPLICATION_ORCHESTRATOR.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+    replicationOrchestratorWorker.registerWorkflowImplementationTypes(ReplicationOrchestratorWorkflowImpl.class);
+    replicationOrchestratorWorker.registerActivitiesImplementations(
+        new ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
+            databasePassword, databaseUrl, airbyteVersion));
+
     factory.start();
   }
 
@@ -159,7 +161,8 @@ public class WorkerApp {
           configs.getWorkspaceRoot(),
           configs.getWorkspaceDockerMount(),
           configs.getLocalDockerMount(),
-          configs.getDockerNetwork());
+          configs.getDockerNetwork(),
+          false);
     }
   }
 

@@ -11,6 +11,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
@@ -36,13 +37,19 @@ public class DockerProcessFactory implements ProcessFactory {
   private final Path workspaceRoot;
   private final String localMountSource;
   private final String networkName;
+  private final boolean isRoot;
   private final Path imageExistsScriptPath;
 
-  public DockerProcessFactory(final Path workspaceRoot, final String workspaceMountSource, final String localMountSource, final String networkName) {
+  public DockerProcessFactory(final Path workspaceRoot,
+                              final String workspaceMountSource,
+                              final String localMountSource,
+                              final String networkName,
+                              final boolean isRoot) {
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
     this.networkName = networkName;
+    this.isRoot = isRoot;
     this.imageExistsScriptPath = prepareImageExistsScript();
   }
 
@@ -85,23 +92,45 @@ public class DockerProcessFactory implements ProcessFactory {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
 
-      final List<String> cmd =
-          Lists.newArrayList(
-              "docker",
-              "run",
-              "--rm",
-              "--init",
-              "-i",
-              "-v",
-              String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION),
-              "-v",
-              String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
-              "-w",
-              rebasePath(jobRoot).toString(),
-              "--network",
-              networkName,
-              "--log-driver",
-              "none");
+      List<String> cmd;
+
+      if (isRoot) {
+        cmd = Lists.newArrayList(
+            "docker",
+            "run",
+            "--rm",
+            "--init",
+            "-i",
+            "-v",
+            String.format("%s:%s", workspaceMountSource, new EnvConfigs().getWorkspaceRoot()),
+            "-v",
+            String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
+            "-v",
+            "/var/run/docker.sock:/var/run/docker.sock",
+            "-w",
+            jobRoot.toString(),
+            "--network",
+            networkName,
+            "--log-driver",
+            "none");
+      } else {
+        cmd = Lists.newArrayList(
+            "docker",
+            "run",
+            "--rm",
+            "--init",
+            "-i",
+            "-v",
+            String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION),
+            "-v",
+            String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
+            "-w",
+            rebasePath(jobRoot).toString(),
+            "--network",
+            networkName,
+            "--log-driver",
+            "none");
+      }
       if (!Strings.isNullOrEmpty(entrypoint)) {
         cmd.add("--entrypoint");
         cmd.add(entrypoint);

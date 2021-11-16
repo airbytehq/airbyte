@@ -13,6 +13,7 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityOptions;
@@ -27,7 +28,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SyncWorkflowImpl.class);
   private static final String VERSION_LABEL = "sync-workflow";
-  private static final int CURRENT_VERSION = 1;
+  private static final int CURRENT_VERSION = 2;
 
   private static final int MAX_SYNC_TIMEOUT_DAYS = new EnvConfigs().getMaxSyncTimeoutDays();
 
@@ -43,7 +44,6 @@ public class SyncWorkflowImpl implements SyncWorkflow {
           .build())
       .build();
 
-  private final ReplicationActivity replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, options);
   private final NormalizationActivity normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, options);
   private final DbtTransformationActivity dbtTransformationActivity = Workflow.newActivityStub(DbtTransformationActivity.class, options);
   private final PersistStateActivity persistActivity = Workflow.newActivityStub(PersistStateActivity.class, persistOptions);
@@ -54,7 +54,13 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
-    final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+
+    final ReplicationOrchestratorWorkflow replicationOrchestrator = Workflow.newChildWorkflowStub(
+        ReplicationOrchestratorWorkflow.class,
+        TemporalUtils.getChildWorkflowOptions(TemporalJobType.REPLICATION_ORCHESTRATOR));
+
+    final StandardSyncOutput run =
+        replicationOrchestrator.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, connectionId);
 
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
 

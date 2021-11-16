@@ -6,33 +6,28 @@ package io.airbyte.workers.temporal.sync;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteConfigValidator;
-import io.airbyte.config.ConfigSchema;
+import io.airbyte.commons.logging.LoggingHelper;
+import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.config.*;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.ReplicationOutput;
-import io.airbyte.config.StandardSyncInput;
-import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.DefaultReplicationWorker;
-import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.*;
+import io.airbyte.workers.process.DockerProcessFactory;
+import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
-import io.airbyte.workers.protocols.airbyte.AirbyteSource;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
-import io.airbyte.workers.protocols.airbyte.EmptyAirbyteSource;
-import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +47,10 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final String databasePassword;
   private final String databaseUrl;
   private final String airbyteVersion;
+
+  private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
+      .setLogPrefix("runner") // todo: uniquely identify runner since we'll eventually have multiple runners
+      .setPrefixColor(LoggingHelper.Color.YELLOW);
 
   public ReplicationActivityImpl(
                                  final ProcessFactory processFactory,
@@ -94,7 +93,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   public StandardSyncOutput replicate(final JobRunConfig jobRunConfig,
                                       final IntegrationLauncherConfig sourceLauncherConfig,
                                       final IntegrationLauncherConfig destinationLauncherConfig,
-                                      final StandardSyncInput syncInput) {
+                                      final StandardSyncInput syncInput,
+                                      final UUID connectionId) {
 
     final var fullSourceConfig = secretsHydrator.hydrate(syncInput.getSourceConfiguration());
     final var fullDestinationConfig = secretsHydrator.hydrate(syncInput.getDestinationConfiguration());
@@ -111,7 +111,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
         workspaceRoot, workerEnvironment, logConfigs,
         jobRunConfig,
-        getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
+        getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput, connectionId),
         inputSupplier,
         new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
@@ -146,34 +146,97 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                                                                                     final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                     final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                     final JobRunConfig jobRunConfig,
-                                                                                                    final StandardSyncInput syncInput) {
-    return () -> {
-      final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
-          sourceLauncherConfig.getJobId(),
-          Math.toIntExact(sourceLauncherConfig.getAttemptId()),
-          sourceLauncherConfig.getDockerImage(),
-          processFactory,
-          syncInput.getResourceRequirements());
-      final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
-          destinationLauncherConfig.getJobId(),
-          Math.toIntExact(destinationLauncherConfig.getAttemptId()),
-          destinationLauncherConfig.getDockerImage(),
-          processFactory,
-          syncInput.getResourceRequirements());
+                                                                                                    final StandardSyncInput syncInput,
+                                                                                                    final UUID connectionId) {
+    return () -> new Worker<>() {
 
-      // reset jobs use an empty source to induce resetting all data in destination.
-      final AirbyteSource airbyteSource =
-          sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
-              : new DefaultAirbyteSource(sourceLauncher);
+      final AtomicBoolean cancelled = new AtomicBoolean(false);
+      Process process;
 
-      return new DefaultReplicationWorker(
-          jobRunConfig.getJobId(),
-          Math.toIntExact(jobRunConfig.getAttemptId()),
-          airbyteSource,
-          new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
-          new DefaultAirbyteDestination(destinationLauncher),
-          new AirbyteMessageTracker(),
-          new AirbyteMessageTracker());
+      @Override
+      public ReplicationOutput run(StandardSyncInput standardSyncInput, Path jobRoot) throws WorkerException {
+        try {
+          // todo: do we need to wrapp all of this in a worker with anew TemporalAttemptExecution<>()
+
+          final Path jobPath = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+
+          // todo: don't use magic strings
+          final Map<String, String> fileMap = Map.of(
+              "application.txt", "replication",
+              "jobRunConfig.json", Jsons.serialize(jobRunConfig),
+              "sourceLauncherConfig.json", Jsons.serialize(sourceLauncherConfig),
+              "destinationLauncherConfig.json", Jsons.serialize(destinationLauncherConfig),
+              "syncInput.json", Jsons.serialize(syncInput),
+              "connectionId.json", Jsons.serialize(connectionId),
+              "envMap.json", Jsons.serialize(System.getenv()));
+
+          // todo: temporarily hack around docker inclusion
+          final Configs configs = new EnvConfigs();
+          ProcessFactory rootProcessFactory = new DockerProcessFactory(
+              new EnvConfigs().getWorkspaceRoot(),
+              configs.getWorkspaceDockerMount(),
+              configs.getLocalDockerMount(),
+              "airbyte_default",
+              true);
+
+          // for now keep same failure behavior where this is heartbeating and depends on the parent worker to
+          // exist
+          process = rootProcessFactory.create(
+              "runner-" + UUID.randomUUID().toString().substring(0, 10),
+              0,
+              jobPath,
+              "airbyte/runner:" + airbyteVersion,
+              false,
+              fileMap,
+              null,
+              null, // todo: allow resource requirements for this pod to be configurable
+              Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_RUNNER));
+
+          final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
+
+          LineGobbler.gobble(process.getInputStream(), line -> {
+            final var maybeOutput = Jsons.tryDeserialize(line, ReplicationOutput.class);
+            maybeOutput.ifPresent(output::set);
+          });
+
+          LineGobbler.gobble(process.getInputStream(), LOGGER::info, LOG_MDC_BUILDER);
+          LineGobbler.gobble(process.getErrorStream(), LOGGER::error, LOG_MDC_BUILDER);
+
+          WorkerUtils.wait(process);
+
+          if (process.exitValue() != 0) {
+            throw new WorkerException("Non-zero exit code!"); // todo: handle better
+          }
+
+          if (output.get() != null) {
+            return output.get();
+          } else {
+            throw new WorkerException("Running the sync attempt resulted in no readable output!");
+          }
+        } catch (Exception e) {
+          if (cancelled.get()) {
+            throw new WorkerException("Sync was cancelled.", e);
+          } else {
+            throw new WorkerException("Running the sync attempt failed", e);
+          }
+        }
+      }
+
+      @Override
+      public void cancel() {
+        cancelled.set(true);
+
+        if (process == null) {
+          return;
+        }
+
+        LOGGER.debug("Closing sync runner process");
+        WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+        if (process.isAlive() || process.exitValue() != 0) {
+          LOGGER.error("Sync runner process wasn't successful");
+        }
+      }
+
     };
   }
 

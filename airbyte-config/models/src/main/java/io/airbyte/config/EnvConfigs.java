@@ -108,7 +108,7 @@ public class EnvConfigs implements Configs {
     this(System::getenv);
   }
 
-  EnvConfigs(final Function<String, String> getEnv) {
+  public EnvConfigs(final Function<String, String> getEnv) {
     this.getEnv = getEnv;
     this.logConfiguration = new LogConfiguration(
         getEnvOrDefault(LogClientSingleton.S3_LOG_BUCKET, ""),
