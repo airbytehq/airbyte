@@ -11,10 +11,8 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 
-@ActivityInterface
 public interface ReplicationActivity {
 
-  @ActivityMethod
   StandardSyncOutput replicate(JobRunConfig jobRunConfig,
                                IntegrationLauncherConfig sourceLauncherConfig,
                                IntegrationLauncherConfig destinationLauncherConfig,

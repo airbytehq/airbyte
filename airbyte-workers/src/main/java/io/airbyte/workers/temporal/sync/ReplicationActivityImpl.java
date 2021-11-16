@@ -109,11 +109,11 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     };
 
     final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
-        workspaceRoot, workerEnvironment, logConfigs,
-        jobRunConfig,
-        getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
-        inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
+            workspaceRoot, workerEnvironment, logConfigs,
+            jobRunConfig,
+            getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
+            inputSupplier,
+            onCancellationCallback -> {}, databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
     final ReplicationOutput attemptOutput = temporalAttempt.get();
     final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);

@@ -18,11 +18,19 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerApp;
+import io.airbyte.workers.process.DockerProcessFactory;
+import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.sync.*;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.util.Config;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -140,7 +148,13 @@ public class SyncAttemptApp {
   }
 
   public static void main(String[] args) throws IOException {
-    final Configs configs = new EnvConfigs();
+
+    // todo: is this a massive hack or the right approach?
+    final Map<String, String> envMap = (Map<String, String>) Jsons.deserialize(Files.readString(Path.of("envMap.json")), Map.class);
+    final Configs configs = new EnvConfigs(envMap::get);
+
+    // won't be captured by MDC
+    LOGGER.info("configs = " + configs);
 
     // set up app
 
@@ -148,9 +162,11 @@ public class SyncAttemptApp {
     LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
         LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot()));
 
+    LOGGER.info("Starting sync attempt app...");
+
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
 
-    final ProcessFactory processFactory = WorkerApp.getProcessBuilderFactory(configs);
+    final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 
     // todo: DRY this? also present in WorkerApp
     final Database configDatabase = new ConfigsDatabaseInstance(
@@ -175,15 +191,31 @@ public class SyncAttemptApp {
         configs.getAirbyteVersionOrWarning(),
         configRepository);
 
+    LOGGER.info("Attempting to retrieve files...");
+
     // retrieve files
     // todo: don't use magic strings
     final JobRunConfig jobRunConfig = Jsons.deserialize(Files.readString(Path.of("jobRunConfig.json")), JobRunConfig.class);
+
+    LOGGER.info("jobRunConfig = " + jobRunConfig);
+
     final IntegrationLauncherConfig sourceLauncherConfig =
         Jsons.deserialize(Files.readString(Path.of("sourceLauncherConfig.json")), IntegrationLauncherConfig.class);
+
+    LOGGER.info("sourceLauncherConfig = " + sourceLauncherConfig);
+
     final IntegrationLauncherConfig destinationLauncherConfig =
         Jsons.deserialize(Files.readString(Path.of("destinationLauncherConfig.json")), IntegrationLauncherConfig.class);
+
+    LOGGER.info("destinationLauncherConfig = " + destinationLauncherConfig);
+
     final StandardSyncInput syncInput = Jsons.deserialize(Files.readString(Path.of("syncInput.json")), StandardSyncInput.class);
+
+    LOGGER.info("syncInput = " + syncInput);
+
     final UUID connectionId = Jsons.deserialize(Files.readString(Path.of("connectionId.json")), UUID.class); // todo: does this work?
+
+    LOGGER.info("connectionId = " + connectionId);
 
     app.run(
         jobRunConfig,
@@ -191,6 +223,23 @@ public class SyncAttemptApp {
         destinationLauncherConfig,
         syncInput,
         connectionId);
+  }
+
+  private static ProcessFactory getProcessBuilderFactory(final Configs configs) throws IOException {
+    if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
+      final ApiClient officialClient = Config.defaultClient();
+      final KubernetesClient fabricClient = new DefaultKubernetesClient();
+      final String localIp = InetAddress.getLocalHost().getHostAddress();
+      final String kubeHeartbeatUrl = localIp + ":" + WorkerApp.KUBE_HEARTBEAT_PORT;
+      LOGGER.info("Using Kubernetes namespace: {}", configs.getKubeNamespace());
+      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, configs.getTemporalWorkerPorts());
+    } else {
+      return new DockerProcessFactory(
+          configs.getWorkspaceRoot(),
+          configs.getWorkspaceDockerMount(),
+          configs.getLocalDockerMount(),
+          configs.getDockerNetwork());
+    }
   }
 
 }

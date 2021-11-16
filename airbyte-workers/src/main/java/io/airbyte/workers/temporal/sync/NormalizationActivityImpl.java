@@ -95,7 +95,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         jobRunConfig,
         getWorkerFactory(destinationLauncherConfig, jobRunConfig),
         inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
+        onCancellationCallback -> {}, databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
     return temporalAttemptExecution.get();
   }

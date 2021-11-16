@@ -98,7 +98,7 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
         jobRunConfig,
         getWorkerFactory(destinationLauncherConfig, jobRunConfig, resourceRequirements),
         inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
+        onCancellationCallback -> {}, databaseUser, databasePassword, databaseUrl, airbyteVersion);
 
     return temporalAttemptExecution.get();
   }

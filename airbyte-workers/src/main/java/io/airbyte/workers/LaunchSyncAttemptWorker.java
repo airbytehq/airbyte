@@ -67,7 +67,8 @@ public class LaunchSyncAttemptWorker implements Worker<StandardSyncInput, Standa
           "sourceLauncherConfig.json", Jsons.serialize(sourceLauncherConfig),
           "destinationLauncherConfig.json", Jsons.serialize(destinationLauncherConfig),
           "syncInput.json", Jsons.serialize(syncInput),
-          "connectionId.json", Jsons.serialize(connectionId));
+          "connectionId.json", Jsons.serialize(connectionId),
+          "envMap.json", Jsons.serialize(System.getenv())); // todo: inject this differently
 
       // for now keep same failure behavior where this is heartbeating and depends on the parent worker to
       // exist
@@ -75,7 +76,7 @@ public class LaunchSyncAttemptWorker implements Worker<StandardSyncInput, Standa
           "sync-attempt-" + UUID.randomUUID().toString().substring(0, 10),
           0,
           jobPath,
-          "airbyte-sync-attempt:" + airbyteVersion,
+          "airbyte/sync-attempt:" + airbyteVersion,
           false,
           fileMap,
           null,

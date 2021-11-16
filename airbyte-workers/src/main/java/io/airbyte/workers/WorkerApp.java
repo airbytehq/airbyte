@@ -145,7 +145,7 @@ public class WorkerApp {
     factory.start();
   }
 
-  public static ProcessFactory getProcessBuilderFactory(final Configs configs) throws IOException {
+  private static ProcessFactory getProcessBuilderFactory(final Configs configs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final ApiClient officialClient = Config.defaultClient();
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
@@ -158,7 +158,8 @@ public class WorkerApp {
           configs.getWorkspaceRoot(),
           configs.getWorkspaceDockerMount(),
           configs.getLocalDockerMount(),
-          configs.getDockerNetwork());
+          "airbyte_default"); // todo: this should probably be possible to override. Is it guaranteed that this will be the
+      // network name? Is there a different way to retrieve this?
     }
   }
 
