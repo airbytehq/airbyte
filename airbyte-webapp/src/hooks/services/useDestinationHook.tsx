@@ -10,7 +10,7 @@ import DestinationDefinitionSpecificationResource from "core/resources/Destinati
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { DestinationDefinitionSpecification } from "core/domain/connector";
 
 type ValuesProps = {
@@ -102,7 +102,7 @@ type DestinationService = {
 const useDestination = (): DestinationService => {
   const { push } = useRouter();
   const { workspace } = useWorkspace();
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
   const createDestinationsImplementation = useFetcher(
     DestinationResource.createShape()
   );

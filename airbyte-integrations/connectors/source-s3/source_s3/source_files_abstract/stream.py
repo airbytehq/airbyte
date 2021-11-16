@@ -377,7 +377,7 @@ class IncrementalFileStream(FileStream, ABC):
         return self.ab_last_mod_col
 
     def _get_datetime_from_stream_state(self, stream_state: Mapping[str, Any] = None) -> datetime:
-        """ if no state, we default to 1970-01-01 in order to pick up all files present. """
+        """if no state, we default to 1970-01-01 in order to pick up all files present."""
         if stream_state is not None and self.cursor_field in stream_state.keys():
             return datetime.strptime(stream_state[self.cursor_field], self.datetime_format_string)
         else:
