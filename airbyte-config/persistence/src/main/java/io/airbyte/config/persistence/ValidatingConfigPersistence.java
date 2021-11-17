@@ -77,8 +77,8 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
       throws IOException, JsonValidationException {
     for (final Map.Entry<String, T> config : configs.entrySet()) {
       validateJson(Jsons.jsonNode(config.getValue()), configType);
-      decoratedPersistence.writeConfig(configType, config.getKey(), config.getValue());
     }
+    decoratedPersistence.writeConfigs(configType, configs);
   }
 
   @Override
