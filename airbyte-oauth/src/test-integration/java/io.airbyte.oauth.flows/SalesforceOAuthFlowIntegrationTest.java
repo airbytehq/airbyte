@@ -84,7 +84,7 @@ public class SalesforceOAuthFlowIntegrationTest {
             .put("client_id", clientId)
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = salesforceOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = salesforceOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -153,13 +153,13 @@ public class SalesforceOAuthFlowIntegrationTest {
       }
     }
 
-    private static Map<String, String> deserialize(String query) {
+    private static Map<String, String> deserialize(final String query) {
       if (query == null) {
         return null;
       }
       final Map<String, String> result = new HashMap<>();
-      for (String param : query.split("&")) {
-        String[] entry = param.split("=", 2);
+      for (final String param : query.split("&")) {
+        final String[] entry = param.split("=", 2);
         if (entry.length > 1) {
           result.put(entry[0], entry[1]);
         } else {
