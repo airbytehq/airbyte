@@ -5,6 +5,8 @@ tests:
   spec:
     - spec_path: "source_salesforce/spec.json"
   connection:
+    - config_path: "secrets/config_bulk.json"
+      status: "succeed"
     - config_path: "secrets/config.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
