@@ -18,9 +18,10 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 # Basic full refresh stream
 class MondayStream(HttpStream, ABC):
-    url_base = "https://api.monday.com/v2"
-    primary_key = "id"
-    page = 1
+    url_base: str = "https://api.monday.com/v2"
+    primary_key: str = "id"
+    page: int = 1
+    pagination_field: str = "page"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -28,7 +29,7 @@ class MondayStream(HttpStream, ABC):
         records = json_response.get(self.name.lower(), [])
         self.page += 1
         if records:
-            return {"page": self.page}
+            return {self.pagination_field: self.page}
 
     def load_schema(self):
         """
@@ -64,11 +65,11 @@ class MondayStream(HttpStream, ABC):
         graphql_params = {}
         if next_page_token:
             graphql_params.update(next_page_token)
-
-        graphql_query = ",".join([f"{k}:{v}" for k, v in graphql_params.items()])
-
-        # Monday uses a query string to pass in environments
-        params = {"query": f"query {{ {self.name.lower()} ({graphql_query}) {{ {self.load_schema()} }} }}"}
+            graphql_query = ",".join([f"{k}:{v}" for k, v in graphql_params.items()])
+            # Monday uses a query string to pass in environments
+            params = {"query": f"query {{ {self.name.lower()} ({graphql_query}) {{ {self.load_schema()} }} }}"}
+        else:
+            params = {"query": f"query {{ {self.name.lower()} {{ {self.load_schema()} }} }}"}
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -93,11 +94,17 @@ class Boards(MondayStream):
     API Documentation: https://api.developer.monday.com/docs/groups-queries#groups-queries
     """
 
+    pagination_field: str = "pageInt"
+
 
 class Teams(MondayStream):
     """
     API Documentation: https://api.developer.monday.com/docs/teams-queries
     """
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # Stream Teams doesn't support pagination
+        return
 
 
 class Updates(MondayStream):
@@ -112,15 +119,32 @@ class Users(MondayStream):
     """
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        pass
+        # Stream Users doesn't support pagination
+        return
+
+
+class SourceMondayAuthenticator:
+    @staticmethod
+    def get_auth(config):
+        credentials = config.get("credentials", {})
+        auth_method = credentials.get("auth_method")
+        if auth_method == "api_token" or not credentials:
+            api_token = credentials.get("api_token") or config.get("api_token")
+            if not api_token:
+                raise Exception("No api_token in creds")
+            return TokenAuthenticator(token=api_token)
+        elif auth_method == "oauth2.0":
+            return TokenAuthenticator(token=credentials["access_token"])
+        else:
+            raise Exception(f"Invalid auth method: {auth_method}")
 
 
 # Source
 class SourceMonday(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         url = "https://api.monday.com/v2"
-        params = {"query": "{boards(limit:1){id name}}"}
-        auth = TokenAuthenticator(config["api_token"]).get_auth_header()
+        params = {"query": "query { me { is_guest created_at name id}}"}
+        auth = SourceMondayAuthenticator.get_auth(config).get_auth_header()
         try:
             response = requests.post(url, params=params, headers=auth)
             response.raise_for_status()
@@ -129,7 +153,7 @@ class SourceMonday(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = TokenAuthenticator(token=config["api_token"])
+        auth = SourceMondayAuthenticator.get_auth(config)
         return [
             Items(authenticator=auth),
             Boards(authenticator=auth),

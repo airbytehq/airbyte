@@ -1,0 +1,6 @@
+{
+  "credentials": {
+    "auth_method": "api_token",
+    "api_token": "invalid_api_token"
+  }
+}

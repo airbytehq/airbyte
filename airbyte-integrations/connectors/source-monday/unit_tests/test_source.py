@@ -13,9 +13,8 @@ def test_check_connection(mocker, config):
     assert source.check_connection(logger_mock, config) == (True, None)
 
 
-def test_stream_count(mocker):
+def test_stream_count(mocker, config):
     source = SourceMonday()
-    config_mock = MagicMock()
-    streams = source.streams(config_mock)
+    streams = source.streams(config)
     expected_streams_number = 5
     assert len(streams) == expected_streams_number
