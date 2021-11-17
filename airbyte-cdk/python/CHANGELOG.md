@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.36
+Fix broken logger in streams: add logger inheritance for streams from `airbyte`.
+
 ## 0.1.35
 Fix false warnings on record transform.
 
