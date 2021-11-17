@@ -21,14 +21,14 @@ The instructions have been tested on `Digital Ocean Droplet ($5)`
 ![](../.gitbook/assets/dg_droplet_type.png)
 
 * `Region` 
-  * You can choose datacenter close to you
+  * Generally, choose a datacenter close to you.
 * `Authentication`
   * Password
 * `Create Droplet`
 
 ![](../.gitbook/assets/dg_droplet_creating.png)
 
-* Wait for the droplet to become `Running`
+* Wait for the droplet to enter the `Running` state.
 
 ## Install environment
 
