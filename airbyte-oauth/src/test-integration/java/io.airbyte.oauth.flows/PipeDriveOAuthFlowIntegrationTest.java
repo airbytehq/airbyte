@@ -36,6 +36,7 @@ public class PipeDriveOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest 
     return "http://localhost:3000/auth_flow";
   }
 
+  @Override
   protected int getServerListeningPort() {
     return 3000;
   }
@@ -59,7 +60,8 @@ public class PipeDriveOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest 
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build())))));
-    final String url = getFlowImplementation(configRepository, httpClient).getSourceConsentUrl(workspaceId, definitionId, getRedirectUrl());
+    final String url = getFlowImplementation(configRepository, httpClient).getSourceConsentUrl(workspaceId, definitionId, getRedirectUrl(),
+        Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     waitForResponse(20);
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
