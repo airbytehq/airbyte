@@ -197,12 +197,48 @@ subprojects {
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
     }
 
+    def integrationTagName = 'integration'
+    def slowIntegratinoTagName = 'slow-integration'
+
     test {
-        useJUnitPlatform()
+        useJUnitPlatform {
+            excludeTags(integrationTagName, slowIntegratinoTagName)
+        }
         testLogging() {
             events 'failed'
             exceptionFormat 'full'
             // showStandardStreams = true
+        }
+        finalizedBy jacocoTestReport
+    }
+
+    task integrationTests(type: Test) {
+        useJUnitPlatform {
+            includeTags integrationTagName
+        }
+        testLogging() {
+            events 'failed'
+            exceptionFormat 'full'
+        }
+        finalizedBy jacocoTestReport
+    }
+
+    task slowIntegrationTests(type: Test) {
+        useJUnitPlatform {
+            includeTags slowIntegratinoTagName
+        }
+        testLogging() {
+            events 'failed'
+            exceptionFormat 'full'
+        }
+        finalizedBy jacocoTestReport
+    }
+
+    task allTests(type: Test) {
+        useJUnitPlatform()
+        testLogging() {
+            events 'failed'
+            exceptionFormat 'full'
         }
         finalizedBy jacocoTestReport
     }
