@@ -14,6 +14,8 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTes
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.io.File;
+import java.io.IOException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,10 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
 
-import java.io.File;
-import java.io.IOException;
-
 public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSourceDatatypeTest.class);
 
   private MySQLContainer<?> container;
@@ -82,6 +82,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   protected String getNameSpace() {
     return container.getDatabaseName();
   }
+
   @Override
   protected void initTests() {
     addDataTypeTestData(
@@ -272,13 +273,13 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .build());
 
     addDataTypeTestData(
-            TestDataHolder.builder()
-                    .sourceType("varbinary")
-                    .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
-                    .fullSourceDataType("varbinary(20000)")// size should be enough to save test.png
-                    .addInsertValues("null", "'test'", "'тест'", String.format("FROM_BASE64('%s')", getFileDataInBase64()))
-                    .addExpectedValues(null, "dGVzdA==", "0YLQtdGB0YI=", getFileDataInBase64())
-                    .build());
+        TestDataHolder.builder()
+            .sourceType("varbinary")
+            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .fullSourceDataType("varbinary(20000)")// size should be enough to save test.png
+            .addInsertValues("null", "'test'", "'тест'", String.format("FROM_BASE64('%s')", getFileDataInBase64()))
+            .addExpectedValues(null, "dGVzdA==", "0YLQtdGB0YI=", getFileDataInBase64())
+            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -366,4 +367,5 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     }
     return null;
   }
+
 }

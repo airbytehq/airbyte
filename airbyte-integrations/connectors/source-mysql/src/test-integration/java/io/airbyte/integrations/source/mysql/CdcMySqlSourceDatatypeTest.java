@@ -13,19 +13,18 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTes
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.io.File;
+import java.io.IOException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.MySQLContainer;
 
-import java.io.File;
-import java.io.IOException;
-
 public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(CdcMySqlSourceDatatypeTest.class);
 
   private MySQLContainer<?> container;
@@ -378,6 +377,7 @@ public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     stringBuilder.append("lpad('0', ").append(length % maxLpadLength).append(", '0'))");
     return stringBuilder.toString();
   }
+
   private String getFileDataInBase64() {
     File file = new File(getClass().getClassLoader().getResource("test.png").getFile());
     try {

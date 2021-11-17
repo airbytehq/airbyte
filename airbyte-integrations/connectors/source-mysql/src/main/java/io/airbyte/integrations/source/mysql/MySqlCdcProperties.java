@@ -35,7 +35,7 @@ public class MySqlCdcProperties {
     // https://debezium.io/documentation/reference/1.4/connectors/mysql.html#mysql-property-include-schema-changes
     props.setProperty("include.schema.changes", "false");
     // This to make sure that binary data represented as a base64-encoded String.
-    //https://debezium.io/documentation/reference/1.4/connectors/mysql.html#mysql-property-binary-handling-mode
+    // https://debezium.io/documentation/reference/1.4/connectors/mysql.html#mysql-property-binary-handling-mode
     props.setProperty("binary.handling.mode", "base64");
 
     return props;
