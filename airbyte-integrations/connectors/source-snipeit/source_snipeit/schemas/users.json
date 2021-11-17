@@ -1,55 +1,26 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "name": "hardware",
     "type": "object",
     "properties": {
         "id": {"type": "integer"},
+        "avatar": {"type": "string"},
         "name": {"type": "string"},
-        "image": {},
-        "company": {"type": "object"},
-        "manufacturer": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "example": 1,
-                    "default": 0
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Apple"
-                }
-            }
-        },
-        "supplier": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "example": 1,
-                    "default": 0
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Harvey-Hettinger"
-                }
-            }
-        },
-        "model_number": {"type": "string"},
-        "category": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "example": 1,
-                    "default": 0
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Laptops"
-                }
-            }
-        },
+        "first_name": {"type": "string"},
+        "last_name": {"type": "string"},
+        "username": {"type": "string"},
+        "locale": {"type": "string"},
+        "employee_num": {"type": "string"},
+        "manager": {},
+        "jobtitle": {"type": "string"},
+        "phone": {},
+        "website": {},
+        "address": {},
+        "city": {},
+        "state": {},
+        "country": {},
+        "zip": {},
+        "email": {"type": "string"},
+        "department": {},
         "location": {
             "type": "object",
             "properties": {
@@ -60,39 +31,32 @@
                 },
                 "name": {
                     "type": "string",
-                    "example": "Tonystad"
+                    "example": "Nikitaborough"
                 }
+
             }
         },
         "notes": {"type": "string"},
-        "qty": {"type": "integer"},
-        "purchase_date": {
-            "type": "object",
-            "properties": {
-                "date": {
-                    "type": "string",
-                    "example": "2016-12-03"
-                },
-                "formatted": {
-                    "type": "string",
-                    "example": "Sat Dec 03, 2016"
-                }
-            }
-        },
-        "purchase_cost": {"type": "string"},
-        "order_number": {"type": "string"},
-        "min_qty": {"type": "integer"},
-        "remaining_qty": {"type": "integer"},
+        "permissions": {"type": "object"},
+        "activated": {"type": "boolean"},
+        "ldap_import": {"type": "boolean"},
+        "two_factor_activated": {"type": "boolean"},
+        "two_factor_enrolled": {"type": "boolean"},
+        "assets_count": {"type": "integer"},
+        "licenses_count": {"type": "integer"},
+        "accessories_count": {"type": "integer"},
+        "consumables_count": {"type": "integer"},
+        "company": {"type": "object"},
         "created_at": {
             "type": "object",
             "properties": {
                 "datetime": {
                     "type": "string",
-                    "example": "2017-10-18 21:00:08"
+                    "example": "2018-10-09 19:09:21"
                 },
                 "formatted": {
                     "type": "string",
-                    "example": "Wed Oct 18, 2017 9:00PM"
+                    "example": "2018-10-09 07:09 PM"
                 }
             }
         },
@@ -101,11 +65,37 @@
             "properties": {
                 "datetime": {
                     "type": "string",
-                    "example": "2017-10-19 07:57:37"
+                    "example": "2018-10-09 19:09:21"
                 },
                 "formatted": {
                     "type": "string",
-                    "example": "Thu Oct 19, 2017 7:57AM"
+                    "example": "2018-10-09 07:09 PM"
+                }
+            }
+        },
+        "last_login": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2018-10-09 19:09:21"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2018-10-09 07:09 PM"
+                }
+            }
+        },
+        "deleted_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2018-10-09 19:09:21"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2018-10-09 07:09 PM"
                 }
             }
         },
@@ -122,11 +112,6 @@
                     "example": true,
                     "default": true
                 },
-                "clone": {
-                    "type": "boolean",
-                    "example": true,
-                    "default": true
-                },
                 "update": {
                     "type": "boolean",
                     "example": true,
@@ -139,6 +124,6 @@
                 }
             }
         },
-        "user_can_checkout": {"type": "boolean"}
+        "groups": {"total": "object"}
     }
 }

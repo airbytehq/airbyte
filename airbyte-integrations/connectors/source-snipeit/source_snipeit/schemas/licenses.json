@@ -1,98 +1,99 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "name": "hardware",
     "type": "object",
     "properties": {
-        "id": {"type": "integer"},
-        "name": {"type": "string"},
-        "image": {},
-        "company": {"type": "object"},
+        "id": {
+            "type": "integer",
+            "example": 1,
+            "default": 0
+        },
+        "name": {
+            "type": "string",
+            "example": "Photoshop"
+        },
+        "company": {},
         "manufacturer": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "integer",
-                    "example": 1,
+                    "example": 9,
                     "default": 0
                 },
                 "name": {
                     "type": "string",
-                    "example": "Apple"
+                    "example": "Adobe"
                 }
             }
         },
-        "supplier": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "example": 1,
-                    "default": 0
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Harvey-Hettinger"
-                }
-            }
+        "product_key": {
+            "type": "string",
+            "example": "0d5254fb-b9f9-342c-a210-5feba9ea08b0"
         },
-        "model_number": {"type": "string"},
-        "category": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "example": 1,
-                    "default": 0
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Laptops"
-                }
-            }
+        "order_number": {
+            "type": "string",
+            "example": "27709963"
         },
-        "location": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "example": 3,
-                    "default": 0
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Tonystad"
-                }
-            }
+        "purchase_order": {
+            "type": "string",
+            "example": ""
         },
-        "notes": {"type": "string"},
-        "qty": {"type": "integer"},
         "purchase_date": {
             "type": "object",
             "properties": {
                 "date": {
                     "type": "string",
-                    "example": "2016-12-03"
+                    "example": "2017-07-04"
                 },
                 "formatted": {
                     "type": "string",
-                    "example": "Sat Dec 03, 2016"
+                    "example": "2017-07-04"
                 }
             }
         },
-        "purchase_cost": {"type": "string"},
-        "order_number": {"type": "string"},
-        "min_qty": {"type": "integer"},
-        "remaining_qty": {"type": "integer"},
+        "purchase_cost": {
+            "type": "string",
+            "example": "299.99"
+        },
+        "notes": {
+            "type": "string",
+            "example": "Created by DB seeder"
+        },
+        "expiration_date": {},
+        "seats": {
+            "type": "integer",
+            "example": 10,
+            "default": 0
+        },
+        "free_seats_count": {
+            "type": "integer",
+            "example": 10,
+            "default": 0
+        },
+        "license_name": {
+            "type": "string",
+            "example": "Prof. Alba Sawayn"
+        },
+        "license_email": {
+            "type": "string",
+            "example": "merlin50@example.org"
+        },
+        "maintained": {
+            "type": "boolean",
+            "example": false,
+            "default": true
+        },
+        "supplier": {},
         "created_at": {
             "type": "object",
             "properties": {
                 "datetime": {
                     "type": "string",
-                    "example": "2017-10-18 21:00:08"
+                    "example": "2017-11-11 18:18:03"
                 },
                 "formatted": {
                     "type": "string",
-                    "example": "Wed Oct 18, 2017 9:00PM"
+                    "example": "2017-11-11 06:18 PM"
                 }
             }
         },
@@ -101,13 +102,18 @@
             "properties": {
                 "datetime": {
                     "type": "string",
-                    "example": "2017-10-19 07:57:37"
+                    "example": "2017-11-11 18:18:03"
                 },
                 "formatted": {
                     "type": "string",
-                    "example": "Thu Oct 19, 2017 7:57AM"
+                    "example": "2017-11-11 06:18 PM"
                 }
             }
+        },
+        "user_can_checkout": {
+            "type": "boolean",
+            "example": true,
+            "default": true
         },
         "available_actions": {
             "type": "object",
@@ -138,7 +144,6 @@
                     "default": true
                 }
             }
-        },
-        "user_can_checkout": {"type": "boolean"}
+        }
     }
 }

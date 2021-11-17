@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "id": {"type": "integer"},
+        "name": {"type": "string"},
+        "image": {"type": "string"},
+        "category_type": {"type": "string"},
+        "has_eula": {"type": "boolean"},
+        "use_default_eula": {"type": "boolean"},
+        "eula": {"type": "string"},
+        "checkin_email": {"type": "boolean"},
+        "require_acceptance": {"type": "boolean"},
+        "item_count": {"type": "integer"},
+        "assets_count": {"type": "integer"},
+        "accessories_count": {"type": "integer"},
+        "consumables_count": {"type": "integer"},
+        "components_count": {"type": "integer"},
+        "licenses_count": {"type": "integer"},
+        "created_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-11-11 18:18:03"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2017-11-11 06:18 PM"
+                }
+            }
+        },
+        "updated_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-11-11 18:18:03"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2017-11-11 06:18 PM"
+                }
+            }
+        },
+        "available_actions": {
+            "type": "object",
+            "properties": {
+                "update": {"type": "boolean"},
+                "delete": {"type": "boolean"}
+            }
+        }
+    }
+}

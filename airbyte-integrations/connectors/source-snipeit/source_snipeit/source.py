@@ -121,6 +121,86 @@ class Accessories(SnipeitStream):
     ) -> str:
         return "accessories/"
 
+class Consumables(SnipeitStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "consumables/"
+
+class Components(SnipeitStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "components/"
+
+class Users(SnipeitStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "users/"
+
+class StatusLabels(SnipeitStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "statuslabels/"
+
+class Models(SnipeitStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "models/"
+
+class Licenses(SnipeitStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "licenses/"
+
+class Categories(SnipeitStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "categories/"
+
+class Manufacturers(SnipeitStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "manufacturers/"
+
+class Maintenances(SnipeitStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "maintenances/"
+
+class Departments(SnipeitStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "departments/"
+
 # Source
 class SourceSnipeit(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -151,4 +231,19 @@ class SourceSnipeit(AbstractSource):
         # TODO remove the authenticator if not required.
         access_jwt = config.get("access_token")
         auth = TokenAuthenticator(token=access_jwt)  # Oauth2Authenticator is also available if you need oauth support
-        return [Hardware(authenticator=auth), Companies(authenticator=auth), Locations(authenticator=auth)]
+        return [
+            Hardware(authenticator=auth),
+            Companies(authenticator=auth),
+            Locations(authenticator=auth),
+            Accessories(authenticator=auth),
+            Consumables(authenticator=auth),
+            Components(authenticator=auth),
+            Users(authenticator=auth),
+            StatusLabels(authenticator=auth),
+            Models(authenticator=auth),
+            Licenses(authenticator=auth),
+            Categories(authenticator=auth),
+            Manufacturers(authenticator=auth),
+            Maintenances(authenticator=auth),
+            Departments(authenticator=auth),
+        ]

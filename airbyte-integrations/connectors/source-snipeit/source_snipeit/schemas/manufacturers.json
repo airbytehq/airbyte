@@ -1,0 +1,64 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "id": {"type": "integer"},
+        "name": {"type": "string"},
+        "url": {"type": "string"},
+        "image": {"type": "string"},
+        "support_url": {"type": "string"},
+        "support_phone": {"type": "string"},
+        "support_email": {"type": "string"},
+        "assets_count": {"type": "integer"},
+        "licenses_count": {"type": "integer"},
+        "consumables_count": {"type": "integer"},
+        "accessories_count": {"type": "integer"},
+        "created_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-11-11 18:18:03"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2017-11-11 06:18 PM"
+                }
+            }
+        },
+        "updated_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-11-11 18:18:03"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2017-11-11 06:18 PM"
+                }
+            }
+        },
+        "deleted_at": {
+            "type": "object",
+            "properties": {
+                "datetime": {
+                    "type": "string",
+                    "example": "2017-11-11 18:18:03"
+                },
+                "formatted": {
+                    "type": "string",
+                    "example": "2017-11-11 06:18 PM"
+                }
+            }
+        },
+        "available_actions": {
+            "type": "object",
+            "properties": {
+                "update": {"type": "boolean"},
+                "restore": {"type": "boolean"},
+                "delete": {"type": "boolean"}
+            }
+        }
+    }
+}
