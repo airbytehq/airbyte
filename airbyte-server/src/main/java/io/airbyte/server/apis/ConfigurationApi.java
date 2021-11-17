@@ -179,7 +179,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobPersistence,
         jobNotifier,
         temporalService,
-        new OAuthConfigSupplier(configRepository, false, trackingClient), workerEnvironment, logConfigs);
+        new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs);
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository, workspaceHelper, trackingClient);

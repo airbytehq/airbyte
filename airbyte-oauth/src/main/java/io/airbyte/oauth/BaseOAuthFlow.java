@@ -61,7 +61,7 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
       final Optional<DestinationOAuthParameter> param = MoreOAuthParameters.getDestinationOAuthParameter(
           configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId);
       if (param.isPresent()) {
-        // TODO: if we write a flyway migration to flatten persisted configs in db, we don't need to flatten
+        // TODO: if we write a migration to flatten persisted configs in db, we don't need to flatten
         // here see https://github.com/airbytehq/airbyte/issues/7624
         return MoreOAuthParameters.flattenOAuthConfig(param.get().getConfiguration());
       } else {
@@ -142,6 +142,9 @@ public abstract class BaseOAuthFlow implements OAuthFlowImplementation {
         validator,
         oAuthConfigSpecification.getCompleteOauthServerOutputSpecification(),
         Jsons.keys(oAuthParamConfig),
+        // TODO secrets should be masked with the correct type
+        // https://github.com/airbytehq/airbyte/issues/5990
+        // In the short-term this is not world-ending as all secret fields are currently strings
         (resultMap, key) -> resultMap.put(key, MoreOAuthParameters.SECRET_MASK));
 
     return MoreMaps.merge(oAuthServerOutputs, oAuthOutputs);
