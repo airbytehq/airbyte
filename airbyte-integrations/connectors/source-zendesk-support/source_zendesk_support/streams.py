@@ -442,7 +442,12 @@ class TicketComments(IncrementalSortedPageStream):
     ) -> Iterable[Mapping]:
         """Handle response status"""
         if response.status_code == 200:
-            yield from super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+            # Ticket ID not included in ticket comments response.
+            # Manually add ticket_id to ticket_comments dict.
+            ticket_id = stream_slice["id"]
+            result = super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+            enriched_result = map(lambda x: x.update({"ticket_id": ticket_id}) or x, result)
+            yield from enriched_result
         elif response.status_code == 404:
             ticket_id = stream_slice["id"]
             # skip 404 errors for not found tickets

@@ -78,7 +78,7 @@ def test_comments_not_found_ticket(prepare_stream_args, status_code, expected_co
                 "comments": [
                     {
                         "id": fake_id,
-                        TicketComments.cursor_field: "2021-07-22T06:55:55Z",
+                        TicketComments.cursor_field: "2121-07-22T06:55:55Z",
                     }
                 ]
             },
