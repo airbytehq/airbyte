@@ -368,7 +368,6 @@ class InventoryLevels(ChildSubstream):
 class InventoryItems(ChildSubstream):
 
     parent_stream_class: object = Products
-    cursor_field = "updated_at"
     slice_key = "id"
     record_field_name = "variants"
 
