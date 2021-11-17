@@ -53,7 +53,7 @@ So if you just want logs to be sent to the local `Minio` deployment, you do not 
 
 #### Custom Configuration
 
-Airbyte currently supports logging to `Minio`, `S3` or `GCS`. The following instructions are for users wishing to log to their own `Minio` layer, `S3` bucket or `GCS` bucket.
+Alternatively, if you want logs to be sent to a custom location, Airbyte currently supports logging to `Minio`, `S3` or `GCS`. The following instructions are for users wishing to log to their own `Minio` layer, `S3` bucket or `GCS` bucket.
 
 The provided credentials require both read and write permissions. The logger attempts to create the log bucket if it does not exist.
 
