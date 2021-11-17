@@ -33,6 +33,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 // requires kube running locally to run. If using Minikube it requires MINIKUBE=true
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.Timeout;
 // this can hang forever during failures.
 @Timeout(value = 5,
     unit = TimeUnit.MINUTES)
+@IntegrationTest
 public class KubePodProcessIntegrationTest {
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
@@ -77,7 +79,7 @@ public class KubePodProcessIntegrationTest {
     server.stop();
   }
 
-  @IntegrationTest
+  @Test
   public void testSuccessfulSpawning() throws Exception {
     // start a finite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -90,7 +92,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(0, process.exitValue());
   }
 
-  @IntegrationTest
+  @Test
   public void testSuccessfulSpawningWithQuotes() throws Exception {
     // start a finite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -105,7 +107,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(0, process.exitValue());
   }
 
-  @IntegrationTest
+  @Test
   public void testPipeInEntrypoint() throws Exception {
     // start a process that has a pipe in the entrypoint
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -118,7 +120,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(0, process.exitValue());
   }
 
-  @IntegrationTest
+  @Test
   public void testExitCodeRetrieval() throws Exception {
     // start a process that requests
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -131,7 +133,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(10, process.exitValue());
   }
 
-  @IntegrationTest
+  @Test
   public void testMissingEntrypoint() throws WorkerException, InterruptedException {
     // start a process with an entrypoint that doesn't exist
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -144,7 +146,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(127, process.exitValue());
   }
 
-  @IntegrationTest
+  @Test
   public void testKillingWithoutHeartbeat() throws Exception {
     // start an infinite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();

@@ -228,7 +228,15 @@ jobs:
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Build
-        run: SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
+        run: |
+          branch=$(git rev-parse --abbrev-ref HEAD)
+          if [[ $branch == bump-version* ]] ;
+          then
+              SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
+              SUB_BUILD=PLATFORM ./gradlew allTests
+          else
+              SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
+          fi
 
       - name: Test if Seed spec is updated
         run: SUB_BUILD=PLATFORM ./gradlew format && git --no-pager diff && test -z "$(git --no-pager diff)"
