@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.kinesis;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.time.Instant;
@@ -75,11 +74,15 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
       var partitionKey = KinesisUtils.buildPartitionKey();
 
       var data = Jsons.jsonNode(Map.of(
-          JavaBaseConstants.COLUMN_NAME_AB_ID, partitionKey,
-          JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(messageRecord.getData()),
-          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Instant.now()));
+          KinesisRecord.ID_PROPERTY, partitionKey,
+          KinesisRecord.DATA_PROPERTY, Jsons.serialize(messageRecord.getData()),
+          KinesisRecord.TIMESTAMP_PROPERTY, Instant.now()));
 
-      kinesisStream.putRecord(streamConfig.getStreamName(), partitionKey, Jsons.serialize(data));
+      var streamName = streamConfig.getStreamName();
+      kinesisStream.putRecord(streamName, partitionKey, Jsons.serialize(data), e -> {
+        LOGGER.error("Error while streaming data to Kinesis", e);
+        // throw exception and end sync?
+      });
     } else if (message.getType() == AirbyteMessage.Type.STATE) {
       this.lastMessage = message;
     } else {
@@ -95,11 +98,16 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
    */
   @Override
   protected void close(boolean hasFailed) {
-    if (!hasFailed) {
-      kinesisStream.flush();
-      this.outputRecordCollector.accept(lastMessage);
+    try {
+      if (!hasFailed) {
+        kinesisStream.flush(e -> {
+          LOGGER.error("Error while streaming data to Kinesis", e);
+        });
+        this.outputRecordCollector.accept(lastMessage);
+      }
+    } finally {
+      kinesisStream.close();
     }
-    kinesisStream.close();
   }
 
 }

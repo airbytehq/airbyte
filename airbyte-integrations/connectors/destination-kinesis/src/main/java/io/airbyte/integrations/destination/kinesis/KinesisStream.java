@@ -8,6 +8,8 @@ import io.airbyte.commons.json.Jsons;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,11 +114,12 @@ public class KinesisStream implements Closeable {
    * @param streamName   name of the stream where the record should be sent
    * @param partitionKey to determine the destination shard
    * @param data         actual data to be streamed
+   * @param exceptionConsumer for handling errors related to flushing data per stream
    */
-  public void putRecord(String streamName, String partitionKey, String data) {
+  public void putRecord(String streamName, String partitionKey, String data, Consumer<Exception> exceptionConsumer) {
     buffer.add(Tuple.of(streamName, Tuple.of(partitionKey, data)));
     if (buffer.size() == bufferSize) {
-      flush();
+      flush(exceptionConsumer);
     }
   }
 
@@ -156,20 +159,30 @@ public class KinesisStream implements Closeable {
   /**
    * Flush all records previously buffered to increase throughput and performance.
    * Records are grouped by stream name and are sent for each stream separately.
+   *
+   * @param exceptionConsumer for handling errors related to flushing data per stream, rethrowing
+   *                          an exception in the consumer will stop the sync and clear the cache
    */
-  public void flush() {
-    buffer.stream()
-        .collect(Collectors.groupingBy(Tuple::value1, Collectors.mapping(Tuple::value2, Collectors.toList())))
-        .forEach((k, v) -> {
-          var records = v.stream().map(entry -> PutRecordsRequestEntry.builder()
-              // partition key used to determine stream shard.
-              .partitionKey(entry.value1())
-              .data(SdkBytes.fromUtf8String(entry.value2()))
-              .build())
-              .collect(Collectors.toList());
-
-          kinesisClient.putRecords(b -> b.streamName(k).records(records));
-        });
+  public void flush(Consumer<Exception> exceptionConsumer) {
+    try {
+      buffer.stream()
+          .collect(Collectors.groupingBy(Tuple::value1, Collectors.mapping(Tuple::value2, Collectors.toList())))
+          .forEach((k, v) -> {
+            var records = v.stream().map(entry -> PutRecordsRequestEntry.builder()
+                    // partition key used to determine stream shard.
+                    .partitionKey(entry.value1())
+                    .data(SdkBytes.fromUtf8String(entry.value2()))
+                    .build())
+                .collect(Collectors.toList());
+            try {
+              kinesisClient.putRecords(b -> b.streamName(k).records(records));
+            } catch (Exception e) {
+              exceptionConsumer.accept(e);
+            }
+          });
+    } finally {
+      buffer.clear();
+    }
   }
 
   /**

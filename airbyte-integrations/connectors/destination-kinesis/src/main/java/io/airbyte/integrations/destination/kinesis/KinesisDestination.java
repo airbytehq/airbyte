@@ -42,7 +42,7 @@ public class KinesisDestination extends BaseConnector implements Destination {
       kinesisStream = new KinesisStream(kinesisConfig);
       kinesisStream.createStream(streamName);
       var partitionKey = KinesisUtils.buildPartitionKey();
-      kinesisStream.putRecord(streamName, partitionKey, "{}");
+      kinesisStream.putRecord(streamName, partitionKey, "{}", e -> {});
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.error("Error while trying to connect to Kinesis: ", e);
@@ -50,7 +50,7 @@ public class KinesisDestination extends BaseConnector implements Destination {
     } finally {
       if (kinesisStream != null) {
         try {
-          kinesisStream.flush();
+          kinesisStream.flush(e -> {});
           kinesisStream.deleteStream(streamName);
         } catch (Exception e) {
           LOGGER.error("Error while deleting kinesis stream: ", e);

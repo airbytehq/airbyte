@@ -8,7 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
@@ -48,7 +47,7 @@ class KinesisStreamTest {
     String streamName = "test_create_stream";
     // given
     kinesisStream.createStream(streamName);
-    kinesisStream.flush();
+    kinesisStream.flush(e -> {});
     // when
     var records = kinesisStream.getRecords(streamName);
 
@@ -96,12 +95,15 @@ class KinesisStreamTest {
     kinesisStream.createStream(streamName);
 
     var partitionKey1 = KinesisUtils.buildPartitionKey();
-    kinesisStream.putRecord(streamName, partitionKey1, createData(partitionKey1, "{\"property\":\"data1\"}"));
+    kinesisStream.putRecord(streamName, partitionKey1, createData(partitionKey1, "{\"property\":\"data1\"}"),
+        e -> {});
 
     var partitionKey2 = KinesisUtils.buildPartitionKey();
-    kinesisStream.putRecord(streamName, partitionKey2, createData(partitionKey2, "{\"property\":\"data2\"}"));
+    kinesisStream.putRecord(streamName, partitionKey2, createData(partitionKey2, "{\"property\":\"data2\"}"),
+        e -> {});
 
-    kinesisStream.flush();
+    kinesisStream.flush(e -> {
+    });
 
     // when
     var records = kinesisStream.getRecords(streamName);
@@ -115,11 +117,11 @@ class KinesisStreamTest {
   }
 
   private String createData(String partitionKey, String data) {
-    var record = Jsons.jsonNode(Map.of(
-        JavaBaseConstants.COLUMN_NAME_AB_ID, partitionKey,
-        JavaBaseConstants.COLUMN_NAME_DATA, data,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT, Instant.now()));
-    return Jsons.serialize(record);
+    var kinesisRecord = Jsons.jsonNode(Map.of(
+        KinesisRecord.ID_PROPERTY, partitionKey,
+        KinesisRecord.DATA_PROPERTY, data,
+        KinesisRecord.TIMESTAMP_PROPERTY, Instant.now()));
+    return Jsons.serialize(kinesisRecord);
   }
 
 }
