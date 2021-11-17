@@ -9,12 +9,16 @@
 1. `x.java`
 2. `y.python`
 
+## 🚨 User Impact 🚨
+Are there any breaking changes? If yes, please make sure to include it here and in any changelogs with the 🚨🚨 emoji
+What is the end result perceived by the user?
+
 ## Pre-merge Checklist
 Expand the relevant checklist and delete the others. 
 
 <details><summary> <strong> New Connector </strong></summary>
 <p>
-   
+
 #### Community member or Airbyter
    
 - [ ] **Community member?** Grant edit access to maintainers ([instructions](https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork#enabling-repository-maintainer-permissions-on-existing-pull-requests))
