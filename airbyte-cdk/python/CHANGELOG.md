@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.36
+Fix broken logger in streams: add logger inheritance for streams from `airbyte`.
+
+## 0.1.35
+Fix false warnings on record transform.
+
+## 0.1.34
+Fix logging inside source and streams
+
+## 0.1.33
+ Resolve $ref fields for discover json schema.
+
 ## 0.1.32
 - Added Sphinx docs `airbyte-cdk/python/reference_docs` module. 
 - Added module documents at `airbyte-cdk/python/sphinx-docs.md`.

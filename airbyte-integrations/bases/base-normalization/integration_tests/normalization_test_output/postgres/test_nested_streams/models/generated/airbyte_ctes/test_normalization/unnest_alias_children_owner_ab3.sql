@@ -1,6 +1,6 @@
 {{ config(
     indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
+    unique_key = '_airbyte_ab_id',
     schema = "_airbyte_test_normalization",
     tags = [ "nested-intermediate" ]
 ) }}
@@ -9,6 +9,7 @@ select
     {{ dbt_utils.surrogate_key([
         '_airbyte_children_hashid',
         'owner_id',
+        array_to_string(adapter.quote('column`_\'with""_quotes')),
     ]) }} as _airbyte_owner_hashid,
     tmp.*
 from {{ ref('unnest_alias_children_owner_ab2') }} tmp

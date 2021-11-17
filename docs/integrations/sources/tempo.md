@@ -37,3 +37,9 @@ Source Tempo is designed to interact with the data your permissions give you acc
 
 Go to **Tempo &gt; Settings**, scroll down to **Data Access** and select **API integration**.
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.2.4   | 2021-11-08 | [7649](https://github.com/airbytehq/airbyte/pull/7649) | Migrate to the CDK |
+
