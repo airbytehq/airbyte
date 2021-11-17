@@ -3,7 +3,7 @@ import org.jsonschema2pojo.SourceType
 plugins {
     id 'application'
     id 'com.github.eirnym.js2p' version '1.0'
-    id 'airbyte-integration-test-java'
+    // id 'airbyte-integration-test-java'
 }
 
 configurations {
@@ -38,8 +38,9 @@ dependencies {
     testImplementation 'org.testcontainers:postgresql:1.15.3'
 
     testImplementation project(':airbyte-commons-docker')
+    testImplementation project(':airbyte-test-utils')
 
-    integrationTestJavaImplementation project(':airbyte-workers')
+    // integrationTestJavaImplementation project(':airbyte-workers')
 }
 
 jsonSchema2Pojo {
