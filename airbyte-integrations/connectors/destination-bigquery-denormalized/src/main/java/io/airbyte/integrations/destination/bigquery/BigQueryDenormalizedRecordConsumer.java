@@ -64,7 +64,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     // Do not need to iterate through all JSON Object nodes, only first nesting object.
     if (!fieldsWithRefDefinition.isEmpty()) {
       fieldsWithRefDefinition.forEach(key -> {
-        if (data.get(key) != null && !data.get(key).isNull()){
+        if (data.get(key) != null && !data.get(key).isNull()) {
           data.put(key, data.get(key).toString());
         }
       });
@@ -76,7 +76,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
   }
 
   @Override
-  public void close(boolean hasFailed) {
+  public void close(final boolean hasFailed) {
     fieldsWithRefDefinition.clear();
     super.close(hasFailed);
   }
@@ -86,7 +86,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     if (fields == null) {
       return root;
     }
-    List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(fields);
+    final List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(fields);
     if (!dateTimeFields.isEmpty()) {
       BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) root);
     }
