@@ -15,6 +15,7 @@ import io.airbyte.oauth.flows.IntercomOAuthFlow;
 import io.airbyte.oauth.flows.PipeDriveOAuthFlow;
 import io.airbyte.oauth.flows.QuickbooksOAuthFlow;
 import io.airbyte.oauth.flows.SalesforceOAuthFlow;
+import io.airbyte.oauth.flows.SalesforceSandboxOAuthFlow;
 import io.airbyte.oauth.flows.SlackOAuthFlow;
 import io.airbyte.oauth.flows.SnapchatMarketingOAuthFlow;
 import io.airbyte.oauth.flows.SurveymonkeyOAuthFlow;
@@ -50,6 +51,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-pipedrive", new PipeDriveOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-quickbooks", new QuickbooksOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-salesforce-sandbox", new SalesforceSandboxOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-slack", new SlackOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-snapchat-marketing", new SnapchatMarketingOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
