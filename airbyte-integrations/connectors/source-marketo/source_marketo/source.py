@@ -524,6 +524,9 @@ class SourceMarketo(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        if "window_in_days" not in config:
+            config["window_in_days"] = 30  # Set date range to maximum (30 days)
+
         config["authenticator"] = MarketoAuthenticator(config)
 
         streams = [ActivityTypes(config), Campaigns(config), Leads(config), Lists(config), Programs(config)]

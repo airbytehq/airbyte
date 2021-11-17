@@ -58,11 +58,6 @@ def format_value(value, schema):
         elif "integer" in field_type:
             if isinstance(value, int):
                 return value
-
-            # Custom Marketo percent type fields can have decimals, so we drop them
-            decimal_index = value.find(".")
-            if decimal_index > 0:
-                value = value[:decimal_index]
             return int(value)
         elif "string" in field_type:
             return str(value)
