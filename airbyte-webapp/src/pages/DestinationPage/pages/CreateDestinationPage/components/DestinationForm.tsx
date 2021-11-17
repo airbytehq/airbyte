@@ -77,30 +77,26 @@ const DestinationForm: React.FC<IProps> = ({
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
-    <>
-      <ContentCard
-        title={<FormattedMessage id="onboarding.destinationSetUp" />}
-      >
-        <ServiceForm
-          onServiceSelect={onDropDownSelect}
-          fetchingConnectorError={sourceDefinitionError}
-          onSubmit={onSubmitForm}
-          formType="destination"
-          availableServices={destinationDefinitions}
-          selectedConnector={destinationDefinitionSpecification}
-          hasSuccess={hasSuccess}
-          errorMessage={errorMessage}
-          isLoading={isLoading}
-          formValues={
-            destinationDefinitionId
-              ? { serviceType: destinationDefinitionId }
-              : undefined
-          }
-          allowChangeConnector
-        />
-        <JobsLogItem jobInfo={jobInfo} />
-      </ContentCard>
-    </>
+    <ContentCard title={<FormattedMessage id="onboarding.destinationSetUp" />}>
+      <ServiceForm
+        onServiceSelect={onDropDownSelect}
+        fetchingConnectorError={sourceDefinitionError}
+        onSubmit={onSubmitForm}
+        formType="destination"
+        availableServices={destinationDefinitions}
+        selectedConnector={destinationDefinitionSpecification}
+        hasSuccess={hasSuccess}
+        errorMessage={errorMessage}
+        isLoading={isLoading}
+        formValues={
+          destinationDefinitionId
+            ? { serviceType: destinationDefinitionId }
+            : undefined
+        }
+        allowChangeConnector
+      />
+      <JobsLogItem jobInfo={jobInfo} />
+    </ContentCard>
   );
 };
 

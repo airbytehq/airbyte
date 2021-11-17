@@ -17,6 +17,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { LogsRequestError } from "../../../../../core/request/LogsRequestError";
 
 const Content = styled.div`
   width: 100%;
@@ -124,7 +125,9 @@ const DestinationsSettings: React.FC<IProps> = ({
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
           errorMessage={errorStatusRequest?.statusMessage}
         />
-        <JobsLogItem jobInfo={errorStatusRequest?.response} />
+        <JobsLogItem
+          jobInfo={LogsRequestError.extractJobInfo(errorStatusRequest)}
+        />
       </ContentCard>
       <DeleteBlock type="destination" onDelete={onDelete} />
     </Content>
