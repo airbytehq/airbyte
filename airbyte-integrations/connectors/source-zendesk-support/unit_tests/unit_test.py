@@ -3,15 +3,15 @@
 #
 
 import json
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 import requests
 import requests_mock
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from requests.exceptions import HTTPError
 from source_zendesk_support import SourceZendeskSupport
-from source_zendesk_support.streams import Tags, TicketComments, Tickets
+from source_zendesk_support.streams import Tags, TicketComments
 
 CONFIG_FILE = "secrets/config.json"
 
@@ -21,6 +21,16 @@ def prepare_stream_args():
     """Generates streams settings from a file"""
     with open(CONFIG_FILE, "r") as f:
         return SourceZendeskSupport.convert_config2stream_args(json.loads(f.read()))
+
+
+@pytest.fixture(scope="module")
+def config():
+    """Generates fake config"""
+    return {
+        "subdomain": "fake_domain",
+        "start_date": "2020-01-01T00:00:00Z",
+        "auth_method": {"auth_method": "api_token", "email": "email@email.com", "api_token": "fake_api_token"},
+    }
 
 
 @pytest.mark.parametrize(
@@ -100,7 +110,6 @@ def test_comments_not_found_ticket(prepare_stream_args, status_code, expected_co
 @pytest.mark.parametrize(
     "input_data,expected_data",
     [
-        # success
         (
             {"id": 123, "custom_fields": [{"id": 3213212, "value": ["fake_3000", "fake_5555"]}]},
             {"id": 123, "custom_fields": [{"id": 3213212, "value": "['fake_3000', 'fake_5555']"}]},
@@ -115,19 +124,26 @@ def test_comments_not_found_ticket(prepare_stream_args, status_code, expected_co
         ),
     ],
 )
-def test_transform_for_tickets_stream(prepare_stream_args, input_data, expected_data):
+def test_transform_for_tickets_stream(config, input_data, expected_data):
     """Checks Transform in case when records come with invalid fields data types"""
-    stream = Tickets(**prepare_stream_args)
+    test_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="tickets", json_schema={}),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            )
+        ]
+    )
+
     with requests_mock.Mocker() as ticket_mock:
-        path = "incremental/tickets.json"
-        stream.path = Mock(return_value=path)
-        url = stream.url_base + path
         ticket_mock.get(
-            url,
+            f"https://{config['subdomain']}.zendesk.com/api/v2/incremental/tickets.json",
             status_code=200,
             json={"tickets": [input_data], "end_time": "2021-07-22T06:55:55Z", "end_of_stream": True},
         )
-        tickets = stream.read_records(sync_mode=SyncMode.full_refresh)
-        for ticket in tickets:
-            stream.transformer.transform(ticket, stream.get_json_schema())
-            assert ticket == expected_data
+
+        source = SourceZendeskSupport()
+        records = source.read(MagicMock(), config, test_catalog, None)
+        for record in records:
+            assert record.record.data == expected_data
