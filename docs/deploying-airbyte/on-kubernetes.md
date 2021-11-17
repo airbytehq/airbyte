@@ -57,19 +57,28 @@ Airbyte currently supports logging to `Minio`, `S3` or `GCS`. The following inst
 
 The provided credentials require both read and write permissions. The logger attempts to create the log bucket if it does not exist.
 
-##### Configuring Custom S3 Log Location
+##### Configuring Custom Minio Log Location
 
-Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
+To write to a custom minio log location, replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
 
 ```text
-# The S3 bucket to write logs in.
-S3_LOG_BUCKET=
-# The S3 bucket region.
-S3_LOG_BUCKET_REGION=
-# Aws Access Key Id.
-AWS_ACCESS_KEY_ID=
-# Aws Secret Access Key
-AWS_SECRET_ACCESS_KEY=
+S3_LOG_BUCKET=<your_minio_bucket_to_write_logs_in>
+AWS_ACCESS_KEY_ID=<your_minio_access_key>
+AWS_SECRET_ACCESS_KEY=<your_minio_secret_key>
+S3_MINIO_ENDPOINT=<endpoint_where_minio_is_deployed_at>
+```
+
+The `S3_PATH_STYLE_ACCESS` variable should remain `true`. The `S3_LOG_BUCKET_REGION` variable should remain empty.
+
+##### Configuring Custom S3 Log Location
+
+To write to a custom S3 log location, replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
+
+```text
+S3_LOG_BUCKET=<your_s3_bucket_to_write_logs_in>
+S3_LOG_BUCKET_REGION=<your_s3_bucket_region>
+AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
+AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key>
 # Set this to empty.
 S3_MINIO_ENDPOINT=
 # Set this to empty.
@@ -104,30 +113,12 @@ data:
 3\) Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
 
 ```text
-# The GCS bucket to write logs in.
-GCP_STORAGE_BUCKET=
+GCP_STORAGE_BUCKET=<your_GCS_bucket_to_write_logs_in>
 # The path the GCS creds are written to. Unless you know what you are doing, use the below default value.
 GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs-log-creds/gcp.json
 ```
 
 See [here](https://cloud.google.com/storage/docs/creating-buckets) for instruction on creating a GCS bucket and [here](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-console) for instruction on creating GCP credentials.
-
-##### Configuring Custom Minio Log Location
-
-Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
-
-```text
-# The Minio bucket to write logs in.
-S3_LOG_BUCKET=
-# Minio Access Key.
-AWS_ACCESS_KEY_ID=
-# Minio Secret Key.
-AWS_SECRET_ACCESS_KEY=
-# Endpoint where Minio is deployed at.
-S3_MINIO_ENDPOINT=
-```
-
-The `S3_PATH_STYLE_ACCESS` variable should remain `true`. The `S3_LOG_BUCKET_REGION` variable should remain empty.
 
 ### Launch Airbyte
 
