@@ -729,7 +729,7 @@ class FormSubmissionStream(Stream):
                 del submission["id"]
                 del submission["updatedAt"]
 
-                submission["form_id"] = form["id"]
+                submission["formId"] = form["id"]
                 yield submission
 
 

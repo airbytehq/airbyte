@@ -22,6 +22,9 @@
       },
     "pageUrl": {
       "type": ["null", "string"]
+    },
+    "formId": {
+      "type": ["null", "string"]
     }
   }
 }
