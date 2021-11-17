@@ -57,13 +57,23 @@ public class OAuthHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSourceDefinition sourceDefinition =
         configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
-    final OAuthFlowImplementation oAuthFlowImplementation =
-        oAuthImplementationFactory.create(sourceDefinition);
+    final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
+    final ConnectorSpecification spec = specFetcher.getSpec(sourceDefinition);
     final ImmutableMap<String, Object> metadata = generateSourceMetadata(sourceDefinitionIdRequestBody.getSourceDefinitionId());
-    final OAuthConsentRead result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
-        sourceDefinitionIdRequestBody.getWorkspaceId(),
-        sourceDefinitionIdRequestBody.getSourceDefinitionId(),
-        sourceDefinitionIdRequestBody.getRedirectUrl()));
+    final OAuthConsentRead result;
+    if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
+      result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
+          sourceDefinitionIdRequestBody.getWorkspaceId(),
+          sourceDefinitionIdRequestBody.getSourceDefinitionId(),
+          sourceDefinitionIdRequestBody.getRedirectUrl(),
+          sourceDefinitionIdRequestBody.getoAuthInputConfiguration(),
+          spec.getAdvancedAuth().getOauthConfigSpecification()));
+    } else {
+      result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
+          sourceDefinitionIdRequestBody.getWorkspaceId(),
+          sourceDefinitionIdRequestBody.getSourceDefinitionId(),
+          sourceDefinitionIdRequestBody.getRedirectUrl(), Jsons.emptyObject(), null));
+    }
     try {
       trackingClient.track(sourceDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     } catch (final Exception e) {
@@ -76,13 +86,23 @@ public class OAuthHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
-    final OAuthFlowImplementation oAuthFlowImplementation =
-        oAuthImplementationFactory.create(destinationDefinition);
+    final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
+    final ConnectorSpecification spec = specFetcher.getSpec(destinationDefinition);
     final ImmutableMap<String, Object> metadata = generateDestinationMetadata(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
-    final OAuthConsentRead result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
-        destinationDefinitionIdRequestBody.getWorkspaceId(),
-        destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
-        destinationDefinitionIdRequestBody.getRedirectUrl()));
+    final OAuthConsentRead result;
+    if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
+      result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
+          destinationDefinitionIdRequestBody.getWorkspaceId(),
+          destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
+          destinationDefinitionIdRequestBody.getRedirectUrl(),
+          destinationDefinitionIdRequestBody.getoAuthInputConfiguration(),
+          spec.getAdvancedAuth().getOauthConfigSpecification()));
+    } else {
+      result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
+          destinationDefinitionIdRequestBody.getWorkspaceId(),
+          destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
+          destinationDefinitionIdRequestBody.getRedirectUrl(), Jsons.emptyObject(), null));
+    }
     try {
       trackingClient.track(destinationDefinitionIdRequestBody.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     } catch (final Exception e) {
@@ -161,6 +181,8 @@ public class OAuthHandler {
         .orElseGet(() -> new SourceOAuthParameter().withOauthParameterId(UUID.randomUUID()))
         .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
         .withSourceDefinitionId(requestBody.getSourceDefinitionId());
+    // TODO validate requestBody.getParams() against
+    // spec.getAdvancedAuth().getOauthConfigSpecification().getCompleteOauthServerInputSpecification()
     configRepository.writeSourceOAuthParam(param);
   }
 
@@ -171,6 +193,8 @@ public class OAuthHandler {
         .orElseGet(() -> new DestinationOAuthParameter().withOauthParameterId(UUID.randomUUID()))
         .withConfiguration(Jsons.jsonNode(requestBody.getParams()))
         .withDestinationDefinitionId(requestBody.getDestinationDefinitionId());
+    // TODO validate requestBody.getParams() against
+    // spec.getAdvancedAuth().getOauthConfigSpecification().getCompleteOauthServerInputSpecification()
     configRepository.writeDestinationOAuthParam(param);
   }
 
