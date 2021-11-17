@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
  * <p>
  * The test will only be run when the gradle integrationTest task is run
  */
-@Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD})
+@Target({ElementType.ANNOTATION_TYPE, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Test
 @Tag("integration")
