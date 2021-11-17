@@ -37,6 +37,18 @@ class ConnectorConfig(BaseModel):
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
     )
+    data_start_time: str = Field(
+        None,
+        description="The start of a date and time range, in ISO 8601 date time format, used for selecting the data to report. The default is now. The value must be prior to or equal to the current date and time. Not all report types make use of this.",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        examples=["2017-01-25T00:00:00Z"],
+    )
+    data_end_time: str = Field(
+        None,
+        description="The end of a date and time range, in ISO 8601 date time format, used for selecting the data to report. The default is now. The value must be prior to or equal to the current date and time. Not all report types make use of this.",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        examples=["2017-01-26T00:00:00Z"],
+    )
     refresh_token: str = Field(
         description="The refresh token used obtained via authorization (can be passed to the client instead)", airbyte_secret=True
     )
@@ -77,6 +89,8 @@ class SourceAmazonSellerPartner(AbstractSource):
             "authenticator": auth,
             "aws_signature": aws_signature,
             "replication_start_date": config.replication_start_date,
+            "data_start_time": config.data_start_time,
+            "data_end_time": config.data_end_time,
             "marketplace_ids": [marketplace_id],
         }
         return stream_kwargs
@@ -114,6 +128,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             VendorDirectFulfillmentShipping(**stream_kwargs),
             VendorInventoryHealthReports(**stream_kwargs),
             Orders(**stream_kwargs),
+            SellerFeedbackReports(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:

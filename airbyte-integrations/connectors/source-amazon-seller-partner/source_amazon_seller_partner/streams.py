@@ -136,6 +136,8 @@ class ReportsAmazonSPStream(Stream, ABC):
         url_base: str,
         aws_signature: AWSSignature,
         replication_start_date: str,
+        data_start_time: Optional[str],
+        data_end_time: Optional[str],
         marketplace_ids: List[str],
         authenticator: HttpAuthenticator = NoAuth(),
     ):
@@ -144,6 +146,8 @@ class ReportsAmazonSPStream(Stream, ABC):
         self._url_base = url_base
         self._session.auth = aws_signature
         self._replication_start_date = replication_start_date
+        self._data_start_time = data_start_time
+        self._data_end_time = data_end_time
         self.marketplace_ids = marketplace_ids
 
     @property
@@ -194,14 +198,18 @@ class ReportsAmazonSPStream(Stream, ABC):
 
         return self._session.prepare_request(requests.Request(**args))
 
-    def _create_report(self) -> Mapping[str, Any]:
-        request_headers = self.request_headers()
+    def _report_data_default(self) -> Mapping[str, Any]:
         replication_start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
-        report_data = {
+
+        return {
             "reportType": self.name,
             "marketplaceIds": self.marketplace_ids,
             "createdSince": replication_start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
+
+    def _create_report(self) -> Mapping[str, Any]:
+        request_headers = self.request_headers()
+        report_data = self._report_data_default()
         create_report_request = self._create_prepared_request(
             http_method="POST",
             path=f"{self.path_prefix}/reports",
@@ -343,6 +351,16 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
 
 class SellerFeedbackReports(ReportsAmazonSPStream):
     name = "GET_SELLER_FEEDBACK_DATA"
+
+    def _report_data(self) -> Mapping[str, Any]:
+        data_start_time = pendulum.now("utc") if self._data_start_time is None else self._data_start_time
+        data_end_time = pendulum.now("utc") if self._data_end_time is None else self._data_end_time
+        data_times = {
+            "dataStartTime": data_start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "dataEndTime": data_end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
+
+        return self._report_data_default.update(data_times)
 
 
 class Orders(IncrementalAmazonSPStream):
