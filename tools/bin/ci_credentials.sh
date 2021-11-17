@@ -95,7 +95,7 @@ function export_gsm_secrets(){
 
   # docs: https://cloud.google.com/secret-manager/docs/filtering#api
   local filter="name:SECRET_"
-  [[ ${CONNECTOR_NAME} != "all" ]] && filter="${filter} AND labels.connector:${CONNECTOR_NAME}"
+  [[ ${CONNECTOR_NAME} != "all" ]] && filter="${filter} AND labels.connector=${CONNECTOR_NAME}"
   local uri="https://secretmanager.googleapis.com/v1/projects/${project_id}/secrets"
   local next_token=''
   while true; do
