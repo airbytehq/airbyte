@@ -4,78 +4,18 @@
 
 package io.airbyte.oauth.flows;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import io.airbyte.oauth.BaseOAuthFlow;
 
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.validation.json.JsonValidationException;
-import java.io.IOException;
-import java.net.http.HttpClient;
-import java.net.http.HttpResponse;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+public class RetentlyOAuthFlowTest extends BaseOAuthFlowTest {
 
-public class RetentlyOAuthFlowTest {
-
-  private UUID workspaceId;
-  private UUID definitionId;
-  private RetentlyOAuthFlow retentlyOAuthFlow;
-  private HttpClient httpClient;
-
-  private static final String REDIRECT_URL = "https://airbyte.io";
-
-  private static String getConstantState() {
-    return "state";
+  @Override
+  protected BaseOAuthFlow getOAuthFlow() {
+    return new RetentlyOAuthFlow(getConfigRepository(), getHttpClient(), this::getConstantState);
   }
 
-  @BeforeEach
-  public void setup() throws IOException, JsonValidationException {
-    workspaceId = UUID.randomUUID();
-    definitionId = UUID.randomUUID();
-    ConfigRepository configRepository = mock(ConfigRepository.class);
-    httpClient = mock(HttpClient.class);
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build())))));
-    retentlyOAuthFlow = new RetentlyOAuthFlow(configRepository, httpClient, RetentlyOAuthFlowTest::getConstantState);
-
-  }
-
-  @Test
-  public void testGetSourceConcentUrl() throws IOException, ConfigNotFoundException {
-    final String concentUrl =
-        retentlyOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    assertEquals(concentUrl,
-        "https://app.retently.com/api/oauth/authorize?client_id=test_client_id&response_type=code&redirect_uri=https%3A%2F%2Fairbyte.io&state=state");
-  }
-
-  @Test
-  public void testCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
-
-    Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
-    final HttpResponse response = mock(HttpResponse.class);
-    when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
-    when(httpClient.send(any(), any())).thenReturn(response);
-
-    final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams =
-        retentlyOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    Map<String, Object> credentials = (Map<String, Object>) actualQueryParams.get("credentials");
-    assertEquals(credentials.get("refresh_token"), "refresh_token_response");
+  @Override
+  protected String getExpectedConsentUrl() {
+    return "https://app.retently.com/api/oauth/authorize?client_id=test_client_id&response_type=code&redirect_uri=https%3A%2F%2Fairbyte.io&state=state";
   }
 
 }
