@@ -12,18 +12,18 @@ If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes.md
 
 ## Mandatory Intermediate Upgrade
 
-**If your current version of airbyte is < v0.32.0-alpha, you first need to upgrade to this version before upgrading to any later version.**
+**If your current version of airbyte is < v0.32.1-alpha, you first need to upgrade to this version before upgrading to any later version.**
 
-The reason for this is that there are breaking changes made in v0.32.0-alpha, and the logic for these changes is removed in later versions, making it impossible to upgrade directly. 
-To upgrade to v0.32.0-alpha, follow the steps in the following sections, but replace the `docker pull` or `wget` commands with the following:
+The reason for this is that there are breaking changes made in v0.32.1-alpha, and the logic for these changes is removed in later versions, making it impossible to upgrade directly. 
+To upgrade to v0.32.1-alpha, follow the steps in the following sections, but replace the `docker pull` or `wget` commands with the following:
 
-1. If you are in a cloned Airbyte repo, v0.32.0-alpha can be pulled from GitHub with
+1. If you are in a cloned Airbyte repo, v0.32.1-alpha can be pulled from GitHub with
 
    ``` 
-   git checkout v0.32.0-alpha
+   git checkout v0.32.1-alpha
    ```
 
-2. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/v0.32.0-alpha/{.env,docker-compose.yaml}` to pull this version and overwrite both files.
+2. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/v0.32.1-alpha/{.env,docker-compose.yaml}` to pull this version and overwrite both files.
 
 As a warning, this upgrade requires specs to be retrieved for all connectors that currently exist in your database. So, if specs cannot be retrieved for any of your connector images, server startup will fail. In this case you must either fix the image so that spec retrieval is successful, or set the `VERSION_0_32_0_FORCE_UPGRADE` environment variable to `true`, which will cause the server to delete any connectors for which specs cannot be retrieved, as well as any connections built on top of them.
 
@@ -99,7 +99,7 @@ If you are upgrading from \(i.e. your current version of Airbyte is\) Airbyte ve
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.32.0-alpha --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.32.1-alpha --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```
