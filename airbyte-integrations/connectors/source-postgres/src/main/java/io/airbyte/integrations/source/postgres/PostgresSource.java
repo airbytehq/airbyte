@@ -9,6 +9,7 @@ import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.jooq.tools.StringUtils.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -44,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.jooq.tools.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -239,11 +241,11 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
             conn -> conn.getMetaData().getTablePrivileges(getCatalog(database), schema, null),
             resultSet ->
                 JdbcPrivilegeDto.builder()
-                    .grantee(ofNullable(resultSet.getString(GRANTEE)).orElse(BLANK_STRING))
+                    .grantee(ofNullable(resultSet.getString(GRANTEE)).orElse(EMPTY))
                     // we need the schema as different schemas could have tables with the same names
-                    .schemaName(ofNullable(resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)).orElse(BLANK_STRING))
-                    .tableName(ofNullable(resultSet.getString(JDBC_COLUMN_TABLE_NAME)).orElse(BLANK_STRING))
-                    .privilege(ofNullable(resultSet.getString(PRIVILEGE)).orElse(BLANK_STRING))
+                    .schemaName(ofNullable(resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)).orElse(EMPTY))
+                    .tableName(ofNullable(resultSet.getString(JDBC_COLUMN_TABLE_NAME)).orElse(EMPTY))
+                    .privilege(ofNullable(resultSet.getString(PRIVILEGE)).orElse(EMPTY))
                     .build())
         .stream()
         .filter(jdbcPrivilegeDto ->
