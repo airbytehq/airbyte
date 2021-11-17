@@ -728,6 +728,8 @@ class FormSubmissionStream(Stream):
             for submission in self.read(getter=partial(self._api.get, url=f"{self.url}/{form['id']}")):
                 del submission["id"]
                 del submission["updatedAt"]
+
+                submission["form_id"] = form["id"]
                 yield submission
 
 
