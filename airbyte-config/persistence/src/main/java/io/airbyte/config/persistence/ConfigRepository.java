@@ -112,12 +112,6 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
-  public void writeStandardWorkspaces(final List<StandardWorkspace> workspaces) throws JsonValidationException, IOException {
-    for (final StandardWorkspace workspace : workspaces) {
-      persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
-    }
-  }
-
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString(), StandardSourceDefinition.class);
@@ -136,6 +130,16 @@ public class ConfigRepository {
     try {
       final StandardSync sync = getStandardSync(connectionId);
       return getSourceDefinitionFromSource(sync.getSourceId());
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public StandardWorkspace getStandardWorkspaceFromConnection(final UUID connectionId, final boolean isTombstone) {
+    try {
+      final StandardSync sync = getStandardSync(connectionId);
+      final SourceConnection source = getSourceConnection(sync.getSourceId());
+      return getStandardWorkspace(source.getWorkspaceId(), isTombstone);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }

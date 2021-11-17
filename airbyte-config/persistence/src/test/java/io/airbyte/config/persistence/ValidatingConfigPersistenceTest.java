@@ -60,7 +60,14 @@ class ValidatingConfigPersistenceTest {
   @Test
   void testWriteConfigSuccess() throws IOException, JsonValidationException {
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
-    verify(decoratedConfigPersistence).writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
+    final Map<String, StandardSourceDefinition> aggregatedSource = new HashMap<>() {
+
+      {
+        put(UUID_1.toString(), SOURCE_1);
+      }
+
+    };
+    verify(decoratedConfigPersistence).writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, aggregatedSource);
   }
 
   @Test
@@ -75,7 +82,7 @@ class ValidatingConfigPersistenceTest {
     };
 
     configPersistence.writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionById);
-    verify(decoratedConfigPersistence).writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
+    verify(decoratedConfigPersistence).writeConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionById);
   }
 
   @Test

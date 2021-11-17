@@ -45,6 +45,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
@@ -156,12 +157,12 @@ public class JobSubmitterTest {
     final StandardWorkspace nonCompletedSyncWorkspace = new StandardWorkspace()
         .withFirstCompletedSync(false);
 
-    when(configRepository.listStandardWorkspaces(false))
-        .thenReturn(Lists.newArrayList(completedSyncWorkspace, nonCompletedSyncWorkspace));
+    when(configRepository.getStandardWorkspaceFromConnection(any(UUID.class), false))
+        .thenReturn(nonCompletedSyncWorkspace);
 
     jobSubmitter.submitJob(job);
 
-    verify(configRepository).writeStandardWorkspaces(Lists.newArrayList(nonCompletedSyncWorkspace));
+    verify(configRepository).writeStandardWorkspace(nonCompletedSyncWorkspace);
   }
 
   @Test
@@ -256,8 +257,7 @@ public class JobSubmitterTest {
   class OnlyOneJobIdRunning {
 
     /**
-     * See {@link JobSubmitter#attemptJobSubmit()} to understand why we need to test that only one job
-     * id can be successfully submited at once.
+     * See {@link JobSubmitter#attemptJobSubmit()} to understand why we need to test that only one job id can be successfully submited at once.
      */
     @Test
     public void testOnlyOneJobCanBeSubmittedAtOnce() throws Exception {

@@ -10,6 +10,7 @@ import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -23,6 +24,7 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -136,17 +138,13 @@ public class JobSubmitter implements Runnable {
             persistence.succeedAttempt(job.getId(), attemptNumber);
 
             if (job.getConfigType() == ConfigType.SYNC) {
-              final List<StandardWorkspace> standardWorkspaces = configRepository.listStandardWorkspaces(false);
+              final String connectionId = job.getScope();
+              final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(UUID.fromString(connectionId), false);
 
-              final List<StandardWorkspace> workspacesToUpdate = standardWorkspaces.stream()
-                  .filter(standardWorkspace -> !Optional.ofNullable(standardWorkspace.getFirstCompletedSync()).orElse(false))
-                  .map(standardWorkspace -> {
-                    standardWorkspace.setFirstCompletedSync(true);
-                    return standardWorkspace;
-                  })
-                  .collect(Collectors.toList());
-
-              configRepository.writeStandardWorkspaces(workspacesToUpdate);
+              if (!workspace.getFirstCompletedSync()) {
+                workspace.setFirstCompletedSync(true);
+                configRepository.writeStandardWorkspace(workspace);
+              }
 
               jobNotifier.successJob(job);
             }
