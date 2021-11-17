@@ -95,8 +95,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             return True, None
         except StopIteration or requests.exceptions.RequestException as e:
             if isinstance(e, StopIteration):
-                e = 'Could not check connection without data for Orders stream. ' \
-                    'Please change value for replication start date field.'
+                e = "Could not check connection without data for Orders stream. " "Please change value for replication start date field."
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
