@@ -24,6 +24,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,11 +33,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteSource.class);
 
   private static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
-  private static final Duration CHECK_HEARTBEAT_DURATION = Duration.of(10, ChronoUnit.SECONDS);
-  // todo (cgardens) - keep the graceful shutdown consistent with current behavior for release. make
-  // sure everything is working well before we reduce this to something more reasonable.
-  private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(10, ChronoUnit.HOURS);
-  private static final Duration FORCED_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
+  private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
 
   private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("source")
@@ -110,12 +107,10 @@ public class DefaultAirbyteSource implements AirbyteSource {
     }
 
     LOGGER.debug("Closing source process");
-    WorkerUtils.gentleCloseWithHeartbeat(
+    WorkerUtils.gentleClose(
         sourceProcess,
-        heartbeatMonitor,
-        GRACEFUL_SHUTDOWN_DURATION,
-        CHECK_HEARTBEAT_DURATION,
-        FORCED_SHUTDOWN_DURATION);
+        GRACEFUL_SHUTDOWN_DURATION.toMillis(),
+        TimeUnit.MILLISECONDS);
 
     if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
       final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();

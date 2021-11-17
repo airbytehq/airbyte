@@ -24,7 +24,7 @@
       },
       {
         "title": "Infinite Feed",
-        "required": ["type", "max_records"],
+        "required": ["type", "max_records", "message_interval"],
         "additionalProperties": false,
         "properties": {
           "type": {
@@ -35,6 +35,11 @@
           "max_records": {
             "title": "Max Records",
             "description": "Number of records to emit. If not set, defaults to infinity.",
+            "type": "integer"
+          },
+          "message_interval": {
+            "title": "Message Interval",
+            "description": "Interval between messages in ms.",
             "type": "integer"
           }
         }

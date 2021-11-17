@@ -107,7 +107,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     }
 
     LOGGER.debug("Closing destination process");
-    WorkerUtils.gentleClose(destinationProcess, 10, TimeUnit.HOURS);
+    WorkerUtils.gentleClose(destinationProcess, 1, TimeUnit.MINUTES);
     if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
       final String message =
           destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + destinationProcess.exitValue();
