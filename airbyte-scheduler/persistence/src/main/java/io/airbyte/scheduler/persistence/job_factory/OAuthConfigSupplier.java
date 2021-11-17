@@ -88,51 +88,52 @@ public class OAuthConfigSupplier {
                                                final ConnectorSpecification spec,
                                                final JsonNode oAuthParameters,
                                                final JsonNode connectorConfig) {
-    if (hasOAuthConfigSpecification(spec)) {
-      if (!checkOAuthPredicate(spec.getAdvancedAuth().getPredicateKey(), spec.getAdvancedAuth().getPredicateValue(), connectorConfig)) {
-        return false;
-      }
-      // TODO: if we write a migration to flatten persisted configs in db, we don't need to flatten
-      // here see https://github.com/airbytehq/airbyte/issues/7624
-      final JsonNode flatOAuthParameters = MoreOAuthParameters.flattenOAuthConfig(oAuthParameters);
-      final JsonNode outputSpec = spec.getAdvancedAuth().getOauthConfigSpecification().getCompleteOauthServerOutputSpecification();
-      boolean result = false;
-      for (final String key : Jsons.keys(outputSpec)) {
-        final JsonNode node = outputSpec.get(key);
-        if (node.getNodeType() == OBJECT) {
-          final JsonNode pathNode = node.get(PATH_IN_CONNECTOR_CONFIG);
-          if (pathNode != null && pathNode.getNodeType() == ARRAY) {
-            final List<String> propertyPath = new ArrayList<>();
-            final ArrayNode arrayNode = (ArrayNode) pathNode;
-            for (int i = 0; i < arrayNode.size(); ++i) {
-              propertyPath.add(arrayNode.get(i).asText());
-            }
-            if (propertyPath.size() > 0) {
-              Jsons.replaceNestedValue(connectorConfig, propertyPath, flatOAuthParameters.get(key));
-              result = true;
-            } else {
-              LOGGER.error(String.format("In %s's advanced_auth spec, completeOAuthServerOutputSpecification includes an invalid empty %s for %s",
-                  connectorName, PATH_IN_CONNECTOR_CONFIG, key));
-            }
-          } else {
-            LOGGER.error(
-                String.format("In %s's advanced_auth spec, completeOAuthServerOutputSpecification does not declare an Array<String> %s for %s",
-                    connectorName, PATH_IN_CONNECTOR_CONFIG, key));
-          }
-        } else {
-          LOGGER.error(String.format("In %s's advanced_auth spec, completeOAuthServerOutputSpecification does not declare an ObjectNode for %s",
-              connectorName, key));
-        }
-      }
-      return result;
-    } else {
+    if (!hasOAuthConfigSpecification(spec)) {
+      // keep backward compatible behavior if connector does not declare an OAuth config spec
       MoreOAuthParameters.mergeJsons((ObjectNode) connectorConfig, (ObjectNode) oAuthParameters);
       return true;
     }
+    if (!checkOAuthPredicate(spec.getAdvancedAuth().getPredicateKey(), spec.getAdvancedAuth().getPredicateValue(), connectorConfig)) {
+      // OAuth is not applicable in this connectorConfig due to the predicate not being verified
+      return false;
+    }
+    // TODO: if we write a migration to flatten persisted configs in db, we don't need to flatten
+    // here see https://github.com/airbytehq/airbyte/issues/7624
+    final JsonNode flatOAuthParameters = MoreOAuthParameters.flattenOAuthConfig(oAuthParameters);
+    final JsonNode outputSpec = spec.getAdvancedAuth().getOauthConfigSpecification().getCompleteOauthServerOutputSpecification();
+    boolean result = false;
+    for (final String key : Jsons.keys(outputSpec)) {
+      final JsonNode node = outputSpec.get(key);
+      if (node.getNodeType() == OBJECT) {
+        final JsonNode pathNode = node.get(PATH_IN_CONNECTOR_CONFIG);
+        if (pathNode != null && pathNode.getNodeType() == ARRAY) {
+          final List<String> propertyPath = new ArrayList<>();
+          final ArrayNode arrayNode = (ArrayNode) pathNode;
+          for (int i = 0; i < arrayNode.size(); ++i) {
+            propertyPath.add(arrayNode.get(i).asText());
+          }
+          if (propertyPath.size() > 0) {
+            Jsons.replaceNestedValue(connectorConfig, propertyPath, flatOAuthParameters.get(key));
+            result = true;
+          } else {
+            LOGGER.error(String.format("In %s's advanced_auth spec, completeOAuthServerOutputSpecification includes an invalid empty %s for %s",
+                connectorName, PATH_IN_CONNECTOR_CONFIG, key));
+          }
+        } else {
+          LOGGER.error(
+              String.format("In %s's advanced_auth spec, completeOAuthServerOutputSpecification does not declare an Array<String> %s for %s",
+                  connectorName, PATH_IN_CONNECTOR_CONFIG, key));
+        }
+      } else {
+        LOGGER.error(String.format("In %s's advanced_auth spec, completeOAuthServerOutputSpecification does not declare an ObjectNode for %s",
+            connectorName, key));
+      }
+    }
+    return result;
   }
 
   private static boolean checkOAuthPredicate(final List<String> predicateKey, final String predicateValue, final JsonNode connectorConfig) {
-    if (!predicateKey.isEmpty()) {
+    if (predicateKey != null && !predicateKey.isEmpty()) {
       JsonNode node = connectorConfig;
       for (final String key : predicateKey) {
         if (node.has(key)) {
