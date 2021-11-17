@@ -8,9 +8,10 @@ from unittest.mock import Mock
 import pytest
 import requests
 import requests_mock
+from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
 from source_zendesk_support import SourceZendeskSupport
-from source_zendesk_support.streams import Tags, TicketComments
+from source_zendesk_support.streams import Tags, TicketComments, Tickets
 
 CONFIG_FILE = "secrets/config.json"
 
@@ -94,3 +95,39 @@ def test_comments_not_found_ticket(prepare_stream_args, status_code, expected_co
                 next(comments)
         else:
             assert len(list(comments)) == expected_comment_count
+
+
+@pytest.mark.parametrize(
+    "input_data,expected_data",
+    [
+        # success
+        (
+            {"id": 123, "custom_fields": [{"id": 3213212, "value": ["fake_3000", "fake_5555"]}]},
+            {"id": 123, "custom_fields": [{"id": 3213212, "value": "['fake_3000', 'fake_5555']"}]},
+        ),
+        (
+            {"id": 234, "custom_fields": [{"id": 2345234, "value": "fake_123"}]},
+            {"id": 234, "custom_fields": [{"id": 2345234, "value": "fake_123"}]},
+        ),
+        (
+            {"id": 345, "custom_fields": [{"id": 5432123, "value": 55432.321}]},
+            {"id": 345, "custom_fields": [{"id": 5432123, "value": "55432.321"}]},
+        ),
+    ],
+)
+def test_transform_for_tickets_stream(prepare_stream_args, input_data, expected_data):
+    """Checks Transform in case when records come with invalid fields data types"""
+    stream = Tickets(**prepare_stream_args)
+    with requests_mock.Mocker() as ticket_mock:
+        path = "incremental/tickets.json"
+        stream.path = Mock(return_value=path)
+        url = stream.url_base + path
+        ticket_mock.get(
+            url,
+            status_code=200,
+            json={"tickets": [input_data], "end_time": "2021-07-22T06:55:55Z", "end_of_stream": True},
+        )
+        tickets = stream.read_records(sync_mode=SyncMode.full_refresh)
+        for ticket in tickets:
+            stream.transformer.transform(ticket, stream.get_json_schema())
+            assert ticket == expected_data
