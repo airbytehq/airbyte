@@ -37,19 +37,28 @@ public class DockerProcessFactory implements ProcessFactory {
   private final Path workspaceRoot;
   private final String localMountSource;
   private final String networkName;
-  private final boolean isRoot;
+  private final boolean isOrchestrator;
   private final Path imageExistsScriptPath;
 
+  /**
+   * Used to construct a Docker process.
+   *
+   * @param workspaceRoot real root of workspace
+   * @param workspaceMountSource workspace volume
+   * @param localMountSource local volume
+   * @param networkName docker network
+   * @param isOrchestrator if the process needs to be able to launch containers
+   */
   public DockerProcessFactory(final Path workspaceRoot,
                               final String workspaceMountSource,
                               final String localMountSource,
                               final String networkName,
-                              final boolean isRoot) {
+                              final boolean isOrchestrator) {
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
     this.networkName = networkName;
-    this.isRoot = isRoot;
+    this.isOrchestrator = isOrchestrator;
     this.imageExistsScriptPath = prepareImageExistsScript();
   }
 
@@ -94,7 +103,7 @@ public class DockerProcessFactory implements ProcessFactory {
 
       List<String> cmd;
 
-      if (isRoot) {
+      if (isOrchestrator) {
         cmd = Lists.newArrayList(
             "docker",
             "run",
@@ -102,13 +111,13 @@ public class DockerProcessFactory implements ProcessFactory {
             "--init",
             "-i",
             "-v",
-            String.format("%s:%s", workspaceMountSource, new EnvConfigs().getWorkspaceRoot()),
+            String.format("%s:%s", workspaceMountSource, workspaceRoot), // real workspace root, not a rebased version
             "-v",
             String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
             "-v",
-            "/var/run/docker.sock:/var/run/docker.sock",
+            "/var/run/docker.sock:/var/run/docker.sock", // needs to be able to run docker in docker
             "-w",
-            jobRoot.toString(),
+            jobRoot.toString(), // real jobroot, not rebased version
             "--network",
             networkName,
             "--log-driver",
@@ -121,11 +130,11 @@ public class DockerProcessFactory implements ProcessFactory {
             "--init",
             "-i",
             "-v",
-            String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION),
+            String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION), // uses job data mount
             "-v",
             String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
             "-w",
-            rebasePath(jobRoot).toString(),
+            rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
             "--network",
             networkName,
             "--log-driver",

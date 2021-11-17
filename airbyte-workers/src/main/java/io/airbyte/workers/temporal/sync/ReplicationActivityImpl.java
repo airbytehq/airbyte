@@ -170,18 +170,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               "connectionId.json", Jsons.serialize(connectionId),
               "envMap.json", Jsons.serialize(System.getenv()));
 
-          // todo: temporarily hack around docker inclusion
-          final Configs configs = new EnvConfigs();
-          ProcessFactory rootProcessFactory = new DockerProcessFactory(
-              new EnvConfigs().getWorkspaceRoot(),
-              configs.getWorkspaceDockerMount(),
-              configs.getLocalDockerMount(),
-              "airbyte_default",
-              true);
-
           // for now keep same failure behavior where this is heartbeating and depends on the parent worker to
           // exist
-          process = rootProcessFactory.create(
+          process = processFactory.create(
               "runner-" + UUID.randomUUID().toString().substring(0, 10),
               0,
               jobPath,
