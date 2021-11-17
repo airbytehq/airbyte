@@ -19,7 +19,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class JobsStream(HttpStream):
-    " https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs "
+    "https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs"
 
     name = None
     primary_key = None
@@ -41,7 +41,7 @@ class JobsStream(HttpStream):
             return {"name": self.JOB_NAME, "reportTypeId": self.name}
 
     def list(self):
-        " https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/list "
+        "https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/list"
         self.name = None
         self.http_method = "GET"
         results = list(self.read_records(sync_mode=None))
@@ -49,7 +49,7 @@ class JobsStream(HttpStream):
         return result.get("jobs", {})
 
     def create(self, name):
-        " https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/create "
+        "https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/create"
         self.name = name
         self.http_method = "POST"
         results = list(self.read_records(sync_mode=None))
@@ -58,7 +58,7 @@ class JobsStream(HttpStream):
 
 
 class ReportResources(HttpStream):
-    " https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs.reports/list "
+    "https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs.reports/list"
 
     name = None
     primary_key = "id"
@@ -98,7 +98,7 @@ class ReportResources(HttpStream):
 
 
 class ChannelReports(HttpSubStream):
-    " https://developers.google.com/youtube/reporting/v1/reports/channel_reports "
+    "https://developers.google.com/youtube/reporting/v1/reports/channel_reports"
 
     name = None
     primary_key = None
