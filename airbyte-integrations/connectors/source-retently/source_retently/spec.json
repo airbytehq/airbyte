@@ -4,13 +4,76 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Retently Api Spec",
     "type": "object",
-    "required": ["api_key"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
-      "api_key": {
-        "type": "string",
-        "description": "API key from https://app.retently.com/settings/api/tokens"
+      "credentials": {
+        "title": "Authentication mechanism",
+        "description": "Choose how to authenticate to Retently",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Authenticate via Retently (Oauth)",
+            "required": ["client_id", "client_secret", "refresh_token"],
+            "additionalProperties": false,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "enum": ["Client"],
+                "default": "Client",
+                "order": 0
+              },
+              "client_id": {
+                "title": "Client ID",
+                "type": "string",
+                "description": "The Client ID of your application"
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "description": "The client secret of your application",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "title": "Refresh Token",
+                "type": "string",
+                "description": "A refresh token generated using the above client ID and secret",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Authenticate with API Token",
+            "required": ["api_key"],
+            "additionalProperties": false,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Token",
+                "enum": ["Token"],
+                "default": "Token",
+                "order": 0
+              },
+              "api_key": {
+                "title": "API Token",
+                "description": "API token from https://app.retently.com/settings/api/tokens",
+                "type": "string",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
       }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["credentials", 0],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"]]
     }
   }
 }
