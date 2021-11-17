@@ -58,7 +58,6 @@ public class AirbyteGithubStoreTest {
       assertEquals(Collections.emptyList(), githubStore.getLatestSources());
     }
 
-
     @Test
     void testGetLatestDestinationsWithNonJson() throws InterruptedException {
       final var nonjsonBody = "irrelevant text";
@@ -80,10 +79,10 @@ public class AirbyteGithubStoreTest {
       webServer.enqueue(jsonResponse);
       assertEquals(Collections.emptyList(), githubStore.getLatestDestinations());
     }
+
   }
 
-
-    @Nested
+  @Nested
   @DisplayName("when there is no internet")
   class NoInternet {
 
@@ -98,7 +97,6 @@ public class AirbyteGithubStoreTest {
       webServer.shutdown();
       assertEquals(Collections.emptyList(), githubStore.getLatestSources());
     }
-
 
   }
 
