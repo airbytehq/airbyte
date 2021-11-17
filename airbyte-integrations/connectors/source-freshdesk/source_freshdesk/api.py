@@ -134,7 +134,7 @@ class StreamAPI(ABC):
         """Read using getter"""
         params = params or {}
 
-        for page in count(1):
+        for page in count(start=1):
             batch = list(
                 getter(
                     params={
