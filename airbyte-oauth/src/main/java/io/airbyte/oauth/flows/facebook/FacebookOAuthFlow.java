@@ -41,7 +41,11 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
   protected abstract String getScopes();
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
       return new URIBuilder(AUTH_CODE_TOKEN_URL)
           .addParameter("client_id", clientId)
