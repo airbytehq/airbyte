@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import boto3
+import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -92,8 +93,9 @@ class SourceAmazonSellerPartner(AbstractSource):
             orders_stream = Orders(**stream_kwargs)
             next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
-        except Exception as e:
-            return False, e
+        except StopIteration or requests.exceptions.RequestException as e:
+            if isinstance(e, StopIteration):
+                e = "Could not check connection without data for Orders stream. " "Please change value for replication start date field."
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
