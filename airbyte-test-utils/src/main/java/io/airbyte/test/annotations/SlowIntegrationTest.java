@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
  * The test will only be run when the gradle slowIntegrationTests task is run
  */
 @Target({ElementType.ANNOTATION_TYPE, ElementType.TYPE})
-@Tag("slow-integration")
+@Tag("platform-slow-integration")
 public @interface SlowIntegrationTest {
 
 }

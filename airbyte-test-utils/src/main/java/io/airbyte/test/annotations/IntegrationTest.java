@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
  * The test will only be run when the gradle integrationTest task is run
  */
 @Target({ElementType.ANNOTATION_TYPE, ElementType.TYPE})
-@Tag("integration")
+@Tag("platform-integration")
 public @interface IntegrationTest {
 
 }

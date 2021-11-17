@@ -197,8 +197,8 @@ subprojects {
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
     }
 
-    def integrationTagName = 'integration'
-    def slowIntegratinoTagName = 'slow-integration'
+    def integrationTagName = 'platform-integration'
+    def slowIntegratinoTagName = 'platform-slow-integration'
 
     test {
         useJUnitPlatform {
