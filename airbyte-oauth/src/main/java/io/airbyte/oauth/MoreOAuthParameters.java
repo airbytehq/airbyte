@@ -74,40 +74,24 @@ public class MoreOAuthParameters {
   }
 
   public static JsonNode mergeJsons(final ObjectNode mainConfig, final ObjectNode fromConfig) {
-    return mergeJsons(mainConfig, fromConfig, null);
-  }
-
-  public static JsonNode mergeJsons(final ObjectNode mainConfig, final ObjectNode fromConfig, final JsonNode maskedValue) {
     for (final String key : Jsons.keys(fromConfig)) {
       if (fromConfig.get(key).getNodeType() == OBJECT) {
         // nested objects are merged rather than overwrite the contents of the equivalent object in config
         if (mainConfig.get(key) == null) {
-          mergeJsons(mainConfig.putObject(key), (ObjectNode) fromConfig.get(key), maskedValue);
+          mergeJsons(mainConfig.putObject(key), (ObjectNode) fromConfig.get(key));
         } else if (mainConfig.get(key).getNodeType() == OBJECT) {
-          mergeJsons((ObjectNode) mainConfig.get(key), (ObjectNode) fromConfig.get(key), maskedValue);
+          mergeJsons((ObjectNode) mainConfig.get(key), (ObjectNode) fromConfig.get(key));
         } else {
           throw new IllegalStateException("Can't merge an object node into a non-object node!");
         }
       } else {
-        if (maskedValue != null && !maskedValue.isNull()) {
-          LOGGER.debug(String.format("Masking instance wide parameter %s in config", key));
-          mainConfig.set(key, maskedValue);
-        } else {
-          if (!mainConfig.has(key) || isSecretMask(mainConfig.get(key).asText())) {
-            LOGGER.debug(String.format("injecting instance wide parameter %s into config", key));
-            mainConfig.set(key, fromConfig.get(key));
-          }
+        if (!mainConfig.has(key) || isSecretMask(mainConfig.get(key).asText())) {
+          LOGGER.debug(String.format("injecting instance wide parameter %s into config", key));
+          mainConfig.set(key, fromConfig.get(key));
         }
       }
     }
     return mainConfig;
-  }
-
-  public static JsonNode getSecretMask() {
-    // TODO secrets should be masked with the correct type
-    // https://github.com/airbytehq/airbyte/issues/5990
-    // In the short-term this is not world-ending as all secret fields are currently strings
-    return Jsons.jsonNode(SECRET_MASK);
   }
 
   private static boolean isSecretMask(final String input) {
