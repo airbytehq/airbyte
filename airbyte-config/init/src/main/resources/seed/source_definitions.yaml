@@ -108,6 +108,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/commercetools
   sourceType: api
+- name: Customer.io
+  sourceDefinitionId: c47d6804-8b98-449f-970a-5ddb5cb5d7aa
+  dockerRepository: faros-ai/airbyte-customer-io-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/customer-io
+  icon: customer-io.svg
+  sourceType: api
 - name: Delighted
   sourceDefinitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
   dockerRepository: airbyte/source-delighted
@@ -232,6 +239,13 @@
   dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/greenhouse
   icon: greenhouse.svg
+  sourceType: api
+- name: Harness
+  sourceDefinitionId: 6fe89830-d04d-401b-aad6-6552ffa5c4af
+  dockerRepository: faros-ai/airbyte-harness-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/harness
+  icon: harness.svg
   sourceType: api
 - name: Harvest
   sourceDefinitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
@@ -388,6 +402,13 @@
   dockerImageTag: 0.3.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/oracle
   sourceType: database
+- name: PagerDuty
+  sourceDefinitionId: 2817b3f0-04e4-4c7a-9f32-7a5e8a83db95
+  dockerRepository: faros-ai/airbyte-pagerduty-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/pagerduty
+  icon: pagerduty.svg
+  sourceType: api
 - name: Paypal Transaction
   sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
   dockerRepository: airbyte/source-paypal-transaction
@@ -400,6 +421,13 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/paystack
   icon: paystack.svg
+  sourceType: api
+- name: Phabricator
+  sourceDefinitionId: e7dd2ae5-6905-46db-a609-84dfcf54355c
+  dockerRepository: faros-ai/airbyte-phabricator-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/phabricator
+  icon: phabricator.svg
   sourceType: api
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
@@ -599,6 +627,13 @@
   dockerRepository: airbyte/source-us-census
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/us-census
+  sourceType: api
+- name: VictorOps
+  sourceDefinitionId: 7e20ce3e-d820-4327-ad7a-88f3927fd97a
+  dockerRepository: faros-ai/airbyte-victorops-source
+  dockerImageTag: 0.1.23
+  documentationUrl: https://docs.airbyte.io/integrations/sources/victorops
+  icon: victorops.svg
   sourceType: api
 - name: Zendesk Chat
   sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
