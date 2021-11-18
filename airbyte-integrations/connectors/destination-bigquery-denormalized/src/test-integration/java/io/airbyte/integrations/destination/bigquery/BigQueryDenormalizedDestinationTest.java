@@ -281,8 +281,8 @@ class BigQueryDenormalizedDestinationTest {
     return resultSet;
   }
 
-  private JsonNode removeAirbyteMetadataFields(JsonNode record) {
-    for (String airbyteMetadataField : AIRBYTE_METADATA_FIELDS) {
+  private JsonNode removeAirbyteMetadataFields(final JsonNode record) {
+    for (final String airbyteMetadataField : AIRBYTE_METADATA_FIELDS) {
       ((ObjectNode) record).remove(airbyteMetadataField);
     }
     return record;
@@ -311,7 +311,7 @@ class BigQueryDenormalizedDestinationTest {
         arguments(getSchema(), MESSAGE_USERS2));
   }
 
-  private static AirbyteMessage createRecordMessage(String stream, JsonNode data) {
+  private static AirbyteMessage createRecordMessage(final String stream, final JsonNode data) {
     return new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(stream)
             .withData(data)

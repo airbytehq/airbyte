@@ -13,7 +13,7 @@ public class MigrationCurrentSchemaTest {
   @Test
   public void testLastMigration() {
     final Migration lastMigration = Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1);
-    assertEquals(Migrations.MIGRATION_V_0_30_0.getVersion(), lastMigration.getVersion(),
+    assertEquals(Migrations.MIGRATION_V_0_32_0.getVersion(), lastMigration.getVersion(),
         "The file-based migration is deprecated. Please do not write a new migration this way. Use Flyway instead.");
   }
 
