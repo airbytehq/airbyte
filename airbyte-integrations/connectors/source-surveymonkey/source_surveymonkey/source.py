@@ -38,8 +38,7 @@ class SourceSurveymonkey(AbstractSource):
         try:
             response = requests.get(url=url, headers=authenticator.get_auth_header())
             response.raise_for_status()
-            self._check_scopes(response.json())
-            return True, None
+            return self._check_scopes(response.json())
         except Exception as e:
             return False, repr(e)
 
@@ -59,4 +58,5 @@ class SourceSurveymonkey(AbstractSource):
         granted_scopes = response_json["scopes"]["granted"]
         missed_scopes = cls.SCOPES - set(granted_scopes)
         if missed_scopes:
-            raise Exception("missed required scopes: " + ", ".join(missed_scopes))
+            return False, "missed required scopes: " + ", ".join(missed_scopes)
+        return True, None
