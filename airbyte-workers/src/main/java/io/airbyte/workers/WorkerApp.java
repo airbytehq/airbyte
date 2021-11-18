@@ -45,7 +45,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -172,13 +171,19 @@ public class WorkerApp {
 
   private static ProcessFactory getOrchestratorProcessFactory(final Configs configs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      throw new NotImplementedException();
+      // there is no difference for kube
+      return getJobProcessFactory(configs);
     } else {
       return new DockerProcessFactory(
           configs.getWorkspaceRoot(),
           configs.getWorkspaceDockerMount(),
           configs.getLocalDockerMount(),
-          "airbyte_default", // todo
+
+          // this needs to point at the Docker network Airbyte is running on, not the host network or job
+          // runner network
+          // otherwise it can't talk with the db/minio
+          "airbyte_default", // todo: should this be configurable via envconfigs?
+
           true);
     }
   }
