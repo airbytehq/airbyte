@@ -14,25 +14,29 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.AdvancedAuth;
+import io.airbyte.protocol.models.AdvancedAuth.AuthFlowType;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.OAuthConfigSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class OAuthConfigSupplierTest {
+
+  public static final String API_CLIENT = "api_client";
+  public static final String CREDENTIALS = "credentials";
 
   private ConfigRepository configRepository;
   private TrackingClient trackingClient;
@@ -43,16 +47,15 @@ public class OAuthConfigSupplierTest {
   public void setup() throws JsonValidationException, ConfigNotFoundException, IOException {
     configRepository = mock(ConfigRepository.class);
     trackingClient = mock(TrackingClient.class);
-    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
+    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     sourceDefinitionId = UUID.randomUUID();
-    when(configRepository.getStandardSourceDefinition(any())).thenReturn(new StandardSourceDefinition()
-        .withSourceDefinitionId(sourceDefinitionId)
-        .withName("test")
-        .withDockerImageTag("dev"));
+    setupStandardDefinitionMock(createAdvancedAuth()
+        .withPredicateKey(List.of(CREDENTIALS, "auth_type"))
+        .withPredicateValue("oauth"));
   }
 
   @Test
-  public void testInjectEmptyOAuthParameters() throws IOException {
+  public void testNoOAuthInjectionBecauseEmptyParams() throws IOException {
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
@@ -61,71 +64,168 @@ public class OAuthConfigSupplierTest {
   }
 
   @Test
-  public void testInjectGlobalOAuthParameters() throws JsonValidationException, IOException {
+  public void testNoOAuthInjectionBecauseMissingPredicateKey() throws IOException, JsonValidationException, ConfigNotFoundException {
+    setupStandardDefinitionMock(createAdvancedAuth()
+        .withPredicateKey(List.of("some_random_fields", "auth_type"))
+        .withPredicateValue("oauth"));
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
-    final Map<String, String> oauthParameters = generateOAuthParameters();
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
-        new SourceOAuthParameter()
-            .withOauthParameterId(UUID.randomUUID())
+    setupOAuthParamMocks(generateOAuthParameters());
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    assertEquals(config, actualConfig);
+    assertNoTracking();
+  }
+
+  @Test
+  public void testNoOAuthInjectionBecauseWrongPredicateValue() throws IOException, JsonValidationException, ConfigNotFoundException {
+    setupStandardDefinitionMock(createAdvancedAuth()
+        .withPredicateKey(List.of(CREDENTIALS, "auth_type"))
+        .withPredicateValue("wrong_auth_type"));
+    final JsonNode config = generateJsonConfig();
+    final UUID workspaceId = UUID.randomUUID();
+    setupOAuthParamMocks(generateOAuthParameters());
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    assertEquals(config, actualConfig);
+    assertNoTracking();
+  }
+
+  @Test
+  public void testOAuthInjection() throws JsonValidationException, IOException {
+    final JsonNode config = generateJsonConfig();
+    final UUID workspaceId = UUID.randomUUID();
+    final Map<String, Object> oauthParameters = generateOAuthParameters();
+    setupOAuthParamMocks(oauthParameters);
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final JsonNode expectedConfig = getExpectedNode((String) oauthParameters.get(API_CLIENT));
+    assertEquals(expectedConfig, actualConfig);
+    assertTracking(workspaceId);
+  }
+
+  @Test
+  public void testOAuthInjectionWithoutPredicate() throws JsonValidationException, IOException, ConfigNotFoundException {
+    setupStandardDefinitionMock(createAdvancedAuth()
+        .withPredicateKey(null)
+        .withPredicateValue(null));
+    final JsonNode config = generateJsonConfig();
+    final UUID workspaceId = UUID.randomUUID();
+    final Map<String, Object> oauthParameters = generateOAuthParameters();
+    setupOAuthParamMocks(oauthParameters);
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final JsonNode expectedConfig = getExpectedNode((String) oauthParameters.get(API_CLIENT));
+    assertEquals(expectedConfig, actualConfig);
+    assertTracking(workspaceId);
+  }
+
+  @Test
+  public void testOAuthInjectionWithoutPredicateValue() throws JsonValidationException, IOException, ConfigNotFoundException {
+    setupStandardDefinitionMock(createAdvancedAuth()
+        .withPredicateKey(List.of(CREDENTIALS, "auth_type"))
+        .withPredicateValue(""));
+    final JsonNode config = generateJsonConfig();
+    final UUID workspaceId = UUID.randomUUID();
+    final Map<String, Object> oauthParameters = generateOAuthParameters();
+    setupOAuthParamMocks(oauthParameters);
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final JsonNode expectedConfig = getExpectedNode((String) oauthParameters.get(API_CLIENT));
+    assertEquals(expectedConfig, actualConfig);
+    assertTracking(workspaceId);
+  }
+
+  @Test
+  public void testOAuthFullInjectionBecauseNoOAuthSpec() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final JsonNode config = generateJsonConfig();
+    final UUID workspaceId = UUID.randomUUID();
+    final Map<String, Object> oauthParameters = generateOAuthParameters();
+    when(configRepository.getStandardSourceDefinition(any()))
+        .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(sourceDefinitionId)
-            .withWorkspaceId(null)
-            .withConfiguration(Jsons.jsonNode(oauthParameters)),
-        new SourceOAuthParameter()
-            .withOauthParameterId(UUID.randomUUID())
-            .withSourceDefinitionId(UUID.randomUUID())
-            .withWorkspaceId(null)
-            .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
+            .withName("test")
+            .withDockerImageTag("dev")
+            .withSpec(null));
+    setupOAuthParamMocks(oauthParameters);
     final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
     final ObjectNode expectedConfig = ((ObjectNode) Jsons.clone(config));
     for (final String key : oauthParameters.keySet()) {
       expectedConfig.set(key, Jsons.jsonNode(oauthParameters.get(key)));
     }
     assertEquals(expectedConfig, actualConfig);
-    verify(trackingClient, times(1)).track(workspaceId, "OAuth Injection - Backend", Map.of(
-        "connector_source", "test",
-        "connector_source_definition_id", sourceDefinitionId,
-        "connector_source_version", "dev"));
+    assertTracking(workspaceId);
   }
 
   @Test
-  public void testInjectWorkspaceOAuthParameters() throws JsonValidationException, IOException {
+  public void testOAuthInjectionScopedToWorkspace() throws JsonValidationException, IOException {
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
+    final Map<String, Object> oauthParameters = generateOAuthParameters();
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
         new SourceOAuthParameter()
             .withOauthParameterId(UUID.randomUUID())
-            .withSourceDefinitionId(sourceDefinitionId)
+            .withSourceDefinitionId(UUID.randomUUID())
             .withWorkspaceId(null)
             .withConfiguration(Jsons.jsonNode(generateOAuthParameters())),
         new SourceOAuthParameter()
             .withOauthParameterId(UUID.randomUUID())
             .withSourceDefinitionId(sourceDefinitionId)
             .withWorkspaceId(workspaceId)
-            .withConfiguration(Jsons.jsonNode(ImmutableMap.<String, Object>builder()
-                .put("api_secret", "my secret workspace")
-                .put("api_client", Map.of("anyOf", List.of(Map.of("id", "id"), Map.of("service", "account"))))
-                .build()))));
+            .withConfiguration(Jsons.jsonNode(oauthParameters))));
     final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
-    final ObjectNode expectedConfig = (ObjectNode) Jsons.clone(config);
-    expectedConfig.set("api_secret", Jsons.jsonNode("my secret workspace"));
-    expectedConfig.set("api_client", Jsons.jsonNode(Map.of("anyOf", List.of(
-        Map.of("id", "id"),
-        Map.of("service", "account")))));
+    final JsonNode expectedConfig = getExpectedNode((String) oauthParameters.get(API_CLIENT));
     assertEquals(expectedConfig, actualConfig);
-    verify(trackingClient, times(1)).track(workspaceId, "OAuth Injection - Backend", Map.of(
-        "connector_source", "test",
-        "connector_source_definition_id", sourceDefinitionId,
-        "connector_source_version", "dev"));
+    assertTracking(workspaceId);
   }
 
   @Test
-  void testInjectMaskedOAuthParameters() throws JsonValidationException, IOException {
-    final OAuthConfigSupplier maskingSupplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
-
+  public void testOAuthFullInjectionBecauseNoOAuthSpecNestedParameters() throws JsonValidationException, IOException, ConfigNotFoundException {
+    // Until https://github.com/airbytehq/airbyte/issues/7624 is solved, we need to handle nested oauth
+    // parameters
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
-    final Map<String, String> oauthParameters = generateOAuthParameters();
+    final Map<String, Object> oauthParameters = generateNestedOAuthParameters();
+    setupOAuthParamMocks(oauthParameters);
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final JsonNode expectedConfig = Jsons.jsonNode(Map.of(
+        "fieldName", "fieldValue",
+        CREDENTIALS, Map.of(
+            "api_secret", "123",
+            "auth_type", "oauth",
+            API_CLIENT, ((Map<String, String>) oauthParameters.get(CREDENTIALS)).get(API_CLIENT))));
+    assertEquals(expectedConfig, actualConfig);
+    assertTracking(workspaceId);
+  }
+
+  @Test
+  public void testOAuthInjectionNestedParameters() throws JsonValidationException, IOException {
+    // Until https://github.com/airbytehq/airbyte/issues/7624 is solved, we need to handle nested oauth
+    // parameters
+    final JsonNode config = generateJsonConfig();
+    final UUID workspaceId = UUID.randomUUID();
+    final Map<String, Object> oauthParameters = generateNestedOAuthParameters();
+    setupOAuthParamMocks(oauthParameters);
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final JsonNode expectedConfig = getExpectedNode((String) ((Map<String, Object>) oauthParameters.get(CREDENTIALS)).get(API_CLIENT));
+    assertEquals(expectedConfig, actualConfig);
+    assertTracking(workspaceId);
+  }
+
+  private static AdvancedAuth createAdvancedAuth() {
+    return new AdvancedAuth()
+        .withAuthFlowType(AuthFlowType.OAUTH_2_0)
+        .withOauthConfigSpecification(new OAuthConfigSpecification()
+            .withCompleteOauthServerOutputSpecification(Jsons.jsonNode(Map.of(
+                API_CLIENT, Map.of(
+                    "type", "string",
+                    OAuthConfigSupplier.PATH_IN_CONNECTOR_CONFIG, List.of(CREDENTIALS, API_CLIENT))))));
+  }
+
+  private void setupStandardDefinitionMock(final AdvancedAuth advancedAuth) throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configRepository.getStandardSourceDefinition(any())).thenReturn(new StandardSourceDefinition()
+        .withSourceDefinitionId(sourceDefinitionId)
+        .withName("test")
+        .withDockerImageTag("dev")
+        .withSpec(new ConnectorSpecification().withAdvancedAuth(advancedAuth)));
+  }
+
+  private void setupOAuthParamMocks(final Map<String, Object> oauthParameters) throws JsonValidationException, IOException {
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
         new SourceOAuthParameter()
             .withOauthParameterId(UUID.randomUUID())
@@ -137,130 +237,46 @@ public class OAuthConfigSupplierTest {
             .withSourceDefinitionId(UUID.randomUUID())
             .withWorkspaceId(null)
             .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
-    final JsonNode actualConfig = maskingSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
-    final ObjectNode expectedConfig = ((ObjectNode) Jsons.clone(config));
-    for (final String key : oauthParameters.keySet()) {
-      expectedConfig.set(key, Jsons.jsonNode(OAuthConfigSupplier.SECRET_MASK));
-    }
-    assertEquals(expectedConfig, actualConfig);
-    assertNoTracking();
   }
 
-  private ObjectNode generateJsonConfig() {
-    return (ObjectNode) Jsons.jsonNode(ImmutableMap.builder()
-        .put("apiSecret", "123")
-        .put("client", "testing")
-        .build());
+  private static ObjectNode generateJsonConfig() {
+    return (ObjectNode) Jsons.jsonNode(
+        Map.of(
+            "fieldName", "fieldValue",
+            CREDENTIALS, Map.of(
+                "api_secret", "123",
+                "auth_type", "oauth")));
   }
 
-  private Map<String, String> generateOAuthParameters() {
-    return ImmutableMap.<String, String>builder()
-        .put("api_secret", "mysecret")
-        .put("api_client", UUID.randomUUID().toString())
-        .build();
+  private static Map<String, Object> generateOAuthParameters() {
+    return Map.of(
+        "api_secret", "mysecret",
+        API_CLIENT, UUID.randomUUID().toString());
   }
 
-  private void maskAllValues(final ObjectNode node) {
-    for (final String key : Jsons.keys(node)) {
-      if (node.get(key).getNodeType() == JsonNodeType.OBJECT) {
-        maskAllValues((ObjectNode) node.get(key));
-      } else {
-        node.set(key, Jsons.jsonNode(OAuthConfigSupplier.SECRET_MASK));
-      }
-    }
+  private static Map<String, Object> generateNestedOAuthParameters() {
+    return Map.of(CREDENTIALS, generateOAuthParameters());
   }
 
-  @Test
-  void testInjectUnnestedNode_Masked() {
-    final OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
-    final ObjectNode oauthParams = (ObjectNode) Jsons.jsonNode(generateOAuthParameters());
-    final ObjectNode maskedOauthParams = Jsons.clone(oauthParams);
-    maskAllValues(maskedOauthParams);
-    final ObjectNode actual = generateJsonConfig();
-    final ObjectNode expected = Jsons.clone(actual);
-    expected.setAll(maskedOauthParams);
-
-    supplier.injectJsonNode(actual, oauthParams);
-    assertEquals(expected, actual);
-    assertNoTracking();
-  }
-
-  @Test
-  void testInjectUnnestedNode_Unmasked() {
-    final OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
-    final ObjectNode oauthParams = (ObjectNode) Jsons.jsonNode(generateOAuthParameters());
-
-    final ObjectNode actual = generateJsonConfig();
-    final ObjectNode expected = Jsons.clone(actual);
-    expected.setAll(oauthParams);
-
-    supplier.injectJsonNode(actual, oauthParams);
-
-    assertEquals(expected, actual);
-    assertNoTracking();
-  }
-
-  @Test
-  void testInjectNewNestedNode_Masked() {
-    final OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, true, trackingClient);
-    final ObjectNode oauthParams = (ObjectNode) Jsons.jsonNode(generateOAuthParameters());
-    final ObjectNode maskedOauthParams = Jsons.clone(oauthParams);
-    maskAllValues(maskedOauthParams);
-    final ObjectNode nestedConfig = (ObjectNode) Jsons.jsonNode(ImmutableMap.builder()
-        .put("oauth_credentials", oauthParams)
-        .build());
-
-    // nested node does not exist in actual object
-    final ObjectNode actual = generateJsonConfig();
-    final ObjectNode expected = Jsons.clone(actual);
-    expected.putObject("oauth_credentials").setAll(maskedOauthParams);
-
-    supplier.injectJsonNode(actual, nestedConfig);
-    assertEquals(expected, actual);
-    assertNoTracking();
-  }
-
-  @Test
-  @DisplayName("A nested config should be inserted with the same nesting structure")
-  void testInjectNewNestedNode_Unmasked() {
-    final OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
-    final ObjectNode oauthParams = (ObjectNode) Jsons.jsonNode(generateOAuthParameters());
-    final ObjectNode nestedConfig = (ObjectNode) Jsons.jsonNode(ImmutableMap.builder()
-        .put("oauth_credentials", oauthParams)
-        .build());
-
-    // nested node does not exist in actual object
-    final ObjectNode actual = generateJsonConfig();
-    final ObjectNode expected = Jsons.clone(actual);
-    expected.putObject("oauth_credentials").setAll(oauthParams);
-
-    supplier.injectJsonNode(actual, nestedConfig);
-    assertEquals(expected, actual);
-    assertNoTracking();
-  }
-
-  @Test
-  @DisplayName("A nested node which partially exists in the main config should be merged into the main config, not overwrite the whole nested object")
-  void testInjectedPartiallyExistingNestedNode_Unmasked() {
-    final OAuthConfigSupplier supplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
-    final ObjectNode oauthParams = (ObjectNode) Jsons.jsonNode(generateOAuthParameters());
-    final ObjectNode nestedConfig = (ObjectNode) Jsons.jsonNode(ImmutableMap.builder()
-        .put("oauth_credentials", oauthParams)
-        .build());
-
-    // nested node partially exists in actual object
-    final ObjectNode actual = generateJsonConfig();
-    actual.putObject("oauth_credentials").put("irrelevant_field", "_");
-    final ObjectNode expected = Jsons.clone(actual);
-    ((ObjectNode) expected.get("oauth_credentials")).setAll(oauthParams);
-
-    supplier.injectJsonNode(actual, nestedConfig);
-    assertEquals(expected, actual);
-    assertNoTracking();
+  private static JsonNode getExpectedNode(final String apiClient) {
+    return Jsons.jsonNode(
+        Map.of(
+            "fieldName", "fieldValue",
+            CREDENTIALS, Map.of(
+                "api_secret", "123",
+                "auth_type", "oauth",
+                API_CLIENT, apiClient)));
   }
 
   private void assertNoTracking() {
     verify(trackingClient, times(0)).track(any(), anyString(), anyMap());
+  }
+
+  private void assertTracking(final UUID workspaceId) {
+    verify(trackingClient, times(1)).track(workspaceId, "OAuth Injection - Backend", Map.of(
+        "connector_source", "test",
+        "connector_source_definition_id", sourceDefinitionId,
+        "connector_source_version", "dev"));
   }
 
 }

@@ -31,6 +31,10 @@ public class HubspotOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
     return Path.of("secrets/hubspot.json");
   }
 
+  protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
+    return new HubspotOAuthFlow(configRepository, httpClient);
+  }
+
   @Override
   protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
     return new HubspotOAuthFlow(configRepository, httpClient);
@@ -52,7 +56,7 @@ public class HubspotOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
             .put("client_secret", credentialsJson.get("credentials").get("client_secret").asText())
             .build()))));
     var flowObject = getFlowImplementation(configRepository, httpClient);
-    final String url = flowObject.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = flowObject.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
