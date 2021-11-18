@@ -135,6 +135,16 @@ public class ConfigRepository {
     }
   }
 
+  public StandardWorkspace getStandardWorkspaceFromConnection(final UUID connectionId, final boolean isTombstone) {
+    try {
+      final StandardSync sync = getStandardSync(connectionId);
+      final SourceConnection source = getSourceConnection(sync.getSourceId());
+      return getStandardWorkspace(source.getWorkspaceId(), isTombstone);
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public List<StandardSourceDefinition> listStandardSourceDefinitions() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
   }
