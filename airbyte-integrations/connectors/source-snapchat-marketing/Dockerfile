@@ -19,11 +19,11 @@ RUN echo "Etc/UTC" > /etc/timezone
 
 WORKDIR /airbyte/integration_code
 COPY main.py ./
-COPY source_zendesk_support ./source_snapchat_marketing
+COPY source_snapchat_marketing ./source_snapchat_marketing
 
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.4
+LABEL io.airbyte.version=0.1.3
 LABEL io.airbyte.name=airbyte/source-snapchat-marketing
