@@ -54,11 +54,7 @@ class AirtableStream(HttpStream, ABC):
     def process_records(self, records):
         for record in records:
             data = record.get("fields", {})
-            processed_record = {
-                "_airtable_id": record.get("id"),
-                "_airtable_created_time": record.get("createdTime"),
-                **data
-            }
+            processed_record = {"_airtable_id": record.get("id"), "_airtable_created_time": record.get("createdTime"), **data}
             yield processed_record
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:

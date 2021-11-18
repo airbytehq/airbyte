@@ -3,8 +3,7 @@
 #
 
 from http import HTTPStatus
-from unittest.mock import patch
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -15,21 +14,26 @@ from source_airtable.helpers import Helpers
 def base_id():
     return "app1234567890"
 
+
 @pytest.fixture
 def api_key():
     return "key1234567890"
+
 
 @pytest.fixture
 def table():
     return "Table 1"
 
+
 @pytest.fixture
 def auth():
     return MagicMock()
 
+
 @pytest.fixture
 def json_response():
     return {"records": [{"id": "abc", "fields": {"name": "test"}}]}
+
 
 @pytest.fixture
 def expected_json_schema():
@@ -42,6 +46,7 @@ def expected_json_schema():
         },
         "type": "object",
     }
+
 
 def test_get_first_row(auth, base_id, table, json_response):
     with patch("requests.get") as mock_get:
