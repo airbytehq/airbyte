@@ -5,9 +5,11 @@
 package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +34,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ConfigRepositoryTest {
 
@@ -45,7 +49,7 @@ class ConfigRepositoryTest {
     configPersistence = mock(ConfigPersistence.class);
     final var secretPersistence = new MemorySecretPersistence();
     configRepository =
-        new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence));
+        spy(new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence)));
   }
 
   @AfterEach
@@ -72,6 +76,35 @@ class ConfigRepositoryTest {
     when(configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, WORKSPACE_ID.toString(), StandardWorkspace.class)).thenReturn(workspace);
 
     assertEquals(workspace, configRepository.getStandardWorkspace(WORKSPACE_ID, true));
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void testWorkspaceByConnectionId(final boolean isTombstone) throws ConfigNotFoundException, IOException, JsonValidationException {
+    final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withTombstone(isTombstone);
+
+    final UUID connectionId = UUID.randomUUID();
+    final UUID sourceId = UUID.randomUUID();
+    final StandardSync mSync = new StandardSync()
+        .withSourceId(sourceId);
+    final SourceConnection mSourceConnection = new SourceConnection()
+        .withWorkspaceId(WORKSPACE_ID);
+    final StandardWorkspace mWorkflow = new StandardWorkspace()
+        .withWorkspaceId(WORKSPACE_ID);
+
+    doReturn(mSync)
+        .when(configRepository)
+        .getStandardSync(connectionId);
+    doReturn(mSourceConnection)
+        .when(configRepository)
+        .getSourceConnection(sourceId);
+    doReturn(mWorkflow)
+        .when(configRepository)
+        .getStandardWorkspace(WORKSPACE_ID, isTombstone);
+
+    configRepository.getStandardWorkspaceFromConnection(connectionId, isTombstone);
+
+    verify(configRepository).getStandardWorkspace(WORKSPACE_ID, isTombstone);
   }
 
   @Test

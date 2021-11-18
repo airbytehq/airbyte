@@ -37,10 +37,11 @@ public class FacebookOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
   }
 
   @Override
-  protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
+  protected OAuthFlowImplementation getFlowImplementation(final ConfigRepository configRepository, final HttpClient httpClient) {
     return new FacebookMarketingOAuthFlow(configRepository, httpClient);
   }
 
+  @Override
   @BeforeEach
   public void setup() throws IOException {
     super.setup();
@@ -65,7 +66,7 @@ public class FacebookOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     waitForResponse(20);
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
