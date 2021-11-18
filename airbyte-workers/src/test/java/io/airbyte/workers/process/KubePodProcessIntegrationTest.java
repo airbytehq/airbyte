@@ -40,7 +40,7 @@ import org.junit.jupiter.api.Timeout;
 // Must have a timeout on this class because it tests child processes that may misbehave; otherwise
 // this can hang forever during failures.
 @Timeout(value = 5,
-    unit = TimeUnit.MINUTES)
+         unit = TimeUnit.MINUTES)
 @IntegrationTest
 public class KubePodProcessIntegrationTest {
 
