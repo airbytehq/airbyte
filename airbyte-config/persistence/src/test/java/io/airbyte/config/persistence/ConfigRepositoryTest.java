@@ -41,6 +41,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class ConfigRepositoryTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
+
   private ConfigPersistence configPersistence;
   private ConfigRepository configRepository;
 

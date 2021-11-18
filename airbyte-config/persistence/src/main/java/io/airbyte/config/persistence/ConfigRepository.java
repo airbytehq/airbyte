@@ -112,12 +112,6 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
-  public void writeStandardWorkspaces(final List<StandardWorkspace> workspaces) throws JsonValidationException, IOException {
-    for (final StandardWorkspace workspace : workspaces) {
-      persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
-    }
-  }
-
   public void setFeedback(final UUID workflowId) throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardWorkspace workspace = this.getStandardWorkspace(workflowId, false);
 
@@ -242,12 +236,12 @@ public class ConfigRepository {
   }
 
   private <T> void deleteConnectorDefinitionAndAssociations(
-                                                            final ConfigSchema definitionType,
-                                                            final ConfigSchema connectorType,
-                                                            final Class<T> connectorClass,
-                                                            final Function<T, UUID> connectorIdGetter,
-                                                            final Function<T, UUID> connectorDefinitionIdGetter,
-                                                            final UUID definitionId)
+      final ConfigSchema definitionType,
+      final ConfigSchema connectorType,
+      final Class<T> connectorClass,
+      final Function<T, UUID> connectorIdGetter,
+      final Function<T, UUID> connectorDefinitionIdGetter,
+      final UUID definitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final Set<T> connectors = persistence.listConfigs(connectorType, connectorClass)
         .stream()
@@ -304,8 +298,8 @@ public class ConfigRepository {
 
   /**
    * @param workspaceId workspace id for the config
-   * @param fullConfig full config
-   * @param spec connector specification
+   * @param fullConfig  full config
+   * @param spec        connector specification
    * @return partial config
    */
   public JsonNode statefulSplitSecrets(final UUID workspaceId, final JsonNode fullConfig, final ConnectorSpecification spec) {
@@ -314,9 +308,9 @@ public class ConfigRepository {
 
   /**
    * @param workspaceId workspace id for the config
-   * @param oldConfig old full config
-   * @param fullConfig new full config
-   * @param spec connector specification
+   * @param oldConfig   old full config
+   * @param fullConfig  new full config
+   * @param spec        connector specification
    * @return partial config
    */
   public JsonNode statefulUpdateSecrets(final UUID workspaceId,
@@ -352,7 +346,7 @@ public class ConfigRepository {
 
   /**
    * @param fullConfig full config
-   * @param spec connector specification
+   * @param spec       connector specification
    * @return partial config
    */
   public JsonNode statefulSplitEphemeralSecrets(final JsonNode fullConfig, final ConnectorSpecification spec) {
@@ -531,8 +525,8 @@ public class ConfigRepository {
   }
 
   /**
-   * Converts between a dumpConfig() output and a replaceAllConfigs() input, by deserializing the
-   * string/jsonnode into the AirbyteConfig, Stream&lt;Object&lt;AirbyteConfig.getClassName()&gt;&gt;
+   * Converts between a dumpConfig() output and a replaceAllConfigs() input, by deserializing the string/jsonnode into the AirbyteConfig,
+   * Stream&lt;Object&lt;AirbyteConfig.getClassName()&gt;&gt;
    *
    * @param configurations from dumpConfig()
    * @return input suitable for replaceAllConfigs()
@@ -557,8 +551,7 @@ public class ConfigRepository {
       final var augmentedMap = new HashMap<>(configs);
 
       // get all source defs so that we can use their specs when storing secrets.
-      @SuppressWarnings("unchecked")
-      final List<StandardSourceDefinition> sourceDefs =
+      @SuppressWarnings("unchecked") final List<StandardSourceDefinition> sourceDefs =
           (List<StandardSourceDefinition>) augmentedMap.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).collect(Collectors.toList());
       // restore data in the map that gets consumed downstream.
       augmentedMap.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefs.stream());
@@ -571,8 +564,7 @@ public class ConfigRepository {
           }));
 
       // get all destination defs so that we can use their specs when storing secrets.
-      @SuppressWarnings("unchecked")
-      final List<StandardDestinationDefinition> destinationDefs =
+      @SuppressWarnings("unchecked") final List<StandardDestinationDefinition> destinationDefs =
           (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).collect(Collectors.toList());
       augmentedMap.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefs.stream());
       final Map<UUID, ConnectorSpecification> destinationDefIdToSpec = destinationDefs

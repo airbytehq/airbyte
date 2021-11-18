@@ -165,6 +165,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         final boolean isExistingConfig = ctx.fetchExists(select()
             .from(AIRBYTE_CONFIGS)
             .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId)));
+
         if (isExistingConfig) {
           updateConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configId);
         } else {
