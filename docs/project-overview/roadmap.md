@@ -12,12 +12,12 @@ Check out our [Roadmap for Core](https://github.com/airbytehq/airbyte/milestones
 
 We understand that we're not "production-ready" for a lot of companies yet. In the end, we just got started in July 2020, so we're at the beginning of the journey. Here is a highlight of the main features we are planning on releasing in the next few months:
 
-**Landing in October or so:**
+**Landing in November or so:**
 
-* Airbyte Cloud release. 
+* Improve stability and performance across the board.
+* Stabilize Airbyte Cloud Architecture.
+* Improve scheduling performance and migrate completely to Temporal.  
 * Adapt automatically to sources' schema changes.
-* Optimize normalization, so it costs less to our users
-* OAuth support for connector configuration \([\#768](https://github.com/airbytehq/airbyte/issues/768)\).
 
 **Coming a bit later:**
 
