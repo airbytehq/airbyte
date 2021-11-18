@@ -57,7 +57,7 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
   /**
    * Attempts to read an AirbyteMessage from the Destination.
    *
-   * @return returns an AirbyteMessage is the Destination emits one. Otherwise, empty. This method
+   * @return returns an AirbyteMessage if the Destination emits one. Otherwise, empty. This method
    *         BLOCKS on waiting for the Destination to emit data to STDOUT.
    */
   Optional<AirbyteMessage> attemptRead();
