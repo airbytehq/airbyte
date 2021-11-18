@@ -341,8 +341,6 @@ class SourceLinkedinAds(AbstractSource):
         try:
             next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
             return True, None
-        except requests.exceptions.RequestException as e:
-            return False, f"{e}, {response.json().get('message')}"
         except Exception as e:
             return False, e
 
