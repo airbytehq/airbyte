@@ -212,9 +212,10 @@ subprojects {
         finalizedBy jacocoTestReport
     }
 
-    task integrationTests(type: Test) {
+    task newIntegrationTests(type: Test) {
         useJUnitPlatform {
             includeTags integrationTagName
+
         }
         testLogging() {
             events 'failed'
@@ -241,10 +242,6 @@ subprojects {
             exceptionFormat 'full'
         }
         finalizedBy jacocoTestReport
-    }
-
-    jacocoTestReport {
-        dependsOn test
     }
 
     dependencies {
