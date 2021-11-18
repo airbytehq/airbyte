@@ -20,6 +20,8 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 // todo (cgardens) - these are not truly "unit" tests as they are check resources on the internet.
 // we should move them to "integration" tests, when we have facility to do so.
@@ -55,7 +57,7 @@ class DockerProcessFactoryTest {
   public void testImageExists() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
-    final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
+    final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "", false);
     assertTrue(processFactory.checkImageExists("busybox"));
   }
 
@@ -63,16 +65,17 @@ class DockerProcessFactoryTest {
   public void testImageDoesNotExist() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
-    final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
+    final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "", false);
     assertFalse(processFactory.checkImageExists("airbyte/fake:0.1.2"));
   }
 
-  @Test
-  public void testFileWriting() throws IOException, WorkerException {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testFileWriting(boolean isOrchestrator) throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
     final Path jobRoot = workspaceRoot.resolve("job");
 
-    final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
+    final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "", isOrchestrator);
     processFactory.create("job_id", 0, jobRoot, "busybox", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
         WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of());
 

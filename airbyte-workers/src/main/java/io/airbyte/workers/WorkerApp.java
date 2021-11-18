@@ -45,7 +45,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,11 +175,11 @@ public class WorkerApp {
       throw new NotImplementedException();
     } else {
       return new DockerProcessFactory(
-              configs.getWorkspaceRoot(),
-              configs.getWorkspaceDockerMount(),
-              configs.getLocalDockerMount(),
-              "airbyte_default", // todo
-              true);
+          configs.getWorkspaceRoot(),
+          configs.getWorkspaceDockerMount(),
+          configs.getLocalDockerMount(),
+          "airbyte_default", // todo
+          true);
     }
   }
 
