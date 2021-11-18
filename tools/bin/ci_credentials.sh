@@ -48,6 +48,7 @@ write_standard_creds base-normalization "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "sno
 write_standard_creds base-normalization "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" "redshift.json"
 write_standard_creds base-normalization "$AWS_ORACLE_INTEGRATION_TEST_CREDS" "oracle.json"
 
+write_standard_creds source-airtable "$SOURCE_AIRTABLE_TEST_CREDS"
 write_standard_creds source-amazon-seller-partner "$AMAZON_SELLER_PARTNER_TEST_CREDS"
 write_standard_creds source-amazon-sqs "$SOURCE_AMAZON_SQS_TEST_CREDS"
 write_standard_creds source-amplitude "$AMPLITUDE_INTEGRATION_TEST_CREDS"
