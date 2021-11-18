@@ -13,8 +13,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 """
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
-
 This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
 incremental syncs from an HTTP API.
 
