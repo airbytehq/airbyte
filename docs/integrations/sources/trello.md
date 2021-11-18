@@ -42,7 +42,7 @@ The Trello connector should not run into Trello API limitations under normal usa
 * Trello API Key
 
 ### Setup guide
-
+<!-- markdown-link-check-disable-next-line -->
 Please read [How to get your APIs Token and Key](https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#using-basic-oauth) or you can log in to Trello and visit [Developer API Keys](https://trello.com/app-key/).
 
 ## Changelog

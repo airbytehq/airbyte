@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -18,16 +19,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 
 public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest {
-
-  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private static MSSQLServerContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
@@ -129,7 +126,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
               return ctx
                   .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                   .stream()
-                  .map(r -> r.formatJSON(JSON_FORMAT))
+                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
                   .map(Jsons::deserialize)
                   .collect(Collectors.toList());
             });

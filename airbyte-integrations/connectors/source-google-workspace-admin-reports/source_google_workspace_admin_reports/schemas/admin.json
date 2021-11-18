@@ -20,8 +20,7 @@
         "customerId": {
           "type": "string"
         }
-      },
-      "required": ["time", "uniqueQualifier", "applicationName", "customerId"]
+      }
     },
     "actor": {
       "type": "object",
@@ -38,8 +37,7 @@
         "key": {
           "type": "string"
         }
-      },
-      "required": ["callerType", "email", "profileId", "key"]
+      }
     },
     "ownerDomain": {
       "type": "string"
@@ -49,19 +47,20 @@
     },
     "events": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "parameters": {
-              "type": "array",
-              "items": [
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "anyOf": [
                 {
                   "type": "object",
                   "properties": {
@@ -70,22 +69,53 @@
                     },
                     "value": {
                       "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
                     },
                     "intValue": {
                       "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
                     },
                     "boolValue": {
-                      "type": "string"
+                      "type": "boolean"
                     }
-                  },
-                  "required": ["name", "value", "intValue", "boolValue"]
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "multiValue": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 }
               ]
             }
-          },
-          "required": ["type", "name", "parameters"]
+          }
         }
-      ]
+      }
+    },
+    "time": {
+      "type": "string"
     }
   }
 }

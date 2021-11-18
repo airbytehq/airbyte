@@ -174,7 +174,7 @@ create storage INTEGRATION gcs_airbyte_integration
   STORAGE_ALLOWED_LOCATIONS = ('gcs://YOURBUCKETNAME');
 
 create stage gcs_airbyte_stage
-  url = 'gcs://io_airbyte_test_staging'
+  url = 'gcs://YOURBUCKETNAME'
   storage_integration = gcs_airbyte_integration;
 
 GRANT USAGE ON integration gcs_airbyte_integration TO ROLE AIRBYTE_ROLE;
@@ -190,6 +190,7 @@ Finally, you need to add read/write permissions to your bucket with that email.
 
 | Version | Date      | Pull Request | Subject |
 | :------ | :-------- | :-----       | :------ |
+| 0.3.17 | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |
 | 0.3.15  | 2021-10-11 | [#6949](https://github.com/airbytehq/airbyte/pull/6949) | Each stream was split into files of 10,000 records each for copying using S3 or GCS  |
 | 0.3.14  | 2021-09-08 | [#5924](https://github.com/airbytehq/airbyte/pull/5924) | Fixed AWS S3 Staging COPY is writing records from different table in the same raw table  |
 | 0.3.13  | 2021-09-01 | [#5784](https://github.com/airbytehq/airbyte/pull/5784) | Updated query timeout from 30 minutes to 3 hours |
