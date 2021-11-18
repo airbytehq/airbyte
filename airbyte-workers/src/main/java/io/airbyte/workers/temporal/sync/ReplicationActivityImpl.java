@@ -188,6 +188,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
             final var maybeOutput = Jsons.tryDeserialize(line, ReplicationOutput.class);
 
             if (maybeOutput.isPresent()) {
+              LOGGER.info("Found output!");
               output.set(maybeOutput.get());
             } else {
               try (final var mdcScope = LOG_MDC_BUILDER.build()) {
@@ -196,7 +197,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
             }
           });
 
-          LineGobbler.gobble(process.getInputStream(), LOGGER::info, LOG_MDC_BUILDER);
           LineGobbler.gobble(process.getErrorStream(), LOGGER::error, LOG_MDC_BUILDER);
 
           WorkerUtils.wait(process);

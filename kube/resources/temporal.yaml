@@ -75,7 +75,7 @@ spec:
     spec:
       containers:
         - name: airbyte-temporal
-          image: temporalio/auto-setup:1.7.0
+          image: temporalio/auto-setup:1.7.0 # todo: needs to be updated to new temporal image separately
           env:
             - name: POSTGRES_USER
               valueFrom:
