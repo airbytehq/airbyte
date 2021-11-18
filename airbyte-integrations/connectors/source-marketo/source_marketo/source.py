@@ -179,7 +179,6 @@ class MarketoExportBase(IncrementalMarketoStream):
             date_slice["id"] = export.get("exportId")
 
             if not export:
-                date_slices = []
                 break
 
         return date_slices
