@@ -9,6 +9,7 @@ from urllib.parse import urlencode
 
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -333,24 +334,24 @@ class SourceLinkedinAds(AbstractSource):
         :: more info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin
         """
 
-        header = self.get_authenticator(config).get_auth_header()
-        profile_url = "https://api.linkedin.com/v2/me"
-
+        config["authenticator"] = self.get_authenticator(config)
+        stream = Accounts(config)
+        # need to load the first item only
+        stream.records_limit = 1
         try:
-            response = requests.get(url=profile_url, headers=header)
-            response.raise_for_status()
+            next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
             return True, None
         except requests.exceptions.RequestException as e:
             return False, f"{e}, {response.json().get('message')}"
+        except Exception as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         Mapping a input config of the user input configuration as defined in the connector spec.
         Passing config to the streams.
         """
-
         config["authenticator"] = self.get_authenticator(config)
-
         return [
             Accounts(config),
             AccountUsers(config),

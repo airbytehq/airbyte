@@ -6,7 +6,6 @@ package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
@@ -34,7 +33,11 @@ public class LinkedinAdsOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+  protected String formatConsentUrl(UUID definitionId,
+                                    String clientId,
+                                    String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
