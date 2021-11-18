@@ -169,17 +169,18 @@ class MarketoExportBase(IncrementalMarketoStream):
     def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         date_slices = super().stream_slices(sync_mode, stream_state, **kwargs)
 
-        for date_slice in date_slices:
+        for i, date_slice in enumerate(date_slices):
             param = {"fields": [], "filter": {"createdAt": date_slice}}
             param["fields"].extend(self.stream_fields)
             param["filter"].update(self.stream_filter)
 
             export = self.create_export(param)
 
-            date_slice["id"] = export.get("exportId")
-
             if not export:
+                date_slices = date_slices[:i]
                 break
+
+            date_slice["id"] = export.get("exportId")
 
         return date_slices
 
