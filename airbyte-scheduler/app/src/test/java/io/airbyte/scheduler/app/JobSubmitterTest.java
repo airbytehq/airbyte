@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
@@ -26,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -45,6 +47,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
@@ -156,12 +159,17 @@ public class JobSubmitterTest {
     final StandardWorkspace nonCompletedSyncWorkspace = new StandardWorkspace()
         .withFirstCompletedSync(false);
 
-    when(configRepository.listStandardWorkspaces(false))
-        .thenReturn(Lists.newArrayList(completedSyncWorkspace, nonCompletedSyncWorkspace));
+    when(configRepository.getStandardWorkspaceFromConnection(any(UUID.class), eq(false)))
+        .thenReturn(nonCompletedSyncWorkspace);
+
+    when(job.getScope())
+        .thenReturn(UUID.randomUUID().toString());
+    when(job.getConfigType())
+        .thenReturn(ConfigType.SYNC);
 
     jobSubmitter.submitJob(job);
 
-    verify(configRepository).writeStandardWorkspaces(Lists.newArrayList(nonCompletedSyncWorkspace));
+    verify(configRepository).writeStandardWorkspace(nonCompletedSyncWorkspace);
   }
 
   @Test

@@ -155,34 +155,16 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     };
     writeConfigs(configType, configIdToConfig);
-    database.transaction(ctx -> {
-      final boolean isExistingConfig = ctx.fetchExists(select()
-          .from(AIRBYTE_CONFIGS)
-          .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId)));
-
-      final OffsetDateTime timestamp = OffsetDateTime.now();
-
-      if (isExistingConfig) {
-        updateConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configId);
-      } else {
-        insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config),
-            configType.getIdFieldName());
-      }
-
-      return null;
-    });
   }
 
   @Override
   public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) throws IOException {
     database.transaction(ctx -> {
+      final OffsetDateTime timestamp = OffsetDateTime.now();
       configs.forEach((configId, config) -> {
         final boolean isExistingConfig = ctx.fetchExists(select()
             .from(AIRBYTE_CONFIGS)
             .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId)));
-
-        final OffsetDateTime timestamp = OffsetDateTime.now();
-
         if (isExistingConfig) {
           updateConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configId);
         } else {

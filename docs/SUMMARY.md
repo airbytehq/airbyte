@@ -15,6 +15,7 @@
   * [On GCP (Compute Engine)](deploying-airbyte/on-gcp-compute-engine.md)
   * [On Kubernetes (Beta)](deploying-airbyte/on-kubernetes.md)
   * [On Oracle Cloud Infrastructure VM](deploying-airbyte/on-oci-vm.md)
+  * [On Digital Ocean Droplet](deploying-airbyte/on-digitalocean-droplet.md)  
 * [Operator Guides](operator-guides/README.md)
   * [Upgrading Airbyte](operator-guides/upgrading-airbyte.md)
   * [Resetting Your Data](operator-guides/reset.md)

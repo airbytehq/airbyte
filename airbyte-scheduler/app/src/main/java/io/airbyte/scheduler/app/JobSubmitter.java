@@ -22,12 +22,11 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -141,19 +140,15 @@ public class JobSubmitter implements Runnable {
           if (output.getStatus() == io.airbyte.workers.JobStatus.SUCCEEDED) {
             persistence.succeedAttempt(job.getId(), attemptNumber);
 
-            final List<StandardWorkspace> standardWorkspaces = configRepository.listStandardWorkspaces(false);
-
-            final List<StandardWorkspace> workspacesToUpdate = standardWorkspaces.stream()
-                .filter(standardWorkspace -> !Optional.ofNullable(standardWorkspace.getFirstCompletedSync()).orElse(false))
-                .map(standardWorkspace -> {
-                  standardWorkspace.setFirstCompletedSync(true);
-                  return standardWorkspace;
-                })
-                .collect(Collectors.toList());
-
-            configRepository.writeStandardWorkspaces(workspacesToUpdate);
-
             if (job.getConfigType() == ConfigType.SYNC) {
+              final String connectionId = job.getScope();
+              final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(UUID.fromString(connectionId), false);
+
+              if (!workspace.getFirstCompletedSync()) {
+                workspace.setFirstCompletedSync(true);
+                configRepository.writeStandardWorkspace(workspace);
+              }
+
               jobNotifier.successJob(job);
             }
           } else {
