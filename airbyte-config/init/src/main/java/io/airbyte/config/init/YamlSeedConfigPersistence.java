@@ -131,6 +131,11 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) {
+    throw new UnsupportedOperationException("The seed config persistence is read only.");
+  }
+
+  @Override
   public void deleteConfig(final AirbyteConfig configType, final String configId) {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
