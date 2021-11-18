@@ -195,7 +195,11 @@ public class MongoUtils {
         new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$$ROOT"))),
         new Document("$unwind", "$arrayofkeyvalue"),
         new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
-    return (List) output.cursor().next().get("allkeys");
+    if (output.cursor().hasNext()) {
+      return (List) output.cursor().next().get("allkeys");
+    } else {
+      return Collections.emptyList();
+    }
   }
 
   private static void addUniqueType(Map<String, BsonType> map,
