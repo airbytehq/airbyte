@@ -97,6 +97,7 @@
     * [Monday](integrations/sources/monday.md)
     * [Mongo DB](integrations/sources/mongodb-v2.md)
     * [MySQL](integrations/sources/mysql.md)
+    * [Notion](integrations/sources/notion.md)
     * [Okta](integrations/sources/okta.md)
     * [OneSignal](integrations/sources/onesignal.md)
     * [Oracle DB](integrations/sources/oracle.md)

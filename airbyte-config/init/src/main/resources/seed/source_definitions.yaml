@@ -370,6 +370,12 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
+- name: Notion
+  sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
+  dockerRepository: airbyte/source-notion
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/notion
+  sourceType: api
 - name: Okta
   sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   dockerRepository: airbyte/source-okta

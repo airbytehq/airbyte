@@ -75,6 +75,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Mixpanel](sources/mixpanel.md) | Beta |
 | [Mongo DB](sources/mongodb-v2.md) | Beta |
 | [MySQL](sources/mysql.md) | Certified |
+| [Notion](sources/notion.md) | Alpha |
 | [Okta](sources/okta.md) | Beta |
 | [OneSignal](sources/onesignal.md) | Alpha |
 | [Oracle DB](sources/oracle.md) | Certified |
