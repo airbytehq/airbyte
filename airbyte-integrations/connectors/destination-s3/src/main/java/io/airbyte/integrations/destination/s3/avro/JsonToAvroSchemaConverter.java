@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,7 +31,8 @@ import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
  * The main function of this class is to convert a JsonSchema to Avro schema. It can also
  * standardize schema names, and keep track of a mapping from the original names to the standardized
  * ones, which is needed for unit tests.
- * <p/>
+ * <p>
+ * </p>
  * For limitations of this converter, see the README of this connector:
  * https://docs.airbyte.io/integrations/destinations/s3#avro
  */
@@ -232,7 +234,7 @@ public class JsonToAvroSchemaConverter {
    */
   Schema getNullableFieldTypes(final String fieldName, final JsonNode fieldDefinition) {
     // Filter out null types, which will be added back in the end.
-    final List<Schema> nonNullFieldTypes = getNonNullTypes(fieldName, fieldDefinition)
+    final LinkedList<Schema> nonNullFieldTypes = getNonNullTypes(fieldName, fieldDefinition)
         .stream()
         .flatMap(fieldType -> {
           final Schema singleFieldSchema = getSingleFieldType(fieldName, fieldType, fieldDefinition);
@@ -243,7 +245,7 @@ public class JsonToAvroSchemaConverter {
           }
         })
         .distinct()
-        .collect(Collectors.toList());
+        .collect(Collectors.toCollection(LinkedList::new));
 
     if (nonNullFieldTypes.isEmpty()) {
       return Schema.create(Schema.Type.NULL);
@@ -251,6 +253,11 @@ public class JsonToAvroSchemaConverter {
       // Mark every field as nullable to prevent missing value exceptions from Avro / Parquet.
       if (!nonNullFieldTypes.contains(NULL_SCHEMA)) {
         nonNullFieldTypes.add(0, NULL_SCHEMA);
+      }
+      if((nonNullFieldTypes
+              .stream().anyMatch(schema -> schema.getLogicalType() != null)) &&
+              (!nonNullFieldTypes.contains(Schema.create(Schema.Type.STRING)))){
+        nonNullFieldTypes.addLast(Schema.create(Schema.Type.STRING));
       }
       return Schema.createUnion(nonNullFieldTypes);
     }

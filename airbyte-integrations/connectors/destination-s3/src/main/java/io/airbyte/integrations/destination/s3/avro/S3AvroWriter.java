@@ -7,10 +7,8 @@ package io.airbyte.integrations.destination.s3.avro;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
@@ -68,11 +66,6 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
 
   @Override
   public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
-    JsonNode jsonSchema = getStream().getJsonSchema();
-    JsonNode recordMessageData = recordMessage.getData();
-    AvroRecordHelper.transformDateTimeInJson(jsonSchema, recordMessageData);
-    recordMessage.setData(recordMessageData);
-
     dataFileWriter.append(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 
