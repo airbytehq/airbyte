@@ -12,16 +12,19 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.client.util.DateTime;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.bson.BsonBinary;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
@@ -44,7 +47,9 @@ public class MongoUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoUtils.class);
 
-  private static final int DISCOVERY_BATCH_SIZE = 10000;
+  private static final String MISSING_TYPE = "missing";
+  private static final String NULL_TYPE = "null";
+  private static final String TYPE = "type";
   private static final String AIRBYTE_SUFFIX = "_aibyte_transform";
 
   public static JsonSchemaPrimitive getType(final BsonType dataType) {
@@ -89,7 +94,7 @@ public class MongoUtils {
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       readDocument(reader, objectNode, columnNames);
     } catch (final Exception e) {
-      LOGGER.error("Exception while parsing BsonDocument: ", e.getMessage());
+      LOGGER.error("Exception while parsing BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
     }
   }
@@ -174,34 +179,68 @@ public class MongoUtils {
    * @return map of unique fields and its type
    */
   public static Map<String, BsonType> getUniqueFields(final MongoCollection<Document> collection) {
-    final Map<String, BsonType> uniqueFields = new HashMap<>();
-    try (final MongoCursor<Document> cursor = collection.find().batchSize(DISCOVERY_BATCH_SIZE).iterator()) {
-      while (cursor.hasNext()) {
-        final BsonDocument document = toBsonDocument(cursor.next());
-        try (final BsonReader reader = new BsonDocumentReader(document)) {
-          reader.readStartDocument();
-          while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-            final var fieldName = reader.readName();
+
+    Map<String, BsonType> result = new HashMap<>();
+    var allkeys = getFieldsName(collection);
+    allkeys.forEach(key -> {
+      var types = getTypes(collection, key);
+      addUniqueType(result, collection, key, types);
+    });
+
+    return result;
+  }
+
+  private static List<String> getFieldsName(MongoCollection<Document> collection) {
+    AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
+        new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$$ROOT"))),
+        new Document("$unwind", "$arrayofkeyvalue"),
+        new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
+    return (List) output.cursor().next().get("allkeys");
+  }
+
+  private static void addUniqueType(Map<String, BsonType> map,
+                                    MongoCollection<Document> collection,
+                                    String fieldName,
+                                    Set<String> types) {
+    if (types.size() != 1) {
+      map.put(fieldName + AIRBYTE_SUFFIX, BsonType.STRING);
+    } else {
+      var document = collection.find(new Document(fieldName,
+          new Document("$type", types.stream().findFirst().get()))).first();
+      var bsonDoc = toBsonDocument(document);
+      try (final BsonReader reader = new BsonDocumentReader(bsonDoc)) {
+        reader.readStartDocument();
+        while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
+          if (reader.readName().equals(fieldName)) {
             final var fieldType = reader.getCurrentBsonType();
-            reader.skipValue();
-            if (uniqueFields.containsKey(fieldName) && fieldType.compareTo(uniqueFields.get(fieldName)) != 0) {
-              uniqueFields.replace(fieldName + AIRBYTE_SUFFIX, BsonType.STRING);
-            } else {
-              uniqueFields.put(fieldName, fieldType);
-            }
+            map.put(fieldName, fieldType);
           }
-          reader.readEndDocument();
+          reader.skipValue();
         }
+        reader.readEndDocument();
       }
     }
-    return uniqueFields;
+  }
+
+  private static Set<String> getTypes(MongoCollection<Document> collection, String fieldName) {
+    var searchField = "$" + fieldName;
+    var docTypes = collection.aggregate(List.of(
+        new Document("$project", new Document(TYPE, new Document("$type", searchField))))).cursor();
+    Set<String> types = new HashSet<>();
+    while (docTypes.hasNext()) {
+      var type = String.valueOf(docTypes.next().get(TYPE));
+      if (!MISSING_TYPE.equals(type) && !NULL_TYPE.equals(type)) {
+        types.add(type);
+      }
+    }
+    return types.isEmpty() ? Set.of(NULL_TYPE) : types;
   }
 
   private static BsonDocument toBsonDocument(final Document document) {
     try {
       return document.toBsonDocument();
     } catch (final Exception e) {
-      LOGGER.error("Exception while converting Document to BsonDocument: ", e.getMessage());
+      LOGGER.error("Exception while converting Document to BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
     }
   }
