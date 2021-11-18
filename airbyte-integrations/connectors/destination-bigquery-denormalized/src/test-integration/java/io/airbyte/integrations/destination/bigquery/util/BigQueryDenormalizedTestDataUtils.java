@@ -1,10 +1,15 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 
 public class BigQueryDenormalizedTestDataUtils {
-  
+
   public static JsonNode getSchema() {
     return Jsons.deserialize(
         "{\n"
@@ -198,6 +203,28 @@ public class BigQueryDenormalizedTestDataUtils {
             + "}");
   }
 
+  public static JsonNode getDataWithJSONWithReference() {
+    return Jsons.jsonNode(
+        ImmutableMap.of("users", ImmutableMap.of(
+            "name", "John",
+            "surname", "Adams")));
+  }
+
+  public static JsonNode getSchemaWithReferenceDefinition() {
+    return Jsons.deserialize(
+        "{ \n"
+            + "  \"type\" : [ \"null\", \"object\" ],\n"
+            + "  \"properties\" : {\n"
+            + "    \"users\": {\n"
+            + "      \"$ref\": \"#/definitions/users_\"\n"
+            +
+            "    }\n"
+            + "  }\n"
+            +
+            "}\n"
+            + "  ");
+  }
+
   public static JsonNode getDataWithEmptyObjectAndArray() {
     return Jsons.deserialize(
         "{\n"
@@ -221,4 +248,5 @@ public class BigQueryDenormalizedTestDataUtils {
             + "  ]\n"
             + "}");
   }
+
 }

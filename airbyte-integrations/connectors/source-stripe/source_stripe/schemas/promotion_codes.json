@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": { "type": ["null", "string"] },
+    "code": { "type": ["null", "string"] },
+    "coupon": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": { "type": ["null", "string"] },
+        "amount_off": { "type": ["null", "integer"] },
+        "currency": { "type": ["null", "string"] },
+        "duration": { "type": ["null", "string"] },
+        "duration_in_months": { "type": ["null", "integer"] },
+        "metadata": {
+          "type": ["null", "object"],
+          "properties": {}
+        },
+        "name": { "type": ["null", "string"] },
+        "percent_off": { "type": ["null", "number"] },
+        "object": { "type": ["null", "string"] },
+        "applies_to": {
+          "type": ["null", "object"],
+          "properties": {
+            "products": {
+              "type": ["null", "array"],
+              "items": { "type": ["null", "string"] }
+            }
+          }
+        },
+        "created": { "type": ["null", "integer"] },
+        "livemode": { "type": ["null", "boolean"] },
+        "max_redemptions": { "type": ["null", "integer"] },
+        "redeem_by": { "type": ["null", "integer"] },
+        "times_redeemed": { "type": ["null", "integer"] },
+        "valid": { "type": ["null", "boolean"] }
+      }
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {}
+    },
+    "object": { "type": ["null", "string"] },
+    "active": { "type": ["null", "boolean"] },
+    "created": { "type": ["null", "integer"] },
+    "customer": { "type": ["null", "string"] },
+    "expires_at": { "type": ["null", "integer"] },
+    "livemode": { "type": ["null", "boolean"] },
+    "max_redemptions": { "type": ["null", "integer"] },
+    "restrictions": {
+      "type": ["null", "object"],
+      "properties": {
+        "first_time_transaction": { "type": ["null", "boolean"] },
+        "minimum_amount": { "type": ["null", "integer"] },
+        "minimum_amount_currency": { "type": ["null", "string"] }
+      }
+    }
+  }
+}

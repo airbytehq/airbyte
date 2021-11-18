@@ -4,10 +4,11 @@
 
 package io.airbyte.oauth.flows.google;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -19,12 +20,12 @@ import org.apache.http.client.utils.URIBuilder;
 /**
  * Following docs from https://developers.google.com/identity/protocols/oauth2/web-server
  */
-public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
+public abstract class GoogleOAuthFlow extends BaseOAuth2Flow {
 
   private static final String ACCESS_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
-  public GoogleOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public GoogleOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
@@ -33,7 +34,11 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
         .setHost("accounts.google.com")
@@ -78,6 +83,16 @@ public abstract class GoogleOAuthFlow extends BaseOAuthFlow {
         .put("grant_type", "authorization_code")
         .put("redirect_uri", redirectUrl)
         .build();
+  }
+
+  @Override
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
+    final Map<String, Object> result = super.extractOAuthOutput(data, accessTokenUrl);
+    if (data.has("access_token")) {
+      // google also returns an access token the first time you complete oauth flow
+      result.put("access_token", data.get("access_token").asText());
+    }
+    return result;
   }
 
 }
