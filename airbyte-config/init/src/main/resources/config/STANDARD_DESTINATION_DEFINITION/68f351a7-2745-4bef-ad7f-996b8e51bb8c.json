@@ -1,0 +1,7 @@
+{
+  "destinationDefinitionId": "68f351a7-2745-4bef-ad7f-996b8e51bb8c",
+  "name": "ElasticSearch",
+  "dockerRepository": "airbyte/destination-elasticsearch",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/elasticsearch"
+}

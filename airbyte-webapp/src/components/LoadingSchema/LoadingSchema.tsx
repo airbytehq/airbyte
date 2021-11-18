@@ -5,7 +5,7 @@ import styled from "styled-components";
 import Spinner from "components/Spinner";
 
 const SpinnerBlock = styled.div`
-  margin: 40px;
+  padding: 40px;
   text-align: center;
 `;
 

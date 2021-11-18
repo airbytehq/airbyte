@@ -116,8 +116,17 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
     node.put(columnName, resultSet.getBoolean(index));
   }
 
+  /**
+   * In some sources Short might have value larger than {@link Short#MAX_VALUE}. E.q. MySQL has
+   * unsigned smallint type, which can contain value 65535. If we fail to cast Short value, we will
+   * try to cast Integer.
+   */
   protected void putShortInt(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, resultSet.getShort(index));
+    try {
+      node.put(columnName, resultSet.getShort(index));
+    } catch (final SQLException e) {
+      node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getInt(index)));
+    }
   }
 
   /**

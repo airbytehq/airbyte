@@ -6,6 +6,77 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
+## [11-12-2021 - 0.32.1](https://github.com/airbytehq/airbyte/releases/tag/v0.32.0-alpha)
+* No major changes to Airbyte Core.
+
+## [11-12-2021 - 0.32.0](https://github.com/airbytehq/airbyte/releases/tag/v0.32.0-alpha)
+* This is a **MAJOR** version update. You need to [update to this version](../../operator-guides/upgrading-airbyte.md#mandatory-intermediate-upgrade) before updating to any version newer than `0.32.0`
+
+## [11-11-2021 - 0.31.0](https://github.com/airbytehq/airbyte/releases/tag/v0.31.0-alpha)
+* No major changes to Airbyte Core.
+
+## [11-11-2021 - 0.30.39](https://github.com/airbytehq/airbyte/releases/tag/v0.30.39-alpha)
+* We migrated our secret management to Google Secret Manager, allowing us to scale how many connectors we support.
+
+## [11-09-2021 - 0.30.37](https://github.com/airbytehq/airbyte/releases/tag/v0.30.37-alpha)
+* No major changes to Airbyte Core.
+
+## [11-09-2021 - 0.30.36](https://github.com/airbytehq/airbyte/releases/tag/v0.30.36-alpha)
+* No major changes to Airbyte Core.
+
+## [11-08-2021 - 0.30.35](https://github.com/airbytehq/airbyte/releases/tag/v0.30.35-alpha)
+* No major changes to Airbyte Core.
+
+## [11-06-2021 - 0.30.34](https://github.com/airbytehq/airbyte/releases/tag/v0.30.34-alpha)
+* No major changes to Airbyte Core.
+
+## [11-06-2021 - 0.30.33](https://github.com/airbytehq/airbyte/releases/tag/v0.30.33-alpha)
+* No major changes to Airbyte Core.
+
+## [11-05-2021 - 0.30.32](https://github.com/airbytehq/airbyte/releases/tag/v0.30.32-alpha)
+* Airbyte Server no longer crashes from having too many open files.
+
+## [11-04-2021 - 0.30.31](https://github.com/airbytehq/airbyte/releases/tag/v0.30.31-alpha)
+* No major changes to Airbyte Core.
+
+## [11-01-2021 - 0.30.25](https://github.com/airbytehq/airbyte/releases/tag/v0.30.25-alpha)
+* No major changes to Airbyte Core.
+
+## [11-01-2021 - 0.30.24](https://github.com/airbytehq/airbyte/releases/tag/v0.30.24-alpha)
+* Incremental normalization is live. Basic normalization no longer runs on already normalized data, making it way faster and cheaper.
+
+## [11-01-2021 - 0.30.23](https://github.com/airbytehq/airbyte/releases/tag/v0.30.23-alpha)
+* No major changes to Airbyte Core.
+
+## [10-21-2021 - 0.30.22](https://github.com/airbytehq/airbyte/releases/tag/v0.30.22-alpha)
+* We now support experimental deployment of Airbyte on Macbooks with M1 chips!
+
+{% hint style="info" %}
+This interim patch period mostly contained stability changes for Airbyte Cloud, so we skipped from `0.30.16` to `0.30.22`.
+{% endhint %}
+
+## [10-07-2021 - 0.30.16](https://github.com/airbytehq/airbyte/releases/tag/v0.30.16-alpha)
+* On Kubernetes deployments, you can now configure the Airbyte Worker Pod's image pull policy.
+
+{% hint style="info" %}
+This interim patch period mostly contained stability changes for Airbyte Cloud, so we skipped from `0.30.2` to `0.30.16`.
+{% endhint %}
+
+## [09-30-2021 - 0.30.2](https://github.com/airbytehq/airbyte/releases/tag/v0.30.2-alpha)
+* Fixed a bug that would fail Airbyte upgrades for deployments with sync notifications.
+
+## [09-24-2021 - 0.29.22](https://github.com/airbytehq/airbyte/releases/tag/v0.29.22-alpha)
+* We now have integration tests for SSH.
+
+## [09-19-2021 - 0.29.21](https://github.com/airbytehq/airbyte/releases/tag/v0.29.21-alpha)
+* You can now [deploy Airbyte on Kubernetes with a Helm Chart](https://github.com/airbytehq/airbyte/pull/5891)!
+
+## [09-16-2021 - 0.29.19](https://github.com/airbytehq/airbyte/releases/tag/v0.29.19-alpha)
+* Fixes a breaking bug that prevents Airbyte upgrading from older versions.
+
+## [09-15-2021 - 0.29.18](https://github.com/airbytehq/airbyte/releases/tag/v0.29.18-alpha)
+* Building images is now optional in the CI build. 
+
 ## [09-08-2021 - 0.29.17](https://github.com/airbytehq/airbyte/releases/tag/v0.29.17-alpha)
 
 * You can now properly cancel deployments when deploying on K8s.
@@ -331,7 +402,7 @@ This is the changelog for Airbyte Platform. For our connector changelog, please 
 ## [0.10.0](https://github.com/airbytehq/airbyte/milestone/12?closed=1) - delivered on 01/04/2021
 
 * You can now **deploy Airbyte on** [**Kuberbetes**](https://docs.airbyte.io/deploying-airbyte/on-kubernetes) _\*\*_\(alpha version\)
-* **Support incremental sync** for Mixpanel and Hubspot sources
+* **Support incremental sync** for Mixpanel and HubSpot sources
 * **Fixes on connectors:**
   * Fixed a bug in the GitHub connector where the connector didn’t verify the provided API token was granted the correct permissions
   * Fixed a bug in the Google Sheets connector where rate limits were not always respected
@@ -387,7 +458,7 @@ Here is what we are working on right now:
 
 ## [0.3.0](https://github.com/airbytehq/airbyte/milestone/3?closed=1) - delivered on 10/30/2020
 
-* **New sources:** Salesforce, GitHub, Google Sheets, Google Analytics, Hubspot, Rest APIs, and MySQL
+* **New sources:** Salesforce, GitHub, Google Sheets, Google Analytics, HubSpot, Rest APIs, and MySQL
 * Integration test suite for sources
 * Improve build speed
 

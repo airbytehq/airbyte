@@ -4,8 +4,10 @@
 
 package io.airbyte.analytics;
 
+import io.airbyte.commons.version.AirbyteVersion;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import org.slf4j.Logger;
@@ -39,7 +41,7 @@ public class LoggingTrackingClient implements TrackingClient {
   @Override
   public void track(final UUID workspaceId, final String action, final Map<String, Object> metadata) {
     LOGGER.info("track. version: {}, userId: {}, action: {}, metadata: {}",
-        identityFetcher.apply(workspaceId).getAirbyteVersion(),
+        Optional.ofNullable(identityFetcher.apply(workspaceId).getAirbyteVersion()).map(AirbyteVersion::serialize).orElse(null),
         identityFetcher.apply(workspaceId).getCustomerId(),
         action,
         metadata);

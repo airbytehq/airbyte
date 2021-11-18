@@ -1,8 +1,8 @@
 {
   "sourceDefinitionId": "36c891d9-4bd9-43ac-bad2-10e12756272c",
-  "name": "Hubspot",
+  "name": "HubSpot",
   "dockerRepository": "airbyte/source-hubspot",
-  "dockerImageTag": "0.1.18",
+  "dockerImageTag": "0.1.24",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/hubspot",
   "icon": "hubspot.svg"
 }

@@ -23,10 +23,12 @@ tests:
       configured_catalog_path: "integration_tests/issue_worklogs_configured_catalog.json"
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/projects_configured_catalog.json"
+      empty_streams: ["project_permission_schemes"]
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/workflows_configured_catalog.json"
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: ["epics", "screen_tab_fields", "sprint_issues", "sprints"]
 #  incremental:
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/inc_configured_catalog.json"

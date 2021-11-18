@@ -15,8 +15,10 @@ import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
@@ -55,7 +57,7 @@ import org.slf4j.MDC;
  * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
  * them. The current implementation uses two thread pools to do so. One pool is responsible for all
  * job launching operations. The other pool is responsible for clean up operations.
- *
+ * <p>
  * Operations can have thread pools under the hood. An important thread pool to note is that the job
  * submitter thread pool. This pool does the work of submitting jobs to temporal - the size of this
  * pool determines the number of concurrent jobs that can be run. This is controlled via the
@@ -81,6 +83,8 @@ public class SchedulerApp {
   private final int submitterNumThreads;
   private final int maxSyncJobAttempts;
   private final String airbyteVersionOrWarnings;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
 
   public SchedulerApp(final Path workspaceRoot,
                       final JobPersistence jobPersistence,
@@ -90,7 +94,9 @@ public class SchedulerApp {
                       final TemporalClient temporalClient,
                       final Integer submitterNumThreads,
                       final Integer maxSyncJobAttempts,
-                      final String airbyteVersionOrWarnings) {
+                      final String airbyteVersionOrWarnings,
+                      final WorkerEnvironment workerEnvironment,
+                      final LogConfigs logConfigs) {
     this.workspaceRoot = workspaceRoot;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
@@ -100,6 +106,8 @@ public class SchedulerApp {
     this.submitterNumThreads = submitterNumThreads;
     this.maxSyncJobAttempts = maxSyncJobAttempts;
     this.airbyteVersionOrWarnings = airbyteVersionOrWarnings;
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
   }
 
   public void start() throws IOException {
@@ -116,7 +124,7 @@ public class SchedulerApp {
         jobPersistence,
         temporalWorkerRunFactory,
         new JobTracker(configRepository, jobPersistence, trackingClient),
-        jobNotifier);
+        jobNotifier, workerEnvironment, logConfigs, configRepository);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -187,7 +195,8 @@ public class SchedulerApp {
 
     final Configs configs = new EnvConfigs();
 
-    LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getSchedulerLogsRoot(configs));
+    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
+        LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot()));
 
     final Path workspaceRoot = configs.getWorkspaceRoot();
     LOGGER.info("workspaceRoot = " + workspaceRoot);
@@ -221,7 +230,7 @@ public class SchedulerApp {
         workspaceRoot,
         jobPersistence);
     AirbyteVersion.assertIsCompatible(
-        new AirbyteVersion(configs.getAirbyteVersion()),
+        configs.getAirbyteVersion(),
         jobPersistence.getVersion().map(AirbyteVersion::new).orElseThrow());
 
     TrackingClientSingleton.initialize(
@@ -250,7 +259,7 @@ public class SchedulerApp {
         temporalClient,
         Integer.parseInt(configs.getSubmitterNumThreads()),
         configs.getMaxSyncJobAttempts(),
-        configs.getAirbyteVersionOrWarning())
+        configs.getAirbyteVersionOrWarning(), configs.getWorkerEnvironment(), configs.getLogConfigs())
             .start();
   }
 

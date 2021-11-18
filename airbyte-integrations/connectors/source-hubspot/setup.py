@@ -7,8 +7,6 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
-    "airbyte-protocol",
-    "base-python",
     "backoff==1.11.1",
     "pendulum==2.1.2",
     "requests==2.26.0",
@@ -22,7 +20,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_hubspot",
-    description="Source implementation for Hubspot.",
+    description="Source implementation for HubSpot.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
