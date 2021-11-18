@@ -9,7 +9,7 @@ import urllib.parse
 from abc import ABC, abstractmethod
 from functools import lru_cache, partial
 from http import HTTPStatus
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
 import pendulum as pendulum
@@ -316,7 +316,7 @@ class Stream(ABC):
     def _filter_old_records(self, records: Iterable) -> Iterable:
         """Skip records that was updated before our start_date"""
         for record in records:
-            updated_at = record[self.updated_at_field]
+            updated_at = record.get(self.updated_at_field) or None
             if updated_at:
                 updated_at = self._field_to_datetime(updated_at)
                 if updated_at < self._start_date:
@@ -697,6 +697,77 @@ class FormStream(Stream):
     url = "/marketing/v3/forms"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+
+
+class PropertyHistoryStream(IncrementalStream):
+    """Contacts Endpoint, API v1
+    Is used to get all Contacts and the history of their respective
+    Properties. Whenever a property is changed it is added here.
+    Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
+
+    """
+    more_key = "has-more"
+    url = "/contacts/v1/lists/all/contacts/all"
+    updated_at_field = "timestamp"
+    created_at_field = "timestamp"
+    data_field = "contacts"
+    page_field = "vid-offset"
+    page_filter = "vidOffset"
+
+    def list(self, fields) -> Iterable:
+        properties = self._api.get(f"/properties/v2/contact/properties")
+        properties_list = [single_property["name"] for single_property in properties]
+        params = {"propertyMode": "value_and_history", "property": properties_list}
+        yield from self.read(partial(self._api.get, url=self.url), params)
+
+    def _transform(self, records: Iterable) -> Iterable:
+        record: Dict[str, Dict]
+        for record in records:
+            properties = record.get("properties")
+            vid = record.get("vid")
+            value_dict: Dict
+            for key, value_dict in properties.items():
+                versions = value_dict.get("versions")
+                if key == "lastmodifieddate":
+                    continue
+                if versions:
+                    for version in versions:
+                        version["timestamp"] = self._field_to_datetime(version["timestamp"]).to_datetime_string()
+                        version["property"] = key
+                        version["vid"] = vid
+                        yield version
+
+
+class FormSubmssionStream(Stream):
+    """Submissions for forms, v1
+    Get the Submissions for a form and the field values.
+    Docs: https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form
+    """
+    url = "/form-integrations/v1/submissions/forms"
+    limit = 50
+    updated_at_field = "submittedAt"
+    created_at_field = "submittedAt"
+    page_field = "paging"
+    page_filter = "after"
+    
+    def list(self, fields) -> Iterable:
+        params = {
+            "limit": 50,
+        }
+        forms = self.read(partial(self._api.get, url="/marketing/v3/forms"), params)
+        for row in forms:
+            record = self.read(partial(self._api.get, url=f"{self.url}/{row['id']}"), params)
+            for entry in record:
+                entry["form_guid"] = row["id"]
+                yield entry
+
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in records:
+            values: dict = record.get("values") or None
+            if values:
+                record["submittedAt"] = self._field_to_datetime(record["submittedAt"]).to_datetime_string()
+            yield record
 
 
 class MarketingEmailStream(Stream):
