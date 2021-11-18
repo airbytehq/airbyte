@@ -7,7 +7,8 @@ For information about how to use this connector within Airbyte, see [the documen
 
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
-
+- Create a base named `users` in your AirTable account.
+- Create two tables named `Table 1` and `Table 2` in the `users` base.
 #### Minimum Python version required `= 3.7.0`
 
 #### Build & Activate Virtual Environment and install dependencies

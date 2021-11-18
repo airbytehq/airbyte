@@ -13,6 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .helpers import Helpers
 
@@ -21,6 +22,7 @@ from .helpers import Helpers
 class AirtableStream(HttpStream, ABC):
     url_base = "https://api.airtable.com/v0/"
     primary_key = "id"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, base_id: str, table_name: str, schema, **kwargs):
         super().__init__(**kwargs)
@@ -50,18 +52,14 @@ class AirtableStream(HttpStream, ABC):
         return {}
 
     def process_records(self, records):
-        processed_records = []
         for record in records:
+            data = record.get("fields", {})
             processed_record = {
                 "_airtable_id": record.get("id"),
                 "_airtable_created_time": record.get("createdTime"),
+                **data
             }
-            data = record.get("fields", {})
-            # Convert all values to string
-            data = {key: str(value) for key, value in data.items()}
-            processed_record.update(data)
-            processed_records.append(processed_record)
-        return processed_records
+            yield processed_record
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
@@ -102,7 +100,6 @@ class SourceAirtable(AbstractSource):
         for table in config["tables"]:
             record = Helpers.get_first_row(auth, config["base_id"], table)
             json_schema = Helpers.get_json_schema(record)
-            kwargs = {"base_id": config["base_id"], "table_name": table, "authenticator": auth, "schema": json_schema}
-            stream = AirtableStream(**kwargs)
+            stream = AirtableStream(base_id=config["base_id"], table_name=table, authenticator=auth, schema=json_schema)
             streams.append(stream)
         return streams

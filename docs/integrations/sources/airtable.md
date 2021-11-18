@@ -11,7 +11,7 @@ This source syncs data from the [Airtable API](https://airtable.com/api).
 
 ## Supported Tables
 
-This source allows you to configure any table in your Airtable base. 
+This source allows you to configure any table in your Airtable base. In case you you rename or add a column to any existing table, you will need to recreate the source to update the Airbyte catalog. 
 
 ## Getting started
 
