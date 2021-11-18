@@ -15,7 +15,7 @@ Several output streams are available from this source:
 
 * [Incidents](https://portal.victorops.com/public/api-docs.html#!/Reporting/get_api_reporting_v2_incidents) \(Incremental\)
 * [Teams](https://portal.victorops.com/public/api-docs.html#!/Teams/get_api_public_v1_team)
-* [Users](https://portal.victorops.com/public/api-docs.html#!/Teams/get_api_public_v1_team)
+* [Users](https://portal.victorops.com/public/api-docs.html#!/Users/get_api_public_v1_user)
 
 If there are more endpoints you'd like Faros AI to support, please [create an
 issue.](https://github.com/faros-ai/airbyte-connectors/issues/new)
