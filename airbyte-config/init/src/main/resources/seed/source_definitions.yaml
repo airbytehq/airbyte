@@ -654,7 +654,5 @@
   name: Zenloop
   dockerRepository: airbyte/source-zenloop
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/url
+  documentationUrl: https://docs.airbyte.io/integrations/sources/zenloop
   sourceType: api
-  documentationUrl: https://docs.airbyte.io/integrations/sources/azure-table
-  sourceType: database

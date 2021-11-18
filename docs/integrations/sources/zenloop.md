@@ -13,7 +13,7 @@ This Source is capable of syncing the following core Streams:
 * [AnswersSurveyGroup](https://docs.zenloop.com/reference#get-answers-for-survey-group) \(Incremental\)
 * [SurveyGroups](https://docs.zenloop.com/reference#get-list-of-survey-groups)
 
-The `Answers` and `AnswersSurveyGroup` stream respectively have an optional survey_id parameter. If not provided answers for all surveys (groups) will be pulled.
+The `Answers` and `AnswersSurveyGroup` stream respectively have an optional survey_id parameter that can be set by filling the `public_hash_id` field of the connector configuration. If not provided answers for all surveys (groups) will be pulled.
 
 ### Data type mapping
 

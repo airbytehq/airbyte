@@ -17,9 +17,14 @@
         "description": "Zenloop date_from. Format: 2021-10-24T03:30:30Z or 2021-10-24. Leave empty if only data from current data should be synced",
         "examples": ["2021-10-24T03:30:30Z"]
       },
-      "public_hash_id": {
+      "survey_id": {
         "type": "string",
-        "description": "Zenloop Survey (Group) ID. Can be found <a href=\"https://app.zenloop.com/settings/api\">here</a>. Leave empty to pull answers from all surveys",
+        "description": "Zenloop Survey ID. Can be found <a href=\"https://app.zenloop.com/settings/api\">here</a>. Leave empty to pull answers from all surveys",
+        "airbyte_secret": true
+      },
+      "survey_group_id": {
+        "type": "string",
+        "description": "Zenloop Survey Group ID. Can be found by pulling All Survey Groups via SurveyGroups stream. Leave empty to pull answers from all survey groups",
         "airbyte_secret": true
       }
     }

@@ -18,8 +18,8 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_zenloop",
     description="Source implementation for Zenloop.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Alexander Batoulis",
+    author_email="alexander.batoulis@hometogo.com",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
