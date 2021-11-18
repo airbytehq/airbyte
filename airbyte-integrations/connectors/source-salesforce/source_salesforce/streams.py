@@ -257,7 +257,6 @@ class BulkSalesforceStream(SalesforceStream):
                 break
 
 
-
 class IncrementalSalesforceStream(SalesforceStream, ABC):
     state_checkpoint_interval = 500
 

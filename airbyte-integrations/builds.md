@@ -59,13 +59,8 @@
 | Mongo DB  | [![source-mongodb-v2](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mongodb-v2%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mongodb-v2) |
 | Monday  | [![source-monday](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-monday%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-monday) |
 | MySQL   | [![source-mysql](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mysql%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mysql) |
-<<<<<<< HEAD
-| OneSignal   | [![source-onesignal](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-onesignal%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-onesignal) |
-| Notion   | [![source-notion](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-notion%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-notion) |
-=======
 | Notion   | [![source-notion](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-notion%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-notion) |
 | OneSignal   | [![source-onesignal](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-onesignal%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-onesignal) |
->>>>>>> 1dcd525eb812fee389c50802d275a1c223a8a8f0
 | Oracle DB   | [![source-oracle](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-oracle%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-oracle) |
 | Paypal Transaction   | [![paypal-transaction](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-paypal-transaction%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-paypal-transaction) |
 | Paystack   | [![source-paystack](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-paystack%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-paystack) |
