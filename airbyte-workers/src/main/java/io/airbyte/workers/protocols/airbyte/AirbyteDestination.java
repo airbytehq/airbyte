@@ -21,7 +21,7 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
    * Starts the Destination container. It instantiates a writer to write to STDIN on that container.
    * It also instantiates a reader to listen on STDOUT.
    *
-   * @param destinationConfig - contains the arguments that must be passed to the read method of the
+   * @param destinationConfig - contains the arguments that must be passed to the write method of the
    *        Destination.
    * @param jobRoot - directory where the job can write data.
    * @throws Exception - throws if there is any failure in startup.
