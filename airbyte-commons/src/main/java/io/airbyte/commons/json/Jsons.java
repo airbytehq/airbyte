@@ -141,6 +141,10 @@ public class Jsons {
     return node;
   }
 
+  public static void replaceNestedValue(final JsonNode json, final List<String> keys, final JsonNode replacement) {
+    replaceNested(json, keys, (node, finalKey) -> node.put(finalKey, replacement));
+  }
+
   public static void replaceNestedString(final JsonNode json, final List<String> keys, final String replacement) {
     replaceNested(json, keys, (node, finalKey) -> node.put(finalKey, replacement));
   }

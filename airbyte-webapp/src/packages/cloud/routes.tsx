@@ -132,29 +132,27 @@ const MainViewRoutes = () => {
   const { currentWorkspaceId } = useWorkspaceService();
 
   return (
-    <>
-      <Switch>
-        <Route path={Routes.AuthFlow}>
-          <CompleteOauthRequest />
-        </Route>
-        <Route>
-          {currentWorkspaceId ? (
-            <MainView>
-              <Suspense fallback={<LoadingPage />}>
-                <MainRoutes currentWorkspaceId={currentWorkspaceId} />
-              </Suspense>
-            </MainView>
-          ) : (
-            <Switch>
-              <Route exact path={Routes.SelectWorkspace}>
-                <WorkspacesPage />
-              </Route>
-              <Redirect to={Routes.SelectWorkspace} />
-            </Switch>
-          )}
-        </Route>
-      </Switch>
-    </>
+    <Switch>
+      <Route path={Routes.AuthFlow}>
+        <CompleteOauthRequest />
+      </Route>
+      <Route>
+        {currentWorkspaceId ? (
+          <MainView>
+            <Suspense fallback={<LoadingPage />}>
+              <MainRoutes currentWorkspaceId={currentWorkspaceId} />
+            </Suspense>
+          </MainView>
+        ) : (
+          <Switch>
+            <Route exact path={Routes.SelectWorkspace}>
+              <WorkspacesPage />
+            </Route>
+            <Redirect to={Routes.SelectWorkspace} />
+          </Switch>
+        )}
+      </Route>
+    </Switch>
   );
 };
 
