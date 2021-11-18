@@ -276,7 +276,7 @@ class StreamProcessor(object):
                 self.generate_id_hashing_model(from_table, column_names),
                 forced_materialization_type,
                 is_intermediate=True,
-                suffix="ab3",
+                suffix="tmp",
             )
             from_table = self.add_to_outputs(
                 self.generate_scd_type_2_model(from_table, column_names),
@@ -373,6 +373,7 @@ class StreamProcessor(object):
         template = Template(
             """
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: {{ from_table }}
 {{ unnesting_before_query }}
 select
   {%- if parent_hash_id %}
@@ -451,6 +452,7 @@ where 1 = 1
         template = Template(
             """
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ from_table }}
 select
   {%- if parent_hash_id %}
     {{ parent_hash_id }},
@@ -573,6 +575,7 @@ where 1 = 1
         template = Template(
             """
 -- SQL model to build a hash column based on the values of this record
+-- depends_on: {{ from_table }}
 select
     {{ '{{' }} dbt_utils.surrogate_key([
       {%- if parent_hash_id %}
@@ -634,6 +637,7 @@ where 1 = 1
 
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         scd_sql_template = """
+-- depends_on: {{ from_table }}
 with
 {{ '{% if is_incremental() %}' }}
 new_data as (
@@ -656,6 +660,7 @@ new_data_ids as (
     from new_data
 ),
 empty_new_data as (
+    -- build an empty table to only keep the table's column types
     select * from new_data where 1 = 0
 ),
 previous_active_scd_data as (
@@ -665,7 +670,7 @@ previous_active_scd_data as (
     from {{ '{{ this }}' }} as this_data
     -- make a join with new_data using primary key to filter active data that need to be updated only
     join new_data_ids on this_data.{{ unique_key }} = new_data_ids.{{ unique_key }}
-    -- force left join to NULL values (we just need to transfer column types only for the star_intersect macro)
+    -- force left join to NULL values (we just need to transfer column types only for the star_intersect macro on schema changes)
     left join empty_new_data as inc_data on this_data.{{ col_ab_id }} = inc_data.{{ col_ab_id }}
     where {{ active_row }} = 1
 ),
@@ -870,6 +875,7 @@ from dedup_data where {{ airbyte_row_num }} = 1
         template = Template(
             """
 -- Final base SQL model
+-- depends_on: {{ from_table }}
 select
   {%- if parent_hash_id %}
     {{ parent_hash_id }},
@@ -950,14 +956,7 @@ where 1 = 1
         else:
             config["schema"] = f'"{schema}"'
         if self.is_incremental_mode(self.destination_sync_mode):
-            if suffix == "scd":
-                if self.destination_type == DestinationType.POSTGRES:
-                    # because of https://github.com/dbt-labs/docs.getdbt.com/issues/335, we avoid VIEW for postgres
-                    # so we need to clean up temporary table materialization...
-                    ab3_schema = self.get_schema(True)
-                    ab3_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "ab3", truncate_name)
-                    config["post_hook"] = f"['drop table if exists {ab3_schema}.{ab3_table}']"
-            else:
+            if suffix != "scd":
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)
         template = Template(

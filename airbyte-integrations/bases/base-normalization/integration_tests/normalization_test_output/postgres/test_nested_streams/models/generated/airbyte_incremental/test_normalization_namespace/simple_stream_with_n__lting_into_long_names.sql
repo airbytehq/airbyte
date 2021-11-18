@@ -5,6 +5,7 @@
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('simple_stream_with_n__lting_into_long_names_ab3') }}
 select
     {{ adapter.quote('id') }},
     {{ adapter.quote('date') }},

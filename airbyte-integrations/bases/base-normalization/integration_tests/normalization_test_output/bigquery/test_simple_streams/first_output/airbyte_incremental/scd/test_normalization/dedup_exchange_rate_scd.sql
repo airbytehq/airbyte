@@ -9,11 +9,12 @@
   OPTIONS()
   as (
     
+-- depends_on: ref('dedup_exchange_rate_tmp')
 with
 
 input_data as (
     select *
-    from `dataline-integration-testing`._airbyte_test_normalization.`dedup_exchange_rate_ab3`
+    from `dataline-integration-testing`._airbyte_test_normalization.`dedup_exchange_rate_tmp`
     -- dedup_exchange_rate from `dataline-integration-testing`.test_normalization._airbyte_raw_dedup_exchange_rate
 ),
 

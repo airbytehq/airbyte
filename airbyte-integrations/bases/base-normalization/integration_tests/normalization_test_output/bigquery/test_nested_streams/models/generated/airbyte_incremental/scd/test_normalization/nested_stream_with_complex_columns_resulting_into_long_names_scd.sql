@@ -5,13 +5,14 @@
     schema = "test_normalization",
     tags = [ "top-level" ]
 ) }}
+-- depends_on: ref('nested_stream_with_complex_columns_resulting_into_long_names_tmp')
 with
 {% if is_incremental() %}
 new_data as (
     -- retrieve incremental "new" data
     select
         *
-    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_ab3')  }}
+    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_tmp')  }}
     -- nested_stream_with_complex_columns_resulting_into_long_names from {{ source('test_normalization', '_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names') }}
     where 1 = 1
     {{ incremental_clause('_airbyte_emitted_at') }}
@@ -25,28 +26,29 @@ new_data_ids as (
     from new_data
 ),
 empty_new_data as (
+    -- build an empty table to only keep the table's column types
     select * from new_data where 1 = 0
 ),
 previous_active_scd_data as (
     -- retrieve "incomplete old" data that needs to be updated with an end date because of new changes
     select
-        {{ star_intersect(ref('nested_stream_with_complex_columns_resulting_into_long_names_ab3'), this, from_alias='inc_data', intersect_alias='this_data') }}
+        {{ star_intersect(ref('nested_stream_with_complex_columns_resulting_into_long_names_tmp'), this, from_alias='inc_data', intersect_alias='this_data') }}
     from {{ this }} as this_data
     -- make a join with new_data using primary key to filter active data that need to be updated only
     join new_data_ids on this_data._airbyte_unique_key = new_data_ids._airbyte_unique_key
-    -- force left join to NULL values (we just need to transfer column types only for the star_intersect macro)
+    -- force left join to NULL values (we just need to transfer column types only for the star_intersect macro on schema changes)
     left join empty_new_data as inc_data on this_data._airbyte_ab_id = inc_data._airbyte_ab_id
     where _airbyte_active_row = 1
 ),
 input_data as (
-    select {{ dbt_utils.star(ref('nested_stream_with_complex_columns_resulting_into_long_names_ab3')) }} from new_data
+    select {{ dbt_utils.star(ref('nested_stream_with_complex_columns_resulting_into_long_names_tmp')) }} from new_data
     union all
-    select {{ dbt_utils.star(ref('nested_stream_with_complex_columns_resulting_into_long_names_ab3')) }} from previous_active_scd_data
+    select {{ dbt_utils.star(ref('nested_stream_with_complex_columns_resulting_into_long_names_tmp')) }} from previous_active_scd_data
 ),
 {% else %}
 input_data as (
     select *
-    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_ab3')  }}
+    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_tmp')  }}
     -- nested_stream_with_complex_columns_resulting_into_long_names from {{ source('test_normalization', '_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names') }}
 ),
 {% endif %}
