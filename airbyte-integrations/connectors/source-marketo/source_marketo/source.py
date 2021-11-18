@@ -55,13 +55,15 @@ class MarketoStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        data = response.json()
+        # if we get record-level errors like "1029, Export daily quota exceeded" we signaling about that in log
+        errors_data = response.json().get("errors")
+        if errors_data:
+            for error_data in errors_data:
+                self.logger.error(f"{error_data.get('code')}, {error_data.get('message')}")
 
-        data_field = self.data_field
-        if "errors" in data:
-            data_field = "errors"
+        data = response.json().get(self.data_field, [])
 
-        for record in data.get(data_field, []):
+        for record in data:
             yield record
 
 
@@ -145,14 +147,6 @@ class MarketoExportBase(IncrementalMarketoStream):
     def stream_filter(self):
         return {}
 
-    @property
-    def raise_on_http_errors(self):
-        """We need turn off http errors, because when we get an Export daily quota exceeded error.
-        Field exportId field was None, according to that stream_slice['id'] also None,
-        so as not stop sync according to 404 error and lose all data
-        we sync till we get Export daily quota exceeded error and save state"""
-        return False
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
@@ -182,11 +176,11 @@ class MarketoExportBase(IncrementalMarketoStream):
 
             export = self.create_export(param)
 
-            # if we get record-level errors like "1029, Export daily quota exceeded" we signaling about that in log
-            if "code" in export:
-                self.logger.error(f"{export.get('code')}, {export.get('message')}")
-
             date_slice["id"] = export.get("exportId")
+
+            if not export:
+                date_slices = []
+                break
 
         return date_slices
 
