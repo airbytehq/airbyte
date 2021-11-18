@@ -11,6 +11,7 @@ import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -59,8 +60,25 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws JsonValidationException, IOException {
-    validateJson(Jsons.jsonNode(config), configType);
-    decoratedPersistence.writeConfig(configType, configId, config);
+
+    final Map<String, T> configIdToConfig = new HashMap<>() {
+
+      {
+        put(configId, config);
+      }
+
+    };
+
+    writeConfigs(configType, configIdToConfig);
+  }
+
+  @Override
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs)
+      throws IOException, JsonValidationException {
+    for (final Map.Entry<String, T> config : configs.entrySet()) {
+      validateJson(Jsons.jsonNode(config.getValue()), configType);
+    }
+    decoratedPersistence.writeConfigs(configType, configs);
   }
 
   @Override

@@ -151,4 +151,5 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [SQL Server \(MSSQL\)](destinations/mssql.md) | Alpha |
 | [Snowflake](destinations/snowflake.md) | Certified |
 | [Cassandra](destinations/cassandra.md) | Alpha |
+| [Scylla](destinations/scylla.md) | Alpha |
 

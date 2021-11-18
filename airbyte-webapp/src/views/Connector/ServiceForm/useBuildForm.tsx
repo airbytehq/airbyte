@@ -33,7 +33,8 @@ function useBuildInitialSchema(
           (schema as any).is_auth = true;
           const schemaWithoutPaths = removeNestedPaths(
             schema,
-            spec.oauthFlowInitParameters ?? []
+            spec.oauthFlowInitParameters ?? [],
+            false
           );
 
           const schemaWithoutOutputPats = removeNestedPaths(
