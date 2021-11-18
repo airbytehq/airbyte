@@ -294,6 +294,8 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date | Pull Request | Subject |  |
 | :--- | :--- | :--- | :--- | :--- |
+| 0.3.9 | 2021-11-09 | [7386](https://github.com/airbytehq/airbyte/pull/7386) | Improve support for binary and varbinary data types  |  |
+| 0.3.8 | 2021-10-26 | [7386](https://github.com/airbytehq/airbyte/pull/7386) | Fixed data type (smalldatetime, smallmoney) conversion from mssql source |  |
 | 0.3.7 | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |  |
 | 0.3.6 | 2021-09-17 | [6318](https://github.com/airbytehq/airbyte/pull/6318) | Added option to connect to DB via SSH |  |
 | 0.3.4 | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |  |

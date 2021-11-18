@@ -456,14 +456,16 @@ public abstract class DestinationAcceptanceTest {
   public void specNormalizationValueShouldBeCorrect() throws Exception {
     final boolean normalizationFromSpec = normalizationFromSpec();
     assertEquals(normalizationFromSpec, supportsNormalization());
-    boolean normalizationRunnerFactorySupportsDestinationImage;
-    try {
-      NormalizationRunnerFactory.create(getImageName(), processFactory);
-      normalizationRunnerFactorySupportsDestinationImage = true;
-    } catch (final IllegalStateException e) {
-      normalizationRunnerFactorySupportsDestinationImage = false;
+    if (normalizationFromSpec) {
+      boolean normalizationRunnerFactorySupportsDestinationImage;
+      try {
+        NormalizationRunnerFactory.create(getImageName(), processFactory);
+        normalizationRunnerFactorySupportsDestinationImage = true;
+      } catch (final IllegalStateException e) {
+        normalizationRunnerFactorySupportsDestinationImage = false;
+      }
+      assertEquals(normalizationFromSpec, normalizationRunnerFactorySupportsDestinationImage);
     }
-    assertEquals(normalizationFromSpec, normalizationRunnerFactorySupportsDestinationImage);
   }
 
   @Test
@@ -494,7 +496,6 @@ public abstract class DestinationAcceptanceTest {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
-
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
             .withType(Type.RECORD)
@@ -730,7 +731,7 @@ public abstract class DestinationAcceptanceTest {
     final OperatorDbt dbtConfig = new OperatorDbt()
         .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
         .withGitRepoBranch("main")
-        .withDockerImage("airbyte/normalization:dev");
+        .withDockerImage(NormalizationRunnerFactory.getNormalizationInfoForConnector(getImageName()).getLeft());
     //
     // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
     //
@@ -1120,7 +1121,9 @@ public abstract class DestinationAcceptanceTest {
           "EMITTED_AT",
           "AB_ID",
           "NORMALIZED_AT",
-          "HASHID");
+          "HASHID",
+          "unique_key",
+          "UNIQUE_KEY");
       if (airbyteInternalFields.stream().anyMatch(internalField -> key.toLowerCase().contains(internalField.toLowerCase()))
           || json.get(key).isNull()) {
         ((ObjectNode) json).remove(key);

@@ -6,9 +6,8 @@ package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -21,13 +20,20 @@ import org.apache.http.client.utils.URIBuilder;
  * Following docs from
  * https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps#web-application-flow
  */
-public class GithubOAuthFlow extends BaseOAuthFlow {
+public class GithubOAuthFlow extends BaseOAuth2Flow {
 
   private static final String AUTHORIZE_URL = "https://github.com/login/oauth/authorize";
   private static final String ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
+  // Setting "repo" scope would allow grant not only read but also write
+  // access to our application. Unfortunatelly we cannot follow least
+  // privelege principle here cause github has no option of granular access
+  // tune up.
+  // This is necessary to pull data from private repositories.
+  // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
+  private static final String SCOPES = "repo";
 
-  public GithubOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public GithubOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
@@ -36,16 +42,19 @@ public class GithubOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
-      // No scope means read-only access to public information
-      // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
+          .addParameter("scope", SCOPES)
           .addParameter("state", getState())
           .build().toString();
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
@@ -56,27 +65,12 @@ public class GithubOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
-    System.out.println(data);
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
     if (data.has("access_token")) {
-      return Map.of("credentials", Map.of("access_token", data.get("access_token").asText()));
+      return Map.of("access_token", data.get("access_token").asText());
     } else {
       throw new IOException(String.format("Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL));
     }
-  }
-
-  @Override
-  protected String getClientIdUnsafe(final JsonNode config) {
-    // the config object containing client ID and secret is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientIdUnsafe(config.get("credentials"));
-  }
-
-  @Override
-  protected String getClientSecretUnsafe(final JsonNode config) {
-    // the config object containing client ID and secret is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientSecretUnsafe(config.get("credentials"));
   }
 
 }

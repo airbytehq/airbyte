@@ -14,6 +14,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 | Connector | Grade |
 | :--- | :--- |
+| [Amazon SQS](sources/amazon-sqs.md) | Alpha |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md) | Alpha |
 | [Amplitude](sources/amplitude.md) | Beta |
 | [Apify Dataset](sources/apify-dataset.md) | Alpha |
@@ -49,14 +50,16 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Google Sheets](sources/google-sheets.md) | Certified |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md) | Certified |
 | [Greenhouse](sources/greenhouse.md) | Beta |
-| [Hubspot](sources/hubspot.md) | Certified |
+| [HubSpot](sources/hubspot.md) | Certified |
 | [Instagram](sources/instagram.md) | Certified |
 | [Intercom](sources/intercom.md) | Beta |
 | [Iterable](sources/iterable.md) | Beta |
 | [Jira](sources/jira.md) | Certified |
 | [Klaviyo](sources/klaviyo.md) | Beta |
 | [Klaviyo](sources/kustomer.md) | Alpha |
+| [Lemlist](sources/lemlist.md) | Alpha |
 | [LinkedIn Ads](sources/linkedin-ads.md) | Beta |
+| [Linnworks](sources/linnworks.md) | Alpha |
 | [Kustomer](sources/kustomer.md) | Alpha |
 | [Lever Hiring](sources/lever-hiring.md) | Beta |
 | [Looker](sources/looker.md) | Beta |
@@ -78,6 +81,8 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md) | Beta |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md) | Beta |
 | [PayPal Transaction](sources/paypal-transaction.md) | Beta |
+| [Paystack](sources/paystack.md) | Alpha |
+| [Pinterest](sources/pinterest.md) | Alpha |
 | [Pipedrive](sources/pipedrive.md) | Alpha |
 | [Plaid](sources/plaid.md) | Alpha |
 | [PokéAPI](sources/pokeapi.md) | Beta |
@@ -93,6 +98,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Salesloft](./sources/salesloft.md)| Alpha |
 | [SAP Business One](sources/sap-business-one.md) | Beta |
 | [Sendgrid](sources/sendgrid.md) | Certified |
+| [Sentry](sources/sentry.md) | Alpha |
 | [Shopify](sources/shopify.md) | Certified |
 | [Short.io](sources/shortio.md) | Beta |
 | [Slack](sources/slack.md) | Beta |
@@ -100,6 +106,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Smartsheets](sources/smartsheets.md) | Beta |
 | [Snowflake](sources/snowflake.md) | Beta |
 | [Square](sources/square.md) | Beta |
+| [Strava](sources/strava.md) | Beta |
 | [Stripe](sources/stripe.md) | Certified |
 | [Sugar CRM](sources/sugar-crm.md) | Beta |
 | [SurveyMonkey](sources/surveymonkey.md) | Beta |
@@ -127,6 +134,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [BigQuery](destinations/bigquery.md) | Certified |
 | [Chargify \(Keen\)](destinations/chargify.md) | Alpha |
 | [Databricks](destinations/databricks.md) | Beta |
+| [Elasticsearch](destinations/elasticsearch.md) | Alpha |
 | [Google Cloud Storage \(GCS\)](destinations/gcs.md) | Alpha |
 | [Google Pubsub](destinations/pubsub.md) | Alpha |
 | [Kafka](destinations/kafka.md) | Alpha |
@@ -138,7 +146,10 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [MySQL](destinations/mysql.md) | Beta |
 | [Oracle](destinations/oracle.md) | Alpha |
 | [Postgres](destinations/postgres.md) | Certified |
+| [Pulsar](destinations/pulsar.md) | Alpha |
 | [Redshift](destinations/redshift.md) | Certified |
 | [S3](destinations/s3.md) | Certified |
 | [SQL Server \(MSSQL\)](destinations/mssql.md) | Alpha |
 | [Snowflake](destinations/snowflake.md) | Certified |
+| [Cassandra](destinations/cassandra.md) | Alpha |
+| [Scylla](destinations/scylla.md) | Alpha |

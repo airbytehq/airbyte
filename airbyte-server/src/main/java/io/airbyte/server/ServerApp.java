@@ -4,6 +4,7 @@
 
 package io.airbyte.server;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -15,10 +16,10 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
@@ -51,6 +52,7 @@ import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -69,17 +71,19 @@ public class ServerApp implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
+  private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.32.0-alpha");
+
   /**
    * We can't support automatic migration for kube before this version because we had a bug in kube
    * which would cause airbyte db to erase state upon termination, as a result the automatic migration
    * wouldn't run
    */
   private static final AirbyteVersion KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION = new AirbyteVersion("0.26.5-alpha");
-  private final String airbyteVersion;
+  private final AirbyteVersion airbyteVersion;
   private final Set<Class<?>> customComponentClasses;
   private final Set<Object> customComponents;
 
-  public ServerApp(final String airbyteVersion,
+  public ServerApp(final AirbyteVersion airbyteVersion,
                    final Set<Class<?>> customComponentClasses,
                    final Set<Object> customComponents) {
     this.airbyteVersion = airbyteVersion;
@@ -120,7 +124,7 @@ public class ServerApp implements ServerRunnable {
 
     server.start();
     final String banner = MoreResources.readResource("banner/banner.txt");
-    LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion));
+    LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion.serialize()));
     server.join();
   }
 
@@ -157,7 +161,8 @@ public class ServerApp implements ServerRunnable {
   public static ServerRunnable getServer(final ServerFactory apiFactory, final ConfigPersistence seed) throws Exception {
     final Configs configs = new EnvConfigs();
 
-    LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getServerLogsRoot(configs));
+    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
+        LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
 
     LOGGER.info("Creating Staged Resource folder...");
     ConfigDumpImporter.initStagedResourceFolder();
@@ -199,7 +204,7 @@ public class ServerApp implements ServerRunnable {
     // if no workspace exists, we create one so the user starts out with a place to add configuration.
     createWorkspaceIfNoneExists(configRepository);
 
-    final AirbyteVersion airbyteVersion = new AirbyteVersion(configs.getAirbyteVersion());
+    final AirbyteVersion airbyteVersion = configs.getAirbyteVersion();
     if (jobPersistence.getVersion().isEmpty()) {
       LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
       jobPersistence.setVersion(airbyteVersion.serialize());
@@ -208,7 +213,7 @@ public class ServerApp implements ServerRunnable {
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
     final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
-    final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false, trackingClient);
+    final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final SchedulerJobClient schedulerJobClient =
         new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence, configRepository));
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
@@ -218,6 +223,105 @@ public class ServerApp implements ServerRunnable {
     final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
     final SpecFetcher specFetcher = new SpecFetcher(cachingSchedulerClient);
 
+    // todo (cgardens) - this method is deprecated. new migrations are not run using this code path. it
+    // is scheduled to be removed.
+    final Optional<AirbyteVersion> airbyteDatabaseVersion = runFileMigration(
+        airbyteVersion,
+        configRepository,
+        seed,
+        specFetcher,
+        jobPersistence,
+        configs);
+
+    final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+
+    if (!isLegalUpgrade(airbyteDatabaseVersion.orElse(null), airbyteVersion)) {
+      final String attentionBanner = MoreResources.readResource("banner/attention-banner.txt");
+      LOGGER.error(attentionBanner);
+      final String message = String.format(
+          "Cannot upgrade from version %s to version %s directly. First you must upgrade to version %s. After that upgrade is complete, you may upgrade to version %s",
+          airbyteDatabaseVersion.get(),
+          airbyteVersion,
+          VERSION_BREAK,
+          airbyteVersion);
+
+      LOGGER.error(message);
+      throw new RuntimeException(message);
+    }
+
+    if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
+      LOGGER.info("Starting server...");
+
+      runFlywayMigration(configs, configDatabase, jobDatabase);
+      LOGGER.info("Ran Flyway migrations...");
+
+      configPersistence.loadData(seed);
+      LOGGER.info("Loaded seed data...");
+
+      // todo (lmossman) - this will only exist temporarily to ensure all definitions contain specs. It
+      // will be removed after the faux major version bump
+      ConnectorDefinitionSpecBackfiller.migrateAllDefinitionsToContainSpec(
+          configRepository,
+          configPersistence,
+          seed,
+          cachingSchedulerClient,
+          trackingClient,
+          configs);
+      LOGGER.info("Migrated all definitions to contain specs...");
+
+      return apiFactory.create(
+          schedulerJobClient,
+          cachingSchedulerClient,
+          temporalService,
+          configRepository,
+          jobPersistence,
+          seed,
+          configDatabase,
+          jobDatabase,
+          trackingClient,
+          configs.getWorkerEnvironment(),
+          configs.getLogConfigs(),
+          configs.getWebappUrl(),
+          configs.getAirbyteVersion(),
+          configs.getWorkspaceRoot(),
+          httpClient);
+    } else {
+      LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
+      return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);
+    }
+  }
+
+  @VisibleForTesting
+  static boolean isLegalUpgrade(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
+    // means there was no previous version so upgrade even needs to happen. always legal.
+    if (airbyteDatabaseVersion == null) {
+      return true;
+    }
+
+    return !isUpgradingThroughVersionBreak(airbyteDatabaseVersion, airbyteVersion);
+  }
+
+  /**
+   * Check to see if given the current version of the app and the version we are trying to upgrade if
+   * it passes through a version break (i.e. a major version bump).
+   *
+   * @param airbyteDatabaseVersion - current version of the app
+   * @param airbyteVersion - version we are trying to upgrade to
+   * @return true if upgrading through a major version, otherwise false.
+   */
+  private static boolean isUpgradingThroughVersionBreak(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {
+    return airbyteDatabaseVersion.lessThan(VERSION_BREAK) && airbyteVersion.greaterThan(VERSION_BREAK);
+  }
+
+  @Deprecated
+  @SuppressWarnings({"DeprecatedIsStillUsed"})
+  private static Optional<AirbyteVersion> runFileMigration(final AirbyteVersion airbyteVersion,
+                                                           final ConfigRepository configRepository,
+                                                           final ConfigPersistence seed,
+                                                           final SpecFetcher specFetcher,
+                                                           final JobPersistence jobPersistence,
+                                                           final Configs configs)
+      throws IOException {
     // required before migration
     // TODO: remove this specFetcherFn logic once file migrations are deprecated
     configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.getSpec(dockerImage)));
@@ -235,27 +339,7 @@ public class ServerApp implements ServerRunnable {
       }
     }
 
-    if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
-      LOGGER.info("Starting server...");
-
-      runFlywayMigration(configs, configDatabase, jobDatabase);
-      configPersistence.loadData(seed);
-
-      return apiFactory.create(
-          schedulerJobClient,
-          cachingSchedulerClient,
-          temporalService,
-          configRepository,
-          jobPersistence,
-          seed,
-          configDatabase,
-          jobDatabase,
-          configs,
-          trackingClient);
-    } else {
-      LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
-      return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);
-    }
+    return airbyteDatabaseVersion;
   }
 
   public static void main(final String[] args) throws Exception {

@@ -25,6 +25,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @Tag("logger-client")
 public class S3LogsTest {
 
+  private static final LogConfigs logConfigs = (new EnvConfigs()).getLogConfigs();
+
   @Test
   public void testMissingCredentials() {
     final var configs = mock(LogConfigs.class);
@@ -41,8 +43,7 @@ public class S3LogsTest {
    */
   @Test
   public void testRetrieveAllLogs() throws IOException {
-    final var configs = new LogConfigDelegator(new EnvConfigs());
-    final var data = S3Logs.getFile(configs, "paginate", 6);
+    final var data = S3Logs.getFile(logConfigs, "paginate", 6);
 
     final var retrieved = new ArrayList<String>();
     Files.lines(data.toPath()).forEach(retrieved::add);
@@ -61,9 +62,7 @@ public class S3LogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    final var configs = new LogConfigDelegator(new EnvConfigs());
-    final var data = new S3Logs().tailCloudLog(configs, "tail", 6);
-
+    final var data = new S3Logs().tailCloudLog(logConfigs, "tail", 6);
     final var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
     assertEquals(data, expected);
   }

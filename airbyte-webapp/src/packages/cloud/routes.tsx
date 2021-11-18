@@ -5,19 +5,10 @@ import {
   Route,
   Switch,
 } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
-import { useAsync } from "react-use";
 
 import SourcesPage from "pages/SourcesPage";
 import DestinationPage from "pages/DestinationPage";
-import {
-  DestinationsPage as SettingsDestinationPage,
-  SourcesPage as SettingsSourcesPage,
-} from "pages/SettingsPage/pages/ConnectorsPage";
 import ConnectionPage from "pages/ConnectionPage";
-import SettingsPage from "pages/SettingsPage";
-import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
-import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
 
 import LoadingPage from "components/LoadingPage";
 import MainView from "packages/cloud/views/layout/MainView";
@@ -25,26 +16,28 @@ import { WorkspacesPage } from "packages/cloud/views/workspaces";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { Auth } from "packages/cloud/views/auth";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import { useIntercom } from "packages/cloud/services/useIntercom";
-import useConnector from "hooks/services/useConnector";
+import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
 
 import {
   useGetWorkspace,
   useWorkspaceService,
   WorkspaceServiceProvider,
 } from "packages/cloud/services/workspaces/WorkspacesService";
-import { PageConfig } from "pages/SettingsPage/SettingsPage";
-import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView";
-import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView/UsersSettingsView";
-import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView/AccountSettingsView";
 import OnboardingPage from "pages/OnboardingPage";
 import { CreditsPage } from "packages/cloud/views/credits";
 import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
-import useRouter from "hooks/useRouter";
-import { WithPageAnalytics } from "pages/withPageAnalytics";
-import useWorkspace from "../../hooks/services/useWorkspace";
-import { CompleteOauthRequest } from "../../pages/CompleteOauthRequest";
+import { TrackPageAnalytics } from "hooks/services/Analytics/TrackPageAnalytics";
+import useWorkspace from "hooks/services/useWorkspace";
+import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
+import { useConfig } from "./services/config";
+import useFullStory from "./services/thirdParty/fullstory/useFullStory";
+import {
+  useAnalyticsIdentifyUser,
+  useAnalyticsRegisterValues,
+} from "hooks/services/Analytics/useAnalyticsService";
+import { CloudSettingsPage } from "./views/CloudSettingsPage";
+import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -82,75 +75,24 @@ export enum Routes {
   FirebaseAction = "/verify-email",
 }
 
-export enum FirebaseActionMode {
-  VERIFY_EMAIL = "verifyEmail",
-  RESET_PASSWORD = "resetPassword",
-}
-
 const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
   currentWorkspaceId,
 }) => {
   useGetWorkspace(currentWorkspaceId);
-  const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
   const { workspace } = useWorkspace();
+
+  const analyticsContext = useMemo(
+    () => ({
+      workspaceId: workspace.workspaceId,
+      customerId: workspace.customerId,
+    }),
+    [workspace]
+  );
+  useAnalyticsRegisterValues(analyticsContext);
+
   const mainRedirect = workspace.displaySetupWizard
     ? Routes.Onboarding
     : Routes.Connections;
-
-  const pageConfig = useMemo<PageConfig>(
-    () => ({
-      menuConfig: [
-        {
-          category: <FormattedMessage id="settings.userSettings" />,
-          routes: [
-            {
-              path: `${Routes.Settings}${Routes.Account}`,
-              name: <FormattedMessage id="settings.account" />,
-              component: AccountSettingsView,
-            },
-          ],
-        },
-        {
-          category: <FormattedMessage id="settings.workspaceSettings" />,
-          routes: [
-            {
-              path: `${Routes.Settings}${Routes.Workspace}`,
-              name: <FormattedMessage id="settings.generalSettings" />,
-              component: WorkspaceSettingsView,
-            },
-            {
-              path: `${Routes.Settings}${Routes.Source}`,
-              name: <FormattedMessage id="tables.sources" />,
-              indicatorCount: countNewSourceVersion,
-              component: SettingsSourcesPage,
-            },
-            {
-              path: `${Routes.Settings}${Routes.Destination}`,
-              name: <FormattedMessage id="tables.destinations" />,
-              indicatorCount: countNewDestinationVersion,
-              component: SettingsDestinationPage,
-            },
-            {
-              path: `${Routes.Settings}${Routes.Configuration}`,
-              name: <FormattedMessage id="admin.configuration" />,
-              component: ConfigurationsPage,
-            },
-            {
-              path: `${Routes.Settings}${Routes.AccessManagement}`,
-              name: <FormattedMessage id="settings.accessManagementSettings" />,
-              component: UsersSettingsView,
-            },
-            {
-              path: `${Routes.Settings}${Routes.Notifications}`,
-              name: <FormattedMessage id="settings.notifications" />,
-              component: NotificationPage,
-            },
-          ],
-        },
-      ],
-    }),
-    [countNewSourceVersion, countNewDestinationVersion]
-  );
 
   return (
     <Switch>
@@ -164,7 +106,9 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
         <ConnectionPage />
       </Route>
       <Route path={Routes.Settings}>
-        <SettingsPage pageConfig={pageConfig} />
+        <Suspense fallback={LoadingPage}>
+          <CloudSettingsPage />
+        </Suspense>
       </Route>
       <Route path={Routes.Credits}>
         <CreditsPage />
@@ -188,47 +132,50 @@ const MainViewRoutes = () => {
   const { currentWorkspaceId } = useWorkspaceService();
 
   return (
-    <>
-      <Switch>
-        <Route path={Routes.AuthFlow}>
-          <CompleteOauthRequest />
-        </Route>
-        <Route>
-          {currentWorkspaceId ? (
-            <MainView>
-              <Suspense fallback={<LoadingPage />}>
-                <MainRoutes currentWorkspaceId={currentWorkspaceId} />
-              </Suspense>
-            </MainView>
-          ) : (
-            <Switch>
-              <Route exact path={Routes.SelectWorkspace}>
-                <WorkspacesPage />
-              </Route>
-              <Redirect to={Routes.SelectWorkspace} />
-            </Switch>
-          )}
-        </Route>
-      </Switch>
-    </>
+    <Switch>
+      <Route path={Routes.AuthFlow}>
+        <CompleteOauthRequest />
+      </Route>
+      <Route>
+        {currentWorkspaceId ? (
+          <MainView>
+            <Suspense fallback={<LoadingPage />}>
+              <MainRoutes currentWorkspaceId={currentWorkspaceId} />
+            </Suspense>
+          </MainView>
+        ) : (
+          <Switch>
+            <Route exact path={Routes.SelectWorkspace}>
+              <WorkspacesPage />
+            </Route>
+            <Redirect to={Routes.SelectWorkspace} />
+          </Switch>
+        )}
+      </Route>
+    </Switch>
   );
-};
-
-const FirebaseActionRoute: React.FC = () => {
-  const { query } = useRouter<{ oobCode: string }>();
-  const { verifyEmail } = useAuthService();
-
-  useAsync(async () => await verifyEmail(query.oobCode), []);
-
-  return <LoadingPage />;
 };
 
 export const Routing: React.FC = () => {
   const { user, inited, emailVerified } = useAuthService();
+  const config = useConfig();
+  useFullStory(config.fullstory, config.fullstory.enabled);
+
+  const analyticsContext = useMemo(
+    () =>
+      user
+        ? {
+            cloud_user_id: user.userId,
+          }
+        : null,
+    [user]
+  );
+  useAnalyticsRegisterValues(analyticsContext);
+  useAnalyticsIdentifyUser(user?.userId);
 
   return (
     <Router>
-      <WithPageAnalytics />
+      <TrackPageAnalytics />
       <Suspense fallback={<LoadingPage />}>
         {inited ? (
           <>
@@ -240,7 +187,7 @@ export const Routing: React.FC = () => {
             {user && !emailVerified && (
               <Switch>
                 <Route path={Routes.FirebaseAction}>
-                  <FirebaseActionRoute />
+                  <VerifyEmailAction />
                 </Route>
                 <Route path={Routes.ConfirmVerifyEmail}>
                   <ConfirmEmailPage />
