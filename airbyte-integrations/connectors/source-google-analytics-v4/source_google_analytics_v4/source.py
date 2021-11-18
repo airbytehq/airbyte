@@ -478,8 +478,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         config["metrics"] = ["ga:14dayUsers"]
         config["dimensions"] = ["ga:date"]
 
-        # Produce only one date-slice to check the reading permissions
-        first_stream_slice = TestStreamConnection(config).stream_slices(stream_state=None)[0]
+        stream_slices = TestStreamConnection(config).stream_slices(stream_state=None)
 
         try:
             # test the eligibility of custom_reports input
@@ -487,10 +486,13 @@ class SourceGoogleAnalyticsV4(AbstractSource):
             if custom_reports:
                 json.loads(custom_reports)
 
-            # test the reading operation
-            read_check = list(TestStreamConnection(config).read_records(sync_mode=None, stream_slice=first_stream_slice))
-            if read_check:
-                return True, None
+            # Start reading from the latest date-slice to check the reading permissions in reverse order
+            # until fetching some records
+            for stream_slice in reversed(stream_slices):
+                read_check = list(TestStreamConnection(config).read_records(sync_mode=None, stream_slice=stream_slice))
+                if read_check:
+                    return True, None
+            return False, f"Please check the permissions for the requested view_id: {config['view_id']}. No records have been fetched."
 
         except ValueError as e:
             return False, f"Invalid custom reports json structure. {e}"
