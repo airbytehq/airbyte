@@ -95,7 +95,7 @@ function export_gsm_secrets(){
 
   # docs: https://cloud.google.com/secret-manager/docs/filtering#api
   local filter="name:SECRET_"
-  [[ ${CONNECTOR_NAME} != "all" ]] && filter="${filter} AND labels.connector:${CONNECTOR_NAME}"
+  [[ ${CONNECTOR_NAME} != "all" ]] && filter="${filter} AND labels.connector=${CONNECTOR_NAME}"
   local uri="https://secretmanager.googleapis.com/v1/projects/${project_id}/secrets"
   local next_token=''
   while true; do
@@ -264,8 +264,6 @@ read_secrets source-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
 read_secrets source-retently "$SOURCE_RETENTLY_TEST_CREDS"
 read_secrets source-s3 "$SOURCE_S3_TEST_CREDS"
 read_secrets source-s3 "$SOURCE_S3_PARQUET_CREDS" "parquet_config.json"
-read_secrets source-salesforce "$SALESFORCE_BULK_INTEGRATION_TESTS_CREDS" "config_bulk.json"
-read_secrets source-salesforce "$SALESFORCE_INTEGRATION_TESTS_CREDS"
 read_secrets source-salesloft "$SOURCE_SALESLOFT_TEST_CREDS"
 read_secrets source-sendgrid "$SENDGRID_INTEGRATION_TEST_CREDS"
 read_secrets source-shopify "$SHOPIFY_INTEGRATION_TEST_CREDS"
