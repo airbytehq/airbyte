@@ -229,13 +229,16 @@ jobs:
 
       - name: Build
         run: |
+            SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
+
+      - name: Integration test
+        run: |
           branch=$(git rev-parse --abbrev-ref HEAD)
           if [[ $branch == bump-version* ]] ;
           then
-              SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
-              SUB_BUILD=PLATFORM ./gradlew allTests
+              SUB_BUILD=PLATFORM ./gradlew newIntegrationTest slowIntegrationTest
           else
-              SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
+              SUB_BUILD=PLATFORM ./gradlew build newIntegrationTest
           fi
 
       - name: Test if Seed spec is updated

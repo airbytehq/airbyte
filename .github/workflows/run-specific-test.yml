@@ -3,11 +3,11 @@ on:
   workflow_dispatch:
     inputs:
       test-name:
-        description: "Test class name"
+        description: "Test to run classname"
         required: true
 
 jobs:
-  run-specific-test:
+  single-test-runner:
     timeout-minutes: 300
     needs: start-platform-build-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-platform-build-runner.outputs.label }} # run the job on the newly created runner
@@ -44,4 +44,5 @@ jobs:
           node-version: '16.13.0'
 
       - name: Build
+        id: run-specific-test
         run: ./gradlew allTest --tests *${{ github.event.inputs.test-name }}
