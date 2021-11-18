@@ -182,7 +182,7 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/workspaces/feedback:
+  /v1/workspaces/tag_feedback_status_as_done:
     post:
       tags:
         - workspace
