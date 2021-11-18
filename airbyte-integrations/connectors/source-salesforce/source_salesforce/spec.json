@@ -43,6 +43,14 @@
         "type": "string",
         "enum": ["BULK", "REST"],
         "default": "BULK"
+      },
+      "wait_timeout": {
+        "title": "Response Waiting Time",
+        "description": "Maximum wait time of Safesforce responses in minutes. This option is used for the BULK mode only",
+        "type": "integer",
+        "minimum": 5,
+        "maximum": 60,
+        "default": 10
       }
     }
   },

@@ -111,7 +111,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.2"
+- dockerImage: "airbyte/source-amazon-seller-partner:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
@@ -1098,7 +1098,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-exchange-rates:0.2.4"
+- dockerImage: "airbyte/source-exchange-rates:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/exchangeratesapi"
     connectionSpecification:
@@ -1129,6 +1129,10 @@
           examples:
           - "EUR"
           - "USD"
+        ignore_weekends:
+          type: "boolean"
+          description: "Ignore weekends? (Exchanges don't run on weekends)"
+          default: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -1507,7 +1511,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshdesk:0.2.7"
+- dockerImage: "airbyte/source-freshdesk:0.2.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/freshdesk"
     connectionSpecification:
@@ -3082,6 +3086,37 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-linnworks:0.1.1"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Linnworks Spec"
+      type: "object"
+      required:
+      - "application_id"
+      - "application_secret"
+      - "token"
+      - "start_date"
+      additionalProperties: false
+      properties:
+        application_id:
+          title: "Application ID"
+          type: "string"
+        application_secret:
+          title: "Application secret"
+          type: "string"
+          airbyte_secret: true
+        token:
+          title: "Token"
+          type: "string"
+        start_date:
+          title: "Start date"
+          type: "string"
+          format: "date-time"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-looker:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/looker"
@@ -4207,7 +4242,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pipedrive:0.1.7"
+- dockerImage: "airbyte/source-pipedrive:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pipedrive"
     connectionSpecification:
@@ -5033,7 +5068,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:0.1.5"
+- dockerImage: "airbyte/source-salesforce:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/salesforce"
     connectionSpecification:
@@ -5088,6 +5123,14 @@
           - "BULK"
           - "REST"
           default: "BULK"
+        wait_timeout:
+          title: "Response Waiting Time"
+          description: "Maximum wait time of Safesforce responses in minutes. This\
+            \ option is used for the BULK mode only"
+          type: "integer"
+          minimum: 5
+          maximum: 60
+          default: 10
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -5617,7 +5660,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-surveymonkey:0.1.3"
+- dockerImage: "airbyte/source-surveymonkey:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/surveymonkey"
     connectionSpecification:
@@ -5949,7 +5992,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zendesk-support:0.1.4"
+- dockerImage: "airbyte/source-zendesk-support:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
