@@ -249,17 +249,6 @@ public class ServerApp implements ServerRunnable {
     configPersistence.loadData(seed);
     LOGGER.info("Loaded seed data...");
 
-    // todo (lmossman) - this will only exist temporarily to ensure all definitions contain specs. It
-    // will be removed after the faux major version bump
-    ConnectorDefinitionSpecBackfiller.migrateAllDefinitionsToContainSpec(
-        configRepository,
-        configPersistence,
-        seed,
-        cachingSchedulerClient,
-        trackingClient,
-        configs);
-    LOGGER.info("Migrated all definitions to contain specs...");
-
     return apiFactory.create(
         schedulerJobClient,
         cachingSchedulerClient,
