@@ -254,9 +254,9 @@ public class JsonToAvroSchemaConverter {
       if (!nonNullFieldTypes.contains(NULL_SCHEMA)) {
         nonNullFieldTypes.add(0, NULL_SCHEMA);
       }
-      if((nonNullFieldTypes
-              .stream().anyMatch(schema -> schema.getLogicalType() != null)) &&
-              (!nonNullFieldTypes.contains(Schema.create(Schema.Type.STRING)))){
+      if ((nonNullFieldTypes
+          .stream().anyMatch(schema -> schema.getLogicalType() != null)) &&
+          (!nonNullFieldTypes.contains(Schema.create(Schema.Type.STRING)))) {
         nonNullFieldTypes.addLast(Schema.create(Schema.Type.STRING));
       }
       return Schema.createUnion(nonNullFieldTypes);
