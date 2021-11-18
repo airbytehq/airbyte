@@ -54,5 +54,6 @@ Please register on OneSignal and follow this [docs](https://documentation.onesig
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-11-10 | [7617](https://github.com/airbytehq/airbyte/pull/7617) | Fix get_update state |
 | 0.1.0 | 2021-10-13 | [6998](https://github.com/airbytehq/airbyte/pull/6998) | Initial Release |
 

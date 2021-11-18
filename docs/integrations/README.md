@@ -50,7 +50,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Google Sheets](sources/google-sheets.md) | Certified |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md) | Certified |
 | [Greenhouse](sources/greenhouse.md) | Beta |
-| [Hubspot](sources/hubspot.md) | Certified |
+| [HubSpot](sources/hubspot.md) | Certified |
 | [Instagram](sources/instagram.md) | Certified |
 | [Intercom](sources/intercom.md) | Beta |
 | [Iterable](sources/iterable.md) | Beta |
@@ -59,6 +59,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Klaviyo](sources/kustomer.md) | Alpha |
 | [Lemlist](sources/lemlist.md) | Alpha |
 | [LinkedIn Ads](sources/linkedin-ads.md) | Beta |
+| [Linnworks](sources/linnworks.md) | Alpha |
 | [Kustomer](sources/kustomer.md) | Alpha |
 | [Lever Hiring](sources/lever-hiring.md) | Beta |
 | [Looker](sources/looker.md) | Beta |
@@ -151,4 +152,5 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [SQL Server \(MSSQL\)](destinations/mssql.md) | Alpha |
 | [Snowflake](destinations/snowflake.md) | Certified |
 | [Cassandra](destinations/cassandra.md) | Alpha |
+| [Scylla](destinations/scylla.md) | Alpha |
 
