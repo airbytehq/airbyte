@@ -17,7 +17,7 @@ import org.slf4j.MDC;
  * <pre>
  *   <code>
  *     try(final ScopedMDCChange scopedMDCChange = new ScopedMDCChange(
- *      new HashMap<String, String>() {{
+ *      new HashMap&lt;String, String&gt;() {{
  *        put("my", "value");
  *      }}
  *     )) {
@@ -28,7 +28,7 @@ import org.slf4j.MDC;
  */
 public class MdcScope implements AutoCloseable {
 
-  public final static MdcScope DEFAULT = new Builder().build();
+  public final static MdcScope.Builder DEFAULT_BUILDER = new Builder();
 
   private final Map<String, String> originalContextMap;
 

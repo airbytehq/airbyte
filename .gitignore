@@ -1,6 +1,7 @@
 .gradle
 .idea
 *.iml
+*.swp
 build
 out
 .DS_Store
@@ -60,6 +61,3 @@ resources/examples/airflow/logs/*
 
 # Cloud Demo
 !airbyte-webapp/src/packages/cloud/data
-
-# Sphinx Docs
-_build

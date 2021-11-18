@@ -1,3 +1,16 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:7.1.0'
+    }
+}
+
 plugins {
     id 'base'
     id 'pmd'
@@ -58,24 +71,23 @@ def createJavaLicenseWith = { license ->
 // monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
 def createSpotlessTarget = { pattern ->
     def excludes = [
-            '.gradle',
-            'node_modules',
-            '.eggs',
-            '.mypy_cache',
-            '.venv',
-            '*.egg-info',
-            'build',
-            'dbt-project-template',
-            'dbt-project-template-mssql',
-            'dbt-project-template-mysql',
-            'dbt-project-template-oracle',
-            'dbt_data_tests',
-            'dbt_data_tests_tmp',
-            'dbt_schema_tests',
-            'normalization_test_output',
-            'tools',
-            'secrets',
-            'charts' // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+        '.gradle',
+        'node_modules',
+        '.eggs',
+        '.mypy_cache',
+        '.venv',
+        '*.egg-info',
+        'build',
+        'dbt-project-template',
+        'dbt-project-template-mssql',
+        'dbt-project-template-mysql',
+        'dbt-project-template-oracle',
+        'dbt_test_config',
+        'normalization_test_output',
+        'tools',
+        'secrets',
+        'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+        'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -113,27 +125,40 @@ spotless {
 }
 check.dependsOn 'spotlessApply'
 
+@SuppressWarnings('GroovyAssignabilityCheck')
+def Task getDockerBuildTask(String artifactName, String projectDir) {
+    return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
+        def buildTag = System.getenv('VERSION') ?: 'dev'
+        def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
+        def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
+        def postgresImage = System.getenv('POSTGRES_IMAGE') ?: 'postgres:13-alpine'
+        def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
+        def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
+
+        inputDir = file("$projectDir/build/docker")
+        platform = buildPlatform
+        images.add("airbyte/$artifactName:$buildTag")
+        buildArgs.put('JDK_VERSION', jdkVersion)
+        buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
+        buildArgs.put('ALPINE_IMAGE', alpineImage)
+        buildArgs.put('POSTGRES_IMAGE', postgresImage)
+    })
+}
+
 allprojects {
-    apply plugin: 'base'
+    apply plugin: 'com.bmuschko.docker-remote-api'
 
-    afterEvaluate { project ->
-        def composeDeps = [
-                ":airbyte-config:init",
-                ":airbyte-db:lib",
-                ":airbyte-migration",
-                ":airbyte-scheduler:app",
-                ":airbyte-workers",
-                ":airbyte-server",
-                ":airbyte-webapp",
-        ].toSet().asImmutable()
+    task copyDocker(type: Copy) {
+        delete "build/docker"
 
-        if (project.getPath() in composeDeps) {
-            composeBuild.dependsOn(project.getPath() + ':assemble')
-        }
+        from "${project.projectDir}/Dockerfile"
+        into "build/docker/"
     }
 }
 
 allprojects {
+    apply plugin: 'base'
+
     // by default gradle uses directory as the project name. That works very well in a single project environment but
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.
     def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
@@ -235,6 +260,7 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
         testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
         testImplementation 'org.assertj:assertj-core:3.21.0'
+
     }
 
     tasks.withType(Tar) {
@@ -244,28 +270,8 @@ subprojects {
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
-}
 
-task composeBuild {
-    def buildTag = System.getenv('VERSION') ?: 'dev'
-    def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
-    def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
-    def jdkVersion = System.getenv('JDK_VERSION') ?: '14.0.2'
-    def dockerComposeFile = buildArch == 'arm64' ? 'docker-compose.build-m1.yaml' : 'docker-compose.build.yaml'
-    doFirst {
-        exec {
-            workingDir rootDir
-            commandLine 'docker-compose', '-f', dockerComposeFile, 'build', '--parallel', '--quiet'
-            environment 'VERSION', buildTag
-            environment 'DOCKER_BUILD_PLATFORM', buildPlatform
-            environment 'DOCKER_BUILD_ARCH', buildArch
-            environment 'JDK_VERSION', jdkVersion
-        }
-    }
-}
-
-if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
-    build.dependsOn(composeBuild)
+    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 }
 
 task('generate') {
@@ -303,6 +309,17 @@ subprojects {
             licenseTask.dependsOn generateFilesTask
         }
     }
+}
+
+task('generate-docker') {
+    dependsOn(':airbyte-workers:assemble')
+    dependsOn(':airbyte-webapp:assemble')
+    dependsOn(':airbyte-server:assemble')
+    dependsOn(':airbyte-scheduler:app:assemble')
+    dependsOn(':airbyte-migration:assemble')
+    dependsOn(':airbyte-db:lib:assemble')
+    dependsOn(':airbyte-config:init:assemble')
+    dependsOn(':airbyte-temporal:assemble')
 }
 
 // produce reproducible archives

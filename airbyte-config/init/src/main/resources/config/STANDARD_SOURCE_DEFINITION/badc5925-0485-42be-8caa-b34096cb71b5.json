@@ -2,6 +2,6 @@
   "sourceDefinitionId": "badc5925-0485-42be-8caa-b34096cb71b5",
   "name": "Survey Monkey",
   "dockerRepository": "airbyte/source-surveymonkey",
-  "dockerImageTag": "0.1.0",
+  "dockerImageTag": "0.1.4",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/surveymonkey"
 }

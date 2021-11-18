@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -31,7 +32,7 @@ public class CockroachDbSource extends AbstractJdbcSource {
   public static final List<String> PORT_KEY = List.of("port");
 
   public CockroachDbSource() {
-    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration(), new CockroachJdbcSourceOperations());
   }
 
   public static Source sshWrappedSource() {
@@ -92,6 +93,11 @@ public class CockroachDbSource extends AbstractJdbcSource {
     LOGGER.info("starting source: {}", CockroachDbSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", CockroachDbSource.class);
+  }
+
+  @Override
+  protected JdbcSourceOperations getSourceOperations() {
+    return new CockroachJdbcSourceOperations();
   }
 
 }
