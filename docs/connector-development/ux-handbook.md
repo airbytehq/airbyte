@@ -2,7 +2,7 @@
 
 ## Connector Development UX Handbook
 
-![Connector UX Handbook](https://imgs.xkcd.com/comics/ui\_vs\_ux.png)
+![Connector UX Handbook](../.gitbook/assets/uivsux.png)
 
 ### Overview
 
@@ -53,7 +53,7 @@ The same is true with Airbyte: if it worked less than 99% of the time, many user
 
 Our users have the following hierarchy of needs:&#x20;
 
-![](../.gitbook/assets/ux\_hierarchy\_pyramid2.png)
+![](../.gitbook/assets/ux_hierarchy_pyramid2.png)
 
 **Security**
 
@@ -152,7 +152,7 @@ For example, the following spec:
 
 produces the following input field in the UI:&#x20;
 
-![](../.gitbook/assets/ux\_username\_bad.png)
+![](../.gitbook/assets/ux_username_bad.png)
 
 Whereas the following specification:
 
@@ -171,7 +171,7 @@ Whereas the following specification:
 
 produces the following UI:
 
-![](../.gitbook/assets/ux\_username\_good.png)
+![](../.gitbook/assets/ux_username_good.png)
 
 The title should use Pascal Case “with spaces” e.g: “Attribution Lookback Window”, “Host URL”, etc...
 
