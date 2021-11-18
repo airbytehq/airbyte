@@ -37,16 +37,6 @@ class TestFullRefresh(BaseTest):
         for record in records_2:
             records_by_stream_2[record.stream].append(record.data)
 
-<<<<<<< HEAD
-        output_diff = set(map(serialize, records_1)) - set(map(serialize, records_2))
-        if output_diff:
-            detailed_logger.info(f"record_1: {records_1}")
-            detailed_logger.info(f"record_2: {records_2}")
-            msg = "The two sequential reads should produce either equal set of records or one of them is a strict subset of the other"
-            detailed_logger.info(msg)
-            detailed_logger.log_json_list(output_diff)
-            pytest.fail(msg)
-=======
         for stream in records_by_stream_1.keys():
             serializer = partial(make_hashable, exclude_fields=ignored_fields.get(stream))
             stream_records_1 = records_by_stream_1.get(stream)
@@ -62,4 +52,3 @@ class TestFullRefresh(BaseTest):
                 detailed_logger.info("Difference")
                 detailed_logger.log_json_list(output_diff)
                 pytest.fail(msg)
->>>>>>> 1dcd525eb812fee389c50802d275a1c223a8a8f0
