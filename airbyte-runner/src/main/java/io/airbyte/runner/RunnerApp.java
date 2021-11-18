@@ -130,20 +130,6 @@ public class RunnerApp {
     System.out.println(Jsons.serialize(replicationOutput));
   }
 
-  private static boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput, final ConfigRepository configRepository) {
-    final State state = syncOutput.getState();
-    if (state != null) {
-      try {
-        configRepository.updateConnectionState(connectionId, state);
-      } catch (final IOException e) {
-        throw new RuntimeException(e);
-      }
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   public static void main(String[] args) throws IOException {
     final String application = Files.readString(Path.of("application.txt"));
 

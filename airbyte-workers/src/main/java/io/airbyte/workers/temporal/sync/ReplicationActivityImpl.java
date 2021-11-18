@@ -186,7 +186,14 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
           LineGobbler.gobble(process.getInputStream(), line -> {
             final var maybeOutput = Jsons.tryDeserialize(line, ReplicationOutput.class);
-            maybeOutput.ifPresent(output::set);
+
+            if (maybeOutput.isPresent()) {
+              output.set(maybeOutput.get());
+            } else {
+              try (final var mdcScope = LOG_MDC_BUILDER.build()) {
+                LOGGER.info(line);
+              }
+            }
           });
 
           LineGobbler.gobble(process.getInputStream(), LOGGER::info, LOG_MDC_BUILDER);
