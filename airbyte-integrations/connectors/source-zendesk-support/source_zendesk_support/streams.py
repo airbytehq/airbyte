@@ -16,6 +16,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY = "_last_end_time"
@@ -33,6 +34,8 @@ class SourceZendeskSupportStream(HttpStream, ABC):
     page_size = 100
     created_at_field = "created_at"
     updated_at_field = "updated_at"
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, subdomain: str, **kwargs):
         super().__init__(**kwargs)

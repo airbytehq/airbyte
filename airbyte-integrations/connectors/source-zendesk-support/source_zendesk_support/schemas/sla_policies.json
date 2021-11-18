@@ -67,7 +67,9 @@
           "business_hours": {
             "type": ["null", "boolean"]
           },
-          "metric": {}
+          "metric": {
+            "type": ["null", "string"]
+          }
         },
         "type": ["null", "object"]
       }
