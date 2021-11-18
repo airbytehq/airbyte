@@ -1887,6 +1887,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+        firstCompletedSync:
+          type: boolean
+        feedbackDone:
+          type: boolean
     WorkspaceUpdate:
       type: object
       required:
