@@ -68,7 +68,6 @@ class MondayStream(HttpStream, ABC):
             graphql_params.update(next_page_token)
 
         graphql_query = ",".join([f"{k}:{v}" for k, v in graphql_params.items()])
-        self.logger.info(graphql_query)
         # Monday uses a query string to pass in environments
         params = {"query": f"query {{ {self.name.lower()} ({graphql_query}) {{ {self.load_schema()} }} }}"}
         return params
