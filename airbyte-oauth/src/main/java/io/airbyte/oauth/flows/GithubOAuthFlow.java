@@ -24,6 +24,13 @@ public class GithubOAuthFlow extends BaseOAuth2Flow {
 
   private static final String AUTHORIZE_URL = "https://github.com/login/oauth/authorize";
   private static final String ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
+  // Setting "repo" scope would allow grant not only read but also write
+  // access to our application. Unfortunatelly we cannot follow least
+  // privelege principle here cause github has no option of granular access
+  // tune up.
+  // This is necessary to pull data from private repositories.
+  // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
+  private static final String SCOPES = "repo";
 
   public GithubOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -41,11 +48,10 @@ public class GithubOAuthFlow extends BaseOAuth2Flow {
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
     try {
-      // No scope means read-only access to public information
-      // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
+          .addParameter("scope", SCOPES)
           .addParameter("state", getState())
           .build().toString();
     } catch (final URISyntaxException e) {
