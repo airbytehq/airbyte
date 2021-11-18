@@ -13,14 +13,11 @@ in the tables and columns you set up for replication, every time a sync is run.
 
 Several output streams are available from this source:
 
-* [Commits](https://developer.pagerduty.com/api-reference/b3A6Mjc0ODEzOA-list-incidents) \(Incremental\)
-* [Projects](https://developer.pagerduty.com/api-reference/b3A6Mjc0ODE1NA-list-log-entries) \(Incremental\)
-* [Repositories](https://developer.pagerduty.com/api-reference/b3A6Mjc0ODE2NA-list-priorities) \(Incremental\)
-* [Revisions](https://developer.pagerduty.com/api-reference/b3A6Mjc0ODIzMw-list-users) \(Incremental\)
-* [Users](https://developer.pagerduty.com/api-reference/b3A6Mjc0ODIzMw-list-users) \(Incremental\)
-
-In the above links, replace `your.phabricator.url` with the url of your
-Phabricator instance.
+* [Commits](https://secure.phabricator.com/conduit/method/diffusion.commit.search/) \(Incremental\)
+* [Projects](https://secure.phabricator.com/conduit/method/project.search/) \(Incremental\)
+* [Repositories](https://secure.phabricator.com/conduit/method/diffusion.repository.search/) \(Incremental\)
+* [Revisions](https://secure.phabricator.com/conduit/method/differential.revision.search/) \(Incremental\)
+* [Users](https://secure.phabricator.com/conduit/method/user.search/) \(Incremental\)
 
 If there are more endpoints you'd like Faros AI to support, please [create an
 issue.](https://github.com/faros-ai/airbyte-connectors/issues/new)
@@ -52,7 +49,7 @@ rate limit issues that are not automatically retried successfully.
 ### Setup guide
 
 Login to your Phabricator server in your browser and go to
-`https://your.phabricator.url/me/configure` to generate your API token.
+`settings/panel/apitokens/` to generate your API token.
 
 ## Changelog
 
