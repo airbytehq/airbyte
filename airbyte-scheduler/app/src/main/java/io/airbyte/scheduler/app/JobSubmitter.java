@@ -144,7 +144,7 @@ public class JobSubmitter implements Runnable {
               final String connectionId = job.getScope();
               final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(UUID.fromString(connectionId), false);
 
-              if (!workspace.getFirstCompletedSync()) {
+              if (workspace.getFirstCompletedSync() == null || !workspace.getFirstCompletedSync()) {
                 workspace.setFirstCompletedSync(true);
                 configRepository.writeStandardWorkspace(workspace);
               }
