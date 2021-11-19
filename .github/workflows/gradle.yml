@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '0 */1 * * *'
   push:
+    branches-ignore:
+      - 'gitbook/v1'
 
 jobs:
   ## Gradle Build (Connectors Base)

@@ -59,6 +59,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Klaviyo](sources/kustomer.md) | Alpha |
 | [Lemlist](sources/lemlist.md) | Alpha |
 | [LinkedIn Ads](sources/linkedin-ads.md) | Beta |
+| [Linnworks](sources/linnworks.md) | Alpha |
 | [Kustomer](sources/kustomer.md) | Alpha |
 | [Lever Hiring](sources/lever-hiring.md) | Beta |
 | [Looker](sources/looker.md) | Beta |
@@ -74,6 +75,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Mixpanel](sources/mixpanel.md) | Beta |
 | [Mongo DB](sources/mongodb-v2.md) | Beta |
 | [MySQL](sources/mysql.md) | Certified |
+| [Notion](sources/notion.md) | Alpha |
 | [Okta](sources/okta.md) | Beta |
 | [OneSignal](sources/onesignal.md) | Alpha |
 | [Oracle DB](sources/oracle.md) | Certified |
@@ -150,4 +152,5 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [SQL Server \(MSSQL\)](destinations/mssql.md) | Alpha |
 | [Snowflake](destinations/snowflake.md) | Certified |
 | [Cassandra](destinations/cassandra.md) | Alpha |
+| [Scylla](destinations/scylla.md) | Alpha |
 
