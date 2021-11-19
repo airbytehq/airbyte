@@ -66,7 +66,7 @@ public class MigrationAcceptanceTest {
     } else {
       final Properties prop = new Properties();
       prop.load(new FileInputStream(ENV_FILE));
-      targetVersion = prop.getProperty("VERSION");
+      targetVersion = "0.32.0-alpha";
     }
     LOGGER.info("Using version: {} as target version", targetVersion);
 
