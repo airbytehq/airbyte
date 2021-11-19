@@ -221,19 +221,10 @@ public class ServerApp implements ServerRunnable {
     final SynchronousSchedulerClient bucketSpecCacheSchedulerClient =
         new BucketSpecCacheSchedulerClient(syncSchedulerClient, configs.getSpecCacheBucket());
     final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
-    final SpecFetcher specFetcher = new SpecFetcher(cachingSchedulerClient);
-
-    // todo (cgardens) - this method is deprecated. new migrations are not run using this code path. it
-    // is scheduled to be removed.
-    final Optional<AirbyteVersion> airbyteDatabaseVersion = runFileMigration(
-        airbyteVersion,
-        configRepository,
-        seed,
-        specFetcher,
-        jobPersistence,
-        configs);
-
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+
+    // represents the version of airbyte associated with the data in the db.
+    final Optional<AirbyteVersion> airbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new);
 
     if (!isLegalUpgrade(airbyteDatabaseVersion.orElse(null), airbyteVersion)) {
       final String attentionBanner = MoreResources.readResource("banner/attention-banner.txt");
