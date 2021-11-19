@@ -225,7 +225,6 @@ read_secrets source-google-sheets "$GOOGLE_SHEETS_TESTS_CREDS_OLD" "old_config.j
 read_secrets source-google-workspace-admin-reports "$GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS"
 read_secrets source-greenhouse "$GREENHOUSE_TEST_CREDS"
 read_secrets source-greenhouse "$GREENHOUSE_TEST_CREDS_LIMITED" "config_users_only.json"
-read_secrets source-harvest "$HARVEST_INTEGRATION_TESTS_CREDS"
 read_secrets source-hubspot "$HUBSPOT_INTEGRATION_TESTS_CREDS"
 read_secrets source-hubspot "$HUBSPOT_INTEGRATION_TESTS_CREDS_OAUTH" "config_oauth.json"
 read_secrets source-instagram "$INSTAGRAM_INTEGRATION_TESTS_CREDS"
