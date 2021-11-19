@@ -453,32 +453,14 @@ class TestStreamConnection(GoogleAnalyticsV4Stream):
         """For test reading pagination is not required"""
         return None
 
-    def request_body_json(
-        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> Optional[Mapping]:
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
-        Overwrite the method to fetch records from start_date up to now for testing case,
-        and request 1 record per page
+        Override this method to fetch records from start_date up to now for testing case
         """
-        metrics = [{"expression": metric} for metric in self.metrics]
-        dimensions = [{"name": dimension} for dimension in self.dimensions]
-
         start_date = pendulum.parse(self.start_date).date()
         end_date = pendulum.now().date()
-        date_range = {"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}
-        request_body = {
-            "reportRequests": [
-                {
-                    "viewId": self.view_id,
-                    "dateRanges": [date_range],
-                    "pageSize": self.page_size,
-                    "metrics": metrics,
-                    "dimensions": dimensions,
-                }
-            ]
-        }
-
-        return request_body
+        date_slices = [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]
+        return date_slices
 
 
 class SourceGoogleAnalyticsV4(AbstractSource):
