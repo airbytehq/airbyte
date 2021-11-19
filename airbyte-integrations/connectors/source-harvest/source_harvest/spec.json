@@ -94,29 +94,43 @@
   },
   "advancedAuth": {
     "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "Client",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
-        "refresh_token": {
-          "type": "string",
-          "path_in_connector_config": ["credentials", 0, "refresh_token"]
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "refresh_token"]
+          }
         }
       },
       "complete_oauth_server_input_specification": {
-        "client_id": {
-          "type": "string"
-        },
-        "client_secret": {
-          "type": "string"
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
         }
       },
       "complete_oauth_server_output_specification": {
-        "client_id": {
-          "type": "string",
-          "path_in_connector_config": ["credentials", 0, "client_id"]
-        },
-        "client_secret": {
-          "type": "string",
-          "path_in_connector_config": ["credentials", 0, "client_secret"]
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
         }
       }
     }
