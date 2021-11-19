@@ -47,7 +47,7 @@
             }
           },
           {
-            "title": "Auth2.0",
+            "title": "OAuth2.0",
             "type": "object",
             "required": [ "access_token"],
             "additionalProperties": false,
