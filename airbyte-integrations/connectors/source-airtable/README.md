@@ -1,13 +1,14 @@
-# Cart.com Source
+# Airtable Source
 
-This is the repository for the Cart.com source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/cart).
+This is the repository for the Airtable source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/airtable).
 
 ## Local development
 
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
-
+- Create a base named `users` in your AirTable account.
+- Create two tables named `Table 1` and `Table 2` in the `users` base.
 #### Minimum Python version required `= 3.7.0`
 
 #### Build & Activate Virtual Environment and install dependencies
@@ -21,6 +22,7 @@ development environment of choice. To activate it from the terminal, run:
 ```
 source .venv/bin/activate
 pip install -r requirements.txt
+pip install '.[tests]'
 ```
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
@@ -34,16 +36,16 @@ You can also build the connector in Gradle. This is typically used in CI and not
 
 To build using Gradle, from the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-cart:build
+./gradlew :airbyte-integrations:connectors:source-airtable:build
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/cart)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_cart/spec.json` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/airtable)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_airtable/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source cart test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source airtable test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -59,12 +61,12 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-cart:dev
+docker build . -t airbyte/source-airtable:dev
 ```
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-cart:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-airtable:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -72,10 +74,10 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-cart:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-cart:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-cart:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-cart:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-airtable:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-airtable:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-airtable:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-airtable:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
@@ -109,11 +111,11 @@ To run your integration tests with docker
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-cart:unitTest
+./gradlew :airbyte-integrations:connectors:source-airtable:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-cart:integrationTest
+./gradlew :airbyte-integrations:connectors:source-airtable:integrationTest
 ```
 
 ## Dependency Management

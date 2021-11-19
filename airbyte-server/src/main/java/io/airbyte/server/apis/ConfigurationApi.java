@@ -76,6 +76,7 @@ import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceCreate;
+import io.airbyte.api.model.WorkspaceGiveFeedback;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
@@ -144,6 +145,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final Path workspaceRoot;
+  private final ConfigRepository configRepository;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
@@ -210,6 +212,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
+    this.configRepository = configRepository;
   }
 
   // WORKSPACE
@@ -245,6 +248,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspaceUpdate) {
     return execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
+  }
+
+  @Override
+  public void updateWorkspaceFeedback(final WorkspaceGiveFeedback workspaceGiveFeedback) {
+    execute(() -> {
+      workspacesHandler.setFeedbackDone(workspaceGiveFeedback);
+      return null;
+    });
   }
 
   @Override

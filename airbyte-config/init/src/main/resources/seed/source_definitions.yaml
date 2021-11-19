@@ -1,3 +1,9 @@
+- name: Airtable
+  sourceDefinitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
+  dockerRepository: airbyte/source-airtable
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/airtable
+  sourceType: api
 - name: AWS CloudTrail
   sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
   dockerRepository: airbyte/source-aws-cloudtrail
@@ -236,7 +242,7 @@
 - name: Harvest
   sourceDefinitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
   dockerRepository: airbyte/source-harvest
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/harvest
   sourceType: api
 - name: HubSpot
