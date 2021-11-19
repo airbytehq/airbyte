@@ -89,11 +89,17 @@ class PardotIdReplicationStream(PardotStream):
 
 
 class EmailClicks(PardotIdReplicationStream):
+    """
+    API documentation: https://developer.salesforce.com/docs/marketing/pardot/guide/batch-email-clicks-v4.html
+    """
     object_name = "emailClick"
     data_key = "emailClick"
 
 
 class VisitorActivities(PardotIdReplicationStream):
+    """
+    API documentation: https://developer.salesforce.com/docs/marketing/pardot/guide/visitor-activities-v4.html
+    """
     use_cache = True
     object_name = "visitorActivity"
     data_key = "visitor_activity"
@@ -113,21 +119,33 @@ class PardotUpdatedAtReplicationStream(PardotStream):
 
 
 class ProspectAccounts(PardotUpdatedAtReplicationStream):
+    """
+    API documentation: https://developer.salesforce.com/docs/marketing/pardot/guide/prospect-accounts-v4.html
+    """
     object_name = "prospectAccount"
     data_key = "prospectAccount"
 
 
 class Lists(PardotUpdatedAtReplicationStream):
+    """
+    API documentation: https://developer.salesforce.com/docs/marketing/pardot/guide/lists-v4.html
+    """
     object_name = "list"
     data_key = "list"
 
 
 class Prospects(PardotUpdatedAtReplicationStream):
+    """
+    API documentation: https://developer.salesforce.com/docs/marketing/pardot/guide/prospects-v4.html
+    """
     object_name = "prospect"
     data_key = "prospect"
 
 
 class Visitors(PardotUpdatedAtReplicationStream):
+    """
+    API documentation: https://developer.salesforce.com/docs/marketing/pardot/guide/visitors-v4.html
+    """
     use_cache = True
     object_name = "visitor"
     data_key = "visitor"
@@ -140,6 +158,9 @@ class Visitors(PardotUpdatedAtReplicationStream):
 
 
 class Campaigns(PardotUpdatedAtReplicationStream):
+    """
+    API documentation: https://developer.salesforce.com/docs/marketing/pardot/guide/campaigns-v4.html
+    """
     cursor_field = "id"
     filter_param = "id_greater_than"
     object_name = "campaign"
@@ -155,6 +176,9 @@ class Campaigns(PardotUpdatedAtReplicationStream):
 
 
 class ListMembership(PardotUpdatedAtReplicationStream):
+    """
+    API documentation: https://developer.salesforce.com/docs/marketing/pardot/guide/list-memberships-v4.html
+    """
     object_name = "listMembership"
     data_key = "list_membership"
 
@@ -168,6 +192,10 @@ class ListMembership(PardotUpdatedAtReplicationStream):
 
 # PardotFullReplicationStreams
 class Opportunities(PardotStream):
+    """
+    API documentation: https://developer.salesforce.com/docs/marketing/pardot/guide/opportunities-v4.html
+    Currently disabled because test account doesn't have any data
+    """
     object_name = "opportunity"
     data_key = "opportunity"
     filter_param = "created_after"
@@ -175,6 +203,9 @@ class Opportunities(PardotStream):
 
 
 class Users(PardotStream):
+    """
+    API documentation: https://developer.salesforce.com/docs/marketing/pardot/guide/users-v4.html
+    """
     object_name = "user"
     data_key = "user"
     filter_param = "created_after"
@@ -203,6 +234,9 @@ class PardotChildStream(PardotStream):
 
 
 class Visits(PardotChildStream):
+    """
+    API documentation: https://developer.salesforce.com/docs/marketing/pardot/guide/visits-v4.html
+    """
     object_name = "visit"
     data_key = "visit"
     filter_param = "offset"

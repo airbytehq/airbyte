@@ -96,6 +96,7 @@
     * [Oracle DB](integrations/sources/oracle.md)
     * [Oracle Peoplesoft](integrations/sources/oracle-peoplesoft.md)
     * [Oracle Siebel CRM](integrations/sources/oracle-siebel-crm.md)
+    * [Pardot](integrations/sources/pardot.md)
     * [Paypal Transaction](integrations/sources/paypal-transaction.md)
     * [Paystack](integrations/sources/paystack.md)
     * [Plaid](integrations/sources/plaid.md)
