@@ -422,13 +422,6 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/paystack
   icon: paystack.svg
   sourceType: api
-- name: Phabricator
-  sourceDefinitionId: e7dd2ae5-6905-46db-a609-84dfcf54355c
-  dockerRepository: faros-ai/airbyte-phabricator-source
-  dockerImageTag: 0.1.23
-  documentationUrl: https://docs.airbyte.io/integrations/sources/phabricator
-  icon: phabricator.svg
-  sourceType: api
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest

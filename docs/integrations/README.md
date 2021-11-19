@@ -85,7 +85,6 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [PagerDuty](sources/pagerduty.md) | Alpha |
 | [PayPal Transaction](sources/paypal-transaction.md) | Beta |
 | [Paystack](sources/paystack.md) | Alpha |
-| [Phabricator](sources/phabricator.md) | Alpha |
 | [Pinterest](sources/pinterest.md) | Alpha |
 | [Pipedrive](sources/pipedrive.md) | Alpha |
 | [Plaid](sources/plaid.md) | Alpha |

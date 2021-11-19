@@ -107,7 +107,6 @@
     * [PagerDuty (Sponsored by Faros AI)](integrations/sources/pagerduty.md)
     * [Paypal Transaction](integrations/sources/paypal-transaction.md)
     * [Paystack](integrations/sources/paystack.md)
-    * [Phabricator (Sponsored by Faros AI)](integrations/sources/phabricator.md)
     * [Plaid](integrations/sources/plaid.md)
     * [Pinterest](integrations/sources/pinterest.md)
     * [Pipedrive](integrations/sources/pipedrive.md)
