@@ -158,7 +158,7 @@
 - name: Freshdesk
   sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.2.8
+  dockerImageTag: 0.2.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshdesk
   icon: freshdesk.svg
   sourceType: api
@@ -441,7 +441,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.3.13
+  dockerImageTag: 0.3.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -537,7 +537,7 @@
 - name: Snapchat Marketing
   sourceDefinitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
   dockerRepository: airbyte/source-snapchat-marketing
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/snapchat-marketing
   sourceType: api
 - name: Snowflake
@@ -605,6 +605,12 @@
   dockerRepository: airbyte/source-us-census
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/us-census
+  sourceType: api
+- sourceDefinitionId: afa734e4-3571-11ec-991a-1e0031268139
+  name: YouTube Analytics
+  dockerRepository: airbyte/source-youtube-analytics
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/source-youtube-analytics
   sourceType: api
 - name: Zendesk Chat
   sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
