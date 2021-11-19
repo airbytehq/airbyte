@@ -18,144 +18,12 @@
 				"rows": [
 					{
 						"dimensions": [
-							"20211110"
+							"20201027"
 						],
 						"metrics": [
 							{
 								"values": [
 									"1"
-								]
-							}
-						]
-					},
-					{
-						"dimensions": [
-							"20211111"
-						],
-						"metrics": [
-							{
-								"values": [
-									"1"
-								]
-							}
-						]
-					},
-					{
-						"dimensions": [
-							"20211112"
-						],
-						"metrics": [
-							{
-								"values": [
-									"2"
-								]
-							}
-						]
-					},
-					{
-						"dimensions": [
-							"20211113"
-						],
-						"metrics": [
-							{
-								"values": [
-									"2"
-								]
-							}
-						]
-					},
-					{
-						"dimensions": [
-							"20211114"
-						],
-						"metrics": [
-							{
-								"values": [
-									"2"
-								]
-							}
-						]
-					},
-					{
-						"dimensions": [
-							"20211115"
-						],
-						"metrics": [
-							{
-								"values": [
-									"2"
-								]
-							}
-						]
-					},
-					{
-						"dimensions": [
-							"20211116"
-						],
-						"metrics": [
-							{
-								"values": [
-									"2"
-								]
-							}
-						]
-					},
-					{
-						"dimensions": [
-							"20211117"
-						],
-						"metrics": [
-							{
-								"values": [
-									"3"
-								]
-							}
-						]
-					},
-					{
-						"dimensions": [
-							"20211118"
-						],
-						"metrics": [
-							{
-								"values": [
-									"3"
-								]
-							}
-						]
-					},
-					{
-						"dimensions": [
-							"20211119"
-						],
-						"metrics": [
-							{
-								"values": [
-									"3"
-								]
-							}
-						]
-					},
-					{
-						"dimensions": [
-							"20211120"
-						],
-						"metrics": [
-							{
-								"values": [
-									"3"
-								]
-							}
-						]
-					},
-					{
-						"dimensions": [
-							"20211121"
-						],
-						"metrics": [
-							{
-								"values": [
-									"3"
 								]
 							}
 						]
@@ -164,11 +32,11 @@
 				"totals": [
 					{
 						"values": [
-							"27"
+							"158"
 						]
 					}
 				],
-				"rowCount": 12,
+				"rowCount": 134,
 				"minimums": [
 					{
 						"values": [
@@ -183,7 +51,8 @@
 						]
 					}
 				]
-			}
+			},
+			"nextPageToken": "1"
 		}
 	]
 }

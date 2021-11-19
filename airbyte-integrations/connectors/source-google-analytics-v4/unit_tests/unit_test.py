@@ -86,7 +86,7 @@ def test_lookup_metrics_dimensions_data_type(metrics_dimensions_mapping, mock_me
 @patch("source_google_analytics_v4.source.jwt")
 def test_check_connection_fails_jwt(jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_api_returns_no_records):
     """
-    check_connection fails because of the API returns no data,
+    check_connection fails because of the API returns no records,
     then we assume than user doesn't have permission to read requested `view`
     """
     test_config = json.loads(read_file("../integration_tests/sample_config.json"))
@@ -107,7 +107,7 @@ def test_check_connection_fails_jwt(jwt_encode_mock, mocker, mock_metrics_dimens
 @patch("source_google_analytics_v4.source.jwt")
 def test_check_connection_success_jwt(jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_api_returns_valid_records):
     """
-    check_connection succeeds because of the API returns valid data for the latest date based slice,
+    check_connection succeeds because of the API returns valid records for the latest date based slice,
     then we assume than user has permission to read requested `view`
     """
     test_config = json.loads(read_file("../integration_tests/sample_config.json"))
@@ -129,6 +129,10 @@ def test_check_connection_success_jwt(jwt_encode_mock, mocker, mock_metrics_dime
 def test_check_connection_fails_oauth(
     jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_api_returns_no_records
 ):
+    """
+    check_connection fails because of the API returns no records,
+    then we assume than user doesn't have permission to read requested `view`
+    """
     test_config = json.loads(read_file("../integration_tests/sample_config.json"))
     del test_config["custom_reports"]
     test_config["credentials"] = {
@@ -154,6 +158,10 @@ def test_check_connection_fails_oauth(
 def test_check_connection_success_oauth(
     jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_api_returns_valid_records
 ):
+    """
+    check_connection succeeds because of the API returns valid records for the latest date based slice,
+    then we assume than user has permission to read requested `view`
+    """
     test_config = json.loads(read_file("../integration_tests/sample_config.json"))
     del test_config["custom_reports"]
     test_config["credentials"] = {
