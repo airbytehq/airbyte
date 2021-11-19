@@ -447,6 +447,39 @@ class TestStreamConnection(GoogleAnalyticsV4Stream):
     Because of the nature of the connector, the streams are created dynamicaly.
     We declare the static stream like this to be able to test out the prmissions to read the particular view_id."""
 
+    page_size = 1
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """For test reading pagination is not required"""
+        return None
+
+    def request_body_json(
+        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> Optional[Mapping]:
+        """
+        Overwrite the method to fetch records from start_date up to now for testing case,
+        and request 1 record per page
+        """
+        metrics = [{"expression": metric} for metric in self.metrics]
+        dimensions = [{"name": dimension} for dimension in self.dimensions]
+
+        start_date = pendulum.parse(self.start_date).date()
+        end_date = pendulum.now().date()
+        date_range = {"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}
+        request_body = {
+            "reportRequests": [
+                {
+                    "viewId": self.view_id,
+                    "dateRanges": [date_range],
+                    "pageSize": self.page_size,
+                    "metrics": metrics,
+                    "dimensions": dimensions,
+                }
+            ]
+        }
+
+        return request_body
+
 
 class SourceGoogleAnalyticsV4(AbstractSource):
     """Google Analytics lets you analyze data about customer engagement with your website or application."""
@@ -478,20 +511,16 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         config["metrics"] = ["ga:14dayUsers"]
         config["dimensions"] = ["ga:date"]
 
-        stream_slices = TestStreamConnection(config).stream_slices(stream_state=None)
-
         try:
             # test the eligibility of custom_reports input
             custom_reports = config.get("custom_reports")
             if custom_reports:
                 json.loads(custom_reports)
 
-            # Start reading from the latest date-slice to check the reading permissions in reverse order
-            # until fetching some records
-            for stream_slice in reversed(stream_slices):
-                read_check = list(TestStreamConnection(config).read_records(sync_mode=None, stream_slice=stream_slice))
-                if read_check:
-                    return True, None
+            # Read records to check the reading permissions
+            read_check = list(TestStreamConnection(config).read_records(sync_mode=None))
+            if read_check:
+                return True, None
             return False, f"Please check the permissions for the requested view_id: {config['view_id']}. No records have been fetched."
 
         except ValueError as e:
