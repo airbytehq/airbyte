@@ -173,7 +173,7 @@ class MeasReadings(IncrementalOseRealtimeStream):
         return "single". Required.
         """
         station_id = self.get_station_id()
-        dt = (datetime.datetime.now()-datetime.timedelta(days=120)).strftime('%Y-%m-%d')
+        dt = (datetime.datetime.now()-datetime.timedelta(days=30)).strftime('%Y-%m-%d')
 
         return f"meas_readings/{station_id}/{dt}"
 
