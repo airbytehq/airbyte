@@ -3,21 +3,16 @@
 #
 import csv
 import json
-import multiprocessing as mp
-import pprint
 from typing import Any, BinaryIO, Iterator, Mapping, Optional, TextIO, Tuple, Union
 
-import dill
 import pyarrow
 import pyarrow as pa
-from pyarrow import csv as pa_csv, DataType, string
+import six
+from pyarrow import csv as pa_csv
 
 from .abstract_file_parser import AbstractFileParser
-
-
-def multiprocess_queuer(func, queue: mp.Queue, *args, **kwargs):
-    """ this is our multiprocesser helper function, lives at top-level to be Windows-compatible """
-    queue.put(dill.loads(func)(*args, **kwargs))
+from .csv_spec import CsvFormat
+from ...utils import _run_in_external_process
 
 
 class CsvParser(AbstractFileParser):
@@ -25,14 +20,22 @@ class CsvParser(AbstractFileParser):
     def is_binary(self):
         return True
 
+
+
+    @property
+    def format(self) -> CsvFormat:
+        if not hasattr(self, "format_model"):
+            self.format_model = CsvFormat.parse_obj(self._format)
+        return self.format_model
+
     def _read_options(self):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
         build ReadOptions object like: pa.csv.ReadOptions(**self._read_options())
         """
         return {
-            **{"block_size": self._format.get("block_size", 10000), "encoding": self._format.get("encoding", "utf8")},
-            **json.loads(self._format.get("advanced_options", "{}")),
+            **{"block_size": self.format.block_size, "encoding": self.format.encoding},
+            **json.loads(self.format.advanced_options),
         }
 
     def _parse_options(self):
@@ -40,13 +43,13 @@ class CsvParser(AbstractFileParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ParseOptions.html
         build ParseOptions object like: pa.csv.ParseOptions(**self._parse_options())
         """
-        quote_char = self._format.get("quote_char", False) if self._format.get("quote_char", False) != "" else False
+
         return {
-            "delimiter": self._format.get("delimiter", ","),
-            "quote_char": quote_char,
-            "double_quote": self._format.get("double_quote", True),
-            "escape_char": self._format.get("escape_char", False),
-            "newlines_in_values": self._format.get("newlines_in_values", False),
+            "delimiter": self.format.delimiter,
+            "quote_char": self.format.quote_char,
+            "double_quote": self.format.double_quote,
+            "escape_char": self.format.escape_char,
+            "newlines_in_values": self.format.newlines_in_values,
         }
 
     def _convert_options(self, json_schema: Mapping[str, Any] = None):
@@ -56,51 +59,16 @@ class CsvParser(AbstractFileParser):
         :param json_schema: if this is passed in, pyarrow will attempt to enforce this schema on read, defaults to None
         """
         check_utf8 = (
-            self._format.get("encoding", "utf8").lower().replace("-", "") == "utf8"
+            self.format.encoding.lower().replace("-", "") == "utf8"
         )
 
         convert_schema = self.json_schema_to_pyarrow_schema(json_schema) if json_schema is not None else None
         return {
             **{"check_utf8": check_utf8, "column_types": convert_schema},
-            **json.loads(self._format.get("additional_reader_options", "{}")),
+            **json.loads(self.format.additional_reader_options),
         }
 
-    def _run_in_external_process(self, fn, timeout: int, max_timeout: int, *args) -> Any:
-        """
-        fn passed in must return a tuple of (desired return value, Exception OR None)
-        This allows propagating any errors from the process up and raising accordingly
-        """
-        result = None
-        while result is None:
-            q_worker = mp.Queue()
-            proc = mp.Process(
-                target=multiprocess_queuer,
-                # use dill to pickle the function for Windows-compatibility
-                args=(dill.dumps(fn), q_worker, *args),
-            )
-            proc.start()
-            try:
-                # this attempts to get return value from function with our specified timeout up to max
-                result, potential_error = q_worker.get(timeout=min(timeout, max_timeout))
-            except mp.queues.Empty:
-                if timeout >= max_timeout:  # if we've got to max_timeout and tried once with that value
-                    raise TimeoutError(
-                        f"Timed out too many times while running {fn.__name__}, max timeout of {max_timeout} seconds reached."
-                    )
-                self.logger.info(f"timed out while running {fn.__name__} after {timeout} seconds, retrying...")
-                timeout *= 2  # double timeout and try again
-            else:
-                if potential_error is not None:
-                    raise potential_error
-                else:
-                    return result
-            finally:
-                try:
-                    proc.terminate()
-                except Exception as e:
-                    self.logger.info(f"'{fn.__name__}' proc unterminated, error: {e}")
-
-    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
+    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> Mapping[str, Any]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         This now uses multiprocessing in order to timeout the schema inference as it can hang.
@@ -142,22 +110,34 @@ class CsvParser(AbstractFileParser):
         # and so we can't multiprocess with the actual fileobject on Windows systems
         # we're reading block_size*2 bytes here, which we can then pass in and infer schema from block_size bytes
         # the *2 is to give us a buffer as pyarrow figures out where lines actually end so it gets schema correct
-        if self._format.get("infer_datatypes", True):
-            self.logger.debug("inferring schema")
-            file_sample = file.read(self._read_options()["block_size"] * 2)
-            schema_dict = self._run_in_external_process(
-                infer_schema_process, 4, 60, file_sample, self._read_options(), self._parse_options(), self._convert_options()
-            )
-        else:
-            self.logger.debug("infer_datatypes is False, skipping infer_schema")
-            encoding = self._format.get("encoding", "UTF-8")
-            delimiter = self._format.get("delimiter", ",")
-            quote_char = self._format.get("quote_char")
-            reader = csv.reader([file.readline().decode(encoding)], delimiter=delimiter, quotechar=quote_char)
-            field_names = next(reader)
-            schema_dict = {field_name.strip(): pyarrow.string() for field_name in field_names}
-            pprint.pprint(schema_dict)
+        schema_dict = self._get_schema_dict(file, infer_schema_process)
         return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
+
+    def _get_schema_dict(self, file, infer_schema_process):
+        if not self.format.infer_datatypes:
+            return self._get_schema_dict_without_inference(file)
+        self.logger.debug("inferring schema")
+        file_sample = file.read(self._read_options()["block_size"] * 2)
+        return _run_in_external_process(
+            fn=infer_schema_process,
+            timeout=4,
+            max_timeout=60,
+            logger=self.logger,
+            args=[file_sample,
+            self._read_options(),
+            self._parse_options(),
+            self._convert_options(),]
+        )
+
+    # TODO Rename this here and in `_get_schema_dict`
+    def _get_schema_dict_without_inference(self, file):
+        self.logger.debug("infer_datatypes is False, skipping infer_schema")
+        encoding = self.format.encoding
+        delimiter = self.format.delimiter
+        quote_char = self.format.quote_char
+        reader = csv.reader([six.ensure_text(file.readline())], delimiter=delimiter, quotechar=quote_char)
+        field_names = next(reader)
+        return {field_name.strip(): pyarrow.string() for field_name in field_names}
 
     def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
         """

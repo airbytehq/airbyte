@@ -31,7 +31,7 @@ class CsvFormat(BaseModel):
         description="The character used optionally for escaping special characters. To disallow escaping, leave this field blank.",
     )
     encoding: Optional[str] = Field(
-        default=None,
+        default="utf8",
         description='The character encoding of the CSV data. Leave blank to default to <strong>UTF-8</strong>. See <a href="https://docs.python.org/3/library/codecs.html#standard-encodings" target="_blank">list of python encodings</a> for allowable options.',
     )
     double_quote: bool = Field(default=True, description="Whether two quotes in a quoted CSV value denote a single quote in the data.")
