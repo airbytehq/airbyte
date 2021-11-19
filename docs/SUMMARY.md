@@ -142,6 +142,7 @@
     * [US Census API](integrations/sources/us-census.md)
     * [Woo Commerce](integrations/sources/woo-commerce.md)
     * [Wordpress](integrations/sources/wordpress.md)
+    * [YouTube Analytics](integrations/sources/youtube-analytics.md)
     * [Zencart](integrations/sources/zencart.md)
     * [Zendesk Chat](integrations/sources/zendesk-chat.md)
     * [Zendesk Sunshine](integrations/sources/zendesk-sunshine.md)
