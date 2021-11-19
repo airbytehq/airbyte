@@ -28,18 +28,14 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.scheduler.client.BucketSpecCacheSchedulerClient;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
-import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
-import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
@@ -217,9 +213,6 @@ public class ServerApp implements ServerRunnable {
         new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence, configRepository));
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
-    final SynchronousSchedulerClient bucketSpecCacheSchedulerClient =
-        new BucketSpecCacheSchedulerClient(syncSchedulerClient, configs.getSpecCacheBucket());
-    final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
 
     // version in the database when the server main method is called. may be empty if this is the first
@@ -251,7 +244,7 @@ public class ServerApp implements ServerRunnable {
 
     return apiFactory.create(
         schedulerJobClient,
-        cachingSchedulerClient,
+        syncSchedulerClient,
         temporalService,
         configRepository,
         jobPersistence,
@@ -295,14 +288,9 @@ public class ServerApp implements ServerRunnable {
                                                  final AirbyteVersion initialAirbyteDatabaseVersion,
                                                  final ConfigRepository configRepository,
                                                  final ConfigPersistence seed,
-                                                 final SpecFetcher specFetcher,
                                                  final JobPersistence jobPersistence,
                                                  final Configs configs)
       throws IOException {
-    // required before migration
-    // TODO: remove this specFetcherFn logic once file migrations are deprecated
-    configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.getSpec(dockerImage)));
-
     // version in the database after migration is run.
     AirbyteVersion airbyteDatabaseVersion = null;
     if (initialAirbyteDatabaseVersion != null && isDatabaseVersionBehindAppVersion(airbyteVersion, initialAirbyteDatabaseVersion)) {
@@ -320,19 +308,15 @@ public class ServerApp implements ServerRunnable {
     return airbyteDatabaseVersion != null ? airbyteDatabaseVersion : initialAirbyteDatabaseVersion;
   }
 
-  public static void main(final String[] args) throws Exception {
-    getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
-  }
-
   /**
    * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
    * no other operation is allowed
    */
   private static void runAutomaticMigration(final ConfigRepository configRepository,
-                                            final JobPersistence jobPersistence,
-                                            final ConfigPersistence seed,
-                                            final AirbyteVersion airbyteVersion,
-                                            final AirbyteVersion airbyteDatabaseVersion) {
+      final JobPersistence jobPersistence,
+      final ConfigPersistence seed,
+      final AirbyteVersion airbyteVersion,
+      final AirbyteVersion airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion.serialize() + " to version : " + airbyteVersion.serialize());
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
@@ -344,18 +328,19 @@ public class ServerApp implements ServerRunnable {
       LOGGER.error("Automatic Migration failed ", e);
     }
   }
-
   public static boolean isDatabaseVersionBehindAppVersion(final AirbyteVersion serverVersion, final AirbyteVersion databaseVersion) {
     final boolean bothVersionsCompatible = AirbyteVersion.isCompatible(serverVersion, databaseVersion);
     if (bothVersionsCompatible) {
       return false;
     }
-
     if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) < 0) {
       return true;
     }
-
     return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
+  }
+
+  public static void main(final String[] args) throws Exception {
+    getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
   }
 
   private static void runFlywayMigration(final Configs configs, final Database configDatabase, final Database jobDatabase) {

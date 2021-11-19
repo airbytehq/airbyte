@@ -89,8 +89,8 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
-import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
@@ -150,7 +150,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final JobPersistence jobPersistence,
                           final ConfigPersistence seed,
                           final SchedulerJobClient schedulerJobClient,
-                          final CachingSynchronousSchedulerClient synchronousSchedulerClient,
+                          final SynchronousSchedulerClient synchronousSchedulerClient,
                           final FileTtlManager archiveTtlManager,
                           final WorkflowServiceStubs temporalService,
                           final Database configsDatabase,
