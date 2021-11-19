@@ -239,6 +239,10 @@ class Epics(IncrementalJiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get
     """
 
+    def __init__(self, render_fields: bool = False, **kwargs):
+        super().__init__(**kwargs)
+        self._render_fields = render_fields
+
     cursor_field = ["fields", "updated"]
     parse_response_root = "issues"
 
@@ -256,7 +260,8 @@ class Epics(IncrementalJiraStream):
         params["fields"] = ["summary", "description", "status", "updated"]
         jql_parts = ["issuetype = 'Epic'", f"project = '{project_id}'", self.jql_compare_date(stream_state)]
         params["jql"] = " and ".join([p for p in jql_parts if p])
-        params["expand"] = "renderedFields"
+        if self._render_fields:
+            params["expand"] = "renderedFields"
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -318,10 +323,11 @@ class Issues(IncrementalJiraStream):
     parse_response_root = "issues"
     use_cache = True
 
-    def __init__(self, additional_fields: List[str], expand_changelog: bool = False, **kwargs):
+    def __init__(self, additional_fields: List[str], expand_changelog: bool = False, render_fields: bool = False, **kwargs):
         super().__init__(**kwargs)
         self._additional_fields = additional_fields
         self._expand_changelog = expand_changelog
+        self._render_fields = render_fields
 
     def path(self, **kwargs) -> str:
         return "search"
@@ -337,8 +343,13 @@ class Issues(IncrementalJiraStream):
         params["fields"] = stream_slice["fields"]
         jql_parts = [f"project = '{project_id}'", self.jql_compare_date(stream_state)]
         params["jql"] = " and ".join([p for p in jql_parts if p])
+        expand = []
         if self._expand_changelog:
-            params["expand"] = "changelog"
+            expand.append("changelog")
+        if self._render_fields:
+            expand.append("renderedFields")
+        if expand:
+            params["expand"] = ','.join(expand)
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -967,6 +978,8 @@ class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
             yield from super().read_records(stream_slice={"sprint_id": sprints["id"], "fields": fields}, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["issueId"] = record["id"]
+        record["id"] = "-".join([str(stream_slice["sprint_id"]), record["id"]])
         record["sprintId"] = stream_slice["sprint_id"]
         return record
 
