@@ -89,12 +89,19 @@ class SourceAmazonSellerPartner(AbstractSource):
             "url_base": endpoint,
             "authenticator": auth,
             "aws_signature": aws_signature,
-            "replication_start_date": config.replication_start_date,
-            "data_start_time": config.data_start_time,
-            "data_end_time": config.data_end_time,
+            "replication_start_date": config.replication_start_date,            
             "marketplace_ids": [marketplace_id],
         }
         return stream_kwargs
+
+    def _get_stream_kwargs_with_data_times(self, config: ConnectorConfig) -> Mapping[str, Any]:
+        result = self._get_stream_kwargs(config=config)
+        result.update({
+            "data_start_time": config.data_start_time,
+            "data_end_time": config.data_end_time,
+        })
+
+        return result
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
@@ -118,6 +125,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         """
         config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
         stream_kwargs = self._get_stream_kwargs(config)
+        stream_kwargs_with_data_times = self._get_stream_kwargs_with_data_times(config)
 
         return [
             FbaInventoryReports(**stream_kwargs),
@@ -130,7 +138,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             VendorDirectFulfillmentShipping(**stream_kwargs),
             VendorInventoryHealthReports(**stream_kwargs),
             Orders(**stream_kwargs),
-            SellerFeedbackReports(**stream_kwargs),
+            SellerFeedbackReports(**stream_kwargs_with_data_times),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:

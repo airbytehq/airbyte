@@ -1,4 +1,4 @@
-connector_image: airbyte/source-amazon-seller-partner:dev
+connector_image: airbyte/source-amazon-seller-partner:0.2.4
 tests:
   spec:
     - spec_path: "source_amazon_seller_partner/spec.json"

@@ -135,20 +135,16 @@ class ReportsAmazonSPStream(Stream, ABC):
         self,
         url_base: str,
         aws_signature: AWSSignature,
-        replication_start_date: str,
-        data_start_time: Optional[str],
-        data_end_time: Optional[str],
+        replication_start_date: str,        
         marketplace_ids: List[str],
-        authenticator: HttpAuthenticator = NoAuth(),
+        authenticator: HttpAuthenticator = NoAuth(),        
     ):
         self._authenticator = authenticator
         self._session = requests.Session()
         self._url_base = url_base
         self._session.auth = aws_signature
         self._replication_start_date = replication_start_date
-        self._data_start_time = data_start_time
-        self._data_end_time = data_end_time
-        self.marketplace_ids = marketplace_ids
+        self.marketplace_ids = marketplace_ids        
 
     @property
     def url_base(self) -> str:
@@ -351,6 +347,11 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
 
 class SellerFeedbackReports(ReportsAmazonSPStream):
     name = "GET_SELLER_FEEDBACK_DATA"
+
+    def __init__(self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_ids: List[str], data_start_time: Optional[str], data_end_time: Optional[str], authenticator: HttpAuthenticator = NoAuth()):
+        super().__init__(url_base, aws_signature, replication_start_date, marketplace_ids, authenticator=authenticator)
+        self._data_start_time = data_start_time
+        self._data_end_time = data_end_time
 
     def _report_data(self) -> Mapping[str, Any]:
         data_start_time = pendulum.now("utc") if self._data_start_time is None else self._data_start_time
