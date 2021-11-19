@@ -157,7 +157,7 @@ public class MongoUtils {
       case INT64 -> o.put(fieldName, reader.readInt64());
       case DOUBLE -> o.put(fieldName, reader.readDouble());
       case DECIMAL128 -> o.put(fieldName, toDouble(reader.readDecimal128()));
-      case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601String(reader.readTimestamp().getValue()));
+      case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
       case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601String(reader.readDateTime()));
       case BINARY -> o.put(fieldName, toByteArray(reader.readBinaryData()));
       case SYMBOL -> o.put(fieldName, reader.readSymbol());
@@ -195,7 +195,11 @@ public class MongoUtils {
         new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$$ROOT"))),
         new Document("$unwind", "$arrayofkeyvalue"),
         new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
-    return (List) output.cursor().next().get("allkeys");
+    if (output.cursor().hasNext()) {
+      return (List) output.cursor().next().get("allkeys");
+    } else {
+      return Collections.emptyList();
+    }
   }
 
   private static void addUniqueType(Map<String, BsonType> map,
