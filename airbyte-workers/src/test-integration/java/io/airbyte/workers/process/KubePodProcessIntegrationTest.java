@@ -88,8 +88,6 @@ public class KubePodProcessIntegrationTest {
     assertFalse(process.isAlive());
     assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(0, process.exitValue());
-
-    throw new RuntimeException("Noooooooooooo");
   }
 
   @Test
