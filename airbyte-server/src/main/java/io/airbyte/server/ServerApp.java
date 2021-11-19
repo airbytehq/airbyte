@@ -222,34 +222,38 @@ public class ServerApp implements ServerRunnable {
         new BucketSpecCacheSchedulerClient(syncSchedulerClient, configs.getSpecCacheBucket());
     final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
     final SpecFetcher specFetcher = new SpecFetcher(cachingSchedulerClient);
+    final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+
+    // version in the database when the server main method is called. may be empty if this is the first
+    // time the server is started.
+    final Optional<AirbyteVersion> initialAirbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new);
+    if (!isLegalUpgrade(initialAirbyteDatabaseVersion.orElse(null), airbyteVersion)) {
+      final String attentionBanner = MoreResources.readResource("banner/attention-banner.txt");
+      LOGGER.error(attentionBanner);
+      final String message = String.format(
+          "Cannot upgrade from version %s to version %s directly. First you must upgrade to version %s. After that upgrade is complete, you may upgrade to version %s",
+          initialAirbyteDatabaseVersion.get().serialize(),
+          airbyteVersion.serialize(),
+          VERSION_BREAK.serialize(),
+          airbyteVersion.serialize());
+
+      LOGGER.error(message);
+      throw new RuntimeException(message);
+    }
 
     // todo (cgardens) - this method is deprecated. new migrations are not run using this code path. it
     // is scheduled to be removed.
-    final Optional<AirbyteVersion> airbyteDatabaseVersion = runFileMigration(
+    // version in the database after migrations are run. cannot be null.
+    final AirbyteVersion airbyteDatabaseVersion = runFileMigration(
         airbyteVersion,
+        initialAirbyteDatabaseVersion.orElse(null),
         configRepository,
         seed,
         specFetcher,
         jobPersistence,
         configs);
 
-    final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
-
-    if (!isLegalUpgrade(airbyteDatabaseVersion.orElse(null), airbyteVersion)) {
-      final String attentionBanner = MoreResources.readResource("banner/attention-banner.txt");
-      LOGGER.error(attentionBanner);
-      final String message = String.format(
-          "Cannot upgrade from version %s to version %s directly. First you must upgrade to version %s. After that upgrade is complete, you may upgrade to version %s",
-          airbyteDatabaseVersion.get(),
-          airbyteVersion,
-          VERSION_BREAK,
-          airbyteVersion);
-
-      LOGGER.error(message);
-      throw new RuntimeException(message);
-    }
-
-    if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
+    if (AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion)) {
       LOGGER.info("Starting server...");
 
       runFlywayMigration(configs, configDatabase, jobDatabase);
@@ -287,7 +291,7 @@ public class ServerApp implements ServerRunnable {
           httpClient);
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
-      return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);
+      return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion, PORT);
     }
   }
 
@@ -315,31 +319,33 @@ public class ServerApp implements ServerRunnable {
 
   @Deprecated
   @SuppressWarnings({"DeprecatedIsStillUsed"})
-  private static Optional<AirbyteVersion> runFileMigration(final AirbyteVersion airbyteVersion,
-                                                           final ConfigRepository configRepository,
-                                                           final ConfigPersistence seed,
-                                                           final SpecFetcher specFetcher,
-                                                           final JobPersistence jobPersistence,
-                                                           final Configs configs)
+  private static AirbyteVersion runFileMigration(final AirbyteVersion airbyteVersion,
+                                                 final AirbyteVersion initialAirbyteDatabaseVersion,
+                                                 final ConfigRepository configRepository,
+                                                 final ConfigPersistence seed,
+                                                 final SpecFetcher specFetcher,
+                                                 final JobPersistence jobPersistence,
+                                                 final Configs configs)
       throws IOException {
     // required before migration
     // TODO: remove this specFetcherFn logic once file migrations are deprecated
     configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.getSpec(dockerImage)));
 
-    Optional<AirbyteVersion> airbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new);
-    if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
+    // version in the database after migration is run.
+    AirbyteVersion airbyteDatabaseVersion = null;
+    if (initialAirbyteDatabaseVersion != null && isDatabaseVersionBehindAppVersion(airbyteVersion, initialAirbyteDatabaseVersion)) {
       final boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
-      final boolean versionSupportsAutoMigrate = airbyteDatabaseVersion.get().greaterThanOrEqualTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION);
+      final boolean versionSupportsAutoMigrate = initialAirbyteDatabaseVersion.greaterThanOrEqualTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION);
       if (!isKubernetes || versionSupportsAutoMigrate) {
-        runAutomaticMigration(configRepository, jobPersistence, seed, specFetcher, airbyteVersion, airbyteDatabaseVersion.get());
+        runAutomaticMigration(configRepository, jobPersistence, seed, specFetcher, airbyteVersion, initialAirbyteDatabaseVersion);
         // After migration, upgrade the DB version
-        airbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new);
+        airbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new).orElseThrow();
       } else {
         LOGGER.info("Can not run automatic migration for Airbyte on KUBERNETES before version " + KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION.serialize());
       }
     }
 
-    return airbyteDatabaseVersion;
+    return airbyteDatabaseVersion != null ? airbyteDatabaseVersion : initialAirbyteDatabaseVersion;
   }
 
   public static void main(final String[] args) throws Exception {
