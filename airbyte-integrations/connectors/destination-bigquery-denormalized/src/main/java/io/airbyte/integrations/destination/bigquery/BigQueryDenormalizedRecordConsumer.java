@@ -38,13 +38,16 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
 
   private final StandardNameTransformer namingResolver;
   private final Set<String> invalidKeys;
+  private final Set<String> fieldsWithRefDefinition;
 
   public BigQueryDenormalizedRecordConsumer(final BigQuery bigquery,
                                             final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector,
-                                            final StandardNameTransformer namingResolver) {
+                                            final StandardNameTransformer namingResolver,
+                                            final Set<String> fieldsWithRefDefinition) {
     super(bigquery, writeConfigs, catalog, outputRecordCollector, false, false);
+    this.fieldsWithRefDefinition = fieldsWithRefDefinition;
     this.namingResolver = namingResolver;
     invalidKeys = new HashSet<>();
   }
@@ -57,15 +60,35 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
     Preconditions.checkArgument(recordMessage.getData().isObject());
     final ObjectNode data = (ObjectNode) formatData(schema.getFields(), recordMessage.getData());
+    // replace ObjectNode with TextNode for fields with $ref definition key
+    // Do not need to iterate through all JSON Object nodes, only first nesting object.
+    if (!fieldsWithRefDefinition.isEmpty()) {
+      fieldsWithRefDefinition.forEach(key -> {
+        if (data.get(key) != null && !data.get(key).isNull()) {
+          data.put(key, data.get(key).toString());
+        }
+      });
+    }
     data.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt);
+
     return data;
+  }
+
+  @Override
+  public void close(final boolean hasFailed) {
+    fieldsWithRefDefinition.clear();
+    super.close(hasFailed);
   }
 
   protected JsonNode formatData(final FieldList fields, final JsonNode root) {
     // handles empty objects and arrays
     if (fields == null) {
       return root;
+    }
+    final List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(fields);
+    if (!dateTimeFields.isEmpty()) {
+      BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) root);
     }
     if (root.isObject()) {
       final List<String> fieldNames = fields.stream().map(Field::getName).collect(Collectors.toList());
@@ -90,8 +113,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
           .collect(Collectors.toList()));
 
       // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
-      // is)
-      // Turn all "Array of" into "Array of Record of" instead
+      // is). Turn all "Array of" into "Array of Record of" instead
       return Jsons.jsonNode(ImmutableMap.of(BigQueryDenormalizedDestination.NESTED_ARRAY_FIELD, items));
     } else {
       return root;

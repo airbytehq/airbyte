@@ -173,10 +173,6 @@ az postgres server restart --resource-group group --name server
 
 Finally, [follow the rest of steps above](postgres.md#setting-up-cdc-for-postgres).
 
-### CDC on Google CloudSQL
-
-Unfortunately, logical replication is not configurable for Google CloudSQL. You can indicate your support for this feature on the [Google Issue Tracker](https://issuetracker.google.com/issues/120274585).
-
 ## Connection via SSH Tunnel
 
 Airbyte has the ability to connect to a Postgres instance via an SSH Tunnel. The reason you might want to do this because it is not possible \(or against security policy\) to connect to the database directly \(e.g. it does not have a public IP address\).
@@ -239,7 +235,7 @@ Postgres data types are mapped to the following data types when synchronizing da
 | `lseg` | string |  |
 | `macaddr` | string |  |
 | `macaddr8` | string |  |
-| `money` | string |  |
+| `money` | string | When running logical replication (CDC), `money` values larger than 999999999999999 (15 nines) or smaller than -999999999999999 (15 nines)  are transmitted as null; |
 | `mood` | string |  |
 | `numeric` | number |  |
 | `path` | string |  |
@@ -267,6 +263,8 @@ Postgres data types are mapped to the following data types when synchronizing da
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.3.14 | 2021-11-17 | [8010](https://github.com/airbytehq/airbyte/pull/8010) | Added checking of privileges before table internal discovery |
+| 0.3.13 | 2021-10-26 | [7339](https://github.com/airbytehq/airbyte/pull/7339) | Support or improve support for Interval, Money, Date, various geometric data types, inventory_items, and others |
 | 0.3.12 | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
 | 0.3.11 | 2021-09-02 | [5742](https://github.com/airbytehq/airbyte/pull/5742) | Add SSH Tunnel support |
 | 0.3.9 | 2021-08-17 | [5304](https://github.com/airbytehq/airbyte/pull/5304) | Fix CDC OOM issue |

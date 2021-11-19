@@ -173,7 +173,7 @@ class ChildSubstream(IncrementalShopifyStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
-        """ Reading child streams records for each `id` """
+        """Reading child streams records for each `id`"""
 
         self.logger.info(f"Reading {self.name} for {self.slice_key}: {stream_slice.get(self.slice_key)}")
         records = super().read_records(stream_slice=stream_slice, **kwargs)
@@ -325,6 +325,75 @@ class DiscountCodes(ChildSubstream):
         return f"price_rules/{price_rule_id}/{self.data_field}.json"
 
 
+class Locations(ShopifyStream):
+
+    """
+    The location API does not support any form of filtering.
+    https://shopify.dev/api/admin-rest/2021-07/resources/location
+
+    Therefore, only FULL_REFRESH mode is supported.
+    """
+
+    data_field = "locations"
+
+    def path(self, **kwargs):
+        return f"{self.data_field}.json"
+
+
+class InventoryLevels(ChildSubstream):
+    parent_stream_class: object = Locations
+    slice_key = "location_id"
+    cursor_field = "updated_at"
+
+    data_field = "inventory_levels"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        location_id = stream_slice["location_id"]
+        return f"locations/{location_id}/{self.data_field}.json"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records_stream = super().parse_response(response, **kwargs)
+
+        def generate_key(record):
+            record.update({"id": "|".join((str(record.get("location_id", "")), str(record.get("inventory_item_id", ""))))})
+            return record
+
+        # associate the surrogate key
+        yield from map(
+            generate_key,
+            records_stream,
+        )
+
+
+class FulfillmentOrders(ChildSubstream):
+
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
+    data_field = "fulfillment_orders"
+
+    cursor_field = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice[self.slice_key]
+        return f"orders/{order_id}/{self.data_field}.json"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
+
+
+class Fulfillments(ChildSubstream):
+
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
+    data_field = "fulfillments"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice[self.slice_key]
+        return f"orders/{order_id}/{self.data_field}.json"
+
+
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
@@ -365,4 +434,8 @@ class SourceShopify(AbstractSource):
             Pages(config),
             PriceRules(config),
             DiscountCodes(config),
+            Locations(config),
+            InventoryLevels(config),
+            FulfillmentOrders(config),
+            Fulfillments(config),
         ]

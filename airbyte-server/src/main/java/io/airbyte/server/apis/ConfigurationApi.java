@@ -76,12 +76,15 @@ import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceCreate;
+import io.airbyte.api.model.WorkspaceGiveFeedback;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.commons.io.FileTtlManager;
-import io.airbyte.config.Configs;
+import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -110,15 +113,14 @@ import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
-import io.airbyte.server.handlers.WebBackendDestinationsHandler;
-import io.airbyte.server.handlers.WebBackendSourcesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
-import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
+import java.net.http.HttpClient;
+import java.nio.file.Path;
 import java.util.Map;
 
 @javax.ws.rs.Path("/v1")
@@ -134,31 +136,41 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final SchedulerHandler schedulerHandler;
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
-  private final WebBackendSourcesHandler webBackendSourcesHandler;
-  private final WebBackendDestinationsHandler webBackendDestinationsHandler;
   private final HealthCheckHandler healthCheckHandler;
   private final ArchiveHandler archiveHandler;
   private final LogsHandler logsHandler;
   private final OpenApiConfigHandler openApiConfigHandler;
   private final DbMigrationHandler dbMigrationHandler;
   private final OAuthHandler oAuthHandler;
-  private final Configs configs;
+  private final WorkerEnvironment workerEnvironment;
+  private final LogConfigs logConfigs;
+  private final Path workspaceRoot;
+  private final ConfigRepository configRepository;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final ConfigPersistence seed,
                           final SchedulerJobClient schedulerJobClient,
                           final CachingSynchronousSchedulerClient synchronousSchedulerClient,
-                          final Configs configs,
                           final FileTtlManager archiveTtlManager,
                           final WorkflowServiceStubs temporalService,
                           final Database configsDatabase,
                           final Database jobsDatabase,
-                          final TrackingClient trackingClient) {
+                          final TrackingClient trackingClient,
+                          final WorkerEnvironment workerEnvironment,
+                          final LogConfigs logConfigs,
+                          final String webappUrl,
+                          final AirbyteVersion airbyteVersion,
+                          final Path workspaceRoot,
+                          final HttpClient httpClient) {
+    this.workerEnvironment = workerEnvironment;
+    this.logConfigs = logConfigs;
+    this.workspaceRoot = workspaceRoot;
+
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     final JobNotifier jobNotifier = new JobNotifier(
-        configs.getWebappUrl(),
+        webappUrl,
         configRepository,
         new WorkspaceHelper(configRepository, jobPersistence),
         trackingClient);
@@ -169,18 +181,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobPersistence,
         jobNotifier,
         temporalService,
-        new OAuthConfigSupplier(configRepository, false, trackingClient));
-    final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
+        new OAuthConfigSupplier(configRepository, trackingClient), workerEnvironment, logConfigs);
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
-    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
+    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository, workspaceHelper, trackingClient);
     operationsHandler = new OperationsHandler(configRepository);
-    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
+    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
-    jobHistoryHandler = new JobHistoryHandler(jobPersistence);
-    oAuthHandler = new OAuthHandler(configRepository, trackingClient);
+    jobHistoryHandler = new JobHistoryHandler(jobPersistence, workerEnvironment, logConfigs);
+    oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient, specFetcher);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(
         connectionsHandler,
         sourceHandler,
@@ -188,11 +199,9 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobHistoryHandler,
         schedulerHandler,
         operationsHandler);
-    webBackendSourcesHandler = new WebBackendSourcesHandler(sourceHandler, configRepository, trackingClient);
-    webBackendDestinationsHandler = new WebBackendDestinationsHandler(destinationHandler, configRepository, trackingClient);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(
-        configs.getAirbyteVersion(),
+        airbyteVersion,
         configRepository,
         jobPersistence,
         seed,
@@ -203,7 +212,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
-    this.configs = configs;
+    this.configRepository = configRepository;
   }
 
   // WORKSPACE
@@ -239,6 +248,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspaceUpdate) {
     return execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
+  }
+
+  @Override
+  public void updateWorkspaceFeedback(final WorkspaceGiveFeedback workspaceGiveFeedback) {
+    execute(() -> {
+      workspacesHandler.setFeedbackDone(workspaceGiveFeedback);
+      return null;
+    });
   }
 
   @Override
@@ -477,6 +494,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public ConnectionReadList listAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch) {
     return execute(() -> connectionsHandler.searchConnections(connectionSearch));
   }
@@ -580,7 +602,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public File getLogs(final LogsRequestBody logsRequestBody) {
-    return execute(() -> logsHandler.getLogs(configs, logsRequestBody));
+    return execute(() -> logsHandler.getLogs(workspaceRoot, workerEnvironment, logConfigs, logsRequestBody));
   }
 
   @Override
@@ -602,6 +624,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public WebBackendConnectionReadList webBackendListAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> webBackendConnectionsHandler.webBackendListAllConnectionsForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
   public WebBackendConnectionReadList webBackendSearchConnections(final WebBackendConnectionSearch webBackendConnectionSearch) {
     return execute(() -> webBackendConnectionsHandler.webBackendSearchConnections(webBackendConnectionSearch));
   }
@@ -619,16 +646,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
     return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
-  }
-
-  @Override
-  public SourceRead webBackendCreateSource(final SourceCreate sourceCreate) {
-    return execute(() -> webBackendSourcesHandler.webBackendCreateSource(sourceCreate));
-  }
-
-  @Override
-  public DestinationRead webBackendCreateDestination(final DestinationCreate destinationCreate) {
-    return execute(() -> webBackendDestinationsHandler.webBackendCreateDestination(destinationCreate));
   }
 
   // ARCHIVES

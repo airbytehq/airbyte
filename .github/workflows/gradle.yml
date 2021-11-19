@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '0 */1 * * *'
   push:
+    branches-ignore:
+      - 'gitbook/v1'
 
 jobs:
   ## Gradle Build (Connectors Base)
@@ -81,7 +83,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
+          node-version: '16.13.0'
 
       - uses: actions/setup-python@v2
         with:
@@ -183,15 +185,6 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      - name: Pip Caching
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/pip
-          key: ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-
-
       - name: Npm Caching
         uses: actions/cache@v2
         with:
@@ -202,14 +195,14 @@ jobs:
             ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
 
       # this intentionally does not use restore-keys so we don't mess with gradle caching
-      - name: Gradle and Python Caching
+      - name: Gradle Caching
         uses: actions/cache@v2
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
             **/.venv
-          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}
 
       - uses: actions/setup-java@v1
         with:
@@ -217,14 +210,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+          node-version: '16.13.0'
 
       - name: Set up CI Gradle Properties
         run: |
@@ -242,10 +228,10 @@ jobs:
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Build
-        run: SUB_BUILD=PLATFORM ./gradlew build --scan
+        run: SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
 
-      - name: Ensure no file change
-        run: git --no-pager diff && test -z "$(git --no-pager diff)"
+      - name: Test if Seed spec is updated
+        run: SUB_BUILD=PLATFORM ./gradlew format && git --no-pager diff && test -z "$(git --no-pager diff)"
 
       # todo (cgardens) - scope by platform.
       - name: Check documentation
@@ -340,14 +326,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+          node-version: '16.13.0'
 
       - name: Install Cypress Test Dependencies
         run: sudo apt-get update && sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
@@ -362,7 +341,7 @@ jobs:
           EOF
 
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon composebuild --scan
+        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon assemble --scan
 
       - name: Run End-to-End Frontend Tests
         run: ./tools/bin/e2e_test.sh
@@ -428,14 +407,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+          node-version: '16.13.0'
 
       - name: Fix EC-2 Runner
         run: |
@@ -487,7 +459,18 @@ jobs:
           HOME: /home/runner
 
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
+        run: SUB_BUILD=PLATFORM ./gradlew assemble --scan
+
+      - name: Run Kubernetes End-to-End Acceptance Tests
+        env:
+          USER: root
+          HOME: /home/runner
+          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
+          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
+          SECRET_STORE_FOR_CONFIGS: ${{ secrets.SECRET_STORE_FOR_CONFIGS }}
+        run: |
+          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
 
       - name: Run Logging Tests
         run: ./tools/bin/cloud_storage_logging_test.sh
@@ -511,16 +494,6 @@ jobs:
         run: |
           CI=true ./tools/bin/gcp_acceptance_tests.sh
 
-      - name: Run Kubernetes End-to-End Acceptance Tests
-        env:
-          USER: root
-          HOME: /home/runner
-          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
-          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
-          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
-          SECRET_STORE_FOR_CONFIGS: ${{ secrets.SECRET_STORE_FOR_CONFIGS }}
-        run: |
-          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
     name: Stop Kube Acceptance Test EC2 Runner

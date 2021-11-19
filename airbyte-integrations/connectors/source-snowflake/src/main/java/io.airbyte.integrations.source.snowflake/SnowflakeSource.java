@@ -20,7 +20,7 @@ public class SnowflakeSource extends AbstractJdbcSource implements Source {
   public static final String DRIVER_CLASS = "net.snowflake.client.jdbc.SnowflakeDriver";
 
   public SnowflakeSource() {
-    super(DRIVER_CLASS, new SnowflakeJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new SnowflakeJdbcStreamingQueryConfiguration(), new SnowflakeSourceOperations());
   }
 
   public static void main(final String[] args) throws Exception {

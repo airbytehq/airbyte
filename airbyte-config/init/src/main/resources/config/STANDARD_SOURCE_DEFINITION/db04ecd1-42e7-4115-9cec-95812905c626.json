@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "db04ecd1-42e7-4115-9cec-95812905c626",
+  "name": "Retently",
+  "dockerRepository": "airbyte/source-retently",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/retently"
+}

@@ -10,3 +10,4 @@ sources:
   - name: _airbyte_raw_dedup_exchange_rate
   - name: _airbyte_raw_exchange_rate
   - name: _airbyte_raw_pos_dedup_cdcx
+  - name: _airbyte_raw_renamed_dedup_cdc_excluded

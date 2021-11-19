@@ -5,6 +5,7 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.api.client.util.Preconditions;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
@@ -19,7 +20,9 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.State;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -35,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,6 +46,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ConfigRepository {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
@@ -107,6 +112,14 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
+  public void setFeedback(final UUID workflowId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = this.getStandardWorkspace(workflowId, false);
+
+    workspace.setFeedbackDone(true);
+
+    persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
+  }
+
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString(), StandardSourceDefinition.class);
@@ -130,6 +143,16 @@ public class ConfigRepository {
     }
   }
 
+  public StandardWorkspace getStandardWorkspaceFromConnection(final UUID connectionId, final boolean isTombstone) {
+    try {
+      final StandardSync sync = getStandardSync(connectionId);
+      final SourceConnection source = getSourceConnection(sync.getSourceId());
+      return getStandardWorkspace(source.getWorkspaceId(), isTombstone);
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public List<StandardSourceDefinition> listStandardSourceDefinitions() throws JsonValidationException, IOException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
   }
@@ -144,6 +167,17 @@ public class ConfigRepository {
     } catch (final ConfigNotFoundException e) {
       LOGGER.info("Attempted to delete source definition with id: {}, but it does not exist", sourceDefId);
     }
+  }
+
+  public void deleteSourceDefinitionAndAssociations(final UUID sourceDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    deleteConnectorDefinitionAndAssociations(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        ConfigSchema.SOURCE_CONNECTION,
+        SourceConnection.class,
+        SourceConnection::getSourceId,
+        SourceConnection::getSourceDefinitionId,
+        sourceDefinitionId);
   }
 
   public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
@@ -190,6 +224,44 @@ public class ConfigRepository {
     }
   }
 
+  public void deleteDestinationDefinitionAndAssociations(final UUID destinationDefinitionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    deleteConnectorDefinitionAndAssociations(
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        ConfigSchema.DESTINATION_CONNECTION,
+        DestinationConnection.class,
+        DestinationConnection::getDestinationId,
+        DestinationConnection::getDestinationDefinitionId,
+        destinationDefinitionId);
+  }
+
+  private <T> void deleteConnectorDefinitionAndAssociations(
+                                                            final ConfigSchema definitionType,
+                                                            final ConfigSchema connectorType,
+                                                            final Class<T> connectorClass,
+                                                            final Function<T, UUID> connectorIdGetter,
+                                                            final Function<T, UUID> connectorDefinitionIdGetter,
+                                                            final UUID definitionId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final Set<T> connectors = persistence.listConfigs(connectorType, connectorClass)
+        .stream()
+        .filter(connector -> connectorDefinitionIdGetter.apply(connector).equals(definitionId))
+        .collect(Collectors.toSet());
+    for (final T connector : connectors) {
+      final Set<StandardSync> syncs = persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class)
+          .stream()
+          .filter(sync -> sync.getSourceId().equals(connectorIdGetter.apply(connector))
+              || sync.getDestinationId().equals(connectorIdGetter.apply(connector)))
+          .collect(Collectors.toSet());
+
+      for (final StandardSync sync : syncs) {
+        persistence.deleteConfig(ConfigSchema.STANDARD_SYNC, sync.getConnectionId().toString());
+      }
+      persistence.deleteConfig(connectorType, connectorIdGetter.apply(connector).toString());
+    }
+    persistence.deleteConfig(definitionType, definitionId.toString());
+  }
+
   public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
     return persistence.getConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString(), SourceConnection.class);
   }
@@ -225,7 +297,6 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param workspaceId workspace id for the config
    * @param fullConfig full config
    * @param spec connector specification
@@ -236,7 +307,6 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param workspaceId workspace id for the config
    * @param oldConfig old full config
    * @param fullConfig new full config
@@ -275,7 +345,6 @@ public class ConfigRepository {
   }
 
   /**
-   *
    * @param fullConfig full config
    * @param spec connector specification
    * @return partial config
@@ -431,9 +500,33 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class);
   }
 
+  public Optional<State> getConnectionState(final UUID connectionId) throws IOException {
+    try {
+      final StandardSyncState connectionState = persistence.getConfig(
+          ConfigSchema.STANDARD_SYNC_STATE,
+          connectionId.toString(),
+          StandardSyncState.class);
+      return Optional.of(connectionState.getState());
+    } catch (final ConfigNotFoundException e) {
+      return Optional.empty();
+    } catch (final JsonValidationException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public void updateConnectionState(final UUID connectionId, final State state) throws IOException {
+    LOGGER.info("Updating connection {} state: {}", connectionId, state);
+    final StandardSyncState connectionState = new StandardSyncState().withConnectionId(connectionId).withState(state);
+    try {
+      persistence.writeConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(), connectionState);
+    } catch (final JsonValidationException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
   /**
    * Converts between a dumpConfig() output and a replaceAllConfigs() input, by deserializing the
-   * string/jsonnode into the AirbyteConfig, Stream<Object<AirbyteConfig.getClassName()>
+   * string/jsonnode into the AirbyteConfig, Stream&lt;Object&lt;AirbyteConfig.getClassName()&gt;&gt;
    *
    * @param configurations from dumpConfig()
    * @return input suitable for replaceAllConfigs()
@@ -441,7 +534,8 @@ public class ConfigRepository {
   public static Map<AirbyteConfig, Stream<?>> deserialize(final Map<String, Stream<JsonNode>> configurations) {
     final Map<AirbyteConfig, Stream<?>> deserialized = new LinkedHashMap<AirbyteConfig, Stream<?>>();
     for (final String configSchemaName : configurations.keySet()) {
-      deserialized.put(ConfigSchema.valueOf(configSchemaName),
+      deserialized.put(
+          ConfigSchema.valueOf(configSchemaName),
           configurations.get(configSchemaName).map(jsonNode -> Jsons.object(jsonNode, ConfigSchema.valueOf(configSchemaName).getClassName())));
     }
     return deserialized;
@@ -453,6 +547,7 @@ public class ConfigRepository {
 
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     if (longLivedSecretPersistence.isPresent()) {
+      Preconditions.checkNotNull(specFetcherFn);
       final var augmentedMap = new HashMap<>(configs);
 
       // get all source defs so that we can use their specs when storing secrets.

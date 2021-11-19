@@ -492,6 +492,7 @@ public class AcceptanceTests {
   @Test
   @Order(9)
   public void testIncrementalSync() throws Exception {
+    LOGGER.info("Starting testIncrementalSync()");
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
@@ -514,6 +515,7 @@ public class AcceptanceTests {
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
+    LOGGER.info("Beginning testIncrementalSync() sync 1");
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
@@ -534,6 +536,7 @@ public class AcceptanceTests {
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
     source.close();
 
+    LOGGER.info("Starting testIncrementalSync() sync 2");
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
@@ -542,6 +545,7 @@ public class AcceptanceTests {
     assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
 
     // reset back to no data.
+    LOGGER.info("Starting testIncrementalSync() reset");
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
     LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
@@ -549,6 +553,7 @@ public class AcceptanceTests {
     assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public", STREAM_NAME));
 
     // sync one more time. verify it is the equivalent of a full refresh.
+    LOGGER.info("Starting testIncrementalSync() sync 3");
     final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
@@ -916,6 +921,9 @@ public class AcceptanceTests {
           new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream))));
       if (withScdTable) {
         explodedStreamNames
+            .add(new SchemaTableNamePair("_airbyte_" + OUTPUT_NAMESPACE_PREFIX + x.schemaName,
+                String.format("%s%s_stg", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
+        explodedStreamNames
             .add(new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s_scd", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
       }
       return explodedStreamNames.stream();
@@ -1097,6 +1105,7 @@ public class AcceptanceTests {
     dbConfig.put("port", psql.getFirstMappedPort());
     dbConfig.put("database", psql.getDatabaseName());
     dbConfig.put("username", psql.getUsername());
+    dbConfig.put("ssl", false);
 
     if (withSchema) {
       dbConfig.put("schema", "public");
@@ -1144,7 +1153,7 @@ public class AcceptanceTests {
     final Database database = getDestinationDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
+      database.query(context -> context.execute(String.format("DROP TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
     }
   }
 
@@ -1175,6 +1184,16 @@ public class AcceptanceTests {
 
   private static void waitForSuccessfulJob(final JobsApi jobsApi, final JobRead originalJob) throws InterruptedException, ApiException {
     final JobRead job = waitForJob(jobsApi, originalJob, Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING));
+
+    if (!JobStatus.SUCCEEDED.equals(job.getStatus())) {
+      // If a job failed during testing, show us why.
+      final JobIdRequestBody id = new JobIdRequestBody();
+      id.setId(originalJob.getId());
+      for (final AttemptInfoRead attemptInfo : jobsApi.getJobInfo(id).getAttempts()) {
+        LOGGER.warn("Unsuccessful job attempt " + attemptInfo.getAttempt().getId()
+            + " with status " + job.getStatus() + " produced log output as follows: " + attemptInfo.getLogs().getLogLines());
+      }
+    }
     assertEquals(JobStatus.SUCCEEDED, job.getStatus());
   }
 

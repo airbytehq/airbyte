@@ -26,6 +26,12 @@ services:
     environment:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
+      - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
+      - CONFIG_DATABASE_URL=${CONFIG_DATABASE_URL:-}
     volumes:
       - db:/var/lib/postgresql/data
   scheduler:
@@ -146,6 +152,7 @@ services:
       - RESOURCE_MEMORY_REQUEST=${RESOURCE_MEMORY_REQUEST}
       - RESOURCE_MEMORY_LIMIT=${RESOURCE_MEMORY_LIMIT}
       - SECRET_PERSISTENCE=${SECRET_PERSISTENCE}
+      - VERSION_0_32_0_FORCE_UPGRADE=${VERSION_0_32_0_FORCE_UPGRADE}
     ports:
       - 8001:8001
     volumes:
@@ -170,7 +177,7 @@ services:
       - OPENREPLAY=${OPENREPLAY:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
   airbyte-temporal:
-    image: temporalio/auto-setup:1.7.0
+    image: airbyte/temporal:${VERSION}
     logging: *default-logging
     container_name: airbyte-temporal
     restart: unless-stopped

@@ -14,20 +14,15 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs;
-import io.airbyte.db.Database;
-import io.airbyte.db.instance.DatabaseMigrator;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
+import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.temporal.internal.common.CheckedExceptionWrapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,9 +37,8 @@ class TemporalAttemptExecutionTest {
   private static final String SOURCE_USERNAME = "sourceusername";
   private static final String SOURCE_PASSWORD = "hunter2";
 
-  private static PostgreSQLContainer container;
+  private static PostgreSQLContainer<?> container;
   private static Configs configs;
-  private static Database database;
 
   private Path jobRoot;
 
@@ -54,8 +48,8 @@ class TemporalAttemptExecutionTest {
   private TemporalAttemptExecution<String, String> attemptExecution;
 
   @BeforeAll
-  static void setUpAll() throws IOException {
-    container = new PostgreSQLContainer("postgres:13-alpine")
+  static void setUpAll() {
+    container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withUsername(SOURCE_USERNAME)
         .withPassword(SOURCE_PASSWORD);
     container.start();
@@ -63,23 +57,14 @@ class TemporalAttemptExecutionTest {
     when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
     when(configs.getDatabaseUser()).thenReturn(SOURCE_USERNAME);
     when(configs.getDatabasePassword()).thenReturn(SOURCE_PASSWORD);
-
-    // create the initial schema
-    database = new JobsDatabaseInstance(
-        configs.getDatabaseUser(),
-        configs.getDatabasePassword(),
-        configs.getDatabaseUrl())
-            .getAndInitialize();
-
-    // make sure schema is up-to-date
-    final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(database, "test");
-    jobDbMigrator.createBaseline();
-    jobDbMigrator.migrate();
   }
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() throws IOException {
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    databaseProviders.createNewJobsDatabase();
+
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");
     jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_ID));
 
@@ -88,19 +73,15 @@ class TemporalAttemptExecutionTest {
 
     attemptExecution = new TemporalAttemptExecution<>(
         workspaceRoot,
+        configs.getWorkerEnvironment(), configs.getLogConfigs(),
         JOB_RUN_CONFIG, execution,
         () -> "",
         mdcSetter,
         mock(CancellationHandler.class),
-        () -> "workflow_id",
-        configs);
-  }
-
-  @AfterEach
-  void tearDown() throws SQLException {
-    database.query(ctx -> ctx.execute("TRUNCATE TABLE jobs"));
-    database.query(ctx -> ctx.execute("TRUNCATE TABLE attempts"));
-    database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_metadata"));
+        SOURCE_USERNAME,
+        SOURCE_PASSWORD,
+        container.getJdbcUrl(),
+        () -> "workflow_id", configs.getAirbyteVersionOrWarning());
   }
 
   @AfterAll

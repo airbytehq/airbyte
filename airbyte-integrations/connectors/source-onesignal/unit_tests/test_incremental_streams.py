@@ -41,21 +41,21 @@ def test_cursor_field(stream):
 
 def test_get_updated_state(stream):
     inputs = {"current_stream_state": {"updated_at": 42}, "latest_record": {"updated_at": 90}}
-    expected_state = 42
+    expected_state = 90
     state = stream.get_updated_state(**inputs)
-    assert state["updated_at"].value == expected_state
+    assert state["updated_at"] == expected_state
 
     inputs = {"current_stream_state": state, "latest_record": {"updated_at": 100}}
-    expected_state = 42
+    expected_state = 100
     state = stream.get_updated_state(**inputs)
-    assert state["updated_at"].value == expected_state
+    assert state["updated_at"] == expected_state
 
     # after stream sync is finished, state should output the max cursor time
     stream.is_finished = True
     inputs = {"current_stream_state": state, "latest_record": {"updated_at": 80}}
     expected_state = 100
     state = stream.get_updated_state(**inputs)
-    assert state["updated_at"].value == expected_state
+    assert state["updated_at"] == expected_state
 
 
 def test_stream_slices(stream, requests_mock):
@@ -94,9 +94,9 @@ def test_end_of_stream_state(parent, args, requests_mock):
         for record in stream.read_records(sync_mode, stream_slice=app_slice):
             state = stream.get_updated_state(state, record)
             if idx == 2:  # the last slice
-                assert state["queued_at"].value == 90
+                assert state["queued_at"] == 90
             else:
-                assert state["queued_at"].value == 50
+                assert state["queued_at"] == 90
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker, parent, args):

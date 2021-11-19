@@ -17,6 +17,7 @@ import io.airbyte.migrate.migrations.MigrationV0_26_0;
 import io.airbyte.migrate.migrations.MigrationV0_27_0;
 import io.airbyte.migrate.migrations.MigrationV0_28_0;
 import io.airbyte.migrate.migrations.MigrationV0_29_0;
+import io.airbyte.migrate.migrations.MigrationV0_30_0;
 import io.airbyte.migrate.migrations.NoOpMigration;
 import java.util.List;
 
@@ -39,7 +40,9 @@ public class Migrations {
   private static final Migration MIGRATION_V_0_27_0 = new MigrationV0_27_0(MIGRATION_V_0_26_0);
   public static final Migration MIGRATION_V_0_28_0 = new MigrationV0_28_0(MIGRATION_V_0_27_0);
   public static final Migration MIGRATION_V_0_29_0 = new MigrationV0_29_0(MIGRATION_V_0_28_0);
-  public static final Migration MIGRATION_V_0_30_0 = new NoOpMigration(MIGRATION_V_0_29_0, "0.30.0-alpha");
+  public static final Migration MIGRATION_V_0_30_0 = new MigrationV0_30_0(MIGRATION_V_0_29_0);
+  public static final Migration MIGRATION_V_0_31_0 = new NoOpMigration(MIGRATION_V_0_30_0, "0.31.0-alpha");
+  public static final Migration MIGRATION_V_0_32_0 = new NoOpMigration(MIGRATION_V_0_31_0, "0.32.0-alpha");
 
   // all migrations must be added to the list in the order that they should be applied.
   public static final List<Migration> MIGRATIONS = ImmutableList.of(
@@ -60,6 +63,8 @@ public class Migrations {
       MIGRATION_V_0_27_0,
       MIGRATION_V_0_28_0,
       MIGRATION_V_0_29_0,
-      MIGRATION_V_0_30_0);
+      MIGRATION_V_0_30_0,
+      MIGRATION_V_0_31_0,
+      MIGRATION_V_0_32_0);
 
 }
