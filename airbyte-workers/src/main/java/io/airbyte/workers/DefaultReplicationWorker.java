@@ -42,9 +42,8 @@ import org.slf4j.MDC;
  * <li>Listening for state messages emitted from the Destination to keep track of what data has been
  * replicated.</li>
  * <li>Handling shutdown of the Source and Destination</li>
- * <li>Handling failure cases and attempting persist state for partially completed replications (so
- * that the next replication can pick up where it left off instead of starting from the
- * beginning)</li>
+ * <li>Handling failure cases and returning state for partially completed replications (so that the
+ * next replication can pick up where it left off instead of starting from the beginning)</li>
  * </ul>
  */
 public class DefaultReplicationWorker implements ReplicationWorker {

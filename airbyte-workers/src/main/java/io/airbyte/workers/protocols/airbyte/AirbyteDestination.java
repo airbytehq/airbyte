@@ -40,7 +40,12 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
 
   /**
    * This method is a flush to make sure all data that should be written to the Destination is
-   * written. (Potentially should just rename it to flush)
+   * written. Any messages that have already been accepted
+   * ({@link AirbyteDestination#accept(AirbyteMessage)} ()}) will be flushed. Any additional messages
+   * sent to accept will not be flushed. In fact, flush should fail if the caller attempts to send it
+   * additional messages after calling this method.
+   *
+   * (Potentially should just rename it to flush)
    *
    * @throws Exception - throws if there is any failure when flushing.
    */
