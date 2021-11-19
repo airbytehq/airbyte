@@ -187,7 +187,7 @@ New features:
 
 * **GitHub** source: Add support for rotating through multiple API tokens.
 * **Google Ads** source: Added `UserLocationReport` stream.
-* **Cart** source: Added the `order_items` stream.
+* **Cart.com** source: Added the `order_items` stream.
 
 Bug fixes:
 
