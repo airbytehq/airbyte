@@ -13,7 +13,6 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
-import io.airbyte.test.annotations.IntegrationTest;
 import java.io.IOException;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -21,10 +20,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Triggered as part of integration tests in CI. It uses credentials in Github to connect to the
- * integration testing GCP project.
+ * Triggered as part of integration tests in CI. It uses credentials in Github to connect to the integration testing GCP project.
  */
-@IntegrationTest
 public class GoogleSecretManagerPersistenceIntegrationTest {
 
   private GoogleSecretManagerPersistence persistence;

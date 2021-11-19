@@ -1,6 +1,6 @@
 plugins {
     id 'java-library'
-    // id 'airbyte-integration-test-java'
+    id 'airbyte-integration-test-java'
 }
 
 dependencies {
@@ -15,5 +15,5 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-secretmanager:1.7.2'
     testImplementation "org.testcontainers:postgresql:1.15.3"
     testImplementation project(':airbyte-test-utils')
-    // integrationTestJavaImplementation project(':airbyte-config:persistence')
+    integrationTestJavaImplementation project(':airbyte-config:persistence')
 }
