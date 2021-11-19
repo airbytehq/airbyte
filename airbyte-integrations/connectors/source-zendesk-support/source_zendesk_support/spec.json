@@ -34,10 +34,12 @@
                 "const": "api_token"
               },
               "email": {
+                "title": "Email",
                 "type": "string",
                 "description": "The user email for your Zendesk account"
               },
               "api_token": {
+                "title": "API Token",
                 "type": "string",
                 "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a> for more information",
                 "airbyte_secret": true
@@ -45,7 +47,7 @@
             }
           },
           {
-            "title": "Access Token",
+            "title": "Auth2.0",
             "type": "object",
             "required": [ "access_token"],
             "additionalProperties": false,
@@ -55,6 +57,7 @@
                 "const": "access_token"
               },
               "access_token": {
+                "title": "Access Token",
                 "type": "string",
                 "description": "The value of the Access token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a> for more information",
                 "airbyte_secret": true
