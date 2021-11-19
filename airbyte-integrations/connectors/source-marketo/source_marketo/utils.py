@@ -4,6 +4,7 @@
 
 
 from datetime import datetime
+from airbyte_cdk.logger import AirbyteLogger
 
 STRING_TYPES = [
     "string",
@@ -43,7 +44,7 @@ def clean_string(string: str) -> str:
     return "".join("_" + c.lower() if c.isupper() else c for c in string if c != " ").strip("_")
 
 
-def format_value(value, schema):
+def format_value(value, schema, field_name=None):
     """Need use try...except construction for condition
     when we get unexpected type from API"""
 
@@ -56,8 +57,6 @@ def format_value(value, schema):
         if value in [None, "", "null"]:
             return None
         elif "integer" in field_type:
-            if isinstance(value, int):
-                return value
             return int(value)
         elif "string" in field_type:
             return str(value)
@@ -70,4 +69,6 @@ def format_value(value, schema):
 
         return value
     except ValueError:
+        AirbyteLogger().info(f"Could not indicate data type of field {field_name} for {value} with {field_type}."
+                             "Field value set to string data type.")
         return value

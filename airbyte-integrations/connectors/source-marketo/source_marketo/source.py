@@ -221,7 +221,7 @@ class MarketoExportBase(IncrementalMarketoStream):
 
         for values in list_response[1:]:
             record = {
-                headers[i]: format_value(value, schema[headers[i]])
+                headers[i]: format_value(value, schema[headers[i]], headers[i])
                 for i, value in enumerate(next(csv.reader([values], skipinitialspace=True)))
             }
 
