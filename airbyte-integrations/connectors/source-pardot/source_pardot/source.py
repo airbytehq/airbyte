@@ -22,8 +22,12 @@ class SourcePardot(AbstractSource):
         return pardot
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        _ = self._get_pardot_object(config)
-        return True, None
+        try:
+            pardot = self._get_pardot_object(config)
+            pardot.access_token
+            return True, None
+        except Exception as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         pardot = self._get_pardot_object(config)
