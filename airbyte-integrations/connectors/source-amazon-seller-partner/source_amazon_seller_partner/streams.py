@@ -27,7 +27,7 @@ REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
 
-REPORTS_MAX_WAIT_SECONDS = 50
+REPORTS_MAX_WAIT_SECONDS = 550
 
 
 class AmazonSPStream(HttpStream, ABC):
@@ -194,7 +194,7 @@ class ReportsAmazonSPStream(Stream, ABC):
 
         return self._session.prepare_request(requests.Request(**args))
 
-    def _report_data_default(self) -> Mapping[str, Any]:
+    def _report_data(self) -> Mapping[str, Any]:
         replication_start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
 
         return {
@@ -205,7 +205,7 @@ class ReportsAmazonSPStream(Stream, ABC):
 
     def _create_report(self) -> Mapping[str, Any]:
         request_headers = self.request_headers()
-        report_data = self._report_data_default()
+        report_data = self._report_data()
         create_report_request = self._create_prepared_request(
             http_method="POST",
             path=f"{self.path_prefix}/reports",
@@ -354,14 +354,16 @@ class SellerFeedbackReports(ReportsAmazonSPStream):
         self._data_end_time = data_end_time
 
     def _report_data(self) -> Mapping[str, Any]:
-        data_start_time = pendulum.now("utc") if self._data_start_time is None else self._data_start_time
-        data_end_time = pendulum.now("utc") if self._data_end_time is None else self._data_end_time
+        result = super()._report_data()
+        data_start_time = pendulum.now("utc") if self._data_start_time is None else pendulum.parse(self._data_start_time)
+        data_end_time = pendulum.now("utc") if self._data_end_time is None else pendulum.parse(self._data_end_time)
         data_times = {
             "dataStartTime": data_start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "dataEndTime": data_end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        }
+        }        
+        result.update(data_times)
 
-        return self._report_data_default.update(data_times)
+        return result
 
 
 class Orders(IncrementalAmazonSPStream):
