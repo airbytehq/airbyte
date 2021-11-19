@@ -118,6 +118,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [US Census](sources/us-census.md) | Alpha |
 | [WooCommerce](https://github.com/airbytehq/airbyte/tree/8d599c86a84726235c765c78db1ddd85c558bf7f/docs/integrations/sources/woo-commerce.md) | Beta |
 | [Wordpress](sources/wordpress.md) | Beta |
+| [YouTube Analytics](sources/youtube-analytics.md) | Beta |
 | [Zencart](sources/zencart.md) | Beta |
 | [Zendesk Chat](sources/zendesk-chat.md) | Certified |
 | [Zendesk Sunshine](sources/zendesk-sunshine.md) | Beta |
