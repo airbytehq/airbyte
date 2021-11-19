@@ -15,6 +15,7 @@ import io.airbyte.api.model.NotificationRead.StatusEnum;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WorkspaceCreate;
+import io.airbyte.api.model.WorkspaceGiveFeedback;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
@@ -181,6 +182,11 @@ public class WorkspacesHandler {
       return new NotificationRead().status(StatusEnum.FAILED).message(e.getMessage());
     }
     return new NotificationRead().status(StatusEnum.FAILED);
+  }
+
+  public void setFeedbackDone(final WorkspaceGiveFeedback workspaceGiveFeedback)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    configRepository.setFeedback(workspaceGiveFeedback.getWorkspaceId());
   }
 
   private WorkspaceRead buildWorkspaceReadFromId(final UUID workspaceId) throws ConfigNotFoundException, IOException, JsonValidationException {
