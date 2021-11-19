@@ -37,8 +37,7 @@ def mock_auth_call(requests_mock):
 def mock_api_returns_no_records(requests_mock):
     """API returns empty data for given date based slice"""
     yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        json=json.loads(read_file("empty_response.json"))
+        "https://analyticsreporting.googleapis.com/v4/reports:batchGet", json=json.loads(read_file("empty_response.json"))
     )
 
 
@@ -46,8 +45,7 @@ def mock_api_returns_no_records(requests_mock):
 def mock_api_returns_valid_records(requests_mock):
     """API returns valid data for given date based slice"""
     yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        json=json.loads(read_file("response_with_records.json"))
+        "https://analyticsreporting.googleapis.com/v4/reports:batchGet", json=json.loads(read_file("response_with_records.json"))
     )
 
 
@@ -84,7 +82,9 @@ def test_lookup_metrics_dimensions_data_type(metrics_dimensions_mapping, mock_me
 
 
 @patch("source_google_analytics_v4.source.jwt")
-def test_check_connection_fails_jwt(jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_api_returns_no_records):
+def test_check_connection_fails_jwt(
+    jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_api_returns_no_records
+):
     """
     check_connection fails because of the API returns no records,
     then we assume than user doesn't have permission to read requested `view`
@@ -105,7 +105,9 @@ def test_check_connection_fails_jwt(jwt_encode_mock, mocker, mock_metrics_dimens
 
 
 @patch("source_google_analytics_v4.source.jwt")
-def test_check_connection_success_jwt(jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_api_returns_valid_records):
+def test_check_connection_success_jwt(
+    jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_api_returns_valid_records
+):
     """
     check_connection succeeds because of the API returns valid records for the latest date based slice,
     then we assume than user has permission to read requested `view`
