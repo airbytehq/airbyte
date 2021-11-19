@@ -4,14 +4,14 @@
     schema = "test_normalization",
     tags = [ "top-level" ]
 ) }}
--- depends_on: ref('pos_dedup_cdcx_tmp')
+-- depends_on: ref('pos_dedup_cdcx_stg')
 with
 {% if is_incremental() %}
 new_data as (
     -- retrieve incremental "new" data
     select
         *
-    from {{ ref('pos_dedup_cdcx_tmp')  }}
+    from {{ ref('pos_dedup_cdcx_stg')  }}
     -- pos_dedup_cdcx from {{ source('test_normalization', '_airbyte_raw_pos_dedup_cdcx') }}
     where 1 = 1
     {{ incremental_clause('_airbyte_emitted_at') }}
@@ -31,7 +31,7 @@ empty_new_data as (
 previous_active_scd_data as (
     -- retrieve "incomplete old" data that needs to be updated with an end date because of new changes
     select
-        {{ star_intersect(ref('pos_dedup_cdcx_tmp'), this, from_alias='inc_data', intersect_alias='this_data') }}
+        {{ star_intersect(ref('pos_dedup_cdcx_stg'), this, from_alias='inc_data', intersect_alias='this_data') }}
     from {{ this }} as this_data
     -- make a join with new_data using primary key to filter active data that need to be updated only
     join new_data_ids on this_data._airbyte_unique_key = new_data_ids._airbyte_unique_key
@@ -40,14 +40,14 @@ previous_active_scd_data as (
     where _airbyte_active_row = 1
 ),
 input_data as (
-    select {{ dbt_utils.star(ref('pos_dedup_cdcx_tmp')) }} from new_data
+    select {{ dbt_utils.star(ref('pos_dedup_cdcx_stg')) }} from new_data
     union all
-    select {{ dbt_utils.star(ref('pos_dedup_cdcx_tmp')) }} from previous_active_scd_data
+    select {{ dbt_utils.star(ref('pos_dedup_cdcx_stg')) }} from previous_active_scd_data
 ),
 {% else %}
 input_data as (
     select *
-    from {{ ref('pos_dedup_cdcx_tmp')  }}
+    from {{ ref('pos_dedup_cdcx_stg')  }}
     -- pos_dedup_cdcx from {{ source('test_normalization', '_airbyte_raw_pos_dedup_cdcx') }}
 ),
 {% endif %}

@@ -1,6 +1,6 @@
 
 
-  create or replace view `dataline-integration-testing`._airbyte_test_normalization.`dedup_exchange_rate_tmp`
+  create or replace view `dataline-integration-testing`._airbyte_test_normalization.`dedup_exchange_rate_stg`
   OPTIONS()
   as 
 with __dbt__cte__dedup_exchange_rate_ab1 as (
@@ -10,10 +10,10 @@ with __dbt__cte__dedup_exchange_rate_ab1 as (
 select
     json_extract_scalar(_airbyte_data, "$['id']") as id,
     json_extract_scalar(_airbyte_data, "$['currency']") as currency,
+    json_extract_scalar(_airbyte_data, "$['new_column']") as new_column,
     json_extract_scalar(_airbyte_data, "$['date']") as date,
     json_extract_scalar(_airbyte_data, "$['timestamp_col']") as timestamp_col,
     json_extract_scalar(_airbyte_data, "$['HKD@spéçiäl & characters']") as HKD_special___characters,
-    json_extract_scalar(_airbyte_data, "$['HKD_special___characters']") as HKD_special___characters_1,
     json_extract_scalar(_airbyte_data, "$['NZD']") as NZD,
     json_extract_scalar(_airbyte_data, "$['USD']") as USD,
     _airbyte_ab_id,
@@ -29,11 +29,14 @@ where 1 = 1
 -- depends_on: __dbt__cte__dedup_exchange_rate_ab1
 select
     cast(id as 
-    int64
+    float64
 ) as id,
     cast(currency as 
     string
 ) as currency,
+    cast(new_column as 
+    float64
+) as new_column,
     cast(nullif(date, '') as 
     date
 ) as date,
@@ -43,14 +46,11 @@ select
     cast(HKD_special___characters as 
     float64
 ) as HKD_special___characters,
-    cast(HKD_special___characters_1 as 
-    string
-) as HKD_special___characters_1,
     cast(NZD as 
     float64
 ) as NZD,
     cast(USD as 
-    float64
+    int64
 ) as USD,
     _airbyte_ab_id,
     _airbyte_emitted_at,
@@ -66,13 +66,13 @@ select
     string
 ), ''), '-', coalesce(cast(currency as 
     string
+), ''), '-', coalesce(cast(new_column as 
+    string
 ), ''), '-', coalesce(cast(date as 
     string
 ), ''), '-', coalesce(cast(timestamp_col as 
     string
 ), ''), '-', coalesce(cast(HKD_special___characters as 
-    string
-), ''), '-', coalesce(cast(HKD_special___characters_1 as 
     string
 ), ''), '-', coalesce(cast(NZD as 
     string

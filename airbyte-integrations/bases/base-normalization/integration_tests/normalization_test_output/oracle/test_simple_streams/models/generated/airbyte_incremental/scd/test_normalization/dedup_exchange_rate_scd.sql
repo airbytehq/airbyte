@@ -1,16 +1,17 @@
 {{ config(
     unique_key = "{{ quote('_AIRBYTE_UNIQUE_KEY_SCD') }}",
     schema = "test_normalization",
+    post_hook = ['drop view test_normalization.dedup_exchange_rate_stg'],
     tags = [ "top-level" ]
 ) }}
--- depends_on: ref('dedup_exchange_rate_tmp')
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 {% if is_incremental() %}
 new_data as (
     -- retrieve incremental "new" data
     select
         *
-    from {{ ref('dedup_exchange_rate_tmp')  }}
+    from {{ ref('dedup_exchange_rate_stg')  }}
     -- dedup_exchange_rate from {{ source('test_normalization', 'airbyte_raw_dedup_exchange_rate') }}
     where 1 = 1
     {{ incremental_clause(quote('_AIRBYTE_EMITTED_AT')) }}
@@ -32,7 +33,7 @@ empty_new_data as (
 previous_active_scd_data as (
     -- retrieve "incomplete old" data that needs to be updated with an end date because of new changes
     select
-        {{ star_intersect(ref('dedup_exchange_rate_tmp'), this, from_alias='inc_data', intersect_alias='this_data') }}
+        {{ star_intersect(ref('dedup_exchange_rate_stg'), this, from_alias='inc_data', intersect_alias='this_data') }}
     from {{ this }} as this_data
     -- make a join with new_data using primary key to filter active data that need to be updated only
     join new_data_ids on this_data.{{ quote('_AIRBYTE_UNIQUE_KEY') }} = new_data_ids.{{ quote('_AIRBYTE_UNIQUE_KEY') }}
@@ -41,14 +42,14 @@ previous_active_scd_data as (
     where {{ quote('_AIRBYTE_ACTIVE_ROW') }} = 1
 ),
 input_data as (
-    select {{ dbt_utils.star(ref('dedup_exchange_rate_tmp')) }} from new_data
+    select {{ dbt_utils.star(ref('dedup_exchange_rate_stg')) }} from new_data
     union all
-    select {{ dbt_utils.star(ref('dedup_exchange_rate_tmp')) }} from previous_active_scd_data
+    select {{ dbt_utils.star(ref('dedup_exchange_rate_stg')) }} from previous_active_scd_data
 ),
 {% else %}
 input_data as (
     select *
-    from {{ ref('dedup_exchange_rate_tmp')  }}
+    from {{ ref('dedup_exchange_rate_stg')  }}
     -- dedup_exchange_rate from {{ source('test_normalization', 'airbyte_raw_dedup_exchange_rate') }}
 ),
 {% endif %}

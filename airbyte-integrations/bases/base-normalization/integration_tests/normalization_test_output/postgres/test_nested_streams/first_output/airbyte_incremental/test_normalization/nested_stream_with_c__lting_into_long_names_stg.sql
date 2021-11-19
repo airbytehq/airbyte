@@ -1,7 +1,7 @@
 
       
 
-  create  table "postgres"._airbyte_test_normalization."nested_stream_with_c__lting_into_long_names_tmp"
+  create  table "postgres"._airbyte_test_normalization."nested_stream_with_c__lting_into_long_names_stg"
   as (
     
 with __dbt__cte__nested_stream_with_c__lting_into_long_names_ab1 as (

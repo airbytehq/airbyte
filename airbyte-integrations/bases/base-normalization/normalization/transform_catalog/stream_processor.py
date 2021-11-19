@@ -276,7 +276,7 @@ class StreamProcessor(object):
                 self.generate_id_hashing_model(from_table, column_names),
                 forced_materialization_type,
                 is_intermediate=True,
-                suffix="tmp",
+                suffix="stg",
             )
             from_table = self.add_to_outputs(
                 self.generate_scd_type_2_model(from_table, column_names),
@@ -956,7 +956,12 @@ where 1 = 1
         else:
             config["schema"] = f'"{schema}"'
         if self.is_incremental_mode(self.destination_sync_mode):
-            if suffix != "scd":
+            if suffix == "scd":
+                if self.destination_type != DestinationType.POSTGRES:
+                    stg_schema = self.get_schema(True)
+                    stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
+                    config["post_hook"] = f"['drop view {stg_schema}.{stg_table}']"
+            else:
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)
         template = Template(

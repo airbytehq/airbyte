@@ -1,6 +1,6 @@
 
 
-  create view "integrationtests"._airbyte_test_normalization."dedup_exchange_rate_tmp__dbt_tmp" as (
+  create view "integrationtests"._airbyte_test_normalization."dedup_exchange_rate_stg__dbt_tmp" as (
     
 with __dbt__cte__dedup_exchange_rate_ab1 as (
 

@@ -4,12 +4,12 @@
   create  table "postgres".test_normalization."nested_stream_with_c__lting_into_long_names_scd"
   as (
     
--- depends_on: ref('nested_stream_with_c__lting_into_long_names_tmp')
+-- depends_on: ref('nested_stream_with_c__lting_into_long_names_stg')
 with
 
 input_data as (
     select *
-    from "postgres"._airbyte_test_normalization."nested_stream_with_c__lting_into_long_names_tmp"
+    from "postgres"._airbyte_test_normalization."nested_stream_with_c__lting_into_long_names_stg"
     -- nested_stream_with_c__lting_into_long_names from "postgres".test_normalization._airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names
 ),
 

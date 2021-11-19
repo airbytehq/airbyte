@@ -1,7 +1,7 @@
 
       
 
-  create  table "postgres"._airbyte_test_normalization."dedup_cdc_excluded_tmp"
+  create  table "postgres"._airbyte_test_normalization."dedup_cdc_excluded_stg"
   as (
     
 with __dbt__cte__dedup_cdc_excluded_ab1 as (

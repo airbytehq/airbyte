@@ -1,6 +1,6 @@
 
 
-  create or replace view `dataline-integration-testing`._airbyte_test_normalization.`dedup_exchange_rate_tmp`
+  create or replace view `dataline-integration-testing`._airbyte_test_normalization.`dedup_exchange_rate_stg`
   OPTIONS()
   as 
 with __dbt__cte__dedup_exchange_rate_ab1 as (

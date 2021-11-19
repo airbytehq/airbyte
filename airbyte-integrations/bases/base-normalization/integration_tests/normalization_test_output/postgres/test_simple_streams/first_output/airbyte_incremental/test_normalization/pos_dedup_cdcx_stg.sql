@@ -1,7 +1,7 @@
 
       
 
-  create  table "postgres"._airbyte_test_normalization."pos_dedup_cdcx_tmp"
+  create  table "postgres"._airbyte_test_normalization."pos_dedup_cdcx_stg"
   as (
     
 with __dbt__cte__pos_dedup_cdcx_ab1 as (

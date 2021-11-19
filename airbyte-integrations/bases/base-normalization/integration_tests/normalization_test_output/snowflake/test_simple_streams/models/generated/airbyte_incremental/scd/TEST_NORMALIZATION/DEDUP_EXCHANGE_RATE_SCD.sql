@@ -2,16 +2,17 @@
     cluster_by = ["_AIRBYTE_ACTIVE_ROW", "_AIRBYTE_UNIQUE_KEY_SCD", "_AIRBYTE_EMITTED_AT"],
     unique_key = "_AIRBYTE_UNIQUE_KEY_SCD",
     schema = "TEST_NORMALIZATION",
+    post_hook = ['drop view _AIRBYTE_TEST_NORMALIZATION.DEDUP_EXCHANGE_RATE_STG'],
     tags = [ "top-level" ]
 ) }}
--- depends_on: ref('DEDUP_EXCHANGE_RATE_TMP')
+-- depends_on: ref('DEDUP_EXCHANGE_RATE_STG')
 with
 {% if is_incremental() %}
 new_data as (
     -- retrieve incremental "new" data
     select
         *
-    from {{ ref('DEDUP_EXCHANGE_RATE_TMP')  }}
+    from {{ ref('DEDUP_EXCHANGE_RATE_STG')  }}
     -- DEDUP_EXCHANGE_RATE from {{ source('TEST_NORMALIZATION', '_AIRBYTE_RAW_DEDUP_EXCHANGE_RATE') }}
     where 1 = 1
     {{ incremental_clause('_AIRBYTE_EMITTED_AT') }}
@@ -33,7 +34,7 @@ empty_new_data as (
 previous_active_scd_data as (
     -- retrieve "incomplete old" data that needs to be updated with an end date because of new changes
     select
-        {{ star_intersect(ref('DEDUP_EXCHANGE_RATE_TMP'), this, from_alias='inc_data', intersect_alias='this_data') }}
+        {{ star_intersect(ref('DEDUP_EXCHANGE_RATE_STG'), this, from_alias='inc_data', intersect_alias='this_data') }}
     from {{ this }} as this_data
     -- make a join with new_data using primary key to filter active data that need to be updated only
     join new_data_ids on this_data._AIRBYTE_UNIQUE_KEY = new_data_ids._AIRBYTE_UNIQUE_KEY
@@ -42,14 +43,14 @@ previous_active_scd_data as (
     where _AIRBYTE_ACTIVE_ROW = 1
 ),
 input_data as (
-    select {{ dbt_utils.star(ref('DEDUP_EXCHANGE_RATE_TMP')) }} from new_data
+    select {{ dbt_utils.star(ref('DEDUP_EXCHANGE_RATE_STG')) }} from new_data
     union all
-    select {{ dbt_utils.star(ref('DEDUP_EXCHANGE_RATE_TMP')) }} from previous_active_scd_data
+    select {{ dbt_utils.star(ref('DEDUP_EXCHANGE_RATE_STG')) }} from previous_active_scd_data
 ),
 {% else %}
 input_data as (
     select *
-    from {{ ref('DEDUP_EXCHANGE_RATE_TMP')  }}
+    from {{ ref('DEDUP_EXCHANGE_RATE_STG')  }}
     -- DEDUP_EXCHANGE_RATE from {{ source('TEST_NORMALIZATION', '_AIRBYTE_RAW_DEDUP_EXCHANGE_RATE') }}
 ),
 {% endif %}
