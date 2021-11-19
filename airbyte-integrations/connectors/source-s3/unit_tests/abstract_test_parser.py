@@ -11,7 +11,7 @@ from smart_open import open as smart_open
 
 
 class AbstractTestParser(ABC):
-    """ Prefix this class with Abstract so the tests don't run here but only in the children """
+    """Prefix this class with Abstract so the tests don't run here but only in the children"""
 
     logger = AirbyteLogger()
 
