@@ -877,6 +877,30 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/connections/list_all:
+    post:
+      tags:
+        - connection
+      summary: Returns all connections for a workspace, including deleted connections.
+      description: List connections for workspace, including deleted connections.
+      operationId: listAllConnectionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionReadList"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/get:
     post:
       tags:
@@ -1389,8 +1413,31 @@ paths:
     post:
       tags:
         - web_backend
-      summary: Returns all connections for a workspace.
+      summary: Returns all non-deleted connections for a workspace.
       operationId: webBackendListConnectionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionReadList"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/connections/list_all:
+    post:
+      tags:
+        - web_backend
+      summary: Returns all connections for a workspace.
+      operationId: webBackendListAllConnectionsForWorkspace
       requestBody:
         content:
           application/json:
@@ -1492,48 +1539,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionReadList"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/sources/create:
-    post:
-      tags:
-        - web_backend
-      summary: Create a source
-      operationId: webBackendCreateSource
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SourceCreate"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SourceRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/web_backend/destinations/create:
-    post:
-      tags:
-        - web_backend
-      summary: Create a destination
-      operationId: webBackendCreateDestination
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DestinationCreate"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DestinationRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/list:
@@ -1882,6 +1887,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+        firstCompletedSync:
+          type: boolean
+        feedbackDone:
+          type: boolean
     WorkspaceUpdate:
       type: object
       required:
