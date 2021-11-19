@@ -175,6 +175,7 @@ read_secrets base-normalization "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "snowflake.j
 read_secrets base-normalization "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" "redshift.json"
 read_secrets base-normalization "$AWS_ORACLE_INTEGRATION_TEST_CREDS" "oracle.json"
 
+read_secrets source-airtable "$SOURCE_AIRTABLE_TEST_CREDS"
 read_secrets source-amazon-seller-partner "$AMAZON_SELLER_PARTNER_TEST_CREDS"
 read_secrets source-amazon-sqs "$SOURCE_AMAZON_SQS_TEST_CREDS"
 read_secrets source-amplitude "$AMPLITUDE_INTEGRATION_TEST_CREDS"
