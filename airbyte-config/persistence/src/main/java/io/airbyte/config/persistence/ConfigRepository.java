@@ -112,6 +112,14 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
   }
 
+  public void setFeedback(final UUID workflowId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = this.getStandardWorkspace(workflowId, false);
+
+    workspace.setFeedbackDone(true);
+
+    persistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
+  }
+
   public StandardSourceDefinition getStandardSourceDefinition(final UUID sourceDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString(), StandardSourceDefinition.class);
