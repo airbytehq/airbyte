@@ -5,6 +5,7 @@
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('unnest_alias_ab3') }}
 select
     {{ adapter.quote('id') }},
     children,

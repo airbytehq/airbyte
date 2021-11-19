@@ -5,6 +5,7 @@
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('renamed_dedup_cdc_excluded_scd') }}
 select
     _airbyte_unique_key,
     {{ adapter.quote('id') }},

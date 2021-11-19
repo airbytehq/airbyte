@@ -4,6 +4,7 @@
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ ref('nested_stream_with_c___names_partition_data_ab1') }}
 select
     _airbyte_partition_hashid,
     cast(currency as {{ dbt_utils.type_string() }}) as currency,

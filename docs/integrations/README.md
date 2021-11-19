@@ -14,6 +14,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 | Connector | Grade |
 | :--- | :--- |
+| [Airtable](sources/airtable.md) | Alpha |
 | [Amazon SQS](sources/amazon-sqs.md) | Alpha |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md) | Alpha |
 | [Amplitude](sources/amplitude.md) | Beta |
@@ -26,7 +27,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [BigCommerce](sources/bigcommerce.md) | Alpha |
 | [BigQuery](sources/bigquery.md) | Beta |
 | [Bing Ads](sources/bing-ads.md) | Beta |
-| [Cart](sources/cart.md) | Beta |
+| [Cart.com](sources/cart.md) | Beta |
 | [Chargebee](sources/chargebee.md) | Alpha |
 | [ClickHouse](sources/clickhouse.md) | Beta |
 | [Close.com](sources/close-com.md) | Beta |

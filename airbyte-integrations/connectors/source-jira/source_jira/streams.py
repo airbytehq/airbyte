@@ -349,7 +349,11 @@ class Issues(IncrementalJiraStream):
         if self._render_fields:
             expand.append("renderedFields")
         if expand:
+<<<<<<< HEAD
             params["expand"] = ",".join(expand)
+=======
+            params["expand"] = ','.join(expand)
+>>>>>>> master
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
