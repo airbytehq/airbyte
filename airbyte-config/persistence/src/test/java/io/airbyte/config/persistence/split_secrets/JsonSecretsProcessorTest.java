@@ -62,6 +62,97 @@ public class JsonSecretsProcessorTest {
           + "    }\n"
           + "  }");
 
+  private static final JsonNode ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS = Jsons.deserialize(
+      "{\n"
+          + "    \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n"
+          + "    \"title\": \"S3 Destination Spec\",\n"
+          + "    \"type\": \"object\",\n"
+          + "    \"required\": [\n"
+          + "      \"client_id\",\n"
+          + "      \"format\"\n"
+          + "    ],\n"
+          + "    \"additionalProperties\": false,\n"
+          + "    \"properties\": {\n"
+          + "      \"client_id\": {\n"
+          + "        \"title\": \"client it\",\n"
+          + "        \"type\": \"string\",\n"
+          + "        \"default\": \"\"\n"
+          + "      },\n"
+          + "      \"format\": {\n"
+          + "        \"title\": \"Output Format\",\n"
+          + "        \"type\": \"object\",\n"
+          + "        \"description\": \"Output data format\",\n"
+          + "        \"oneOf\": [\n"
+          + "          {\n"
+          + "            \"title\": \"Avro: Apache Avro\",\n"
+          + "            \"required\": [\"format_type\", \"compression_codec\"],\n"
+          + "            \"properties\": {\n"
+          + "              \"format_type\": {\n"
+          + "                \"type\": \"string\",\n"
+          + "                \"enum\": [\"Avro\"],\n"
+          + "                \"default\": \"Avro\"\n"
+          + "              },\n"
+          + "              \"compression_codec\": {\n"
+          + "                \"title\": \"Compression Codec\",\n"
+          + "                \"description\": \"The compression algorithm used to compress data. Default to no compression.\",\n"
+          + "                \"type\": \"object\",\n"
+          + "                \"oneOf\": [\n"
+          + "                  {\n"
+          + "                    \"title\": \"no compression\",\n"
+          + "                    \"required\": [\"codec\"],\n"
+          + "                    \"properties\": {\n"
+          + "                      \"codec\": {\n"
+          + "                        \"type\": \"string\",\n"
+          + "                        \"enum\": [\"no compression\"],\n"
+          + "                        \"default\": \"no compression\"\n"
+          + "                      }\n"
+          + "                    }\n"
+          + "                  },\n"
+          + "                  {\n"
+          + "                    \"title\": \"Deflate\",\n"
+          + "                    \"required\": [\"codec\", \"compression_level\"],\n"
+          + "                    \"properties\": {\n"
+          + "                      \"codec\": {\n"
+          + "                        \"type\": \"string\",\n"
+          + "                        \"enum\": [\"Deflate\"],\n"
+          + "                        \"default\": \"Deflate\"\n"
+          + "                      },\n"
+          + "                      \"compression_level\": {\n"
+          + "                        \"type\": \"integer\",\n"
+          + "                        \"default\": 0,\n"
+          + "                        \"minimum\": 0,\n"
+          + "                        \"maximum\": 9\n"
+          + "                      }\n"
+          + "                    }\n"
+          + "                  }\n"
+          + "                ]\n"
+          + "              }\n"
+          + "            }\n"
+          + "          },\n"
+          + "          {\n"
+          + "            \"title\": \"Parquet: Columnar Storage\",\n"
+          + "            \"required\": [\"format_type\"],\n"
+          + "            \"properties\": {\n"
+          + "              \"format_type\": {\n"
+          + "                \"type\": \"string\",\n"
+          + "                \"enum\": [\"Parquet\"],\n"
+          + "                \"default\": \"Parquet\"\n"
+          + "              },\n"
+          + "              \"compression_codec\": {\n"
+          + "                \"type\": \"string\",\n"
+          + "                \"enum\": [\n"
+          + "                  \"UNCOMPRESSED\",\n"
+          + "                  \"GZIP\"\n"
+          + "                ],\n"
+          + "                \"default\": \"UNCOMPRESSED\"\n"
+          + "              }\n"
+          + "            }\n"
+          + "          }\n"
+          + "        ]\n"
+          + "      }\n"
+          + "    }\n"
+          + "  }");
+
   JsonSecretsProcessor processor = new JsonSecretsProcessor();
 
   @Test
@@ -226,6 +317,28 @@ public class JsonSecretsProcessorTest {
     final JsonNode expected = dst.deepCopy();
 
     assertEquals(expected, actual);
+  }
+
+  // test the case where multiple sub schemas of a oneOf contain the same key but a different type.
+  @Test
+  void testHandlesSameKeyInOneOf() {
+    final JsonNode compressionCodecObject = Jsons.jsonNode(ImmutableMap.of(
+        "codec", "no compression"));
+    final JsonNode avroConfig = Jsons.jsonNode(ImmutableMap.of(
+        "format_type", "Avro",
+        "compression_codec", compressionCodecObject));
+    final JsonNode src = Jsons.jsonNode(ImmutableMap.of(
+        "client_id", "whatever",
+        "format", avroConfig));
+
+    final JsonNode parquetConfig = Jsons.jsonNode(ImmutableMap.of(
+        "format_type", "Parquet",
+        "compression_codec", "GZIP"));
+    final JsonNode dst = Jsons.jsonNode(ImmutableMap.of(
+        "client_id", "whatever",
+        "format", parquetConfig));
+
+    final JsonNode actual = new JsonSecretsProcessor().copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
   }
 
 }
