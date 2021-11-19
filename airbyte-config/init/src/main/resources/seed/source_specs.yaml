@@ -5446,7 +5446,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.2"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -5487,6 +5487,15 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    authSpecification:
+      auth_type: "oauth2.0"
+      oauth2Specification:
+        rootObject: []
+        oauthFlowInitParameters:
+        - - "client_id"
+        - - "client_secret"
+        oauthFlowOutputParameters:
+        - - "refresh_token"
 - dockerImage: "airbyte/source-snowflake:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
