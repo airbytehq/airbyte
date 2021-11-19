@@ -8,13 +8,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.*;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.persistence.ConfigPersistence;
-import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
-import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
-import io.airbyte.db.Database;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.*;
@@ -29,7 +22,6 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,36 +30,14 @@ public class RunnerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RunnerApp.class);
 
-  private static void replicationWorker() throws IOException, WorkerException {
-    // todo: is this a massive hack or the right approach?
-    final Map<String, String> envMap = (Map<String, String>) Jsons.deserialize(Files.readString(Path.of("envMap.json")), Map.class);
-    final Configs configs = new EnvConfigs(envMap::get);
+  private static void replicationRunner(final Configs configs) throws IOException, WorkerException {
+    LOGGER.info("Starting replication runner app...");
 
-    // won't be captured by MDC
-    LOGGER.info("configs = " + configs); // todo: remove
-
-    // set up app
-
-    // todo: figure out where to send these logs
-    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(),
-        LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot()));
-
-    LOGGER.info("Starting sync attempt app...");
-
-    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
+    if (configs.getWorkerEnvironment().equals(Configs.WorkerEnvironment.KUBERNETES)) {
+      KubePortManagerSingleton.init(configs.getTemporalWorkerPorts());
+    }
 
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
-
-    // todo: DRY this? also present in WorkerApp
-    final Database configDatabase = new ConfigsDatabaseInstance(
-        configs.getConfigDatabaseUser(),
-        configs.getConfigDatabasePassword(),
-        configs.getConfigDatabaseUrl())
-            .getInitialized();
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
-    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
-    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
 
     LOGGER.info("Attempting to retrieve files...");
 
@@ -130,11 +100,33 @@ public class RunnerApp {
     System.out.println(Jsons.serialize(replicationOutput));
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws Exception {
     final String application = Files.readString(Path.of("application.txt"));
 
+    final Map<String, String> envMap = (Map<String, String>) Jsons.deserialize(Files.readString(Path.of("envMap.json")), Map.class);
+    final Configs configs = new EnvConfigs(envMap::get);
+
+    if(System.getenv().containsKey("LOG_LEVEL")) {
+      System.setProperty("LOG_LEVEL", System.getenv("LOG_LEVEL"));
+    }
+
+    if(System.getenv().containsKey("S3_PATH_STYLE_ACCESS")) {
+      System.setProperty("S3_PATH_STYLE_ACCESS", System.getenv("S3_PATH_STYLE_ACCESS"));
+    }
+
+    System.setProperty(LogClientSingleton.S3_LOG_BUCKET, configs.getLogConfigs().getS3LogBucket());
+    System.setProperty(LogClientSingleton.S3_LOG_BUCKET_REGION, configs.getLogConfigs().getS3LogBucketRegion());
+    System.setProperty(LogClientSingleton.AWS_ACCESS_KEY_ID, configs.getLogConfigs().getAwsAccessKey());
+    System.setProperty(LogClientSingleton.AWS_SECRET_ACCESS_KEY, configs.getLogConfigs().getAwsSecretAccessKey());
+    System.setProperty(LogClientSingleton.S3_MINIO_ENDPOINT, configs.getLogConfigs().getS3MinioEndpoint());
+    System.setProperty(LogClientSingleton.GCP_STORAGE_BUCKET, configs.getLogConfigs().getGcpStorageBucket());
+    System.setProperty(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, configs.getLogConfigs().getGoogleApplicationCredentials());
+
+    final var logPath = LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot());
+    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(), logPath);
+
     switch (application) {
-      case "replication" -> Exceptions.toRuntime(RunnerApp::replicationWorker);
+      case "replication" -> Exceptions.toRuntime(() -> replicationRunner(configs));
       default -> throw new IllegalStateException("Unexpected value: " + application);
     }
   }
@@ -146,7 +138,7 @@ public class RunnerApp {
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + WorkerApp.KUBE_HEARTBEAT_PORT;
       LOGGER.info("Using Kubernetes namespace: {}", configs.getKubeNamespace());
-      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, configs.getTemporalWorkerPorts());
+      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl);
     } else {
       return new DockerProcessFactory(
           configs.getWorkspaceRoot(),

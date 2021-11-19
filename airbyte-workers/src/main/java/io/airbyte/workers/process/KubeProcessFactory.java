@@ -15,7 +15,6 @@ import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -58,9 +57,8 @@ public class KubeProcessFactory implements ProcessFactory {
   public KubeProcessFactory(final String namespace,
                             final ApiClient officialClient,
                             final KubernetesClient fabricClient,
-                            final String kubeHeartbeatUrl,
-                            final Set<Integer> ports) {
-    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()), ports);
+                            final String kubeHeartbeatUrl) {
+    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()));
   }
 
   /**
@@ -77,14 +75,12 @@ public class KubeProcessFactory implements ProcessFactory {
                             final ApiClient officialClient,
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
-                            final String processRunnerHost,
-                            final Set<Integer> ports) {
+                            final String processRunnerHost) {
     this.namespace = namespace;
     this.officialClient = officialClient;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.processRunnerHost = processRunnerHost;
-    KubePortManagerSingleton.init(ports);
   }
 
   @Override

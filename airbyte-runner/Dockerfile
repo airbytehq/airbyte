@@ -19,6 +19,7 @@ RUN add-apt-repository \
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 
 ENV APPLICATION airbyte-runner
+ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-0.32.2-alpha/bin/${APPLICATION}"
 
 WORKDIR /app
 

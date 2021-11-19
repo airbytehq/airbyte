@@ -17,10 +17,7 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import io.airbyte.workers.process.DockerProcessFactory;
-import io.airbyte.workers.process.KubeProcessFactory;
-import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.process.WorkerHeartbeatServer;
+import io.airbyte.workers.process.*;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivityImpl;
@@ -158,7 +155,7 @@ public class WorkerApp {
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
       LOGGER.info("Using Kubernetes namespace: {}", configs.getKubeNamespace());
-      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, configs.getTemporalWorkerPorts());
+      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl);
     } else {
       return new DockerProcessFactory(
           configs.getWorkspaceRoot(),
@@ -207,6 +204,10 @@ public class WorkerApp {
     LOGGER.info("temporalHost = " + temporalHost);
 
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
+
+    if (configs.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+      KubePortManagerSingleton.init(configs.getTemporalWorkerPorts());
+    }
 
     final ProcessFactory jobProcessFactory = getJobProcessFactory(configs);
     final ProcessFactory orchestratorProcessFactory = getOrchestratorProcessFactory(configs);
