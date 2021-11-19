@@ -114,8 +114,8 @@ class AuthSpecification(BaseModel):
 
 
 class AuthFlowType(Enum):
-    oauth1_0 = "oauth1.0"
     oauth2_0 = "oauth2.0"
+    oauth1_0 = "oauth1.0"
 
 
 class OAuthConfigSpecification(BaseModel):

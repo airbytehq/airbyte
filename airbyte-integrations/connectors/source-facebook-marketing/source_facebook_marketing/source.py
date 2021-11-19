@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from datetime import datetime
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Type
