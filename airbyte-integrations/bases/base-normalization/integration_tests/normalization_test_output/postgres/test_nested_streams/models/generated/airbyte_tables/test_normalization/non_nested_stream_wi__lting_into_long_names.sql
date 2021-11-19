@@ -5,6 +5,7 @@
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('non_nested_stream_wi__lting_into_long_names_ab3') }}
 select
     {{ adapter.quote('id') }},
     {{ adapter.quote('date') }},

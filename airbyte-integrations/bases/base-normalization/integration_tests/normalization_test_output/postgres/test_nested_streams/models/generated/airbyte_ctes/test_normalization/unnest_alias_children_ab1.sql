@@ -4,6 +4,7 @@
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: {{ ref('unnest_alias') }}
 {{ unnest_cte('unnest_alias', 'unnest_alias', 'children') }}
 select
     _airbyte_unnest_alias_hashid,

@@ -4,6 +4,7 @@
     tags = [ "nested" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('unnest_alias_childre__column___with__quotes_ab3') }}
 select
     _airbyte_owner_hashid,
     currency,

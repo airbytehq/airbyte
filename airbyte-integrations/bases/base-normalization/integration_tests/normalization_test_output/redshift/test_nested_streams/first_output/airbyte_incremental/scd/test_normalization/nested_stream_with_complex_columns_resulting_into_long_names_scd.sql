@@ -8,11 +8,12 @@
       compound sortkey(_airbyte_active_row,_airbyte_unique_key_scd,_airbyte_emitted_at)
   as (
     
+-- depends_on: ref('nested_stream_with_complex_columns_resulting_into_long_names_stg')
 with
 
 input_data as (
     select *
-    from "integrationtests"._airbyte_test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_ab3"
+    from "integrationtests"._airbyte_test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_stg"
     -- nested_stream_with_complex_columns_resulting_into_long_names from "integrationtests".test_normalization._airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names
 ),
 

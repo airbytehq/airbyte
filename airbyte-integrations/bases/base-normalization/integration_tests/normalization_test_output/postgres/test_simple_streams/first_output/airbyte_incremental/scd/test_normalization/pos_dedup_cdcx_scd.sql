@@ -4,11 +4,12 @@
   create  table "postgres".test_normalization."pos_dedup_cdcx_scd"
   as (
     
+-- depends_on: ref('pos_dedup_cdcx_stg')
 with
 
 input_data as (
     select *
-    from "postgres"._airbyte_test_normalization."pos_dedup_cdcx_ab3"
+    from "postgres"._airbyte_test_normalization."pos_dedup_cdcx_stg"
     -- pos_dedup_cdcx from "postgres".test_normalization._airbyte_raw_pos_dedup_cdcx
 ),
 

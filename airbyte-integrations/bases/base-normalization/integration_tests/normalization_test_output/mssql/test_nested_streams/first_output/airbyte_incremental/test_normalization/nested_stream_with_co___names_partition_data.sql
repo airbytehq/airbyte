@@ -23,6 +23,7 @@
 with __dbt__CTE__nested_stream_with_co___names_partition_data_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: "test_normalization".test_normalization."nested_stream_with_co___long_names_partition"
 
 select
     _airbyte_partition_hashid,
@@ -47,6 +48,7 @@ and "DATA" is not null
 ),  __dbt__CTE__nested_stream_with_co___names_partition_data_ab2 as (
 
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: __dbt__CTE__nested_stream_with_co___names_partition_data_ab1
 select
     _airbyte_partition_hashid,
     cast(currency as 
@@ -61,6 +63,7 @@ where 1 = 1
 ),  __dbt__CTE__nested_stream_with_co___names_partition_data_ab3 as (
 
 -- SQL model to build a hash column based on the values of this record
+-- depends_on: __dbt__CTE__nested_stream_with_co___names_partition_data_ab2
 select
     convert(varchar(32), HashBytes(''md5'',  coalesce(cast(
     
@@ -76,6 +79,7 @@ from __dbt__CTE__nested_stream_with_co___names_partition_data_ab2 tmp
 where 1 = 1
 
 )-- Final base SQL model
+-- depends_on: __dbt__CTE__nested_stream_with_co___names_partition_data_ab3
 select
     _airbyte_partition_hashid,
     currency,

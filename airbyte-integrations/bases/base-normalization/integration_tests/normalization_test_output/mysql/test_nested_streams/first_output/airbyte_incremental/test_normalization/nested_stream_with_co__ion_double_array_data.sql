@@ -7,6 +7,7 @@
 with __dbt__CTE__nested_stream_with_co_3double_array_data_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: test_normalization.`nested_stream_with_co___long_names_partition`
 with numbers as (
         
 
@@ -70,6 +71,7 @@ and double_array_data is not null
 ),  __dbt__CTE__nested_stream_with_co_3double_array_data_ab2 as (
 
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: __dbt__CTE__nested_stream_with_co_3double_array_data_ab1
 select
     _airbyte_partition_hashid,
     cast(id as char) as id,
@@ -85,6 +87,7 @@ where 1 = 1
 ),  __dbt__CTE__nested_stream_with_co_3double_array_data_ab3 as (
 
 -- SQL model to build a hash column based on the values of this record
+-- depends_on: __dbt__CTE__nested_stream_with_co_3double_array_data_ab2
 select
     md5(cast(concat(coalesce(cast(_airbyte_partition_hashid as char), ''), '-', coalesce(cast(id as char), '')) as char)) as _airbyte_double_array_data_hashid,
     tmp.*
@@ -93,6 +96,7 @@ from __dbt__CTE__nested_stream_with_co_3double_array_data_ab2 tmp
 where 1 = 1
 
 )-- Final base SQL model
+-- depends_on: __dbt__CTE__nested_stream_with_co_3double_array_data_ab3
 select
     _airbyte_partition_hashid,
     id,

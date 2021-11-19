@@ -5,6 +5,7 @@
     tags = [ "nested" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('unnest_alias_children_owner_ab3') }}
 select
     _airbyte_children_hashid,
     owner_id,

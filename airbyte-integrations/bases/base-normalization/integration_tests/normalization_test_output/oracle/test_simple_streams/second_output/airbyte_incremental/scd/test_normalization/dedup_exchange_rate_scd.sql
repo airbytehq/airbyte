@@ -4,11 +4,12 @@
   
   as
     
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 
 input_data as (
     select *
-    from test_normalization.dedup_exchange_rate_ab3
+    from test_normalization.dedup_exchange_rate_stg
     -- dedup_exchange_rate from test_normalization.airbyte_raw_dedup_exchange_rate
 ),
 

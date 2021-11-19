@@ -5,6 +5,7 @@
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition') }}
 {{ unnest_cte('nested_stream_with_complex_columns_resulting_into_long_names_partition', 'partition', 'double_array_data') }}
 select
     _airbyte_partition_hashid,

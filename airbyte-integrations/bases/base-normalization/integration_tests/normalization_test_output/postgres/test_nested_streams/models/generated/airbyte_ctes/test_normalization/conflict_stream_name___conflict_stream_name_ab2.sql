@@ -5,6 +5,7 @@
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ ref('conflict_stream_name___conflict_stream_name_ab1') }}
 select
     _airbyte_conflict_stream_name_2_hashid,
     cast(groups as {{ dbt_utils.type_string() }}) as groups,

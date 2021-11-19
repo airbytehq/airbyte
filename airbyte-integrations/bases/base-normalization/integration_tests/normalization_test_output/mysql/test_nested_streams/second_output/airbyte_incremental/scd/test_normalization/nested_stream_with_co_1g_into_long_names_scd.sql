@@ -4,11 +4,12 @@
     test_normalization.`nested_stream_with_co_1g_into_long_names_scd__dbt_tmp`
   as (
     
+-- depends_on: ref('nested_stream_with_co_1g_into_long_names_stg')
 with
 
 input_data as (
     select *
-    from _airbyte_test_normalization.`nested_stream_with_co_1g_into_long_names_ab3`
+    from _airbyte_test_normalization.`nested_stream_with_co_1g_into_long_names_stg`
     -- nested_stream_with_co__lting_into_long_names from test_normalization._airbyte_raw_nested_s__lting_into_long_names
 ),
 

@@ -6,6 +6,7 @@
 with __dbt__cte__NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_DATA_AB1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: "AIRBYTE_DATABASE".TEST_NORMALIZATION."NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION"
 
 select
     _AIRBYTE_PARTITION_HASHID,
@@ -22,6 +23,7 @@ and DATA is not null
 ),  __dbt__cte__NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_DATA_AB2 as (
 
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: __dbt__cte__NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_DATA_AB1
 select
     _AIRBYTE_PARTITION_HASHID,
     cast(CURRENCY as 
@@ -37,6 +39,7 @@ where 1 = 1
 ),  __dbt__cte__NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_DATA_AB3 as (
 
 -- SQL model to build a hash column based on the values of this record
+-- depends_on: __dbt__cte__NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_DATA_AB2
 select
     md5(cast(coalesce(cast(_AIRBYTE_PARTITION_HASHID as 
     varchar
@@ -51,6 +54,7 @@ from __dbt__cte__NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PA
 where 1 = 1
 
 )-- Final base SQL model
+-- depends_on: __dbt__cte__NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_DATA_AB3
 select
     _AIRBYTE_PARTITION_HASHID,
     CURRENCY,
