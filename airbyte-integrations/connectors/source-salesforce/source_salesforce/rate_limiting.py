@@ -37,7 +37,7 @@ def default_backoff_handler(max_tries: int, factor: int, **kwargs):
                 give_up = False
 
         if give_up:
-            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}")
+            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}, body: {exc.response.json()}")
         return give_up
 
     return backoff.on_exception(

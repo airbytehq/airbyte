@@ -4,8 +4,10 @@
 
 package io.airbyte.oauth.flows.facebook;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.persistence.ConfigRepository;
 import java.net.http.HttpClient;
+import java.util.function.Supplier;
 
 public class FacebookPagesOAuthFlow extends FacebookOAuthFlow {
 
@@ -13,6 +15,11 @@ public class FacebookPagesOAuthFlow extends FacebookOAuthFlow {
 
   public FacebookPagesOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
+  }
+
+  @VisibleForTesting
+  FacebookPagesOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
+    super(configRepository, httpClient, stateSupplier);
   }
 
   @Override

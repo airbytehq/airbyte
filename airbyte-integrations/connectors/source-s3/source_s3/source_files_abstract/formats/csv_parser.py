@@ -21,7 +21,6 @@ class CsvParser(AbstractFileParser):
         return True
 
 
-
     @property
     def format(self) -> CsvFormat:
         if not hasattr(self, "format_model"):
