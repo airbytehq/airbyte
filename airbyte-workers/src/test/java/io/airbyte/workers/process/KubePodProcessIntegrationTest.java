@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.test.annotations.IntegrationTest;
+import io.airbyte.test.annotations.SlowIntegrationTest;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
@@ -40,8 +40,8 @@ import org.junit.jupiter.api.Timeout;
 // Must have a timeout on this class because it tests child processes that may misbehave; otherwise
 // this can hang forever during failures.
 @Timeout(value = 5,
-         unit = TimeUnit.MINUTES)
-@IntegrationTest
+    unit = TimeUnit.MINUTES)
+@SlowIntegrationTest
 public class KubePodProcessIntegrationTest {
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
