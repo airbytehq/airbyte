@@ -89,7 +89,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "url_base": endpoint,
             "authenticator": auth,
             "aws_signature": aws_signature,
-            "replication_start_date": config.replication_start_date,            
+            "replication_start_date": config.replication_start_date,
             "marketplace_ids": [marketplace_id],
         }
         return stream_kwargs

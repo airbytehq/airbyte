@@ -135,16 +135,16 @@ class ReportsAmazonSPStream(Stream, ABC):
         self,
         url_base: str,
         aws_signature: AWSSignature,
-        replication_start_date: str,        
+        replication_start_date: str,
         marketplace_ids: List[str],
-        authenticator: HttpAuthenticator = NoAuth(),        
+        authenticator: HttpAuthenticator = NoAuth(),
     ):
         self._authenticator = authenticator
         self._session = requests.Session()
         self._url_base = url_base
         self._session.auth = aws_signature
         self._replication_start_date = replication_start_date
-        self.marketplace_ids = marketplace_ids        
+        self.marketplace_ids = marketplace_ids
 
     @property
     def url_base(self) -> str:
