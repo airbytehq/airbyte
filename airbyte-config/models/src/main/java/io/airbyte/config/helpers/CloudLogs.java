@@ -63,8 +63,8 @@ public interface CloudLogs {
   }
 
   /**
-   * Logs are configured to go to a Minio instance if the S3MinioEndpoint configuration specifically is set, along with the
-   * other default S3 logging configurations.
+   * Logs are configured to go to a Minio instance if the S3MinioEndpoint configuration specifically
+   * is set, along with the other default S3 logging configurations.
    *
    * @param configs contains the environment variables to check
    * @return boolean indicating if logs are configured to be sent to minio
@@ -75,8 +75,8 @@ public interface CloudLogs {
   }
 
   /**
-   * Logs are configured to go to S3 if the S3LogBucketRegion configuration specifically is set, along with the
-   * other default S3 logging configurations.
+   * Logs are configured to go to S3 if the S3LogBucketRegion configuration specifically is set, along
+   * with the other default S3 logging configurations.
    *
    * @param configs contains the configuration values to check
    * @return boolean indicating if logs are configured to be sent to S3
