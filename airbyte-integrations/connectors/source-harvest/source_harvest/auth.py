@@ -12,6 +12,7 @@ class HarvestMixin:
     Mixin class for providing additional HTTP header for specifying account ID
     https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/
     """
+
     def __init__(self, *, account_id: str, account_id_header: str = "Harvest-Account-ID", **kwargs):
         super().__init__(**kwargs)
         self.account_id = account_id

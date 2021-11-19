@@ -361,10 +361,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   /**
    * @param database - The database where from privileges for tables will be consumed
    * @param schema - The schema where from privileges for tables will be consumed
-   * @return Set with privileges for tables for current DB-session user
-   * The method is responsible for SELECT-ing the table with privileges.
-   * In some cases such SELECT doesn't require (e.g. in Oracle DB - the schema is the user,
-   * you cannot REVOKE a privilege on a table from its owner).
+   * @return Set with privileges for tables for current DB-session user The method is responsible for
+   *         SELECT-ing the table with privileges. In some cases such SELECT doesn't require (e.g. in
+   *         Oracle DB - the schema is the user, you cannot REVOKE a privilege on a table from its
+   *         owner).
    * @throws SQLException
    */
   public <T> Set<T> getPrivilegesTableForCurrentUser(JdbcDatabase database, String schema) throws SQLException {

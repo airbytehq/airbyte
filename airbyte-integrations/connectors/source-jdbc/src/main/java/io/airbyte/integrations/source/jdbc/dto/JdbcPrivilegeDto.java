@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.jdbc.dto;
 
 import com.google.common.base.Objects;
@@ -69,6 +73,7 @@ public class JdbcPrivilegeDto {
     public JdbcPrivilegeDto build() {
       return new JdbcPrivilegeDto(grantee, tableName, schemaName, privilege);
     }
+
   }
 
   @Override
@@ -98,4 +103,5 @@ public class JdbcPrivilegeDto {
         ", privilege='" + privilege + '\'' +
         '}';
   }
+
 }

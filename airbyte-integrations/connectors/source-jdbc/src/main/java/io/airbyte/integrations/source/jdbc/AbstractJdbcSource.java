@@ -170,7 +170,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
       return tablesWithSelectGrantPrivilege.stream()
           .anyMatch(e -> e.getSchemaName().equals(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
           && tablesWithSelectGrantPrivilege.stream()
-          .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
+              .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
           && !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
     };
   }
