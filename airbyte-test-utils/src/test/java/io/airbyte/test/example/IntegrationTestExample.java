@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 public class IntegrationTestExample {
 
   @Test
-  public void longTest() throws InterruptedException {
+  public void longTest() {
     log.error("Start test - integration");
     log.error("end test - integration");
   }
