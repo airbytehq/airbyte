@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Timeout;
 // Must have a timeout on this class because it tests child processes that may misbehave; otherwise
 // this can hang forever during failures.
 @Timeout(value = 5,
-    unit = TimeUnit.MINUTES)
+         unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));

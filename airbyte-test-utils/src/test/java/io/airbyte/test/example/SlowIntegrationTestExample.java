@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.test.example;
 
 import io.airbyte.test.annotations.IntegrationTest;
@@ -16,4 +20,5 @@ public class SlowIntegrationTestExample {
     log.error("Start test - slow integration");
     log.error("end test - slow integration");
   }
+
 }
