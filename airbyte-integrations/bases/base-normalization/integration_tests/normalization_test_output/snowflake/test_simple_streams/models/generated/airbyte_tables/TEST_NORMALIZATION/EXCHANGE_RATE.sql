@@ -5,6 +5,7 @@
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('EXCHANGE_RATE_AB3') }}
 select
     ID,
     CURRENCY,

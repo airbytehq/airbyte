@@ -5,6 +5,7 @@
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: {{ ref('conflict_stream_name') }}
 select
     _airbyte_conflict_stream_name_hashid,
     {{ json_extract('table_alias', 'conflict_stream_name', ['conflict_stream_name'], ['conflict_stream_name']) }} as conflict_stream_name,

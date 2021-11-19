@@ -318,10 +318,10 @@ To enable basic normalization \(which is optional\), you can toggle it on or dis
 
 ## Incremental runs
 
-When the source is configured with incremental sync modes such as ([incremental append](connections/incremental-append.md) or  [incremental deduped history](connections/incremental-deduped-history.md)), only rows that have changed in the source are transferred over the network and written by the destination connector.
+When the source is configured with sync modes compatible with incremental transformations (using append on destination) such as ( [full_refresh_append](connections/full-refresh-append.md), [incremental append](connections/incremental-append.md) or  [incremental deduped history](connections/incremental-deduped-history.md)), only rows that have changed in the source are transferred over the network and written by the destination connector.
 Normalization will then try to build the normalized tables incrementally as the rows in the raw tables that have been created or updated since the last time dbt ran. As such, on each dbt run, the models get built incrementally. This limits the amount of data that needs to be transformed, vastly reducing the runtime of the transformations. This improves warehouse performance and reduces compute costs.
 Because normalization can be either run incrementally and, or, in full refresh, a technical column `_airbyte_normalized_at` can serve to track when was the last time a record has been transformed and written by normalization.
-This may be greatly diverge from the `_airbyte_emitted_at` value as the normalized tables could be totally re-built at a latter time from the data stored in the `_airbyte_raw` tables.
+This may greatly diverge from the `_airbyte_emitted_at` value as the normalized tables could be totally re-built at a latter time from the data stored in the `_airbyte_raw` tables.
 
 ## Partitioning, clustering, sorting, indexing
 
@@ -329,6 +329,8 @@ Normalization produces tables that are partitioned, clustered, sorted or indexed
 
 In general, normalization needs to do lookup on the last emitted_at column to know if a record is freshly produced and need to be
 incrementally processed or not. But in certain models, such as SCD tables for example, we also need to retrieve older data to update their type 2 SCD end_date and active_row flags, thus a different partitioning scheme is used to optimize that use case.
+ 
+On Postgres destination, an additional table suffixed with `_stg` for every stream replicated in  [incremental deduped history](connections/incremental-deduped-history.md) needs to be persisted (in a different staging schema) for incremental transformations to work because of a [limitation](https://github.com/dbt-labs/docs.getdbt.com/issues/335#issuecomment-694199569).
 
 ## Extending Basic Normalization
 
@@ -348,6 +350,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- | :--- |
+| 0.32.5-alpha | 0.1.60 | 2021-11-22 | [\#8088](https://github.com/airbytehq/airbyte/pull/8088) | Speed-up incremental queries for SCD table on Snowflake |
 | 0.30.32-alpha | 0.1.59 | 2021-11-08 | [\#7669](https://github.com/airbytehq/airbyte/pull/7169) | Fix nested incremental dbt |
 | 0.30.24-alpha | 0.1.57 | 2021-10-26 | [\#7162](https://github.com/airbytehq/airbyte/pull/7162) | Implement incremental dbt updates |
 | 0.30.16-alpha | 0.1.52 | 2021-10-07 | [\#6379](https://github.com/airbytehq/airbyte/pull/6379) | Handle empty string for date and date-time format |
