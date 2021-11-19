@@ -720,10 +720,14 @@ public abstract class DestinationAcceptanceTest {
 
     final JsonNode config = getConfig();
 
-    // This may throw IllegalStateException "Requesting normalization, but it is not included in the normalization mappings"
-    // We indeed require normalization implementation of the 'transform_config' function for this destination,
-    // because we make sure to install required dbt dependency in the normalization docker image in order to run
-    // this test successfully and that we are able to convert a destination 'config.json' into a dbt 'profiles.yml'
+    // This may throw IllegalStateException "Requesting normalization, but it is not included in the
+    // normalization mappings"
+    // We indeed require normalization implementation of the 'transform_config' function for this
+    // destination,
+    // because we make sure to install required dbt dependency in the normalization docker image in
+    // order to run
+    // this test successfully and that we are able to convert a destination 'config.json' into a dbt
+    // 'profiles.yml'
     // (we don't actually rely on normalization running anything else here though)
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
         getImageName(),
