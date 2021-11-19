@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "e7dd2ae5-6905-46db-a609-84dfcf54355c",
-  "name": "Phabricator",
-  "dockerRepository": "farosai/airbyte-phabricator-source",
-  "dockerImageTag": "0.1.23",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/phabricator",
-  "icon": "phabricator.svg"
-}
