@@ -128,9 +128,7 @@ public class DestinationDefinitionsHandler {
         .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
 
     final boolean imageTagHasChanged = !currentDestination.getDockerImageTag().equals(destinationDefinitionUpdate.getDockerImageTag());
-    // TODO (lmossman): remove null spec condition when the spec field becomes required on the
-    // definition struct
-    final ConnectorSpecification spec = (imageTagHasChanged || currentDestination.getSpec() == null)
+    final ConnectorSpecification spec = imageTagHasChanged
         ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag())
         : currentDestination.getSpec();
 

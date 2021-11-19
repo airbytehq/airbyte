@@ -355,8 +355,7 @@ public class RunMigrationTest {
         jobPersistence,
         configRepository,
         new AirbyteVersion(TARGET_VERSION),
-        YamlSeedConfigPersistence.getDefault(),
-        mock(SpecFetcher.class))) {
+        YamlSeedConfigPersistence.getDefault())) {
       runMigration.run();
     }
   }

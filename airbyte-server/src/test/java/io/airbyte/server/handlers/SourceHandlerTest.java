@@ -33,7 +33,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.ConnectorSpecificationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
@@ -55,7 +54,6 @@ class SourceHandlerTest {
   private SourceHandler sourceHandler;
   private JsonSchemaValidator validator;
   private ConnectionsHandler connectionsHandler;
-  private SpecFetcher specFetcher;
   private ConfigurationUpdate configurationUpdate;
   private Supplier<UUID> uuidGenerator;
   private JsonSecretsProcessor secretsProcessor;
@@ -68,7 +66,6 @@ class SourceHandlerTest {
     configRepository = mock(ConfigRepository.class);
     validator = mock(JsonSchemaValidator.class);
     connectionsHandler = mock(ConnectionsHandler.class);
-    specFetcher = mock(SpecFetcher.class);
     configurationUpdate = mock(ConfigurationUpdate.class);
     uuidGenerator = mock(Supplier.class);
     secretsProcessor = mock(JsonSecretsProcessor.class);
@@ -78,7 +75,8 @@ class SourceHandlerTest {
         .withName("marketo")
         .withDockerRepository("thebestrepo")
         .withDockerImageTag("thelatesttag")
-        .withDocumentationUrl("https://wikipedia.org");
+        .withDocumentationUrl("https://wikipedia.org")
+        .withSpec(connectorSpecification);
 
     imageName = DockerUtils.getTaggedImageName(standardSourceDefinition.getDockerRepository(), standardSourceDefinition.getDockerImageTag());
 
@@ -91,8 +89,7 @@ class SourceHandlerTest {
 
     sourceConnection = SourceHelpers.generateSource(standardSourceDefinition.getSourceDefinitionId());
 
-    sourceHandler =
-        new SourceHandler(configRepository, validator, specFetcher, connectionsHandler, uuidGenerator, secretsProcessor, configurationUpdate);
+    sourceHandler = new SourceHandler(configRepository, validator, connectionsHandler, uuidGenerator, secretsProcessor, configurationUpdate);
   }
 
   @Test
@@ -105,7 +102,6 @@ class SourceHandlerTest {
 
     when(uuidGenerator.get()).thenReturn(sourceConnection.getSourceId());
     when(configRepository.getSourceConnection(sourceConnection.getSourceId())).thenReturn(sourceConnection);
-    when(specFetcher.getSpec(standardSourceDefinition)).thenReturn(connectorSpecification);
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(secretsProcessor.maskSecrets(sourceCreate.getConnectionConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
@@ -150,7 +146,6 @@ class SourceHandlerTest {
     when(configRepository.getSourceConnection(sourceConnection.getSourceId()))
         .thenReturn(sourceConnection)
         .thenReturn(expectedSourceConnection);
-    when(specFetcher.getSpec(standardSourceDefinition)).thenReturn(connectorSpecification);
     when(configurationUpdate.source(sourceConnection.getSourceId(), updatedSourceName, newConfiguration))
         .thenReturn(expectedSourceConnection);
 
@@ -174,7 +169,6 @@ class SourceHandlerTest {
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
-    when(specFetcher.getSpec(standardSourceDefinition)).thenReturn(connectorSpecification);
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());
 
@@ -206,7 +200,6 @@ class SourceHandlerTest {
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
-    when(specFetcher.getSpec(standardSourceDefinition)).thenReturn(connectorSpecification);
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());
 
@@ -225,7 +218,6 @@ class SourceHandlerTest {
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
-    when(specFetcher.getSpec(standardSourceDefinition)).thenReturn(connectorSpecification);
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());
 
@@ -261,7 +253,6 @@ class SourceHandlerTest {
     when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
     when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
-    when(specFetcher.getSpec(standardSourceDefinition)).thenReturn(connectorSpecification);
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());

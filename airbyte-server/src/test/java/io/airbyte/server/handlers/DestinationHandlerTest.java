@@ -34,7 +34,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.ConnectorSpecificationHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
@@ -55,7 +54,6 @@ class DestinationHandlerTest {
   private DestinationConnection destinationConnection;
   private DestinationHandler destinationHandler;
   private ConnectionsHandler connectionsHandler;
-  private SpecFetcher specFetcher;
   private ConfigurationUpdate configurationUpdate;
   private JsonSchemaValidator validator;
   private Supplier<UUID> uuidGenerator;
@@ -70,7 +68,6 @@ class DestinationHandlerTest {
     validator = mock(JsonSchemaValidator.class);
     uuidGenerator = mock(Supplier.class);
     connectionsHandler = mock(ConnectionsHandler.class);
-    specFetcher = mock(SpecFetcher.class);
     configurationUpdate = mock(ConfigurationUpdate.class);
     secretsProcessor = mock(JsonSecretsProcessor.class);
 
@@ -79,7 +76,8 @@ class DestinationHandlerTest {
         .withName("db2")
         .withDockerRepository("thebestrepo")
         .withDockerImageTag("thelatesttag")
-        .withDocumentationUrl("https://wikipedia.org");
+        .withDocumentationUrl("https://wikipedia.org")
+        .withSpec(connectorSpecification);
 
     imageName =
         DockerUtils.getTaggedImageName(standardDestinationDefinition.getDockerRepository(), standardDestinationDefinition.getDockerImageTag());
@@ -99,7 +97,7 @@ class DestinationHandlerTest {
     destinationConnection = DestinationHelpers.generateDestination(standardDestinationDefinition.getDestinationDefinitionId());
 
     destinationHandler =
-        new DestinationHandler(configRepository, validator, specFetcher, connectionsHandler, uuidGenerator, secretsProcessor, configurationUpdate);
+        new DestinationHandler(configRepository, validator, connectionsHandler, uuidGenerator, secretsProcessor, configurationUpdate);
   }
 
   @Test
@@ -110,7 +108,6 @@ class DestinationHandlerTest {
         .thenReturn(destinationConnection);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
-    when(specFetcher.getSpec(standardDestinationDefinition)).thenReturn(connectorSpecification);
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(destinationConnection.getConfiguration());
 
@@ -159,7 +156,6 @@ class DestinationHandlerTest {
         .thenReturn(expectedDestinationConnection);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
-    when(specFetcher.getSpec(standardDestinationDefinition)).thenReturn(connectorSpecification);
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
 
     destinationHandler.deleteDestination(destinationId);
@@ -196,7 +192,6 @@ class DestinationHandlerTest {
         .thenReturn(standardDestinationDefinition);
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId()))
         .thenReturn(expectedDestinationConnection);
-    when(specFetcher.getSpec(standardDestinationDefinition)).thenReturn(connectorSpecification);
     when(configurationUpdate.destination(destinationConnection.getDestinationId(), updatedDestName, newConfiguration))
         .thenReturn(expectedDestinationConnection);
 
@@ -229,7 +224,6 @@ class DestinationHandlerTest {
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
-    when(specFetcher.getSpec(standardDestinationDefinition)).thenReturn(connectorSpecification);
 
     final DestinationRead actualDestinationRead = destinationHandler.getDestination(destinationIdRequestBody);
 
@@ -263,7 +257,6 @@ class DestinationHandlerTest {
 
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
     when(configRepository.listDestinationConnection()).thenReturn(Lists.newArrayList(destinationConnection));
-    when(specFetcher.getSpec(standardDestinationDefinition)).thenReturn(connectorSpecification);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
@@ -288,7 +281,6 @@ class DestinationHandlerTest {
 
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
     when(configRepository.listDestinationConnection()).thenReturn(Lists.newArrayList(destinationConnection));
-    when(specFetcher.getSpec(standardDestinationDefinition)).thenReturn(connectorSpecification);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))

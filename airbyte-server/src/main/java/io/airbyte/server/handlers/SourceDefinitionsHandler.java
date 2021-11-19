@@ -122,9 +122,7 @@ public class SourceDefinitionsHandler {
         configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
 
     final boolean imageTagHasChanged = !currentSourceDefinition.getDockerImageTag().equals(sourceDefinitionUpdate.getDockerImageTag());
-    // TODO (lmossman): remove null spec condition when the spec field becomes required on the
-    // definition struct
-    final ConnectorSpecification spec = (imageTagHasChanged || currentSourceDefinition.getSpec() == null)
+    final ConnectorSpecification spec = imageTagHasChanged
         ? getSpecForImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag())
         : currentSourceDefinition.getSpec();
 
