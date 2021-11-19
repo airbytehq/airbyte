@@ -234,7 +234,7 @@ jobs:
       - name: Integration test
         run: |
           branch=$(git rev-parse --abbrev-ref HEAD)
-          if [[ $branch == bump-version* ]] ;
+          if [[ $branch == bump-version* || $branch == master ]] ;
           then
               SUB_BUILD=PLATFORM ./gradlew newIntegrationTest slowIntegrationTest
           else
