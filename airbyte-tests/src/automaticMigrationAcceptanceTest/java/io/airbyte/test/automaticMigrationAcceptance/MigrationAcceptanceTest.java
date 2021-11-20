@@ -66,12 +66,13 @@ public class MigrationAcceptanceTest {
     } else {
       final Properties prop = new Properties();
       prop.load(new FileInputStream(ENV_FILE));
-      targetVersion = "0.32.0-alpha";
+      targetVersion = prop.getProperty("VERSION");
     }
     LOGGER.info("Using version: {} as target version", targetVersion);
 
     firstRun();
-    secondRun(targetVersion);
+    majorVersionBumpRun();
+    finalRun(targetVersion);
   }
 
   private Consumer<String> logConsumerForServer(final Set<String> expectedLogs) {
@@ -113,16 +114,44 @@ public class MigrationAcceptanceTest {
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  private void secondRun(final String targetVersion) throws Exception {
+  private void majorVersionBumpRun() throws Exception {
     final Set<String> logsToExpect = new HashSet<>();
-    logsToExpect.add("Version: " + targetVersion);
-    logsToExpect.add("Starting migrations. Current version: 0.17.0-alpha-db-patch, Target version: " + targetVersionWithoutPatch(targetVersion));
+    logsToExpect.add("Version: 0.32.0-alpha");
+    logsToExpect.add("Starting migrations. Current version: 0.17.0-alpha-db-patch, Target version: 0.32.0-alpha");
     logsToExpect.add("Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.");
     logsToExpect.add("Migrating from version: 0.18.0-alpha to version 0.19.0-alpha.");
     logsToExpect.add("Migrating from version: 0.19.0-alpha to version 0.20.0-alpha.");
     logsToExpect.add("Migrating from version: 0.20.0-alpha to version 0.21.0-alpha.");
     logsToExpect.add("Migrating from version: 0.22.0-alpha to version 0.23.0-alpha.");
-    logsToExpect.add("Migrations complete. Now on version: " + targetVersionWithoutPatch(targetVersion));
+    logsToExpect.add("Migrations complete. Now on version: " + targetVersionWithoutPatch("0.32.0-alpha"));
+
+    final AirbyteTestContainer airbyteTestContainer =
+        new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose-migration-test-0-32-0-alpha.yaml").toURI()))
+            .setEnv(new File(Resources.getResource("env-file-migration-test-0-32-0.env").toURI()))
+            // override to use test mounts.
+            .setEnvVariable("DATA_DOCKER_MOUNT", "airbyte_data_migration_test")
+            .setEnvVariable("DB_DOCKER_MOUNT", "airbyte_db_migration_test")
+            .setEnvVariable("WORKSPACE_DOCKER_MOUNT", "airbyte_workspace_migration_test")
+            .setEnvVariable("LOCAL_ROOT", "/tmp/airbyte_local_migration_test")
+            .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
+            .setLogListener("server", logConsumerForServer(logsToExpect))
+            .build();
+
+    airbyteTestContainer.start();
+
+    final ApiClient apiClient = getApiClient();
+    healthCheck(apiClient);
+
+    assertTrue(logsToExpect.isEmpty(), "Missing logs: " + logsToExpect);
+    assertDataFromApi(apiClient);
+
+    airbyteTestContainer.stopRetainVolumes();
+  }
+
+  @SuppressWarnings("UnstableApiUsage")
+  private void finalRun(final String targetVersion) throws Exception {
+    final Set<String> logsToExpect = new HashSet<>();
+    logsToExpect.add("Version: " + targetVersion);
 
     final AirbyteTestContainer airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose.yaml").toURI()))
         .setEnv(ENV_FILE)
