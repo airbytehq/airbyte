@@ -194,7 +194,7 @@ public class AcceptanceTests {
           .setEnvVariable("LOCAL_ROOT", "/tmp/airbyte_local_migration_test")
           .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
           .build();
-      airbyteTestContainer.start();
+      airbyteTestContainer.startBlocking();
     } else {
       LOGGER.info("Using external deployment of airbyte.");
     }
