@@ -19,6 +19,7 @@ public class SlowIntegrationTestExample {
   public void longTest() {
     log.error("Start test - slow integration");
     log.error("end test - slow integration");
+    throw new RuntimeException("Noooooooo");
   }
 
 }
