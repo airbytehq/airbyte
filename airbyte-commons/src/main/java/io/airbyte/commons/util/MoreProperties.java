@@ -11,9 +11,16 @@ import java.util.Properties;
 
 public class MoreProperties {
 
-  public static Properties envFileToProperties(final File file) throws IOException {
+  /**
+   * Read an .env file into a Properties object.
+   *
+   * @param envFile - .env file to read
+   * @return properties object parsed from the contents of the .env
+   * @throws IOException throws an exception if there are errors while reading the file.
+   */
+  public static Properties envFileToProperties(final File envFile) throws IOException {
     final Properties prop = new Properties();
-    prop.load(new FileInputStream(file));
+    prop.load(new FileInputStream(envFile));
     return prop;
   }
 

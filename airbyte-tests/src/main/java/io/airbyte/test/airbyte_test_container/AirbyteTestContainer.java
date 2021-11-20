@@ -245,11 +245,6 @@ public class AirbyteTestContainer {
       this.env = new HashMap<>();
     }
 
-    // public Builder setEnv(final File envFile) throws IOException {
-    // this.env.putAll(prepareDockerComposeEnvVariables(envFile));
-    // return this;
-    // }
-
     public Builder setEnv(final Properties env) {
       this.env.putAll(Maps.fromProperties(env));
       return this;
