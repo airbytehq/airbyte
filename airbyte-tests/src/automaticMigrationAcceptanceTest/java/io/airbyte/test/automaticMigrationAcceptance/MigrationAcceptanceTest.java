@@ -132,24 +132,6 @@ public class MigrationAcceptanceTest {
     }
   }
 
-  private static class WaitForLogLine {
-
-    AtomicBoolean hasSeenLine = new AtomicBoolean();
-
-    public Consumer<String> getListener(final String stringToListenFor) {
-      return (logLine) -> {
-        if (logLine.contains(stringToListenFor)) {
-          hasSeenLine.set(true);
-        }
-      };
-    }
-
-    public Supplier<Boolean> hasSeenLine() {
-      return () -> hasSeenLine.get();
-    }
-
-  }
-
   private void runAirbyteAndWaitForUpgradeException(final File dockerComposeFile, final Properties env) throws Exception {
     final WaitForLogLine waitForLogLine = new WaitForLogLine();
     LOGGER.info("Start up Airbyte at version {}", env.get("VERSION"));
@@ -164,6 +146,27 @@ public class MigrationAcceptanceTest {
     final boolean loggedUpgradeException = WaitingUtils.waitForCondition(Duration.ofSeconds(5), Duration.ofMinutes(1), condition);
     airbyteTestContainer.stopRetainVolumes();
     assertTrue(loggedUpgradeException, "Airbyte failed to throw upgrade exception.");
+  }
+
+  /**
+   * Allows the test to listen for a specific log line so that the test can end as soon as that log line has been encountered.
+   */
+  private static class WaitForLogLine {
+
+    final AtomicBoolean hasSeenLine = new AtomicBoolean();
+
+    public Consumer<String> getListener(final String stringToListenFor) {
+      return (logLine) -> {
+        if (logLine.contains(stringToListenFor)) {
+          hasSeenLine.set(true);
+        }
+      };
+    }
+
+    public Supplier<Boolean> hasSeenLine() {
+      return hasSeenLine::get;
+    }
+
   }
 
   private static void assertHealthy() throws ApiException {
