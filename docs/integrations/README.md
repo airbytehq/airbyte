@@ -156,7 +156,3 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Cassandra](destinations/cassandra.md) | Alpha |
 | [Scylla](destinations/scylla.md) | Alpha |
 | [Redis](destinations/redis.md) | Alpha |
-
-
-
-
