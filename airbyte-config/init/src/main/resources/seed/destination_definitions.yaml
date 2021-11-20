@@ -94,6 +94,11 @@
   dockerRepository: airbyte/destination-pulsar
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pulsar
+- name: Redis
+  destinationDefinitionId: d4d3fef9-e319-45c2-881a-bd02ce44cc9f
+  dockerRepository: airbyte/destination-redis
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/redis
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift

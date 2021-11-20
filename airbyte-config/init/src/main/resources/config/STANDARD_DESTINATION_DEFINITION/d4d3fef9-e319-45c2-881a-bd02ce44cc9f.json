@@ -1,0 +1,7 @@
+{
+  "destinationDefinitionId": "d4d3fef9-e319-45c2-881a-bd02ce44cc9f",
+  "name": "Redis",
+  "dockerRepository": "airbyte/destination-redis",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redis"
+}
