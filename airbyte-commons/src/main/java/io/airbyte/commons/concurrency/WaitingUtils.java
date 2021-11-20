@@ -9,7 +9,7 @@ import static java.lang.Thread.sleep;
 import java.time.Duration;
 import java.util.function.Supplier;
 
-public class WaitFor {
+public class WaitingUtils {
 
   /**
    * Wait for a condition or timeout.

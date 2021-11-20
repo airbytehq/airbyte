@@ -10,7 +10,7 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.HealthApi;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
-import io.airbyte.commons.concurrency.WaitFor;
+import io.airbyte.commons.concurrency.WaitingUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -138,7 +138,7 @@ public class AirbyteTestContainer {
       }
     };
 
-    if (!WaitFor.waitForCondition(Duration.ofSeconds(5), Duration.ofMinutes(2), condition)) {
+    if (!WaitingUtils.waitForCondition(Duration.ofSeconds(5), Duration.ofMinutes(2), condition)) {
       throw new IllegalStateException("Airbyte took too long to start. Including last exception.", lastException.get());
     }
   }

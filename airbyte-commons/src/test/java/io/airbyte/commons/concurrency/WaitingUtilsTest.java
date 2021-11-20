@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
-class WaitForTest {
+class WaitingUtilsTest {
 
   @SuppressWarnings("unchecked")
   @Test
@@ -23,7 +23,7 @@ class WaitForTest {
         .thenReturn(false)
         .thenReturn(false)
         .thenReturn(true);
-    assertTrue(WaitFor.waitForCondition(Duration.ofMillis(1), Duration.ofMillis(5), condition));
+    assertTrue(WaitingUtils.waitForCondition(Duration.ofMillis(1), Duration.ofMillis(5), condition));
   }
 
   @SuppressWarnings("unchecked")
@@ -31,7 +31,7 @@ class WaitForTest {
   void testWaitForConditionTimeout() {
     final Supplier<Boolean> condition = mock(Supplier.class);
     when(condition.get()).thenReturn(false);
-    assertFalse(WaitFor.waitForCondition(Duration.ofMillis(1), Duration.ofMillis(5), condition));
+    assertFalse(WaitingUtils.waitForCondition(Duration.ofMillis(1), Duration.ofMillis(5), condition));
   }
 
 }

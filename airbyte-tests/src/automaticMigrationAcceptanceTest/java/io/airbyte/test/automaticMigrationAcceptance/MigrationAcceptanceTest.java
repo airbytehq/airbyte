@@ -29,7 +29,7 @@ import io.airbyte.api.client.model.SourceDefinitionRead;
 import io.airbyte.api.client.model.WorkspaceIdRequestBody;
 import io.airbyte.api.client.model.WorkspaceRead;
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.concurrency.WaitFor;
+import io.airbyte.commons.concurrency.WaitingUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
@@ -161,7 +161,7 @@ public class MigrationAcceptanceTest {
     airbyteTestContainer.startAsync();
 
     final Supplier<Boolean> condition = waitForLogLine.hasSeenLine();
-    final boolean loggedUpgradeException = WaitFor.waitForCondition(Duration.ofSeconds(5), Duration.ofMinutes(1), condition);
+    final boolean loggedUpgradeException = WaitingUtils.waitForCondition(Duration.ofSeconds(5), Duration.ofMinutes(1), condition);
     airbyteTestContainer.stopRetainVolumes();
     assertTrue(loggedUpgradeException, "Airbyte failed to throw upgrade exception.");
   }
