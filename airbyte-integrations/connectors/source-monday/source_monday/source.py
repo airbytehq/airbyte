@@ -99,6 +99,7 @@ class Teams(MondayStream):
     """
     API Documentation: https://api.developer.monday.com/docs/teams-queries
     """
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
@@ -108,6 +109,7 @@ class Teams(MondayStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return {}
+
 
 class Updates(MondayStream):
     """
