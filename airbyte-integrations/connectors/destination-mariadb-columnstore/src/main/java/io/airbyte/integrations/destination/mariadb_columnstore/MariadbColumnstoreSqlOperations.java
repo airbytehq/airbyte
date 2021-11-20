@@ -135,7 +135,7 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
         statement.execute("SET GLOBAL local_infile=true");
       } catch (final Exception e) {
         throw new RuntimeException(
-            "The DB user provided to airbyte was unable to switch on the local_infile attribute on the MySQL server. As an admin user, you will need to run \"SET GLOBAL local_infile = true\" before syncing data with Airbyte.",
+            "The DB user provided to airbyte was unable to switch on the local_infile attribute on the MariaDB server. As an admin user, you will need to run \"SET GLOBAL local_infile = true\" before syncing data with Airbyte.",
             e);
       }
     });
