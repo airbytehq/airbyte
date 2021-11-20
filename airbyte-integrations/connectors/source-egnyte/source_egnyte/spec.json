@@ -1,0 +1,32 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Egnyte Spec",
+    "type": "object",
+    "required": ["client_id", "client_secret", "username", "password"],
+    "additionalProperties": false,
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "description": "This is the key string that was provided to you when you registered your application"
+      },
+      "client_secret": {
+        "type": "string",
+        "description": "This is the secret key that was provided with your key to you when you registered your application"
+      },
+      "username": {
+        "type": "string",
+        "description": "This is the Egnyte username of the user on whose behalf you are acting"
+      },
+      "password": {
+        "type": "string",
+        "description": "This is the Egnyte password of the user"
+      },
+      "folder_path": {
+        "type": "string",
+        "description": "folder path of files that need to be downloaded"
+      }
+    }
+  }
+}
