@@ -52,6 +52,8 @@ class MondayStream(HttpStream, ABC):
         # Monday API return code 200 with and errors key if complexity is too high.
         # https://api.developer.monday.com/docs/complexity-queries
         is_complex_query = response.json().get("errors")
+        if is_complex_query:
+            self.logger.error(response.text)
         return response.status_code == 429 or 500 <= response.status_code < 600 or is_complex_query
 
     @property
@@ -66,7 +68,6 @@ class MondayStream(HttpStream, ABC):
             graphql_params.update(next_page_token)
 
         graphql_query = ",".join([f"{k}:{v}" for k, v in graphql_params.items()])
-
         # Monday uses a query string to pass in environments
         params = {"query": f"query {{ {self.name.lower()} ({graphql_query}) {{ {self.load_schema()} }} }}"}
         return params
@@ -98,6 +99,16 @@ class Teams(MondayStream):
     """
     API Documentation: https://api.developer.monday.com/docs/teams-queries
     """
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        # Stream teams doesn't support pagination
+        params = {"query": f"query {{ {self.name.lower()} () {{ {self.load_schema()} }} }}"}
+        return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return {}
 
 
 class Updates(MondayStream):
