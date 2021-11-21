@@ -4,6 +4,7 @@
 
 |name |status |
 | :--- | :--- |
+| Airtable  | [![source-airtable](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-airtable%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-airtable) |
 | Amazon Seller Partner  | [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-amazon-seller-partner%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-amazon-seller-partner) |
 | Amplitude   | [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-amplitude%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-amplitude) |
 | Apify Dataset   | [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-apify-dataset%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-apify-dataset) |
@@ -59,6 +60,7 @@
 | Mongo DB  | [![source-mongodb-v2](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mongodb-v2%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mongodb-v2) |
 | Monday  | [![source-monday](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-monday%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-monday) |
 | MySQL   | [![source-mysql](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mysql%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mysql) |
+| Notion   | [![source-notion](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-notion%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-notion) |
 | OneSignal   | [![source-onesignal](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-onesignal%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-onesignal) |
 | Oracle DB   | [![source-oracle](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-oracle%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-oracle) |
 | Paypal Transaction   | [![paypal-transaction](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-paypal-transaction%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-paypal-transaction) |
@@ -93,6 +95,7 @@
 | Twilio   | [![source-twilio](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-twilio%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-twilio) |
 | Typeform   | [![source-typeform](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-typeform%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-typeform) |
 | US Census | [![source-us-census](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-us-census%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-us-census) |
+| YouTube Analytics  | [![source-youtube-analytics](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-youtube-analytics%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-youtube-analytics) |
 | Zendesk Chat   | [![source-zendesk-chat](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-chat%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-chat) |
 | Zendesk Support   | [![source-zendesk-support](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-support%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-support) |
 | Zendesk Talk   | [![source-zendesk-talk](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-talk%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-talk) |

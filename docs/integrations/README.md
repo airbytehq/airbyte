@@ -14,6 +14,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 | Connector | Grade |
 | :--- | :--- |
+| [Airtable](sources/airtable.md) | Alpha |
 | [Amazon SQS](sources/amazon-sqs.md) | Alpha |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md) | Alpha |
 | [Amplitude](sources/amplitude.md) | Beta |
@@ -26,7 +27,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [BigCommerce](sources/bigcommerce.md) | Alpha |
 | [BigQuery](sources/bigquery.md) | Beta |
 | [Bing Ads](sources/bing-ads.md) | Beta |
-| [Cart](sources/cart.md) | Beta |
+| [Cart.com](sources/cart.md) | Beta |
 | [Chargebee](sources/chargebee.md) | Alpha |
 | [ClickHouse](sources/clickhouse.md) | Beta |
 | [Close.com](sources/close-com.md) | Beta |
@@ -75,6 +76,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Mixpanel](sources/mixpanel.md) | Beta |
 | [Mongo DB](sources/mongodb-v2.md) | Beta |
 | [MySQL](sources/mysql.md) | Certified |
+| [Notion](sources/notion.md) | Alpha |
 | [Okta](sources/okta.md) | Beta |
 | [OneSignal](sources/onesignal.md) | Alpha |
 | [Oracle DB](sources/oracle.md) | Certified |
@@ -117,6 +119,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [US Census](sources/us-census.md) | Alpha |
 | [WooCommerce](https://github.com/airbytehq/airbyte/tree/8d599c86a84726235c765c78db1ddd85c558bf7f/docs/integrations/sources/woo-commerce.md) | Beta |
 | [Wordpress](sources/wordpress.md) | Beta |
+| [YouTube Analytics](sources/youtube-analytics.md) | Beta |
 | [Zencart](sources/zencart.md) | Beta |
 | [Zendesk Chat](sources/zendesk-chat.md) | Certified |
 | [Zendesk Sunshine](sources/zendesk-sunshine.md) | Beta |
@@ -152,4 +155,4 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Snowflake](destinations/snowflake.md) | Certified |
 | [Cassandra](destinations/cassandra.md) | Alpha |
 | [Scylla](destinations/scylla.md) | Alpha |
-
+| [Redis](destinations/redis.md) | Alpha |
