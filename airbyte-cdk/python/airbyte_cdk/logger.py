@@ -5,6 +5,7 @@
 import logging
 import logging.config
 import traceback
+from typing import Iterable, Optional
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 
@@ -42,6 +43,10 @@ def init_logger(name: str = None):
 class AirbyteLogFormatter(logging.Formatter):
     """Output log records using AirbyteMessage"""
 
+    def __init__(self, secret_values: Optional[Iterable[str]] = None, **kwargs):
+        super().__init__(**kwargs)
+        self.secret_values = secret_values or []
+
     # Transforming Python log levels to Airbyte protocol log levels
     level_mapping = {
         logging.FATAL: "FATAL",
@@ -56,8 +61,11 @@ class AirbyteLogFormatter(logging.Formatter):
         """Return a JSON representation of the log message"""
         message = super().format(record)
         airbyte_level = self.level_mapping.get(record.levelno, "INFO")
-        log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
-        return log_message.json(exclude_unset=True)
+        log_message = AirbyteLogMessage(level=airbyte_level, message=message)
+        log_message_json = log_message.json(exclude_unset=True)
+        for value in self.secret_values:
+            log_message_json = log_message_json.replace(value, "******")
+        return log_message_json
 
 
 class AirbyteNativeLogger(logging.Logger):
@@ -103,7 +111,7 @@ class AirbyteLogger:
     def log(self, level, message):
         log_record = AirbyteLogMessage(level=level, message=message)
         log_message = AirbyteMessage(type="LOG", log=log_record)
-        print(log_message.json(exclude_unset=True))
+        self.info(log_message.json(exclude_unset=True))
 
     def fatal(self, message):
         self.log("FATAL", message)
@@ -126,3 +134,15 @@ class AirbyteLogger:
 
     def trace(self, message):
         self.log("TRACE", message)
+
+
+class LoggerWriter:
+    def __init__(self, level):
+        self.level = level
+
+    def write(self, message):
+        if message != "\n":
+            self.level(message)
+
+    def flush(self):
+        pass

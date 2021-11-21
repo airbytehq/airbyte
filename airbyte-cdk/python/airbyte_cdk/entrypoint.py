@@ -11,18 +11,25 @@ import sys
 import tempfile
 from typing import Iterable, List
 
-from airbyte_cdk.logger import init_logger
+from airbyte_cdk.logger import AirbyteLogFormatter, LoggerWriter
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 
-logger = init_logger("airbyte")
-
 
 class AirbyteEntrypoint(object):
-    def __init__(self, source: Source):
+    def __init__(self, source: Source, args: List[str]):
         self.source = source
         self.logger = logging.getLogger(f"airbyte.{getattr(source, 'name', '')}")
+        self.logger.level = logging.INFO
+
+        parsed_args = self.parse_args(args)
+        raw_config = self.source.read_config(parsed_args.config)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = self.source.configure(raw_config, temp_dir)
+            handler = logging.StreamHandler(sys.stdout)
+            handler.setFormatter(AirbyteLogFormatter(secret_values=config.values()))
+            self.logger.root.handlers = [handler]
 
     def parse_args(self, args: List[str]) -> argparse.Namespace:
         # set up parent parsers
@@ -103,10 +110,22 @@ class AirbyteEntrypoint(object):
 
 
 def launch(source: Source, args: List[str]):
-    source_entrypoint = AirbyteEntrypoint(source)
+    source_entrypoint = AirbyteEntrypoint(source, args)
+
+    def excepthook(exctype, excvalue, exctraceback):
+        import traceback
+
+        sys.stderr.write("An uncaught exception occurred. Terminating...\n")
+        traceback.print_exception(exctype, excvalue, exctraceback)
+        exit()
+
+    sys.stdout = LoggerWriter(source_entrypoint.logger.info)
+    sys.stderr = LoggerWriter(source_entrypoint.logger.error)
+    sys.excepthook = excepthook
+
     parsed_args = source_entrypoint.parse_args(args)
     for message in source_entrypoint.run(parsed_args):
-        print(message)
+        source_entrypoint.logger.info(message)
 
 
 def main():

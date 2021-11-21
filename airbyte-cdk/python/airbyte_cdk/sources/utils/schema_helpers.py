@@ -5,6 +5,7 @@
 
 import importlib
 import json
+import logging
 import os
 import pkgutil
 from typing import Any, ClassVar, Dict, Mapping, Tuple
@@ -15,6 +16,8 @@ from airbyte_cdk.models import ConnectorSpecification
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 
 class ResourceSchemaLoader:
@@ -43,8 +46,7 @@ class ResourceSchemaLoader:
         try:
             raw_schema = json.loads(raw_file)
         except ValueError:
-            # TODO use proper logging
-            print(f"Invalid JSON file format for file {schema_filename}")
+            logger.exception(f"Invalid JSON file format for file {schema_filename}")
             raise
 
         return self.__resolve_schema_references(raw_schema)
