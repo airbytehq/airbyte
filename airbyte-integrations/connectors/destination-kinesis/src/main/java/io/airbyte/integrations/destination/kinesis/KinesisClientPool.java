@@ -24,9 +24,9 @@ public class KinesisClientPool {
   }
 
   /**
-   * Initializes a Kinesis client for accessing Kinesis. If there is already an existing
-   * client with the provided configuration it will return the existing one and increase
-   * the usage count, if not it will return a new one.
+   * Initializes a Kinesis client for accessing Kinesis. If there is already an existing client with
+   * the provided configuration it will return the existing one and increase the usage count, if not
+   * it will return a new one.
    *
    * @param kinesisConfig used to configure the Kinesis client.
    * @return KinesisClient which can be used to access Kinesis.
@@ -44,9 +44,9 @@ public class KinesisClientPool {
   }
 
   /**
-   * Returns a Kinesis client to the pool. If the client is no longer used by
-   * any other external instances it will be closed and removed from the map,
-   * if not only its usage count will be decreased.
+   * Returns a Kinesis client to the pool. If the client is no longer used by any other external
+   * instances it will be closed and removed from the map, if not only its usage count will be
+   * decreased.
    *
    * @param kinesisConfig that was used to configure the Kinesis client.
    */

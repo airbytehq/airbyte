@@ -102,8 +102,7 @@ class KinesisStreamTest {
     kinesisStream.putRecord(streamName, partitionKey2, createData(partitionKey2, "{\"property\":\"data2\"}"),
         e -> {});
 
-    kinesisStream.flush(e -> {
-    });
+    kinesisStream.flush(e -> {});
 
     // when
     var records = kinesisStream.getRecords(streamName);

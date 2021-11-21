@@ -54,8 +54,8 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   /**
-   * Handle an incoming Airbyte message by serializing it to the appropriate Kinesis
-   * structure and sending it to the stream.
+   * Handle an incoming Airbyte message by serializing it to the appropriate Kinesis structure and
+   * sending it to the stream.
    *
    * @param message received from the Airbyte source.
    */
@@ -91,8 +91,8 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   /**
-   * Flush the Kinesis stream if there are any remaining messages to be sent
-   * and close the client as a terminal operation.
+   * Flush the Kinesis stream if there are any remaining messages to be sent and close the client as a
+   * terminal operation.
    *
    * @param hasFailed flag for indicating if the operation has failed.
    */

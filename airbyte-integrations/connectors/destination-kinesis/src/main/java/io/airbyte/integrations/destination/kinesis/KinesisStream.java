@@ -9,7 +9,6 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,9 +48,9 @@ public class KinesisStream implements Closeable {
   }
 
   /**
-   * Creates a stream specified via its name and with the provided shard count.
-   * The method will block and retry every 2s until it verifies that the stream is active and can be written to.
-   * If the stream is already created it will only wait until it is active.
+   * Creates a stream specified via its name and with the provided shard count. The method will block
+   * and retry every 2s until it verifies that the stream is active and can be written to. If the
+   * stream is already created it will only wait until it is active.
    *
    * @param streamName name of the stream to be created.
    */
@@ -77,8 +76,8 @@ public class KinesisStream implements Closeable {
   }
 
   /**
-   * Delete the stream specified via its name. The method will block and retry every 2s
-   * until it verifies that the stream is deleted by receiving the appropriate exception.
+   * Delete the stream specified via its name. The method will block and retry every 2s until it
+   * verifies that the stream is deleted by receiving the appropriate exception.
    *
    * @param streamName name of the stream to be deleted.
    */
@@ -99,21 +98,20 @@ public class KinesisStream implements Closeable {
   }
 
   /**
-   * Deletes all streams in the Kinesis service, waiting/blocking
-   * until all of them are deleted.
+   * Deletes all streams in the Kinesis service, waiting/blocking until all of them are deleted.
    */
   public void deleteAllStreams() {
     kinesisClient.listStreams().streamNames().forEach(this::deleteStream);
   }
 
   /**
-   * Sends a record to the Kinesis stream specified via its name. To improve
-   * performance the records are buffered until the buffer limit is reached after which
-   * they are flushed to its destination stream.
+   * Sends a record to the Kinesis stream specified via its name. To improve performance the records
+   * are buffered until the buffer limit is reached after which they are flushed to its destination
+   * stream.
    *
-   * @param streamName   name of the stream where the record should be sent
+   * @param streamName name of the stream where the record should be sent
    * @param partitionKey to determine the destination shard
-   * @param data         actual data to be streamed
+   * @param data actual data to be streamed
    * @param exceptionConsumer for handling errors related to flushing data per stream
    */
   public void putRecord(String streamName, String partitionKey, String data, Consumer<Exception> exceptionConsumer) {
@@ -124,9 +122,8 @@ public class KinesisStream implements Closeable {
   }
 
   /**
-   * Iterates over all the shards for a given streams and retrieves the records
-   * which are combined and deserialized to a
-   * {@link io.airbyte.integrations.destination.kinesis.KinesisRecord} objects.
+   * Iterates over all the shards for a given streams and retrieves the records which are combined and
+   * deserialized to a {@link io.airbyte.integrations.destination.kinesis.KinesisRecord} objects.
    *
    * @param streamName from where to retrieve the records.
    * @return List of KinesisRecord objects retrieved from the stream.
@@ -157,11 +154,11 @@ public class KinesisStream implements Closeable {
   }
 
   /**
-   * Flush all records previously buffered to increase throughput and performance.
-   * Records are grouped by stream name and are sent for each stream separately.
+   * Flush all records previously buffered to increase throughput and performance. Records are grouped
+   * by stream name and are sent for each stream separately.
    *
-   * @param exceptionConsumer for handling errors related to flushing data per stream, rethrowing
-   *                          an exception in the consumer will stop the sync and clear the cache
+   * @param exceptionConsumer for handling errors related to flushing data per stream, rethrowing an
+   *        exception in the consumer will stop the sync and clear the cache
    */
   public void flush(Consumer<Exception> exceptionConsumer) {
     try {
@@ -169,10 +166,10 @@ public class KinesisStream implements Closeable {
           .collect(Collectors.groupingBy(Tuple::value1, Collectors.mapping(Tuple::value2, Collectors.toList())))
           .forEach((k, v) -> {
             var records = v.stream().map(entry -> PutRecordsRequestEntry.builder()
-                    // partition key used to determine stream shard.
-                    .partitionKey(entry.value1())
-                    .data(SdkBytes.fromUtf8String(entry.value2()))
-                    .build())
+                // partition key used to determine stream shard.
+                .partitionKey(entry.value1())
+                .data(SdkBytes.fromUtf8String(entry.value2()))
+                .build())
                 .collect(Collectors.toList());
             try {
               kinesisClient.putRecords(b -> b.streamName(k).records(records));

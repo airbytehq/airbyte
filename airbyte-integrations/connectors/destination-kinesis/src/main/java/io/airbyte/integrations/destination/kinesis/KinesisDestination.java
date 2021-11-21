@@ -63,8 +63,8 @@ public class KinesisDestination extends BaseConnector implements Destination {
   /**
    * Returns an Airbyte message consumer which can be used to handle the incoming Airbyte messages.
    *
-   * @param config                json configuration for connecting to Kinesis
-   * @param configuredCatalog     of the incoming stream.
+   * @param config json configuration for connecting to Kinesis
+   * @param configuredCatalog of the incoming stream.
    * @param outputRecordCollector state collector.
    * @return KinesisMessageConsumer for consuming Airbyte messages and streaming them to Kinesis.
    */

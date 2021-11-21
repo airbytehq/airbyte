@@ -50,7 +50,7 @@ public class KinesisUtils {
    * Build a Kinesis exception with the provided message and cause.
    *
    * @param message of the exception
-   * @param cause   of the exception
+   * @param cause of the exception
    * @return KinesisException to be thrown
    */
   static KinesisException buildKinesisException(String message, Throwable cause) {
