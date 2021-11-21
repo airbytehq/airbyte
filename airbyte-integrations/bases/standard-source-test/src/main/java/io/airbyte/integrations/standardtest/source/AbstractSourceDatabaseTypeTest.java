@@ -105,11 +105,10 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
       final String streamName = msg.getRecord().getStream();
       final List<String> expectedValuesForStream = expectedValues.get(streamName);
       if (expectedValuesForStream != null) {
-        final var a = msg.getRecord().getData().get(getTestColumnName());
         final String value = getValueFromJsonNode(msg.getRecord().getData().get(getTestColumnName()));
         assertTrue(expectedValuesForStream.contains(value),
-            "Returned value '" + value + "' by streamer " + streamName
-                + " should be in the expected list: " + expectedValuesForStream);
+            String.format("Returned value '%s' from stream %s is not in the expected list: %s",
+                value, streamName, expectedValuesForStream));
         expectedValuesForStream.remove(value);
       }
     }

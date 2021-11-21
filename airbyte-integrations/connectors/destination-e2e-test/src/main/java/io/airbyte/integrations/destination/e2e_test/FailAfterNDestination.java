@@ -1,6 +1,8 @@
-package io.airbyte.integrations.destination.e2e_test;
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
 
-import static java.lang.Thread.sleep;
+package io.airbyte.integrations.destination.e2e_test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.BaseConnector;
@@ -26,8 +28,8 @@ public class FailAfterNDestination extends BaseConnector implements Destination 
 
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     return new FailAfterNConsumer(config.get("num_messages").asLong(), outputRecordCollector);
   }
 
@@ -66,4 +68,5 @@ public class FailAfterNDestination extends BaseConnector implements Destination 
     public void close() {}
 
   }
+
 }

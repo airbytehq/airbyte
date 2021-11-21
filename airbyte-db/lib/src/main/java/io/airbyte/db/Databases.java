@@ -136,12 +136,12 @@ public class Databases {
   }
 
   public static JdbcDatabase createStreamingJdbcDatabase(final String username,
-                                                                    final String password,
-                                                                    final String jdbcConnectionString,
-                                                                    final String driverClassName,
-                                                                    final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
-                                                                    final String connectionProperties,
-                                                                    final JdbcCompatibleSourceOperations<?> sourceOperations) {
+                                                         final String password,
+                                                         final String jdbcConnectionString,
+                                                         final String driverClassName,
+                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
+                                                         final String connectionProperties,
+                                                         final JdbcCompatibleSourceOperations<?> sourceOperations) {
     final BasicDataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
 
