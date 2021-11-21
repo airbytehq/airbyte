@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 
 public class BigQueryDenormalizedTestDataUtils {
@@ -200,6 +201,28 @@ public class BigQueryDenormalizedTestDataUtils {
             + "    \"nested_datetime\": \"2021-11-11T06:36:53+00:00\"\n"
             + "  }\n"
             + "}");
+  }
+
+  public static JsonNode getDataWithJSONWithReference() {
+    return Jsons.jsonNode(
+        ImmutableMap.of("users", ImmutableMap.of(
+            "name", "John",
+            "surname", "Adams")));
+  }
+
+  public static JsonNode getSchemaWithReferenceDefinition() {
+    return Jsons.deserialize(
+        "{ \n"
+            + "  \"type\" : [ \"null\", \"object\" ],\n"
+            + "  \"properties\" : {\n"
+            + "    \"users\": {\n"
+            + "      \"$ref\": \"#/definitions/users_\"\n"
+            +
+            "    }\n"
+            + "  }\n"
+            +
+            "}\n"
+            + "  ");
   }
 
   public static JsonNode getDataWithEmptyObjectAndArray() {

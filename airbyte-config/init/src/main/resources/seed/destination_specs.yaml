@@ -254,7 +254,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.1.8"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -1414,7 +1414,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-mssql:0.1.10"
+- dockerImage: "airbyte/destination-mssql:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -1799,7 +1799,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-mysql:0.1.13"
+- dockerImage: "airbyte/destination-mysql:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mysql"
     connectionSpecification:
@@ -1903,8 +1903,8 @@
                 order: 3
               ssh_key:
                 title: "SSH Private Key"
-                description: "OS-level user account ssh key credentials for logging\
-                  \ into the jump server host."
+                description: "OS-level user account ssh key credentials in RSA PEM\
+                  \ format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )"
                 type: "string"
                 airbyte_secret: true
                 multiline: true
@@ -1957,7 +1957,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-oracle:0.1.11"
+- dockerImage: "airbyte/destination-oracle:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/oracle"
     connectionSpecification:
@@ -2184,7 +2184,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-postgres:0.3.11"
+- dockerImage: "airbyte/destination-postgres:0.3.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres"
     connectionSpecification:
@@ -2299,8 +2299,8 @@
                 order: 3
               ssh_key:
                 title: "SSH Private Key"
-                description: "OS-level user account ssh key credentials for logging\
-                  \ into the jump server host."
+                description: "OS-level user account ssh key credentials in RSA PEM\
+                  \ format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )"
                 type: "string"
                 airbyte_secret: true
                 multiline: true
@@ -2502,7 +2502,62 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-redshift:0.3.19"
+- dockerImage: "airbyte/destination-redis:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/redis"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Redis Destination Spec"
+      type: "object"
+      required:
+      - "host"
+      - "port"
+      - "username"
+      - "password"
+      - "cache_type"
+      additionalProperties: false
+      properties:
+        host:
+          title: "Host"
+          description: "Redis host to connect to."
+          type: "string"
+          examples:
+          - "localhost,127.0.0.1"
+          order: 1
+        port:
+          title: "Port"
+          description: "Port of Redis."
+          type: "integer"
+          minimum: 0
+          maximum: 65536
+          default: 6379
+          order: 2
+        username:
+          title: "Username"
+          description: "Username associated with Redis."
+          type: "string"
+          order: 3
+        password:
+          title: "Password"
+          description: "Password associated with Redis."
+          type: "string"
+          airbyte_secret: true
+          order: 4
+        cache_type:
+          title: "Cache type"
+          type: "string"
+          default: "hash"
+          description: "Redis cache type to store data in."
+          enum:
+          - "hash"
+          order: 5
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "overwrite"
+    - "append"
+- dockerImage: "airbyte/destination-redshift:0.3.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -2945,7 +3000,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.3.16"
+- dockerImage: "airbyte/destination-snowflake:0.3.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:

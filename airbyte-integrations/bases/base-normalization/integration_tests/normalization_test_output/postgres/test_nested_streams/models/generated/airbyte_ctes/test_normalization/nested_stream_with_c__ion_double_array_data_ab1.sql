@@ -1,10 +1,10 @@
 {{ config(
     indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
     schema = "_airbyte_test_normalization",
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: {{ ref('nested_stream_with_c___long_names_partition') }}
 {{ unnest_cte('nested_stream_with_c___long_names_partition', 'partition', 'double_array_data') }}
 select
     _airbyte_partition_hashid,
@@ -17,4 +17,5 @@ from {{ ref('nested_stream_with_c___long_names_partition') }} as table_alias
 {{ cross_join_unnest('partition', 'double_array_data') }}
 where 1 = 1
 and double_array_data is not null
+{{ incremental_clause('_airbyte_emitted_at') }}
 

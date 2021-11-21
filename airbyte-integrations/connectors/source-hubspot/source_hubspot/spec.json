@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/hubspot",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Hubspot Source Spec",
+    "title": "HubSpot Source Spec",
     "type": "object",
     "required": ["start_date", "credentials"],
     "additionalProperties": false,
@@ -21,13 +21,11 @@
         "oneOf": [
           {
             "type": "object",
-            "title": "Authenticate via Hubspot (Oauth)",
+            "title": "Authenticate via HubSpot (Oauth)",
             "required": [
-              "redirect_uri",
               "client_id",
               "client_secret",
               "refresh_token",
-              "access_token",
               "credentials_title"
             ],
             "properties": {
@@ -42,20 +40,20 @@
               },
               "client_id": {
                 "title": "Client ID",
-                "description": "Hubspot client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this id.",
+                "description": "HubSpot client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this id.",
                 "type": "string",
                 "examples": ["123456789000"]
               },
               "client_secret": {
                 "title": "Client Secret",
-                "description": "Hubspot client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this secret.",
+                "description": "HubSpot client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this secret.",
                 "type": "string",
                 "examples": ["secret"],
                 "airbyte_secret": true
               },
               "refresh_token": {
                 "title": "Refresh token",
-                "description": "Hubspot refresh_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help generating the token.",
+                "description": "HubSpot refresh_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help generating the token.",
                 "type": "string",
                 "examples": ["refresh_token"],
                 "airbyte_secret": true
@@ -78,7 +76,7 @@
               },
               "api_key": {
                 "title": "API key",
-                "description": "Hubspot API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this key.",
+                "description": "HubSpot API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this key.",
                 "type": "string",
                 "airbyte_secret": true
               }
@@ -92,11 +90,7 @@
     "auth_type": "oauth2.0",
     "oauth2Specification": {
       "rootObject": ["credentials", "0"],
-      "oauthFlowInitParameters": [
-        ["client_id"],
-        ["client_secret"],
-        ["refresh_token"]
-      ],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
       "oauthFlowOutputParameters": [["refresh_token"]]
     }
   }
