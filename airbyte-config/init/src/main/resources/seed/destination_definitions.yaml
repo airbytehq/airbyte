@@ -48,6 +48,11 @@
   dockerRepository: airbyte/destination-kafka
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
+- name: Kinesis
+  destinationDefinitionId: 6d1d66d4-26ab-4602-8d32-f85894b04955
+  dockerRepository: airbyte/destination-kinesis
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/kinesis
 - name: Local CSV
   destinationDefinitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6
   dockerRepository: airbyte/destination-csv
