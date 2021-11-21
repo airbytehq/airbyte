@@ -138,6 +138,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Databricks](destinations/databricks.md) | Beta |
 | [Elasticsearch](destinations/elasticsearch.md) | Alpha |
 | [Google Cloud Storage \(GCS\)](destinations/gcs.md) | Alpha |
+| [Google Firestore](destinations/firestore.md) | Alpha |
 | [Google Pubsub](destinations/pubsub.md) | Alpha |
 | [Kafka](destinations/kafka.md) | Alpha |
 | [Keen](destinations/keen.md) | Alpha |
