@@ -18,13 +18,13 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.bson.BsonBinary;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
@@ -49,7 +49,6 @@ public class MongoUtils {
 
   private static final String MISSING_TYPE = "missing";
   private static final String NULL_TYPE = "null";
-  private static final String TYPE = "type";
   private static final String AIRBYTE_SUFFIX = "_aibyte_transform";
 
   public static JsonSchemaPrimitive getType(final BsonType dataType) {
@@ -184,60 +183,77 @@ public class MongoUtils {
     var allkeys = getFieldsName(collection);
     allkeys.forEach(key -> {
       var types = getTypes(collection, key);
-      addUniqueType(result, collection, key, types);
+      addUniqueType(result, key, types);
     });
-
     return result;
   }
 
   private static List<String> getFieldsName(MongoCollection<Document> collection) {
     AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
-        new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$$ROOT"))),
-        new Document("$unwind", "$arrayofkeyvalue"),
-        new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
+            new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$$ROOT"))),
+            new Document("$unwind", "$arrayofkeyvalue"),
+            new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
     if (output.cursor().hasNext()) {
-      return (List) output.cursor().next().get("allkeys");
+      var fieldsNames = (List) output.cursor().next().get("allkeys");
+      fieldsNames.remove("_id");
+      return fieldsNames;
     } else {
       return Collections.emptyList();
     }
   }
 
+  private static ArrayList<String> getTypes(MongoCollection<Document> collection, String name) {
+    var fieldName = "$" + name;
+    AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
+            new Document("$project", new Document("_id", 0).append("fieldType", new Document("$type", fieldName))),
+            new Document("$group", new Document("_id", new Document("fieldType", "$fieldType"))
+                    .append("count", new Document("$sum", 1)))));
+    var listOfTypes = new ArrayList<String>();
+    var cursor = output.cursor();
+    while (cursor.hasNext()) {
+      var type = ((Document) cursor.next().get("_id")).get("fieldType").toString();
+      if (!type.equals(MISSING_TYPE) && !type.equals(NULL_TYPE)) {
+        listOfTypes.add(type);
+      }
+    }
+    if (listOfTypes.isEmpty()) {
+      listOfTypes.add(NULL_TYPE);
+    }
+    return listOfTypes;
+  }
+
   private static void addUniqueType(Map<String, BsonType> map,
-                                    MongoCollection<Document> collection,
                                     String fieldName,
-                                    Set<String> types) {
+                                    List<String> types) {
     if (types.size() != 1) {
       map.put(fieldName + AIRBYTE_SUFFIX, BsonType.STRING);
     } else {
-      var document = collection.find(new Document(fieldName,
-          new Document("$type", types.stream().findFirst().get()))).first();
-      var bsonDoc = toBsonDocument(document);
-      try (final BsonReader reader = new BsonDocumentReader(bsonDoc)) {
-        reader.readStartDocument();
-        while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-          if (reader.readName().equals(fieldName)) {
-            final var fieldType = reader.getCurrentBsonType();
-            map.put(fieldName, fieldType);
-          }
-          reader.skipValue();
-        }
-        reader.readEndDocument();
-      }
+      var type = types.get(0);
+      map.put(fieldName, getBsonTypeByTypeAlias(type));
     }
   }
 
-  private static Set<String> getTypes(MongoCollection<Document> collection, String fieldName) {
-    var searchField = "$" + fieldName;
-    var docTypes = collection.aggregate(List.of(
-        new Document("$project", new Document(TYPE, new Document("$type", searchField))))).cursor();
-    Set<String> types = new HashSet<>();
-    while (docTypes.hasNext()) {
-      var type = String.valueOf(docTypes.next().get(TYPE));
-      if (!MISSING_TYPE.equals(type) && !NULL_TYPE.equals(type)) {
-        types.add(type);
-      }
-    }
-    return types.isEmpty() ? Set.of(NULL_TYPE) : types;
+  private static BsonType getBsonTypeByTypeAlias(String typeAlias) {
+    return switch (typeAlias) {
+      case "double" -> BsonType.DOUBLE;
+      case "string" -> BsonType.STRING;
+      case "objectId" -> BsonType.OBJECT_ID;
+      case "array" -> BsonType.ARRAY;
+      case "binData" -> BsonType.BINARY;
+      case "bool" -> BsonType.BOOLEAN;
+      case "date" -> BsonType.DATE_TIME;
+      case "null" -> BsonType.NULL;
+      case "regex" -> BsonType.REGULAR_EXPRESSION;
+      case "dbPointer" -> BsonType.DB_POINTER;
+      case "javascript" -> BsonType.JAVASCRIPT;
+      case "symbol" -> BsonType.SYMBOL;
+      case "javascriptWithScope" -> BsonType.JAVASCRIPT_WITH_SCOPE;
+      case "int" -> BsonType.INT32;
+      case "timestamp" -> BsonType.TIMESTAMP;
+      case "long" -> BsonType.INT64;
+      case "decimal" -> BsonType.DECIMAL128;
+      default -> BsonType.STRING;
+    };
   }
 
   private static BsonDocument toBsonDocument(final Document document) {
