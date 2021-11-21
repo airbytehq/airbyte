@@ -58,6 +58,11 @@
   dockerRepository: airbyte/destination-local-json
   dockerImageTag: 0.2.8
   documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json
+- name: MQTT
+  destinationDefinitionId: f3802bc4-5406-4752-9e8d-01e504ca8194
+  dockerRepository: airbyte/destination-mqtt
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/mqtt
 - name: MS SQL Server
   destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   dockerRepository: airbyte/destination-mssql

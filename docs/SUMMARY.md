@@ -167,6 +167,7 @@
     * [Local JSON](integrations/destinations/local-json.md)
     * [MeiliSearch](integrations/destinations/meilisearch.md)
     * [MongoDB](integrations/destinations/mongodb.md)
+    * [MQTT](integrations/destinations/mqtt.md)
     * [MSSQL](integrations/destinations/mssql.md)
     * [MySQL](integrations/destinations/mysql.md)
     * [Oracle DB](integrations/destinations/oracle.md)
