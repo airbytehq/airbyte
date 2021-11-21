@@ -550,6 +550,10 @@ class TicketMetrics(IncrementalUnsortedPageStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
 
 
+class TicketMetricEvents(IncrementalUnsortedPageStream):
+    """TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/"""
+
+
 # endpoints provide a pagination and sorting mechanism
 
 

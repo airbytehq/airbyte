@@ -24,6 +24,7 @@ from .streams import (
     TicketFields,
     TicketForms,
     TicketMetrics,
+    TicketMetricEvents,
     Tickets,
     Users,
     UserSettingsStream,
@@ -104,6 +105,7 @@ class SourceZendeskSupport(AbstractSource):
             TicketFields(**args),
             TicketForms(**args),
             TicketMetrics(**args),
+            TicketMetricEvents(**args),
             Tickets(**args),
             Users(**args),
         ]
