@@ -145,6 +145,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Local JSON](destinations/local-json.md) | Certified |
 | [MeiliSearch](destinations/meilisearch.md) | Beta |
 | [MongoDB](destinations/mongodb.md) | Alpha |
+| [MQTT](destinations/mqtt.md) | Alpha |
 | [MySQL](destinations/mysql.md) | Beta |
 | [Oracle](destinations/oracle.md) | Alpha |
 | [Postgres](destinations/postgres.md) | Certified |
