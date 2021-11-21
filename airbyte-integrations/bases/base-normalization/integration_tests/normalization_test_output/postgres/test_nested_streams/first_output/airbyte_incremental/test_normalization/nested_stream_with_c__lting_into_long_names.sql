@@ -5,6 +5,7 @@
   as (
     
 -- Final base SQL model
+-- depends_on: "postgres".test_normalization."nested_stream_with_c__lting_into_long_names_scd"
 select
     _airbyte_unique_key,
     "id",

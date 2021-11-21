@@ -8,11 +8,12 @@
       compound sortkey(_airbyte_active_row,_airbyte_unique_key_scd,_airbyte_emitted_at)
   as (
     
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 
 input_data as (
     select *
-    from "integrationtests"._airbyte_test_normalization."dedup_exchange_rate_ab3"
+    from "integrationtests"._airbyte_test_normalization."dedup_exchange_rate_stg"
     -- dedup_exchange_rate from "integrationtests".test_normalization._airbyte_raw_dedup_exchange_rate
 ),
 
