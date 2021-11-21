@@ -121,7 +121,12 @@ public class MongoUtils {
 
   private static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {
     if (columnNames.contains(fieldName + AIRBYTE_SUFFIX)) {
-      jsonNodes.put(fieldName, jsonNodes.get(fieldName).asText());
+      JsonNode data = jsonNodes.get(fieldName);
+      if(data != null){
+        jsonNodes.put(fieldName, data.asText());
+      } else {
+        LOGGER.error("Field list out of sync, Document doesn't contain field: {}", fieldName);
+      }
     }
   }
 
