@@ -76,7 +76,7 @@ public class MongoUtils {
         case INT64 -> new BsonInt64(Long.parseLong(value));
         case DOUBLE -> new BsonDouble(Double.parseDouble(value));
         case DECIMAL128 -> Decimal128.parse(value);
-        case TIMESTAMP -> new BsonTimestamp(Long.parseLong(value));
+        case TIMESTAMP -> new BsonTimestamp(new DateTime(value).getValue());
         case DATE_TIME -> new BsonDateTime(new DateTime(value).getValue());
         case OBJECT_ID -> new ObjectId(value);
         case SYMBOL -> new Symbol(value);
