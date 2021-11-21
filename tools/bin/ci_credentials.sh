@@ -152,6 +152,7 @@ export_github_secrets
 read_secrets destination-bigquery "$BIGQUERY_INTEGRATION_TEST_CREDS" "credentials.json"
 read_secrets destination-bigquery-denormalized "$BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS" "credentials.json"
 read_secrets destination-databricks "$DESTINATION_DATABRICKS_CREDS"
+read_secrets destination-firestore "$DESTINATION_FIRESTORE_CREDS"
 read_secrets destination-gcs "$DESTINATION_GCS_CREDS"
 read_secrets destination-kvdb "$DESTINATION_KVDB_TEST_CREDS"
 read_secrets destination-keen "$DESTINATION_KEEN_TEST_CREDS"
