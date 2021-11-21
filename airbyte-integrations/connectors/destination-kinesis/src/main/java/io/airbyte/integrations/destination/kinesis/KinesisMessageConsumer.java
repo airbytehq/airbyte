@@ -74,9 +74,9 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
       var partitionKey = KinesisUtils.buildPartitionKey();
 
       var data = Jsons.jsonNode(Map.of(
-          KinesisRecord.ID_PROPERTY, partitionKey,
-          KinesisRecord.DATA_PROPERTY, Jsons.serialize(messageRecord.getData()),
-          KinesisRecord.TIMESTAMP_PROPERTY, Instant.now()));
+          KinesisRecord.COLUMN_NAME_AB_ID, partitionKey,
+          KinesisRecord.COLUMN_NAME_DATA, Jsons.serialize(messageRecord.getData()),
+          KinesisRecord.COLUMN_NAME_EMITTED_AT, Instant.now()));
 
       var streamName = streamConfig.getStreamName();
       kinesisStream.putRecord(streamName, partitionKey, Jsons.serialize(data), e -> {

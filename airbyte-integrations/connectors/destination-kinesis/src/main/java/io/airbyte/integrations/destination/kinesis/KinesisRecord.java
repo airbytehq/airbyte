@@ -13,19 +13,17 @@ import java.util.UUID;
  */
 public class KinesisRecord {
 
-  public static final String ID_PROPERTY = "_airbyte_ab_id";
+  public static final String COLUMN_NAME_AB_ID = "_airbyte_ab_id";
+  public static final String COLUMN_NAME_DATA = "_airbyte_data";
+  public static final String COLUMN_NAME_EMITTED_AT = "_airbyte_emitted_at";
 
-  public static final String DATA_PROPERTY = "_airbyte_data";
-
-  public static final String TIMESTAMP_PROPERTY = "_airbyte_emitted_at";
-
-  @JsonProperty(ID_PROPERTY)
+  @JsonProperty(COLUMN_NAME_AB_ID)
   private UUID id;
 
-  @JsonProperty(DATA_PROPERTY)
+  @JsonProperty(COLUMN_NAME_DATA)
   private String data;
 
-  @JsonProperty(TIMESTAMP_PROPERTY)
+  @JsonProperty(COLUMN_NAME_EMITTED_AT)
   private Instant timestamp;
 
   public KinesisRecord() {

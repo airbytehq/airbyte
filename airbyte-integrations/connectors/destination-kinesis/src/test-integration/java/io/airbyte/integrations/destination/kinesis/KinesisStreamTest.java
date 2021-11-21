@@ -118,9 +118,9 @@ class KinesisStreamTest {
 
   private String createData(String partitionKey, String data) {
     var kinesisRecord = Jsons.jsonNode(Map.of(
-        KinesisRecord.ID_PROPERTY, partitionKey,
-        KinesisRecord.DATA_PROPERTY, data,
-        KinesisRecord.TIMESTAMP_PROPERTY, Instant.now()));
+        KinesisRecord.COLUMN_NAME_AB_ID, partitionKey,
+        KinesisRecord.COLUMN_NAME_DATA, data,
+        KinesisRecord.COLUMN_NAME_EMITTED_AT, Instant.now()));
     return Jsons.serialize(kinesisRecord);
   }
 
