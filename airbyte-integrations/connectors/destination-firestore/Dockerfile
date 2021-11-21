@@ -4,8 +4,10 @@ FROM python:3.7.11-alpine3.14 as base
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
+# added second line to solve grpcio install problem (https://github.com/grpc/grpc/issues/24722)
 # upgrade pip to the latest version
 RUN apk --no-cache upgrade \
+    && apk add --no-cache gcc g++ linux-headers \
     && pip install --upgrade pip \
     && apk --no-cache add tzdata build-base
 
@@ -27,6 +29,9 @@ RUN echo "Etc/UTC" > /etc/timezone
 # bash is installed for more convenient debugging.
 RUN apk --no-cache add bash
 
+# this is used by grpc
+RUN apk --no-cache add libstdc++
+
 # copy payload code only
 COPY main.py ./
 COPY destination_firestore ./destination_firestore
@@ -34,5 +39,5 @@ COPY destination_firestore ./destination_firestore
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.version=0.1.1
 LABEL io.airbyte.name=airbyte/destination-firestore
