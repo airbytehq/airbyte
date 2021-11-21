@@ -75,4 +75,4 @@ You should now have all the requirements needed to configure MQTT as a destinati
 
 More info about this can be found in the [OASIS MQTT standard site](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html).
 
-_NOTE_: MQTT version 5 is not supported yet.
+**_NOTE_**: MQTT version 5 is not supported yet.
