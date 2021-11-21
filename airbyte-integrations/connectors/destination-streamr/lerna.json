@@ -1,0 +1,8 @@
+{
+  "version": "0.1.23",
+  "npmClient": "npm",
+  "useWorkspaces": false,
+  "packages": [
+    "destinations/**"
+  ]
+}

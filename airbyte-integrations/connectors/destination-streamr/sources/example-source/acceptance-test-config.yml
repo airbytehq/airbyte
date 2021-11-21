@@ -1,0 +1,26 @@
+connector_image: example-source
+tests:
+  spec:
+    - config_path: "test_files/config.json"
+      spec_path: "test_files/spec.json"
+  connection:
+    - config_path: "test_files/config.json"
+      status: "succeed"
+    - config_path: "test_files/invalid_config.json"
+      status: "failed"
+  discovery:
+    - config_path: "test_files/config.json"
+  basic_read:
+    - config_path: "test_files/config.json"
+      configured_catalog_path: "test_files/full_configured_catalog.json"
+      expect_records:
+        path: "test_files/expected_records.txt"
+  full_refresh:
+    - config_path: "test_files/config.json"
+      configured_catalog_path: "test_files/full_configured_catalog.json"
+  incremental:
+    - config_path: "test_files/config.json"
+      configured_catalog_path: "test_files/incremental_configured_catalog.json"
+      future_state_path: "test_files/abnormal_state.json"
+      cursor_paths:
+        builds: [ "cutoff" ]

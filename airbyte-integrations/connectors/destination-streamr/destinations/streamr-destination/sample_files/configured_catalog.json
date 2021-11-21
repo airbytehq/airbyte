@@ -1,0 +1,26 @@
+{
+  "streams": [
+    {
+      "sync_mode": "FULL_REFRESH",
+      "stream": {
+        "name": "airlines",
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

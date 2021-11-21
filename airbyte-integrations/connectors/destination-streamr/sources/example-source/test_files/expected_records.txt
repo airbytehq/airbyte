@@ -1,0 +1,5 @@
+{"stream": "builds", "data": {"uid":"1","source":"Jenkins","updated_at":1,"fields":{"command":"command 1"},"more_fields":[{"name":"key1","value":"value1","nested":{"value":"nested 1"}}]}, "emitted_at": 0}
+{"stream": "builds", "data": {"uid":"2","source":"Jenkins","updated_at":2,"fields":{"command":"command 2"},"more_fields":[{"name":"key2","value":"value2","nested":{"value":"nested 2"}}]}, "emitted_at": 0}
+{"stream": "builds", "data": {"uid":"3","source":"Jenkins","updated_at":3,"fields":{"command":"command 3"},"more_fields":[{"name":"key3","value":"value3","nested":{"value":"nested 3"}}]}, "emitted_at": 0}
+{"stream": "builds", "data": {"uid":"4","source":"Jenkins","updated_at":4,"fields":{"command":"command 4"},"more_fields":[{"name":"key4","value":"value4","nested":{"value":"nested 4"}}]}, "emitted_at": 0}
+{"stream": "builds", "data": {"uid":"5","source":"Jenkins","updated_at":5,"fields":{"command":"command 5"},"more_fields":[{"name":"key5","value":"value5","nested":{"value":"nested 5"}}]}, "emitted_at": 0}

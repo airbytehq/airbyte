@@ -1,0 +1,10 @@
+**/node_modules
+**/lib
+**/secrets
+**/*.log
+**/*.out
+**/.pytest_cache
+**/acceptance-test-config.yml
+**/acceptance_tests_logs
+**/test_files
+**/test

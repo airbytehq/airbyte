@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "uid": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "integer"
+    },
+    "fields": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "number": {
+          "type": "integer"
+        }
+      }
+    },
+    "more_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": ["string", "integer"]
+          },
+          "nested": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
