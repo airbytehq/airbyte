@@ -11,7 +11,7 @@
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
 - name: Cassandra
   destinationDefinitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
@@ -48,6 +48,11 @@
   dockerRepository: airbyte/destination-kafka
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
+- name: Kinesis
+  destinationDefinitionId: 6d1d66d4-26ab-4602-8d32-f85894b04955
+  dockerRepository: airbyte/destination-kinesis
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/kinesis
 - name: Local CSV
   destinationDefinitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6
   dockerRepository: airbyte/destination-csv
@@ -58,6 +63,11 @@
   dockerRepository: airbyte/destination-local-json
   dockerImageTag: 0.2.8
   documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json
+- name: MQTT
+  destinationDefinitionId: f3802bc4-5406-4752-9e8d-01e504ca8194
+  dockerRepository: airbyte/destination-mqtt
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/mqtt
 - name: MS SQL Server
   destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   dockerRepository: airbyte/destination-mssql
@@ -94,6 +104,11 @@
   dockerRepository: airbyte/destination-pulsar
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pulsar
+- name: Redis
+  destinationDefinitionId: d4d3fef9-e319-45c2-881a-bd02ce44cc9f
+  dockerRepository: airbyte/destination-redis
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/redis
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift

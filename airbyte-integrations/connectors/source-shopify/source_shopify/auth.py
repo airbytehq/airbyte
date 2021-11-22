@@ -9,7 +9,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 
 class NotImplementedAuth(Exception):
-    """ Not implemented Auth option error"""
+    """Not implemented Auth option error"""
 
     logger = AirbyteLogger()
 

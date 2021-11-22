@@ -25,25 +25,25 @@ This Source is capable of syncing the following data as streams:
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `number` | `number` | float number |
-| `integer` | `integer` | whole number |
-| `date` | `string` | FORMAT YYYY-MM-DD |
-| `datetime` | `string` | FORMAT YYYY-MM-DDThh:mm:ss |
-| `array` | `array` |  |
-| `boolean` | `boolean` | True/False |
-| `string` | `string` |  |
+| Integration Type | Airbyte Type | Notes                      |
+| :--------------- | :----------- | :------------------------- |
+| `number`         | `number`     | float number               |
+| `integer`        | `integer`    | whole number               |
+| `date`           | `string`     | FORMAT YYYY-MM-DD          |
+| `datetime`       | `string`     | FORMAT YYYY-MM-DDThh:mm:ss |
+| `array`          | `array`      |                            |
+| `boolean`        | `boolean`    | True/False                 |
+| `string`         | `string`     |                            |
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Overwrite Sync | Yes |  |
-| Full Refresh Append Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Append + Deduplication Sync | Yes |  |
-| Namespaces | No |  |
+| Feature                                   | Supported?\(Yes/No\) | Notes |
+| :---------------------------------------- | :------------------- | :---- |
+| Full Refresh Overwrite Sync               | Yes                  |       |
+| Full Refresh Append Sync                  | Yes                  |       |
+| Incremental - Append Sync                 | Yes                  |       |
+| Incremental - Append + Deduplication Sync | Yes                  |       |
+| Namespaces                                | No                   |       |
 
 ### Performance considerations
 
@@ -62,35 +62,25 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose you app &gt; Analytics
 
 ## Getting started
-
-### Authentication
-
-The source LinkedIn uses `access_token` provided in the UI connector's settings to make API requests. Access tokens expire after `2 months from generating date (60 days)` and require a user to manually authenticate again. If you receive a `401 invalid token response`, the error logs will state that your access token has expired and to re-authenticate your connection to generate a new token. This is described more [here](https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin/context).
+The API user account should be assigned the following permissions for the API endpoints:
+Endpoints such as: `Accounts`, `Account Users`, `Ad Direct Sponsored Contents`, `Campaign Groups`, `Campaings`, `Creatives` requires the next permissions set:
+* `r_ads`: read ads \(Recommended\), `rw_ads`: read-write ads
+Endpoints such as: `Ad Analytics by Campaign`, `Ad Analytics by Creatives` requires the next permissions set:
+* `r_ads_reporting`: read ads reporting
+The complete set of permissions is:
+* `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
 
 The API user account should be assigned one of the following roles:
-
 * ACCOUNT\_BILLING\_ADMIN
 * ACCOUNT\_MANAGER
 * CAMPAIGN\_MANAGER
 * CREATIVE\_MANAGER
 * VIEWER \(Recommended\)
 
-The API user account should be assigned the following permissions for the API endpoints:
-
-Endpoints such as: `Accounts`, `Account Users`, `Ad Direct Sponsored Contents`, `Campaign Groups`, `Campaings`, `Creatives` requires the next permissions set:
-
-* `r_ads`: read ads \(Recommended\), `rw_ads`: read-write ads
-
-Endpoints such as: `Ad Analytics by Campaign`, `Ad Analytics by Creatives` requires the next permissions set:
-
-* `r_ads_reporting`: read ads reporting
-
-The complete set of prmissions is:
-
-* `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
-
-### Generate the Access\_Token
-
+### Authentication
+There are 2 authentication methods:
+##### Generate the Access\_Token
+The source LinkedIn uses `access_token` provided in the UI connector's settings to make API requests. Access tokens expire after `2 months from generating date (60 days)` and require a user to manually authenticate again. If you receive a `401 invalid token response`, the error logs will state that your access token has expired and to re-authenticate your connection to generate a new token. This is described more [here](https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin/context).
 1. **Login to LinkedIn as the API user.**
 2. **Create an App** [here](https://www.linkedin.com/developers/apps):
    * `App Name`: airbyte-source
@@ -135,10 +125,15 @@ The complete set of prmissions is:
 
 6. **Use the `access_token`** from response from the `Step 5` to autorize LinkedIn Ads connector.
 
+##### OAuth2 authentication
+The source LinkedIn supports the oAuth2 protocol. Everyone can use it directly via the Airbyte Web interface. As result Airbyte server will save a 'refresh_token' which expire after `1 year from generating date (356 days)` and require a user to manually authenticate again.
+
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.1 | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610) | Fix for  `Campaigns/targetingCriteria` transformation, coerced  `Creatives/variables/values` to string by default |
-| 0.1.0 | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285) | Initial release of Native LinkedIn Ads connector for Airbyte |
+| Version | Date       | Pull Request                                           | Subject                                                                                                           |
+| :------ | :--------- | :----------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| 0.1.3   | 2021-11-11 | [7839](https://github.com/airbytehq/airbyte/pull/7839) | Added oauth support                                                                                               |
+| 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies                                                                                   |
+| 0.1.1   | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610) | Fix for  `Campaigns/targetingCriteria` transformation, coerced  `Creatives/variables/values` to string by default |
+| 0.1.0   | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285) | Initial release of Native LinkedIn Ads connector for Airbyte                                                      |
 
