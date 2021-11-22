@@ -240,7 +240,7 @@ jobs:
         id: extract_branch
 
       - name: Slow integration test
-        if: contains(['bump-version'], steps.extract_branch.outputs.branch) || steps.extract_branch.outputs.branch == 'master'
+        if: contains(['bump-version', 'master'], steps.extract_branch.outputs.branch)
         run: SUB_BUILD=PLATFORM ./gradlew slowIntegrationTest
 
       - name: Test if Seed spec is updated
