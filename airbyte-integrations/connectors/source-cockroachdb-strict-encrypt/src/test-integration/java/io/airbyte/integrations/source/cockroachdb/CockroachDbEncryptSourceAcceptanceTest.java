@@ -32,11 +32,12 @@ public class CockroachDbEncryptSourceAcceptanceTest extends SourceAcceptanceTest
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
 
-  private CockroachDbSslTestContainer container = new CockroachDbSslTestContainer();
+  private CockroachDbSslTestContainer container;
   private JsonNode config;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+    container = new CockroachDbSslTestContainer();
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
