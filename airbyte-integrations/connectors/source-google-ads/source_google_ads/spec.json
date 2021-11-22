@@ -65,7 +65,7 @@
       },
       "custom_queries": {
         "type": "array",
-        "title": "Custom GAQL Queries",
+        "title": "Custom GAQL Queries (Optional)",
         "order": 3,
         "items": {
           "type": "object",
@@ -88,7 +88,7 @@
       },
       "login_customer_id": {
         "type": "string",
-        "title": "Login Customer ID",
+        "title": "Login Customer ID for Managed Accounts (Optional)",
         "description": "If your access to the customer account is through a manager account, this field is required and must be set to the customer ID of the manager account (10-digit number without dashes). More information about this field you can see <a href=\"https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid\">here</a>",
         "order": 4
       },
