@@ -25,6 +25,7 @@ from source_amazon_seller_partner.streams import (
     Orders,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
+    BrandAnalyticsSearchTermsReports,
 )
 
 
@@ -36,6 +37,23 @@ class ConnectorConfig(BaseModel):
         description="UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
+    )
+    data_start_time: str = Field(
+        None,
+        description="The start of a date and time range, in ISO 8601 date time format, used for selecting the data to report. The default is now. The value must be prior to or equal to the current date and time. Not all report types make use of this.",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        examples=["2017-01-25T00:00:00Z"],
+    )
+    data_end_time: str = Field(
+        None,
+        description="The end of a date and time range, in ISO 8601 date time format, used for selecting the data to report. The default is now. The value must be prior to or equal to the current date and time. Not all report types make use of this.",
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        examples=["2017-01-26T00:00:00Z"],
+    )
+    report_options: str = Field(
+        None,
+        description="Additional information passed to reports. This varies by report type. Must be valid json string.",
+        examples=['{"reportPeriod": "WEEK"}', '{"custom": "true"}'],
     )
     refresh_token: str = Field(
         description="The refresh token used obtained via authorization (can be passed to the client instead)", airbyte_secret=True
@@ -81,6 +99,16 @@ class SourceAmazonSellerPartner(AbstractSource):
         }
         return stream_kwargs
 
+    def _get_stream_kwargs_with_data_times(self, config: ConnectorConfig) -> Mapping[str, Any]:
+         result = self._get_stream_kwargs(config=config)
+         result.update({
+             "data_start_time": config.data_start_time,
+             "data_end_time": config.data_end_time,
+             "report_options": config.report_options,
+         })
+
+         return result    
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
         Check connection to Amazon SP API by requesting the list of reports as this endpoint should be available for any config.
@@ -103,6 +131,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         """
         config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
         stream_kwargs = self._get_stream_kwargs(config)
+        stream_kwargs_with_data_times = self._get_stream_kwargs_with_data_times(config)
 
         return [
             FbaInventoryReports(**stream_kwargs),
@@ -115,6 +144,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             VendorDirectFulfillmentShipping(**stream_kwargs),
             VendorInventoryHealthReports(**stream_kwargs),
             Orders(**stream_kwargs),
+            BrandAnalyticsSearchTermsReports(**stream_kwargs_with_data_times),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
