@@ -921,7 +921,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-cockroachdb:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/postgres"
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Cockroach Source Spec"
@@ -3551,7 +3551,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mongodb-v2:0.1.3"
+- dockerImage: "airbyte/source-mongodb-v2:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
