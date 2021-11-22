@@ -234,13 +234,13 @@ jobs:
       - name: Integration test
         run: SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
 
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
+      #- name: Extract branch name
+      #  shell: bash
+      #  run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      #  id: extract_branch
 
       - name: Slow integration test
-        if: startWith('bump-version', steps.extract_branch.outputs.branch) || steps.extract_branch.outputs.branch == 'master'
+       # if: startWith('bump-version', steps.extract_branch.outputs.branch) || steps.extract_branch.outputs.branch == 'master'
         run: SUB_BUILD=PLATFORM ./gradlew slowIntegrationTest
 
       - name: Test if Seed spec is updated
