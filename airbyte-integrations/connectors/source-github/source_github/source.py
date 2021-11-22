@@ -133,6 +133,8 @@ class SourceGithub(AbstractSource):
             # In case of getting repository list for given organization was
             # successfull no need of checking stats for every repository within
             # that organization.
+            # Since we have "repo" scope requested it should grant access to private repos as well:
+            # https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
             repositories, _ = self._generate_repositories(config=config, authenticator=authenticator)
 
             repository_stats_stream = RepositoryStats(
@@ -140,7 +142,7 @@ class SourceGithub(AbstractSource):
                 repositories=repositories,
             )
             for stream_slice in repository_stats_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-                next(repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+                next(repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
             return True, None
         except Exception as e:
             return False, repr(e)
