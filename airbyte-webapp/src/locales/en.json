@@ -295,6 +295,7 @@
   "connection.successSync": "Succeeded sync",
   "connection.noSyncData": "Sync was not started",
   "connection.refreshSchema": "Refresh schema",
+  "connection.replication": "Replication",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",

@@ -18,9 +18,10 @@ import DestinationDefinitionResource from "core/resources/DestinationDefinition"
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { equal } from "utils/objects";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import ReplicationView from "./components/ReplicationView";
 
 type ConnectionItemPageProps = {
-  currentStep: "status" | "settings";
+  currentStep: "status" | "settings" | "replication";
 };
 
 const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
@@ -62,6 +63,10 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
       name: <FormattedMessage id={"sources.status"} />,
     },
     {
+      id: "replication",
+      name: <FormattedMessage id={"connection.replication"} />,
+    },
+    {
       id: "settings",
       name: <FormattedMessage id={"sources.settings"} />,
     },
@@ -71,6 +76,10 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
     if (id === "settings") {
       push(
         `${Routes.Connections}/${connection.connectionId}${Routes.Settings}`
+      );
+    } else if (id === "replication") {
+      push(
+        `${Routes.Connections}/${connection.connectionId}${Routes.Replication}`
       );
     } else {
       push(`${Routes.Connections}/${connection.connectionId}`);
@@ -89,6 +98,7 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   };
 
   const renderStep = () => {
+    console.log(currentStep);
     if (currentStep === "status") {
       return (
         <StatusView
@@ -99,16 +109,19 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
         />
       );
     }
+    if (currentStep === "replication") {
+      return (
+        <ReplicationView
+          onAfterSaveSchema={onAfterSaveSchema}
+          connectionId={connection.connectionId}
+          frequencyText={frequency?.text}
+          sourceDefinition={sourceDefinition}
+          destinationDefinition={destinationDefinition}
+        />
+      );
+    }
 
-    return (
-      <SettingsView
-        onAfterSaveSchema={onAfterSaveSchema}
-        connectionId={connection.connectionId}
-        frequencyText={frequency?.text}
-        sourceDefinition={sourceDefinition}
-        destinationDefinition={destinationDefinition}
-      />
-    );
+    return <SettingsView connectionId={connection.connectionId} />;
   };
 
   const linkToSource = () => (

@@ -41,6 +41,11 @@ const ConnectionPage: React.FC = () => {
             <ConnectionItemPage currentStep="settings" />
           </ErrorBoundary>
         </Route>
+        <Route path={`${Routes.Connections}/:id${Routes.Replication}`}>
+          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
+            <ConnectionItemPage currentStep="replication" />
+          </ErrorBoundary>
+        </Route>
         <Route path={`${Routes.Connections}/:id`}>
           <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
             <ConnectionItemPage currentStep="status" />

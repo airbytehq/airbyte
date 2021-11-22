@@ -40,6 +40,7 @@ export enum Routes {
   SourceNew = "/new-source",
   DestinationNew = "/new-destination",
   Settings = "/settings",
+  Replication = "/replication",
   Configuration = "/configuration",
   Notifications = "/notifications",
   Metrics = "/metrics",
