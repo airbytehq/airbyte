@@ -3,16 +3,19 @@
 #
 
 import json
+import os
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import requests
+import vcr
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from requests.auth import AuthBase
+from vcr.cassette import Cassette
 
 
 class LinnworksStream(HttpStream, ABC):
@@ -239,6 +242,19 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
         for record in self.paged_result(response)["Data"]:
             yield record
 
+    def request_cache(self) -> Cassette:
+        try:
+            os.remove(self.cache_filename)
+        except FileNotFoundError:
+            pass
+
+        return vcr.use_cassette(
+            self.cache_filename,
+            record_mode="new_episodes",
+            serializer="yaml",
+            match_on=["method", "scheme", "host", "port", "path", "query", "body"],
+        )
+
 
 class ProcessedOrderDetails(HttpSubStream, LinnworksStream):
     # https://apps.linnworks.net/Api/Method/Orders-GetOrdersById
@@ -253,7 +269,6 @@ class ProcessedOrderDetails(HttpSubStream, LinnworksStream):
     def path(self, **kwargs) -> str:
         return "/api/Orders/GetOrdersById"
 
-
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         buffer = []
         for slice in HttpSubStream.stream_slices(self, **kwargs):
@@ -263,7 +278,6 @@ class ProcessedOrderDetails(HttpSubStream, LinnworksStream):
                 buffer = []
         if len(buffer) > 0:
             yield buffer
-
 
     def request_body_data(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
