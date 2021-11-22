@@ -9,7 +9,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.models import SyncMode
-from source_iterable.iterable_streams import IterableExportStream, IterableExportStreamRanged, IterableStream
+from source_iterable.iterable_streams import IterableExportStreamAdjustableRange, IterableExportStreamRanged, IterableStream
 
 EVENT_ROWS_LIMIT = 200
 CAMPAIGNS_PER_REQUEST = 20
@@ -141,42 +141,42 @@ class Channels(IterableStream):
         return "channels"
 
 
-class EmailBounce(IterableExportStream):
+class EmailBounce(IterableExportStreamAdjustableRange):
     name = "email_bounce"
     data_field = "emailBounce"
 
 
-class EmailClick(IterableExportStreamRanged):
+class EmailClick(IterableExportStreamAdjustableRange):
     name = "email_click"
     data_field = "emailClick"
 
 
-class EmailComplaint(IterableExportStream):
+class EmailComplaint(IterableExportStreamAdjustableRange):
     name = "email_complaint"
     data_field = "emailComplaint"
 
 
-class EmailOpen(IterableExportStreamRanged):
+class EmailOpen(IterableExportStreamAdjustableRange):
     name = "email_open"
     data_field = "emailOpen"
 
 
-class EmailSend(IterableExportStreamRanged):
+class EmailSend(IterableExportStreamAdjustableRange):
     name = "email_send"
     data_field = "emailSend"
 
 
-class EmailSendSkip(IterableExportStreamRanged):
+class EmailSendSkip(IterableExportStreamAdjustableRange):
     name = "email_send_skip"
     data_field = "emailSendSkip"
 
 
-class EmailSubscribe(IterableExportStream):
+class EmailSubscribe(IterableExportStreamAdjustableRange):
     name = "email_subscribe"
     data_field = "emailSubscribe"
 
 
-class EmailUnsubscribe(IterableExportStream):
+class EmailUnsubscribe(IterableExportStreamAdjustableRange):
     name = "email_unsubscribe"
     data_field = "emailUnsubscribe"
 
@@ -228,7 +228,7 @@ class Metadata(IterableStream):
         return "metadata"
 
 
-class Templates(IterableExportStream):
+class Templates(IterableExportStreamRanged):
     data_field = "templates"
     template_types = ["Base", "Blast", "Triggered", "Workflow"]
     message_types = ["Email", "Push", "InApp", "SMS"]
@@ -251,6 +251,6 @@ class Templates(IterableExportStream):
             yield record
 
 
-class Users(IterableExportStream):
+class Users(IterableExportStreamRanged):
     data_field = "user"
     cursor_field = "profileUpdatedAt"
