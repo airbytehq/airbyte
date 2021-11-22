@@ -15,7 +15,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.io.Resources;
 import io.airbyte.commons.io.Archives;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.DestinationConnection;
@@ -38,11 +37,9 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.migrate.Migrations;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.RunMigration;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -69,8 +66,6 @@ public class RunMigrationTest {
   private static final String TARGET_VERSION = Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1).getVersion();
   private static final String DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED = "d2147be5-fa36-4936-977e-f031affa5895";
   private static final String DEPRECATED_SOURCE_DEFINITION_BEING_USED = "4eb22946-2a79-4d20-a3e6-effd234613c3";
-  private static final ConnectorSpecification MOCK_CONNECTOR_SPEC = new ConnectorSpecification()
-      .withConnectionSpecification(Jsons.deserialize("{}"));
 
   private static PostgreSQLContainer<?> container;
   private static Database jobDatabase;
@@ -159,7 +154,6 @@ public class RunMigrationTest {
         new NoOpSecretsHydrator(),
         Optional.of(secretPersistence),
         Optional.of(secretPersistence));
-    configRepository.setSpecFetcher(s -> MOCK_CONNECTOR_SPEC);
     final Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSourceDefinitions().stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
     assertTrue(sourceDefinitionsBeforeMigration.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
@@ -178,7 +172,6 @@ public class RunMigrationTest {
         new NoOpSecretsHydrator(),
         Optional.of(secretPersistence),
         Optional.of(secretPersistence));
-    configRepository.setSpecFetcher(s -> MOCK_CONNECTOR_SPEC);
     final UUID workspaceId = configRepository.listStandardWorkspaces(true).get(0).getWorkspaceId();
     // originally the default workspace started with a hardcoded id. the migration in version 0.29.0
     // took that id and randomized it. we want to check that the id is now NOT that hardcoded id and
@@ -350,7 +343,6 @@ public class RunMigrationTest {
         new NoOpSecretsHydrator(),
         Optional.of(secretPersistence),
         Optional.of(secretPersistence));
-    configRepository.setSpecFetcher(s -> MOCK_CONNECTOR_SPEC);
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
         configRepository,
