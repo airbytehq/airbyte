@@ -12,10 +12,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
@@ -39,10 +37,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import io.airbyte.test.utils.CockroachDBContainerHelper;
-
-import java.sql.Connection;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -53,13 +47,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.postgresql.ds.PGSimpleDataSource;
-import org.testcontainers.containers.CockroachContainer;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.builder.ImageFromDockerfile;
-import org.testcontainers.utility.MountableFile;
 
 class CockroachDbJdbcEncryptSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
@@ -75,8 +62,7 @@ class CockroachDbJdbcEncryptSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   private JsonNode config;
 
   @BeforeAll
-  static void init() {
-
+  static void init() throws Exception {
     container.start();
   }
 
@@ -94,26 +80,7 @@ class CockroachDbJdbcEncryptSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   }
 
   @Test
-  public void sss() throws Exception {
-    PGSimpleDataSource ds = new PGSimpleDataSource();
-
-
-    ds.setServerNames(new String[]{"localhost"});
-    ds.setPortNumbers(new int[]{26257});
-    ds.setDatabaseName("defaultdb");
-    ds.setUser("test_user");
-    ds.setPassword("test_user");
-    ds.setSsl(true);
-    ds.setSslMode("require");
-    ds.setApplicationName("CockroachDbJdbcEncryptSourceAcceptanceTest");
-
-    System.out.println(ds.getProtocolVersion());
-    System.out.println(ds.getSslHostnameVerifier());
-    System.out.println(ds.getSslCert());
-
-    Connection connection = ds.getConnection();
-    System.out.println(connection.prepareCall("select 1").execute());
-  }
+  public void test() {}
 
   @Override
   public boolean supportsSchemas() {

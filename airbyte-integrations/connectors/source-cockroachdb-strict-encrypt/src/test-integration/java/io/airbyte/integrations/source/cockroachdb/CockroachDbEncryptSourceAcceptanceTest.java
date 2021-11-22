@@ -26,28 +26,25 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
-import org.testcontainers.containers.CockroachContainer;
 
 public class CockroachDbEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
 
-  private CockroachContainer container;
+  private CockroachDbSslTestContainer container = new CockroachDbSslTestContainer();
   private JsonNode config;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new CockroachContainer("cockroachdb/cockroach");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        // by some reason it return not a port number as exposed and mentioned in logs
-        .put("port", container.getFirstMappedPort() - 1)
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
+        .put("host", container.getCockroachSslDbContainer().getHost())
+        .put("port", container.getCockroachSslDbContainer().getFirstMappedPort())
+        .put("database", "defaultdb")
+        .put("username", "test_user")
+        .put("password", "test_user")
         .build());
 
     final Database database = Databases.createDatabase(

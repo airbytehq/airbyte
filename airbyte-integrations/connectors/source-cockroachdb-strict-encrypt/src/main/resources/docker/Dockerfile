@@ -1,4 +1,4 @@
-FROM cockroachdb/cockroach:latest
+FROM cockroachdb/cockroach:20.2.18
 
 ##
 # Test CockroachDB container with enabled SSL
@@ -16,4 +16,7 @@ EXPOSE 26257
 
 COPY cockroachdb_init.sh .
 COPY cockroachdb_test_user.sh .
+
+RUN chmod +x cockroachdb_init.sh
+
 ENTRYPOINT cockroachdb_init.sh

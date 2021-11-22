@@ -6,7 +6,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.source.cockroachdb.CockroachDbSourceStrictEncrypt'
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0', '-Djdk.tls.client.protocols=TLSv1.2']
+    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
@@ -25,6 +25,7 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-cockroachdb')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-cockroachdb-strict-encrypt')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
