@@ -10,6 +10,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.flows.AsanaOAuthFlow;
 import io.airbyte.oauth.flows.GithubOAuthFlow;
+import io.airbyte.oauth.flows.HarvestOAuthFlow;
 import io.airbyte.oauth.flows.HubspotOAuthFlow;
 import io.airbyte.oauth.flows.IntercomOAuthFlow;
 import io.airbyte.oauth.flows.LinkedinAdsOAuthFlow;
@@ -27,6 +28,7 @@ import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
 import io.airbyte.oauth.flows.google.GoogleSheetsOAuthFlow;
+import io.airbyte.oauth.flows.google.YouTubeAnalyticsOAuthFlow;
 import java.net.http.HttpClient;
 import java.util.Map;
 
@@ -44,6 +46,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-google-analytics-v4", new GoogleAnalyticsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-google-search-console", new GoogleSearchConsoleOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-google-sheets", new GoogleSheetsOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-harvest", new HarvestOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-hubspot", new HubspotOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-intercom", new IntercomOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-instagram", new InstagramOAuthFlow(configRepository, httpClient))
@@ -55,6 +58,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-snapchat-marketing", new SnapchatMarketingOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-youtube-analytics", new YouTubeAnalyticsOAuthFlow(configRepository, httpClient))
         .build();
   }
 
