@@ -984,7 +984,7 @@
         "tags": {
           "type": ["null", "string"]
         },
-        "tax_exempt": {
+        "tax_exemptions": {
           "type": ["null", "boolean"]
         },
         "id": {
