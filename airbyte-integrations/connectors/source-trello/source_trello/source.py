@@ -55,6 +55,13 @@ class ChildStreamMixin:
     parent_stream_class: Optional[TrelloStream] = None
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        config = self.config
+        board_ids = config.get("board_ids", [])
+        if len(board_ids) > 0:
+            for id in board_ids:
+                yield {"id": id}
+            # early exit because we don't need to fetch all boards we specifically told us not to
+            return
         for item in self.parent_stream_class(config=self.config).read_records(sync_mode=sync_mode):
             yield {"id": item["id"]}
 
@@ -209,5 +216,4 @@ class SourceTrello(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["authenticator"] = self._get_authenticator(config)
-
         return [Actions(config), Boards(config), Cards(config), Checklists(config), Lists(config), Users(config)]
