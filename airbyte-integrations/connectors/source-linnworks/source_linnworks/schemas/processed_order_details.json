@@ -245,12 +245,120 @@
           "description": "Username of customer (Comes from channel)"
         },
         "Address": {
-          "$ref": "#/$defs/customer_address",
-          "description": "Customer address"
+          "type": "object",
+          "description": "Customer address",
+          "additionalProperties": false,
+          "properties": {
+            "EmailAddress": {
+              "type": "string",
+              "description": "Customer's email address."
+            },
+            "Address1": {
+              "type": "string",
+              "description": "First line of customer address."
+            },
+            "Address2": {
+              "type": "string",
+              "description": "Second line of customer address."
+            },
+            "Address3": {
+              "type": "string",
+              "description": "Third line of customer address."
+            },
+            "Town": {
+              "type": "string",
+              "description": "Customer's town."
+            },
+            "Region": {
+              "type": "string",
+              "description": "Customer's region."
+            },
+            "PostCode": {
+              "type": "string",
+              "description": "Customer's postcode."
+            },
+            "Country": {
+              "type": "string",
+              "description": "Customer's country."
+            },
+            "Continent": {
+              "type": "string",
+              "description": "Customer's continent"
+            },
+            "FullName": {
+              "type": "string",
+              "description": "Customer's first and second name."
+            },
+            "Company": {
+              "type": "string",
+              "description": "Customer's company name."
+            },
+            "PhoneNumber": {
+              "type": "string",
+              "description": "Customer's telephone number."
+            },
+            "CountryId": {
+              "type": "string"
+            }
+          }
         },
         "BillingAddress": {
-          "$ref": "#/$defs/customer_address",
-          "description": "Customer billing address"
+          "type": "object",
+          "description": "Customer billing address",
+          "additionalProperties": false,
+          "properties": {
+            "EmailAddress": {
+              "type": "string",
+              "description": "Customer's email address."
+            },
+            "Address1": {
+              "type": "string",
+              "description": "First line of customer address."
+            },
+            "Address2": {
+              "type": "string",
+              "description": "Second line of customer address."
+            },
+            "Address3": {
+              "type": "string",
+              "description": "Third line of customer address."
+            },
+            "Town": {
+              "type": "string",
+              "description": "Customer's town."
+            },
+            "Region": {
+              "type": "string",
+              "description": "Customer's region."
+            },
+            "PostCode": {
+              "type": "string",
+              "description": "Customer's postcode."
+            },
+            "Country": {
+              "type": "string",
+              "description": "Customer's country."
+            },
+            "Continent": {
+              "type": "string",
+              "description": "Customer's continent"
+            },
+            "FullName": {
+              "type": "string",
+              "description": "Customer's first and second name."
+            },
+            "Company": {
+              "type": "string",
+              "description": "Customer's company name."
+            },
+            "PhoneNumber": {
+              "type": "string",
+              "description": "Customer's telephone number."
+            },
+            "CountryId": {
+              "type": "string"
+            }
+          }
         }
       }
     },
@@ -751,65 +859,6 @@
     "TaxId": {
       "type": "string",
       "description": "Buyer's tax number."
-    }
-  },
-  "$defs": {
-    "customer_address": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "EmailAddress": {
-          "type": "string",
-          "description": "Customer's email address."
-        },
-        "Address1": {
-          "type": "string",
-          "description": "First line of customer address."
-        },
-        "Address2": {
-          "type": "string",
-          "description": "Second line of customer address."
-        },
-        "Address3": {
-          "type": "string",
-          "description": "Third line of customer address."
-        },
-        "Town": {
-          "type": "string",
-          "description": "Customer's town."
-        },
-        "Region": {
-          "type": "string",
-          "description": "Customer's region."
-        },
-        "PostCode": {
-          "type": "string",
-          "description": "Customer's postcode."
-        },
-        "Country": {
-          "type": "string",
-          "description": "Customer's country."
-        },
-        "Continent": {
-          "type": "string",
-          "description": "Customer's continent"
-        },
-        "FullName": {
-          "type": "string",
-          "description": "Customer's first and second name."
-        },
-        "Company": {
-          "type": "string",
-          "description": "Customer's company name."
-        },
-        "PhoneNumber": {
-          "type": "string",
-          "description": "Customer's telephone number."
-        },
-        "CountryId": {
-          "type": "string"
-        }
-      }
     }
   }
 }
