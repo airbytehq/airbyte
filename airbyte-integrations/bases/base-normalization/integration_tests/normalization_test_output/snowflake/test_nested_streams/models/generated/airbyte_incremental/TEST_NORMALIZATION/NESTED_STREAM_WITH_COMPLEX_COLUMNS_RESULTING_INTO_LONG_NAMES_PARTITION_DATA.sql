@@ -4,6 +4,7 @@
     tags = [ "nested" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_DATA_AB3') }}
 select
     _AIRBYTE_PARTITION_HASHID,
     CURRENCY,
