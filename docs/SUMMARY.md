@@ -180,6 +180,7 @@
     * [Cassandra](integrations/destinations/cassandra.md)
     * [Scylla](integrations/destinations/scylla.md)
     * [Redis](integrations/destinations/redis.md)
+    * [Kinesis](integrations/destinations/kinesis.md)
   * [Custom or New Connector](integrations/custom-connectors.md)
 * [Connector Development](connector-development/README.md)
   * [Tutorials](connector-development/tutorials/README.md)
