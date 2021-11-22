@@ -135,7 +135,7 @@
           },
           "binary_field_name": {
             "type": "string",
-            "contentEncoding":"base64"
+            "contentEncoding": "base64"
           }
         }
       }
