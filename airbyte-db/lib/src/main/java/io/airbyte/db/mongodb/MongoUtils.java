@@ -193,9 +193,7 @@ public class MongoUtils {
         new Document("$unwind", "$arrayofkeyvalue"),
         new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
     if (output.cursor().hasNext()) {
-      var fieldsNames = (List) output.cursor().next().get("allkeys");
-      fieldsNames.remove("_id");
-      return fieldsNames;
+      return (List) output.cursor().next().get("allkeys");
     } else {
       return Collections.emptyList();
     }
