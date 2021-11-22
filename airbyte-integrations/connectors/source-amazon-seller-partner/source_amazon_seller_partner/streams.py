@@ -364,10 +364,11 @@ class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
         }        
         result.update(data_times)
         
-        report_options = {
-            "reportOptions": self._report_options
-        }
-        result.update(report_options)
+        if self._report_options is not None:
+            report_options = {
+                "reportOptions": json_lib.loads(self._report_options)
+            }
+            result.update(report_options)
 
         return result
 
