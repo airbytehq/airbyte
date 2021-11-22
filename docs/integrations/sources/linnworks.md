@@ -11,6 +11,7 @@ This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connec
 This Source is capable of syncing the following data as streams:
 
 * [StockLocations](https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations)
+* [StockLocationDetails](https://apps.linnworks.net/Api/Method/Locations-GetLocation)
 * [StockItems](https://apps.linnworks.net//Api/Method/Stock-GetStockItemsFull)
 * [ProcessedOrders](https://apps.linnworks.net/Api/Method/ProcessedOrders-SearchProcessedOrders)
 
@@ -52,5 +53,6 @@ Authentication credentials can be obtained on developer portal section Applicati
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.0 | 2021-11-22 | [8169](https://github.com/airbytehq/airbyte/pull/8169) | Source Linnworks: refactor stream StockLocations |
 | 0.1.0 | 2021-11-09 | [7588](https://github.com/airbytehq/airbyte/pull/7588) | New Source: Linnworks |
 
