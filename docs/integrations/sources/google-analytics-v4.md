@@ -132,6 +132,7 @@ The Google Analytics connector should not run into Google Analytics API limitati
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.10 | 2021-11-22 | [0000](https://github.com/airbytehq/airbyte/pull/0000) | Fix validation of unknown metric(s) or dimension(s) error |
 | 0.1.9 | 2021-10-27 | [7410](https://github.com/airbytehq/airbyte/pull/7410) | Add check for correct permission for requested `view_id` |
 | 0.1.8 | 2021-10-13 | [7020](https://github.com/airbytehq/airbyte/pull/7020) | Add intermediary auth config support |
 | 0.1.7 | 2021-10-07 | [6414](https://github.com/airbytehq/airbyte/pull/6414) | Declare oauth parameters in google sources |

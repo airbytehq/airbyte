@@ -119,6 +119,16 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         if next_page:
             return {"pageToken": next_page}
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 400:
+            self.logger.info(f"{response.json()['error']['message']}")
+            self.raise_on_http_errors = False
+
+        return super().should_retry(response)
+
+    def raise_on_http_errors(self) -> bool:
+        return True
+
     def request_body_json(
         self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> Optional[Mapping]:
@@ -504,6 +514,9 @@ class SourceGoogleAnalyticsV4(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         streams: List[GoogleAnalyticsV4Stream] = []
+
+        if "window_in_days" not in config:
+            config["window_in_days"] = 90
 
         authenticator = self.get_authenticator(config)
 
