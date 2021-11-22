@@ -1,4 +1,4 @@
-FROM cockroachdb/cockroach:20.2.18
+FROM cockroachdb/cockroach
 
 ##
 # Test CockroachDB container with enabled SSL
