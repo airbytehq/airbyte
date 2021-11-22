@@ -152,6 +152,7 @@ export_github_secrets
 read_secrets destination-bigquery "$BIGQUERY_INTEGRATION_TEST_CREDS" "credentials.json"
 read_secrets destination-bigquery-denormalized "$BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS" "credentials.json"
 read_secrets destination-databricks "$DESTINATION_DATABRICKS_CREDS"
+read_secrets destination-firestore "$DESTINATION_FIRESTORE_CREDS"
 read_secrets destination-gcs "$DESTINATION_GCS_CREDS"
 read_secrets destination-kvdb "$DESTINATION_KVDB_TEST_CREDS"
 read_secrets destination-keen "$DESTINATION_KEEN_TEST_CREDS"
@@ -175,6 +176,7 @@ read_secrets base-normalization "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "snowflake.j
 read_secrets base-normalization "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" "redshift.json"
 read_secrets base-normalization "$AWS_ORACLE_INTEGRATION_TEST_CREDS" "oracle.json"
 
+read_secrets source-airtable "$SOURCE_AIRTABLE_TEST_CREDS"
 read_secrets source-amazon-seller-partner "$AMAZON_SELLER_PARTNER_TEST_CREDS"
 read_secrets source-amazon-sqs "$SOURCE_AMAZON_SQS_TEST_CREDS"
 read_secrets source-amplitude "$AMPLITUDE_INTEGRATION_TEST_CREDS"
@@ -224,7 +226,6 @@ read_secrets source-google-sheets "$GOOGLE_SHEETS_TESTS_CREDS_OLD" "old_config.j
 read_secrets source-google-workspace-admin-reports "$GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS"
 read_secrets source-greenhouse "$GREENHOUSE_TEST_CREDS"
 read_secrets source-greenhouse "$GREENHOUSE_TEST_CREDS_LIMITED" "config_users_only.json"
-read_secrets source-harvest "$HARVEST_INTEGRATION_TESTS_CREDS"
 read_secrets source-hubspot "$HUBSPOT_INTEGRATION_TESTS_CREDS"
 read_secrets source-hubspot "$HUBSPOT_INTEGRATION_TESTS_CREDS_OAUTH" "config_oauth.json"
 read_secrets source-instagram "$INSTAGRAM_INTEGRATION_TESTS_CREDS"

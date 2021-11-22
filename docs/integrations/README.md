@@ -14,6 +14,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 | Connector | Grade |
 | :--- | :--- |
+| [Airtable](sources/airtable.md) | Alpha |
 | [Amazon SQS](sources/amazon-sqs.md) | Alpha |
 | [Amazon Seller Partner](sources/amazon-seller-partner.md) | Alpha |
 | [Amplitude](sources/amplitude.md) | Beta |
@@ -26,7 +27,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [BigCommerce](sources/bigcommerce.md) | Alpha |
 | [BigQuery](sources/bigquery.md) | Beta |
 | [Bing Ads](sources/bing-ads.md) | Beta |
-| [Cart](sources/cart.md) | Beta |
+| [Cart.com](sources/cart.md) | Beta |
 | [Chargebee](sources/chargebee.md) | Alpha |
 | [ClickHouse](sources/clickhouse.md) | Beta |
 | [Close.com](sources/close-com.md) | Beta |
@@ -137,6 +138,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Databricks](destinations/databricks.md) | Beta |
 | [Elasticsearch](destinations/elasticsearch.md) | Alpha |
 | [Google Cloud Storage \(GCS\)](destinations/gcs.md) | Alpha |
+| [Google Firestore](destinations/firestore.md) | Alpha |
 | [Google Pubsub](destinations/pubsub.md) | Alpha |
 | [Kafka](destinations/kafka.md) | Alpha |
 | [Keen](destinations/keen.md) | Alpha |
@@ -144,6 +146,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Local JSON](destinations/local-json.md) | Certified |
 | [MeiliSearch](destinations/meilisearch.md) | Beta |
 | [MongoDB](destinations/mongodb.md) | Alpha |
+| [MQTT](destinations/mqtt.md) | Alpha |
 | [MySQL](destinations/mysql.md) | Beta |
 | [Oracle](destinations/oracle.md) | Alpha |
 | [Postgres](destinations/postgres.md) | Certified |
@@ -154,4 +157,5 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Snowflake](destinations/snowflake.md) | Certified |
 | [Cassandra](destinations/cassandra.md) | Alpha |
 | [Scylla](destinations/scylla.md) | Alpha |
-
+| [Redis](destinations/redis.md) | Alpha |
+| [Kinesis](destinations/kinesis.md) | Alpha |
