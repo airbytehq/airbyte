@@ -73,14 +73,12 @@ class ConfigurationUpdateTest {
       .withConfiguration(NEW_CONFIGURATION);
 
   private ConfigRepository configRepository;
-  private SpecFetcher specFetcher;
   private JsonSecretsProcessor secretsProcessor;
   private ConfigurationUpdate configurationUpdate;
 
   @BeforeEach
   void setup() {
     configRepository = mock(ConfigRepository.class);
-    specFetcher = mock(SpecFetcher.class);
     secretsProcessor = mock(JsonSecretsProcessor.class);
 
     configurationUpdate = new ConfigurationUpdate(configRepository, secretsProcessor);
