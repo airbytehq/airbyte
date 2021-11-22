@@ -198,11 +198,11 @@ subprojects {
     }
 
     def integrationTagName = 'platform-integration'
-    def slowIntegratinoTagName = 'platform-slow-integration'
+    def slowIntegrationTagName = 'platform-slow-integration'
 
     test {
         useJUnitPlatform {
-            excludeTags(integrationTagName, slowIntegratinoTagName)
+            excludeTags(integrationTagName, slowIntegrationTagName)
         }
         testLogging() {
             events 'failed'
@@ -225,7 +225,7 @@ subprojects {
 
     task slowIntegrationTests(type: Test) {
         useJUnitPlatform {
-            includeTags slowIntegratinoTagName
+            includeTags slowIntegrationTagName
         }
         testLogging() {
             events 'failed'
