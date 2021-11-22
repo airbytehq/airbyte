@@ -442,10 +442,7 @@
             "description": "Current stock level"
           },
           "MinimumLevel": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": ["null", "integer"],
             "description": "Minimum level"
           },
           "AvailableStock": {
@@ -535,10 +532,7 @@
             "description": "If item got an image"
           },
           "ImageId": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "description": "Image ID"
           },
           "AdditionalInfo": {
@@ -615,10 +609,7 @@
                   "description": "If the item is batched, identifies the batch number"
                 },
                 "OrderItemBatchId": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ],
+                  "type": ["null", "integer"],
                   "description": "If the item is batched, identifies the unique order item batch row"
                 }
               }
@@ -753,10 +744,7 @@
       }
     },
     "PaidDateTime": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time",
       "description": "Date and time when the order was marked as paid"
     },
