@@ -71,6 +71,8 @@ class DestinationHandlerTest {
     configurationUpdate = mock(ConfigurationUpdate.class);
     secretsProcessor = mock(JsonSecretsProcessor.class);
 
+    connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
+
     standardDestinationDefinition = new StandardDestinationDefinition()
         .withDestinationDefinitionId(UUID.randomUUID())
         .withName("db2")
@@ -84,8 +86,6 @@ class DestinationHandlerTest {
 
     final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody().destinationDefinitionId(
         standardDestinationDefinition.getDestinationDefinitionId());
-
-    connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
 
     destinationDefinitionSpecificationRead = new DestinationDefinitionSpecificationRead()
         .connectionSpecification(connectorSpecification.getConnectionSpecification())

@@ -70,6 +70,8 @@ class SourceHandlerTest {
     uuidGenerator = mock(Supplier.class);
     secretsProcessor = mock(JsonSecretsProcessor.class);
 
+    connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
+
     standardSourceDefinition = new StandardSourceDefinition()
         .withSourceDefinitionId(UUID.randomUUID())
         .withName("marketo")
@@ -79,8 +81,6 @@ class SourceHandlerTest {
         .withSpec(connectorSpecification);
 
     imageName = DockerUtils.getTaggedImageName(standardSourceDefinition.getDockerRepository(), standardSourceDefinition.getDockerImageTag());
-
-    connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
 
     sourceDefinitionSpecificationRead = new SourceDefinitionSpecificationRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())

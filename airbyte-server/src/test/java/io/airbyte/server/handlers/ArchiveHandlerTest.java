@@ -60,6 +60,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 public class ArchiveHandlerTest {
@@ -116,12 +117,6 @@ public class ArchiveHandlerTest {
 
     jobPersistence.setVersion(VERSION.serialize());
 
-    final SpecFetcher specFetcher = mock(SpecFetcher.class);
-    final ConnectorSpecification emptyConnectorSpec = mock(ConnectorSpecification.class);
-    when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
-    when(specFetcher.getSpec(any(StandardSourceDefinition.class))).thenReturn(emptyConnectorSpec);
-    when(specFetcher.getSpec(any(StandardDestinationDefinition.class))).thenReturn(emptyConnectorSpec);
-
     archiveHandler = new ArchiveHandler(
         VERSION,
         configRepository,
@@ -129,7 +124,6 @@ public class ArchiveHandlerTest {
         YamlSeedConfigPersistence.getDefault(),
         new WorkspaceHelper(configRepository, jobPersistence),
         new NoOpFileTtlManager(),
-        specFetcher,
         true);
   }
 
@@ -295,17 +289,17 @@ public class ArchiveHandlerTest {
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, sourceid.toString(), new SourceConnection()
         .withSourceId(sourceid)
         .withWorkspaceId(workspaceId)
-        .withSourceDefinitionId(configRepository.listStandardSourceDefinitions().get(0).getSourceDefinitionId())
+        .withSourceDefinitionId(UUID.fromString("ef69ef6e-aa7f-4af1-a01d-ef775033524e")) // GitHub source definition
         .withName("test-source")
-        .withConfiguration(Jsons.emptyObject())
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.of("start_date", "2021-03-01T00:00:00Z", "repository", "airbytehq/airbyte")))
         .withTombstone(false));
     final UUID destinationId = UUID.randomUUID();
     configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), new DestinationConnection()
         .withDestinationId(destinationId)
         .withWorkspaceId(workspaceId)
-        .withDestinationDefinitionId(configRepository.listStandardDestinationDefinitions().get(0).getDestinationDefinitionId())
+        .withDestinationDefinitionId(UUID.fromString("079d5540-f236-4294-ba7c-ade8fd918496")) // BigQuery destination definition
         .withName("test-destination")
-        .withConfiguration(Jsons.emptyObject())
+        .withConfiguration(Jsons.jsonNode(ImmutableMap.of("project_id", "project", "dataset_id", "dataset")))
         .withTombstone(false));
   }
 
@@ -333,5 +327,4 @@ public class ArchiveHandlerTest {
               Strings.join(actualRecords, "\n")));
     }
   }
-
 }
