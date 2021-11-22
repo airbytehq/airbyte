@@ -27,7 +27,7 @@ REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
 
-# 33min. taken from real world experience working with amazon seller partner raports
+# 33min. taken from real world experience working with amazon seller partner reports
 REPORTS_MAX_WAIT_SECONDS = 1980
 
 
