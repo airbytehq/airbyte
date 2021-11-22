@@ -27,7 +27,8 @@ REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
 
-REPORTS_MAX_WAIT_SECONDS = 550
+# 33min. taken from real world experience working with amazon seller partner raports
+REPORTS_MAX_WAIT_SECONDS = 1980
 
 
 class AmazonSPStream(HttpStream, ABC):
