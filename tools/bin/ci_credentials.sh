@@ -294,6 +294,7 @@ read_secrets source-zendesk-sunshine "$ZENDESK_SUNSHINE_TEST_CREDS"
 read_secrets source-zendesk-support "$ZENDESK_SUPPORT_TEST_CREDS"
 read_secrets source-zendesk-support "$ZENDESK_SUPPORT_OAUTH_TEST_CREDS" "config_oauth.json"
 read_secrets source-zendesk-talk "$ZENDESK_TALK_TEST_CREDS"
+read_secrets source-zenloop "$SOURCE_ZENLOOP_TEST_CREDS"
 read_secrets source-zoom-singer "$ZOOM_INTEGRATION_TEST_CREDS"
 read_secrets source-zuora "$SOURCE_ZUORA_TEST_CREDS"
 
