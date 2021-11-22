@@ -6,7 +6,6 @@ package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
@@ -63,20 +62,6 @@ public class DriftOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String getClientIdUnsafe(JsonNode config) {
-    // the config object containing client ID is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientIdUnsafe(config.get("credentials"));
-  }
-
-  @Override
-  protected String getClientSecretUnsafe(JsonNode config) {
-    // the config object containing client SECRET is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientSecretUnsafe(config.get("credentials"));
-  }
-
-  @Override
   protected String getAccessTokenUrl() {
     return ACCESS_TOKEN_URL;
   }
@@ -91,14 +76,14 @@ public class DriftOAuthFlow extends BaseOAuth2Flow {
         .build();
   }
 
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, String accessTokenUrl) throws IOException {
     final Map<String, Object> result = new HashMap<>();
     if (data.has("access_token")) {
       result.put("access_token", data.get("access_token").asText());
     } else {
       throw new IOException(String.format("Missing 'access_token' in query params from %s", accessTokenUrl));
     }
-    return Map.of("credentials", result);
+    return result;
   }
 
 }
