@@ -77,14 +77,14 @@ class CockroachDbJdbcEncryptSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   @BeforeAll
   static void init() {
 
-    //container.start();
+    container.start();
   }
 
   @BeforeEach
   public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "localhost")//container.getCockroachSslDbContainer().getHost())
-        .put("port", "26257")//container.getCockroachSslDbContainer().getFirstMappedPort())
+        .put("host", container.getCockroachSslDbContainer().getHost())
+        .put("port", container.getCockroachSslDbContainer().getFirstMappedPort())
         .put("database", "defaultdb")
         .put("username", "test_user")
         .put("password", "test_user")
@@ -148,7 +148,7 @@ class CockroachDbJdbcEncryptSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   @AfterAll
   static void cleanUp() {
 
-    //container.close();
+    container.close();
   }
 
   @Override
