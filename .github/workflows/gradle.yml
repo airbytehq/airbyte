@@ -231,6 +231,13 @@ jobs:
         run: |
             SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
 
+      - name: Integration test
+        run: SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
+
+      - name: Slow integration test
+        if: contains(['bump-version', 'master'], github.ref)
+        run: SUB_BUILD=PLATFORM ./gradlew slowIntegrationTest
+
       - name: Test if Seed spec is updated
         run: SUB_BUILD=PLATFORM ./gradlew format && git --no-pager diff && test -z "$(git --no-pager diff)"
 
