@@ -37,7 +37,7 @@ public class DriftOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl, JsonNode inputOAuthConfiguration) throws IOException {
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
         .setHost("dev.drift.com")
