@@ -29,16 +29,16 @@
                 "description": "The Client ID of your OAuth application.",
                 "airbyte_secret": true
               },
-              "access_token": {
-                "type": "string",
-                "title": "Access Token",
-                "description": "Long-term access Token for making authenticated requests.",
-                "airbyte_secret": true
-              },
               "client_secret": {
                 "type": "string",
                 "title": "Client Secret",
                 "description": "The Client Secret of your OAuth application.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "Long-term access Token for making authenticated requests.",
                 "airbyte_secret": true
               },
               "subdomain": {
@@ -77,7 +77,7 @@
     "auth_type": "oauth2.0",
     "oauth2Specification": {
       "rootObject": ["credentials", "0"],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowInitParameters": [],
       "oauthFlowOutputParameters": [["access_token"]]
     }
   }

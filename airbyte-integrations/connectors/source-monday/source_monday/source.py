@@ -21,7 +21,6 @@ class MondayStream(HttpStream, ABC):
     url_base: str = "https://api.monday.com/v2"
     primary_key: str = "id"
     page: int = 1
-    pagination_field: str = "page"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -29,7 +28,7 @@ class MondayStream(HttpStream, ABC):
         records = json_response.get(self.name.lower(), [])
         self.page += 1
         if records:
-            return {self.pagination_field: self.page}
+            return {"page": self.page}
 
     def load_schema(self):
         """
@@ -94,8 +93,6 @@ class Boards(MondayStream):
     """
     API Documentation: https://api.developer.monday.com/docs/groups-queries#groups-queries
     """
-
-    pagination_field: str = "pageInt"
 
 
 class Teams(MondayStream):
