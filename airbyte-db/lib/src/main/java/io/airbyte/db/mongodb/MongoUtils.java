@@ -18,7 +18,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -190,9 +189,9 @@ public class MongoUtils {
 
   private static List<String> getFieldsName(MongoCollection<Document> collection) {
     AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
-            new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$$ROOT"))),
-            new Document("$unwind", "$arrayofkeyvalue"),
-            new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
+        new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$$ROOT"))),
+        new Document("$unwind", "$arrayofkeyvalue"),
+        new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
     if (output.cursor().hasNext()) {
       var fieldsNames = (List) output.cursor().next().get("allkeys");
       fieldsNames.remove("_id");
@@ -205,9 +204,9 @@ public class MongoUtils {
   private static ArrayList<String> getTypes(MongoCollection<Document> collection, String name) {
     var fieldName = "$" + name;
     AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
-            new Document("$project", new Document("_id", 0).append("fieldType", new Document("$type", fieldName))),
-            new Document("$group", new Document("_id", new Document("fieldType", "$fieldType"))
-                    .append("count", new Document("$sum", 1)))));
+        new Document("$project", new Document("_id", 0).append("fieldType", new Document("$type", fieldName))),
+        new Document("$group", new Document("_id", new Document("fieldType", "$fieldType"))
+            .append("count", new Document("$sum", 1)))));
     var listOfTypes = new ArrayList<String>();
     var cursor = output.cursor();
     while (cursor.hasNext()) {
