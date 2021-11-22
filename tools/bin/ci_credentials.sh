@@ -30,7 +30,7 @@ function read_secrets() {
   fi
   local key="${connector_name}#${cred_filename}"
   [[ -z "${creds}" ]] && error "Empty credential for the connector '${key} from ${secrets_provider_name}"
-  
+
   if [ -v SECRET_MAP[${key}] ]; then
     echo "The connector '${key}' was added before"
     return 0
@@ -65,8 +65,8 @@ function write_all_secrets() {
     local connector_name=$(echo ${key} | cut -d'#' -f1)
     local cred_filename=$(echo ${key} | cut -d'#' -f2)
     local creds=${SECRET_MAP[${key}]}
-    write_secret_to_disk ${connector_name} ${cred_filename} "${creds}" 
-    
+    write_secret_to_disk ${connector_name} ${cred_filename} "${creds}"
+
   done
   return 0
 }
@@ -77,7 +77,7 @@ function export_github_secrets(){
   local pairs=`echo ${GITHUB_PROVIDED_SECRETS_JSON} | jq -c 'keys[] as $k | {"name": $k, "value": .[$k]} | @base64'`
   while read row; do
     pair=$(echo "${row}" | tr -d '"' | base64 -d)
-    local key=$(echo ${pair} | jq -r .name)  
+    local key=$(echo ${pair} | jq -r .name)
     local value=$(echo ${pair} | jq -r .value)
     if [[ "$key" == *"_CREDS"* ]]; then
       declare -gxr "${key}"="$(echo ${value})"
@@ -107,7 +107,7 @@ function export_gsm_secrets(){
       --header "x-goog-user-project: ${project_id}")
     [[ -z ${data} ]] && error "Can't load secret for connector ${CONNECTOR_NAME}"
     # GSM returns an empty JSON object if secrets are not found.
-    # It breaks JSON parsing by the 'jq' utility. The simplest fix is response normalization 
+    # It breaks JSON parsing by the 'jq' utility. The simplest fix is response normalization
     [[ ${data} == "{}" ]] && data='{"secrets": []}'
 
     for row in $(echo "${data}" | jq -r '.secrets[] | @base64'); do
@@ -198,6 +198,7 @@ read_secrets source-commercetools "$SOURCE_COMMERCETOOLS_TEST_CREDS"
 read_secrets source-confluence "$SOURCE_CONFLUENCE_TEST_CREDS"
 read_secrets source-delighted "$SOURCE_DELIGHTED_TEST_CREDS"
 read_secrets source-drift "$DRIFT_INTEGRATION_TEST_CREDS"
+read_secrets source-drift "$DRIFT_INTEGRATION_TEST_OAUTH_CREDS" "config_oauth.json"
 read_secrets source-dixa "$SOURCE_DIXA_TEST_CREDS"
 read_secrets source-exchange-rates "$EXCHANGE_RATES_TEST_CREDS"
 read_secrets source-file "$GOOGLE_CLOUD_STORAGE_TEST_CREDS" "gcs.json"
