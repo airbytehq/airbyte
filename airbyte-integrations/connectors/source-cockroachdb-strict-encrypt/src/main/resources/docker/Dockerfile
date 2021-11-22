@@ -4,7 +4,7 @@ FROM cockroachdb/cockroach:latest
 # Test CockroachDB container with enabled SSL
 # Database: defaultdb
 # User: test_user
-# Build command: docker build -f Cockroachdb.Dockerfile -t cockroachdb-test-ssl:latest .
+# Build command: docker build -f Dockerfile -t cockroachdb-test-ssl:latest .
 # Run command: docker run -td -p 26257:26257 -p 8080:8080 --name cockroach-test-cont  cockroachdb-test-ssl:latest
 ##
 

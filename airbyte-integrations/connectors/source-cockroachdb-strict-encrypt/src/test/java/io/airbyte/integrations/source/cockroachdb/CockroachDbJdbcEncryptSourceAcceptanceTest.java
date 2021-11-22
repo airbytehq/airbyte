@@ -40,6 +40,9 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.CockroachDBContainerHelper;
+
+import java.sql.Connection;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -50,12 +53,17 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.postgresql.ds.PGSimpleDataSource;
 import org.testcontainers.containers.CockroachContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.MountableFile;
 
 class CockroachDbJdbcEncryptSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
-  private static CockroachContainer PSQL_DB;
+  private static final CockroachDbSslTestContainer container = new CockroachDbSslTestContainer();
   public static String COL_ROW_ID = "rowid";
 
   public static Long ID_VALUE_1 = 1L;
@@ -68,29 +76,43 @@ class CockroachDbJdbcEncryptSourceAcceptanceTest extends JdbcSourceAcceptanceTes
 
   @BeforeAll
   static void init() {
-    PSQL_DB = new CockroachContainer("cockroachdb/cockroach");
-    PSQL_DB.start();
+
+    //container.start();
   }
 
   @BeforeEach
   public void setup() throws Exception {
-    final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
-
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", PSQL_DB.getHost())
-        .put("port", PSQL_DB.getFirstMappedPort() - 1)
-        .put("database", dbName)
-        .put("username", PSQL_DB.getUsername())
-        .put("password", PSQL_DB.getPassword())
-        .put("ssl", false)
+        .put("host", "localhost")//container.getCockroachSslDbContainer().getHost())
+        .put("port", "26257")//container.getCockroachSslDbContainer().getFirstMappedPort())
+        .put("database", "defaultdb")
+        .put("username", "test_user")
+        .put("password", "test_user")
         .build());
 
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs
-        .writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
-    CockroachDBContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
-
     super.setup();
+  }
+
+  @Test
+  public void sss() throws Exception {
+    PGSimpleDataSource ds = new PGSimpleDataSource();
+
+
+    ds.setServerNames(new String[]{"localhost"});
+    ds.setPortNumbers(new int[]{26257});
+    ds.setDatabaseName("defaultdb");
+    ds.setUser("test_user");
+    ds.setPassword("test_user");
+    ds.setSsl(true);
+    ds.setSslMode("require");
+    ds.setApplicationName("CockroachDbJdbcEncryptSourceAcceptanceTest");
+
+    System.out.println(ds.getProtocolVersion());
+    System.out.println(ds.getSslHostnameVerifier());
+    System.out.println(ds.getSslCert());
+
+    Connection connection = ds.getConnection();
+    System.out.println(connection.prepareCall("select 1").execute());
   }
 
   @Override
@@ -125,7 +147,8 @@ class CockroachDbJdbcEncryptSourceAcceptanceTest extends JdbcSourceAcceptanceTes
 
   @AfterAll
   static void cleanUp() {
-    PSQL_DB.close();
+
+    //container.close();
   }
 
   @Override

@@ -49,6 +49,8 @@ public class CockroachDbSource extends AbstractJdbcSource {
         config.get("port").asText(),
         config.get("database").asText()));
 
+    LOGGER.warn(""+config.has("ssl"));
+    LOGGER.warn(""+config.get("ssl"));
     if (config.has("ssl") && config.get("ssl").asBoolean() || !config.has("ssl")) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
@@ -59,6 +61,8 @@ public class CockroachDbSource extends AbstractJdbcSource {
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl.toString());
+
+    LOGGER.warn(jdbcUrl.toString());
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
