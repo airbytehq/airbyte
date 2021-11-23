@@ -143,7 +143,7 @@
     * [Twilio](integrations/sources/twilio.md)
     * [Typeform](integrations/sources/typeform.md)
     * [US Census API](integrations/sources/us-census.md)
-    * [Woo Commerce](integrations/sources/woo-commerce.md)
+    * [Woo Commerce](integrations/sources/woocommerce.md)
     * [Wordpress](integrations/sources/wordpress.md)
     * [YouTube Analytics](integrations/sources/youtube-analytics.md)
     * [Zencart](integrations/sources/zencart.md)
