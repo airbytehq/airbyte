@@ -10,7 +10,6 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
@@ -22,16 +21,5 @@ dependencies {
     implementation "org.testcontainers:cockroachdb:1.15.3"
     implementation "org.postgresql:postgresql:42.3.1"
 
-    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-cockroachdb')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-cockroachdb-strict-encrypt')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-
-    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    testImplementation project(":airbyte-json-validation")
-    testImplementation project(':airbyte-test-utils')
 }
