@@ -21,9 +21,9 @@ class SourceRetently(AbstractSource):
         if credentials and "client_id" in credentials:
             return Oauth2Authenticator(
                 token_refresh_endpoint="https://app.retently.com/api/oauth/token",
-                client_id=credentials.get("client_id"),
-                client_secret=credentials.get("client_secret"),
-                refresh_token=credentials.get("refresh_token"),
+                client_id=credentials["client_id"],
+                client_secret=credentials["client_secret"],
+                refresh_token=credentials["refresh_token"],
             )
 
         api_key = credentials.get("api_key", config.get("api_key"))
