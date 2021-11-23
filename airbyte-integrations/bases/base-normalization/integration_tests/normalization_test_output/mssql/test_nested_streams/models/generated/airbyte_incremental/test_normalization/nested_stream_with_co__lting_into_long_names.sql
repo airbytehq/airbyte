@@ -4,6 +4,7 @@
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('nested_stream_with_co__lting_into_long_names_scd') }}
 select
     _airbyte_unique_key,
     id,
