@@ -556,18 +556,14 @@ class TicketMetricEvents(IncrementalExportStream):
     # The API compares the start_time with the ticket metric event's generated_timestamp value, not its updated_at value.
     # The generated_timestamp value is updated for all entity updates, including system updates.
     # If a system update occurs after a event, the unchanged updated_at time will become earlier relative to the updated generated_timestamp time.
-    cursor_field = "generated_timestamp"
+    cursor_field = "time"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """Need to save a cursor values as integer"""
         state = super().get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
         if state and state.get(self.cursor_field):
-            state[self.cursor_field] = int(state[self.cursor_field])
+            state[self.cursor_field] = datetime.strptime(state[self.cursor_field], DATETIME_FORMAT).timestamp()
         return state
-
-    def get_last_end_time(self) -> Optional[Union[str, int]]:
-        """A response with tickets provides cursor data as unixtime"""
-        return self.last_end_time
 
 
 class Macros(IncrementalSortedPageStream):
