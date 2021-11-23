@@ -52,6 +52,16 @@ class SourceTiktokMarketingSpec(BaseModel):
         description="Start Date in format: YYYY-MM-DD.", default=DEFAULT_START_DATE, pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
     )
 
+    report_level: str = Field(
+        description="Until which entity level should be reported", default="AD",
+        enum=["ADVERTISER", "CAMPAIGN", "ADGROUP", "AD"]
+    )
+
+    report_granularity: str = Field(
+        description="Which time granularity should be grouped by; for LIFETIME there will be no grouping",
+        default="DAY", enum=["LIFETIME", "DAY", "HOUR"]
+    )
+
     @staticmethod
     def change_format_to_oneOf(schema: dict, field_name: str) -> dict:
         schema["properties"][field_name]["oneOf"] = deepcopy(schema["properties"][field_name]["anyOf"])

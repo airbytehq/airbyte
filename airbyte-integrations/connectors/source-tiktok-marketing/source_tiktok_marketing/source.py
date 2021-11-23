@@ -12,7 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .spec import SourceTiktokMarketingSpec
-from .streams import AdGroups, Ads, Advertisers, Campaigns, BasicReports
+from .streams import AdGroups, Ads, Advertisers, BasicReports, Campaigns
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
 
