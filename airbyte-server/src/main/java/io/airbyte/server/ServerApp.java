@@ -307,6 +307,10 @@ public class ServerApp implements ServerRunnable {
     return airbyteDatabaseVersion != null ? airbyteDatabaseVersion : initialAirbyteDatabaseVersion;
   }
 
+  public static void main(final String[] args) throws Exception {
+    getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
+  }
+
   /**
    * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
    * no other operation is allowed
@@ -337,10 +341,6 @@ public class ServerApp implements ServerRunnable {
       return true;
     }
     return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
-  }
-
-  public static void main(final String[] args) throws Exception {
-    getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
   }
 
   private static void runFlywayMigration(final Configs configs, final Database configDatabase, final Database jobDatabase) {
