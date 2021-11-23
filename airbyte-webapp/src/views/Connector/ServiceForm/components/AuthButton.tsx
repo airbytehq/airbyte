@@ -8,7 +8,7 @@ import { Button } from "components/base/Button";
 import { isSourceDefinition } from "core/domain/connector/source";
 import { ConnectorDefinition } from "core/domain/connector";
 import { isDestinationDefinition } from "core/domain/connector/destination";
-import { IProps } from "components/base/Button/types";
+import GoogleAuthButton from "./GoogleAuthButton";
 
 const AuthSectionRow = styled.div`
   display: flex;
@@ -53,26 +53,28 @@ function getDefinitionId(
   }
 }
 
+function getButtonComponent(connectorDefinitionId: string) {
+  if (isGoogleConnector(connectorDefinitionId)) {
+    return GoogleAuthButton;
+  } else {
+    return Button;
+  }
+}
+
+function getAuthenticateMessageId(connectorDefinitionId: string) {
+  if (isGoogleConnector(connectorDefinitionId)) {
+    return "connectorForm.signInWithGoogle";
+  } else {
+    return "connectorForm.authenticate";
+  }
+}
+
 export const AuthButton: React.FC = () => {
   const { selectedService, selectedConnector } = useServiceForm();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loading, done, run } = useRunOauthFlow(selectedConnector!);
   const definitionId = getDefinitionId(selectedService!);
-  let Component;
-  if (isGoogleConnector(definitionId!)) {
-    Component = (props: IProps) => (
-      <Button>
-        <img
-          src="/connectors/google/btn_google_light_normal_ios.svg"
-          alt={"Sign in with Goolge"}
-          height={40}
-        />
-        {props.children}
-      </Button>
-    );
-  } else {
-    Component = Button;
-  }
+  const Component = getButtonComponent(definitionId!);
   return (
     <AuthSectionRow>
       <Component isLoading={loading} type="button" onClick={run}>
@@ -80,7 +82,7 @@ export const AuthButton: React.FC = () => {
           <FormattedMessage id="connectorForm.reauthenticate" />
         ) : (
           <FormattedMessage
-            id="connectorForm.authenticate"
+            id={getAuthenticateMessageId(definitionId!)}
             values={{ connector: selectedService?.name }}
           />
         )}
