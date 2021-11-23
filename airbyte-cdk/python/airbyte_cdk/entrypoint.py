@@ -13,6 +13,7 @@ from typing import Iterable, List
 
 from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
+from airbyte_cdk.secure_logger import init_secure_logger
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 
@@ -80,22 +81,24 @@ class AirbyteEntrypoint(object):
                 # Put internal flags back to config dict
                 config.update(internal_config.dict())
 
+                secure_logger = init_secure_logger("airbyte", self.source, config)
+
                 if cmd == "check":
-                    check_result = self.source.check(self.logger, config)
+                    check_result = self.source.check(secure_logger, config)
                     if check_result.status == Status.SUCCEEDED:
-                        self.logger.info("Check succeeded")
+                        secure_logger.info("Check succeeded")
                     else:
-                        self.logger.error("Check failed")
+                        secure_logger.error("Check failed")
 
                     output_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result).json(exclude_unset=True)
                     yield output_message
                 elif cmd == "discover":
-                    catalog = self.source.discover(self.logger, config)
+                    catalog = self.source.discover(secure_logger, config)
                     yield AirbyteMessage(type=Type.CATALOG, catalog=catalog).json(exclude_unset=True)
                 elif cmd == "read":
                     config_catalog = self.source.read_catalog(parsed_args.catalog)
                     state = self.source.read_state(parsed_args.state)
-                    generator = self.source.read(self.logger, config, config_catalog, state)
+                    generator = self.source.read(secure_logger, config, config_catalog, state)
                     for message in generator:
                         yield message.json(exclude_unset=True)
                 else:
