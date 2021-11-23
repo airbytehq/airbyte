@@ -5,11 +5,11 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static com.amazonaws.util.StringUtils.UTF8;
+import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.printHeapMemoryConsumption;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.CopyJobConfiguration;
@@ -21,12 +21,10 @@ import com.google.cloud.bigquery.JobInfo.CreateDisposition;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.LoadJobConfiguration;
 import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.bytes.ByteUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.string.Strings;
@@ -34,7 +32,9 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadStrategy;
+import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadGCPStrategy;
+import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadBasicStrategy;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
@@ -43,14 +43,10 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -63,25 +59,33 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private final BigQuery bigquery;
   private final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs;
-  private final ConfiguredAirbyteCatalog catalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final boolean isGcsUploadingMode;
   private final boolean isKeepFilesInGcs;
-
   private AirbyteMessage lastStateMessage = null;
+  private long bufferSizeInBytes;
+
+  private final List<AirbyteMessage> buffer;
+  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256 mib
+  private final ConfiguredAirbyteCatalog catalog;
+  private AirbyteMessage lastFlushedState;
+  private AirbyteMessage pendingState;
+
 
   public BigQueryRecordConsumer(final BigQuery bigquery,
-                                final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                final ConfiguredAirbyteCatalog catalog,
-                                final Consumer<AirbyteMessage> outputRecordCollector,
-                                final boolean isGcsUploadingMode,
-                                final boolean isKeepFilesInGcs) {
+      final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog,
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final boolean isGcsUploadingMode,
+      final boolean isKeepFilesInGcs) {
     this.bigquery = bigquery;
     this.writeConfigs = writeConfigs;
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
     this.isGcsUploadingMode = isGcsUploadingMode;
+    this.buffer = new ArrayList<>(10_000);
     this.isKeepFilesInGcs = isKeepFilesInGcs;
+    this.bufferSizeInBytes = 0;
   }
 
   @Override
@@ -93,68 +97,50 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   public void acceptTracked(final AirbyteMessage message) throws IOException {
     if (message.getType() == Type.STATE) {
       lastStateMessage = message;
+      pendingState = message;
     } else if (message.getType() == Type.RECORD) {
-      final AirbyteRecordMessage recordMessage = message.getRecord();
-
-      // ignore other message types.
-      final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
-      if (!writeConfigs.containsKey(pair)) {
-        throw new IllegalArgumentException(
-            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
-      }
-      final BigQueryWriteConfig writer = writeConfigs.get(pair);
-
-      // select the way of uploading - normal or through the GCS
-      if (writer.getGcsCsvWriter() == null) {
-        // Normal uploading way
-        try {
-          writer.getWriter()
-              .write(ByteBuffer.wrap((Jsons.serialize(formatRecord(writer.getSchema(), recordMessage)) + "\n").getBytes(Charsets.UTF_8)));
-        } catch (final IOException | RuntimeException e) {
-          LOGGER.error("Got an error while writing message:" + e.getMessage());
-          LOGGER.error(String.format(
-              "Failed to process a message for job: %s, \nStreams numbers: %s, \nSyncMode: %s, \nTableName: %s, \nTmpTableName: %s, \nAirbyteMessage: %s",
-              writer.getWriter().getJob(), catalog.getStreams().size(), writer.getSyncMode(), writer.getTable(), writer.getTmpTable(), message));
-          printHeapMemoryConsumption();
-          throw new RuntimeException(e);
-        }
-      } else {
-        // GCS uploading way, this data will be moved to bigquery in close method
-        final GcsCsvWriter gcsCsvWriter = writer.getGcsCsvWriter();
-        writeRecordToCsv(gcsCsvWriter, recordMessage);
-      }
+      processRecord(message);
     } else {
       LOGGER.warn("Unexpected message: " + message.getType());
     }
   }
 
-  protected JsonNode formatRecord(final Schema schema, final AirbyteRecordMessage recordMessage) {
-    // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
-    // use BQ helpers to string-format correctly.
-    final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
-    final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
-    final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
-    return Jsons.jsonNode(ImmutableMap.of(
-        JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
-        JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(formattedData),
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt));
+  private void processRecord(AirbyteMessage message) {
+    final AirbyteRecordMessage recordMessage = message.getRecord();
+
+    // ignore other message types.
+    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
+    if (!writeConfigs.containsKey(pair)) {
+      throw new IllegalArgumentException(
+          String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+              Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
+    }
+    final BigQueryWriteConfig writer = writeConfigs.get(pair);
+
+    long messageSizeInBytes = ByteUtils.getSizeInBytes(Jsons.serialize(recordMessage.getData()));
+    if (bufferSizeInBytes + messageSizeInBytes >= MAX_BATCH_SIZE_BYTES) {
+      // select the way of uploading - normal or through the GCS
+      if (writer.getGcsCsvWriter() != null) {
+        flushQueueToDestination(writer, new BigQueryUploadGCPStrategy());
+      } else {
+        flushQueueToDestination(writer, new BigQueryUploadBasicStrategy());
+      }
+      bufferSizeInBytes = 0;
+    }
+    buffer.add(message);
+    bufferSizeInBytes += messageSizeInBytes;
   }
 
-  protected void writeRecordToCsv(final GcsCsvWriter gcsCsvWriter, final AirbyteRecordMessage recordMessage) {
-    // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
-    // use BQ helpers to string-format correctly.
-    final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
-    final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
-    final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
-    try {
-      gcsCsvWriter.getCsvPrinter().printRecord(
-          UUID.randomUUID().toString(),
-          formattedEmittedAt,
-          Jsons.serialize(formattedData));
-    } catch (IOException e) {
-      e.printStackTrace();
-      LOGGER.warn("An error occurred writing CSV file.");
+  protected void flushQueueToDestination(BigQueryWriteConfig writer, BigQueryUploadStrategy bigQueryUploadStrategy) {
+    for (final AirbyteMessage airbyteMessage : buffer) {
+      bigQueryUploadStrategy.upload(writer, airbyteMessage, catalog);
+    }
+
+    buffer.clear();
+
+    if (pendingState != null) {
+      lastFlushedState = pendingState;
+      pendingState = null;
     }
   }
 
@@ -170,6 +156,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
     if (isGcsUploadingMode && !isKeepFilesInGcs) {
       deleteDataFromGcsBucket();
+    }
+
+    if (lastFlushedState != null) {
+      outputRecordCollector.accept(lastFlushedState);
     }
   }
 
@@ -422,14 +412,4 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
             .collect(Collectors.joining(", "))
         + String.format(" from `%s.%s.%s`", projectId, destinationTableId.getDataset(), destinationTableId.getTable());
   }
-
-  private void printHeapMemoryConsumption() {
-    final int mb = 1024 * 1024;
-    final MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-    final long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
-    final long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
-    LOGGER.info("Initial Memory (xms) mb = " + xms);
-    LOGGER.info("Max Memory (xmx) : mb + " + xmx);
-  }
-
 }
