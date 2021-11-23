@@ -62,7 +62,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
         }),
       }}
       {...props}
-      value={currentValue}
+      value={currentValue ?? null}
       components={components}
     />
   );
