@@ -553,7 +553,7 @@ class TicketMetrics(IncrementalUnsortedPageStream):
 class TicketMetricEvents(IncrementalExportStream):
     """TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/"""
 
-    # The API compares the start_time with the ticket's generated_timestamp value, not its updated_at value.
+    # The API compares the start_time with the ticket metric event's generated_timestamp value, not its updated_at value.
     # The generated_timestamp value is updated for all entity updates, including system updates.
     # If a system update occurs after a event, the unchanged updated_at time will become earlier relative to the updated generated_timestamp time.
     cursor_field = "generated_timestamp"

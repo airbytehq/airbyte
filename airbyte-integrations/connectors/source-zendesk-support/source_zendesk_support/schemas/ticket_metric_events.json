@@ -17,6 +17,10 @@
     },
     "type": {
       "type": ["null", "string"]
+    },
+    "generated_timestamp": {
+      "type": ["null", "integer"]
     }
-  }
+  },
+  "type": ["null", "object"]
 }
