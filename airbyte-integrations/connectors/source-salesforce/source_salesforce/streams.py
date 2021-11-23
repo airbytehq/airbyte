@@ -286,7 +286,9 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
         stream_date = stream_state.get(self.cursor_field)
         start_date = next_page_token or stream_date or self.start_date
 
-        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} WHERE {self.cursor_field} >= {start_date} "
+        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        if start_date:
+            query += f"WHERE {self.cursor_field} >= {start_date} "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.page_size}"
         return {"q": query}

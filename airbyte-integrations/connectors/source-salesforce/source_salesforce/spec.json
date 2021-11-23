@@ -8,7 +8,6 @@
       "client_id",
       "client_secret",
       "refresh_token",
-      "start_date",
       "api_type"
     ],
     "additionalProperties": false,
