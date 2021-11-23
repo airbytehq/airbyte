@@ -1,29 +1,15 @@
-# MIT License
 #
-# Copyright (c) 2020 Airbyte
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+
 
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Mapping
+import socket
+import time
 
+import docker
 import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
@@ -42,11 +28,29 @@ from destination_sftp_json import DestinationSftpJson
 from destination_sftp_json.client import SftpClient
 
 
-@pytest.fixture(name="config")
-def config_fixture() -> Mapping[str, Any]:
-    with (Path(__file__).parents[1] / "secrets/config.json").open("r") as f:
-        return json.loads(f.read())
+@pytest.fixture(scope="module")
+def docker_client():
+    return docker.from_env()
 
+@pytest.fixture(name="config", scope="module")
+def config_fixture(docker_client):
+    config = {
+        "host": "0.0.0.0",
+        "port": 22,
+        "username": "foo",
+        "password": "pass",
+        "destination_path": "upload"
+    }
+    container = docker_client.containers.run(
+        "atmoz/sftp",
+         f"{config['username']}:{config['password']}:::{config['destination_path']}",
+        name="mysftp",
+        ports={config["port"]:config["port"]}, 
+        detach=True)
+    time.sleep(20)
+    yield config
+    container.kill()
+    container.remove()
 
 @pytest.fixture(name="configured_catalog")
 def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:

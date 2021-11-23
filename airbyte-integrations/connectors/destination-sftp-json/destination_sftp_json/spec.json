@@ -10,7 +10,6 @@
     "type": "object",
     "required": [
       "host",
-      "port",
       "username",
       "password",
       "destination_path"
@@ -30,7 +29,7 @@
         "minimum": 0,
         "maximum": 65536,
         "default": 22,
-        "examples": ["22"],
+        "examples": [22],
         "order": 1
       },
       "username": {
