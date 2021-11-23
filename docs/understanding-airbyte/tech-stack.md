@@ -18,7 +18,7 @@ Connectors can be written in any language. However the most common languages are
 
 ## **Frontend**
 
-* [Node.js 14](https://nodejs.org/en/)
+* [Node.js 16](https://nodejs.org/en/)
 * [TypeScript](https://www.typescriptlang.org/)
 * Web Framework/Library: [React](https://reactjs.org/)
 
