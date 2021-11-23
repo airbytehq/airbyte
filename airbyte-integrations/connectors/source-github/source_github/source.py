@@ -156,35 +156,36 @@ class SourceGithub(AbstractSource):
 
         organization_args = {"authenticator": authenticator, "organizations": organizations}
         repository_args = {"authenticator": authenticator, "repositories": repositories}
-        repository_from_date_args = {**repository_args, "start_date": config["start_date"]}
+        repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
 
         default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)
+        pull_requests_stream = PullRequests(**repository_args_with_start_date)
 
         return [
             Assignees(**repository_args),
             Branches(**repository_args),
             Collaborators(**repository_args),
-            Comments(**repository_from_date_args),
-            CommitCommentReactions(**repository_from_date_args),
-            CommitComments(**repository_from_date_args),
-            Commits(**repository_from_date_args, branches_to_pull=branches_to_pull, default_branches=default_branches),
-            Events(**repository_from_date_args),
-            IssueCommentReactions(**repository_from_date_args),
-            IssueEvents(**repository_from_date_args),
+            Comments(**repository_args_with_start_date),
+            CommitCommentReactions(**repository_args_with_start_date),
+            CommitComments(**repository_args_with_start_date),
+            Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull, default_branches=default_branches),
+            Events(**repository_args_with_start_date),
+            IssueCommentReactions(**repository_args_with_start_date),
+            IssueEvents(**repository_args_with_start_date),
             IssueLabels(**repository_args),
-            IssueMilestones(**repository_from_date_args),
-            IssueReactions(**repository_from_date_args),
-            Issues(**repository_from_date_args),
+            IssueMilestones(**repository_args_with_start_date),
+            IssueReactions(**repository_args_with_start_date),
+            Issues(**repository_args_with_start_date),
             Organizations(**organization_args),
-            Projects(**repository_from_date_args),
-            PullRequestCommentReactions(**repository_from_date_args),
-            PullRequestStats(PullRequests(**repository_from_date_args), **repository_args),
-            PullRequests(**repository_from_date_args),
-            Releases(**repository_from_date_args),
+            Projects(**repository_args_with_start_date),
+            PullRequestCommentReactions(**repository_args_with_start_date),
+            PullRequestStats(parent=pull_requests_stream, **repository_args),
+            PullRequests(**repository_args_with_start_date),
+            Releases(**repository_args_with_start_date),
             Repositories(**organization_args),
-            ReviewComments(**repository_from_date_args),
-            Reviews(PullRequests(**repository_from_date_args), **repository_args),
-            Stargazers(**repository_from_date_args),
+            ReviewComments(**repository_args_with_start_date),
+            Reviews(parent=pull_requests_stream, **repository_args),
+            Stargazers(**repository_args_with_start_date),
             Tags(**repository_args),
             Teams(**organization_args),
             Users(**organization_args),
