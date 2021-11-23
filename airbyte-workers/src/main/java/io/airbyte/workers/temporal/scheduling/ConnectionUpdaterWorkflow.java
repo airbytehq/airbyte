@@ -19,4 +19,7 @@ public interface ConnectionUpdaterWorkflow {
 
   @SignalMethod
   ManualSyncOutput submitManualSync();
+
+  @SignalMethod
+  void deleteConnection();
 }

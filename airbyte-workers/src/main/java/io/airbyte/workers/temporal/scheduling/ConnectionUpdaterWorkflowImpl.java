@@ -8,9 +8,16 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
   private boolean canStart = false;
   private boolean isRunning = false;
+  private boolean isDeleted = false;
 
   @Override public SyncResult run() {
     Workflow.await(() -> canStart);
+
+    if (isDeleted) {
+      return new SyncResult(true);
+    } else {
+      Workflow.continueAsNew();
+    }
     return null;
   }
 
@@ -28,6 +35,11 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     canStart = true;
 
     return new ManualSyncOutput(true);
+  }
+
+  @Override public void deleteConnection() {
+    canStart = false;
+    isDeleted = true;
   }
 
   private Boolean canStart() {
