@@ -10,4 +10,5 @@ import lombok.Value;
 public class SyncResult {
 
   private final boolean success;
+
 }

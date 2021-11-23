@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.scheduling;
 
 import io.temporal.workflow.Workflow;
@@ -10,7 +14,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private boolean isRunning = false;
   private boolean isDeleted = false;
 
-  @Override public SyncResult run() {
+  @Override
+  public SyncResult run() {
     Workflow.await(() -> canStart);
 
     if (isDeleted) {
@@ -21,11 +26,13 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     return null;
   }
 
-  @Override public void updateSchedule(final SchedulingInput input) {
+  @Override
+  public void updateSchedule(final SchedulingInput input) {
     canStart = true;
   }
 
-  @Override public ManualSyncOutput submitManualSync() {
+  @Override
+  public ManualSyncOutput submitManualSync() {
     if (isRunning) {
       log.info("Can't schedule a manual workflow is a sync is running for this connection");
       return new ManualSyncOutput(false);
@@ -37,7 +44,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     return new ManualSyncOutput(true);
   }
 
-  @Override public void deleteConnection() {
+  @Override
+  public void deleteConnection() {
     canStart = false;
     isDeleted = true;
   }
@@ -45,4 +53,5 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private Boolean canStart() {
     return canStart;
   }
+
 }
