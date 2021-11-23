@@ -62,11 +62,25 @@ public interface CloudLogs {
     throw new RuntimeException("Error no cloud credentials configured..");
   }
 
+  /**
+   * Logs are configured to go to a Minio instance if the S3MinioEndpoint configuration specifically
+   * is set, along with the other default S3 logging configurations.
+   *
+   * @param configs contains the environment variables to check
+   * @return boolean indicating if logs are configured to be sent to minio
+   */
   private static boolean hasMinioConfiguration(final LogConfigs configs) {
     return !configs.getS3LogBucket().isBlank() && !configs.getAwsAccessKey().isBlank()
         && !configs.getAwsSecretAccessKey().isBlank() && !configs.getS3MinioEndpoint().isBlank();
   }
 
+  /**
+   * Logs are configured to go to S3 if the S3LogBucketRegion configuration specifically is set, along
+   * with the other default S3 logging configurations.
+   *
+   * @param configs contains the configuration values to check
+   * @return boolean indicating if logs are configured to be sent to S3
+   */
   private static boolean hasS3Configuration(final LogConfigs configs) {
     return !configs.getAwsAccessKey().isBlank() &&
         !configs.getAwsSecretAccessKey().isBlank() &&
