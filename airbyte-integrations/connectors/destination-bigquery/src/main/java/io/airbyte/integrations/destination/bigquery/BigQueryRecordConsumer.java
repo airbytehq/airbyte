@@ -33,7 +33,7 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadStrategy;
-import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadGCPStrategy;
+import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadGCSStrategy;
 import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadBasicStrategy;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
@@ -121,7 +121,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     if (bufferSizeInBytes + messageSizeInBytes >= MAX_BATCH_SIZE_BYTES) {
       // select the way of uploading - normal or through the GCS
       if (writer.getGcsCsvWriter() != null) {
-        flushQueueToDestination(writer, new BigQueryUploadGCPStrategy());
+        flushQueueToDestination(writer, new BigQueryUploadGCSStrategy());
       } else {
         flushQueueToDestination(writer, new BigQueryUploadBasicStrategy());
       }

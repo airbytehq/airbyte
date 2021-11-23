@@ -13,9 +13,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryUploadGCPStrategy implements BigQueryUploadStrategy {
+public class BigQueryUploadGCSStrategy implements BigQueryUploadStrategy {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploadGCPStrategy.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploadGCSStrategy.class);
 
   @Override
   public void upload(BigQueryWriteConfig writer, AirbyteMessage airbyteMessage, ConfiguredAirbyteCatalog catalog) {
