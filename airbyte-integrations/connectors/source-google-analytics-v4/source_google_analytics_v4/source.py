@@ -459,8 +459,7 @@ class TestStreamConnection(GoogleAnalyticsV4Stream):
         """
         start_date = pendulum.parse(self.start_date).date()
         end_date = pendulum.now().date()
-        date_slices = [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]
-        return date_slices
+        return [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]
 
 
 class SourceGoogleAnalyticsV4(AbstractSource):
