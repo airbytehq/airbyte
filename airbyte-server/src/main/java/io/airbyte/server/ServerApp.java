@@ -337,9 +337,11 @@ public class ServerApp implements ServerRunnable {
     if (bothVersionsCompatible) {
       return false;
     }
+
     if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) < 0) {
       return true;
     }
+
     return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
   }
 
