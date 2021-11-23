@@ -890,7 +890,8 @@ public class AcceptanceTests {
             .put("message_interval", 100)
             .build()));
 
-    // Destination fails after processing 5 messages, so the job should fail after the graceful close timeout of 1 minute
+    // Destination fails after processing 5 messages, so the job should fail after the graceful close
+    // timeout of 1 minute
     final DestinationRead destination = createDestination(
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
