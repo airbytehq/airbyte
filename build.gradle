@@ -197,8 +197,13 @@ subprojects {
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
     }
 
+    def integrationTagName = 'platform-integration'
+    def slowIntegrationTagName = 'platform-slow-integration'
+
     test {
-        useJUnitPlatform()
+        useJUnitPlatform {
+            excludeTags(integrationTagName, slowIntegrationTagName)
+        }
         testLogging() {
             events 'failed'
             exceptionFormat 'full'
@@ -207,8 +212,35 @@ subprojects {
         finalizedBy jacocoTestReport
     }
 
-    jacocoTestReport {
-        dependsOn test
+    task newIntegrationTests(type: Test) {
+        useJUnitPlatform {
+            includeTags integrationTagName
+        }
+        testLogging() {
+            events 'failed'
+            exceptionFormat 'full'
+        }
+        finalizedBy jacocoTestReport
+    }
+
+    task slowIntegrationTests(type: Test) {
+        useJUnitPlatform {
+            includeTags slowIntegrationTagName
+        }
+        testLogging() {
+            events 'failed'
+            exceptionFormat 'full'
+        }
+        finalizedBy jacocoTestReport
+    }
+
+    task allTests(type: Test) {
+        useJUnitPlatform()
+        testLogging() {
+            events 'failed'
+            exceptionFormat 'full'
+        }
+        finalizedBy jacocoTestReport
     }
 
     dependencies {
@@ -254,6 +286,12 @@ subprojects {
 
         implementation 'software.amazon.awssdk:s3:2.16.84'
 
+        // Lombok dependencies
+        compileOnly 'org.projectlombok:lombok:1.18.22'
+        annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+        testCompileOnly 'org.projectlombok:lombok:1.18.22'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
