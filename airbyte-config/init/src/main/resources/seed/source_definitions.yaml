@@ -400,6 +400,12 @@
   dockerImageTag: 0.3.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/oracle
   sourceType: database
+- sourceDefinitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
+  name: Outreach
+  dockerRepository: airbyte/source-outreach
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/outreach
+  sourceType: api
 - name: Paypal Transaction
   sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
   dockerRepository: airbyte/source-paypal-transaction
