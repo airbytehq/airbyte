@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 from urllib.parse import unquote
 
 import pytest
+from requests import HTTPError
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_google_analytics_v4.source import GoogleAnalyticsV4Stream, GoogleAnalyticsV4TypesList, SourceGoogleAnalyticsV4
 
@@ -35,7 +36,12 @@ def mock_auth_call(requests_mock):
 
 @pytest.fixture
 def mock_auth_check_connection(requests_mock):
-    yield requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", json={"data": {"test": "value"}})
+    yield requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", json={"data": {"test": "value"}})\
+
+
+@pytest.fixture
+def mock_unknown_metrics_or_dimensions_error(requests_mock):
+    yield requests_mock.post(f"https://analyticsreporting.googleapis.com/v4/reports:batchGet", status_code=400, json={"error":{"message": "Unknown metrics or dimensions"}})
 
 
 def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
@@ -104,3 +110,8 @@ def test_check_connection_oauth(
     assert "client_secret_val" in unquote(mock_auth_call.last_request.body)
     assert "refresh_token_val" in unquote(mock_auth_call.last_request.body)
     assert mock_auth_call.called
+
+
+def test_unknown_metrics_or_dimensions_error_validation(mock_metrics_dimensions_type_list_link, mock_unknown_metrics_or_dimensions_error):
+    records = GoogleAnalyticsV4Stream(MagicMock()).read_records(sync_mode=None)
+    assert records

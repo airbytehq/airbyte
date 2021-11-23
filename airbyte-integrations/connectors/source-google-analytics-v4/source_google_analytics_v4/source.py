@@ -120,6 +120,10 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             return {"pageToken": next_page}
 
     def should_retry(self, response: requests.Response) -> bool:
+        """When the connector gets a custom report which has unknown metric(s) or dimension(s)
+        and API returns an error with 400 code, the connector ignores an error with 400 code
+        to finish successfully sync and inform the user about an error in logs with an error message."""
+
         if response.status_code == 400:
             self.logger.info(f"{response.json()['error']['message']}")
             self.raise_on_http_errors = False
