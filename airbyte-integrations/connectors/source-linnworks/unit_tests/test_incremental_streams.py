@@ -4,10 +4,13 @@
 
 
 import json
+import os
+from unittest.mock import MagicMock
 
 import pendulum
 import pytest
 import requests
+import vcr
 from source_linnworks.streams import IncrementalLinnworksStream, ProcessedOrders
 
 
@@ -191,3 +194,22 @@ def test_processed_orders_parse_response(patch_incremental_base_class, requests_
 
     with pytest.raises(KeyError, match="'Data'"):
         list(stream.parse_response(bad_response))
+
+
+def test_processed_orders_request_cache(patch_incremental_base_class, mocker):
+    remove = MagicMock()
+    use_cassette = MagicMock()
+
+    mocker.patch.object(os, "remove", remove)
+    mocker.patch.object(vcr, "use_cassette", use_cassette)
+
+    stream = ProcessedOrders()
+    stream.request_cache()
+
+    remove.assert_called_with(stream.cache_filename)
+    use_cassette.assert_called_with(
+        stream.cache_filename,
+        record_mode="new_episodes",
+        serializer="yaml",
+        match_on=["method", "scheme", "host", "port", "path", "query", "body"],
+    )
