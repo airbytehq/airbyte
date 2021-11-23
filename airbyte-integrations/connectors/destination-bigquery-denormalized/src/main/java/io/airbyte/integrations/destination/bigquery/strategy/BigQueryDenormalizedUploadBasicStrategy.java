@@ -71,37 +71,45 @@ public class BigQueryDenormalizedUploadBasicStrategy extends BigQueryUploadBasic
       BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) root);
     }
     if (root.isObject()) {
-      final List<String> fieldNames = fields.stream().map(Field::getName).collect(Collectors.toList());
-      return Jsons.jsonNode(Jsons.keys(root).stream()
-          .filter(key -> {
-            final boolean validKey = fieldNames.contains(namingResolver.getIdentifier(key));
-            if (!validKey && !invalidKeys.contains(key)) {
-              LOGGER.warn("Ignoring field {} as it is not defined in catalog", key);
-              invalidKeys.add(key);
-            }
-            return validKey;
-          })
-          .collect(Collectors.toMap(namingResolver::getIdentifier,
-              key -> formatData(fields.get(namingResolver.getIdentifier(key)).getSubFields(), root.get(key)))));
+      return getObjectNode(fields, root);
     } else if (root.isArray()) {
-      // Arrays can have only one field
-      final Field arrayField = fields.get(0);
-      // If an array of records, we should use subfields
-      final FieldList subFields;
-      if (arrayField.getSubFields() == null || arrayField.getSubFields().isEmpty()) {
-        subFields = fields;
-      } else {
-        subFields = arrayField.getSubFields();
-      }
-      final JsonNode items = Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
-          .map(p -> formatData(subFields, p))
-          .collect(Collectors.toList()));
-
-      // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
-      // is). Turn all "Array of" into "Array of Record of" instead
-      return Jsons.jsonNode(ImmutableMap.of(BigQueryDenormalizedDestination.NESTED_ARRAY_FIELD, items));
+      return getArrayNode(fields, root);
     } else {
       return root;
     }
+  }
+
+  private JsonNode getArrayNode(FieldList fields, JsonNode root) {
+    // Arrays can have only one field
+    final Field arrayField = fields.get(0);
+    // If an array of records, we should use subfields
+    final FieldList subFields;
+    if (arrayField.getSubFields() == null || arrayField.getSubFields().isEmpty()) {
+      subFields = fields;
+    } else {
+      subFields = arrayField.getSubFields();
+    }
+    final JsonNode items = Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
+        .map(p -> formatData(subFields, p))
+        .collect(Collectors.toList()));
+
+    // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
+    // is). Turn all "Array of" into "Array of Record of" instead
+    return Jsons.jsonNode(ImmutableMap.of(BigQueryDenormalizedDestination.NESTED_ARRAY_FIELD, items));
+  }
+
+  private JsonNode getObjectNode(FieldList fields, JsonNode root) {
+    final List<String> fieldNames = fields.stream().map(Field::getName).collect(Collectors.toList());
+    return Jsons.jsonNode(Jsons.keys(root).stream()
+        .filter(key -> {
+          final boolean validKey = fieldNames.contains(namingResolver.getIdentifier(key));
+          if (!validKey && !invalidKeys.contains(key)) {
+            LOGGER.warn("Ignoring field {} as it is not defined in catalog", key);
+            invalidKeys.add(key);
+          }
+          return validKey;
+        })
+        .collect(Collectors.toMap(namingResolver::getIdentifier,
+            key -> formatData(fields.get(namingResolver.getIdentifier(key)).getSubFields(), root.get(key)))));
   }
 }
