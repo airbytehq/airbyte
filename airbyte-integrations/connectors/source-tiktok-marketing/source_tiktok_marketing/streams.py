@@ -12,6 +12,7 @@
 #         ├── Ads
 #         └── Campaigns
 
+from enum import Enum
 import json
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeVar, Union
@@ -44,6 +45,19 @@ class JsonUpdatedState(pydantic.BaseModel):
             return self.current_stream_state
         max_updated_at = self.stream.max_cursor_date or ""
         return max(max_updated_at, self.current_stream_state)
+
+
+class ReportLevel(str, Enum):
+    ADVERTISER = "ADVERTISER"
+    CAMPAIGN = "CAMPAIGN"
+    ADGROUP = "ADGROUP"
+    AD = "AD"
+
+
+class ReportGranularity(str, Enum):
+    LIFETIME = "LIFETIME"
+    DAY = "DAY"
+    HOUR = "HOUR"
 
 
 class TiktokException(Exception):
@@ -321,16 +335,16 @@ class Ads(IncrementalTiktokStream):
 class BasicReports(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957200780290"""
 
-    cursor_field = None
+    cursor_field = ""
 
     def __init__(self, report_level, report_granularity, **kwargs):
         super().__init__(**kwargs)
         self.report_level = report_level
         self.report_granularity = report_granularity
 
-        if self.report_granularity == 'DAY':
+        if self.report_granularity == ReportGranularity.DAY:
             self.cursor_field = "stat_time_day"
-        elif self.report_granularity == 'HOUR':
+        elif self.report_granularity == ReportGranularity.HOUR:
             self.cursor_field = "stat_time_hour"
 
     @staticmethod
@@ -347,11 +361,11 @@ class BasicReports(IncrementalTiktokStream):
         end_date = pendulum.now()
 
         # Snapchat API only allows certain amount of days of data based on the reporting granularity
-        if granularity == "DAY":
+        if granularity == ReportGranularity.DAY:
             max_interval = 30
-        elif granularity == "HOUR":
+        elif granularity == ReportGranularity.HOUR:
             max_interval = 1
-        elif granularity == "LIFETIME":
+        elif granularity == ReportGranularity.LIFETIME:
             max_interval = 364
         else:
             raise ValueError("Unsupported reporting granularity, must be one of DAY, HOUR, LIFETIME")
@@ -361,20 +375,20 @@ class BasicReports(IncrementalTiktokStream):
 
         for i in range(iterations + 1):
             chunk_start = start_date + pendulum.duration(days=(i * max_interval))
-            chunk_end = min(start_date + pendulum.duration(days=max_interval), end_date)
+            chunk_end = min(chunk_start + pendulum.duration(days=max_interval, seconds=-1), end_date)
             yield chunk_start, chunk_end
 
     def _get_reporting_dimensions(self):
         result = []
         spec_id_dimensions = {
-            "ADVERTISER": "advertiser_id",
-            "CAMPAIGN": "campaign_id",
-            "ADGROUP": "adgroup_id",
-            "AD": "ad_id",
+            ReportLevel.ADVERTISER: "advertiser_id",
+            ReportLevel.CAMPAIGN: "campaign_id",
+            ReportLevel.ADGROUP: "adgroup_id",
+            ReportLevel.AD: "ad_id",
         }
         spec_time_dimensions = {
-            "DAY": "stat_time_day",
-            "HOUR": "stat_time_hour",
+            ReportGranularity.DAY: "stat_time_day",
+            ReportGranularity.HOUR: "stat_time_hour",
         }
         if self.report_level and self.report_level in spec_id_dimensions:
             result.append(spec_id_dimensions[self.report_level])
@@ -424,10 +438,11 @@ class BasicReports(IncrementalTiktokStream):
         """Additional data filtering"""
         state = stream_state.get(self.cursor_field) or self._start_time
         for record in TiktokStream.parse_response(self, response, **kwargs):
+            # for lifetime granularity we do not have any cursor_field
             if not self.cursor_field:
                 yield record
 
-            updated = record.get("dimensions").get(self.cursor_field)
+            updated = record.get("dimensions").get(self.cursor_field, "")
             if isinstance(state, JsonUpdatedState):
                 current_state = state.current_stream_state
             else:
