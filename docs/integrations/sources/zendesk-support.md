@@ -19,6 +19,7 @@ This Source is capable of syncing the following core Streams:
 * [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields)
 * [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms)
 * [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics)
+* [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/)
 * [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships)
 * [Macros](https://developer.zendesk.com/rest_api/docs/support/macros)
 * [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings)
@@ -33,7 +34,6 @@ This Source is capable of syncing the following core Streams:
 
 * [Ticket Attachments](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket-attachments/)
 * [Ticket Requests](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket-requests/)
-* [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/)
 * [Ticket Activities](https://developer.zendesk.com/api-reference/ticketing/tickets/activity_stream/)
 * [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/)
 
