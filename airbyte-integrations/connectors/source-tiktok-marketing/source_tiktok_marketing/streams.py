@@ -311,3 +311,120 @@ class Ads(IncrementalTiktokStream):
 
     def path(self, *args, **kwargs) -> str:
         return "ad/get/"
+
+
+class BasicReports(IncrementalTiktokStream):
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957200780290"""
+
+    cursor_field = None
+
+    def __init__(self, report_level, report_granularity, **kwargs):
+        super().__init__(**kwargs)
+        self.report_level = report_level
+        self.report_granularity = report_granularity
+
+        if self.report_granularity == 'DAY':
+            self.cursor_field = "stat_time_day"
+        elif self.report_granularity == 'HOUR':
+            self.cursor_field = "stat_time_hour"
+
+    @staticmethod
+    def _get_time_interval(start_date, granularity):
+        """Due to time range restrictions based on the level of granularity of reports, we have to chunk API calls in order
+        to get the desired time range.
+        Docs: https://ads.tiktok.com/marketing_api/docs?id=1714590313280513
+        :param start_date - Timestamp from which we should start the report
+        :param granularity - Level of granularity of the report; one of [HOUR, DAY, LIFETIME]
+        :return Iterator for pair of start_date and end_date that can be used as request parameters
+        """
+        if isinstance(start_date, str):
+            start_date = pendulum.parse(start_date)
+        end_date = pendulum.now()
+
+        # Snapchat API only allows certain amount of days of data based on the reporting granularity
+        if granularity == "DAY":
+            max_interval = 30
+        elif granularity == "HOUR":
+            max_interval = 1
+        elif granularity == "LIFETIME":
+            max_interval = 364
+        else:
+            raise ValueError("Unsupported reporting granularity, must be one of DAY, HOUR, LIFETIME")
+
+        total_date_diff = end_date - start_date
+        iterations = total_date_diff.days // max_interval
+
+        for i in range(iterations + 1):
+            chunk_start = start_date + pendulum.duration(days=(i * max_interval))
+            chunk_end = min(start_date + pendulum.duration(days=max_interval), end_date)
+            yield chunk_start, chunk_end
+
+    def _get_reporting_dimensions(self):
+        result = []
+        spec_id_dimensions = {
+            "ADVERTISER": "advertiser_id",
+            "CAMPAIGN": "campaign_id",
+            "ADGROUP": "adgroup_id",
+            "AD": "ad_id",
+        }
+        spec_time_dimensions = {
+            "DAY": "stat_time_day",
+            "HOUR": "stat_time_hour",
+        }
+        if self.report_level and self.report_level in spec_id_dimensions:
+            result.append(spec_id_dimensions[self.report_level])
+
+        if self.report_granularity and self.report_granularity in spec_time_dimensions:
+            result.append(spec_time_dimensions[self.report_granularity])
+
+        return result
+
+    def _get_metrics(self):
+        result = ["spend", "impressions", "reach"]
+        return result
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        slices = super().stream_slices(**kwargs)
+        stream_start = stream_state.get(self.cursor_field) or self._start_time
+        for slice in slices:
+            for start_date, end_date in self._get_time_interval(stream_start, self.report_granularity):
+                slice["start_date"] = start_date.strftime("%Y-%m-%d")
+                slice["end_date"] = end_date.strftime("%Y-%m-%d")
+                yield slice
+
+    def path(self, *args, **kwargs) -> str:
+        return "reports/integrated/get/"
+
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+
+        params["advertiser_id"] = stream_slice.get("advertiser_id")
+        params["service_type"] = "AUCTION"
+        params["report_type"] = "BASIC"
+        params["data_level"] = "_".join(["AUCTION", self.report_level])
+        params["dimensions"] = json.dumps(self._get_reporting_dimensions())
+        params["metrics"] = json.dumps(self._get_metrics())
+
+        params["start_date"] = stream_slice.get("start_date")
+        params["end_date"] = stream_slice.get("end_date")
+
+        return params
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        """Additional data filtering"""
+        state = stream_state.get(self.cursor_field) or self._start_time
+        for record in TiktokStream.parse_response(self, response, **kwargs):
+            if not self.cursor_field:
+                yield record
+
+            updated = record.get("dimensions").get(self.cursor_field)
+            if updated <= state:
+                continue
+            elif not self.max_cursor_date or self.max_cursor_date < updated:
+                self.max_cursor_date = updated
+            yield record
