@@ -82,6 +82,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Oracle DB](sources/oracle.md) | Certified |
 | [Oracle PeopleSoft](sources/oracle-peoplesoft.md) | Beta |
 | [Oracle Siebel CRM](sources/oracle-siebel-crm.md) | Beta |
+| [Outreach](./sources/outreach.md)| Alpha |
 | [PayPal Transaction](sources/paypal-transaction.md) | Beta |
 | [Paystack](sources/paystack.md) | Alpha |
 | [Pinterest](sources/pinterest.md) | Alpha |
@@ -125,6 +126,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Zendesk Sunshine](sources/zendesk-sunshine.md) | Beta |
 | [Zendesk Support](sources/zendesk-support.md) | Certified |
 | [Zendesk Talk](sources/zendesk-talk.md) | Certified |
+| [Zenloop](sources/zenloop.md)| Alpha |
 | [Zoom](sources/zoom.md) | Beta |
 | [Zuora](sources/zuora.md) | Beta |
 
