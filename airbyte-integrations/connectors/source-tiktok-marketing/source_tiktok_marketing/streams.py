@@ -253,7 +253,12 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         state = stream_state.get(self.cursor_field) or self._start_time
         for record in super().parse_response(response, **kwargs):
             updated = record[self.cursor_field]
-            if updated <= state:
+            if isinstance(state, JsonUpdatedState):
+                current_state = state.current_stream_state
+            else:
+                current_state = state
+
+            if updated <= current_state:
                 continue
             elif not self.max_cursor_date or self.max_cursor_date < updated:
                 self.max_cursor_date = updated
@@ -423,7 +428,12 @@ class BasicReports(IncrementalTiktokStream):
                 yield record
 
             updated = record.get("dimensions").get(self.cursor_field)
-            if updated <= state:
+            if isinstance(state, JsonUpdatedState):
+                current_state = state.current_stream_state
+            else:
+                current_state = state
+
+            if updated <= current_state:
                 continue
             elif not self.max_cursor_date or self.max_cursor_date < updated:
                 self.max_cursor_date = updated
