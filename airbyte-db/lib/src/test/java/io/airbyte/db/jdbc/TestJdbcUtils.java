@@ -269,9 +269,9 @@ public class TestJdbcUtils {
         .put("decimal", JsonSchemaPrimitive.NUMBER)
         .put("char", JsonSchemaPrimitive.STRING)
         .put("varchar", JsonSchemaPrimitive.STRING)
-        .put("date", JsonSchemaPrimitive.STRING)
-        .put("time", JsonSchemaPrimitive.STRING)
-        .put("timestamp", JsonSchemaPrimitive.STRING)
+        .put("date", JsonSchemaPrimitive.STRING_DATE)
+        .put("time", JsonSchemaPrimitive.STRING_TIME)
+        .put("timestamp", JsonSchemaPrimitive.STRING_DATETIME)
         .put("binary1", JsonSchemaPrimitive.STRING)
         .build();
 
