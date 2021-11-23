@@ -29,10 +29,12 @@ class Client(BaseClient):
     """HubSpot client, provides methods to discover and read streams"""
 
     def __init__(self, start_date, credentials, **kwargs):
+
         self._start_date = start_date
         self._api = API(credentials=credentials)
+        unset_hs_time_properties = kwargs.get("unset_hs_time_properties", False)
 
-        common_params = dict(api=self._api, start_date=self._start_date)
+        common_params = dict(api=self._api, start_date=self._start_date, unset_hs_time_properties=unset_hs_time_properties)
         self._apis = {
             "campaigns": CampaignStream(**common_params),
             "companies": CRMObjectStream(entity="company", associations=["contacts"], **common_params),

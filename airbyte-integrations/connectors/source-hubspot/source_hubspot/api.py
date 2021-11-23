@@ -208,6 +208,7 @@ class Stream(ABC):
     def __init__(self, api: API, start_date: str = None, **kwargs):
         self._api: API = api
         self._start_date = pendulum.parse(start_date)
+        self.unset_hs_time_properties = kwargs.get("unset_hs_time_properties", False)
 
     @property
     def name(self) -> str:
@@ -224,10 +225,11 @@ class Stream(ABC):
         see https://github.com/airbytehq/airbyte/issues/2397
         """
         for record in records:
-            if isinstance(record, Mapping) and "properties" in record:
-                for key in list(record["properties"].keys()):
-                    if key.startswith("hs_time_in"):
-                        record["properties"].pop(key)
+            if self.unset_hs_time_properties:
+                if isinstance(record, Mapping) and "properties" in record:
+                    for key in record["properties"]:
+                        if key.startswith("hs_time_in_"):
+                            record["properties"][key] = None
             yield record
 
     @staticmethod
