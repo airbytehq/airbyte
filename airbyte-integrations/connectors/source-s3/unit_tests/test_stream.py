@@ -9,7 +9,7 @@ from airbyte_cdk import AirbyteLogger
 from source_s3.source_files_abstract.stream import FileStream
 
 LOGGER = AirbyteLogger()
-
+from .abstract_test_parser import memory_limit
 
 class TestFileStream:
     @pytest.mark.parametrize(  # set return_schema to None for an expected fail
@@ -37,6 +37,7 @@ class TestFileStream:
             ('{"a": "NOT A REAL DATATYPE", "b": "ANOTHER FAKE DATATYPE"}', None),  # multiple incorrect datatypes
         ],
     )
+    @memory_limit(512)
     def test_parse_user_input_schema(self, schema_string, return_schema):
         if return_schema is not None:
             assert FileStream._parse_user_input_schema(schema_string) == return_schema
@@ -88,6 +89,7 @@ class TestFileStream:
                 },
             ),
         ],
+        ids=["simple_case", "additional_columns", "missing_columns", "additional_and_missing_columns"]
     )
     @patch(
         "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
@@ -120,10 +122,12 @@ class TestFileStream:
                 {"id": "1", "first_name": "Samwise", "last_name": "Gamgee"},
             ),
         ],
+        ids=["one_extra_field", "multiple_extra_fields", "empty_extra_map"]
     )
     @patch(
         "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
+    @memory_limit(512)
     def test_add_extra_fields_from_map(self, extra_map, record, expected_return_record):
         fs = FileStream(dataset="dummy", provider={}, format={}, path_pattern=[])
         if expected_return_record is not None:
@@ -291,10 +295,23 @@ class TestFileStream:
                 ["prefix-file.csv", "folder/nested/prefixmylovelyfile.csv"],
             ),
         ],
+        ids=[
+            "everything case",
+            "specific filetype only",
+            "specific filetypes only",
+            "everything only 1 level deep",
+            "everything at least 1 level deep",
+            "everything at least 3 levels deep",
+            "specific filetype at least 1 level deep",
+            "everything with specific filename (any filetype)",
+            "specific dir / any dir / specific dir / any file",
+            "specific file prefix and filetype, anywhere"
+        ]
     )
     @patch(
         "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
+    @memory_limit(512)
     def test_pattern_matched_filepath_iterator(self, patterns, filepaths, expected_filepaths):
         fs = FileStream(dataset="dummy", provider={}, format={}, path_pattern=patterns)
         assert set([p for p in fs.pattern_matched_filepath_iterator(filepaths)]) == set(expected_filepaths)

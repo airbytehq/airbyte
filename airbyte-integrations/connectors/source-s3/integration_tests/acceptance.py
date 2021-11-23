@@ -3,10 +3,10 @@
 #
 
 
-import shutil
+import shutil, os
 import tempfile
 from zipfile import ZipFile
-
+from unit_tests.test_csv_parser import TestCsvParser
 import docker
 import pytest
 
@@ -25,6 +25,11 @@ def minio_setup():
     tmp_dir = tempfile.mkdtemp()
     with ZipFile("./integration_tests/minio_data.zip") as archive:
         archive.extractall(tmp_dir)
+    # generates a big CSV files separately
+    big_file_folder = os.path.join(tmp_dir, "big_files")
+    os.makedirs(big_file_folder)
+    filepath = os.path.join(big_file_folder, "file.csv")
+    _, file_size = TestCsvParser.generate_big_file(filepath, 0.2, 500)
 
     container = client.containers.run(
         "minio/minio",

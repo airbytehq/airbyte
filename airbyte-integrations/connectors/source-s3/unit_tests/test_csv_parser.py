@@ -4,22 +4,63 @@
 
 import json
 import os
+import random
+import string
+from smart_open import open as smart_open
 from pathlib import Path
-from typing import Any, List, Mapping
-
+from typing import Any, List, Mapping, Tuple
+from .conftest import TMP_FOLDER
+import pytest
 from source_s3.source_files_abstract.formats.csv_parser import CsvParser
-
+from .abstract_test_parser import memory_limit
 from .abstract_test_parser import AbstractTestParser
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/")
 
+# All possible CSV data types
+CSV_TYPES = {
+    # logical_type: (json_type, csv_types, convert_function)
+    # standard types
+    "string": ("string", ["string"], None),
+    "boolean": ("boolean", ["boolean"], None),
+    "number": ("number", ["number"], None),
+    "integer": ("integer", ["integer"], None),
+}
+
 
 class TestCsvParser(AbstractTestParser):
-    @property
-    def test_files(self) -> List[Mapping[str, Any]]:
-        return [
-            {
-                # basic 'normal' test
+    record_types = CSV_TYPES
+    filetype = "csv"
+
+    @classmethod
+    def _generate_row(cls, *args, **kwargs) -> List[Any]:
+        return [str(col) if col is not None else "" for col in super()._generate_row(*args, **kwargs)]
+
+    @classmethod
+    def _generate_value(cls, typ: str) -> Any:
+        if typ == "string":
+            if cls._generate_value("boolean"):
+                return None
+            random_length = random.randint(0, 512)
+            return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(random_length))
+        return super()._generate_value(typ)
+
+    @classmethod
+    def generate_csv_file(cls, filename: str, columns: Mapping[str, str], num_rows: int, delimiter: str) -> str:
+        """Generates  a random CSV data and save it to a tmp file"""
+        header_line = delimiter.join(columns.keys())
+        types = list(columns.values()) if num_rows else []
+        with open(filename, "w") as f:
+            f.write(header_line + "\n")
+            for _ in range(num_rows):
+                f.write(delimiter.join(cls._generate_row(types)) + "\n")
+        return filename
+
+
+    @classmethod
+    def cases(cls) -> Mapping[str, Any]:
+        return {
+            "basic_normal_test": {
                 "AbstractFileParser": CsvParser(
                     format={"filetype": "csv"},
                     master_schema={
@@ -46,9 +87,8 @@ class TestCsvParser(AbstractTestParser):
                 "line_checks": {},
                 "fails": [],
             },
-            {
+            "custom_csv_parameters": {
                 # tests custom CSV parameters (odd delimiter, quote_char, escape_char & newlines in values in the file)
-                "test_alias": "custom csv parameters",
                 "AbstractFileParser": CsvParser(
                     format={"filetype": "csv", "delimiter": "^", "quote_char": "|", "escape_char": "!", "newlines_in_values": True},
                     master_schema={
@@ -75,9 +115,8 @@ class TestCsvParser(AbstractTestParser):
                 "line_checks": {},
                 "fails": [],
             },
-            {
+            "encoding_Big5": {
                 # tests encoding: Big5
-                "test_alias": "encoding: Big5",
                 "AbstractFileParser": CsvParser(
                     format={"filetype": "csv", "encoding": "big5"}, master_schema={"id": "integer", "name": "string", "valid": "boolean"}
                 ),
@@ -93,9 +132,8 @@ class TestCsvParser(AbstractTestParser):
                 },
                 "fails": [],
             },
-            {
+            "encoding_Arabic_(Windows 1256)": {
                 # tests encoding: Arabic (Windows 1256)
-                "test_alias": "encoding: Arabic (Windows 1256)",
                 "AbstractFileParser": CsvParser(
                     format={"filetype": "csv", "encoding": "windows-1256"},
                     master_schema={"id": "integer", "notes": "string", "valid": "boolean"},
@@ -112,9 +150,8 @@ class TestCsvParser(AbstractTestParser):
                 },
                 "fails": [],
             },
-            {
+            "compression_gzip": {
                 # tests compression: gzip
-                "test_alias": "compression: gzip",
                 "AbstractFileParser": CsvParser(
                     format={"filetype": "csv"},
                     master_schema={
@@ -151,9 +188,8 @@ class TestCsvParser(AbstractTestParser):
                 },
                 "fails": [],
             },
-            {
+            "compression_bz2": {
                 # tests compression: bz2
-                "test_alias": "compression: bz2",
                 "AbstractFileParser": CsvParser(
                     format={"filetype": "csv"},
                     master_schema={
@@ -190,9 +226,8 @@ class TestCsvParser(AbstractTestParser):
                 },
                 "fails": [],
             },
-            {
+            "extra_columns_in_master_schema": {
                 # tests extra columns in master schema
-                "test_alias": "extra columns in master schema",
                 "AbstractFileParser": CsvParser(
                     format={"filetype": "csv"},
                     master_schema={
@@ -221,10 +256,9 @@ class TestCsvParser(AbstractTestParser):
                 "line_checks": {},
                 "fails": [],
             },
-            {
+            "missing_columns_in_master_schema": {
                 # tests missing columns in master schema
                 # TODO: maybe this should fail read_records, but it does pick up all the columns from file despite missing from master schema
-                "test_alias": "missing columns in master schema",
                 "AbstractFileParser": CsvParser(format={"filetype": "csv"}, master_schema={"id": "integer", "name": "string"}),
                 "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_1.csv"),
                 "num_records": 8,
@@ -240,9 +274,8 @@ class TestCsvParser(AbstractTestParser):
                 "line_checks": {},
                 "fails": [],
             },
-            {
+            "empty_csv_file": {
                 # tests empty file, SHOULD FAIL INFER & STREAM RECORDS
-                "test_alias": "empty csv file",
                 "AbstractFileParser": CsvParser(format={"filetype": "csv"}, master_schema={}),
                 "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_6_empty.csv"),
                 "num_records": 0,
@@ -250,9 +283,8 @@ class TestCsvParser(AbstractTestParser):
                 "line_checks": {},
                 "fails": ["test_get_inferred_schema", "test_stream_records"],
             },
-            {
+            "no_header_csv_file": {
                 # no header test
-                "test_alias": "no header csv file",
                 "AbstractFileParser": CsvParser(
                     format={
                         "filetype": "csv",
@@ -275,5 +307,57 @@ class TestCsvParser(AbstractTestParser):
                 },
                 "line_checks": {},
                 "fails": [],
-            },
-        ]
+            }
+        }
+
+    @classmethod
+    def generate_big_file(cls, filepath: str, size_in_gigabytes: float, columns_number: int) -> Tuple[dict, float]:
+        schema = {f"column {i}": random.choice(["integer", "string", "boolean", "number"]) for i in
+                  range(columns_number)}
+        cls.generate_csv_file(filepath, schema, 453, ",")
+        temp_files = [filepath + ".1", filepath + ".2"]
+
+        skip_headers = False
+        with open(filepath, "r") as f:
+            with open(temp_files[0], "w") as tf:
+                for line in f:
+                    if not skip_headers:
+                        skip_headers = True
+                        continue
+                    tf.write(str(line))
+
+        with open(filepath, "ab") as f:
+            while True:
+                file_size = os.stat(filepath).st_size / (1024 ** 3)
+                if file_size > size_in_gigabytes:  #:
+                    break
+                with open(temp_files[0], "rb") as tf:
+                    with open(temp_files[1], "wb") as tf2:
+                        buf = tf.read(50 * 1024 ** 2)  # by 50Mb
+                        if buf:
+                            f.write(buf)
+                            tf2.write(buf)
+                temp_files.append(temp_files.pop(0))
+        # remove temp files
+        for temp_file in temp_files:
+            os.remove(temp_file)
+        return schema, file_size
+
+    @memory_limit(512)
+    @pytest.mark.order(1)
+    def test_big_file(self):
+        """tests a big csv file (>= 1.5G records)"""
+        filepath = os.path.join(TMP_FOLDER, "big_csv_file." + self.filetype)
+        schema, file_size = self.generate_big_file(filepath, 1.0, 500)
+        expected_count = sum(1 for _ in open(filepath)) - 1
+        self.logger.info(f"generated file {filepath} with size {file_size}Gb, lines: {expected_count}")
+        for _ in range(3):
+            parser = CsvParser(
+                format={"filetype": self.filetype, "block_size": 5 * 1024 ** 2},
+                master_schema=schema,
+            )
+            with smart_open(filepath, self._get_readmode({"AbstractFileParser": parser})) as f:
+                assert sum(1 for _ in parser.stream_records(f)) == expected_count
+
+
+

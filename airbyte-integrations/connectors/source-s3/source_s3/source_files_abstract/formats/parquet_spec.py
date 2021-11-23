@@ -29,3 +29,4 @@ class ParquetFormat(BaseModel):
         default=64 * 1024,  # 64K records
         description="Maximum number of records per batch. Batches may be smaller if there aren’t enough rows in the file. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
     )
+

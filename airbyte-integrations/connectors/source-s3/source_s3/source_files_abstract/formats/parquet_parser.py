@@ -51,7 +51,7 @@ class ParquetParser(AbstractFileParser):
 
         """
         options = self._select_options(
-            "buffer_size",
+            "buffer_size"
         )
         # Source is a file path and enabling memory_map can improve performance in some environments.
         options["memory_map"] = True
@@ -117,10 +117,10 @@ class ParquetParser(AbstractFileParser):
             raise OSError("empty Parquet file")
 
         args = self._select_options("columns", "batch_size")
-        num_row_groups = list(range(reader.num_row_groups))
+        self.logger.debug(f"Found the {reader.num_row_groups} Parquet groups")
 
         # load batches per page
-        for num_row_group in num_row_groups:
+        for num_row_group in range(reader.num_row_groups):
             args["row_groups"] = [num_row_group]
             for batch in reader.iter_batches(**args):
                 # this gives us a dist of lists where each nested list holds ordered values for a single column
