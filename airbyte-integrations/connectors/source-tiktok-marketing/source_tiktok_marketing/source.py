@@ -46,7 +46,7 @@ class SourceTiktokMarketing(AbstractSource):
         """Converts an input configure to stream arguments"""
         return {
             "authenticator": TiktokTokenAuthenticator(config["access_token"]),
-            "start_time": config.get("start_time") or "2021-01-01",
+            "start_date": config.get("start_date") or "2021-01-01",
             "advertiser_id": int(config["environment"].get("advertiser_id", 0)),
             "app_id": int(config["environment"].get("app_id", 0)),
             "secret": config["environment"].get("secret"),

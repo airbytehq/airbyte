@@ -171,11 +171,11 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
     primary_key = "id"
     fields: List[str] = None
 
-    def __init__(self, advertiser_id: int, app_id: int, secret: str, start_time: str, **kwargs):
+    def __init__(self, advertiser_id: int, app_id: int, secret: str, start_date: str, **kwargs):
         super().__init__(**kwargs)
         # convert a start date to TikTok format
         # example:  "2021-08-24" => "2021-08-24 00:00:00"
-        self._start_time = pendulum.parse(start_time or DEFAULT_START_DATE).strftime("%Y-%m-%d 00:00:00")
+        self._start_time = pendulum.parse(start_date or DEFAULT_START_DATE).strftime("%Y-%m-%d 00:00:00")
         self._advertiser_storage = ListAdvertiserIdsStream(
             advertiser_id=advertiser_id, app_id=app_id, secret=secret, access_token=self.authenticator.token
         )
