@@ -14,11 +14,19 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTes
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.io.File;
+import java.io.IOException;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.SQLDialect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
 
 public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSourceDatatypeTest.class);
 
   private MySQLContainer<?> container;
   private JsonNode config;
@@ -267,22 +275,18 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varbinary")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .fullSourceDataType("varbinary(256)")
-            .addInsertValues("null", "'test'")
-            // @TODO Returns binary value instead of text
-            // #5878 binary value issue
-            // .addExpectedValues(null, "test")
+            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .fullSourceDataType("varbinary(20000)")// size should be enough to save test.png
+            .addInsertValues("null", "'test'", "'тест'", String.format("FROM_BASE64('%s')", getFileDataInBase64()))
+            .addExpectedValues(null, "dGVzdA==", "0YLQtdGB0YI=", getFileDataInBase64())
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("blob")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'test'")
-            // @TODO Returns binary value instead of text
-            // #5878 binary value issue
-            // .addExpectedValues(null, "test")
+            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .addInsertValues("null", "'test'", "'тест'", String.format("FROM_BASE64('%s')", getFileDataInBase64()))
+            .addExpectedValues(null, "dGVzdA==", "0YLQtdGB0YI=", getFileDataInBase64())
             .build());
 
     addDataTypeTestData(
@@ -352,6 +356,16 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     }
     stringBuilder.append("lpad('0', ").append(length % maxLpadLength).append(", '0'))");
     return stringBuilder.toString();
+  }
+
+  private String getFileDataInBase64() {
+    File file = new File(getClass().getClassLoader().getResource("test.png").getFile());
+    try {
+      return Base64.encodeBase64String(FileUtils.readFileToByteArray(file));
+    } catch (IOException e) {
+      LOGGER.error(String.format("Fail to read the file: %s. Error: %s", file.getAbsoluteFile(), e.getMessage()));
+    }
+    return null;
   }
 
 }
