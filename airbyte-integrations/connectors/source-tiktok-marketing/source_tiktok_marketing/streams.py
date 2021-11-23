@@ -12,9 +12,9 @@
 #         ├── Ads
 #         └── Campaigns
 
-from enum import Enum
 import json
 from abc import ABC
+from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeVar, Union
 
 import pendulum
@@ -399,7 +399,52 @@ class BasicReports(IncrementalTiktokStream):
         return result
 
     def _get_metrics(self):
-        result = ["spend", "impressions", "reach"]
+        # common metrics for all reporting levels
+        result = ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency"]
+
+        if self.report_level == ReportLevel.ADVERTISER and self.report_granularity == ReportGranularity.LIFETIME:
+            result.extend(["cash_spend", "voucher_spend"])
+
+        if self.report_level in (ReportLevel.CAMPAIGN, ReportLevel.ADGROUP, ReportLevel.AD):
+            result.extend(["campaign_name"])
+
+        if self.report_level in (ReportLevel.ADGROUP, ReportLevel.AD):
+            result.extend(
+                [
+                    "campaign_id",
+                    "adgroup_name",
+                    "placement",
+                    "tt_app_id",
+                    "tt_app_name",
+                    "mobile_app_id",
+                    "promotion_type",
+                    "dpa_target_audience_type",
+                ]
+            )
+
+            result.extend(
+                [
+                    "conversion",
+                    "cost_per_conversion",
+                    "conversion_rate",
+                    "real_time_conversion",
+                    "real_time_cost_per_conversion",
+                    "real_time_conversion_rate",
+                    "result",
+                    "cost_per_result",
+                    "result_rate",
+                    "real_time_result",
+                    "real_time_cost_per_result",
+                    "real_time_result_rate",
+                    "secondary_goal_result",
+                    "cost_per_secondary_goal_result",
+                    "secondary_goal_result_rate",
+                ]
+            )
+
+        if self.report_level == ReportLevel.AD:
+            result.extend(["adgroup_id", "ad_name", "ad_text"])
+
         return result
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -415,10 +460,7 @@ class BasicReports(IncrementalTiktokStream):
         return "reports/integrated/get/"
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            **kwargs
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
 
