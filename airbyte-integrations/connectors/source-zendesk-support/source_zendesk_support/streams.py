@@ -216,7 +216,7 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
             elif not self.last_end_time:
                 self.last_end_time = current_state
             start_time = int(current_state or time.mktime(self._start_date.timetuple()))
-            # +1 because the API returns all records where  generated_timestamp >= start_time
+            # +1 because the API returns all records where generated_timestamp >= start_time
 
             now = calendar.timegm(datetime.now().utctimetuple())
             if start_time > now - 60:
@@ -461,7 +461,7 @@ class TicketComments(IncrementalSortedPageStream):
 
 # NOTE: all Zendesk endpoints can be split into several templates of data loading.
 # 1) with API built-in incremental approach
-# 2)  pagination and sorting mechanism
+# 2) pagination and sorting mechanism
 # 3) cursor pagination and sorting mechanism
 # 4) without sorting but with pagination
 # 5) without created_at/updated_at fields
