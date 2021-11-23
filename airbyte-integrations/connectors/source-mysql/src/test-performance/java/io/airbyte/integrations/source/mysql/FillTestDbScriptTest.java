@@ -17,15 +17,14 @@ import java.util.Map;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MySQLContainer;
 
-public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
+public class FillTestDbScriptTest extends AbstractSourcePerformanceTest {
 
-  private MySQLContainer<?> container;
   private JsonNode config;
   private static final String CREATE_DB_TABLE_TEMPLATE = "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, %s)";
   private static final String INSERT_INTO_DB_TABLE_QUERY_TEMPLATE = "INSERT INTO %s.%s (%s) VALUES %s";
   private static final String TEST_DB_FIELD_TYPE = "varchar(8)";
+  private static final String DATABASE_NAME = "your_db_name";
 
   @Override
   protected JsonNode getConfig() {
@@ -33,9 +32,7 @@ public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-    container.close();
-  }
+  protected void tearDown(final TestDestinationEnv testEnv) {}
 
   @Override
   protected String getImageName() {
@@ -44,15 +41,12 @@ public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
 
   @Override
   protected Database setupDatabase(String dbName) throws Exception {
-    container = new MySQLContainer<>("mysql:8.0");
-    container.start();
-
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
+        .put("host", "your_host")
+        .put("port", 3306)
+        .put("database", DATABASE_NAME) // set your db name
+        .put("username", "your_username")
+        .put("password", "your_padd")
         .put("replication_method", ReplicationMethod.STANDARD)
         .build());
 
@@ -67,7 +61,7 @@ public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
         SQLDialect.MYSQL,
         "zeroDateTimeBehavior=convertToNull");
 
-    super.databaseName = container.getDatabaseName();
+    super.databaseName = DATABASE_NAME;
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
@@ -93,7 +87,7 @@ public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
 
   @Override
   protected String getNameSpace() {
-    return container.getDatabaseName();
+    return DATABASE_NAME;
   }
 
   /**
@@ -126,15 +120,16 @@ public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
   }
 
   /**
-   * The test checks that connector can fetch prepared data without failure.
+   * The test added test data to a new DB and check results. 1. Set DB creds in static variables above
+   * 2. Set desired number for streams, coolumns and records 3. Run the test
    */
   @Test
-  @Disabled // Kept enabled performance tests that *pointed to read DB only
-  public void test1000Streams() throws Exception {
+  @Disabled
+  public void addTestDataToDbAndCheckTheResult() throws Exception {
     numberOfColumns = 240; // 240 is near the max value for varchar(8) type
     // 200 is near the max value for 1 batch call,if need more - implement multiple batching for single
     // stream
-    numberOfDummyRecords = 20; // 200;
+    numberOfDummyRecords = 200; // 200;
     numberOfStreams = 1000;
 
     setupDatabaseInternal();

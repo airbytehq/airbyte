@@ -79,7 +79,7 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceConnec
    * @return configured test database
    * @throws Exception - might throw any exception during initialization.
    */
-  protected abstract Database setupDatabase() throws Exception;
+  protected abstract Database setupDatabase(String dbName) throws Exception;
 
   /**
    * Get a create table template for a DB

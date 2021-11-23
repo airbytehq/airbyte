@@ -6,26 +6,25 @@ package io.airbyte.integrations.source.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.AbstractSourcePerformanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.nio.file.Path;
 import java.util.Map;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MySQLContainer;
 
-public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
+public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerformanceTest {
 
-  private MySQLContainer<?> container;
   private JsonNode config;
   private static final String CREATE_DB_TABLE_TEMPLATE = "CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, %s)";
   private static final String INSERT_INTO_DB_TABLE_QUERY_TEMPLATE = "INSERT INTO %s.%s (%s) VALUES %s";
   private static final String TEST_DB_FIELD_TYPE = "varchar(8)";
+  private static final String PERFORMANCE_SECRET_CREDS = "secrets/performance-config.json";
 
   @Override
   protected JsonNode getConfig() {
@@ -33,9 +32,7 @@ public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-    container.close();
-  }
+  protected void tearDown(final TestDestinationEnv testEnv) {}
 
   @Override
   protected String getImageName() {
@@ -44,16 +41,16 @@ public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
 
   @Override
   protected Database setupDatabase(String dbName) throws Exception {
-    container = new MySQLContainer<>("mysql:8.0");
-    container.start();
+    super.databaseName = dbName;
+    JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("replication_method", ReplicationMethod.STANDARD)
+        .put("host", plainConfig.get("host"))
+        .put("port", plainConfig.get("port"))
+        .put("database", dbName)
+        .put("username", plainConfig.get("username"))
+        .put("password", plainConfig.get("password"))
+        .put("replication_method", plainConfig.get("replication_method"))
         .build());
 
     final Database database = Databases.createDatabase(
@@ -62,12 +59,10 @@ public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
         String.format("jdbc:mysql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            config.get("database").asText()),
+            dbName),
         "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL,
         "zeroDateTimeBehavior=convertToNull");
-
-    super.databaseName = container.getDatabaseName();
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
@@ -93,51 +88,54 @@ public class MySqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
 
   @Override
   protected String getNameSpace() {
-    return container.getDatabaseName();
+    return databaseName;
   }
 
-  /**
-   * Creates all tables and insert data described in the registered data type tests.
-   *
-   * @throws Exception might raise exception if configuration goes wrong or tables creation/insert
-   *         scripts failed.
-   */
-  private void setupDatabaseInternal() throws Exception {
-    final Database database = setupDatabase(null);
-
-    database.query(ctx -> {
-      String insertQueryTemplate = prepareInsertQueryTemplate(numberOfColumns,
-          numberOfDummyRecords);
-
-      for (int currentSteamNumber = 0; currentSteamNumber < numberOfStreams; currentSteamNumber++) {
-        // CREATE TABLE test.test_1_int(id INTEGER PRIMARY KEY, test_column int)
-
-        String currentTableName = String.format(getTestStreamNameTemplate(), currentSteamNumber);
-
-        ctx.fetch(prepareCreateTableQuery(numberOfColumns, currentTableName));
-        ctx.fetch(String.format(insertQueryTemplate, currentTableName));
-
-        c.info("Finished processing for stream " + currentSteamNumber);
-      }
-      return null;
-    });
-
-    database.close();
-  }
-
-  /**
-   * The test checks that connector can fetch prepared data without failure.
-   */
   @Test
-  @Disabled // Kept enabled performance tests that *pointed to read DB only
-  public void test1000Streams() throws Exception {
+  public void test100tables100recordsDb() throws Exception {
     numberOfColumns = 240; // 240 is near the max value for varchar(8) type
     // 200 is near the max value for 1 batch call,if need more - implement multiple batching for single
     // stream
-    numberOfDummyRecords = 20; // 200;
+    numberOfDummyRecords = 100; // 200 is near the max value for one shot in batching;
+    numberOfStreams = 100;
+
+    setupDatabase("test100tables100recordsDb");
+
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
+        numberOfStreams, numberOfDummyRecords);
+    final Map<String, Integer> checkStatusMap =
+        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
+    validateNumberOfReceivedMsgs(checkStatusMap);
+  }
+
+  @Test
+  public void test1000tables240columns200recordsDb() throws Exception {
+    numberOfColumns = 240; // 240 is near the max value for varchar(8) type
+    // 200 is near the max value for 1 batch call,if need more - implement multiple batching for single
+    // stream
+    numberOfDummyRecords = 200;
     numberOfStreams = 1000;
 
-    setupDatabaseInternal();
+    setupDatabase("test1000tables240columns200recordsDb");
+
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
+        numberOfStreams, numberOfDummyRecords);
+    final Map<String, Integer> checkStatusMap =
+        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
+    validateNumberOfReceivedMsgs(checkStatusMap);
+  }
+
+  @Test
+  public void test5000tables240columns200recordsDb() throws Exception {
+    numberOfColumns = 240; // 240 is near the max value for varchar(8) type
+    // 200 is near the max value for 1 batch call,if need more - implement multiple batching for single
+    // stream
+    numberOfDummyRecords = 200;
+    numberOfStreams = 5000;
+
+    setupDatabase("test5000tables240columns200recordsDb");
 
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
     final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
