@@ -11,6 +11,7 @@ import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -311,10 +312,10 @@ public class ServerApp implements ServerRunnable {
    * no other operation is allowed
    */
   private static void runAutomaticMigration(final ConfigRepository configRepository,
-      final JobPersistence jobPersistence,
-      final ConfigPersistence seed,
-      final AirbyteVersion airbyteVersion,
-      final AirbyteVersion airbyteDatabaseVersion) {
+                                            final JobPersistence jobPersistence,
+                                            final ConfigPersistence seed,
+                                            final AirbyteVersion airbyteVersion,
+                                            final AirbyteVersion airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion.serialize() + " to version : " + airbyteVersion.serialize());
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
@@ -326,6 +327,7 @@ public class ServerApp implements ServerRunnable {
       LOGGER.error("Automatic Migration failed ", e);
     }
   }
+
   public static boolean isDatabaseVersionBehindAppVersion(final AirbyteVersion serverVersion, final AirbyteVersion databaseVersion) {
     final boolean bothVersionsCompatible = AirbyteVersion.isCompatible(serverVersion, databaseVersion);
     if (bothVersionsCompatible) {
