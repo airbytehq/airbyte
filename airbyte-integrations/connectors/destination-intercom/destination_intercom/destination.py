@@ -13,7 +13,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-from destination_intercom.writers import create_writer
+from destination_intercom.writer import create_writer
 
 
 class DestinationIntercom(Destination):
@@ -25,7 +25,6 @@ class DestinationIntercom(Destination):
     ) -> Iterable[AirbyteMessage]:
 
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received

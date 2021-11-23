@@ -1,7 +1,6 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/intercom",
   "supported_destination_sync_modes": [
-    "overwrite",
     "append", 
     "append_dedup"
   ],
@@ -25,8 +24,8 @@
       "model": {
         "title": "Intercom object model",
         "type": "string",
-        "description": "Object model to sync, e.g. contact, company",
-        "enum": ["contact", "company"],
+        "description": "Intercom model to sync, e.g. Contact, Company",
+        "enum": ["Contact", "Company"],
         "airbyte_secret": false,
         "order": 2
       }

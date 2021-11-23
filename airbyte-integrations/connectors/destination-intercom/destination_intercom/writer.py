@@ -124,12 +124,16 @@ class CompanyWriter(IntercomWriter):
         'industry'
     ]
 
+    user_key = 'user_email'
+
+    excluded_attributes = ['user_email']
+
 
 def create_writer(
     access_token: str = None,
     model: str = None
 ):
-    if model == 'company':
+    if model == 'Company':
         return CompanyWriter(IntercomClient(access_token=access_token))
-    elif model == 'contact':
+    elif model == 'Contact':
         return ContactWriter(IntercomClient(access_token=access_token))
