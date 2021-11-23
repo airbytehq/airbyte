@@ -9,7 +9,7 @@ import time
 import zlib
 from abc import ABC, abstractmethod
 from io import StringIO
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -20,6 +20,7 @@ from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from Crypto.Cipher import AES
 from source_amazon_seller_partner.auth import AWSSignature
 
@@ -293,6 +294,25 @@ class ReportsAmazonSPStream(Stream, ABC):
         else:
             logger.warn(f"There are no report document related in stream `{self.name}`. Report body {report_payload}")
 
+class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
+    @property
+    @abstractmethod
+    def cursor_field(self) -> Union[str, List[str]]:
+        pass
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        logger.info('CURRENT STREAM STATE')
+        logger.info(current_stream_state)
+        logger.info('LATEST RECORD')
+        logger.info(latest_record)
+        latest_benchmark = latest_record[self.cursor_field]
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+        return {self.cursor_field: latest_benchmark}
 
 class MerchantListingsReports(ReportsAmazonSPStream):
     name = "GET_MERCHANT_LISTINGS_ALL_DATA"
@@ -346,8 +366,10 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 
-class SellerFeedbackReports(ReportsAmazonSPStream):
+class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
     name = "GET_SELLER_FEEDBACK_DATA"
+    cursor_field = 'Date'
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     def __init__(self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_ids: List[str], data_start_time: Optional[str], data_end_time: Optional[str], authenticator: HttpAuthenticator = NoAuth()):
         super().__init__(url_base, aws_signature, replication_start_date, marketplace_ids, authenticator=authenticator)
@@ -365,6 +387,19 @@ class SellerFeedbackReports(ReportsAmazonSPStream):
         result.update(data_times)
 
         return result
+
+    @transformer.registerCustomTransform
+    def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+        logger.info('registerCustomTransform')
+        logger.info(original_value)
+        logger.info(field_schema)
+        if original_value and "format" in field_schema and field_schema["format"] == "date":
+            transformed_value = pendulum.from_format(original_value, "M/D/YY").to_date_string()
+            logger.info('transformed_value')
+            logger.info(transformed_value)
+            return transformed_value
+            
+        return original_value    
 
 
 class Orders(IncrementalAmazonSPStream):
