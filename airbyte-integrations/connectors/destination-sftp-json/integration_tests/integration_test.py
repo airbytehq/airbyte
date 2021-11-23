@@ -6,7 +6,7 @@
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Mapping
-import socket
+from socket import socket
 import time
 
 import docker
@@ -28,15 +28,20 @@ from destination_sftp_json import DestinationSftpJson
 from destination_sftp_json.client import SftpClient
 
 
+
 @pytest.fixture(scope="module")
 def docker_client():
     return docker.from_env()
 
 @pytest.fixture(name="config", scope="module")
 def config_fixture(docker_client):
+    with socket() as s:
+        s.bind(('',0))
+        available_port = s.getsockname()[1]
+
     config = {
         "host": "0.0.0.0",
-        "port": 22,
+        "port": available_port,
         "username": "foo",
         "password": "pass",
         "destination_path": "upload"
@@ -45,7 +50,7 @@ def config_fixture(docker_client):
         "atmoz/sftp",
          f"{config['username']}:{config['password']}:::{config['destination_path']}",
         name="mysftp",
-        ports={config["port"]:config["port"]}, 
+        ports={22:config["port"]}, 
         detach=True)
     time.sleep(20)
     yield config
