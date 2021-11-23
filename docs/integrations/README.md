@@ -146,6 +146,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Keen](destinations/keen.md) | Alpha |
 | [Local CSV](destinations/local-csv.md) | Certified |
 | [Local JSON](destinations/local-json.md) | Certified |
+| [MariaDB ColumnStore](destinations/mariadb-columnstore.md) | Alpha |
 | [MeiliSearch](destinations/meilisearch.md) | Beta |
 | [MongoDB](destinations/mongodb.md) | Alpha |
 | [MQTT](destinations/mqtt.md) | Alpha |

@@ -168,6 +168,7 @@
     * [Keen](integrations/destinations/keen.md)
     * [Local CSV](integrations/destinations/local-csv.md)
     * [Local JSON](integrations/destinations/local-json.md)
+    * [MariaDB ColumnStore](integrations/destinations/mariadb-columnstore.md)
     * [MeiliSearch](integrations/destinations/meilisearch.md)
     * [MongoDB](integrations/destinations/mongodb.md)
     * [MQTT](integrations/destinations/mqtt.md)
