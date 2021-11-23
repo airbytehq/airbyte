@@ -19,7 +19,7 @@ public class IntegrationTestExample {
   public void longTest() {
     log.error("Start test - integration");
     log.error("end test - integration");
-    throw new RuntimeException("Noooooooo");
+    // throw new RuntimeException("Noooooooo");
   }
 
 }
