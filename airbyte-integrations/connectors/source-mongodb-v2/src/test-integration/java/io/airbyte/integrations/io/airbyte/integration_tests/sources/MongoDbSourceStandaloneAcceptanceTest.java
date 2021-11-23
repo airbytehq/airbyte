@@ -53,7 +53,7 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .append("double_test", 100.12).append("int_test", 100);
     final var doc2 = new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201);
     final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null)
-            .append("double_test", 212.11).append("int_test", 302);
+        .append("double_test", 212.11).append("int_test", 302);
 
     collection.insertMany(List.of(doc1, doc2, doc3));
   }
