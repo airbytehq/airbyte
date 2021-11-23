@@ -17,7 +17,7 @@
       "username",
       "password"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "host": {
         "description": "Host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com).",

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -47,7 +27,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     super(DestinationType.class, SnowflakeDestination::getTypeFromConfig, getTypeToDestination());
   }
 
-  public static DestinationType getTypeFromConfig(JsonNode config) {
+  public static DestinationType getTypeFromConfig(final JsonNode config) {
     if (isS3Copy(config)) {
       return DestinationType.COPY_S3;
     } else if (isGcsCopy(config)) {
@@ -57,11 +37,11 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     }
   }
 
-  public static boolean isS3Copy(JsonNode config) {
+  public static boolean isS3Copy(final JsonNode config) {
     return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("s3_bucket_name");
   }
 
-  public static boolean isGcsCopy(JsonNode config) {
+  public static boolean isGcsCopy(final JsonNode config) {
     return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("project_id");
   }
 
@@ -76,7 +56,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
         DestinationType.COPY_GCS, copyGcsDestination);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new SnowflakeDestination();
     LOGGER.info("starting destination: {}", SnowflakeDestination.class);
     new IntegrationRunner(destination).run(args);

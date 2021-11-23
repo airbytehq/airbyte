@@ -9,7 +9,7 @@
     "title": "JDBC Destination Spec",
     "type": "object",
     "required": ["username", "jdbc_url"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "username": {
         "description": "Username to use to access the database.",

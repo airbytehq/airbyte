@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "9845d17a-45f1-4070-8a60-50914b1c8e2b",
-  "name": "HTTP Request",
-  "dockerRepository": "airbyte/source-http-request",
-  "dockerImageTag": "0.2.4",
-  "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-http-request",
-  "icon": "http.svg"
-}

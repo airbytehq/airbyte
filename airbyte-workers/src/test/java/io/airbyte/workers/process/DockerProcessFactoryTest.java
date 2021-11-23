@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -37,6 +17,7 @@ import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
@@ -72,7 +53,7 @@ class DockerProcessFactoryTest {
    */
   @Test
   public void testImageExists() throws IOException, WorkerException {
-    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
     assertTrue(processFactory.checkImageExists("busybox"));
@@ -80,7 +61,7 @@ class DockerProcessFactoryTest {
 
   @Test
   public void testImageDoesNotExist() throws IOException, WorkerException {
-    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
     assertFalse(processFactory.checkImageExists("airbyte/fake:0.1.2"));
@@ -88,12 +69,12 @@ class DockerProcessFactoryTest {
 
   @Test
   public void testFileWriting() throws IOException, WorkerException {
-    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
-    Path jobRoot = workspaceRoot.resolve("job");
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path jobRoot = workspaceRoot.resolve("job");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
     processFactory.create("job_id", 0, jobRoot, "busybox", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of());
 
     assertEquals(
         Jsons.jsonNode(ImmutableMap.of("data", 2)),

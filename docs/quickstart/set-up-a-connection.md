@@ -22,7 +22,7 @@ Now let's verify that this worked:
 cat /tmp/airbyte_local/json_data/_airbyte_raw_pokemon.jsonl
 ```
 
-You should see one line for each day that was replicated.
+You should see a large JSON object with the response from the API, giving you a lot of information about the selected Pokemon.
 
 If you have [`jq`](https://stedolan.github.io/jq/) installed, let's look at some of the data that we have replicated about `charizard`. We'll pull its abilities and weight:
 
@@ -34,7 +34,7 @@ jq '._airbyte_data | {abilities: .abilities, weight: .weight}'
 And there you have it. You've pulled data from an API directly into a file, with all of the actual configuration for this replication only taking place in the UI.
 
 Note: If you are using Airbyte on Windows with WSL2 and Docker, refer to [this tutorial](../operator-guides/locating-files-local-destination.md) or [this section](../integrations/destinations/local-json.md#access-replicated-data-files) in the local-json destination guide to locate the replicated folder and file.
- 
+
 ## That's it!
 
 This is just the beginning of using Airbyte. We support a large collection of sources and destinations. You can even contribute your own.
@@ -42,3 +42,8 @@ This is just the beginning of using Airbyte. We support a large collection of so
 If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request a connector you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
 
 Thank you and we hope you enjoy using Airbyte.
+
+{% hint style="warning" %}
+At the moment, Airbyte runs a full-refresh to recreate the final tables. This can cause more costs in some destinations like Snowflake, Redshift, and Bigquery. To understand better what sync mode and frequency you should select, read [this doc](../understanding-airbyte/connections/). There is a FAQ topic on our Discourse that more extensively explains the cost issue [here](https://discuss.airbyte.io/t/why-are-my-final-tables-are-being-recreated-everytime/76).
+{% endhint %}
+

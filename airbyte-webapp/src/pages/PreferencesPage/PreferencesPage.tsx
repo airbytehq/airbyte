@@ -1,23 +1,23 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
-import { PageViewContainer } from "../../components/CenteredPageComponents";
+import { PageViewContainer } from "components/CenteredPageComponents";
 import { H1 } from "components";
 import { PreferencesForm } from "views/Settings/PreferencesForm";
-import config from "../../config";
-import { AnalyticsService } from "../../core/analytics/AnalyticsService";
-import useWorkspace from "../../components/hooks/services/useWorkspaceHook";
-import styled from "styled-components";
 import HeadTitle from "components/HeadTitle";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const Title = styled(H1)`
   margin-bottom: 47px;
 `;
 
 const PreferencesPage: React.FC = () => {
-  useEffect(() => {
-    AnalyticsService.page("Preferences Page");
-  }, []);
+  const analyticsService = useAnalyticsService();
+  useEffect(() => analyticsService.page("Preferences Page"), [
+    analyticsService,
+  ]);
 
   const { setInitialSetupConfig } = useWorkspace();
 
@@ -29,8 +29,7 @@ const PreferencesPage: React.FC = () => {
   }) => {
     await setInitialSetupConfig(data);
 
-    AnalyticsService.track("Specified Preferences", {
-      user_id: config.ui.workspaceId,
+    analyticsService.track("Specified Preferences", {
       email: data.email,
       anonymized: data.anonymousDataCollection,
       subscribed_newsletter: data.news,

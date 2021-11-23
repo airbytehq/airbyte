@@ -1,32 +1,86 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.protocols.airbyte;
 
+import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.protocols.Destination;
+import java.nio.file.Path;
+import java.util.Optional;
 
-public interface AirbyteDestination extends Destination<AirbyteMessage> {
+/**
+ * This interface provides a java interface over all interactions with a Destination from the POV of
+ * the platform. It encapsulates the full lifecycle of the Destination as well as any inputs and
+ * outputs.
+ */
+public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
+
+  /**
+   * Starts the Destination container. It instantiates a writer to write to STDIN on that container.
+   * It also instantiates a reader to listen on STDOUT.
+   *
+   * @param destinationConfig - contains the arguments that must be passed to the write method of the
+   *        Destination.
+   * @param jobRoot - directory where the job can write data.
+   * @throws Exception - throws if there is any failure in startup.
+   */
+  void start(WorkerDestinationConfig destinationConfig, Path jobRoot) throws Exception;
+
+  /**
+   * Accepts an AirbyteMessage and writes it to STDIN of the Destination. Blocks if STDIN's buffer is
+   * full.
+   *
+   * @param message message to send to destination.
+   * @throws Exception - throws if there is any failure in writing to Destination.
+   */
+  @Override
+  void accept(AirbyteMessage message) throws Exception;
+
+  /**
+   * This method is a flush to make sure all data that should be written to the Destination is
+   * written. Any messages that have already been accepted
+   * ({@link AirbyteDestination#accept(AirbyteMessage)} ()}) will be flushed. Any additional messages
+   * sent to accept will not be flushed. In fact, flush should fail if the caller attempts to send it
+   * additional messages after calling this method.
+   *
+   * (Potentially should just rename it to flush)
+   *
+   * @throws Exception - throws if there is any failure when flushing.
+   */
+  void notifyEndOfStream() throws Exception;
+
+  /**
+   * Means no more data will be emitted by the Destination. This may be because all data has already
+   * been emitted or because the Destination container has exited.
+   *
+   * @return true, if no more data will be emitted. otherwise, false.
+   */
+  boolean isFinished();
+
+  /**
+   * Attempts to read an AirbyteMessage from the Destination.
+   *
+   * @return returns an AirbyteMessage if the Destination emits one. Otherwise, empty. This method
+   *         BLOCKS on waiting for the Destination to emit data to STDOUT.
+   */
+  Optional<AirbyteMessage> attemptRead();
+
+  /**
+   * Attempts to shut down the Destination's container. Waits for a graceful shutdown, capped by a
+   * timeout.
+   *
+   * @throws Exception - throws if there is any failure in shutdown.
+   */
+  @Override
+  void close() throws Exception;
+
+  /**
+   * Attempt to shut down the Destination's container quickly.
+   *
+   * @throws Exception - throws if there is any failure in shutdown.
+   */
+  void cancel() throws Exception;
 
 }

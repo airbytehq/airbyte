@@ -5,6 +5,7 @@ import { StepType } from "./types";
 const useStepsConfig = (
   hasSources: boolean,
   hasDestinations: boolean,
+  hasConnections: boolean,
   afterUpdateStep?: () => void
 ): {
   currentStep: StepType;
@@ -14,16 +15,17 @@ const useStepsConfig = (
   const getInitialStep = () => {
     if (hasSources) {
       if (hasDestinations) {
+        if (hasConnections) {
+          return StepType.FINAl;
+        }
         return StepType.SET_UP_CONNECTION;
       }
-
       return StepType.CREATE_DESTINATION;
     }
-
-    return StepType.CREATE_SOURCE;
+    return StepType.INSTRUCTION;
   };
 
-  const [currentStep, setCurrentStep] = useState(getInitialStep);
+  const [currentStep, setCurrentStep] = useState<StepType>(getInitialStep);
   const updateStep = useCallback(
     (step: StepType) => {
       setCurrentStep(step);
@@ -36,6 +38,10 @@ const useStepsConfig = (
 
   const steps = useMemo(
     () => [
+      {
+        id: StepType.INSTRUCTION,
+        name: <FormattedMessage id="onboarding.instruction" />,
+      },
       {
         id: StepType.CREATE_SOURCE,
         name: <FormattedMessage id="onboarding.createSource" />,
@@ -61,6 +67,10 @@ const useStepsConfig = (
         //   hasSources && hasDestinations
         //     ? () => updateStep(StepType.SET_UP_CONNECTION)
         //     : undefined
+      },
+      {
+        id: StepType.FINAl,
+        name: <FormattedMessage id="onboarding.final" />,
       },
     ],
     []

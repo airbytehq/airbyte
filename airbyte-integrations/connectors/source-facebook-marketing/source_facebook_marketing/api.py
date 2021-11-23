@@ -1,38 +1,20 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 import json
+import logging
 from time import sleep
 
 import pendulum
-from airbyte_cdk.entrypoint import logger
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.common import FacebookAPIException
+
+logger = logging.getLogger("airbyte")
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
@@ -86,14 +68,14 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
             if max_usage > self.call_rate_threshold:
                 max_pause_interval = max(max_pause_interval, self.pause_interval_minimum)
-                logger.warn(f"Utilization is too high ({max_usage})%, pausing for {max_pause_interval}")
+                logger.warning(f"Utilization is too high ({max_usage})%, pausing for {max_pause_interval}")
                 sleep(max_pause_interval.total_seconds())
         else:
             headers = response.headers()
             usage, pause_interval = self.parse_call_rate_header(headers)
             if usage > self.call_rate_threshold or pause_interval:
                 pause_interval = max(pause_interval, self.pause_interval_minimum)
-                logger.warn(f"Utilization is too high ({usage})%, pausing for {pause_interval}")
+                logger.warning(f"Utilization is too high ({usage})%, pausing for {pause_interval}")
                 sleep(pause_interval.total_seconds())
 
     def call(

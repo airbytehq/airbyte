@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -33,6 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -63,7 +44,7 @@ class SqlOperationsUtilsTest {
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
 
-    JsonNode config = createConfig();
+    final JsonNode config = createConfig();
 
     database = Databases.createJdbcDatabase(
         config.get("username").asText(),
@@ -80,7 +61,7 @@ class SqlOperationsUtilsTest {
     final UUID RECORD2_UUID = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(RECORD1_UUID).thenReturn(RECORD2_UUID);
 
-    new DefaultSqlOperations().createTableIfNotExists(database, SCHEMA_NAME, STREAM_NAME);
+    new TestJdbcSqlOperations().createTableIfNotExists(database, SCHEMA_NAME, STREAM_NAME);
 
     final String insertQueryComponent = String.format(
         "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
@@ -105,18 +86,20 @@ class SqlOperationsUtilsTest {
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM RIVERS"),
-        JdbcUtils::rowToJson);
+        JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
     final List<JsonNode> expectedRecords = Lists.newArrayList(
         Jsons.jsonNode(ImmutableMap.builder()
             .put(JavaBaseConstants.COLUMN_NAME_AB_ID, RECORD1_UUID)
             .put(JavaBaseConstants.COLUMN_NAME_DATA, records.get(0).getData())
-            .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, JdbcUtils.toISO8601String(records.get(0).getEmittedAt()))
+            .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, DataTypeUtils
+                .toISO8601String(records.get(0).getEmittedAt()))
             .build()),
         Jsons.jsonNode(ImmutableMap.builder()
             .put(JavaBaseConstants.COLUMN_NAME_AB_ID, RECORD2_UUID)
             .put(JavaBaseConstants.COLUMN_NAME_DATA, records.get(1).getData())
-            .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, JdbcUtils.toISO8601String(records.get(1).getEmittedAt()))
+            .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, DataTypeUtils
+                .toISO8601String(records.get(1).getEmittedAt()))
             .build()));
 
     actualRecords.forEach(

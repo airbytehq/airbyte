@@ -1,9 +1,13 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import { RequestMiddleware } from "core/request/RequestMiddleware";
 
 class HealthService extends AirbyteRequestService {
+  constructor(rootUrl: string, requestSigner: RequestMiddleware[] = []) {
+    super(rootUrl, requestSigner);
+  }
+
   async health(): Promise<void> {
-    const path = `${AirbyteRequestService.rootUrl}health`;
-    await fetch(path, {
+    await this.fetch("health", undefined, {
       method: "GET",
     });
   }

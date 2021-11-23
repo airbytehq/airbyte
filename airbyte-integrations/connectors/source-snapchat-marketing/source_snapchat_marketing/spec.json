@@ -1,0 +1,46 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/snapchat-marketing",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Snapchat Marketing Spec",
+    "type": "object",
+    "required": ["client_id", "client_secret", "refresh_token"],
+    "additionalProperties": false,
+    "properties": {
+      "client_id": {
+        "title": "Client ID",
+        "type": "string",
+        "description": "The Snapchat Client ID for API credentials.",
+        "airbyte_secret": true
+      },
+      "client_secret": {
+        "title": "Client Secret",
+        "type": "string",
+        "description": "The Client Secret for a given Client ID.",
+        "airbyte_secret": true
+      },
+      "refresh_token": {
+        "title": "API Refresh Token",
+        "type": "string",
+        "description": "Refresh Token to get next api key after expiration. Is given with API Key",
+        "airbyte_secret": true
+      },
+      "start_date": {
+        "title": "Start Date",
+        "type": "string",
+        "description": "The start date to sync data. Leave blank for full sync. Format: YYYY-MM-DD.",
+        "examples": ["2021-01-01"],
+        "default": "1970-01-01",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"]]
+    }
+  }
+}

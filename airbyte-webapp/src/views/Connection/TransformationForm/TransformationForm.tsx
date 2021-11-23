@@ -6,9 +6,10 @@ import { getIn, useFormik } from "formik";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
 import { Transformation } from "core/domain/connection/operation";
-import { operationService } from "core/domain/connection/OperationService";
 import { equal } from "utils/objects";
 import { FormikErrors } from "formik/dist/types";
+import { useGetService } from "core/servicesProvider";
+import { OperationService } from "../../../core/domain/connection";
 
 const Content = styled.div`
   display: flex;
@@ -72,7 +73,7 @@ function prepareLabelFields(
 }
 
 // enum with only one value for the moment
-const TransformationTypes = [{ value: "custom", text: "Custom DBT" }];
+const TransformationTypes = [{ value: "custom", label: "Custom DBT" }];
 
 const TransformationForm: React.FC<TransformationProps> = ({
   transformation,
@@ -80,6 +81,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
   onDone,
 }) => {
   const formatMessage = useIntl().formatMessage;
+  const operationService = useGetService<OperationService>("OperationService");
 
   const formik = useFormik({
     initialValues: transformation,
@@ -131,7 +133,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
         <Column>
           <Label label={<FormattedMessage id="form.transformationType" />}>
             <DropDown
-              data={TransformationTypes}
+              options={TransformationTypes}
               value="custom"
               placeholder={formatMessage({ id: "form.selectType" })}
             />

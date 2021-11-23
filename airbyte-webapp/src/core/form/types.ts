@@ -1,4 +1,5 @@
-import { JSONSchema7, JSONSchema7Type, JSONSchema7TypeName } from "json-schema";
+import { JSONSchema7Type, JSONSchema7TypeName } from "json-schema";
+import { AirbyteJSONSchema } from "core/jsonSchema";
 
 type FormItem = {
   fieldKey: string;
@@ -7,6 +8,8 @@ type FormItem = {
   order?: number;
   title?: string;
   description?: string;
+
+  airbyte_hidden?: boolean;
 };
 
 export type FormBaseItem = {
@@ -15,13 +18,14 @@ export type FormBaseItem = {
   isSecret?: boolean;
   multiline?: boolean;
 } & FormItem &
-  Partial<JSONSchema7>;
+  AirbyteJSONSchema;
 
 type FormGroupItem = {
   _type: "formGroup";
-  jsonSchema: JSONSchema7;
+  jsonSchema: AirbyteJSONSchema;
   properties: FormBlock[];
   isLoading?: boolean;
+  hasOauth?: boolean;
   default?: JSONSchema7Type;
   examples?: JSONSchema7Type;
 } & FormItem;

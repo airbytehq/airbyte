@@ -4,21 +4,20 @@ import { useResource } from "rest-hooks";
 
 import PageTitle from "components/PageTitle";
 import HeadTitle from "components/HeadTitle";
-import useRouter from "components/hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 import StepsMenu from "components/StepsMenu";
 import StatusView from "./components/StatusView";
 import SettingsView from "./components/SettingsView";
 import ConnectionResource from "core/resources/Connection";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
-import config from "config";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
 import FrequencyConfig from "config/FrequencyConfig.json";
 import Link from "components/Link";
 import { Routes } from "../../../routes";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { equal } from "utils/objects";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 type ConnectionItemPageProps = {
   currentStep: "status" | "settings";
@@ -28,7 +27,7 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   currentStep,
 }) => {
   const { query, push } = useRouter<{ id: string }>();
-
+  const analyticsService = useAnalyticsService();
   const connection = useResource(ConnectionResource.detailShape(), {
     connectionId: query.id,
   });
@@ -79,8 +78,7 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   };
 
   const onAfterSaveSchema = () => {
-    AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
+    analyticsService.track("Source - Action", {
       action: "Edit schema",
       connector_source: source.sourceName,
       connector_source_id: source.sourceDefinitionId,

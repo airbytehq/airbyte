@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.migrate.migrations;
@@ -43,7 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This migration fixes a mistake. We should have done a minor version bump from 0.14.2 => 0.14.3
+ * This migration fixes a mistake. We should have done a minor version bump from 0.14.2 to 0.14.3
  * but we did not. This migration cleans up any problems that might have arisen from that. Then we
  * will do another migration to 0.15 forcing everyone to migrate (guaranteeing they hit this one)
  * and getting into a good state. The only change here is that instead of using StandardDataSchema
@@ -53,7 +33,7 @@ public class MigrationV0_14_3 extends BaseMigration implements Migration {
 
   private static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
-  public MigrationV0_14_3(MigrationV0_14_0 previousMigration) {
+  public MigrationV0_14_3(final Migration previousMigration) {
     super(previousMigration);
   }
 
@@ -72,7 +52,7 @@ public class MigrationV0_14_3 extends BaseMigration implements Migration {
   }
 
   @Override
-  public void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
@@ -88,7 +68,7 @@ public class MigrationV0_14_3 extends BaseMigration implements Migration {
     }
   }
 
-  private static JsonNode toConfiguredCatalog(JsonNode schema) {
+  private static JsonNode toConfiguredCatalog(final JsonNode schema) {
     final List<Map<String, JsonNode>> configuredStreams = MoreIterators.toList(schema.get("streams").elements())
         .stream()
         .map(stream -> {
@@ -116,7 +96,7 @@ public class MigrationV0_14_3 extends BaseMigration implements Migration {
     return Jsons.jsonNode(ImmutableMap.of("streams", configuredStreams));
   }
 
-  private static JsonNode fieldsToJsonSchema(JsonNode fields) {
+  private static JsonNode fieldsToJsonSchema(final JsonNode fields) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("type", "object")
         .put("properties", MoreIterators.toList(fields.elements())

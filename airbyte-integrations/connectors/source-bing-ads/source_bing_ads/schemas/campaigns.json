@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AudienceAdsBidAdjustment": {
+      "type": ["null", "number"]
+    },
+    "BiddingScheme": {
+      "type": ["null", "object"],
+      "properties": {
+        "Type": {
+          "type": ["null", "string"]
+        },
+        "MaxCpc": {
+          "type": ["null", "object"],
+          "properties": {
+            "Amount": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "BudgetType": {
+      "type": ["null", "string"]
+    },
+    "DailyBudget": {
+      "type": ["null", "number"]
+    },
+    "ExperimentId": {
+      "type": ["null", "number"]
+    },
+    "FinalUrlSuffix": {
+      "type": ["null", "string"]
+    },
+    "ForwardCompatibilityMap": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "key": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "Id": {
+      "type": ["null", "number"]
+    },
+    "Name": {
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "SubType": {
+      "type": ["null", "string"]
+    },
+    "TimeZone": {
+      "type": ["null", "string"]
+    },
+    "TrackingUrlTemplate": {
+      "type": ["null", "string"]
+    },
+    "UrlCustomParameters": {
+      "type": ["null", "object"],
+      "properties": {
+        "Parameters": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "Key": {
+                "type": ["null", "string"]
+              },
+              "Value": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "CampaignType": {
+      "type": ["null", "string"]
+    },
+    "Settings": {
+      "type": ["null", "object"],
+      "properties": {
+        "Setting": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "Type": {
+                "type": ["null", "string"]
+              },
+              "Details": {
+                "type": ["null", "object"],
+                "properties": {
+                  "TargetSettingDetail": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "CriterionTypeGroup": {
+                          "type": ["null", "string"]
+                        },
+                        "TargetAndBid": {
+                          "type": ["null", "boolean"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "BudgetId": {
+      "type": ["null", "number"]
+    },
+    "Languages": {
+      "type": ["null", "object"],
+      "properties": {
+        "string": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "AdScheduleUseSearcherTimeZone": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

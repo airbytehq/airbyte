@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.destination;
@@ -56,6 +36,8 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
@@ -82,9 +64,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
@@ -160,7 +145,7 @@ public abstract class DestinationAcceptanceTest {
    * @param config - integration-specific configuration returned by {@link #getConfig()}.
    * @return the default schema, if applicatble.
    */
-  protected String getDefaultSchema(JsonNode config) throws Exception {
+  protected String getDefaultSchema(final JsonNode config) throws Exception {
     if (config.get("schema") == null) {
       return null;
     }
@@ -226,6 +211,28 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
+  /**
+   * Detects if a destination implements overwrite mode from the spec.json that should include
+   * 'supportedDestinationSyncMode'
+   *
+   * @return - a boolean.
+   */
+  protected boolean implementsOverwrite() throws WorkerException {
+    final ConnectorSpecification spec = runSpec();
+    assertNotNull(spec);
+    if (spec.getSupportedDestinationSyncModes() != null) {
+      return spec.getSupportedDestinationSyncModes().contains(DestinationSyncMode.OVERWRITE);
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Override to return true to if the destination implements basic normalization and it should be
+   * tested here.
+   *
+   * @return - a boolean.
+   */
   protected boolean supportsNormalization() {
     return false;
   }
@@ -255,7 +262,8 @@ public abstract class DestinationAcceptanceTest {
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+      throws Exception {
     throw new IllegalStateException("Not implemented");
   }
 
@@ -278,7 +286,7 @@ public abstract class DestinationAcceptanceTest {
    */
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     result.add(identifier);
     return result;
@@ -286,7 +294,7 @@ public abstract class DestinationAcceptanceTest {
 
   @BeforeEach
   void setUpInternal() throws Exception {
-    Path testDir = Path.of("/tmp/airbyte_tests/");
+    final Path testDir = Path.of("/tmp/airbyte_tests/");
     Files.createDirectories(testDir);
     final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
     jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
@@ -337,7 +345,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSync(String messagesFilename, String catalogFilename) throws Exception {
+  public void testSync(final String messagesFilename, final String catalogFilename) throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
@@ -350,10 +358,33 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
+   * This serves to test MSSQL 2100 limit parameters in a single query. this means that for Airbyte
+   * insert data need to limit to ~ 700 records (3 columns for the raw tables) = 2100 params
+   */
+  @ParameterizedTest
+  @ArgumentsSource(DataArgumentsProvider.class)
+  public void testSyncWithLargeRecordBatch(final String messagesFilename, final String catalogFilename) throws Exception {
+    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+
+    final List<AirbyteMessage> largeNumberRecords = Collections.nCopies(400, messages).stream().flatMap(List::stream).collect(Collectors.toList());
+
+    final JsonNode config = getConfig();
+    runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
+  }
+
+  /**
    * Verify that the integration overwrites the first sync with the second sync.
    */
   @Test
   public void testSecondSync() throws Exception {
+    if (!implementsOverwrite()) {
+      LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
+      return;
+    }
+
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
@@ -425,14 +456,16 @@ public abstract class DestinationAcceptanceTest {
   public void specNormalizationValueShouldBeCorrect() throws Exception {
     final boolean normalizationFromSpec = normalizationFromSpec();
     assertEquals(normalizationFromSpec, supportsNormalization());
-    boolean normalizationRunnerFactorySupportsDestinationImage;
-    try {
-      NormalizationRunnerFactory.create(getImageName(), processFactory);
-      normalizationRunnerFactorySupportsDestinationImage = true;
-    } catch (IllegalStateException e) {
-      normalizationRunnerFactorySupportsDestinationImage = false;
+    if (normalizationFromSpec) {
+      boolean normalizationRunnerFactorySupportsDestinationImage;
+      try {
+        NormalizationRunnerFactory.create(getImageName(), processFactory);
+        normalizationRunnerFactorySupportsDestinationImage = true;
+      } catch (final IllegalStateException e) {
+        normalizationRunnerFactorySupportsDestinationImage = false;
+      }
+      assertEquals(normalizationFromSpec, normalizationRunnerFactorySupportsDestinationImage);
     }
-    assertEquals(normalizationFromSpec, normalizationRunnerFactorySupportsDestinationImage);
   }
 
   @Test
@@ -463,7 +496,6 @@ public abstract class DestinationAcceptanceTest {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
-
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
             .withType(Type.RECORD)
@@ -498,7 +530,7 @@ public abstract class DestinationAcceptanceTest {
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncWithNormalization(String messagesFilename, String catalogFilename) throws Exception {
+  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
     if (!normalizationFromSpec()) {
       return;
     }
@@ -511,7 +543,7 @@ public abstract class DestinationAcceptanceTest {
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
 
-    String defaultSchema = getDefaultSchema(config);
+    final String defaultSchema = getDefaultSchema(config);
     final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
     assertSameMessages(messages, actualMessages, true);
   }
@@ -664,7 +696,7 @@ public abstract class DestinationAcceptanceTest {
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
 
-  private String generateBigString(int addExtraCharacters) {
+  private String generateBigString(final int addExtraCharacters) {
     final int length = getMaxRecordValueLimit() + addExtraCharacters;
     return new Random()
         .ints('a', 'z' + 1)
@@ -699,7 +731,7 @@ public abstract class DestinationAcceptanceTest {
     final OperatorDbt dbtConfig = new OperatorDbt()
         .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
         .withGitRepoBranch("main")
-        .withDockerImage("airbyte/normalization:dev");
+        .withDockerImage(NormalizationRunnerFactory.getNormalizationInfoForConnector(getImageName()).getLeft());
     //
     // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
     //
@@ -825,8 +857,8 @@ public abstract class DestinationAcceptanceTest {
     final var diffNamespaceStreams = new ArrayList<AirbyteStream>();
     final var namespace2 = "diff_source_namespace";
     final var mapper = MoreMappers.initMapper();
-    for (AirbyteStream stream : catalog.getStreams()) {
-      var clonedStream = mapper.readValue(mapper.writeValueAsString(stream), AirbyteStream.class);
+    for (final AirbyteStream stream : catalog.getStreams()) {
+      final var clonedStream = mapper.readValue(mapper.writeValueAsString(stream), AirbyteStream.class);
       clonedStream.setNamespace(namespace2);
       diffNamespaceStreams.add(clonedStream);
     }
@@ -882,7 +914,7 @@ public abstract class DestinationAcceptanceTest {
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
-  private StandardCheckConnectionOutput runCheck(JsonNode config) throws WorkerException {
+  private StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
@@ -891,10 +923,10 @@ public abstract class DestinationAcceptanceTest {
     return new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
   }
 
-  protected void runSyncAndVerifyStateOutput(JsonNode config,
-                                             List<AirbyteMessage> messages,
-                                             ConfiguredAirbyteCatalog catalog,
-                                             boolean runNormalization)
+  protected void runSyncAndVerifyStateOutput(final JsonNode config,
+                                             final List<AirbyteMessage> messages,
+                                             final ConfiguredAirbyteCatalog catalog,
+                                             final boolean runNormalization)
       throws Exception {
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog, runNormalization);
     final AirbyteMessage expectedStateMessage = MoreLists.reversed(messages)
@@ -915,7 +947,11 @@ public abstract class DestinationAcceptanceTest {
     assertEquals(expectedStateMessage, actualStateMessage);
   }
 
-  private List<AirbyteMessage> runSync(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog, boolean runNormalization)
+  private List<AirbyteMessage> runSync(
+                                       final JsonNode config,
+                                       final List<AirbyteMessage> messages,
+                                       final ConfiguredAirbyteCatalog catalog,
+                                       final boolean runNormalization)
       throws Exception {
 
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
@@ -929,7 +965,7 @@ public abstract class DestinationAcceptanceTest {
     messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
     destination.notifyEndOfStream();
 
-    List<AirbyteMessage> destinationOutput = new ArrayList<>();
+    final List<AirbyteMessage> destinationOutput = new ArrayList<>();
     while (!destination.isFinished()) {
       destination.attemptRead().ifPresent(destinationOutput::add);
     }
@@ -953,13 +989,15 @@ public abstract class DestinationAcceptanceTest {
     return destinationOutput;
   }
 
-  protected void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog, List<AirbyteMessage> messages, String defaultSchema)
+  protected void retrieveRawRecordsAndAssertSameMessages(final AirbyteCatalog catalog,
+                                                         final List<AirbyteMessage> messages,
+                                                         final String defaultSchema)
       throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
-      List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema, stream.getJsonSchema())
+      final List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema, stream.getJsonSchema())
           .stream()
           .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema).withData(data))
           .collect(Collectors.toList());
@@ -970,7 +1008,9 @@ public abstract class DestinationAcceptanceTest {
   }
 
   // ignores emitted at.
-  protected void assertSameMessages(List<AirbyteMessage> expected, List<AirbyteRecordMessage> actual, boolean pruneAirbyteInternalFields) {
+  protected void assertSameMessages(final List<AirbyteMessage> expected,
+                                    final List<AirbyteRecordMessage> actual,
+                                    final boolean pruneAirbyteInternalFields) {
     final List<JsonNode> expectedProcessed = expected.stream()
         .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
         .map(AirbyteMessage::getRecord)
@@ -987,7 +1027,7 @@ public abstract class DestinationAcceptanceTest {
     assertSameData(expectedProcessed, actualProcessed);
   }
 
-  private void assertSameData(List<JsonNode> expected, List<JsonNode> actual) {
+  private void assertSameData(final List<JsonNode> expected, final List<JsonNode> actual) {
     LOGGER.info("Expected data {}", expected);
     LOGGER.info("Actual data   {}", actual);
     assertEquals(expected.size(), actual.size());
@@ -1005,7 +1045,7 @@ public abstract class DestinationAcceptanceTest {
         final JsonNode expectedValue = expectedEntry.getValue();
         JsonNode actualValue = null;
         String key = expectedEntry.getKey();
-        for (String tmpKey : resolveIdentifier(expectedEntry.getKey())) {
+        for (final String tmpKey : resolveIdentifier(expectedEntry.getKey())) {
           actualValue = actualData.get(tmpKey);
           if (actualValue != null) {
             key = tmpKey;
@@ -1020,17 +1060,17 @@ public abstract class DestinationAcceptanceTest {
   }
 
   // Allows subclasses to implement custom comparison asserts
-  protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
+  protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
     assertEquals(expectedValue, actualValue);
   }
 
-  protected List<AirbyteRecordMessage> retrieveNormalizedRecords(AirbyteCatalog catalog, String defaultSchema) throws Exception {
+  protected List<AirbyteRecordMessage> retrieveNormalizedRecords(final AirbyteCatalog catalog, final String defaultSchema) throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
 
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
 
-      List<AirbyteRecordMessage> msgList = retrieveNormalizedRecords(testEnv, streamName, defaultSchema)
+      final List<AirbyteRecordMessage> msgList = retrieveNormalizedRecords(testEnv, streamName, defaultSchema)
           .stream()
           .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data))
           .collect(Collectors.toList());
@@ -1046,7 +1086,7 @@ public abstract class DestinationAcceptanceTest {
    * @param record - record that will be pruned.
    * @return pruned json node.
    */
-  private AirbyteRecordMessage safePrune(AirbyteRecordMessage record) {
+  private AirbyteRecordMessage safePrune(final AirbyteRecordMessage record) {
     final AirbyteRecordMessage clone = Jsons.clone(record);
     pruneMutate(clone.getData());
     return clone;
@@ -1059,7 +1099,7 @@ public abstract class DestinationAcceptanceTest {
    *
    * @param json - json that will be pruned. will be mutated in place!
    */
-  private void pruneMutate(JsonNode json) {
+  private void pruneMutate(final JsonNode json) {
     for (final String key : Jsons.keys(json)) {
       final JsonNode node = json.get(key);
       // recursively prune all airbyte internal fields.
@@ -1081,7 +1121,9 @@ public abstract class DestinationAcceptanceTest {
           "EMITTED_AT",
           "AB_ID",
           "NORMALIZED_AT",
-          "HASHID");
+          "HASHID",
+          "unique_key",
+          "UNIQUE_KEY");
       if (airbyteInternalFields.stream().anyMatch(internalField -> key.toLowerCase().contains(internalField.toLowerCase()))
           || json.get(key).isNull()) {
         ((ObjectNode) json).remove(key);
@@ -1093,7 +1135,7 @@ public abstract class DestinationAcceptanceTest {
 
     private final Path localRoot;
 
-    public TestDestinationEnv(Path localRoot) {
+    public TestDestinationEnv(final Path localRoot) {
       this.localRoot = localRoot;
     }
 
@@ -1109,5 +1151,126 @@ public abstract class DestinationAcceptanceTest {
     }
 
   }
+
+  /**
+   * This test MUST be disabled by default, but you may uncomment it and use when need to reproduce a
+   * performance issue for destination. This test helps you to emulate lot's of stream and messages in
+   * each simply changing the "streamsSize" args to set a number of tables\streams and the
+   * "messagesNumber" to a messages number that would be written in each stream. !!! Do NOT forget to
+   * manually remove all generated objects !!! Hint: To check the destination container output run
+   * "docker ps" command in console to find the container's id. Then run "docker container attach
+   * your_containers_id" (ex. docker container attach 18cc929f44c8) to see the container's output
+   */
+  @Test
+  @Disabled
+  public void testStressPerformance() throws Exception {
+    final int streamsSize = 5; // number of generated streams
+    final int messagesNumber = 300; // number of msg to be written to each generated stream
+
+    // Each stream will have an id and name fields
+    final String USERS_STREAM_NAME = "users"; // stream's name prefix. Will get "user0", "user1", etc.
+    final String ID = "id";
+    final String NAME = "name";
+
+    // generate schema\catalogs
+    final List<AirbyteStream> configuredAirbyteStreams = new ArrayList<>();
+    for (int i = 0; i < streamsSize; i++) {
+      configuredAirbyteStreams
+          .add(CatalogHelpers.createAirbyteStream(USERS_STREAM_NAME + i,
+              Field.of(NAME, JsonSchemaPrimitive.STRING),
+              Field
+                  .of(ID, JsonSchemaPrimitive.STRING)));
+    }
+    final AirbyteCatalog testCatalog = new AirbyteCatalog().withStreams(configuredAirbyteStreams);
+    final ConfiguredAirbyteCatalog configuredTestCatalog = CatalogHelpers
+        .toDefaultConfiguredCatalog(testCatalog);
+
+    final JsonNode config = getConfig();
+    final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
+        .withConnectionId(UUID.randomUUID())
+        .withCatalog(configuredTestCatalog)
+        .withDestinationConnectionConfiguration(config);
+    final AirbyteDestination destination = getDestination();
+
+    // Start destination
+    destination.start(destinationConfig, jobRoot);
+
+    final AtomicInteger currentStreamNumber = new AtomicInteger(0);
+    final AtomicInteger currentRecordNumberForStream = new AtomicInteger(0);
+
+    // this is just a current state logger. Useful when running long hours tests to see the progress
+    final Thread countPrinter = new Thread(() -> {
+      while (true) {
+        System.out.println(
+            "currentStreamNumber=" + currentStreamNumber + ", currentRecordNumberForStream="
+                + currentRecordNumberForStream + ", " + DateTime.now());
+        try {
+          Thread.sleep(10000);
+        } catch (final InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+
+    });
+    countPrinter.start();
+
+    // iterate through streams
+    for (int streamCounter = 0; streamCounter < streamsSize; streamCounter++) {
+      LOGGER.info("Started new stream processing with #" + streamCounter);
+      // iterate through msm inside a particular stream
+      // Generate messages and put it to stream
+      for (int msgCounter = 0; msgCounter < messagesNumber; msgCounter++) {
+        final AirbyteMessage msg = new AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME + streamCounter)
+                .withData(
+                    Jsons.jsonNode(
+                        ImmutableMap.builder().put(NAME, LOREM_IPSUM)
+                            .put(ID, streamCounter + "_" + msgCounter)
+                            .build()))
+                .withEmittedAt(Instant.now().toEpochMilli()));
+        try {
+          destination.accept(msg);
+        } catch (final Exception e) {
+          LOGGER.error("Failed to write a RECORD message: " + e);
+          throw new RuntimeException(e);
+        }
+
+        currentRecordNumberForStream.set(msgCounter);
+      }
+
+      // send state message here, it's required
+      final AirbyteMessage msgState = new AirbyteMessage()
+          .withType(AirbyteMessage.Type.STATE)
+          .withState(new AirbyteStateMessage()
+              .withData(
+                  Jsons.jsonNode(ImmutableMap.builder().put("start_date", "2020-09-02").build())));
+      try {
+        destination.accept(msgState);
+      } catch (final Exception e) {
+        LOGGER.error("Failed to write a STATE message: " + e);
+        throw new RuntimeException(e);
+      }
+
+      currentStreamNumber.set(streamCounter);
+    }
+
+    LOGGER.info(String
+        .format("Added %s messages to each of %s streams", currentRecordNumberForStream,
+            currentStreamNumber));
+    // Close destination
+    destination.notifyEndOfStream();
+  }
+
+  private final static String LOREM_IPSUM =
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque malesuada lacinia aliquet. Nam feugiat mauris vel magna dignissim feugiat. Nam non dapibus sapien, ac mattis purus. Donec mollis libero erat, a rutrum ipsum pretium id. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer nec aliquam leo. Aliquam eu dictum augue, a ornare elit.\n"
+          + "\n"
+          + "Nulla viverra blandit neque. Nam blandit varius efficitur. Nunc at sapien blandit, malesuada lectus vel, tincidunt orci. Proin blandit metus eget libero facilisis interdum. Aenean luctus scelerisque orci, at scelerisque sem vestibulum in. Nullam ornare massa sed dui efficitur, eget volutpat lectus elementum. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Integer elementum mi vitae erat eleifend iaculis. Nullam eget tincidunt est, eget tempor est. Sed risus velit, iaculis vitae est in, volutpat consectetur odio. Aenean ut fringilla elit. Suspendisse non aliquet massa. Curabitur suscipit metus nunc, nec porttitor velit venenatis vel. Fusce vestibulum eleifend diam, lobortis auctor magna.\n"
+          + "\n"
+          + "Etiam maximus, mi feugiat pharetra mattis, nulla neque euismod metus, in congue nunc sem nec ligula. Curabitur aliquam, risus id convallis cursus, nunc orci sollicitudin enim, quis scelerisque nibh dui in ipsum. Suspendisse mollis, metus a dapibus scelerisque, sapien nulla pretium ipsum, non finibus sem orci et lectus. Aliquam dictum magna nisi, a consectetur urna euismod nec. In pulvinar facilisis nulla, id mollis libero pulvinar vel. Nam a commodo leo, eu commodo dolor. In hac habitasse platea dictumst. Curabitur auctor purus quis tortor laoreet efficitur. Quisque tincidunt, risus vel rutrum fermentum, libero urna dignissim augue, eget pulvinar nibh ligula ut tortor. Vivamus convallis non risus sed consectetur. Etiam accumsan enim ac nisl suscipit, vel congue lorem volutpat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce non orci quis lacus rhoncus vestibulum nec ut magna. In varius lectus nec quam posuere finibus. Vivamus quis lectus vitae tortor sollicitudin fermentum.\n"
+          + "\n"
+          + "Pellentesque elementum vehicula egestas. Sed volutpat velit arcu, at imperdiet sapien consectetur facilisis. Suspendisse porttitor tincidunt interdum. Morbi gravida faucibus tortor, ut rutrum magna tincidunt a. Morbi eu nisi eget dui finibus hendrerit sit amet in augue. Aenean imperdiet lacus enim, a volutpat nulla placerat at. Suspendisse nibh ipsum, venenatis vel maximus ut, fringilla nec felis. Sed risus mi, egestas quis quam ullamcorper, pharetra vestibulum diam.\n"
+          + "\n"
+          + "Praesent finibus scelerisque elit, accumsan condimentum risus mattis vitae. Donec tristique hendrerit facilisis. Curabitur metus purus, venenatis non elementum id, finibus eu augue. Quisque posuere rhoncus ligula, et vehicula erat pulvinar at. Pellentesque vel quam vel lectus tincidunt congue quis id sapien. Ut efficitur mauris vitae pretium iaculis. Aliquam consectetur iaculis nisi vitae laoreet. Integer vel odio quis diam mattis tempor eget nec est. Donec iaculis facilisis neque, at dictum magna vestibulum ut. Sed malesuada non nunc ac consequat. Maecenas tempus lectus a nisl congue, ac venenatis diam viverra. Nam ac justo id nulla iaculis lobortis in eu ligula. Vivamus et ligula id sapien efficitur aliquet. Curabitur est justo, tempus vitae mollis quis, tincidunt vitae felis. Vestibulum molestie laoreet justo, nec mollis purus vulputate at.";
 
 }

@@ -10,7 +10,7 @@ airbytePython {
 }
 
 airbyteStandardSourceTestFile {
-    // For more information on standard source tests, see https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/testing-connectors
+    // For more information on standard source tests, see https://docs.airbyte.io/connector-development/testing-connectors
     specPath = "source_freshdesk/spec.json"
     configPath = "secrets/config.json"
     configuredCatalogPath = "sample_files/configured_catalog.json"

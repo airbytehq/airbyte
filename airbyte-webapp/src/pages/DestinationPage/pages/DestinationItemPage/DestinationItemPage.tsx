@@ -3,8 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
 import PageTitle from "components/PageTitle";
-import useRouter from "components/hooks/useRouterHook";
-import config from "config";
+import useRouter from "hooks/useRouter";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import ConnectionResource from "core/resources/Connection";
 import { Routes } from "../../../routes";
@@ -25,21 +24,23 @@ import { getIcon } from "utils/imageUtils";
 import ImageBlock from "components/ImageBlock";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import HeadTitle from "components/HeadTitle";
+import useWorkspace from "hooks/services/useWorkspace";
+import { DropDownRow } from "components";
 
 const DestinationItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();
-
+  const { workspace } = useWorkspace();
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
   const onSelectStep = (id: string) => setCurrentStep(id);
 
   const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
 
@@ -55,7 +56,7 @@ const DestinationItemPage: React.FC = () => {
   );
 
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const onClickBack = () => push(Routes.Destination);
@@ -80,7 +81,7 @@ const DestinationItemPage: React.FC = () => {
           (sd) => sd.sourceDefinitionId === item.sourceDefinitionId
         );
         return {
-          text: item.name,
+          label: item.name,
           value: item.sourceId,
           img: <ImageBlock img={sourceDef?.icon} />,
         };
@@ -88,7 +89,7 @@ const DestinationItemPage: React.FC = () => {
     [sources, sourceDefinitions]
   );
 
-  const onSelect = (data: { value: string }) => {
+  const onSelect = (data: DropDownRow.IDataItem) => {
     if (data.value === "create-new-item") {
       push({
         pathname: `${Routes.Destination}${Routes.ConnectionNew}`,

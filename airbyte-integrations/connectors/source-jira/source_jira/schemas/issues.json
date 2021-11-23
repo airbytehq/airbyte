@@ -90,7 +90,29 @@
     },
     "fields": {
       "type": "object",
+      "properties": {
+        "created": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor fiekd. Updated may be absent. Added to solve the #4341"
+        },
+        "updated": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor fiekd. Updated may be absent. Added to solve the #4341"
+        }
+      },
       "additionalProperties": {}
+    },
+    "projectId": {
+      "type": "string",
+      "description": "The ID of the project containing the issue.",
+      "readOnly": true
+    },
+    "projectKey": {
+      "type": "string",
+      "description": "The key of the project containing the issue.",
+      "readOnly": true
     }
   },
   "additionalProperties": false

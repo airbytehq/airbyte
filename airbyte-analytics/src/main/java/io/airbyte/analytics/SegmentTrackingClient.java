@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.analytics;
@@ -30,50 +10,74 @@ import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.AliasMessage;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
-import io.airbyte.config.Configs;
-import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.StandardWorkspace;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.UUID;
+import java.util.function.Function;
 
+/**
+ * This class is a wrapper around the Segment backend Java SDK.
+ * <p>
+ * In general, the Segment SDK events have two pieces to them, a top-level userId field and a map of
+ * properties.
+ * <p>
+ * As of 2021/11/03, the top level userId field is standardised on the
+ * {@link StandardWorkspace#getCustomerId()} field. This field is a random UUID generated when a
+ * workspace model is created. This standardisation is through OSS Airbyte and Cloud Airbyte. This
+ * join key now underpins Airbyte OSS Segment tracking. Although the id is meaningless and the name
+ * confusing, it is not worth performing a migration at this time. Interested parties can look at
+ * https://github.com/airbytehq/airbyte/issues/7456 for more context.
+ * <p>
+ * Consumers utilising this class must understand that the top-level userId field is subject to this
+ * constraint.
+ * <p>
+ * See the following document for details on tracked events. Please update this document if tracked
+ * events change.
+ * https://docs.google.com/spreadsheets/d/1lGLmLIhiSPt_-oaEf3CpK-IxXnCO0NRHurvmWldoA2w/edit#gid=1567609168
+ */
 public class SegmentTrackingClient implements TrackingClient {
 
+  public static final String CUSTOMER_ID_KEY = "user_id";
   private static final String SEGMENT_WRITE_KEY = "7UDdp5K55CyiGgsauOr2pNNujGvmhaeu";
   private static final String AIRBYTE_VERSION_KEY = "airbyte_version";
   private static final String AIRBYTE_ROLE = "airbyte_role";
 
   // Analytics is threadsafe.
   private final Analytics analytics;
-  private final Supplier<TrackingIdentity> identitySupplier;
+  private final Function<UUID, TrackingIdentity> identityFetcher;
+  private final Deployment deployment;
   private final String airbyteRole;
-  private final WorkerEnvironment deploymentEnvironment;
 
   @VisibleForTesting
-  SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier,
-                        final Configs.WorkerEnvironment deploymentEnvironment,
+  SegmentTrackingClient(final Function<UUID, TrackingIdentity> identityFetcher,
+                        final Deployment deployment,
                         final String airbyteRole,
                         final Analytics analytics) {
-    this.identitySupplier = identitySupplier;
-    this.deploymentEnvironment = deploymentEnvironment;
+    this.identityFetcher = identityFetcher;
+    this.deployment = deployment;
     this.analytics = analytics;
     this.airbyteRole = airbyteRole;
   }
 
-  public SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier,
-                               final Configs.WorkerEnvironment deploymentEnvironment,
+  public SegmentTrackingClient(final Function<UUID, TrackingIdentity> identityFetcher,
+                               final Deployment deployment,
+
                                final String airbyteRole) {
-    this(identitySupplier, deploymentEnvironment, airbyteRole, Analytics.builder(SEGMENT_WRITE_KEY).build());
+    this(identityFetcher, deployment, airbyteRole, Analytics.builder(SEGMENT_WRITE_KEY).build());
   }
 
   @Override
-  public void identify() {
-    final TrackingIdentity trackingIdentity = identitySupplier.get();
+  public void identify(final UUID workspaceId) {
+    final TrackingIdentity trackingIdentity = identityFetcher.apply(workspaceId);
     final Map<String, Object> identityMetadata = new HashMap<>();
 
     // deployment
-    identityMetadata.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
-    identityMetadata.put("deployment_env", deploymentEnvironment);
+    identityMetadata.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion().serialize());
+    identityMetadata.put("deployment_mode", deployment.getDeploymentMode());
+    identityMetadata.put("deployment_env", deployment.getDeploymentEnv());
+    identityMetadata.put("deployment_id", deployment.getDeploymentId());
 
     // workspace (includes info that in the future we would store in an organization)
     identityMetadata.put("anonymized", trackingIdentity.isAnonymousDataCollection());
@@ -86,32 +90,39 @@ public class SegmentTrackingClient implements TrackingClient {
       identityMetadata.put(AIRBYTE_ROLE, airbyteRole);
     }
 
+    final String joinKey = trackingIdentity.getCustomerId().toString();
     analytics.enqueue(IdentifyMessage.builder()
         // user id is scoped by workspace. there is no cross-workspace tracking.
-        .userId(trackingIdentity.getCustomerId().toString())
+        .userId(joinKey)
         .traits(identityMetadata));
   }
 
   @Override
-  public void alias(String previousCustomerId) {
-    analytics.enqueue(AliasMessage.builder(previousCustomerId).userId(identitySupplier.get().getCustomerId().toString()));
+  public void alias(final UUID workspaceId, final String previousCustomerId) {
+    final var joinKey = identityFetcher.apply(workspaceId).getCustomerId().toString();
+    analytics.enqueue(AliasMessage.builder(previousCustomerId).userId(joinKey));
   }
 
   @Override
-  public void track(String action) {
-    track(action, Collections.emptyMap());
+  public void track(final UUID workspaceId, final String action) {
+    track(workspaceId, action, Collections.emptyMap());
   }
 
   @Override
-  public void track(String action, Map<String, Object> metadata) {
+  public void track(final UUID workspaceId, final String action, final Map<String, Object> metadata) {
     final Map<String, Object> mapCopy = new HashMap<>(metadata);
-    final TrackingIdentity trackingIdentity = identitySupplier.get();
-    mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
+    final TrackingIdentity trackingIdentity = identityFetcher.apply(workspaceId);
+
+    // Always add these traits.
+    mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion().serialize());
+    mapCopy.put(CUSTOMER_ID_KEY, trackingIdentity.getCustomerId());
     if (!metadata.isEmpty()) {
       trackingIdentity.getEmail().ifPresent(email -> mapCopy.put("email", email));
     }
+
+    final var joinKey = trackingIdentity.getCustomerId().toString();
     analytics.enqueue(TrackMessage.builder(action)
-        .userId(trackingIdentity.getCustomerId().toString())
+        .userId(joinKey)
         .properties(mapCopy));
   }
 

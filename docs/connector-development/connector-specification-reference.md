@@ -1,0 +1,159 @@
+# Connector Specification Reference
+
+The [connector specification](../understanding-airbyte/airbyte-specification.md#spec) describes what inputs can be used to configure a connector. Like the rest of the Airbyte Protocol, it uses [JsonSchema](https://json-schema.org), but with some slight modifications.
+
+## Demoing your specification
+
+While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-webapp/docs/HowTo-ConnectionSpecification.md).
+
+
+### Secret obfuscation
+
+By default, any fields in a connector's specification are visible can be read in the UI. However, if you want to obfuscate fields in the UI and API \(for example when working with a password\), add the `airbyte_secret` annotation to your connector's `spec.json` e.g:
+
+```text
+"password": {
+  "type": "string",
+  "examples": ["hunter2"],
+  "airbyte_secret": true
+},
+```
+
+Here is an example of what the password field would look like: ![Screen Shot 2021-08-04 at 11 15 04 PM](https://user-images.githubusercontent.com/6246757/128300633-7f379b05-5f4a-46e8-ad88-88155e7f4260.png)
+
+
+### Ordering fields in the UI
+
+Use the `order` property inside a definition to determine the order in which it will appear relative to other objects on the same level of nesting in the UI. 
+
+For example, using the following spec: 
+
+```
+{
+  "username": {"type": "string", "order": 1},
+  "password": {"type": "string", "order": 2},
+  "cloud_provider": {
+    "order": 0,
+    "type": "object",
+    "properties" : {
+      "name": {"type": "string", "order": 0},
+      "region": {"type": "string", "order": 1}
+    }
+  }
+}
+```
+
+will result in the following configuration on the UI: 
+
+![Screen Shot 2021-11-18 at 7 14 04 PM](https://user-images.githubusercontent.com/6246757/142558797-135f6c73-f05d-479f-9d88-e20cae85870c.png)
+
+
+
+
+### Multi-line String inputs
+
+Sometimes when a user is inputting a string field into a connector, newlines need to be preserveed. For example, if we want a connector to use an RSA key which looks like this:
+
+```text
+---- BEGIN PRIVATE KEY ----
+123
+456
+789
+---- END PRIVATE KEY ----
+```
+
+we need to preserve the line-breaks. In other words, the string `---- BEGIN PRIVATE KEY ----123456789---- END PRIVATE KEY ----` is not equivalent to the one above since it loses linebreaks.
+
+By default, string inputs in the UI can lose their linebreaks. In order to accept multi-line strings in the UI, annotate your string field with `multiline: true` e.g:
+
+```text
+"private_key": {
+  "type": "string",
+  "description": "RSA private key to use for SSH connection",
+  "airbyte_secret": true,
+  "multiline": true
+},
+```
+
+this will display a multi-line textbox in the UI like the following screenshot: ![Screen Shot 2021-08-04 at 11 13 09 PM](https://user-images.githubusercontent.com/6246757/128300404-1dc35323-bceb-4f93-9b81-b23cc4beb670.png)
+
+### Using `oneOf`s
+
+In some cases, a connector needs to accept one out of many options. For example, a connector might need to know the compression codec of the file it will read, which will render in the Airbyte UI as a list of the available codecs. In JSONSchema, this can be expressed using the [oneOf](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) keyword.
+
+{% hint style="info" %}
+Some connectors may follow an older format for dropdown lists, we are currently migrating away from that to this standard.
+{% endhint %}
+
+In order for the Airbyte UI to correctly render a specification, however, a few extra rules must be followed:
+
+1. The top-level item containing the `oneOf` must have `type: object`.
+2. Each item in the `oneOf` array must be a property with `type: object`.
+3. One `string` field with the same property name must be consistently present throughout each object inside the `oneOf` array. It is required to add a [`const`](https://json-schema.org/understanding-json-schema/reference/generic.html#constant-values) value unique to that `oneOf` option.
+
+Let's look at the [source-file](../integrations/sources/file.md) implementation as an example. In this example, we have `provider` as a dropdown list option, which allows the user to select what provider their file is being hosted on. We note that the `oneOf` keyword lives under the `provider` object as follows:
+
+In each item in the `oneOf` array, the `option_title` string field exists with the aforementioned `const`, `default` and `enum` value unique to that item. There is a [Github issue](https://github.com/airbytehq/airbyte/issues/6384) to improve it and use only `const` in the specification. This helps the UI and the connector distinguish between the option that was chosen by the user. This can be displayed with adapting the file source spec to this example:
+
+```javascript
+{
+  "connection_specification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "File Source Spec",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["dataset_name", "format", "url", "provider"],
+    "properties": {
+      "dataset_name": {
+        ...
+      },
+      "format": {
+        ...
+      },
+      "reader_options": {
+        ...
+      },
+      "url": {
+        ...
+      },
+      "provider": {
+        "type": "object",
+        "oneOf": [
+          {
+            "required": [
+              "option_title"
+            ],
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "const": "HTTPS: Public Web",
+                "enum": ["HTTPS: Public Web"],
+                "default": "HTTPS: Public Web",
+                "order": 0
+              }
+            }
+          },
+          {
+            "required": [
+              "option_title"
+            ],
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "const": "GCS: Google Cloud Storage",
+                "enum": ["GCS: Google Cloud Storage"],
+                "default": "GCS: Google Cloud Storage",
+                "order": 0
+              },
+              "service_account_json": {
+                "type": "string",
+                "description": "In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\" target=\"_blank\">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary."
+              }
+            }
+          }
+        ]
+      }
+  }
+}
+```
+

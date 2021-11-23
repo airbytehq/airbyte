@@ -1,0 +1,38 @@
+{
+  "users": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
+  "groups": {
+    "updated_at": "2022-07-15T22:19:01Z"
+  },
+  "organizations": {
+    "updated_at": "2022-07-15T19:29:14Z"
+  },
+  "satisfaction_ratings": {
+    "updated_at": "2022-07-20T10:05:18Z"
+  },
+  "tickets": {
+    "generated_timestamp": 1816817368
+  },
+  "group_memberships": {
+    "updated_at": "2022-04-23T15:34:20Z"
+  },
+  "ticket_fields": {
+    "updated_at": "2022-12-11T19:34:05Z"
+  },
+  "ticket_forms": {
+    "updated_at": "2022-12-11T20:34:37Z"
+  },
+  "ticket_metrics": {
+    "updated_at": "2022-07-19T22:21:26Z"
+  },
+  "macros": {
+    "updated_at": "2022-12-11T19:34:06Z"
+  },
+  "ticket_comments": {
+    "created_at": "2022-07-19T22:21:26Z"
+  },
+  "ticket_audits": {
+    "created_at": "2022-07-19T22:21:26Z"
+  }
+}

@@ -3,7 +3,7 @@ import { Field, FieldProps } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import config from "config";
+import { useConfig } from "config";
 
 import { ControlLabels, DropDown, Input } from "components";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
@@ -19,6 +19,9 @@ const NamespaceConfigurationLabel = styled(ControlLabels)`
 const NamespaceFormatLabel = styled(ControlLabels)`
   margin-left: 21px;
   flex: 5 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 `;
 
 const Row = styled.div`
@@ -28,20 +31,21 @@ const Row = styled.div`
 
 const NamespaceField: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
+  const config = useConfig();
 
   const definitions = useMemo(
     () => [
       {
         value: ConnectionNamespaceDefinition.Source,
-        text: <FormattedMessage id="connectionForm.sourceFormat" />,
+        label: <FormattedMessage id="connectionForm.sourceFormat" />,
       },
       {
         value: ConnectionNamespaceDefinition.Destination,
-        text: <FormattedMessage id="connectionForm.destinationFormat" />,
+        label: <FormattedMessage id="connectionForm.destinationFormat" />,
       },
       {
         value: ConnectionNamespaceDefinition.CustomFormat,
-        text: <FormattedMessage id="connectionForm.customFormat" />,
+        label: <FormattedMessage id="connectionForm.customFormat" />,
       },
     ],
     []
@@ -61,7 +65,11 @@ const NamespaceField: React.FC = () => {
                   id="connectionForm.namespaceDefinition.subtitle"
                   values={{
                     lnk: (...lnk: React.ReactNode[]) => (
-                      <a target="_blank" href={config.ui.namespaceLink}>
+                      <a
+                        target="_blank"
+                        rel="noreferrer"
+                        href={config.ui.namespaceLink}
+                      >
                         {lnk}
                       </a>
                     ),
@@ -70,7 +78,7 @@ const NamespaceField: React.FC = () => {
               }
             >
               <DropDown
-                data={definitions}
+                options={definitions}
                 value={field.value}
                 onChange={({ value }) => form.setFieldValue(field.name, value)}
               />

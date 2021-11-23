@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 
 import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
-import config from "config";
+import { useConfig } from "config";
 import FeedbackBlock from "../../../components/FeedbackBlock";
 
 export type MetricsFormProps = {
@@ -48,6 +48,7 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
   errorMessage,
   isLoading,
 }) => {
+  const config = useConfig();
   return (
     <>
       <Subtitle>

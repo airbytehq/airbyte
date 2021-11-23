@@ -1,30 +1,11 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
 from abc import ABC, abstractmethod
 from functools import partial
+from itertools import count
 from typing import Any, Callable, Iterator, Mapping, MutableMapping, Optional, Sequence
 
 import pendulum
@@ -51,6 +32,7 @@ class API:
         requests_per_minute: int = None,
         verify: bool = True,
         proxies: MutableMapping[str, Any] = None,
+        start_date: str = None,
     ):
         """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"
@@ -64,6 +46,12 @@ class API:
         }
 
         self._call_credit = CallCredit(balance=requests_per_minute) if requests_per_minute else None
+
+        # By default, only tickets that have been created within the past 30 days will be returned.
+        # Since this logic rely not on updated tickets, it can break tickets dependant streams - conversations.
+        # So updated_since parameter will be always used in tickets streams. And start_date will be used too
+        # with default value 30 days look back.
+        self._start_date = pendulum.parse(start_date) if start_date else pendulum.now() - pendulum.duration(days=30)
 
         if domain.find("freshdesk.com") < 0:
             raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
@@ -127,7 +115,6 @@ class StreamAPI(ABC):
     """Basic stream API that allows to iterate over entities"""
 
     result_return_limit = 100  # maximum value
-    maximum_page = 500  # see https://developers.freshdesk.com/api/#best_practices
     call_credit = 1  # see https://developers.freshdesk.com/api/#embedding
 
     def __init__(self, api: API, *args, **kwargs):
@@ -147,7 +134,7 @@ class StreamAPI(ABC):
         """Read using getter"""
         params = params or {}
 
-        for page in range(1, self.maximum_page):
+        for page in count(start=1):
             batch = list(
                 getter(
                     params={
@@ -186,7 +173,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         """Build query parameters responsible for current state"""
         if self._state:
             return {self.state_filter: self._state}
-        return {}
+        return {self.state_filter: self._api._start_date}
 
     @property
     def name(self):
@@ -277,7 +264,8 @@ class TicketsAPI(IncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        params = {"include": "description"}
+        includes = ["description", "requester", "stats"]
+        params = {"include": ",".join(includes)}
         yield from self.read(partial(self._api_get, url="tickets"), params=params)
 
     @staticmethod
@@ -360,8 +348,10 @@ class ConversationsAPI(ClientIncrementalStreamAPI):
             yield from self.read(partial(self._api_get, url=url))
 
 
-class SatisfactionRatingsAPI(ClientIncrementalStreamAPI):
+class SatisfactionRatingsAPI(IncrementalStreamAPI):
     """Surveys satisfaction replies"""
+
+    state_filter = "created_since"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""

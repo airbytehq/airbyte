@@ -1,0 +1,25 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "deleted": {
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    }
+  }
+}

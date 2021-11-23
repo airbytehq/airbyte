@@ -1,0 +1,7 @@
+{
+  "destinationDefinitionId": "b4c5d105-31fd-4817-96b6-cb923bfc04cb",
+  "name": "Azure Blob Storage",
+  "dockerRepository": "airbyte/destination-azure-blob-storage",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/azureblobstorage"
+}

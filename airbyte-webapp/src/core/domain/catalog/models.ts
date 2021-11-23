@@ -1,8 +1,8 @@
 export type SyncSchemaField = {
-  name: string;
   cleanedName: string;
   type: string;
   key: string;
+  path: string[];
 
   fields?: SyncSchemaField[];
 };

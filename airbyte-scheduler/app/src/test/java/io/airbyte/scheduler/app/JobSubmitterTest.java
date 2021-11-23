@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.scheduler.app;
@@ -29,7 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -42,12 +24,19 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.helpers.LogConfiguration;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
@@ -58,8 +47,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -83,6 +72,8 @@ public class JobSubmitterTest {
 
   private JobSubmitter jobSubmitter;
   private JobTracker jobTracker;
+  private JobNotifier jobNotifier;
+  private ConfigRepository configRepository;
 
   @BeforeEach
   public void setup() throws IOException {
@@ -102,12 +93,19 @@ public class JobSubmitterTest {
     this.logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     when(persistence.getNextJob()).thenReturn(Optional.of(job));
     when(persistence.createAttempt(JOB_ID, logPath)).thenReturn(ATTEMPT_NUMBER);
+    jobNotifier = mock(JobNotifier.class);
+
+    configRepository = mock(ConfigRepository.class);
 
     jobSubmitter = spy(new JobSubmitter(
         MoreExecutors.newDirectExecutorService(),
         persistence,
         workerRunFactory,
-        jobTracker));
+        jobTracker,
+        jobNotifier,
+        WorkerEnvironment.DOCKER,
+        LogConfiguration.EMPTY,
+        configRepository));
   }
 
   @Test
@@ -134,9 +132,17 @@ public class JobSubmitterTest {
   public void testSuccess() throws Exception {
     doReturn(SUCCESS_OUTPUT).when(workerRun).call();
 
+    final StandardWorkspace completedSyncWorkspace = new StandardWorkspace()
+        .withFirstCompletedSync(true);
+    final StandardWorkspace nonCompletedSyncWorkspace = new StandardWorkspace()
+        .withFirstCompletedSync(false);
+
+    when(configRepository.listStandardWorkspaces(false))
+        .thenReturn(Lists.newArrayList(completedSyncWorkspace, nonCompletedSyncWorkspace));
+
     jobSubmitter.submitJob(job);
 
-    InOrder inOrder = inOrder(persistence, jobSubmitter);
+    final InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).writeOutput(JOB_ID, ATTEMPT_NUMBER, new JobOutput());
     inOrder.verify(persistence).succeedAttempt(JOB_ID, ATTEMPT_NUMBER);
@@ -145,16 +151,39 @@ public class JobSubmitterTest {
   }
 
   @Test
+  public void testSuccessCompleteWorkspace() throws Exception {
+    doReturn(SUCCESS_OUTPUT).when(workerRun).call();
+
+    final StandardWorkspace completedSyncWorkspace = new StandardWorkspace()
+        .withFirstCompletedSync(true);
+    final StandardWorkspace nonCompletedSyncWorkspace = new StandardWorkspace()
+        .withFirstCompletedSync(false);
+
+    when(configRepository.getStandardWorkspaceFromConnection(any(UUID.class), eq(false)))
+        .thenReturn(nonCompletedSyncWorkspace);
+
+    when(job.getScope())
+        .thenReturn(UUID.randomUUID().toString());
+    when(job.getConfigType())
+        .thenReturn(ConfigType.SYNC);
+
+    jobSubmitter.submitJob(job);
+
+    verify(configRepository).writeStandardWorkspace(nonCompletedSyncWorkspace);
+  }
+
+  @Test
   public void testFailure() throws Exception {
     doReturn(FAILED_OUTPUT).when(workerRun).call();
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobSubmitter);
+    final InOrder inOrder = inOrder(persistence, jobSubmitter);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     verify(jobTracker).trackSync(job, JobState.FAILED);
     inOrder.verifyNoMoreInteractions();
+    verifyNoInteractions(configRepository);
   }
 
   @Test
@@ -163,11 +192,12 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobTracker);
+    final InOrder inOrder = inOrder(persistence, jobTracker);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     inOrder.verify(jobTracker).trackSync(job, JobState.FAILED);
     inOrder.verifyNoMoreInteractions();
+    verifyNoInteractions(configRepository);
   }
 
   @Test
@@ -176,7 +206,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobTracker);
+    final InOrder inOrder = inOrder(persistence, jobTracker);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     inOrder.verify(jobTracker).trackSync(job, JobState.FAILED);
@@ -189,7 +219,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobTracker);
+    final InOrder inOrder = inOrder(persistence, jobTracker);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     inOrder.verify(jobTracker).trackSync(job, JobState.FAILED);
@@ -203,7 +233,7 @@ public class JobSubmitterTest {
 
     jobSubmitter.run();
 
-    InOrder inOrder = inOrder(persistence, jobTracker);
+    final InOrder inOrder = inOrder(persistence, jobTracker);
     inOrder.verify(persistence).createAttempt(JOB_ID, logPath);
     inOrder.verify(persistence).failAttempt(JOB_ID, ATTEMPT_NUMBER);
     inOrder.verify(jobTracker).trackSync(job, JobState.FAILED);
@@ -239,7 +269,7 @@ public class JobSubmitterTest {
      */
     @Test
     public void testOnlyOneJobCanBeSubmittedAtOnce() throws Exception {
-      var jobDone = new AtomicReference<>(false);
+      final var jobDone = new AtomicReference<>(false);
       when(workerRun.call()).thenAnswer((a) -> {
         Thread.sleep(5000);
         jobDone.set(true);
@@ -247,21 +277,20 @@ public class JobSubmitterTest {
       });
 
       // Simulate the same job being submitted over and over again.
-      var simulatedJobSubmitterPool = Executors.newFixedThreadPool(10);
-      var submitCounter = new AtomicInteger(0);
+      final var simulatedJobSubmitterPool = Executors.newFixedThreadPool(10);
       while (!jobDone.get()) {
         // This sleep mimics our SchedulerApp loop.
         Thread.sleep(1000);
         simulatedJobSubmitterPool.submit(() -> {
           if (!jobDone.get()) {
             jobSubmitter.run();
-            submitCounter.incrementAndGet();
           }
         });
       }
 
       simulatedJobSubmitterPool.shutdownNow();
-      verify(persistence, Mockito.times(submitCounter.get())).getNextJob();
+      // This is expected to be called at least once due to the various threads.
+      verify(persistence, atLeast(2)).getNextJob();
       // Assert that the job is actually only submitted once.
       verify(jobSubmitter, Mockito.times(1)).submitJob(Mockito.any());
     }

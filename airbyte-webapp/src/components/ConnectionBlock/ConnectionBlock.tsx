@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
 import ContentCard from "../ContentCard";
-import { ConnectionBlockItem } from "./components/ConnectionBlockItem";
+import { ConnectionBlockItem, Content } from "./components/ConnectionBlockItem";
 
 type IProps = {
   className?: string;
@@ -13,7 +13,6 @@ type IProps = {
 };
 
 const LightContentCard = styled(ContentCard)`
-  background: ${({ theme }) => theme.backgroundColor};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -28,8 +27,8 @@ const Arrow = styled(FontAwesomeIcon)`
   color: ${({ theme }) => theme.primaryColor};
 `;
 
-const ExtraBlock = styled.div`
-  width: 257px;
+const ExtraBlock = styled(Content)`
+  background: none;
 `;
 
 const ConnectionBlock: React.FC<IProps> = (props) => (

@@ -4,9 +4,9 @@ import styled from "styled-components";
 
 import { Toggle } from "components";
 import { Connection } from "core/resources/Connection";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
-import useConnection from "components/hooks/services/useConnectionHook";
+import useConnection from "hooks/services/useConnectionHook";
 import { Status } from "components/EntityTable/types";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
@@ -37,6 +37,7 @@ const EnabledControl: React.FC<IProps> = ({
   frequencyText,
 }) => {
   const { updateConnection } = useConnection();
+  const analyticsService = useAnalyticsService();
 
   const onChangeStatus = async () => {
     await updateConnection({
@@ -51,7 +52,7 @@ const EnabledControl: React.FC<IProps> = ({
         connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
     });
 
-    AnalyticsService.track("Source - Action", {
+    analyticsService.track("Source - Action", {
       action:
         connection.status === Status.ACTIVE
           ? "Disable connection"

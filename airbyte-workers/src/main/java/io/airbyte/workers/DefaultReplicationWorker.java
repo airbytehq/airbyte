@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
@@ -32,10 +12,10 @@ import io.airbyte.config.State;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.protocols.Destination;
-import io.airbyte.workers.protocols.Mapper;
-import io.airbyte.workers.protocols.MessageTracker;
-import io.airbyte.workers.protocols.Source;
+import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
+import io.airbyte.workers.protocols.airbyte.AirbyteMapper;
+import io.airbyte.workers.protocols.airbyte.AirbyteSource;
+import io.airbyte.workers.protocols.airbyte.MessageTracker;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
@@ -49,17 +29,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+/**
+ * This worker is the "data shovel" of ETL. It is responsible for moving data from the Source
+ * container to the Destination container. It manages the full lifecycle of this process. This
+ * includes:
+ * <ul>
+ * <li>Starting the Source and Destination containers</li>
+ * <li>Passing data from Source to Destination</li>
+ * <li>Executing any configured map-only operations (Mappers) in between the Source and
+ * Destination</li>
+ * <li>Collecting metadata about the data that is passing from Source to Destination</li>
+ * <li>Listening for state messages emitted from the Destination to keep track of what data has been
+ * replicated.</li>
+ * <li>Handling shutdown of the Source and Destination</li>
+ * <li>Handling failure cases and returning state for partially completed replications (so that the
+ * next replication can pick up where it left off instead of starting from the beginning)</li>
+ * </ul>
+ */
 public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorker.class);
 
   private final String jobId;
   private final int attempt;
-  private final Source<AirbyteMessage> source;
-  private final Mapper<AirbyteMessage> mapper;
-  private final Destination<AirbyteMessage> destination;
-  private final MessageTracker<AirbyteMessage> sourceMessageTracker;
-  private final MessageTracker<AirbyteMessage> destinationMessageTracker;
+  private final AirbyteSource source;
+  private final AirbyteMapper mapper;
+  private final AirbyteDestination destination;
+  private final MessageTracker sourceMessageTracker;
+  private final MessageTracker destinationMessageTracker;
 
   private final ExecutorService executors;
   private final AtomicBoolean cancelled;
@@ -67,11 +64,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
-                                  final Source<AirbyteMessage> source,
-                                  final Mapper<AirbyteMessage> mapper,
-                                  final Destination<AirbyteMessage> destination,
-                                  final MessageTracker<AirbyteMessage> sourceMessageTracker,
-                                  final MessageTracker<AirbyteMessage> destinationMessageTracker) {
+                                  final AirbyteSource source,
+                                  final AirbyteMapper mapper,
+                                  final AirbyteDestination destination,
+                                  final MessageTracker sourceMessageTracker,
+                                  final MessageTracker destinationMessageTracker) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -98,7 +95,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * @throws WorkerException
    */
   @Override
-  public ReplicationOutput run(StandardSyncInput syncInput, Path jobRoot) throws WorkerException {
+  public ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
 
     // todo (cgardens) - this should not be happening in the worker. this is configuration information
@@ -106,7 +103,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
     destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
-    long startTime = System.currentTimeMillis();
+    final long startTime = System.currentTimeMillis();
     try {
       LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
           .stream()
@@ -143,7 +140,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         destinationOutputThreadFuture.get();
         LOGGER.info("Destination thread complete.");
 
-      } catch (Exception e) {
+      } catch (final Exception e) {
         hasFailed.set(true);
         LOGGER.error("Sync worker failed.", e);
       } finally {
@@ -193,18 +190,18 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       }
 
       return output;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new WorkerException("Sync failed", e);
     }
 
   }
 
-  private static Runnable getReplicationRunnable(Source<AirbyteMessage> source,
-                                                 Destination<AirbyteMessage> destination,
-                                                 AtomicBoolean cancelled,
-                                                 Mapper<AirbyteMessage> mapper,
-                                                 MessageTracker<AirbyteMessage> sourceMessageTracker,
-                                                 Map<String, String> mdc) {
+  private static Runnable getReplicationRunnable(final AirbyteSource source,
+                                                 final AirbyteDestination destination,
+                                                 final AtomicBoolean cancelled,
+                                                 final AirbyteMapper mapper,
+                                                 final MessageTracker sourceMessageTracker,
+                                                 final Map<String, String> mdc) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -225,7 +222,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           }
         }
         destination.notifyEndOfStream();
-      } catch (Exception e) {
+      } catch (final Exception e) {
         if (!cancelled.get()) {
           // Although this thread is closed first, it races with the source's closure and can attempt one
           // final read after the source is closed before it's terminated.
@@ -237,10 +234,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private static Runnable getDestinationOutputRunnable(Destination<AirbyteMessage> destination,
-                                                       AtomicBoolean cancelled,
-                                                       MessageTracker<AirbyteMessage> destinationMessageTracker,
-                                                       Map<String, String> mdc) {
+  private static Runnable getDestinationOutputRunnable(final AirbyteDestination destination,
+                                                       final AtomicBoolean cancelled,
+                                                       final MessageTracker destinationMessageTracker,
+                                                       final Map<String, String> mdc) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Destination output thread started.");
@@ -252,7 +249,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             destinationMessageTracker.accept(messageOptional.get());
           }
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         if (!cancelled.get()) {
           // Although this thread is closed first, it races with the destination's closure and can attempt one
           // final read after the destination is closed before it's terminated.
@@ -270,7 +267,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     LOGGER.info("Cancelling replication worker...");
     try {
       executors.awaitTermination(10, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       e.printStackTrace();
     }
     cancelled.set(true);
@@ -278,14 +275,14 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     LOGGER.info("Cancelling destination...");
     try {
       destination.cancel();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.info("Error cancelling destination: ", e);
     }
 
     LOGGER.info("Cancelling source...");
     try {
       source.cancel();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.info("Error cancelling source: ", e);
     }
 

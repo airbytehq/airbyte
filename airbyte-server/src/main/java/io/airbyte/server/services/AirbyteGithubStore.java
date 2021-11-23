@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.services;
@@ -61,11 +41,11 @@ public class AirbyteGithubStore {
     return new AirbyteGithubStore(GITHUB_BASE_URL, Duration.ofSeconds(30));
   }
 
-  public static AirbyteGithubStore test(String testBaseUrl, Duration timeout) {
+  public static AirbyteGithubStore test(final String testBaseUrl, final Duration timeout) {
     return new AirbyteGithubStore(testBaseUrl, timeout);
   }
 
-  public AirbyteGithubStore(String baseUrl, Duration timeout) {
+  public AirbyteGithubStore(final String baseUrl, final Duration timeout) {
     this.baseUrl = baseUrl;
     this.timeout = timeout;
   }
@@ -73,7 +53,7 @@ public class AirbyteGithubStore {
   public List<StandardDestinationDefinition> getLatestDestinations() throws InterruptedException {
     try {
       return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
-    } catch (IOException e) {
+    } catch (final Throwable e) {
       LOGGER.warn(
           "Unable to retrieve latest Destination list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
           e);
@@ -84,7 +64,7 @@ public class AirbyteGithubStore {
   public List<StandardSourceDefinition> getLatestSources() throws InterruptedException {
     try {
       return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
-    } catch (IOException e) {
+    } catch (final Throwable e) {
       LOGGER.warn(
           "Unable to retrieve latest Source list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
           e);
@@ -93,7 +73,7 @@ public class AirbyteGithubStore {
   }
 
   @VisibleForTesting
-  String getFile(String filePathWithSlashPrefix) throws IOException, InterruptedException {
+  String getFile(final String filePathWithSlashPrefix) throws IOException, InterruptedException {
     final var request = HttpRequest
         .newBuilder(URI.create(baseUrl + filePathWithSlashPrefix))
         .timeout(timeout)

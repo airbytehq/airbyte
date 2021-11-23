@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.pubsub;
@@ -61,9 +41,9 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
   private Publisher publisher;
   private AirbyteMessage lastStateMessage;
 
-  public PubsubConsumer(JsonNode config,
-                        ConfiguredAirbyteCatalog catalog,
-                        Consumer<AirbyteMessage> outputRecordCollector) {
+  public PubsubConsumer(final JsonNode config,
+                        final ConfiguredAirbyteCatalog catalog,
+                        final Consumer<AirbyteMessage> outputRecordCollector) {
     this.outputRecordCollector = outputRecordCollector;
     this.config = config;
     this.catalog = catalog;
@@ -78,7 +58,7 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
     // get publisher
     final String projectId = config.get(PubsubDestination.CONFIG_PROJECT_ID).asText();
     final String topicName = config.get(PubsubDestination.CONFIG_TOPIC_ID).asText();
-    TopicName topic = TopicName.of(projectId, topicName);
+    final TopicName topic = TopicName.of(projectId, topicName);
     final String credentialsString =
         config.get(PubsubDestination.CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(
             PubsubDestination.CONFIG_CREDS))
@@ -90,7 +70,7 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
         .setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final Map<String, String> attrs = Maps.newHashMap();
-      var key = AirbyteStreamNameNamespacePair.fromAirbyteSteam(configStream.getStream());
+      final var key = AirbyteStreamNameNamespacePair.fromAirbyteSteam(configStream.getStream());
       attrs.put(PubsubDestination.STREAM, key.getName());
       if (!Strings.isNullOrEmpty(key.getNamespace())) {
         attrs.put(PubsubDestination.NAMESPACE, key.getNamespace());
@@ -100,7 +80,7 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage msg) throws Exception {
+  protected void acceptTracked(final AirbyteMessage msg) throws Exception {
     if (msg.getType() == Type.STATE) {
       lastStateMessage = msg;
       outputRecordCollector.accept(lastStateMessage);
@@ -130,7 +110,7 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void close(boolean hasFailed) throws Exception {
+  protected void close(final boolean hasFailed) throws Exception {
     if (!hasFailed) {
       publisher.shutdown();
       LOGGER.info("shutting down consumer.");

@@ -1,32 +1,15 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.analytics;
 
+import io.airbyte.commons.version.AirbyteVersion;
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,32 +17,32 @@ public class LoggingTrackingClient implements TrackingClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LoggingTrackingClient.class);
 
-  private final Supplier<TrackingIdentity> identitySupplier;
+  private final Function<UUID, TrackingIdentity> identityFetcher;
 
-  public LoggingTrackingClient(Supplier<TrackingIdentity> identitySupplier) {
-    this.identitySupplier = identitySupplier;
+  public LoggingTrackingClient(final Function<UUID, TrackingIdentity> identityFetcher) {
+    this.identityFetcher = identityFetcher;
   }
 
   @Override
-  public void identify() {
-    LOGGER.info("identify. userId: {}", identitySupplier.get().getCustomerId());
+  public void identify(final UUID workspaceId) {
+    LOGGER.info("identify. userId: {}", identityFetcher.apply(workspaceId).getCustomerId());
   }
 
   @Override
-  public void alias(String previousCustomerId) {
-    LOGGER.info("merge. userId: {} previousUserId: {}", identitySupplier.get().getCustomerId(), previousCustomerId);
+  public void alias(final UUID workspaceId, final String previousCustomerId) {
+    LOGGER.info("merge. userId: {} previousUserId: {}", identityFetcher.apply(workspaceId).getCustomerId(), previousCustomerId);
   }
 
   @Override
-  public void track(String action) {
-    track(action, Collections.emptyMap());
+  public void track(final UUID workspaceId, final String action) {
+    track(workspaceId, action, Collections.emptyMap());
   }
 
   @Override
-  public void track(String action, Map<String, Object> metadata) {
+  public void track(final UUID workspaceId, final String action, final Map<String, Object> metadata) {
     LOGGER.info("track. version: {}, userId: {}, action: {}, metadata: {}",
-        identitySupplier.get().getAirbyteVersion(),
-        identitySupplier.get().getCustomerId(),
+        Optional.ofNullable(identityFetcher.apply(workspaceId).getAirbyteVersion()).map(AirbyteVersion::serialize).orElse(null),
+        identityFetcher.apply(workspaceId).getCustomerId(),
         action,
         metadata);
   }

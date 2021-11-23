@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.yaml;
@@ -131,19 +111,19 @@ class YamlsTest {
 
   @Test
   void testStreamRead() throws IOException {
-    List<ToClass> classes = Lists.newArrayList(
+    final List<ToClass> classes = Lists.newArrayList(
         new ToClass("1", 1, 1),
         new ToClass("2", 2, 2),
         new ToClass("3", 3, 3));
-    ByteArrayInputStream input = spy(new ByteArrayInputStream(Yamls.serialize(classes).getBytes(StandardCharsets.UTF_8)));
+    final ByteArrayInputStream input = spy(new ByteArrayInputStream(Yamls.serialize(classes).getBytes(StandardCharsets.UTF_8)));
 
-    try (AutoCloseableIterator<JsonNode> iterator = Yamls.deserializeArray(input)) {
+    try (final AutoCloseableIterator<JsonNode> iterator = Yamls.deserializeArray(input)) {
       assertEquals(
           classes,
           MoreStreams.toStream(iterator)
               .map(e -> Jsons.object(e, ToClass.class))
               .collect(Collectors.toList()));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       fail();
     }
 
@@ -163,21 +143,21 @@ class YamlsTest {
 
     public ToClass() {}
 
-    public ToClass(String str, Integer num, long numLong) {
+    public ToClass(final String str, final Integer num, final long numLong) {
       this.str = str;
       this.num = num;
       this.numLong = numLong;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
       if (this == o) {
         return true;
       }
       if (o == null || getClass() != o.getClass()) {
         return false;
       }
-      ToClass toClass = (ToClass) o;
+      final ToClass toClass = (ToClass) o;
       return numLong == toClass.numLong
           && Objects.equals(str, toClass.str)
           && Objects.equals(num, toClass.num);

@@ -1,0 +1,59 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "localhost"
+    },
+    {
+      "pattern": "file://"
+    },
+    {
+      "pattern": "slack.airbyte.io"
+    },
+    {
+      "reason": "Return 429 frequently",
+      "pattern": "https://github.com/airbytehq/airbyte"
+    },
+    {
+      "reason": "Private page without public access",
+      "pattern": "https://github.com/airbytehq/airbyte/settings"
+    },
+    {
+      "reason": "Page too large and very slow",
+      "pattern": "https://docs.github.com/en/rest/reference/repos"
+    },
+    {
+      "reason": "Links with bash variable",
+      "pattern": "\\$"
+    },
+    {
+      "reason": "Links in HBS templates",
+      "pattern": "\\{"
+    },
+    {
+      "reason": "Test only scaffold connector",
+      "pattern": "sources/scaffold-"
+    },
+    {
+      "reason": "Test only scaffold connector",
+      "pattern": "sources/python-"
+    },
+    {
+      "reason": "Test only scaffold connector",
+      "pattern": "sources/javascript-"
+    },
+    {
+      "reason": "Test only scaffold connector",
+      "pattern": "destinations/scaffold-"
+    },
+    {
+      "reason": "Returns a 403 for many valid pages",
+      "pattern": "https://mvnrepository.com/artifact/"
+    },
+    {
+      "reason": "Archived articles aren't actively maintained.",
+      "pattern": "archive/"
+    }
+  ],
+  "retryOn429": false,
+  "aliveStatusCodes": [200, 206, 429, 503, 0]
+}

@@ -1,0 +1,102 @@
+{
+  "properties": {
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "title_in_portal": {
+      "type": ["null", "string"]
+    },
+    "visible_in_portal": {
+      "type": ["null", "boolean"]
+    },
+    "collapsed_for_agents": {
+      "type": ["null", "boolean"]
+    },
+    "regexp_for_validation": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "position": {
+      "type": ["null", "integer"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "editable_in_portal": {
+      "type": ["null", "boolean"]
+    },
+    "raw_title_in_portal": {
+      "type": ["null", "string"]
+    },
+    "raw_description": {
+      "type": ["null", "string"]
+    },
+    "custom_field_options": {
+      "items": {
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "default": {
+            "type": ["null", "boolean"]
+          },
+          "raw_name": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "type": ["null", "array"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "tag": {
+      "type": ["null", "string"]
+    },
+    "removable": {
+      "type": ["null", "boolean"]
+    },
+    "active": {
+      "type": ["null", "boolean"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "raw_title": {
+      "type": ["null", "string"]
+    },
+    "required": {
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "agent_description": {
+      "type": ["null", "string"]
+    },
+    "required_in_portal": {
+      "type": ["null", "boolean"]
+    },
+    "system_field_options": {
+      "type": ["null", "array"]
+    },
+    "sub_type_id": {
+      "type": ["null", "integer"]
+    }
+  },
+  "type": ["null", "object"]
+}

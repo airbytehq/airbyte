@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -28,9 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -50,11 +30,11 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String STREAM_NAME = "JDBC_SPACE.ID_AND_NAME";
   private static final String STREAM_NAME2 = "JDBC_SPACE.STARSHIPS";
 
-  private OracleContainer container;
-  private JsonNode config;
+  protected OracleContainer container;
+  protected JsonNode config;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new OracleContainer("epiclabs/docker-oracle-xe-11g");
     container.start();
 
@@ -64,9 +44,13 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("sid", container.getSid())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
+        .put("schemas", List.of("JDBC_SPACE"))
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "unencrypted")
+            .build()))
         .build());
 
-    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
+    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
             config.get("host").asText(),
@@ -90,7 +74,7 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 
@@ -101,7 +85,7 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+    return SshHelpers.getSpecAndInjectSsh();
   }
 
   @Override

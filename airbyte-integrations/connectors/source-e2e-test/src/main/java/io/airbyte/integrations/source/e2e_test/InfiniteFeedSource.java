@@ -1,28 +1,10 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.e2e_test;
+
+import static java.lang.Thread.sleep;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
@@ -62,14 +44,16 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AirbyteCatalog discover(JsonNode config) {
+  public AirbyteCatalog discover(final JsonNode config) {
     return Jsons.clone(CATALOG);
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) {
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
     final Predicate<Long> anotherRecordPredicate =
         config.has("max_records") ? recordNumber -> recordNumber < config.get("max_records").asLong() : recordNumber -> true;
+
+    final long sleepTime = config.has("message_interval") ? config.get("message_interval").asLong() : 3000L;
 
     final AtomicLong i = new AtomicLong();
 
@@ -78,6 +62,14 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
       @Override
       protected AirbyteMessage computeNext() {
         if (anotherRecordPredicate.test(i.get())) {
+          if (i.get() != 0) {
+            try {
+              LOGGER.info("sleeping for {} ms", sleepTime);
+              sleep(sleepTime);
+            } catch (final InterruptedException e) {
+              throw new RuntimeException();
+            }
+          }
           i.incrementAndGet();
           LOGGER.info("source emitting record {}:", i.get());
           return new AirbyteMessage()

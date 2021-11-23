@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.utils;
@@ -40,24 +20,24 @@ import org.testcontainers.utility.MountableFile;
 
 public class PostgreSQLContainerHelper {
 
-  public static void runSqlScript(MountableFile file, PostgreSQLContainer db) {
+  public static void runSqlScript(final MountableFile file, final PostgreSQLContainer db) {
     try {
-      String scriptPath = "/etc/" + UUID.randomUUID() + ".sql";
+      final String scriptPath = "/etc/" + UUID.randomUUID() + ".sql";
       db.copyFileToContainer(file, scriptPath);
       db.execInContainer(
           "psql", "-d", db.getDatabaseName(), "-U", db.getUsername(), "-a", "-f", scriptPath);
 
-    } catch (InterruptedException | IOException e) {
+    } catch (final InterruptedException | IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static JsonNode createDatabaseWithRandomNameAndGetPostgresConfig(PostgreSQLContainer<?> psqlDb) {
+  public static JsonNode createDatabaseWithRandomNameAndGetPostgresConfig(final PostgreSQLContainer<?> psqlDb) {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     return createDatabaseAndGetPostgresConfig(psqlDb, dbName);
   }
 
-  public static JsonNode createDatabaseAndGetPostgresConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
+  public static JsonNode createDatabaseAndGetPostgresConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     final String initScriptName = "init_" + dbName.concat(".sql");
     final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), psqlDb);
@@ -65,7 +45,7 @@ public class PostgreSQLContainerHelper {
     return getDestinationConfig(psqlDb, dbName);
   }
 
-  public static JsonNode getDestinationConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
+  public static JsonNode getDestinationConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
@@ -77,7 +57,7 @@ public class PostgreSQLContainerHelper {
         .build());
   }
 
-  public static Database getDatabaseFromConfig(JsonNode config) {
+  public static Database getDatabaseFromConfig(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -89,7 +69,7 @@ public class PostgreSQLContainerHelper {
         SQLDialect.POSTGRES);
   }
 
-  public static JdbcDatabase getJdbcDatabaseFromConfig(JsonNode config) {
+  public static JdbcDatabase getJdbcDatabaseFromConfig(final JsonNode config) {
     return Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),

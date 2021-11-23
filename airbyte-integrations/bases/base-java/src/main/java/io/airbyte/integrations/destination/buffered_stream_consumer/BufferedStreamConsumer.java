@@ -1,30 +1,12 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.bytes.ByteUtils;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
@@ -66,6 +48,28 @@ import org.slf4j.LoggerFactory;
  * <p>
  * All other message types are ignored.
  * </p>
+ *
+ * <p>
+ * Throughout the lifecycle of the consumer, messages get promoted from buffered to flushed to
+ * committed. A record message when it is received is immediately buffered. When the buffer fills
+ * up, all buffered records are flushed out of memory using the user-provided recordWriter. When
+ * this flush happens, a state message is moved from pending to flushed. On close, if the
+ * user-provided onClose function is successful, then the flushed state record is considered
+ * committed and is then emitted. We expect this class to only ever emit either 1 state message (in
+ * the case of a full or partial success) or 0 state messages (in the case where the onClose step
+ * was never reached or did not complete without exception).
+ * </p>
+ *
+ * <p>
+ * When a record is "flushed" it is moved from the docker container to the destination. By
+ * convention, it is usually placed in some sort of temporary storage on the destination (e.g. a
+ * temporary database or file store). The logic in close handles committing the temporary
+ * representation data to the final store (e.g. final table). In the case of Copy destinations they
+ * often have additional temporary stores. The common pattern for copy destination is that flush
+ * pushes the data into cloud storage and then close copies from cloud storage to a temporary table
+ * AND then copies from the temporary table into the final table. This abstraction is blind to that
+ * detail as it implementation detail of how copy destinations implement close.
+ * </p>
  */
 public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
@@ -77,26 +81,27 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Set<AirbyteStreamNameNamespacePair> streamNames;
   private final List<AirbyteMessage> buffer;
   private final ConfiguredAirbyteCatalog catalog;
-  private final CheckedFunction<String, Boolean, Exception> isValidRecord;
+  private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final int queueBatchSize;
+  private final long maxQueueSizeInBytes;
+  private long bufferSizeInBytes;
 
   private boolean hasStarted;
   private boolean hasClosed;
 
-  private AirbyteMessage lastCommittedState;
+  private AirbyteMessage lastFlushedState;
   private AirbyteMessage pendingState;
 
-  public BufferedStreamConsumer(Consumer<AirbyteMessage> outputRecordCollector,
-                                VoidCallable onStart,
-                                RecordWriter recordWriter,
-                                CheckedConsumer<Boolean, Exception> onClose,
-                                ConfiguredAirbyteCatalog catalog,
-                                CheckedFunction<String, Boolean, Exception> isValidRecord,
-                                int queueBatchSize) {
+  public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
+                                final VoidCallable onStart,
+                                final RecordWriter recordWriter,
+                                final CheckedConsumer<Boolean, Exception> onClose,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                                final long maxQueueSizeInBytes) {
     this.outputRecordCollector = outputRecordCollector;
-    this.queueBatchSize = queueBatchSize;
+    this.maxQueueSizeInBytes = maxQueueSizeInBytes;
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
@@ -105,8 +110,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.catalog = catalog;
     this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     this.isValidRecord = isValidRecord;
-    this.buffer = new ArrayList<>(queueBatchSize);
-
+    this.buffer = new ArrayList<>(10_000);
+    this.bufferSizeInBytes = 0;
     this.pairToIgnoredRecordCount = new HashMap<>();
   }
 
@@ -123,28 +128,33 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage message) throws Exception {
+  protected void acceptTracked(final AirbyteMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
-
     if (message.getType() == Type.RECORD) {
       final AirbyteRecordMessage recordMessage = message.getRecord();
       final AirbyteStreamNameNamespacePair stream = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
-      final String data = Jsons.serialize(message.getRecord().getData());
 
       if (!streamNames.contains(stream)) {
         throwUnrecognizedStream(catalog, message);
       }
 
-      if (!isValidRecord.apply(data)) {
+      if (!isValidRecord.apply(message.getRecord().getData())) {
         pairToIgnoredRecordCount.put(stream, pairToIgnoredRecordCount.getOrDefault(stream, 0L) + 1L);
         return;
       }
 
-      buffer.add(message);
-
-      if (buffer.size() == queueBatchSize) {
+      // TODO use a more efficient way to compute bytes that doesn't require double serialization (records
+      // are serialized again when writing to
+      // the destination
+      long messageSizeInBytes = ByteUtils.getSizeInBytes(Jsons.serialize(recordMessage.getData()));
+      if (bufferSizeInBytes + messageSizeInBytes >= maxQueueSizeInBytes) {
         flushQueueToDestination();
+        bufferSizeInBytes = 0;
       }
+
+      buffer.add(message);
+      bufferSizeInBytes += messageSizeInBytes;
+
     } else if (message.getType() == Type.STATE) {
       pendingState = message;
     } else {
@@ -160,12 +170,12 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
     buffer.clear();
 
-    for (Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : recordsByStream.entrySet()) {
+    for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : recordsByStream.entrySet()) {
       recordWriter.accept(entry.getKey(), entry.getValue());
     }
 
     if (pendingState != null) {
-      lastCommittedState = pendingState;
+      lastFlushedState = pendingState;
       pendingState = null;
     }
   }
@@ -177,7 +187,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  protected void close(boolean hasFailed) throws Exception {
+  protected void close(final boolean hasFailed) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot close; has not started.");
     Preconditions.checkState(!hasClosed, "Has already closed.");
     hasClosed = true;
@@ -192,15 +202,23 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     }
 
     try {
-      onClose.accept(hasFailed);
-      // todo (cgardens) - For now we are using this conditional to maintain existing behavior. When we
-      // enable checkpointing, we will need to get feedback from onClose on whether any data was persisted
-      // or not. If it was then, the state message will be emitted.
-      if (!hasFailed && lastCommittedState != null) {
-        outputRecordCollector.accept(lastCommittedState);
+      // if no state was was emitted (i.e. full refresh), if there were still no failures, then we can
+      // still succeed.
+      if (lastFlushedState == null) {
+        onClose.accept(hasFailed);
+      } else {
+        // if any state message flushed that means we can still go for at least a partial success.
+        onClose.accept(false);
       }
-    } catch (Exception e) {
-      LOGGER.error("on close failed.", e);
+
+      // if one close succeeds without exception then we can emit the state record because it means its
+      // records were not only flushed, but committed.
+      if (lastFlushedState != null) {
+        outputRecordCollector.accept(lastFlushedState);
+      }
+    } catch (final Exception e) {
+      LOGGER.error("Close failed.", e);
+      throw e;
     }
   }
 

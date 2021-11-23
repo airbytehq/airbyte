@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -59,19 +39,19 @@ public class IntegrationRunner {
   private final Source source;
   private static JsonSchemaValidator validator;
 
-  public IntegrationRunner(Destination destination) {
+  public IntegrationRunner(final Destination destination) {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
   }
 
-  public IntegrationRunner(Source source) {
+  public IntegrationRunner(final Source source) {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source);
   }
 
   @VisibleForTesting
-  IntegrationRunner(IntegrationCliParser cliParser,
-                    Consumer<AirbyteMessage> outputRecordCollector,
-                    Destination destination,
-                    Source source) {
+  IntegrationRunner(final IntegrationCliParser cliParser,
+                    final Consumer<AirbyteMessage> outputRecordCollector,
+                    final Destination destination,
+                    final Source source) {
     Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
@@ -83,16 +63,16 @@ public class IntegrationRunner {
   }
 
   @VisibleForTesting
-  IntegrationRunner(IntegrationCliParser cliParser,
-                    Consumer<AirbyteMessage> outputRecordCollector,
-                    Destination destination,
-                    Source source,
-                    JsonSchemaValidator jsonSchemaValidator) {
+  IntegrationRunner(final IntegrationCliParser cliParser,
+                    final Consumer<AirbyteMessage> outputRecordCollector,
+                    final Destination destination,
+                    final Source source,
+                    final JsonSchemaValidator jsonSchemaValidator) {
     this(cliParser, outputRecordCollector, destination, source);
     this.validator = jsonSchemaValidator;
   }
 
-  public void run(String[] args) throws Exception {
+  public void run(final String[] args) throws Exception {
     LOGGER.info("Running integration: {}", integration.getClass().getName());
 
     final IntegrationConfig parsed = cliParser.parse(args);
@@ -107,7 +87,7 @@ public class IntegrationRunner {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         try {
           validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
-        } catch (Exception e) {
+        } catch (final Exception e) {
           // if validation fails don't throw an exception, return a failed connection check message
           outputRecordCollector
               .accept(
@@ -154,7 +134,7 @@ public class IntegrationRunner {
   }
 
   @VisibleForTesting
-  static void consumeWriteStream(AirbyteMessageConsumer consumer) throws Exception {
+  static void consumeWriteStream(final AirbyteMessageConsumer consumer) throws Exception {
     // use a Scanner that only processes new line characters to strictly abide with the
     // https://jsonlines.org/ standard
     final Scanner input = new Scanner(System.in).useDelimiter("[\r\n]+");
@@ -162,30 +142,29 @@ public class IntegrationRunner {
       consumer.start();
       while (input.hasNext()) {
         final String inputString = input.next();
-        final Optional<AirbyteMessage> singerMessageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
-        if (singerMessageOptional.isPresent()) {
-          consumer.accept(singerMessageOptional.get());
+        final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
+        if (messageOptional.isPresent()) {
+          consumer.accept(messageOptional.get());
         } else {
-          // todo (cgardens) - decide if we want to throw here instead.
-          LOGGER.error(inputString);
+          LOGGER.error("Received invalid message: " + inputString);
         }
       }
     }
   }
 
-  private static void validateConfig(JsonNode schemaJson, JsonNode objectJson, String operationType) throws Exception {
+  private static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws Exception {
     final Set<String> validationResult = validator.validate(schemaJson, objectJson);
     if (!validationResult.isEmpty()) {
       throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ",
-          operationType, validationResult.toString()));
+          operationType, validationResult));
     }
   }
 
-  private static JsonNode parseConfig(Path path) {
+  private static JsonNode parseConfig(final Path path) {
     return Jsons.deserialize(IOs.readFile(path));
   }
 
-  private static <T> T parseConfig(Path path, Class<T> klass) {
+  private static <T> T parseConfig(final Path path, final Class<T> klass) {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
   }

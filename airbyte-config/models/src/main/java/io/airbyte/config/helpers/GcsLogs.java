@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -27,6 +7,7 @@ package io.airbyte.config.helpers;
 import com.google.api.client.util.Preconditions;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Blob.BlobSourceOption;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.collect.Lists;
@@ -48,26 +29,26 @@ public class GcsLogs implements CloudLogs {
   private static Storage GCS;
 
   @Override
-  public File downloadCloudLog(LogConfigs configs, String logPath) throws IOException {
+  public File downloadCloudLog(final LogConfigs configs, final String logPath) throws IOException {
     return getFile(configs, logPath, LogClientSingleton.DEFAULT_PAGE_SIZE);
   }
 
-  static File getFile(LogConfigs configs, String logPath, int pageSize) throws IOException {
+  static File getFile(final LogConfigs configs, final String logPath, final int pageSize) throws IOException {
     LOGGER.debug("Retrieving logs from GCS path: {}", logPath);
     createGcsClientIfNotExists(configs);
 
     LOGGER.debug("Start GCS list request.");
-    Page<Blob> blobs = GCS.list(
+    final Page<Blob> blobs = GCS.list(
         configs.getGcpStorageBucket(),
         Storage.BlobListOption.prefix(logPath),
         Storage.BlobListOption.pageSize(pageSize));
 
-    var randomName = Strings.addRandomSuffix("logs", "-", 5);
-    var tmpOutputFile = new File("/tmp/" + randomName);
-    var os = new FileOutputStream(tmpOutputFile);
+    final var randomName = Strings.addRandomSuffix("logs", "-", 5);
+    final var tmpOutputFile = new File("/tmp/" + randomName);
+    final var os = new FileOutputStream(tmpOutputFile);
     LOGGER.debug("Start getting GCS objects.");
     // Objects are returned in lexicographical order.
-    for (Blob blob : blobs.iterateAll()) {
+    for (final Blob blob : blobs.iterateAll()) {
       blob.downloadTo(os);
     }
     os.close();
@@ -76,32 +57,32 @@ public class GcsLogs implements CloudLogs {
   }
 
   @Override
-  public List<String> tailCloudLog(LogConfigs configs, String logPath, int numLines) throws IOException {
+  public List<String> tailCloudLog(final LogConfigs configs, final String logPath, final int numLines) throws IOException {
     LOGGER.debug("Tailing logs from GCS path: {}", logPath);
     createGcsClientIfNotExists(configs);
 
     LOGGER.debug("Start GCS list request.");
-    Page<Blob> blobs = GCS.list(
+    final Page<Blob> blobs = GCS.list(
         configs.getGcpStorageBucket(),
         Storage.BlobListOption.prefix(logPath));
 
-    var ascendingTimestampBlobs = new ArrayList<Blob>();
-    for (Blob blob : blobs.iterateAll()) {
+    final var ascendingTimestampBlobs = new ArrayList<Blob>();
+    for (final Blob blob : blobs.iterateAll()) {
       ascendingTimestampBlobs.add(blob);
     }
-    var descendingTimestampBlobs = Lists.reverse(ascendingTimestampBlobs);
+    final var descendingTimestampBlobs = Lists.reverse(ascendingTimestampBlobs);
 
-    var lines = new ArrayList<String>();
+    final var lines = new ArrayList<String>();
     int linesRead = 0;
 
     LOGGER.debug("Start getting GCS objects.");
     while (linesRead <= numLines && !descendingTimestampBlobs.isEmpty()) {
-      var poppedBlob = descendingTimestampBlobs.remove(0);
-      try (var inMemoryData = new ByteArrayOutputStream()) {
+      final var poppedBlob = descendingTimestampBlobs.remove(0);
+      try (final var inMemoryData = new ByteArrayOutputStream()) {
         poppedBlob.downloadTo(inMemoryData);
-        var currFileLines = inMemoryData.toString().split("\n");
-        List<String> currFileLinesReversed = Lists.reverse(List.of(currFileLines));
-        for (var line : currFileLinesReversed) {
+        final var currFileLines = inMemoryData.toString().split("\n");
+        final List<String> currFileLinesReversed = Lists.reverse(List.of(currFileLines));
+        for (final var line : currFileLinesReversed) {
           if (linesRead == numLines) {
             break;
           }
@@ -115,7 +96,20 @@ public class GcsLogs implements CloudLogs {
     return lines;
   }
 
-  private static void createGcsClientIfNotExists(LogConfigs configs) {
+  @Override
+  public void deleteLogs(final LogConfigs configs, final String logPath) {
+    LOGGER.debug("Retrieving logs from GCS path: {}", logPath);
+    createGcsClientIfNotExists(configs);
+
+    LOGGER.debug("Start GCS list and delete request.");
+    final Page<Blob> blobs = GCS.list(configs.getGcpStorageBucket(), Storage.BlobListOption.prefix(logPath));
+    for (final Blob blob : blobs.iterateAll()) {
+      blob.delete(BlobSourceOption.generationMatch());
+    }
+    LOGGER.debug("Finished all deletes.");
+  }
+
+  private static void createGcsClientIfNotExists(final LogConfigs configs) {
     if (GCS == null) {
       Preconditions.checkNotNull(configs.getGcpStorageBucket());
       Preconditions.checkNotNull(configs.getGoogleApplicationCredentials());
@@ -124,24 +118,24 @@ public class GcsLogs implements CloudLogs {
     }
   }
 
-  public static void main(String[] args) throws IOException {
-    Storage storage = StorageOptions.getDefaultInstance().getService();
-    var bucket = "davin-kube-logging-test";
-    Page<Blob> blobs =
+  public static void main(final String[] args) throws IOException {
+    final Storage storage = StorageOptions.getDefaultInstance().getService();
+    final var bucket = "davin-kube-logging-test";
+    final Page<Blob> blobs =
         storage.list(
             bucket,
             Storage.BlobListOption.prefix("app-logging/workspace/server/logs"),
             Storage.BlobListOption.pageSize(1));
 
-    var randomName = Strings.addRandomSuffix("logs", "-", 5);
-    var tmpOutputFile = new File("/tmp/" + randomName);
-    var os = new FileOutputStream(tmpOutputFile);
-    for (Blob blob : blobs.iterateAll()) {
+    final var randomName = Strings.addRandomSuffix("logs", "-", 5);
+    final var tmpOutputFile = new File("/tmp/" + randomName);
+    final var os = new FileOutputStream(tmpOutputFile);
+    for (final Blob blob : blobs.iterateAll()) {
       System.out.println(blob.getName());
       blob.downloadTo(os);
     }
     os.close();
-    var data = new GcsLogs().tailCloudLog(new LogConfigDelegator(new EnvConfigs()), "tail", 6);
+    final var data = new GcsLogs().tailCloudLog((new EnvConfigs()).getLogConfigs(), "tail", 6);
     System.out.println(data);
   }
 

@@ -8,7 +8,7 @@ import { BigButton } from "components/CenteredPageComponents";
 import LabeledInput from "components/LabeledInput";
 import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
-import config from "config";
+import { useConfig } from "config";
 import EditControls from "./components/EditControls";
 
 export type PreferencesFormProps = {
@@ -68,6 +68,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
   errorMessage,
 }) => {
   const formatMessage = useIntl().formatMessage;
+  const config = useConfig();
 
   return (
     <Formik

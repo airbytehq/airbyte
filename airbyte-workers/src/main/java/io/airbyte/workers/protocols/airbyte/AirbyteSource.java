@@ -1,32 +1,59 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.protocols.airbyte;
 
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.protocols.Source;
+import java.nio.file.Path;
+import java.util.Optional;
 
-public interface AirbyteSource extends Source<AirbyteMessage> {
+/**
+ * This interface provides a java interface over all interactions with a Source from the POV of the
+ * platform. It encapsulates the full lifecycle of the Source as well as any outputs.
+ */
+public interface AirbyteSource extends AutoCloseable {
+
+  /**
+   * Starts the Source container and opens a connection to STDOUT on that container.
+   *
+   * @param sourceConfig - contains the arguments that must be passed to the read method of the
+   *        Source.
+   * @param jobRoot - directory where the job can write data.
+   * @throws Exception - throws if there is any failure in startup.
+   */
+  void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception;
+
+  /**
+   * Means no more data will be emitted by the Source. This may be because all data has already been
+   * emitted or because the Source container has exited.
+   *
+   * @return true, if no more data will be emitted. otherwise, false.
+   */
+  boolean isFinished();
+
+  /**
+   * Attempts to read an AirbyteMessage from the Source.
+   *
+   * @return returns an AirbyteMessage is the Source emits one. Otherwise, empty. This method BLOCKS
+   *         on waiting for the Source to emit data to STDOUT.
+   */
+  Optional<AirbyteMessage> attemptRead();
+
+  /**
+   * Attempts to shut down the Source's container. Waits for a graceful shutdown, capped by a timeout.
+   *
+   * @throws Exception - throws if there is any failure in shutdown.
+   */
+  @Override
+  void close() throws Exception;
+
+  /**
+   * Attempt to shut down the Source's container quickly.
+   *
+   * @throws Exception - throws if there is any failure in shutdown.
+   */
+  void cancel() throws Exception;
 
 }

@@ -1,10 +1,10 @@
 import { useFetcher } from "rest-hooks";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
 import ConnectionResource, { Connection } from "core/resources/Connection";
-import useConnection from "components/hooks/services/useConnectionHook";
+import useConnection from "hooks/services/useConnectionHook";
 import { Status } from "./types";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 const useSyncActions = (): {
   changeStatus: (connection: Connection) => Promise<void>;
@@ -12,6 +12,7 @@ const useSyncActions = (): {
 } => {
   const { updateConnection } = useConnection();
   const SyncConnection = useFetcher(ConnectionResource.syncShape());
+  const analyticsService = useAnalyticsService();
 
   const changeStatus = async (connection: Connection) => {
     await updateConnection({
@@ -31,7 +32,7 @@ const useSyncActions = (): {
         JSON.stringify(item.config) === JSON.stringify(connection.schedule)
     );
 
-    AnalyticsService.track("Source - Action", {
+    analyticsService.track("Source - Action", {
       action:
         connection.status === "active"
           ? "Disable connection"
@@ -46,7 +47,7 @@ const useSyncActions = (): {
   };
 
   const syncManualConnection = async (connection: Connection) => {
-    AnalyticsService.track("Source - Action", {
+    analyticsService.track("Source - Action", {
       action: "Full refresh sync",
       connector_source: connection.source?.sourceName,
       connector_source_id: connection.source?.sourceDefinitionId,

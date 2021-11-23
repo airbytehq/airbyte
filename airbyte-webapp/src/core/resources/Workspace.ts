@@ -3,6 +3,8 @@ import BaseResource from "./BaseResource";
 
 export interface Notification {
   notificationType: string;
+  sendOnSuccess: boolean;
+  sendOnFailure: boolean;
   slackConfiguration: {
     webhook: string;
   };
@@ -45,7 +47,7 @@ export default class WorkspaceResource
 
   static listShape<T extends typeof Resource>(
     this: T
-  ): ReadShape<SchemaDetail<Workspace[]>> {
+  ): ReadShape<SchemaDetail<{ workspaces: Workspace[] }>> {
     return {
       ...super.listShape(),
       schema: { workspaces: [this] },

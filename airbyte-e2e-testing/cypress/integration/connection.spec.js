@@ -11,14 +11,14 @@ describe("Connection main actions", () => {
 
     cy.createTestConnection("Test update connection source cypress", "Test update connection destination cypress");
 
-    cy.visit("/");
+    cy.visit("/source");
     cy.get("div").contains("Test update connection source cypress").click();
     cy.get("div").contains("Test update connection destination cypress").click();
 
     cy.get("div[data-id='settings-step']").click();
 
     cy.get("div[data-testid='schedule']").click();
-    cy.get("div[data-id='5m']").click();
+    cy.get("div[data-testid='Every 5 min']").click();
     cy.submit();
     cy.wait("@updateConnection");
     cy.get("span[data-id='success-result']").should("exist");
@@ -30,7 +30,7 @@ describe("Connection main actions", () => {
   it("Delete connection", () => {
     cy.createTestConnection("Test delete connection source cypress", "Test delete connection destination cypress");
 
-    cy.visit("/");
+    cy.visit("/source");
     cy.get("div").contains("Test delete connection source cypress").click();
     cy.get("div").contains("Test delete connection destination cypress").click();
 

@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<credit-card-transactions type="collection">
+    <current-page-number type="integer">1</current-page-number>
+    <page-size type="integer">50</page-size>
+    <total-items type="integer">2</total-items>
+    <transaction>
+        <id>2cdqmzsg</id>
+        <status>submitted_for_settlement</status>
+        <type>sale</type>
+        <currency-iso-code>USD</currency-iso-code>
+        <amount>2.00</amount>
+        <amount-requested>2.00</amount-requested>
+        <merchant-account-id>airbyte</merchant-account-id>
+        <sub-merchant-account-id nil="true"/>
+        <master-merchant-account-id nil="true"/>
+        <order-id></order-id>
+        <created-at type="datetime">2021-08-10T14:19:49Z</created-at>
+        <updated-at type="datetime">2021-08-10T14:19:50Z</updated-at>
+        <customer>
+            <id nil="true"/>
+            <first-name></first-name>
+            <last-name></last-name>
+            <company></company>
+            <email></email>
+            <website></website>
+            <phone></phone>
+            <fax></fax>
+        </customer>
+        <billing>
+            <id nil="true"/>
+            <first-name nil="true"/>
+            <last-name nil="true"/>
+            <company nil="true"/>
+            <street-address nil="true"/>
+            <extended-address nil="true"/>
+            <locality nil="true"/>
+            <region nil="true"/>
+            <postal-code nil="true"/>
+            <country-name nil="true"/>
+            <country-code-alpha2 nil="true"/>
+            <country-code-alpha3 nil="true"/>
+            <country-code-numeric nil="true"/>
+        </billing>
+        <refund-id nil="true"/>
+        <refund-ids type="array"/>
+        <refunded-transaction-id nil="true"/>
+        <partial-settlement-transaction-ids type="array"/>
+        <authorized-transaction-id nil="true"/>
+        <settlement-batch-id nil="true"/>
+        <shipping>
+            <id nil="true"/>
+            <first-name nil="true"/>
+            <last-name nil="true"/>
+            <company nil="true"/>
+            <street-address nil="true"/>
+            <extended-address nil="true"/>
+            <locality nil="true"/>
+            <region nil="true"/>
+            <postal-code nil="true"/>
+            <country-name nil="true"/>
+            <country-code-alpha2 nil="true"/>
+            <country-code-alpha3 nil="true"/>
+            <country-code-numeric nil="true"/>
+        </shipping>
+        <custom-fields/>
+        <avs-error-response-code nil="true"/>
+        <avs-postal-code-response-code>I</avs-postal-code-response-code>
+        <avs-street-address-response-code>I</avs-street-address-response-code>
+        <cvv-response-code>I</cvv-response-code>
+        <gateway-rejection-reason nil="true"/>
+        <processor-authorization-code>T8LSNZ</processor-authorization-code>
+        <processor-response-code>1000</processor-response-code>
+        <processor-response-text>Approved</processor-response-text>
+        <additional-processor-response nil="true"/>
+        <voice-referral-number nil="true"/>
+        <purchase-order-number></purchase-order-number>
+        <tax-amount nil="true"/>
+        <tax-exempt type="boolean">false</tax-exempt>
+        <sca-exemption-requested nil="true"/>
+        <processed-with-network-token type="boolean">false</processed-with-network-token>
+        <credit-card>
+            <token nil="true"/>
+            <bin>411111</bin>
+            <last-4>1111</last-4>
+            <card-type>Visa</card-type>
+            <expiration-month>08</expiration-month>
+            <expiration-year>2100</expiration-year>
+            <customer-location>US</customer-location>
+            <cardholder-name>sss</cardholder-name>
+            <image-url>https://assets.braintreegateway.com/payment_method_logo/visa.png?environment=sandbox</image-url>
+            <prepaid>Unknown</prepaid>
+            <healthcare>Unknown</healthcare>
+            <debit>Unknown</debit>
+            <durbin-regulated>Unknown</durbin-regulated>
+            <commercial>Unknown</commercial>
+            <payroll>Unknown</payroll>
+            <issuing-bank>Unknown</issuing-bank>
+            <country-of-issuance>Unknown</country-of-issuance>
+            <product-id>Unknown</product-id>
+            <global-id nil="true"/>
+            <account-type nil="true"/>
+            <unique-number-identifier nil="true"/>
+            <venmo-sdk type="boolean">false</venmo-sdk>
+        </credit-card>
+        <status-history type="array">
+            <status-event>
+                <timestamp type="datetime">2021-08-10T14:19:50Z</timestamp>
+                <status>authorized</status>
+                <amount>2.00</amount>
+                <user>sherifairbyte</user>
+                <transaction-source>control_panel</transaction-source>
+            </status-event>
+            <status-event>
+                <timestamp type="datetime">2021-08-10T14:19:50Z</timestamp>
+                <status>submitted_for_settlement</status>
+                <amount>2.00</amount>
+                <user>sherifairbyte</user>
+                <transaction-source>control_panel</transaction-source>
+            </status-event>
+        </status-history>
+        <plan-id nil="true"/>
+        <subscription-id nil="true"/>
+        <subscription>
+            <billing-period-end-date nil="true"/>
+            <billing-period-start-date nil="true"/>
+        </subscription>
+        <add-ons type="array"/>
+        <discounts type="array"/>
+        <descriptor>
+            <name nil="true"/>
+            <phone nil="true"/>
+            <url nil="true"/>
+        </descriptor>
+        <recurring type="boolean">false</recurring>
+        <channel nil="true"/>
+        <service-fee-amount nil="true"/>
+        <escrow-status nil="true"/>
+        <disbursement-details>
+            <disbursement-date nil="true"/>
+            <settlement-amount nil="true"/>
+            <settlement-currency-iso-code nil="true"/>
+            <settlement-currency-exchange-rate nil="true"/>
+            <settlement-base-currency-exchange-rate nil="true"/>
+            <funds-held nil="true"/>
+            <success nil="true"/>
+        </disbursement-details>
+        <disputes type="array"/>
+        <authorization-adjustments type="array"/>
+        <payment-instrument-type>credit_card</payment-instrument-type>
+        <processor-settlement-response-code></processor-settlement-response-code>
+        <processor-settlement-response-text></processor-settlement-response-text>
+        <network-response-code>XX</network-response-code>
+        <network-response-text>sample network response text</network-response-text>
+        <three-d-secure-info nil="true"/>
+        <ships-from-postal-code nil="true"/>
+        <shipping-amount nil="true"/>
+        <discount-amount nil="true"/>
+        <network-transaction-id>020210810141950</network-transaction-id>
+        <processor-response-type>approved</processor-response-type>
+        <authorization-expires-at type="datetime">2021-08-18T14:19:49Z</authorization-expires-at>
+        <retry-ids type="array"/>
+        <retried-transaction-id nil="true"/>
+        <refund-global-ids type="array"/>
+        <partial-settlement-transaction-global-ids type="array"/>
+        <refunded-transaction-global-id nil="true"/>
+        <authorized-transaction-global-id nil="true"/>
+        <global-id>dHJhbnNhY3Rpb25fMmNkcW16c2c</global-id>
+        <retry-global-ids type="array"/>
+        <retried-transaction-global-id nil="true"/>
+        <retrieval-reference-number>1234567</retrieval-reference-number>
+        <installment-count nil="true"/>
+        <installments type="array"/>
+        <refunded-installments type="array"/>
+        <response-emv-data nil="true"/>
+        <acquirer-reference-number nil="true"/>
+        <merchant-identification-number>123456789012</merchant-identification-number>
+        <terminal-identification-number>00000001</terminal-identification-number>
+        <merchant-name>DESCRIPTORNAME</merchant-name>
+        <merchant-address>
+            <street-address></street-address>
+            <locality>Braintree</locality>
+            <region>MA</region>
+            <postal-code>02184</postal-code>
+            <phone>5555555555</phone>
+        </merchant-address>
+        <pin-verified type="boolean">false</pin-verified>
+        <account-balance nil="true"/>
+        <debit-network nil="true"/>
+    </transaction>
+    <transaction>
+        <id>hncnkbsy</id>
+        <status>settled</status>
+        <type>sale</type>
+        <currency-iso-code>USD</currency-iso-code>
+        <amount>500.00</amount>
+        <amount-requested nil="true"/>
+        <merchant-account-id>airbyte</merchant-account-id>
+        <sub-merchant-account-id nil="true"/>
+        <master-merchant-account-id nil="true"/>
+        <order-id></order-id>
+        <created-at type="datetime">2020-12-02T06:30:06Z</created-at>
+        <updated-at type="datetime">2020-12-02T08:20:40Z</updated-at>
+        <customer>
+            <id>896865626</id>
+            <first-name>test</first-name>
+            <last-name>test</last-name>
+            <company>airbyte</company>
+            <email>customer@test.com</email>
+            <website>airbyte.io</website>
+            <phone>1231231231</phone>
+            <fax></fax>
+            <global-id>Y3VzdG9tZXJfODk2ODY1NjI2</global-id>
+        </customer>
+        <billing>
+            <id nil="true"/>
+            <first-name nil="true"/>
+            <last-name nil="true"/>
+            <company nil="true"/>
+            <street-address nil="true"/>
+            <extended-address nil="true"/>
+            <locality nil="true"/>
+            <region nil="true"/>
+            <postal-code nil="true"/>
+            <country-name nil="true"/>
+            <country-code-alpha2 nil="true"/>
+            <country-code-alpha3 nil="true"/>
+            <country-code-numeric nil="true"/>
+        </billing>
+        <refund-id nil="true"/>
+        <refund-ids type="array"/>
+        <refunded-transaction-id nil="true"/>
+        <partial-settlement-transaction-ids type="array"/>
+        <authorized-transaction-id nil="true"/>
+        <settlement-batch-id>2020-12-02_airbyte_gcdq2ac6</settlement-batch-id>
+        <shipping>
+            <id nil="true"/>
+            <first-name nil="true"/>
+            <last-name nil="true"/>
+            <company nil="true"/>
+            <street-address nil="true"/>
+            <extended-address nil="true"/>
+            <locality nil="true"/>
+            <region nil="true"/>
+            <postal-code nil="true"/>
+            <country-name nil="true"/>
+            <country-code-alpha2 nil="true"/>
+            <country-code-alpha3 nil="true"/>
+            <country-code-numeric nil="true"/>
+        </shipping>
+        <custom-fields/>
+        <avs-error-response-code nil="true"/>
+        <avs-postal-code-response-code>I</avs-postal-code-response-code>
+        <avs-street-address-response-code>I</avs-street-address-response-code>
+        <cvv-response-code>I</cvv-response-code>
+        <gateway-rejection-reason nil="true"/>
+        <processor-authorization-code>MQ6H9W</processor-authorization-code>
+        <processor-response-code>1000</processor-response-code>
+        <processor-response-text>Approved</processor-response-text>
+        <additional-processor-response nil="true"/>
+        <voice-referral-number nil="true"/>
+        <purchase-order-number></purchase-order-number>
+        <tax-amount nil="true"/>
+        <tax-exempt type="boolean">false</tax-exempt>
+        <sca-exemption-requested nil="true"/>
+        <processed-with-network-token type="boolean">false</processed-with-network-token>
+        <credit-card>
+            <token>7jt54nr</token>
+            <bin>411111</bin>
+            <last-4>1111</last-4>
+            <card-type>Visa</card-type>
+            <expiration-month>11</expiration-month>
+            <expiration-year>2022</expiration-year>
+            <customer-location>US</customer-location>
+            <cardholder-name>test guy</cardholder-name>
+            <image-url>https://assets.braintreegateway.com/payment_method_logo/visa.png?environment=sandbox</image-url>
+            <prepaid>Unknown</prepaid>
+            <healthcare>Unknown</healthcare>
+            <debit>Unknown</debit>
+            <durbin-regulated>Unknown</durbin-regulated>
+            <commercial>Unknown</commercial>
+            <payroll>Unknown</payroll>
+            <issuing-bank>Unknown</issuing-bank>
+            <country-of-issuance>Unknown</country-of-issuance>
+            <product-id>Unknown</product-id>
+            <global-id>cGF5bWVudG1ldGhvZF9jY183anQ1NG5y</global-id>
+            <account-type nil="true"/>
+            <unique-number-identifier>7ae98b4956f624db53908bece7cb0a47</unique-number-identifier>
+            <venmo-sdk type="boolean">false</venmo-sdk>
+        </credit-card>
+        <status-history type="array">
+            <status-event>
+                <timestamp type="datetime">2020-12-02T06:30:06Z</timestamp>
+                <status>authorized</status>
+                <amount>500.00</amount>
+                <user>sherifairbyte</user>
+                <transaction-source>control_panel</transaction-source>
+            </status-event>
+            <status-event>
+                <timestamp type="datetime">2020-12-02T06:30:06Z</timestamp>
+                <status>submitted_for_settlement</status>
+                <amount>500.00</amount>
+                <user>sherifairbyte</user>
+                <transaction-source>control_panel</transaction-source>
+            </status-event>
+            <status-event>
+                <timestamp type="datetime">2020-12-02T08:20:40Z</timestamp>
+                <status>settled</status>
+                <amount>500.00</amount>
+                <transaction-source></transaction-source>
+            </status-event>
+        </status-history>
+        <plan-id nil="true"/>
+        <subscription-id nil="true"/>
+        <subscription>
+            <billing-period-end-date nil="true"/>
+            <billing-period-start-date nil="true"/>
+        </subscription>
+        <add-ons type="array"/>
+        <discounts type="array"/>
+        <descriptor>
+            <name nil="true"/>
+            <phone nil="true"/>
+            <url nil="true"/>
+        </descriptor>
+        <recurring type="boolean">false</recurring>
+        <channel nil="true"/>
+        <service-fee-amount nil="true"/>
+        <escrow-status nil="true"/>
+        <disbursement-details>
+            <disbursement-date type="date">2020-12-03</disbursement-date>
+            <settlement-amount>500.00</settlement-amount>
+            <settlement-currency-iso-code>USD</settlement-currency-iso-code>
+            <settlement-currency-exchange-rate>1</settlement-currency-exchange-rate>
+            <settlement-base-currency-exchange-rate nil="true"/>
+            <funds-held type="boolean">false</funds-held>
+            <success type="boolean">true</success>
+        </disbursement-details>
+        <disputes type="array"/>
+        <authorization-adjustments type="array"/>
+        <payment-instrument-type>credit_card</payment-instrument-type>
+        <processor-settlement-response-code></processor-settlement-response-code>
+        <processor-settlement-response-text></processor-settlement-response-text>
+        <network-response-code>XX</network-response-code>
+        <network-response-text>sample network response text</network-response-text>
+        <three-d-secure-info nil="true"/>
+        <ships-from-postal-code nil="true"/>
+        <shipping-amount nil="true"/>
+        <discount-amount nil="true"/>
+        <network-transaction-id>020201202063006</network-transaction-id>
+        <processor-response-type>approved</processor-response-type>
+        <authorization-expires-at type="datetime">2020-12-09T06:30:06Z</authorization-expires-at>
+        <retry-ids type="array"/>
+        <retried-transaction-id nil="true"/>
+        <refund-global-ids type="array"/>
+        <partial-settlement-transaction-global-ids type="array"/>
+        <refunded-transaction-global-id nil="true"/>
+        <authorized-transaction-global-id nil="true"/>
+        <global-id>dHJhbnNhY3Rpb25faG5jbmtic3k</global-id>
+        <retry-global-ids type="array"/>
+        <retried-transaction-global-id nil="true"/>
+        <retrieval-reference-number>1234567</retrieval-reference-number>
+        <installment-count nil="true"/>
+        <installments type="array"/>
+        <refunded-installments type="array"/>
+        <response-emv-data nil="true"/>
+        <acquirer-reference-number nil="true"/>
+        <merchant-identification-number>123456789012</merchant-identification-number>
+        <terminal-identification-number>00000001</terminal-identification-number>
+        <merchant-name>DESCRIPTORNAME</merchant-name>
+        <merchant-address>
+            <street-address></street-address>
+            <locality>Braintree</locality>
+            <region>MA</region>
+            <postal-code>02184</postal-code>
+            <phone>5555555555</phone>
+        </merchant-address>
+        <pin-verified type="boolean">false</pin-verified>
+        <account-balance nil="true"/>
+        <debit-network nil="true"/>
+    </transaction>
+</credit-card-transactions>

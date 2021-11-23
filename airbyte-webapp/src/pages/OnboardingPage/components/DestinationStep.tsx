@@ -1,26 +1,22 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
-
-import { AnalyticsService } from "core/analytics/AnalyticsService";
 
 import ContentCard from "components/ContentCard";
-import ServiceForm from "components/ServiceForm";
-import ConnectionBlock from "components/ConnectionBlock";
+import ServiceForm from "views/Connector/ServiceForm";
 import { JobsLogItem } from "components/JobItem";
 
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
+import { useDestinationDefinitionSpecificationLoad } from "hooks/services/useDestinationHook";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
-import SkipOnboardingButton from "./SkipOnboardingButton";
+import TitlesBlock from "./TitlesBlock";
+import HighlightedText from "./HighlightedText";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 type IProps = {
   availableServices: DestinationDefinition[];
-  currentSourceDefinitionId: string;
   onSubmit: (values: {
     name: string;
     serviceType: string;
@@ -36,7 +32,6 @@ type IProps = {
 const DestinationStep: React.FC<IProps> = ({
   onSubmit,
   availableServices,
-  currentSourceDefinitionId,
   hasSuccess,
   error,
   jobInfo,
@@ -47,15 +42,14 @@ const DestinationStep: React.FC<IProps> = ({
     destinationDefinitionSpecification,
     isLoading,
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
-  const currentSource = useResource(SourceDefinitionResource.detailShape(), {
-    sourceDefinitionId: currentSourceDefinitionId,
-  });
+
+  const analyticsService = useAnalyticsService();
 
   const onDropDownSelect = (destinationDefinition: string) => {
     const destinationConnector = availableServices.find(
       (s) => s.destinationDefinitionId === destinationDefinition
     );
-    AnalyticsService.track("New Destination - Action", {
+    analyticsService.track("New Destination - Action", {
       action: "Select a connector",
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id:
@@ -83,29 +77,30 @@ const DestinationStep: React.FC<IProps> = ({
 
   return (
     <>
-      <ConnectionBlock
-        itemFrom={{ name: currentSource.name, icon: currentSource.icon }}
-      />
-      <ContentCard
-        title={<FormattedMessage id="onboarding.destinationSetUp" />}
+      <TitlesBlock
+        title={
+          <FormattedMessage
+            id="onboarding.createFirstDestination"
+            values={{
+              name: (...name: React.ReactNode[]) => (
+                <HighlightedText>{name}</HighlightedText>
+              ),
+            }}
+          />
+        }
       >
+        <FormattedMessage id="onboarding.createFirstDestination.text" />
+      </TitlesBlock>
+      <ContentCard full>
         <ServiceForm
           formType="destination"
-          additionBottomControls={
-            <SkipOnboardingButton step="destination connection" />
-          }
           allowChangeConnector
           onServiceSelect={onDropDownSelect}
           onSubmit={onSubmitForm}
           hasSuccess={hasSuccess}
           availableServices={availableServices}
           errorMessage={errorMessage}
-          specifications={
-            destinationDefinitionSpecification?.connectionSpecification
-          }
-          documentationUrl={
-            destinationDefinitionSpecification?.documentationUrl
-          }
+          selectedConnector={destinationDefinitionSpecification}
           isLoading={isLoading}
         />
         <JobsLogItem jobInfo={jobInfo} />

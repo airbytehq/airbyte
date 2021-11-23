@@ -1,5 +1,5 @@
 export const theme = {
-  primaryColor: "#625EFF",
+  primaryColor: "#615EFF",
   primaryColor25: "rgba(98, 94, 255, .25)",
   primaryColor12: "rgba(103, 87, 255, .12)",
   mediumPrimaryColor: "#36348F",
@@ -11,17 +11,19 @@ export const theme = {
 
   brightColor: "#F7F6FF",
 
-  dangerColor: "#F74D58",
+  dangerColor: "#FF5E7B",
   lightDangerColor: "#FEEDEE",
   dangerTransparentColor: "rgba(247, 77, 88, 0.1)",
   attentionColor: "#FFBD2E",
-  successColor: "#45E698",
+  successColor: "#67DAE1",
   successColor10: "rgba(69, 230, 152, .1)",
   successColor20: "rgba(69, 230, 152, .2)",
-  backgroundColor: "#F8F8FF",
+  backgroundColor: "#FEF9F4",
   shadowColor: "rgba(0, 0, 0, 0.25)",
+  cardShadowColor: "rgba(26, 25, 77, 0.12)",
 
-  textColor: "#1A1A21",
+  textColor: "#1A194D",
+  lightTextColor: "#AFAFC1",
   textColor90: "rgba(26,26,33, .9)",
   greyColor80: "#353542",
   greyColor70: "#555461",
@@ -34,10 +36,21 @@ export const theme = {
   greyColor0: "#F7F7FA",
 
   whiteColor: "#FFFFFF",
+  beigeColor: "#FEF9F4",
+  darkBeigeColor: "#FFEBD7",
+  darkGreyColor: "#8B8BA0",
+  redColor: "#FF6A4D",
+  lightRedColor: "#FF8870",
+  redTransparentColor: "rgba(255, 118, 94, 0.1)",
+  whiteColor5: "rgba(255, 255, 255, .5)",
+  transparentColor: "rgba(255, 255, 255, 0)",
 
   regularFont: "Inter, Arial, sans-serif",
   highlightFont: "Montserrat, Arial, sans-serif",
   codeFont: "Courier Prime, Arial, sans-serif",
+  italicFont: "Shrikhand, serif",
 };
+
+export const barChartColors = ["#E8E8ED", "#AFAFC1"];
 
 export type Theme = typeof theme;

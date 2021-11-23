@@ -1,35 +1,17 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.AirbyteConfig;
+import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -50,7 +32,7 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> T getConfig(final ConfigSchema configType, final String configId, final Class<T> clazz)
+  public <T> T getConfig(final AirbyteConfig configType, final String configId, final Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     final T config = decoratedPersistence.getConfig(configType, configId, clazz);
     validateJson(config, configType);
@@ -58,22 +40,54 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException {
+  public <T> List<T> listConfigs(final AirbyteConfig configType, final Class<T> clazz) throws JsonValidationException, IOException {
     final List<T> configs = decoratedPersistence.listConfigs(configType, clazz);
-    for (T config : configs) {
+    for (final T config : configs) {
       validateJson(config, configType);
     }
     return configs;
   }
 
   @Override
-  public <T> void writeConfig(ConfigSchema configType, String configId, T config) throws JsonValidationException, IOException {
-    validateJson(Jsons.jsonNode(config), configType);
-    decoratedPersistence.writeConfig(configType, configId, config);
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
+      throws JsonValidationException, IOException {
+    final List<ConfigWithMetadata<T>> configs = decoratedPersistence.listConfigsWithMetadata(configType, clazz);
+    for (final ConfigWithMetadata<T> config : configs) {
+      validateJson(config.getConfig(), configType);
+    }
+    return configs;
   }
 
   @Override
-  public <T> void replaceAllConfigs(final Map<ConfigSchema, Stream<T>> configs, final boolean dryRun) throws IOException {
+  public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws JsonValidationException, IOException {
+
+    final Map<String, T> configIdToConfig = new HashMap<>() {
+
+      {
+        put(configId, config);
+      }
+
+    };
+
+    writeConfigs(configType, configIdToConfig);
+  }
+
+  @Override
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs)
+      throws IOException, JsonValidationException {
+    for (final Map.Entry<String, T> config : configs.entrySet()) {
+      validateJson(Jsons.jsonNode(config.getValue()), configType);
+    }
+    decoratedPersistence.writeConfigs(configType, configs);
+  }
+
+  @Override
+  public void deleteConfig(final AirbyteConfig configType, final String configId) throws ConfigNotFoundException, IOException {
+    decoratedPersistence.deleteConfig(configType, configId);
+  }
+
+  @Override
+  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     // todo (cgardens) need to do validation here.
     decoratedPersistence.replaceAllConfigs(configs, dryRun);
   }
@@ -83,8 +97,13 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
     return decoratedPersistence.dumpConfigs();
   }
 
-  private <T> void validateJson(T config, ConfigSchema configType) throws JsonValidationException {
-    JsonNode schema = JsonSchemaValidator.getSchema(configType.getFile());
+  @Override
+  public void loadData(final ConfigPersistence seedPersistence) throws IOException {
+    decoratedPersistence.loadData(seedPersistence);
+  }
+
+  private <T> void validateJson(final T config, final AirbyteConfig configType) throws JsonValidationException {
+    final JsonNode schema = JsonSchemaValidator.getSchema(configType.getConfigSchemaFile());
     schemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
 

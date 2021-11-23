@@ -1,40 +1,32 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
-from typing import Iterator, Tuple
+from typing import Dict, Iterator, Tuple
 
-from base_python import BaseClient
+from airbyte_cdk.sources.deprecated.client import BaseClient
 
 from .api import APIClient
 from .common import AuthError, ValidationError
 
 
+class DriftAuthenticator:
+    def __init__(self, config: Dict):
+        self.config = config
+
+    def get_token(self) -> str:
+        access_token = self.config.get("access_token")
+        if access_token:
+            return access_token
+        else:
+            return self.config.get("credentials").get("access_token")
+
+
 class Client(BaseClient):
-    def __init__(self, access_token: str):
+    def __init__(self, **config: Dict):
         super().__init__()
-        self._client = APIClient(access_token)
+        self._client = APIClient(access_token=DriftAuthenticator(config).get_token())
 
     def stream__accounts(self, **kwargs) -> Iterator[dict]:
         yield from self._client.accounts.list()

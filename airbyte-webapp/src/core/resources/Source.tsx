@@ -1,4 +1,4 @@
-import { ReadShape, Resource, SchemaDetail } from "rest-hooks";
+import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 import { ConnectionConfiguration } from "core/domain/connection";
 
@@ -45,6 +45,7 @@ export class SourceResource extends BaseResource implements Source {
 
   // TODO: fix detailShape here as it is actually createShape
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  // TODO: remove?
   static recreateShape<T extends typeof Resource>(this: T) {
     return {
       ...super.detailShape(),
@@ -60,6 +61,20 @@ export class SourceResource extends BaseResource implements Source {
         return response;
       },
       schema: this,
+    };
+  }
+
+  static createShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<Source>> {
+    return {
+      ...super.createShape(),
+      schema: this,
+      fetch: async (
+        _: Readonly<Record<string, string>>,
+        body: Readonly<Record<string, unknown>>
+      ): Promise<Source> =>
+        await this.fetch("post", `${super.rootUrl()}sources/create`, body),
     };
   }
 }

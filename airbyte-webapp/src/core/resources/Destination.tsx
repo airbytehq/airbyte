@@ -44,6 +44,7 @@ export class DestinationResource extends BaseResource implements Destination {
     };
   }
 
+  // TODO: remove?
   static recreateShape<T extends typeof Resource>(
     this: T
   ): MutateShape<SchemaDetail<Destination>> {
@@ -61,6 +62,20 @@ export class DestinationResource extends BaseResource implements Destination {
         return response;
       },
       schema: this,
+    };
+  }
+
+  static createShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<Destination>> {
+    return {
+      ...super.createShape(),
+      schema: this,
+      fetch: async (
+        _: Readonly<Record<string, string>>,
+        body: Readonly<Record<string, unknown>>
+      ): Promise<Destination> =>
+        await this.fetch("post", `${super.rootUrl()}destinations/create`, body),
     };
   }
 }
