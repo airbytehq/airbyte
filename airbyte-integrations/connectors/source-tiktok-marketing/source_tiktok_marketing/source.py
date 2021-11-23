@@ -12,7 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .spec import SourceTiktokMarketingSpec
-from .streams import AdGroups, Ads, Advertisers, Campaigns
+from .streams import AdGroups, Ads, Advertisers, Campaigns, BasicReports
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
 
@@ -64,4 +64,14 @@ class SourceTiktokMarketing(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self._prepare_stream_args(config)
-        return [Ads(**args), Advertisers(**args), AdGroups(**args), Campaigns(**args)]
+        report_args = {
+            "report_level": config.get("report_level"),
+            "report_granularity": config.get("report_granularity"),
+        }
+        return [
+            Ads(**args),
+            Advertisers(**args),
+            AdGroups(**args),
+            Campaigns(**args),
+            BasicReports(**{**args, **report_args}),
+        ]
