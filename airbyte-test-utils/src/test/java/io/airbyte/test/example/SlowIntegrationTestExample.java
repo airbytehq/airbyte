@@ -4,14 +4,14 @@
 
 package io.airbyte.test.example;
 
-import io.airbyte.test.annotations.IntegrationTest;
+import io.airbyte.test.annotations.SlowIntegrationTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 /**
  * This is an example of a slow integration test
  */
-@IntegrationTest
+@SlowIntegrationTest
 @Slf4j
 public class SlowIntegrationTestExample {
 
