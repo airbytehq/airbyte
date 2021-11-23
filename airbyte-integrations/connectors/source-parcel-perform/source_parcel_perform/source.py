@@ -52,7 +52,7 @@ class ParcelPerformAuthenticator(Oauth2Authenticator):
             raise Exception(f"Error while refreshing access token: {e}") from e
 
 
-class Shipments(HttpStream, ABC):
+class ParcelPerformStream(HttpStream, ABC):
 
     url_base = "https://api.parcelperform.com"
     primary_key = "shipment_uuid"
@@ -60,8 +60,6 @@ class Shipments(HttpStream, ABC):
     sync_end_range = datetime.datetime.now()
     shipment_ids = []
     config = {}
-    raise_on_http_errors = False
-    state_checkpoint_interval = None
 
     def sync_date_range(self, stream_state) -> Mapping[str, Any]:
         config_start_date = datetime.datetime.strptime(
@@ -81,6 +79,24 @@ class Shipments(HttpStream, ABC):
             "end": self.sync_end_range.strftime("%Y-%m-%dT%H:%M:%S"),
         }
 
+    def get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ) -> Mapping[str, any]:
+        return {
+            self.cursor_field: max(
+                latest_record.get(self.cursor_field),
+                current_stream_state.get(self.cursor_field, self.config["start_date"]),
+            )
+        }
+
+
+class Shipments(ParcelPerformStream, ABC):
+
+    raise_on_http_errors = False
+    state_checkpoint_interval = None
+
     def path(
         self,
         stream_state: Mapping[str, Any] = None,
@@ -99,6 +115,10 @@ class Shipments(HttpStream, ABC):
         """
         if response.status_code == 200:
             return response.json()["next_page"]
+
+        # Gracefully handle 404 errors that also have API response code 4041
+        # This represents no objects found within the defined parameters
+        # Full docs here https://developers.parcelperform.com/docs/api-guides-reference/ZG9jOjQ0MzQ4NzI-response-structure-statuses-and-errors#request-level-errors
         elif response.status_code == 404 and response.json()["api_response"] == "4041":
             return None
 
@@ -131,20 +151,12 @@ class Shipments(HttpStream, ABC):
             for row in records:
                 self.shipment_ids.append(row[self.primary_key])
             yield from records
+
+        # Gracefully handle 404 errors that also have API response code 4041
+        # This represents no objects found within the defined parameters
+        # Full docs here https://developers.parcelperform.com/docs/api-guides-reference/ZG9jOjQ0MzQ4NzI-response-structure-statuses-and-errors#request-level-errors
         elif response.status_code == 404 and response.json()["api_response"] == "4041":
             self.logger.info(response.json()["message"])
-
-    def get_updated_state(
-        self,
-        current_stream_state: MutableMapping[str, Any],
-        latest_record: Mapping[str, Any],
-    ) -> Mapping[str, any]:
-        return {
-            self.cursor_field: max(
-                latest_record.get(self.cursor_field),
-                current_stream_state.get(self.cursor_field, self.config["start_date"]),
-            )
-        }
 
 
 class ShipmentsDetails(Shipments, ABC):
@@ -212,8 +224,11 @@ class SourceParcelPerform(AbstractSource):
             config["client_secret"],
             "access_token",
         )
-        if auth.get_access_token():
-            return True, None
+        try:
+            auth.get_access_token()
+        except Exception as e:
+            return False, e
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
