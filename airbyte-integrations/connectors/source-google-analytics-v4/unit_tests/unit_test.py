@@ -44,6 +44,21 @@ def mock_unknown_metrics_or_dimensions_error(requests_mock):
     yield requests_mock.post(f"https://analyticsreporting.googleapis.com/v4/reports:batchGet", status_code=400, json={"error":{"message": "Unknown metrics or dimensions"}})
 
 
+def mock_api_returns_no_records(requests_mock):
+    """API returns empty data for given date based slice"""
+    yield requests_mock.post(
+        "https://analyticsreporting.googleapis.com/v4/reports:batchGet", json=json.loads(read_file("empty_response.json"))
+    )
+
+
+@pytest.fixture
+def mock_api_returns_valid_records(requests_mock):
+    """API returns valid data for given date based slice"""
+    yield requests_mock.post(
+        "https://analyticsreporting.googleapis.com/v4/reports:batchGet", json=json.loads(read_file("response_with_records.json"))
+    )
+
+
 def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
     test_metrics, test_dimensions = GoogleAnalyticsV4TypesList().read_records(sync_mode=None)
 
@@ -77,7 +92,13 @@ def test_lookup_metrics_dimensions_data_type(metrics_dimensions_mapping, mock_me
 
 
 @patch("source_google_analytics_v4.source.jwt")
-def test_check_connection_jwt(jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_auth_check_connection):
+def test_check_connection_fails_jwt(
+    jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_api_returns_no_records
+):
+    """
+    check_connection fails because of the API returns no records,
+    then we assume than user doesn't have permission to read requested `view`
+    """
     test_config = json.loads(read_file("../integration_tests/sample_config.json"))
     del test_config["custom_reports"]
     test_config["credentials"] = {
@@ -85,15 +106,47 @@ def test_check_connection_jwt(jwt_encode_mock, mocker, mock_metrics_dimensions_t
         "credentials_json": '{"client_email": "", "private_key": "", "private_key_id": ""}',
     }
     source = SourceGoogleAnalyticsV4()
-    assert source.check_connection(MagicMock(), test_config) is None
+    is_success, msg = source.check_connection(MagicMock(), test_config)
+    assert is_success is False
+    assert (
+        msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}. Cannot retrieve data from that view ID."
+    )
     jwt_encode_mock.encode.assert_called()
     assert mock_auth_call.called
+    assert mock_api_returns_no_records.called
 
 
 @patch("source_google_analytics_v4.source.jwt")
-def test_check_connection_oauth(
-    jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_auth_check_connection
+def test_check_connection_success_jwt(
+    jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_api_returns_valid_records
 ):
+    """
+    check_connection succeeds because of the API returns valid records for the latest date based slice,
+    then we assume than user has permission to read requested `view`
+    """
+    test_config = json.loads(read_file("../integration_tests/sample_config.json"))
+    del test_config["custom_reports"]
+    test_config["credentials"] = {
+        "auth_type": "Service",
+        "credentials_json": '{"client_email": "", "private_key": "", "private_key_id": ""}',
+    }
+    source = SourceGoogleAnalyticsV4()
+    is_success, msg = source.check_connection(MagicMock(), test_config)
+    assert is_success is True
+    assert msg is None
+    jwt_encode_mock.encode.assert_called()
+    assert mock_auth_call.called
+    assert mock_api_returns_valid_records.called
+
+
+@patch("source_google_analytics_v4.source.jwt")
+def test_check_connection_fails_oauth(
+    jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_api_returns_no_records
+):
+    """
+    check_connection fails because of the API returns no records,
+    then we assume than user doesn't have permission to read requested `view`
+    """
     test_config = json.loads(read_file("../integration_tests/sample_config.json"))
     del test_config["custom_reports"]
     test_config["credentials"] = {
@@ -103,13 +156,47 @@ def test_check_connection_oauth(
         "refresh_token": "refresh_token_val",
     }
     source = SourceGoogleAnalyticsV4()
-    assert source.check_connection(MagicMock(), test_config) is None
+    is_success, msg = source.check_connection(MagicMock(), test_config)
+    assert is_success is False
+    assert (
+        msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}. Cannot retrieve data from that view ID."
+    )
     jwt_encode_mock.encode.assert_not_called()
     assert "https://www.googleapis.com/auth/analytics.readonly" in unquote(mock_auth_call.last_request.body)
     assert "client_id_val" in unquote(mock_auth_call.last_request.body)
     assert "client_secret_val" in unquote(mock_auth_call.last_request.body)
     assert "refresh_token_val" in unquote(mock_auth_call.last_request.body)
     assert mock_auth_call.called
+    assert mock_api_returns_no_records.called
+
+
+@patch("source_google_analytics_v4.source.jwt")
+def test_check_connection_success_oauth(
+    jwt_encode_mock, mocker, mock_metrics_dimensions_type_list_link, mock_auth_call, mock_api_returns_valid_records
+):
+    """
+    check_connection succeeds because of the API returns valid records for the latest date based slice,
+    then we assume than user has permission to read requested `view`
+    """
+    test_config = json.loads(read_file("../integration_tests/sample_config.json"))
+    del test_config["custom_reports"]
+    test_config["credentials"] = {
+        "auth_type": "Client",
+        "client_id": "client_id_val",
+        "client_secret": "client_secret_val",
+        "refresh_token": "refresh_token_val",
+    }
+    source = SourceGoogleAnalyticsV4()
+    is_success, msg = source.check_connection(MagicMock(), test_config)
+    assert is_success is True
+    assert msg is None
+    jwt_encode_mock.encode.assert_not_called()
+    assert "https://www.googleapis.com/auth/analytics.readonly" in unquote(mock_auth_call.last_request.body)
+    assert "client_id_val" in unquote(mock_auth_call.last_request.body)
+    assert "client_secret_val" in unquote(mock_auth_call.last_request.body)
+    assert "refresh_token_val" in unquote(mock_auth_call.last_request.body)
+    assert mock_auth_call.called
+    assert mock_api_returns_valid_records.called
 
 
 def test_unknown_metrics_or_dimensions_error_validation(mock_metrics_dimensions_type_list_link, mock_unknown_metrics_or_dimensions_error):
