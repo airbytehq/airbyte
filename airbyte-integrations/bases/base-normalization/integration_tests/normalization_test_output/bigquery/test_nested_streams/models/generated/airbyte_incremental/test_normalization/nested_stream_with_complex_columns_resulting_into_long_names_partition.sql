@@ -6,6 +6,7 @@
     tags = [ "nested" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_ab3') }}
 select
     _airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid,
     double_array_data,

@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/cart",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Cart Spec",
+    "title": "Cart.com Spec",
     "type": "object",
     "required": ["access_token", "start_date", "store_name"],
     "additionalProperties": true,
