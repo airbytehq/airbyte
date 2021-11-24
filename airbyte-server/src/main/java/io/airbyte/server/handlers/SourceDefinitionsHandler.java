@@ -123,8 +123,8 @@ public class SourceDefinitionsHandler {
     final StandardSourceDefinition currentSourceDefinition =
         configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
 
-    // specs are re-fetched from the container if the image tag has changed, or if the image tag is
-    // "dev"
+    // specs are re-fetched from the container if the image tag has changed, or if the tag is "dev",
+    // to allow for easier iteration of dev images
     final boolean specNeedsUpdate = !currentSourceDefinition.getDockerImageTag().equals(sourceDefinitionUpdate.getDockerImageTag())
         || sourceDefinitionUpdate.getDockerImageTag().equals(DEV_TAG);
     final ConnectorSpecification spec = specNeedsUpdate

@@ -129,8 +129,8 @@ public class DestinationDefinitionsHandler {
     final StandardDestinationDefinition currentDestination = configRepository
         .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
 
-    // specs are re-fetched from the container if the image tag has changed, or if the image tag is
-    // "dev"
+    // specs are re-fetched from the container if the image tag has changed, or if the tag is "dev",
+    // to allow for easier iteration of dev images
     final boolean specNeedsUpdate = !currentDestination.getDockerImageTag().equals(destinationDefinitionUpdate.getDockerImageTag())
         || destinationDefinitionUpdate.getDockerImageTag().equals(DEV_TAG);
     final ConnectorSpecification spec = specNeedsUpdate
