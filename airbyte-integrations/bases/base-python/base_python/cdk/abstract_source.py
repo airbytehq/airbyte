@@ -80,24 +80,23 @@ class AbstractSource(Source, ABC):
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
         with create_timer(self.name) as timer:
-            try:
-                for configured_stream in catalog.streams:
-                    try:
-                        stream_instance = stream_instances[configured_stream.stream.name]
-                        timer.start_event(configured_stream.stream.name)
-                        yield from self._read_stream(
-                            logger=logger,
-                            stream_instance=stream_instance,
-                            configured_stream=configured_stream,
-                            connector_state=connector_state,
-                        )
-                        timer.end_event()
-                    except Exception as e:
-                        logger.exception(f"Encountered an exception while reading stream {self.name}")
-                        raise e
-            finally:
-                logger.info(f"Finished syncing {self.name}")
-                logger.info(timer.report())
+            for configured_stream in catalog.streams:
+                try:
+                    stream_instance = stream_instances[configured_stream.stream.name]
+                    timer.start_event(configured_stream.stream.name)
+                    yield from self._read_stream(
+                        logger=logger,
+                        stream_instance=stream_instance,
+                        configured_stream=configured_stream,
+                        connector_state=connector_state,
+                    )
+                    timer.end_event()
+                except Exception as e:
+                    logger.exception(f"Encountered an exception while reading stream {self.name}")
+                    raise e
+                finally:
+                    logger.info(f"Finished syncing {self.name}")
+                    logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
 
