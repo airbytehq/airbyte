@@ -1,7 +1,10 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import json
+import time
 from abc import ABC
+from numbers import Number
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urljoin
 
@@ -14,7 +17,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
-# Basic full refresh stream
 class MailgunStream(HttpStream, ABC):
     # TODO: Support regions (EU and US) for domains
     url_base = "https://api.mailgun.net/v3/"
@@ -39,12 +41,6 @@ class MailgunStream(HttpStream, ABC):
         # TODO: Requires improve URL creation in the CDK by using urllib.parse.urljoin
         #  (airbyte_cdk.sources.streams.http.http._create_prepared_request)
         return next_page_token["url"] if next_page_token else ""
-
-    def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -73,9 +69,20 @@ class Domains(MailgunStream):
 # Basic incremental stream
 class IncrementalMailgunStream(MailgunStream, ABC):
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-            Mapping[str, Any]:
-        return {}
+    @staticmethod
+    def chunk_timestamps_range(start_timestamp: float, interval: Number = None) -> Iterable[Tuple[float]]:
+        """
+        Yield a tuple of beginning and ending timestamps of each day between the start timestamp and now.
+        """
+        interval = interval or 60 * 60 * 24  # 1 day
+        now = time.time()
+        if start_timestamp > now:
+            yield start_timestamp, start_timestamp
+
+        while start_timestamp <= now:
+            end_timestamp = start_timestamp + interval
+            yield start_timestamp, end_timestamp
+            start_timestamp = end_timestamp
 
 
 class Events(IncrementalMailgunStream):
@@ -87,17 +94,20 @@ class Events(IncrementalMailgunStream):
 
     def __init__(self, config: Mapping[str, Any], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.timestamp = config.get('timestamp', 0)
-        self.ascending = config.get('ascending', True)
+
+        # Messages are stored for 3 days, so it prevents occasional attempt to read from the start of the Epoch
+        default_shift = 60 * 60 * 24 * 3
+        self.start_timestamp = config.get('timestamp', time.time() - default_shift)
+        self.ascending = True
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
             Mapping[str, Any]:
-        if current_stream_state is not None and 'timestamp' in current_stream_state:
+        try:
             current_parsed_timestamp = current_stream_state['timestamp']
             latest_record_timestamp = latest_record['timestamp']
             return {'timestamp': max(current_parsed_timestamp, latest_record_timestamp)}
-        else:
-            return {'timestamp': self.timestamp}
+        except (KeyError, TypeError):
+            return {'timestamp': self.start_timestamp}
 
     def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         # return super().path(*args, **kwargs) or "events"  # TODO: Requires the CDK update (see MailgunStream.path())
@@ -112,19 +122,27 @@ class Events(IncrementalMailgunStream):
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
             next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
-        params.update({
-            "begin": stream_state.get("timestamp", self.timestamp),
+        params = super().request_params(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
+        stream_slice = stream_slice or {
+            "begin": stream_state["timestamp"],
             "ascending": "yes" if self.ascending else "no",
-        })
+        }
+        params.update(stream_slice)
         return params
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, float]]]:
         """
-        Override default stream_slices CDK method to provide date_slices as a list of a single slice with such format:
-        [{"timestamp": 1636411500.861427}]
+        Provide a generator of date_slices in such format:
+        {"begin": 1636411500.0, "end": 1636497900.0}
         """
-        return [stream_state]
+        stream_state = stream_state or {}
+        start_date = stream_state.get(self.cursor_field, self.start_timestamp)
+        for period in self.chunk_timestamps_range(start_date):
+            yield {
+                "begin": period[0], "end": period[1]
+            }
 
 
 # Source
@@ -140,7 +158,13 @@ class SourceMailgun(AbstractSource):
             if response.status_code == 200:
                 return True, None
             else:
-                return False, response.json()['message']
+                message = "Check connection is failed. "
+                try:
+                    message += response.json()['message']
+                except json.JSONDecodeError:
+                    message += "Unexpected response format from the server."
+                finally:
+                    return False, message
         except requests.RequestException as e:
             return False, e
 

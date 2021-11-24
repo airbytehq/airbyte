@@ -43,7 +43,9 @@ def test_check_connection(mocked_responses, source_mailgun, auth_header, check_c
     assert source_mailgun.check_connection(logger_mock, test_config) == (True, None)
 
     test_config["private_key"] = test_config["private_key"][-1::-1]
-    assert source_mailgun.check_connection(logger_mock, MagicMock()) == (False, bad_key_message)
+    check_result = source_mailgun.check_connection(logger_mock, MagicMock())
+    assert not check_result[0]
+    assert bad_key_message in check_result[1]
 
 
 def test_check_connection_error(mocked_responses, source_mailgun, check_connection_url):

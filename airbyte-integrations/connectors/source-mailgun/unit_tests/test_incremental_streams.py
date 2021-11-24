@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import time
+
 import pytest as pytest
 
 from airbyte_cdk.models import SyncMode
@@ -25,7 +27,6 @@ def test_cursor_field(stream, cursor_field):
     [
         (IncrementalMailgunStream(), None, None, {}),
 
-        (Events(TEST_CONFIG), None, None, {"timestamp": 0}),
         (Events(TEST_CONFIG), {"timestamp": 1000}, {"timestamp": 2000}, {"timestamp": 2000}),
         (Events(TEST_CONFIG), {"timestamp": 2000}, {"timestamp": 1000}, {"timestamp": 2000}),
     ]
@@ -35,15 +36,21 @@ def test_get_updated_state(stream, current_stream_state, latest_record, expected
     assert stream.get_updated_state(**inputs) == expected_state
 
 
+def test_get_updated_state_events_default_timestamp():
+    state = Events(TEST_CONFIG).get_updated_state(current_stream_state={}, latest_record={})
+    assert state["timestamp"] == pytest.approx(time.time(), 60 * 60)
+
+
 @pytest.mark.parametrize(
     "stream, inputs, expected_stream_slice",
     [
-        (IncrementalMailgunStream(), {"sync_mode": SyncMode.incremental}, [None]),
-        (Events(TEST_CONFIG), {"stream_state": {"timestamp": 1000}}, [{"timestamp": 1000}]),
+        (IncrementalMailgunStream(), {"sync_mode": SyncMode.incremental}, None),
+        (Events(TEST_CONFIG), {"stream_state": {"timestamp": 1000000}}, {'begin': 1000000, 'end': 1086400}),
     ]
 )
 def test_stream_slices(stream, inputs, expected_stream_slice):
-    assert stream.stream_slices(**inputs) == expected_stream_slice
+    slices = iter(stream.stream_slices(**inputs))
+    assert next(slices) == expected_stream_slice
 
 
 @pytest.mark.parametrize(

@@ -9,7 +9,12 @@
     "properties": {
       "private_key": {
         "type": "string",
-        "description": "Private API key for authenticate with every request"
+        "description": "Private API key for authenticate with every request",
+        "airbyte_secret": true
+      },
+      "start_timestamp": {
+        "type": "number",
+        "description": "Initial timestamp to gather data from"
       }
     }
   }
