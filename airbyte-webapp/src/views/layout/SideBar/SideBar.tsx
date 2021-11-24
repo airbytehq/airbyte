@@ -159,7 +159,14 @@ const SideBar: React.FC = () => {
           </MenuLinkItem>
         </li>
         <li>
-          <ResourcesPopup>
+          <ResourcesPopup
+            options={[
+              { value: "docs" },
+              { value: "slack" },
+              { value: "status" },
+              { value: "recipes" },
+            ]}
+          >
             {({ onOpen }) => (
               <MenuItem onClick={onOpen} as="div">
                 <DocsIcon />
