@@ -153,37 +153,40 @@ class SourceGithub(AbstractSource):
         repositories = repos + organization_repos
 
         organizations = list({org.split("/")[0] for org in repositories})
-        full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
-        incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
+
         organization_args = {"authenticator": authenticator, "organizations": organizations}
-        default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), full_refresh_args)
+        repository_args = {"authenticator": authenticator, "repositories": repositories}
+        repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
+
+        default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)
+        pull_requests_stream = PullRequests(**repository_args_with_start_date)
 
         return [
-            Assignees(**full_refresh_args),
-            Branches(**full_refresh_args),
-            Collaborators(**full_refresh_args),
-            Comments(**incremental_args),
-            CommitCommentReactions(**incremental_args),
-            CommitComments(**incremental_args),
-            Commits(**incremental_args, branches_to_pull=branches_to_pull, default_branches=default_branches),
-            Events(**incremental_args),
-            IssueCommentReactions(**incremental_args),
-            IssueEvents(**incremental_args),
-            IssueLabels(**full_refresh_args),
-            IssueMilestones(**incremental_args),
-            IssueReactions(**incremental_args),
-            Issues(**incremental_args),
+            Assignees(**repository_args),
+            Branches(**repository_args),
+            Collaborators(**repository_args),
+            Comments(**repository_args_with_start_date),
+            CommitCommentReactions(**repository_args_with_start_date),
+            CommitComments(**repository_args_with_start_date),
+            Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull, default_branches=default_branches),
+            Events(**repository_args_with_start_date),
+            IssueCommentReactions(**repository_args_with_start_date),
+            IssueEvents(**repository_args_with_start_date),
+            IssueLabels(**repository_args),
+            IssueMilestones(**repository_args_with_start_date),
+            IssueReactions(**repository_args_with_start_date),
+            Issues(**repository_args_with_start_date),
             Organizations(**organization_args),
-            Projects(**incremental_args),
-            PullRequestCommentReactions(**incremental_args),
-            PullRequestStats(**full_refresh_args),
-            PullRequests(**incremental_args),
-            Releases(**incremental_args),
+            Projects(**repository_args_with_start_date),
+            PullRequestCommentReactions(**repository_args_with_start_date),
+            PullRequestStats(parent=pull_requests_stream, **repository_args),
+            PullRequests(**repository_args_with_start_date),
+            Releases(**repository_args_with_start_date),
             Repositories(**organization_args),
-            ReviewComments(**incremental_args),
-            Reviews(**full_refresh_args),
-            Stargazers(**incremental_args),
-            Tags(**full_refresh_args),
+            ReviewComments(**repository_args_with_start_date),
+            Reviews(parent=pull_requests_stream, **repository_args),
+            Stargazers(**repository_args_with_start_date),
+            Tags(**repository_args),
             Teams(**organization_args),
             Users(**organization_args),
         ]
