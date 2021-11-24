@@ -40,6 +40,9 @@ from source_facebook_marketing.streams import (
 
 logger = logging.getLogger("airbyte")
 
+# deprecated from ConnectorSpec, using default value of 1 = 1 day.
+INSIGHTS_DAYS_PER_JOB: int = 1
+
 
 class InsightConfig(BaseModel):
 
@@ -85,12 +88,6 @@ class ConnectorConfig(BaseModel):
         maximum=28,
     )
 
-    insights_days_per_job: int = Field(
-        default=7,
-        description="Number of days to sync in one job. The more data you have - the smaller you want this parameter to be.",
-        minimum=1,
-        maximum=30,
-    )
     custom_insights: Optional[List[InsightConfig]] = Field(
         description="A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
     )
@@ -130,7 +127,7 @@ class SourceFacebookMarketing(AbstractSource):
             start_date=config.start_date,
             end_date=config.end_date,
             buffer_days=config.insights_lookback_window,
-            days_per_job=config.insights_days_per_job,
+            days_per_job=INSIGHTS_DAYS_PER_JOB,
         )
 
         streams = [
