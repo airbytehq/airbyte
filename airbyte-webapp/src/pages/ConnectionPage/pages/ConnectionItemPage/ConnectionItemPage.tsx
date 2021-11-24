@@ -113,8 +113,6 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
         <ReplicationView
           onAfterSaveSchema={onAfterSaveSchema}
           connectionId={connection.connectionId}
-          sourceDefinition={sourceDefinition}
-          destinationDefinition={destinationDefinition}
         />
       );
     }

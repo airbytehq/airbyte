@@ -15,8 +15,6 @@ import TransferForm from "views/Connection/ConnectionForm/TransferForm";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 import LoadingSchema from "components/LoadingSchema";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { SourceDefinition } from "core/resources/SourceDefinition";
 
 import { equal } from "utils/objects";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
@@ -25,8 +23,6 @@ import { useAsyncFn } from "react-use";
 type IProps = {
   onAfterSaveSchema: () => void;
   connectionId: string;
-  destinationDefinition?: DestinationDefinition;
-  sourceDefinition?: SourceDefinition;
 };
 
 const Content = styled.div`
@@ -73,8 +69,6 @@ const Card = styled(ContentCard)`
 const ReplicationView: React.FC<IProps> = ({
   onAfterSaveSchema,
   connectionId,
-  destinationDefinition,
-  sourceDefinition,
 }) => {
   const [isModalOpen, setIsUpdateModalOpen] = useState(false);
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
@@ -195,8 +189,6 @@ const ReplicationView: React.FC<IProps> = ({
             onCancel={onExitRefreshCatalogMode}
             editSchemeMode={activeUpdatingSchemaMode}
             additionalSchemaControl={renderUpdateSchemaButton()}
-            destinationIcon={destinationDefinition?.icon}
-            sourceIcon={sourceDefinition?.icon}
           />
         ) : (
           <LoadingSchema />

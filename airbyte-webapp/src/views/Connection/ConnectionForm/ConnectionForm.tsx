@@ -25,7 +25,6 @@ import {
 } from "./formConfig";
 import SectionTitle from "./components/SectionTitle";
 import CreateControls from "./components/CreateControls";
-import Connector from "./components/Connector";
 import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
@@ -62,8 +61,6 @@ type ConnectionFormProps = {
   editSchemeMode?: boolean;
   isEditMode?: boolean;
   additionalSchemaControl?: React.ReactNode;
-  sourceIcon?: string;
-  destinationIcon?: string;
 
   connection:
     | Connection
@@ -75,8 +72,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
   onReset,
   onCancel,
-  sourceIcon,
-  destinationIcon,
   className,
   onDropDownSelect,
   isEditMode,
@@ -96,7 +91,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const formatMessage = useIntl().formatMessage;
   const { hasFeature } = useFeatureService();
 
-  const { source, destination, operations } = connection;
+  const { operations } = connection;
   const supportsNormalization = destDefinition.supportsNormalization;
   const supportsTransformations =
     destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
@@ -167,20 +162,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
           <ControlLabelsWithMargin>
-            <ConnectorLabel
-              label={formatMessage({
-                id: "form.sourceConnector",
-              })}
-            >
-              <Connector name={source.name} icon={sourceIcon} />
-            </ConnectorLabel>
-            <ConnectorLabel
-              label={formatMessage({
-                id: "form.destinationConnector",
-              })}
-            >
-              <Connector name={destination.name} icon={destinationIcon} />
-            </ConnectorLabel>
             <Field name="schedule">
               {({ field, meta }: FieldProps<ScheduleProperties>) => (
                 <ConnectorLabel

@@ -3,7 +3,6 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useResource } from "rest-hooks";
 
 import { Button } from "components";
 import LoadingSchema from "components/LoadingSchema";
@@ -16,8 +15,6 @@ import { Destination } from "core/resources/Destination";
 
 import useConnection, { ValuesProps } from "hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "hooks/services/useSchemaHook";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
@@ -52,17 +49,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
 }) => {
   const { createConnection } = useConnection();
   const analyticsService = useAnalyticsService();
-
-  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
-    sourceDefinitionId: source.sourceDefinitionId,
-  });
-
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    {
-      destinationDefinitionId: destination.destinationDefinitionId,
-    }
-  );
 
   const {
     schema,
@@ -157,8 +143,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
             </Button>
           }
           onSubmit={onSubmitConnectionStep}
-          sourceIcon={sourceDefinition?.icon}
-          destinationIcon={destinationDefinition?.icon}
         />
       </Suspense>
     </ContentCard>
