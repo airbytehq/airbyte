@@ -11,6 +11,7 @@ import useConnection, {
   ValuesProps,
 } from "hooks/services/useConnectionHook";
 import ConnectionForm from "views/Connection/ConnectionForm";
+import TransferForm from "views/Connection/ConnectionForm/TransferForm";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 import LoadingSchema from "components/LoadingSchema";
@@ -18,21 +19,18 @@ import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { SourceDefinition } from "core/resources/SourceDefinition";
 
 import { equal } from "utils/objects";
-import EnabledControl from "./EnabledControl";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { useAsyncFn } from "react-use";
 
 type IProps = {
   onAfterSaveSchema: () => void;
   connectionId: string;
-  frequencyText?: string;
   destinationDefinition?: DestinationDefinition;
   sourceDefinition?: SourceDefinition;
 };
 
 const Content = styled.div`
   max-width: 1279px;
-  overflow-x: hidden;
   margin: 18px auto;
   padding-bottom: 10px;
 `;
@@ -68,10 +66,13 @@ const Note = styled.span`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
+const Card = styled(ContentCard)`
+  margin-bottom: 10px;
+`;
+
 const ReplicationView: React.FC<IProps> = ({
   onAfterSaveSchema,
   connectionId,
-  frequencyText,
   destinationDefinition,
   sourceDefinition,
 }) => {
@@ -170,17 +171,15 @@ const ReplicationView: React.FC<IProps> = ({
 
   return (
     <Content>
+      <Card title={<FormattedMessage id="connection.transfer" />}>
+        <TransferForm connection={connection} />
+      </Card>
       <ContentCard
         title={
           <Title>
             <TitleContainer hasButton={!activeUpdatingSchemaMode}>
-              <FormattedMessage id="connection.connectionSettings" />{" "}
+              <FormattedMessage id="connection.streams" />
             </TitleContainer>
-            <EnabledControl
-              disabled={isRefreshingCatalog}
-              connection={initialConnection}
-              frequencyText={frequencyText}
-            />
           </Title>
         }
       >

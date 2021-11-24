@@ -11,6 +11,7 @@ type IProps = {
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
   editSchemeMode?: boolean;
+  withLine?: boolean;
 };
 
 const Warning = styled.div`
@@ -19,15 +20,19 @@ const Warning = styled.div`
   font-weight: bold;
 `;
 
-const Controls = styled.div`
-  margin-top: 34px;
+const Buttons = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  margin-top: 16px;
 `;
 
-const ButtonContainer = styled.span`
+const ControlButton = styled(Button)`
   margin-left: 10px;
 `;
 
-const Success = styled(ButtonContainer)`
+const Success = styled.span`
   color: ${({ theme }) => theme.successColor};
   font-size: 14px;
   line-height: 17px;
@@ -44,6 +49,13 @@ const SpinnerContainer = styled.div`
   top: 10px;
 `;
 
+const Line = styled.div`
+  min-width: 100%;
+  height: 1px;
+  background: ${({ theme }) => theme.greyColor20};
+  margin: 16px -27px 0 -24px;
+`;
+
 const EditControls: React.FC<IProps> = ({
   isSubmitting,
   dirty,
@@ -51,6 +63,7 @@ const EditControls: React.FC<IProps> = ({
   successMessage,
   errorMessage,
   editSchemeMode,
+  withLine,
 }) => {
   const showStatusMessage = () => {
     if (isSubmitting) {
@@ -70,36 +83,41 @@ const EditControls: React.FC<IProps> = ({
   };
 
   return (
-    <Controls>
+    <>
       {editSchemeMode && (
         <Warning>
           <FormattedMessage id="connection.warningUpdateSchema" />
         </Warning>
       )}
-      <Button
-        type="submit"
-        disabled={(isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)}
-      >
-        {editSchemeMode ? (
-          <FormattedMessage id="connection.saveAndReset" />
-        ) : (
-          <FormattedMessage id="form.saveChanges" />
-        )}
-      </Button>
-      <ButtonContainer>
-        <Button
-          type="button"
-          secondary
-          disabled={
-            (isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)
-          }
-          onClick={resetForm}
-        >
-          <FormattedMessage id="form.cancel" />
-        </Button>
-      </ButtonContainer>
-      {showStatusMessage()}
-    </Controls>
+      {withLine && <Line />}
+      <Buttons>
+        <div>{showStatusMessage()}</div>
+        <div>
+          <Button
+            type="button"
+            secondary
+            disabled={
+              (isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)
+            }
+            onClick={resetForm}
+          >
+            <FormattedMessage id="form.cancel" />
+          </Button>
+          <ControlButton
+            type="submit"
+            disabled={
+              (isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)
+            }
+          >
+            {editSchemeMode ? (
+              <FormattedMessage id="connection.saveAndReset" />
+            ) : (
+              <FormattedMessage id="form.saveChanges" />
+            )}
+          </ControlButton>
+        </div>
+      </Buttons>
+    </>
   );
 };
 

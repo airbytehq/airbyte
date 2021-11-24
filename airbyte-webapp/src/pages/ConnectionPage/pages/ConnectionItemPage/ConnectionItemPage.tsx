@@ -98,7 +98,6 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   };
 
   const renderStep = () => {
-    console.log(currentStep);
     if (currentStep === "status") {
       return (
         <StatusView
@@ -114,7 +113,6 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
         <ReplicationView
           onAfterSaveSchema={onAfterSaveSchema}
           connectionId={connection.connectionId}
-          frequencyText={frequency?.text}
           sourceDefinition={sourceDefinition}
           destinationDefinition={destinationDefinition}
         />

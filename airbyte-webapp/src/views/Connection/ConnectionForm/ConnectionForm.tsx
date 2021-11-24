@@ -32,7 +32,7 @@ import { Connection, ScheduleProperties } from "core/resources/Connection";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
 const FormContainer = styled(Form)`
-  padding: 22px 27px 23px 24px;
+  padding: 22px 27px 15px 24px;
 `;
 
 const EditLaterMessage = styled(Label)`

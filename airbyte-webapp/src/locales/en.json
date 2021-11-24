@@ -296,6 +296,10 @@
   "connection.noSyncData": "Sync was not started",
   "connection.refreshSchema": "Refresh schema",
   "connection.replication": "Replication",
+  "connection.streams": "Streams",
+  "connection.transfer": "Transfer",
+  "connection.replicationFrequency": "Replication frequency*",
+  "connection.replicationFrequency.subtitle": "Set how often data should sync to the destination",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",
