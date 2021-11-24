@@ -38,7 +38,8 @@ public class BigQueryDenormalizedUploadStandardStrategy extends BigQueryUploadSt
   public BigQueryDenormalizedUploadStandardStrategy(BigQuery bigquery,
       ConfiguredAirbyteCatalog catalog,
       Consumer<AirbyteMessage> outputRecordCollector,
-      StandardNameTransformer namingResolver, Set<String> invalidKeys,
+      StandardNameTransformer namingResolver,
+      Set<String> invalidKeys,
       Set<String> fieldsWithRefDefinition) {
     super(bigquery, catalog, outputRecordCollector);
     this.namingResolver = namingResolver;

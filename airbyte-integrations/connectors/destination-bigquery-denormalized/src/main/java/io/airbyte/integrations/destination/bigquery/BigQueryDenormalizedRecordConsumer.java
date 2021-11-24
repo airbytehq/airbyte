@@ -22,7 +22,6 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedRecordConsumer.class);
 
-  private final StandardNameTransformer namingResolver;
   private final Set<String> invalidKeys;
   private final Set<String> fieldsWithRefDefinition;
 
@@ -34,11 +33,10 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
                                             final Set<String> fieldsWithRefDefinition) {
     super(bigquery, writeConfigs, catalog, outputRecordCollector, false, false);
     this.fieldsWithRefDefinition = fieldsWithRefDefinition;
-    this.namingResolver = namingResolver;
     invalidKeys = new HashSet<>();
     bigQueryUploadStrategyMap.put(UploadingMethod.STANDARD,
         new BigQueryDenormalizedUploadStandardStrategy(bigquery, catalog, outputRecordCollector, namingResolver, invalidKeys,
-            fieldsWithRefDefinition));
+            Set.copyOf(fieldsWithRefDefinition)));
   }
 
   @Override

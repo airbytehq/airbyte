@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.bigquery;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.util.CollectionUtils;
 import com.google.cloud.bigquery.BigQuery;
 import io.airbyte.commons.bytes.ByteUtils;
 import io.airbyte.commons.json.Jsons;
@@ -25,13 +24,13 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.apache.lucene.util.CollectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +53,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private AirbyteMessage lastFlushedState;
   private AirbyteMessage pendingState;
 
-  protected Map<UploadingMethod, BigQueryUploadStrategy> bigQueryUploadStrategyMap = new ConcurrentHashMap<>();
+  protected final Map<UploadingMethod, BigQueryUploadStrategy> bigQueryUploadStrategyMap = new ConcurrentHashMap<>();
 
   public BigQueryRecordConsumer(final BigQuery bigquery,
       final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
@@ -81,14 +80,13 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   @Override
   public void acceptTracked(final AirbyteMessage message) throws IOException {
-
     if (message.getType() == Type.STATE) {
       lastStateMessage = message;
       pendingState = message;
     } else if (message.getType() == Type.RECORD) {
       processRecord(message);
     } else {
-      LOGGER.warn("Unexpected message: " + message.getType());
+      LOGGER.warn("Unexpected message: {}", message.getType());
     }
   }
 
@@ -169,7 +167,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         keysToDelete.add(new KeyVersion(object.getKey()));
       }
 
-      if (keysToDelete.size() > 0) {
+      if (!keysToDelete.isEmpty()) {
         LOGGER.info("Tearing down test bucket path: {}/{}", gcsBucketName, gcs_bucket_path);
         // Google Cloud Storage doesn't accept request to delete multiple objects
         for (final KeyVersion keyToDelete : keysToDelete) {
