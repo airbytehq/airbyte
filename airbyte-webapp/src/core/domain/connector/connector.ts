@@ -14,8 +14,9 @@ export class Connector {
 
   static hasNewerVersion(connector: ConnectorDefinition): boolean {
     return (
-      !Connector.isDeprecated(connector) &&
-      connector.latestDockerImageTag !== connector.dockerImageTag
+      (!Connector.isDeprecated(connector) &&
+        connector.latestDockerImageTag !== connector.dockerImageTag) ||
+      connector.dockerImageTag === "dev"
     );
   }
 }

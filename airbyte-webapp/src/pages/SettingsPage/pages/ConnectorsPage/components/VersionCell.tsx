@@ -111,7 +111,11 @@ const VersionCell: React.FC<IProps> = ({
             <LoadingButton
               isLoading={isSubmitting}
               type="submit"
-              disabled={(isSubmitting || !dirty) && currentVersion === version}
+              disabled={
+                (isSubmitting || !dirty) &&
+                currentVersion === version &&
+                currentVersion !== "dev"
+              }
             >
               <FormattedMessage id="form.change" />
             </LoadingButton>

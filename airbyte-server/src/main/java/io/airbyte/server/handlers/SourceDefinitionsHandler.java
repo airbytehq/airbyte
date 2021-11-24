@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 
 public class SourceDefinitionsHandler {
 
+  private static final String DEV_TAG = "dev";
+
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
   private final AirbyteGithubStore githubStore;
@@ -121,8 +123,11 @@ public class SourceDefinitionsHandler {
     final StandardSourceDefinition currentSourceDefinition =
         configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
 
-    final boolean imageTagHasChanged = !currentSourceDefinition.getDockerImageTag().equals(sourceDefinitionUpdate.getDockerImageTag());
-    final ConnectorSpecification spec = imageTagHasChanged
+    // specs are re-fetched from the container if the image tag has changed, or if the image tag is
+    // "dev"
+    final boolean specNeedsUpdate = !currentSourceDefinition.getDockerImageTag().equals(sourceDefinitionUpdate.getDockerImageTag())
+        || sourceDefinitionUpdate.getDockerImageTag().equals(DEV_TAG);
+    final ConnectorSpecification spec = specNeedsUpdate
         ? getSpecForImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag())
         : currentSourceDefinition.getSpec();
 

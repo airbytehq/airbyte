@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 
 public class DestinationDefinitionsHandler {
 
+  private static final String DEV_TAG = "dev";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationDefinitionsHandler.class);
 
   private final ConfigRepository configRepository;
@@ -127,8 +129,11 @@ public class DestinationDefinitionsHandler {
     final StandardDestinationDefinition currentDestination = configRepository
         .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
 
-    final boolean imageTagHasChanged = !currentDestination.getDockerImageTag().equals(destinationDefinitionUpdate.getDockerImageTag());
-    final ConnectorSpecification spec = imageTagHasChanged
+    // specs are re-fetched from the container if the image tag has changed, or if the image tag is
+    // "dev"
+    final boolean specNeedsUpdate = !currentDestination.getDockerImageTag().equals(destinationDefinitionUpdate.getDockerImageTag())
+        || destinationDefinitionUpdate.getDockerImageTag().equals(DEV_TAG);
+    final ConnectorSpecification spec = specNeedsUpdate
         ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag())
         : currentDestination.getSpec();
 
