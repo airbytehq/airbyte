@@ -300,6 +300,8 @@
   "connection.transfer": "Transfer",
   "connection.replicationFrequency": "Replication frequency*",
   "connection.replicationFrequency.subtitle": "Set how often data should sync to the destination",
+  "connection.normalization": "Normalization",
+  "connection.customTransformations": "Custom Transformations",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",

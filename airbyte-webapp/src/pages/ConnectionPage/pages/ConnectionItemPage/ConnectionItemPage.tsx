@@ -7,6 +7,7 @@ import HeadTitle from "components/HeadTitle";
 import useRouter from "hooks/useRouter";
 import StepsMenu from "components/StepsMenu";
 import StatusView from "./components/StatusView";
+import TransformationView from "./components/TransformationView";
 import SettingsView from "./components/SettingsView";
 import ConnectionResource from "core/resources/Connection";
 import LoadingPage from "components/LoadingPage";
@@ -21,7 +22,7 @@ import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsServic
 import ReplicationView from "./components/ReplicationView";
 
 type ConnectionItemPageProps = {
-  currentStep: "status" | "settings" | "replication";
+  currentStep: "status" | "settings" | "replication" | "transformation";
 };
 
 const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
@@ -67,6 +68,10 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
       name: <FormattedMessage id={"connection.replication"} />,
     },
     {
+      id: "transformation",
+      name: <FormattedMessage id={"connectionForm.transformation.title"} />,
+    },
+    {
       id: "settings",
       name: <FormattedMessage id={"sources.settings"} />,
     },
@@ -80,6 +85,10 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
     } else if (id === "replication") {
       push(
         `${Routes.Connections}/${connection.connectionId}${Routes.Replication}`
+      );
+    } else if (id === "transformation") {
+      push(
+        `${Routes.Connections}/${connection.connectionId}${Routes.Transformation}`
       );
     } else {
       push(`${Routes.Connections}/${connection.connectionId}`);
@@ -115,6 +124,9 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
           connectionId={connection.connectionId}
         />
       );
+    }
+    if (currentStep === "transformation") {
+      return <TransformationView />;
     }
 
     return <SettingsView connectionId={connection.connectionId} />;
