@@ -6,9 +6,9 @@ from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
-from pendulum.tz.timezone import Timezone
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.v8.services.services.google_ads_service.pagers import SearchPager
+from pendulum.tz.timezone import Timezone
 
 from .google_ads import GoogleAds
 
