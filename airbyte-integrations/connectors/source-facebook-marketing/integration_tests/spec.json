@@ -46,14 +46,6 @@
         "maximum": 28,
         "type": "integer"
       },
-      "insights_days_per_job": {
-        "title": "Insights Days Per Job",
-        "description": "Number of days to sync in one job. The more data you have - the smaller you want this parameter to be.",
-        "default": 7,
-        "minimum": 1,
-        "maximum": 30,
-        "type": "integer"
-      },
       "custom_insights": {
         "title": "Custom Insights",
         "description": "A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)",
