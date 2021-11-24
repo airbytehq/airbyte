@@ -23,6 +23,7 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
+from source_facebook_marketing.common import SourceFacebookMarketingConfig
 from source_facebook_marketing.streams import (
     AdCreatives,
     Ads,
@@ -41,61 +42,6 @@ from source_facebook_marketing.streams import (
 logger = logging.getLogger("airbyte")
 
 
-class InsightConfig(BaseModel):
-
-    name: str = Field(description="The name value of insight")
-
-    fields: Optional[List[str]] = Field(description="A list of chosen fields for fields parameter", default=[])
-
-    breakdowns: Optional[List[str]] = Field(description="A list of chosen breakdowns for breakdowns", default=[])
-
-    action_breakdowns: Optional[List[str]] = Field(description="A list of chosen action_breakdowns for action_breakdowns", default=[])
-
-
-class ConnectorConfig(BaseModel):
-    class Config:
-        title = "Source Facebook Marketing"
-
-    account_id: str = Field(description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API.")
-
-    access_token: str = Field(
-        description='The value of the access token generated. See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information',
-        airbyte_secret=True,
-    )
-
-    start_date: datetime = Field(
-        description="The date from which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        examples=["2017-01-25T00:00:00Z"],
-    )
-
-    end_date: Optional[datetime] = Field(
-        description="The date until which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the latest data.",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        examples=["2017-01-26T00:00:00Z"],
-        default_factory=pendulum.now,
-    )
-
-    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets.")
-
-    insights_lookback_window: int = Field(
-        default=28,
-        description="The attribution window for the actions",
-        minimum=0,
-        maximum=28,
-    )
-
-    insights_days_per_job: int = Field(
-        default=7,
-        description="Number of days to sync in one job. The more data you have - the smaller you want this parameter to be.",
-        minimum=1,
-        maximum=30,
-    )
-    custom_insights: Optional[List[InsightConfig]] = Field(
-        description="A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
-    )
-
-
 class SourceFacebookMarketing(AbstractSource):
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -108,9 +54,21 @@ class SourceFacebookMarketing(AbstractSource):
         error_msg = None
 
         try:
-            config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-            api = API(account_id=config.account_id, access_token=config.access_token)
-            logger.info(f"Select account {api.account}")
+            config = SourceFacebookMarketingConfig(config)
+            api = API(config)
+            account_ids = {str(account["account_id"]) for account in api.accounts}
+
+            if config.account_selection_strategy_is_subset:
+                config_account_ids = set(config.account_ids)
+                if not config_account_ids.issubset(account_ids):
+                    raise Exception(
+                        f"Account Ids: {config_account_ids.difference(account_ids)} not found on this user.")
+            elif config.account_selection_strategy_is_all:
+                if not account_ids:
+                    raise Exception("You don't have accounts assigned to this user.")
+            else:
+                raise Exception("Incorrect account selection strategy.")
+
             ok = True
         except Exception as exc:
             error_msg = repr(exc)
@@ -122,8 +80,8 @@ class SourceFacebookMarketing(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-        api = API(account_id=config.account_id, access_token=config.access_token)
+        config = SourceFacebookMarketingConfig(config)
+        api = API(config)
 
         insights_args = dict(
             api=api,
@@ -163,25 +121,6 @@ class SourceFacebookMarketing(AbstractSource):
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
-    def spec(self, *args, **kwargs) -> ConnectorSpecification:
-        """
-        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
-        required to run this integration.
-        """
-        return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
-            changelogUrl="https://docs.airbyte.io/integrations/sources/facebook-marketing",
-            supportsIncremental=True,
-            supported_destination_sync_modes=[DestinationSyncMode.append],
-            connectionSpecification=expand_local_ref(ConnectorConfig.schema()),
-            authSpecification=AuthSpecification(
-                auth_type="oauth2.0",
-                oauth2Specification=OAuth2Specification(
-                    rootObject=[], oauthFlowInitParameters=[], oauthFlowOutputParameters=[["access_token"]]
-                ),
-            ),
-        )
-
     def _update_insights_streams(self, insights, args, streams) -> List[Type[Stream]]:
         """Update method, if insights have values returns streams replacing the
         default insights streams else returns streams
@@ -193,10 +132,10 @@ class SourceFacebookMarketing(AbstractSource):
         insights_custom_streams = list()
 
         for insight in insights:
-            args["name"] = f"Custom{insight.name}"
-            args["fields"] = list(set(insight.fields))
-            args["breakdowns"] = list(set(insight.breakdowns))
-            args["action_breakdowns"] = list(set(insight.action_breakdowns))
+            args["name"] = f"Custom{insight['name']}"
+            args["fields"] = list(set(insight["fields"]))
+            args["breakdowns"] = list(set(insight["breakdowns"]))
+            args["action_breakdowns"] = list(set(insight["action_breakdowns"]))
             insight_stream = AdsInsights(**args)
             insights_custom_streams.append(insight_stream)
 

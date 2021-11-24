@@ -5,14 +5,15 @@
 import json
 import logging
 from time import sleep
+from typing import List, Type
 
 import pendulum
-from cached_property import cached_property
+from cached_property import cached_property_with_ttl
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.common import FacebookAPIException
+from source_facebook_marketing.common import FacebookAPIException, SourceFacebookMarketingConfig
 
 logger = logging.getLogger("airbyte")
 
@@ -97,26 +98,31 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_id: str, access_token: str):
-        self._account_id = account_id
+    def __init__(self, config: SourceFacebookMarketingConfig):
+
+        self.__config = config
+
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
-        self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
+        self.api = MyFacebookAdsApi.init(access_token=self.__config.access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)
 
-    @cached_property
-    def account(self) -> AdAccount:
-        """Find current account"""
-        return self._find_account(self._account_id)
+    @cached_property_with_ttl(3600)
+    def accounts(self) -> List[Type[AdAccount]]:
+        """Find current accounts"""
+        return self._find_accounts()
 
-    @staticmethod
-    def _find_account(account_id: str) -> AdAccount:
-        """Actual implementation of find account"""
+    def _find_accounts(self) -> List[Type[AdAccount]]:
+        """Actual implementation of find accounts"""
         try:
-            accounts = fb_user.User(fbid="me").get_ad_accounts()
-            for account in accounts:
-                if account["account_id"] == account_id:
-                    return account
+            accounts_found = list(fb_user.User(fbid="me").get_ad_accounts())
+            if self.__config.account_selection_strategy_is_subset:
+                account_ids = self.__config.account_ids
+                accounts_found = list(
+                    filter(
+                        lambda x: not account_ids or x["account_id"] in account_ids,
+                        accounts_found
+                    )
+                )
+            return accounts_found
         except FacebookRequestError as exc:
             raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
-
-        raise FacebookAPIException("Couldn't find account with id {}".format(account_id))
