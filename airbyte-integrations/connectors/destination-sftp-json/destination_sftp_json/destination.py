@@ -5,18 +5,11 @@
 
 import traceback
 import uuid
-from typing import Mapping, Any, Iterable
+from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import (
-    AirbyteConnectionStatus,
-    ConfiguredAirbyteCatalog,
-    AirbyteMessage,
-    Status,
-    DestinationSyncMode,
-    Type,
-)
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_sftp_json.client import SftpClient
 
 
@@ -44,10 +37,7 @@ class DestinationSftpJson(Destination):
         """
         with SftpClient(**config) as writer:
             for configured_stream in configured_catalog.streams:
-                if (
-                    configured_stream.destination_sync_mode
-                    == DestinationSyncMode.overwrite
-                ):
+                if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                     writer.delete(configured_stream.stream.name)
 
             for message in input_messages:
@@ -63,9 +53,7 @@ class DestinationSftpJson(Destination):
                     # ignore other message types for now
                     continue
 
-    def check(
-        self, logger: AirbyteLogger, config: Mapping[str, Any]
-    ) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.

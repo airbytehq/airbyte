@@ -3,11 +3,9 @@
 #
 
 
-import json
-from pathlib import Path
-from typing import Any, Dict, List, Mapping
-from socket import socket
 import time
+from socket import socket
+from typing import Any, Dict, List, Mapping
 
 import docker
 import pytest
@@ -28,34 +26,30 @@ from destination_sftp_json import DestinationSftpJson
 from destination_sftp_json.client import SftpClient
 
 
-
 @pytest.fixture(scope="module")
 def docker_client():
     return docker.from_env()
 
+
 @pytest.fixture(name="config", scope="module")
 def config_fixture(docker_client):
     with socket() as s:
-        s.bind(('',0))
+        s.bind(("", 0))
         available_port = s.getsockname()[1]
 
-    config = {
-        "host": "0.0.0.0",
-        "port": available_port,
-        "username": "foo",
-        "password": "pass",
-        "destination_path": "upload"
-    }
+    config = {"host": "0.0.0.0", "port": available_port, "username": "foo", "password": "pass", "destination_path": "upload"}
     container = docker_client.containers.run(
         "atmoz/sftp",
-         f"{config['username']}:{config['password']}:::{config['destination_path']}",
+        f"{config['username']}:{config['password']}:::{config['destination_path']}",
         name="mysftp",
-        ports={22:config["port"]}, 
-        detach=True)
+        ports={22: config["port"]},
+        detach=True,
+    )
     time.sleep(20)
     yield config
     container.kill()
     container.remove()
+
 
 @pytest.fixture(name="configured_catalog")
 def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
@@ -93,9 +87,7 @@ def test_check_valid_config(config: Mapping):
 
 
 def test_check_invalid_config(config):
-    outcome = DestinationSftpJson().check(
-        AirbyteLogger(), {**config, "destination_path": "/doesnotexist"}
-    )
+    outcome = DestinationSftpJson().check(AirbyteLogger(), {**config, "destination_path": "/doesnotexist"})
     assert outcome.status == Status.FAILED
 
 
@@ -118,9 +110,7 @@ def _sort(messages: List[AirbyteRecordMessage]) -> List[AirbyteRecordMessage]:
     return sorted(messages, key=lambda x: x.record.stream)
 
 
-def retrieve_all_records(
-    client: SftpClient, streams: List[str]
-) -> List[AirbyteRecordMessage]:
+def retrieve_all_records(client: SftpClient, streams: List[str]) -> List[AirbyteRecordMessage]:
     """retrieves and formats all records on the SFTP server as Airbyte messages"""
     all_records = []
     for stream in streams:
@@ -132,9 +122,7 @@ def retrieve_all_records(
     return _sort(out)
 
 
-def test_write(
-    config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: SftpClient
-):
+def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: SftpClient):
     """
     This test verifies that:
         1. writing a stream in "overwrite" mode overwrites any existing data for that stream
@@ -147,9 +135,7 @@ def test_write(
     )
     streams = [append_stream, overwrite_stream]
     first_state_message = _state({"state": "1"})
-    first_record_chunk = [_record(append_stream, str(i), i) for i in range(5)] + [
-        _record(overwrite_stream, str(i), i) for i in range(5)
-    ]
+    first_record_chunk = [_record(append_stream, str(i), i) for i in range(5)] + [_record(overwrite_stream, str(i), i) for i in range(5)]
 
     second_state_message = _state({"state": "2"})
     second_record_chunk = [_record(append_stream, str(i), i) for i in range(5, 10)] + [
@@ -171,17 +157,11 @@ def test_write(
             ],
         )
     )
-    assert (
-        expected_states == output_states
-    ), "Checkpoint state messages were expected from the destination"
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
-    expected_records = [_record(append_stream, str(i), i) for i in range(10)] + [
-        _record(overwrite_stream, str(i), i) for i in range(10)
-    ]
+    expected_records = [_record(append_stream, str(i), i) for i in range(10)] + [_record(overwrite_stream, str(i), i) for i in range(10)]
     records_in_destination = retrieve_all_records(client, streams)
-    assert (
-        _sort(expected_records) == records_in_destination
-    ), "Records in destination should match records expected"
+    assert _sort(expected_records) == records_in_destination, "Records in destination should match records expected"
 
     # After this sync we expect the append stream to have 15 messages and the overwrite stream to have 5
     third_state_message = _state({"state": "3"})
@@ -189,11 +169,7 @@ def test_write(
         _record(overwrite_stream, str(i), i) for i in range(10, 15)
     ]
 
-    output_states = list(
-        destination.write(
-            config, configured_catalog, [*third_record_chunk, third_state_message]
-        )
-    )
+    output_states = list(destination.write(config, configured_catalog, [*third_record_chunk, third_state_message]))
     assert [third_state_message] == output_states
 
     records_in_destination = retrieve_all_records(client, streams)

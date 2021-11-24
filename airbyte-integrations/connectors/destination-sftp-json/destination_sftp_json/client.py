@@ -6,7 +6,7 @@
 import contextlib
 import errno
 import json
-from typing import TextIO, Dict, List
+from typing import Dict, List, TextIO
 
 import paramiko
 import smart_open

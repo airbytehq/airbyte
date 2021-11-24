@@ -8,12 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination SFTP JSON",
     "type": "object",
-    "required": [
-      "host",
-      "username",
-      "password",
-      "destination_path"
-    ],
+    "required": ["host", "username", "password", "destination_path"],
     "additionalProperties": false,
     "properties": {
       "host": {
