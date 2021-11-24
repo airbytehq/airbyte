@@ -6,7 +6,8 @@ import datetime
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from base_python.logger import AirbyteLogger
+
+from airbyte_cdk.logger import AirbyteLogger
 
 logger = AirbyteLogger()
 
