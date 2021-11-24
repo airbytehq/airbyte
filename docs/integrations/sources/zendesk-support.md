@@ -97,6 +97,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.8` | 2021-11-24 | [8224](https://github.com/airbytehq/airbyte/pull/8224) | dump error HTTP response to log |
 | `0.1.7` | 2021-11-23 | [8058](https://github.com/airbytehq/airbyte/pull/8058) | support AccessToken auth |
 | `0.1.6` | 2021-11-18 | [8050](https://github.com/airbytehq/airbyte/pull/8050) | Fix wrong types for schemas, add Transformer |
 | `0.1.5` | 2021-10-26 | [7679](https://github.com/airbytehq/airbyte/pull/7679) | Add ticket_id and ticket_comments |
