@@ -4,9 +4,9 @@ import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { useIntercom } from "react-use-intercom";
 
 import { Routes } from "packages/cloud/routes";
-// import { useConfig } from "config";
 
 import useWorkspace from "hooks/services/useWorkspace";
 import { Link } from "components";
@@ -97,9 +97,10 @@ const WorkspaceButton = styled.div`
 `;
 
 const SideBar: React.FC = () => {
-  // const config = useConfig();
   const { workspace } = useWorkspace();
   const { data: cloudWorkspace } = useGetWorkspace(workspace.workspaceId);
+  const { show } = useIntercom();
+  const handleChatUs = () => show();
 
   return (
     <Bar>
@@ -173,7 +174,7 @@ const SideBar: React.FC = () => {
               {
                 value: "chat",
                 label: (
-                  <Item>
+                  <Item onClick={handleChatUs}>
                     <Icon>
                       <ChatIcon />
                     </Icon>
