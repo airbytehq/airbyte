@@ -35,9 +35,10 @@ from source_facebook_marketing.streams import (
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
+    Videos,
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("airbyte")
 
 
 class InsightConfig(BaseModel):
@@ -144,6 +145,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsDma(**insights_args),
             AdsInsightsPlatformAndDevice(**insights_args),
             AdsInsightsActionType(**insights_args),
+            Videos(api=api, start_date=config.start_date, end_date=config.end_date, include_deleted=config.include_deleted),
         ]
 
         return self._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)

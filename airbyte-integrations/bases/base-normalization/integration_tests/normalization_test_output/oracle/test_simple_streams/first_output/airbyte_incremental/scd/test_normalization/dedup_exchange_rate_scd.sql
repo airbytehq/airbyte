@@ -4,11 +4,12 @@
   
   as
     
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 
 input_data as (
     select *
-    from test_normalization.dedup_exchange_rate_ab3
+    from test_normalization.dedup_exchange_rate_stg
     -- dedup_exchange_rate from test_normalization.airbyte_raw_dedup_exchange_rate
 ),
 
@@ -42,13 +43,13 @@ scd_data as (
             "DATE" desc,
             "_AIRBYTE_EMITTED_AT" desc
       ) as "_AIRBYTE_END_AT",
-      case when lag("DATE") over (
+      case when row_number() over (
         partition by id, currency, cast(nzd as varchar2(4000))
         order by
             "DATE" asc nulls last,
             "DATE" desc,
             "_AIRBYTE_EMITTED_AT" desc
-      ) is null  then 1 else 0 end as "_AIRBYTE_ACTIVE_ROW",
+      ) = 1 then 1 else 0 end as "_AIRBYTE_ACTIVE_ROW",
       "_AIRBYTE_AB_ID",
       "_AIRBYTE_EMITTED_AT",
       "_AIRBYTE_DEDUP_EXCHANGE_RATE_HASHID"

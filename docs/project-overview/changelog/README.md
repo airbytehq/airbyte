@@ -1,5 +1,189 @@
 # Changelog
 
+## 11/17/2021 Summary
+
+Hey Airbyte Community! Let's go over all the changes from v.32.1 and prior! But first, there's an important announcement I need to make about upgrading Airbyte to v.32.1.
+
+⚠️ WARNING ⚠️
+Upgrading to v.32.0 is equivalent to a major version bump. If your current version is v.32.0, you must upgrade to v.32.0 first before upgrading to any later version
+
+Keep in mind that this upgrade requires your all of your connector Specs to be retrievable, or Airbyte will fail on startup. You can force delete your connector Specs by setting the `VERSION_0_32_0_FORCE_UPGRADE` environment variable to `true`. Steps to specifically check out v.32.0 and details around this breaking change can be found [here](https://docs.airbyte.io/operator-guides/upgrading-airbyte#mandatory-intermediate-upgrade).
+
+*Now back to our regularly scheduled programming.*
+
+🎃 Hacktoberfest Submissions 🎃
+
+* New Destination: ScyllaDB (contributed by Ivica Taseski)
+* New Source: Azure Table Storage (contributed by geekwhocodes)
+* New Source: Linnworks (contributed by Juozas)
+
+* ✨ Source MySQL: Now has basic performance tests.
+* ✨ Source Salesforce: We now automatically transform and handle incorrect data for the anyType and calculated types.
+
+* 🐛 IBM Db2 Source: Now handles conversion from DECFLOAT to BigDecimal correctly.
+* 🐛 MSSQL Source: Now handles VARBINARY correctly.
+* 🐛 CockroachDB Source: Improved parsing of various data types.
+
+As usual, thank you so much to our wonderful contributors this week that have made Airbyte into what it is today: Achmad Syarif Hidayatullah, Tuan Nguyen, Ivica Taseski, Hai To, Juozas, gunu, Shadab, Per-Victor Persson, and Harsha Teja Kanna!
+
+## 11/11/2021 Summary
+
+Time to go over changes from v.30.39! And... let's get another update on Hacktoberfest.
+
+🎃 Hacktoberfest Submissions 🎃
+
+* New Destination: Cassandra (contributed by Ivica Taseski)
+* New Destination: Pulsar (contributed by Mario Molina)
+* New Source: Confluence (contributed by Tuan Nguyen)
+* New Source: Monday (contributed by Tuan Nguyen)
+* New Source: Commerce Tools (contributed by James Wilson)
+* New Source: Pinterest Marketing (contributed by us!)
+
+* ✨ Shopify Source: Now supports the FulfillmentOrders and Fulfillments streams.
+* ✨ Greenhouse Source: Now supports the Demographics stream.
+* ✨ Recharge Source: Broken requests should now be re-requested with improved backoff.
+* ✨ Stripe Source: Now supports the checkout_sessions, checkout_sessions_line_item, and promotion_codes streams.
+* ✨ Db2 Source: Now supports SSL.
+
+* 🐛 We've made some updates to incremental normalization to fix some outstanding issues. [Details](https://github.com/airbytehq/airbyte/pull/7669)
+* 🐛 Airbyte Server no longer crashes due to too many open files.
+* 🐛 MSSQL Source: Data type conversion with smalldatetime and smallmoney works correctly now.
+* 🐛 Salesforce Source: anyType fields can now be retrieved properly with the BULK API
+* 🐛 BigQuery-Denormalized Destination: Fixed JSON parsing with $ref fields.
+
+As usual, thank you to our awesome contributors that have done awesome work during the last week: Tuan Nguyen, Harsha Teja Kanna, Aaditya S, James Wilson, Vladimir Remar, Yuhui Shi, Mario Molina, Ivica Taseski, Collin Scangarella, and haoranyu!
+
+## 11/03/2021 Summary
+
+It's patch notes time. Let's go over the changes from 0.30.24 and before. But before we do, let's get a quick update on how Hacktober is going!
+
+🎃 Hacktoberfest Submissions 🎃
+
+* New Destination: Elasticsearch (contributed by Jeremy Branham)
+* New Source: Salesloft (contributed by Pras)
+* New Source: OneSignal (contributed by Bo)
+* New Source: Strava (contributed by terencecho)
+* New Source: Lemlist (contributed by Igli Koxha)
+* New Source: Amazon SQS (contributed by Alasdair Brown)
+* New Source: Freshservices (contributed by Tuan Nguyen)
+* New Source: Freshsales (contributed by Tuan Nguyen)
+* New Source: Appsflyer (contributed by Achmad Syarif Hidayatullah)
+* New Source: Paystack (contributed by Foluso Ogunlana)
+* New Source: Sentry (contributed by koji matsumoto)
+* New Source: Retently (contributed by Subhash Gopalakrishnan)
+* New Source: Delighted! (contributed by Rodrigo Parra)
+
+with 18 more currently in review...
+
+🎉 **Incremental Normalization is here!** 🎉
+
+💎 Basic normalization no longer runs on already normalized data, making it way faster and cheaper. :gem:
+
+🎉 **Airbyte Compiles on M1 Macs!**
+
+Airbyte developers with M1 chips in their MacBooks can now compile the project and run the server. This is a major step towards being able to fully run Airbyte on M1. (contributed by Harsha Teja Kanna)
+
+* ✨ BigQuery Destination: You can now run transformations in batches, preventing queries from hitting BigQuery limits. (contributed by Andrés Bravo)
+* ✨ S3 Source: Memory and Performance optimizations, also some fancy new PyArrow CSV configuration options.
+* ✨ Zuora Source: Now supports Unlimited as an option for the Data Query Live API.
+* ✨ Clickhouse Source: Now supports SSL and connection via SSH tunneling.
+
+* 🐛 Oracle Source: Now handles the LONG RAW data type correctly.
+* 🐛 Snowflake Source: Fixed parsing of extreme values for FLOAT and NUMBER data types.
+* 🐛 Hubspot Source: No longer fails due to lengthy URI/URLs.
+* 🐛 Zendesk Source: The chats stream now pulls data past the first page.
+* 🐛 Jira Source: Normalization now works as expected.
+
+As usual, thank you to our awesome contributors that have done awesome work during this productive spooky season: Tuan Nguyen, Achmad Syarif Hidayatullah, Christopher Wu, Andrés Bravo, Harsha Teja Kanna, Collin Scangarella, haoranyu, koji matsumoto, Subhash Gopalakrishnan, Jeremy Branham, Rodrigo Parra, Foluso Ogunlana, EdBizarro, Gergely Lendvai, Rodeoclash, terencecho, Igli Koxha, Alasdair Brown, bbugh, Pras, Bo, Xiangxuan Liu, Hai To, s-mawjee, Mario Molina, SamyPesse, Yuhui Shi, Maciej Nędza, Matt Hoag, and denis-sokolov!
+
+## 10/20/2021 Summary
+
+It's patch notes time! Let's go over changes from 0.30.16! But before we do... I want to remind everyone that Airbyte Hacktoberfest is currently taking place! For every connector that is merged into our codebase, you'll get $500, so make sure to submit before the hackathon ends on November 19th.
+
+* 🎉 New Source: WooCommerce (contributed by James Wilson)
+* 🎉 K8s deployments: Worker image pull policy is now configurable (contributed by Mario Molina)
+
+* ✨ MSSQL destination: Now supports basic normalization
+* 🐛 LinkedIn Ads source: Analytics streams now work as expected.
+
+We've had a lot of contributors over the last few weeks, so I'd like to thank all of them for their efforts: James Wilson, Mario Molina, Maciej Nędza, Pras, Tuan Nguyen, Andrés Bravo, Christopher Wu, gunu, Harsha Teja Kanna, Jonathan Stacks, darian, Christian Gagnon, Nicolas Moreau, Matt Hoag, Achmad Syarif Hidayatullah, s-mawjee, SamyPesse, heade, zurferr, denis-solokov, and aristidednd!
+
+## 09/29/2021 Summary
+
+It's patch notes time, let's go over the changes from our new minor version, v0.30.0. As usual, bug fixes are in the thread.
+
+* New source: LinkedIn Ads
+* New source: Kafka
+* New source: Lever Hiring
+
+* 🎉 New License: Nothing changes for users of Airbyte/contributors. You just can't sell your own Airbyte Cloud!
+
+* 💎 New API endpoint: You can now call connections/search in the web backend API to search sources and destinations. (contributed by Mario Molina)
+* 💎 K8s: Added support for ImagePullSecrets for connector images.
+* 💎 MSSQL, Oracle, MySQL sources & destinations: Now support connection via SSH (Bastion server)
+
+* ✨ MySQL destination: Now supports connection via TLS/SSL
+* ✨ BigQuery (denormalized) destination: Supports reading BigQuery types such as date by reading the format field (contributed by Nicolas Moreau)
+* ✨ Hubspot source: Added contacts associations to the deals stream.
+* ✨ GitHub source: Now supports pulling commits from user-specified branches.
+* ✨ Google Search Console source: Now accepts admin email as input when using a service account key.
+* ✨ Greenhouse source: Now identifies API streams it has access to if permissions are limited.
+* ✨ Marketo source: Now Airbyte native.
+* ✨ S3 source: Now supports any source that conforms to the S3 protocol (Non-AWS S3).
+* ✨ Shopify source: Now reports pre_tax_price on the line_items stream if you have Shopify Plus.
+* ✨ Stripe source: Now actually uses the mandatory start_date config field for incremental syncs.
+
+* 🏗 Python CDK: Now supports passing custom headers to the requests in OAuth2, enabling token refresh calls.
+* 🏗 Python CDK: Parent streams can now be configured to cache data for their child streams.
+* 🏗 Python CDK: Now has a Transformer class that can cast record fields to the data type expected by the schema.
+
+* 🐛 Amplitude source: Fixed schema for date-time objects.
+* 🐛 Asana source: Schema fixed for the sections, stories, tasks, and users streams.
+* 🐛 GitHub source: Added error handling for streams not applicable to a repo. (contributed by Christopher Wu)
+* 🐛 Google Search Console source: Verifies access to sites when performing the connection check.
+* 🐛 Hubspot source: Now conforms to the V3 API, with streams such as owners reflecting the new fields.
+* 🐛 Intercom source: Fixed data type for the updated_at field. (contributed by Christian Gagnon)
+* 🐛 Iterable source: Normalization now works as expected.
+* 🐛 Pipedrive source: Schema now reflects the correct types for date/time fields.
+* 🐛 Stripe source: Incorrect timestamp formats removed for coupons and subscriptions streams.
+* 🐛 Salesforce source: You can now sync more than 10,000 records with the Bulk API.
+* 🐛 Snowflake destination: Now accepts any date-time format with normalization.
+* 🐛 Snowflake destination: Inserts are now split into batches to accommodate for large data loads.
+
+Thank you to our awesome contributors. Y'all are amazing: Mario Molina, Pras, Vladimir Remar, Christopher Wu, gunu, Juliano Benvenuto Piovezan, Brian M, Justinas Lukasevicius, Jonathan Stacks, Christian Gagnon, Nicolas Moreau, aristidednd, camro, minimax75, peter-mcconnell, and sashkalife!
+
+## 09/16/2021 Summary
+
+Now let's get to the 0.29.19 changelog. As with last time, bug fixes are in the thread!
+
+* New Destination: Databricks 🎉
+* New Source: Google Search Console
+* New Source: Close.com
+
+* 🏗 Python CDK: Now supports auth workflows involving query params.
+* 🏗 Java CDK: You can now run the connector gradle build script on Macs with M1 chips! (contributed by @Harsha Teja Kanna)
+
+* 💎 Google Ads source: You can now specify user-specified queries in GAQL.
+* ✨ GitHub source: All streams with a parent stream use cached parent stream data when possible.
+* ✨ Shopify source: Substantial performance improvements to the incremental sync mode.
+* ✨ Stripe source: Now supports the PaymentIntents stream.
+* ✨ Pipedrive source: Now supports the Organizations stream.
+* ✨ Sendgrid source: Now supports the SingleSendStats stream.
+* ✨ Bing Ads source: Now supports the Report stream.
+* ✨ GitHub source: Now supports the Reactions stream.
+* ✨ MongoDB source: Now Airbyte native!
+* 🐛 Facebook Marketing source: Numeric values are no longer wrapped into strings.
+* 🐛 Facebook Marketing source: Fetching conversion data now works as expected. (contributed by @Manav)
+* 🐛 Keen destination: Timestamps are now parsed correctly.
+* 🐛 S3 destination: Parquet schema parsing errors are fixed.
+* 🐛 Snowflake destination: No longer syncs unnecessary tables with S3.
+* 🐛 SurveyMonkey source: Cached responses are now decoded correctly.
+* 🐛 Okta source: Incremental sync now works as expected.
+
+Also, a quick shout out to Jinni Gu and their team who made the DynamoDB destination that we announced last week!
+
+As usual, thank you to all of our contributors: Harsha Teja Kanna, Manav, Maciej Nędza, mauro, Brian M, Iakov Salikov, Eliziario (Marcos Santos), coeurdestenebres, and mohammadbolt.
+
 ## 09/09/2021 Summary
 
 We're going over the changes from 0.29.17 and before... and there's a lot of big improvements here, so don't miss them!
@@ -29,8 +213,8 @@ We're going over the changes from 0.29.17 and before... and there's a lot of big
 * 🐛 Slack source: Sync operations no longer hang indefinitely.
 * 🐛 Jira source: Now uses updated time as the cursor field for incremental sync instead of the created time.
 * 🐛 Intercom source: Fixed inconsistency between schema and output data.
-* 🐛 Hubspot source: Streams with the items property now have their schemas fixed.
-* 🐛 Hubspot source: Empty strings are no longer handled as dates, fixing the deals, companies, and contacts streams.
+* 🐛 HubSpot source: Streams with the items property now have their schemas fixed.
+* 🐛 HubSpot source: Empty strings are no longer handled as dates, fixing the deals, companies, and contacts streams.
 * 🐛 Typeform source: Allows for multiple choices in responses now.
 * 🐛 Shopify source: The type for the amount field is now fixed in the schema.
 * 🐛 Postgres destination: \u0000\(NULL\) value processing is now fixed.
@@ -42,7 +226,7 @@ As usual... thank you to our wonderful contributors this week: Pras, Christopher
 Got the changes from 0.29.13... with some other surprises!
 
 * 🔥 There's a new way to create Airbyte sources! The team at Faros AI has created a Javascript/Typescript CDK which can be found here and in our docs here. This is absolutely awesome and give a huge thanks to Chalenge Masekera, Christopher Wu, eskrm, and Matthew Tovbin!
-* ✨ New Destination: Azure Blob Storage :sparkles:
+* ✨ New Destination: Azure Blob Storage ✨
 
 **New Source**: Bamboo HR \(contributed by @Oren Haliva\) **New Source**: BigCommerce \(contributed by @James Wilson\) **New Source**: Trello **New Source**: Google Analytics V4 **New Source**: Amazon Ads
 
@@ -61,7 +245,7 @@ New Source: Short.io \(contributed by @Apostol Tegko\)
 * 💎 GitHub source: Added support for rotating through multiple API tokens!
 * ✨ Syncs are now scheduled with a 3 day timeout \(contributed by @Vladimir Remar\).
 * ✨ Google Ads source: Added UserLocationReport stream \(contributed by @Max Krog\).
-* ✨ Cart source: Added the order\_items stream.
+* ✨ Cart.com source: Added the order\_items stream.
 * 🐛 Postgres source: Fixed out-of-memory issue with CDC interacting with large JSON blobs.
 * 🐛 Intercom source: Pagination now works as expected.
 
@@ -83,7 +267,7 @@ New Destination: Keen
 * ✨ Shopify source: The `status` property is now in the `Products` stream.
 * ✨ Amazon Seller Partner source: Added support for `GET_MERCHANT_LISTINGS_ALL_DATA` and `GET_FBA_INVENTORY_AGED_DATA` stream endpoints.
 * ✨ GitHub source: Existing streams now don't minify the user property.
-* ✨ Hubspot source: Updated user-defined custom field schema generation.
+* ✨ HubSpot source: Updated user-defined custom field schema generation.
 * ✨ Zendesk source: Migrated from Singer to the Airbyte CDK.
 * ✨ Amazon Seller Partner source: Migrated to the Airbyte CDK.
 * 🐛 Shopify source: Fixed the `products` schema to be in accordance with the API.
@@ -257,7 +441,8 @@ Airbyte is comprised of 2 parts:
 
 The "production" version of Airbyte is the version of the app specified in `.env`. With each production release, we update the version in the `.env` file. This version will always be available for download on DockerHub. It is the version of the app that runs when a user runs `docker-compose up`.
 
-The "development" version of Airbyte is the head of master branch. It is the version of the app that runs when a user runs `./gradlew composeBuild && VERSION=dev docker compose up`.
+The "development" version of Airbyte is the head of master branch. It is the version of the app that runs when a user runs `./gradlew build && 
+VERSION=dev docker compose up`.
 
 ### Production Release Schedule
 

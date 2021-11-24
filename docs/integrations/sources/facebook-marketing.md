@@ -96,6 +96,11 @@ As a summary, custom insights allows to replicate only some fields, resulting in
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.26  | 2021-11-19 | [7855](https://github.com/airbytehq/airbyte/pull/7855) | Add Video stream |
+| 0.2.25  | 2021-11-12 | [7904](https://github.com/airbytehq/airbyte/pull/7904) | Implement retry logic for async jobs |
+| 0.2.24  | 2021-11-09 | [7744](https://github.com/airbytehq/airbyte/pull/7744) | Fix fail when async job takes too long |
+| 0.2.23  | 2021-11-08 | [7734](https://github.com/airbytehq/airbyte/pull/7734) | Resolve $ref field for discover schema |
+| 0.2.22  | 2021-11-05 | [7605](https://github.com/airbytehq/airbyte/pull/7605) | Add job retry logics to AdsInsights stream |
 | 0.2.21  | 2021-10-05 | [4864](https://github.com/airbytehq/airbyte/pull/4864) | Update insights streams with custom entries for fields, breakdowns and action_breakdowns |
 | 0.2.20 | 2021-10-04 | [6719](https://github.com/airbytehq/airbyte/pull/6719) | Update version of facebook\_bussiness package to 12.0 |
 | 0.2.19 | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification |
