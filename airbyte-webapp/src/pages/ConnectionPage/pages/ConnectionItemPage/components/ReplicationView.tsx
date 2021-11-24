@@ -27,7 +27,7 @@ type IProps = {
 
 const Content = styled.div`
   max-width: 1279px;
-  margin: 18px auto;
+  margin: 0 auto;
   padding-bottom: 10px;
 `;
 

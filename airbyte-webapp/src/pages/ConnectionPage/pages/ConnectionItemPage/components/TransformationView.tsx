@@ -8,7 +8,7 @@ type TransformationViewProps = {};
 
 const Content = styled.div`
   max-width: 1073px;
-  margin: 18px auto;
+  margin: 0 auto;
   padding-bottom: 10px;
 `;
 

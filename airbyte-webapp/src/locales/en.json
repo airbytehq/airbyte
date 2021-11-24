@@ -275,6 +275,7 @@
   "syncMode.incremental": "Incremental",
 
   "connection.warningUpdateSchema": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch.",
+  "connection.title": "Connection",
   "connection.fromTo": "{source} → {destination}",
   "connection.connectionSettings": "Connection settings",
   "connection.testsPassed": "All connection tests passed",

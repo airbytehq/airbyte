@@ -27,7 +27,7 @@ type IProps = {
 };
 
 const Content = styled.div`
-  margin: 18px 10px;
+  margin: 0 10px;
 `;
 
 const StyledContentCard = styled(ContentCard)`

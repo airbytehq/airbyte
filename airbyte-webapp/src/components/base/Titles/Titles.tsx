@@ -4,17 +4,18 @@ type IProps = {
   center?: boolean;
   bold?: boolean;
   parentColor?: boolean;
+  highlighted?: boolean;
 };
 
 export const H1 = styled.h1<IProps>`
   font-size: ${({ theme }) => theme.h1?.fontSize || "28px"};
   line-height: ${({ theme }) => theme.h1?.lineHeight || "34px"};
   font-style: normal;
-  font-weight: ${(props) => (props.bold ? 600 : 500)};
+  font-weight: ${(props) => (props.bold ? "bold" : 500)};
   display: block;
   text-align: ${(props) => (props.center ? "center" : "left")};
-  color: ${({ theme, parentColor }) =>
-    parentColor ? "inherid" : theme.textColor};
+  color: ${({ theme, parentColor, highlighted }) =>
+    parentColor ? "inherid" : highlighted ? theme.redColor : theme.textColor};
   margin: 0;
 `;
 
@@ -36,5 +37,9 @@ export const H4 = styled(H1).attrs({ as: "h4" })`
 export const H5 = styled(H1).attrs({ as: "h5" })`
   font-size: ${({ theme }) => theme.h5?.fontSize || "16px"};
   line-height: ${({ theme }) => theme.h5?.lineHeight || "28px"};
-  font-weight: normal;
+`;
+
+export const H6 = styled(H1).attrs({ as: "h6" })`
+  font-size: ${({ theme }) => theme.h5?.fontSize || "14px"};
+  line-height: ${({ theme }) => theme.h5?.lineHeight || "17px"};
 `;

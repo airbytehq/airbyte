@@ -1,20 +1,16 @@
 import React, { Suspense } from "react";
-import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import PageTitle from "components/PageTitle";
 import HeadTitle from "components/HeadTitle";
 import useRouter from "hooks/useRouter";
-import StepsMenu from "components/StepsMenu";
 import StatusView from "./components/StatusView";
 import TransformationView from "./components/TransformationView";
 import SettingsView from "./components/SettingsView";
+import ConnectionPageTitle from "./components/ConnectionPageTitle";
 import ConnectionResource from "core/resources/Connection";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import FrequencyConfig from "config/FrequencyConfig.json";
-import Link from "components/Link";
-import { Routes } from "../../../routes";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { equal } from "utils/objects";
@@ -28,7 +24,8 @@ type ConnectionItemPageProps = {
 const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   currentStep,
 }) => {
-  const { query, push } = useRouter<{ id: string }>();
+  const { query } = useRouter<{ id: string }>();
+
   const analyticsService = useAnalyticsService();
   const connection = useResource(ConnectionResource.detailShape(), {
     connectionId: query.id,
@@ -57,43 +54,6 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
         }
       : null
   );
-
-  const steps = [
-    {
-      id: "status",
-      name: <FormattedMessage id={"sources.status"} />,
-    },
-    {
-      id: "replication",
-      name: <FormattedMessage id={"connection.replication"} />,
-    },
-    {
-      id: "transformation",
-      name: <FormattedMessage id={"connectionForm.transformation.title"} />,
-    },
-    {
-      id: "settings",
-      name: <FormattedMessage id={"sources.settings"} />,
-    },
-  ];
-
-  const onSelectStep = (id: string) => {
-    if (id === "settings") {
-      push(
-        `${Routes.Connections}/${connection.connectionId}${Routes.Settings}`
-      );
-    } else if (id === "replication") {
-      push(
-        `${Routes.Connections}/${connection.connectionId}${Routes.Replication}`
-      );
-    } else if (id === "transformation") {
-      push(
-        `${Routes.Connections}/${connection.connectionId}${Routes.Transformation}`
-      );
-    } else {
-      push(`${Routes.Connections}/${connection.connectionId}`);
-    }
-  };
 
   const onAfterSaveSchema = () => {
     analyticsService.track("Source - Action", {
@@ -132,18 +92,6 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
     return <SettingsView connectionId={connection.connectionId} />;
   };
 
-  const linkToSource = () => (
-    <Link $clear to={`${Routes.Source}/${source.sourceId}`}>
-      {source.name}
-    </Link>
-  );
-
-  const linkToDestination = () => (
-    <Link $clear to={`${Routes.Destination}/${destination.destinationId}`}>
-      {destination.name}
-    </Link>
-  );
-
   return (
     <MainPageWithScroll
       headTitle={
@@ -161,25 +109,11 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
         />
       }
       pageTitle={
-        <PageTitle
-          withLine
-          title={
-            <FormattedMessage
-              id="connection.fromTo"
-              values={{
-                source: linkToSource(),
-                destination: linkToDestination(),
-              }}
-            />
-          }
-          middleComponent={
-            <StepsMenu
-              lightMode
-              data={steps}
-              onSelect={onSelectStep}
-              activeStep={currentStep}
-            />
-          }
+        <ConnectionPageTitle
+          source={source}
+          destination={destination}
+          currentStep={currentStep}
+          connectionId={connection.connectionId}
         />
       }
     >

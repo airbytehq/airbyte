@@ -10,8 +10,7 @@ type IProps = {
 
 const Content = styled.div`
   max-width: 647px;
-  height: 100%;
-  margin: 18px auto;
+  margin: 0 auto;
   padding-bottom: 10px;
 `;
 
