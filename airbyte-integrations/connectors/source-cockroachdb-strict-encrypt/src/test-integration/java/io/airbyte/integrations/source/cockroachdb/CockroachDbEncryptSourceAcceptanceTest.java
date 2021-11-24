@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -25,29 +26,26 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
-import org.testcontainers.containers.CockroachContainer;
 
-public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
+public class CockroachDbEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
 
-  private CockroachContainer container;
+  private CockroachDbSslTestContainer container;
   private JsonNode config;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new CockroachContainer("cockroachdb/cockroach:v20.2.18");
+    container = new CockroachDbSslTestContainer();
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        // by some reason it return not a port number as exposed and mentioned in logs
-        .put("port", container.getFirstMappedPort() - 1)
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("ssl", false)
+        .put("host", container.getCockroachSslDbContainer().getHost())
+        .put("port", container.getCockroachSslDbContainer().getFirstMappedPort())
+        .put("database", "defaultdb")
+        .put("username", "test_user")
+        .put("password", "test_user")
         .build());
 
     final Database database = Databases.createDatabase(
@@ -80,12 +78,12 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-cockroachdb:dev";
+    return "airbyte/source-cockroachdb-strict-encrypt:dev";
   }
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+    return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
   }
 
   @Override
