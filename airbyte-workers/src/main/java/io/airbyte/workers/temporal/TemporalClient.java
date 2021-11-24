@@ -21,6 +21,8 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
+import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterWorkflow;
+import io.airbyte.workers.temporal.scheduling.SyncResult;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.client.WorkflowClient;
@@ -113,6 +115,15 @@ public class TemporalClient {
             destinationLauncherConfig,
             input,
             connectionId));
+  }
+
+  public TemporalResponse<SyncResult> submitConnectionUpdater() {
+    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowStub(ConnectionUpdaterWorkflow.class,
+        TemporalJobType.CONNECTION_UPDATER);
+    // TODO: proper jobId
+    final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig("connection_id", 3);
+
+    return execute(jobRunConfig, () -> connectionUpdaterWorkflow.run());
   }
 
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {

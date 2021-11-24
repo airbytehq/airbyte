@@ -55,18 +55,17 @@ class TemporalWorkerRunFactoryTest {
     when(job.getScope()).thenReturn(CONNECTION_ID.toString());
   }
 
-  @SuppressWarnings("unchecked")
-  @Test
-  void testSync() throws Exception {
-    when(job.getConfigType()).thenReturn(ConfigType.SYNC);
-    final TemporalResponse<StandardSyncOutput> mockResponse = mock(TemporalResponse.class);
-    when(temporalClient.submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync(), CONNECTION_ID)).thenReturn(mockResponse);
-
-    final WorkerRun workerRun = workerRunFactory.create(job);
-    workerRun.call();
-    verify(temporalClient).submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync(), CONNECTION_ID);
-    assertEquals(jobRoot, workerRun.getJobRoot());
-  }
+  // @SuppressWarnings("unchecked")
+  /*
+   * @Test void testSync() throws Exception { when(job.getConfigType()).thenReturn(ConfigType.SYNC);
+   * final TemporalResponse<StandardSyncOutput> mockResponse = mock(TemporalResponse.class);
+   * when(temporalClient.submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync(),
+   * CONNECTION_ID)).thenReturn(mockResponse);
+   *
+   * final WorkerRun workerRun = workerRunFactory.create(job); workerRun.call();
+   * verify(temporalClient).submitSync(JOB_ID, ATTEMPT_ID, job.getConfig().getSync(), CONNECTION_ID);
+   * assertEquals(jobRoot, workerRun.getJobRoot()); }
+   */
 
   @SuppressWarnings("unchecked")
   @Test

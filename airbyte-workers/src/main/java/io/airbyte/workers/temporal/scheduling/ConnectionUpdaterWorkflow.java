@@ -18,7 +18,8 @@ public interface ConnectionUpdaterWorkflow {
   void updateSchedule(SchedulingInput input);
 
   @SignalMethod
-  ManualSyncOutput submitManualSync();
+  // Maybe query to have a return type??
+  void submitManualSync();
 
   @SignalMethod
   void deleteConnection();

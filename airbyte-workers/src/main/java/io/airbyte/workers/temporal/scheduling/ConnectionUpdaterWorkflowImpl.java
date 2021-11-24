@@ -5,7 +5,8 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
-import io.temporal.workflow.ChildWorkflowCancellationType;
+import io.temporal.api.enums.v1.ParentClosePolicy;
+import io.temporal.workflow.CancellationScope;
 import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
@@ -18,6 +19,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private boolean isRunning = false;
   private boolean isDeleted = false;
   private final boolean skipScheduling = false;
+  // private Optional<SyncWorkflow> childSync = Optional.empty();
+  CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
   @Override
   public SyncResult run() {
@@ -30,12 +33,14 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
     // TODO: Fetch config (maybe store it in GCS)
     log.info("Starting child WF");
-    Workflow.newChildWorkflowStub(SyncWorkflow.class,
+
+    final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
             // This will cancel the child workflow when the parent is terminated
-            .setCancellationType(ChildWorkflowCancellationType.TRY_CANCEL)
-            .build()
-    );
+            .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_ABANDON)
+            .build());
+
+    syncWorkflowCancellationScope = Workflow.newCancellationScope(() -> childSync.run(null, null, null, null, null));
 
     if (isDeleted) {
       return new SyncResult(true);
@@ -52,20 +57,21 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   }
 
   @Override
-  public ManualSyncOutput submitManualSync() {
+  public void submitManualSync() {
     if (isRunning) {
       log.info("Can't schedule a manual workflow is a sync is running for this connection");
-      return new ManualSyncOutput(false);
+      // return new ManualSyncOutput(false);
     }
 
     isRunning = true;
     canStart = true;
 
-    return new ManualSyncOutput(true);
+    // return new ManualSyncOutput(true);
   }
 
   @Override
   public void deleteConnection() {
+    syncWorkflowCancellationScope.cancel("The parent workflow got deleted");
     canStart = false;
     isDeleted = true;
   }

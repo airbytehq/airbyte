@@ -19,6 +19,7 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalResponse;
+import io.airbyte.workers.temporal.scheduling.SyncResult;
 import java.nio.file.Path;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -48,12 +49,12 @@ public class TemporalWorkerRunFactory {
     final UUID connectionId = UUID.fromString(job.getScope());
     return switch (job.getConfigType()) {
       case SYNC -> () -> {
-        final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(
-            job.getId(),
-            attemptId,
-            job.getConfig().getSync(),
-            connectionId);
-        return toOutputAndStatus(output);
+        /*
+         * final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync( job.getId(),
+         * attemptId, job.getConfig().getSync(), connectionId); return toOutputAndStatus(output);
+         */
+
+        return toOutputAndStatusConnector(temporalClient.submitConnectionUpdater());
       };
       case RESET_CONNECTION -> () -> {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
@@ -69,6 +70,7 @@ public class TemporalWorkerRunFactory {
             .withOperationSequence(resetConnection.getOperationSequence())
             .withResourceRequirements(resetConnection.getResourceRequirements());
 
+        // TODO: Signal method?
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(), attemptId, config, connectionId);
         return toOutputAndStatus(output);
       };
@@ -98,6 +100,18 @@ public class TemporalWorkerRunFactory {
       }
     }
     return new OutputAndStatus<>(status, new JobOutput().withSync(response.getOutput().orElse(null)));
+  }
+
+  private OutputAndStatus<JobOutput> toOutputAndStatusConnector(final TemporalResponse<SyncResult> response) {
+    final JobStatus status = JobStatus.SUCCEEDED;
+    /*
+     * if (!response.isSuccess()) { status = JobStatus.FAILED; } else { final ReplicationStatus
+     * replicationStatus = response.getOutput().orElseThrow().getStandardSyncSummary().getStatus(); if
+     * (replicationStatus == ReplicationStatus.FAILED || replicationStatus ==
+     * ReplicationStatus.CANCELLED) { status = JobStatus.FAILED; } else { status = JobStatus.SUCCEEDED;
+     * } }
+     */
+    return new OutputAndStatus<>(status, new JobOutput().withSync(null));
   }
 
 }
