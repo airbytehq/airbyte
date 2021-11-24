@@ -69,7 +69,7 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
                 LOGGER.info("sleeping for {} ms", sleepTime.get());
                 sleep(sleepTime.get());
               } catch (final InterruptedException e) {
-                throw new RuntimeException();
+                throw new RuntimeException(e);
               }
             }
           }
