@@ -123,8 +123,8 @@ export const Routing: React.FC = () => {
 
   const analyticsContext = useMemo(
     () => ({
-      workspaceId: workspace.workspaceId,
-      customerId: workspace.customerId,
+      workspace_id: workspace.workspaceId,
+      customer_id: workspace.customerId,
     }),
     [workspace.workspaceId, workspace.customerId]
   );
