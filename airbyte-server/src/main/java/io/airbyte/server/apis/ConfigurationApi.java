@@ -123,11 +123,8 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
-import javax.validation.Valid;
 import javax.ws.rs.GET;
-import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import org.eclipse.jetty.http.HttpStatus;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
