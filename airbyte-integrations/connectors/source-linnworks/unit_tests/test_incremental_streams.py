@@ -6,6 +6,7 @@
 import json
 import os
 from unittest.mock import MagicMock
+from airbyte_cdk.sources.streams.http.http import HttpSubStream
 
 import pendulum
 import pytest
@@ -217,24 +218,28 @@ def test_processed_orders_request_cache(patch_incremental_base_class, mocker):
 
 
 @pytest.mark.parametrize(
-    ("count"),
+    ("count", "stream_state"),
     [
-        (5),
-        (205),
+        (5, None),
+        (205, None),
+        (5, {"ProcessedDateTime": "a-date"}),
     ],
 )
-def test_processed_order_details_stream_slices(patch_incremental_base_class, mocker, count):
-    parent_records = [{"pkOrderID": str(n)} for n in range(count)]
-
-    mocker.patch.object(ProcessedOrders, "stream_slices", MagicMock(return_value=[{}]))
-    mocker.patch.object(ProcessedOrders, "read_records", MagicMock(return_value=parent_records))
+def test_processed_order_details_stream_slices(patch_incremental_base_class, mocker, count, stream_state):
+    parent_stream_slices = MagicMock(return_value=[{"parent": {"pkOrderID": str(n)}} for n in range(count)])
+    mocker.patch.object(HttpSubStream, "stream_slices", parent_stream_slices)
 
     stream = ProcessedOrderDetails()
     expected_slices = [[str(m) for m in range(count)[i : i + stream.page_size]] for i in range(0, count, stream.page_size)]
 
-    stream_slices = stream.stream_slices(sync_mode=SyncMode.full_refresh)
+    stream_slices = stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)
 
     assert list(stream_slices) == list(expected_slices)
+
+    actual_state = parent_stream_slices.call_args.kwargs["stream_state"]
+    if actual_state:
+        assert actual_state["dProcessedOn"] == stream_state["ProcessedDateTime"]
+
 
 
 def test_processed_order_details_request_body_data(patch_incremental_base_class):

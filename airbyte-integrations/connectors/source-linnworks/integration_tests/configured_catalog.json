@@ -1772,7 +1772,7 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["dProcessedOn"],
+        "default_cursor_field": ["ProcessedDateTime"],
         "source_defined_primary_key": [["NumOrderId"]]
       },
       "sync_mode": "incremental",

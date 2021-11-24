@@ -261,7 +261,7 @@ class ProcessedOrderDetails(HttpSubStream, IncrementalLinnworksStream):
     # Response: List<OrderDetails> https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-OrderManagement-ClassBase-OrderDetails
     # Allows 250 calls per minute
     primary_key = "NumOrderId"
-    cursor_field = "dProcessedOn"
+    cursor_field = "ProcessedDateTime"
     page_size = 100
 
     def __init__(self, **kwargs):
@@ -270,9 +270,13 @@ class ProcessedOrderDetails(HttpSubStream, IncrementalLinnworksStream):
     def path(self, **kwargs) -> str:
         return "/api/Orders/GetOrdersById"
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        parent_stream_state = None
+        if stream_state:
+            parent_stream_state = {"dProcessedOn": stream_state["ProcessedDateTime"]}
+
         buffer = []
-        for slice in HttpSubStream.stream_slices(self, **kwargs):
+        for slice in HttpSubStream.stream_slices(self, stream_state=parent_stream_state, **kwargs):
             buffer.append(slice["parent"]["pkOrderID"])
             if len(buffer) == self.page_size:
                 yield buffer
