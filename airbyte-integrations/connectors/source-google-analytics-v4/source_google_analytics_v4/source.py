@@ -502,7 +502,10 @@ class SourceGoogleAnalyticsV4(AbstractSource):
             read_check = list(TestStreamConnection(config).read_records(sync_mode=None))
             if read_check:
                 return True, None
-            return False, f"Please check the permissions for the requested view_id: {config['view_id']}. Cannot retrieve data from that view ID."
+            return (
+                False,
+                f"Please check the permissions for the requested view_id: {config['view_id']}. Cannot retrieve data from that view ID.",
+            )
 
         except ValueError as e:
             return False, f"Invalid custom reports json structure. {e}"
