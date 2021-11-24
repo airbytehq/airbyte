@@ -41,13 +41,6 @@
         "type": "string",
         "airbyte_secret": true,
         "order": 4
-      },
-      "ssl": {
-        "title": "Connect using SSL",
-        "description": "Encrypt client/server communications for increased security.",
-        "type": "boolean",
-        "default": false,
-        "order": 5
       }
     }
   }
