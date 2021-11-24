@@ -439,6 +439,45 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+- dockerImage: "airbyte/source-azure-table:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Azure Data Table Spec"
+      type: "object"
+      required:
+      - "storage_account_name"
+      - "storage_access_key"
+      additionalProperties: false
+      properties:
+        storage_account_name:
+          title: "Account Name"
+          type: "string"
+          description: "The name of your storage account."
+          order: 0
+          airbyte_secret: false
+        storage_access_key:
+          title: "Access Key"
+          type: "string"
+          description: "The access key to your storage account. Read more about access\
+            \ keys here - https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal#view-account-access-keys"
+          order: 1
+          airbyte_secret: true
+        storage_endpoint_suffix:
+          title: "Endpoint Suffix"
+          type: "string"
+          description: "The Table service account URL suffix. Read more about suffixes\
+            \ here - https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string#create-a-connection-string-with-an-endpoint-suffix"
+          order: 2
+          default: "core.windows.net"
+          examples:
+          - "core.windows.net"
+          - "core.chinacloudapi.cn"
+          airbyte_secret: false
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-bamboo-hr:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bamboo-hr"
@@ -5899,7 +5938,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:0.1.23"
+- dockerImage: "airbyte/source-stripe:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
@@ -5914,7 +5953,6 @@
       properties:
         client_secret:
           type: "string"
-          pattern: "^(s|r)k_(live|test)_[a-zA-Z0-9]+$"
           description: "Stripe API key (usually starts with 'sk_live_'; find yours\
             \ <a href=\"https://dashboard.stripe.com/apikeys\">here</a>)."
           airbyte_secret: true
@@ -6566,45 +6604,6 @@
           title: "Client Secret"
           description: "Your OAuth user Client Secret"
           airbyte_secret: true
-    supportsNormalization: false
-    supportsDBT: false
-    supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-azure-table:0.1.0"
-  spec:
-    documentationUrl: "https://docsurl.com"
-    connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Azure Data Table Spec"
-      type: "object"
-      required:
-      - "storage_account_name"
-      - "storage_access_key"
-      additionalProperties: false
-      properties:
-        storage_account_name:
-          title: "Account Name"
-          type: "string"
-          description: "The name of your storage account."
-          order: 0
-          airbyte_secret: false
-        storage_access_key:
-          title: "Access Key"
-          type: "string"
-          description: "The access key to your storage account. Read more about access\
-            \ keys here - https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal#view-account-access-keys"
-          order: 1
-          airbyte_secret: true
-        storage_endpoint_suffix:
-          title: "Endpoint Suffix"
-          type: "string"
-          description: "The Table service account URL suffix. Read more about suffixes\
-            \ here - https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string#create-a-connection-string-with-an-endpoint-suffix"
-          order: 2
-          default: "core.windows.net"
-          examples:
-          - "core.windows.net"
-          - "core.chinacloudapi.cn"
-          airbyte_secret: false
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
