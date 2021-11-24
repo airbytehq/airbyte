@@ -4,6 +4,7 @@
 
 
 import calendar
+import json
 import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -54,6 +55,37 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         if next_page:
             return dict(parse_qsl(urlparse(next_page).query)).get("page")
         return None
+
+    def serialize_response(self, response: requests.Response) -> str:
+        headers = [
+            "Cache-Control",
+            "Connection",
+            "Content-Length",
+            "Content-Type",
+            "Date",
+            "Retry-After",
+            "Server",
+            "X-Rate-Limit",
+            "X-Rate-Limit-Remaining",
+            "X-Zendesk-Origin-Server",
+            "X-Zendesk-Zorg",
+        ]
+
+        record = {"url": response.url, "status_code": response.status_code, "headers": {}}
+
+        for header in headers:
+            value = response.headers.get(header)
+            if value:
+                record["headers"][header] = value
+        return json.dumps(record)
+
+    def should_retry(self, response: requests.Response) -> bool:
+        "to dump error response to log"
+        try:
+            response.raise_for_status()
+        except requests.HTTPError:
+            self.logger.info(self.serialize_response(response))
+        return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
