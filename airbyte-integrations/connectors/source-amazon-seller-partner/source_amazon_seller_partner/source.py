@@ -10,8 +10,6 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from pydantic import Field
-from pydantic.main import BaseModel
 from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSignature
 from source_amazon_seller_partner.constants import AWSEnvironment, AWSRegion, get_marketplaces
 from source_amazon_seller_partner.streams import (
