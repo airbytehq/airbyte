@@ -1,0 +1,25 @@
+# Build and test implementation
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+
+ENV WORKDIR=/airbyte/build
+WORKDIR $WORKDIR
+
+COPY . ./
+
+RUN dotnet test
+RUN dotnet build -c Release -o output
+
+# Run implementation
+FROM mcr.microsoft.com/dotnet/runtime:5.0 AS runtime
+
+ENV WORKDIR=/airbyte/integration_code
+WORKDIR $WORKDIR
+
+COPY --from=build /airbyte/build/output .
+
+ENV AIRBYTE_IMPL_PATH="/airbyte/integration_code/{{dashname}}.dll"
+ENV AIRBYTE_IMPL_MODULE="{{snakename}}"
+ENTRYPOINT ["dotnet", "/airbyte/integration_code/{{dashname}}.dll", "read", "--command"]
+
+LABEL io.airbyte.version=0.0.1
+LABEL io.airbyte.name=airbyte/{{dashname}}

@@ -10,6 +10,6 @@ namespace Airbyte.Cdk
         [Option('l', "catalog", HelpText = "Catalog file location")]
         public string Catalog { get; set; }
 
-        public abstract string Command { get; set; }
+        public virtual string Command { get; set; }
     }
 }

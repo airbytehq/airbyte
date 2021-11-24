@@ -17,14 +17,18 @@
   <ItemGroup>
     <Folder Include="Destinations\utils\" />
     <Folder Include="Destinations\streams\" />
+    <Folder Include="Images\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CliWrap" Version="3.3.3" />
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Flurl.Http" Version="3.2.0" />
+    <PackageReference Include="Handlebars.Net" Version="2.0.9" />
     <PackageReference Include="JsonCons.JsonPath" Version="1.1.0" />
     <PackageReference Include="JsonSchema.Net" Version="1.11.3" />
     <PackageReference Include="Polly" Version="7.2.2" />
+    <PackageReference Include="Spectre.Console" Version="0.42.0" />
   </ItemGroup>
 
 </Project>

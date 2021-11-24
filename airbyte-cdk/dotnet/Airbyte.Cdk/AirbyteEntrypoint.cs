@@ -36,10 +36,18 @@ namespace Airbyte.Cdk
             Console.OutputEncoding = Encoding.UTF8;
             Console.InputEncoding = Encoding.UTF8;
 
-            Parser.Default.ParseArguments<ReadOptions, WriteOptions>(args)
+            Parser.Default.ParseArguments<ReadOptions, WriteOptions, InitOptions>(args)
                 .WithParsed<ReadOptions>(options => Options = options)
                 .WithParsed<WriteOptions>(options => Options = options)
+                .WithParsed<InitOptions>(options => Options = options)
                 .WithNotParsed(_ => Environment.Exit(1));
+
+            //Check if this is an init
+            if (Options is InitOptions)
+            {
+                await InitCli.Process();
+                return;
+            }
 
             string implModule = Environment.GetEnvironmentVariable("AIRBYTE_IMPL_MODULE");
 

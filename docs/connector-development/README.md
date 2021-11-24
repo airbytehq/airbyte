@@ -2,13 +2,17 @@
 
 Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../understanding-airbyte/airbyte-specification.md).
 
-To build a new connector in Java or Python, we provide templates so you don't need to start everything from scratch.
+To build a new connector in Java, Python or Dotnet, we provide templates so you don't need to start everything from scratch.
 
 **Note: you are not required to maintain the connectors you create.** The goal is that the Airbyte core team and the community help maintain the connector.
 
 ## Python Connector-Development Kit \(CDK\)
 
-You can build a connector very quickly in Python with the [Airbyte CDK](cdk-python/), which generates 75% of the code required for you.
+You can build a connector very quickly in Python with the [Airbyte Python CDK](cdk-python/), which generates 75% of the code required for you.
+
+## Dotnet Connector-Development Kit \(CDK\)
+
+You can build a connector very quickly in Dotnet with the [Airbyte Dotnet CDK](cdk-dotnet/), which generates 80% of the code required for you.
 
 ## TS/JS Connector-Development Kit \(Faros AI Airbyte CDK\)
 

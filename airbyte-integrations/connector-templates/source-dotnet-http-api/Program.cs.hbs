@@ -1,0 +1,48 @@
+using System;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Airbyte.Cdk;
+using Airbyte.Cdk.Sources;
+using Airbyte.Cdk.Sources.Streams;
+using Airbyte.Cdk.Sources.Utils;
+using Flurl;
+using Flurl.Http;
+
+namespace {{snakename}}
+{
+    public class Program : AbstractSource
+    {
+        public static async Task Main(string[] args) => await AirbyteEntrypoint.Main(args);
+
+        public string UrlBase => "https://ifconfig.io";
+
+        public override bool CheckConnection(AirbyteLogger logger, JsonElement config, out Exception exc)
+        {
+            exc = null;
+            try
+            {
+                return UrlBase.AppendPathSegment("ip")
+                    .GetAsync()
+                    .Result.GetJsonAsync().Result.success;
+            }
+            catch (Exception e)
+            {
+                exc = e;
+            }
+
+            return false;
+        }
+
+        public override Stream[] Streams(JsonElement config)
+        {
+            var baseimpl = UrlBase.HttpStream()
+                        .BackoffTime(((i, _) => TimeSpan.FromMinutes(i * 10)))
+                        .ParseResponseObject("$");
+
+            return new Stream[]
+            {
+                baseimpl.Create("ip")
+            };
+        }
+    }
+}

@@ -1,0 +1,17 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <authors>mrhamburg</authors>
+    <owners />
+    <id>Airbyte.Cdk</id>
+    <title />
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Dotnet CDK for Airbyte</description>
+    <language>en-US</language>
+    <icon>icon.svg</icon>
+    <icon>Images\icon.png</icon>
+  </metadata>
+  <files>
+    <file src="..\icon.png" target="Images\" />
+  </files>
+</package>
