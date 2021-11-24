@@ -84,9 +84,9 @@
           }
         ]
       },
-      "unset_hs_time_properties": {
+      "unset_dynamic_fields":
         "type": "boolean",
-        "description": "Set value of hs_time_ properties to 'null'.",
+        "description": "Set 'hs_time_in_*' properties to 'null'.",
         "default": false,
         "airbyte_hidden": true
       }
