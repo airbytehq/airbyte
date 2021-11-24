@@ -109,7 +109,15 @@ def test_get_date_params():
     # Please note that this is equal to inputted stream_slice start date + 1 day
     mock_start_date = "2021-05-19"
     mock_end_date = "2021-06-18"
-    start_date, end_date = IncrementalGoogleAdsStream.get_date_params(
+    mock_conversion_window_days = 14
+
+    incremental_stream_config = dict(
+        conversion_window_days=mock_conversion_window_days,
+        start_date=mock_start_date,
+        api=MockGoogleAdsClient(SAMPLE_CONFIG),
+    )
+
+    start_date, end_date = IncrementalGoogleAdsStream(**incremental_stream_config).get_date_params(
         stream_slice={"segments.date": "2021-05-18"}, cursor_field="segments.date", end_date=pendulum.parse("2021-08-15")
     )
 
