@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime
 import logging
 import sys
 from typing import Any, Iterable, Sequence
@@ -17,6 +18,60 @@ FACEBOOK_UNKNOWN_ERROR_CODE = 99
 DEFAULT_SLEEP_INTERVAL = pendulum.duration(minutes=1)
 
 logger = logging.getLogger("airbyte")
+
+class SourceFacebookMarketingConfig:
+    format = "%Y-%m-%dT%H:%M:%SZ"
+
+    def __init__(self, config):
+        self.__config = config
+
+    @property
+    def config(self):
+        return self.__config
+
+    @property
+    def access_token(self):
+        return self.config["access_token"]
+
+    @property
+    def account_ids(self):
+        return self.config["accounts"].get("ids", [])
+
+    @property
+    def account_selection_strategy(self):
+        return self.config["accounts"]["selection_strategy"]
+
+    @property
+    def account_selection_strategy_is_subset(self):
+        return self.account_selection_strategy == "subset"
+
+    @property
+    def account_selection_strategy_is_all(self):
+        return self.account_selection_strategy == "all"
+
+    @property
+    def start_date(self):
+        return datetime.strptime(self.config["start_date"], self.format)
+
+    @property
+    def end_date(self):
+        return datetime.strptime(self.config["end_date"], self.format) if self.config.get("end_date") else pendulum.now()
+
+    @property
+    def include_deleted(self):
+        return self.config["include_deleted"]
+
+    @property
+    def custom_insights(self):
+        return self.config.get("custom_insights")
+
+    @property
+    def insights_lookback_window(self):
+        return self.config["insights_lookback_window"]
+
+    @property
+    def insights_days_per_job(self):
+        return self.config["insights_days_per_job"]
 
 
 class FacebookAPIException(Exception):

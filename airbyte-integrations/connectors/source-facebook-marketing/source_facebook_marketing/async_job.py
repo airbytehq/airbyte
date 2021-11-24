@@ -8,8 +8,8 @@ from typing import Any, Mapping
 
 import backoff
 import pendulum
+from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.api import API
 
 from .common import JobException, JobTimeoutException, retry_pattern
 
@@ -32,14 +32,14 @@ class AsyncJob:
     MAX_WAIT_TO_START = pendulum.duration(minutes=5)
     MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
 
-    def __init__(self, api: API, params: Mapping[str, Any]):
+    def __init__(self, account: AdAccount, params: Mapping[str, Any]):
         """Initialize
 
         :param api: Facebook Api wrapper
         :param params: job params, required to start/restart job
         """
         self._params = params
-        self._api = api
+        self._account = account
         self._job = None
         self._start_time = None
         self._finish_time = None
@@ -51,12 +51,12 @@ class AsyncJob:
         if self._job:
             raise RuntimeError(f"{self}: Incorrect usage of start - the job already started, use restart instead")
 
-        self._job = self._api.account.get_insights(params=self._params, is_async=True)
+        self._job = self._account.get_insights(params=self._params, is_async=True)
         self._start_time = pendulum.now()
         job_id = self._job["report_run_id"]
         time_range = self._params["time_range"]
         breakdowns = self._params["breakdowns"]
-        logger.info(f"Created AdReportRun: {job_id} to sync insights {time_range} with breakdown {breakdowns}")
+        logger.info(f"Created AdReportRun for AdAccount[{self._account['account_id']}]: {job_id} to sync insights {time_range} with breakdown {breakdowns}")
 
     def restart(self):
         """Restart failed job"""
