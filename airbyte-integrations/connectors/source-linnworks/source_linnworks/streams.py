@@ -188,7 +188,7 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
     # Response: SearchProcessedOrdersResponse https://apps.linnworks.net/Api/Class/API_Linnworks-Controllers-ProcessedOrders-Responses-SearchProcessedOrdersResponse
     # Allows 150 calls per minute
     primary_key = "nOrderId"
-    cursor_field = "dReceivedDate"
+    cursor_field = "dProcessedOn"
     page_size = 500
     use_cache = True
 
@@ -223,12 +223,12 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         request = {
-            "DateField": "received",
+            "DateField": "processed",
             "FromDate": stream_slice["FromDate"],
             "ToDate": stream_slice["ToDate"],
             "PageNumber": 1 if not next_page_token else next_page_token["PageNumber"],
             "ResultsPerPage": self.page_size,
-            "SearchSorting": {"SortField": "dReceivedDate", "SortDirection": "ASC"},
+            "SearchSorting": {"SortField": "dProcessedOn", "SortDirection": "ASC"},
         }
 
         return {

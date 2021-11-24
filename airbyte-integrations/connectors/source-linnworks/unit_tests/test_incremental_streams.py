@@ -93,10 +93,10 @@ def date(*args):
     [
         (None, None, 24, date(2050, 1, 1), date(2050, 1, 2)),
         (date(2050, 1, 2), None, 48, date(2050, 1, 1), date(2050, 1, 3)),
-        (None, {"dReceivedDate": date(2050, 1, 4)}, 1, date(2050, 1, 4), date(2050, 1, 4)),
+        (None, {"dProcessedOn": date(2050, 1, 4)}, 1, date(2050, 1, 4), date(2050, 1, 4)),
         (
             date(2050, 1, 5),
-            {"dReceivedDate": date(2050, 1, 4)},
+            {"dProcessedOn": date(2050, 1, 4)},
             48,
             date(2050, 1, 4),
             date(2050, 1, 6),
@@ -104,7 +104,7 @@ def date(*args):
         (
             # Yearly
             date(2052, 1, 1),
-            {"dReceivedDate": date(2050, 1, 1)},
+            {"dProcessedOn": date(2050, 1, 1)},
             25,
             date(2050, 1, 1),
             date(2052, 1, 2),
@@ -112,7 +112,7 @@ def date(*args):
         (
             # Monthly
             date(2050, 4, 1),
-            {"dReceivedDate": date(2050, 1, 1)},
+            {"dProcessedOn": date(2050, 1, 1)},
             13,
             date(2050, 1, 1),
             date(2050, 4, 2),
@@ -120,7 +120,7 @@ def date(*args):
         (
             # Weekly
             date(2050, 1, 31),
-            {"dReceivedDate": date(2050, 1, 1)},
+            {"dProcessedOn": date(2050, 1, 1)},
             5,
             date(2050, 1, 1),
             date(2050, 2, 1),
@@ -128,7 +128,7 @@ def date(*args):
         (
             # Daily
             date(2050, 1, 1, 23, 59, 59),
-            {"dReceivedDate": date(2050, 1, 1)},
+            {"dProcessedOn": date(2050, 1, 1)},
             24,
             date(2050, 1, 1),
             date(2050, 1, 2),
