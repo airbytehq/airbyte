@@ -9,7 +9,6 @@
     "properties": {
       "client_secret": {
         "type": "string",
-        "pattern": "^(s|r)k_(live|test)_[a-zA-Z0-9]+$",
         "description": "Stripe API key (usually starts with 'sk_live_'; find yours <a href=\"https://dashboard.stripe.com/apikeys\">here</a>).",
         "airbyte_secret": true
       },
