@@ -21,7 +21,7 @@ from airbyte_protocol import (
 )
 from airbyte_protocol import Type as MessageType
 from base_python.cdk.streams.core import Stream
-from base_python.cdk.utils.event_timing import EventTimer
+from base_python.cdk.utils.event_timing import create_timer
 from base_python.integration import Source
 from base_python.logger import AirbyteLogger
 
@@ -79,7 +79,7 @@ class AbstractSource(Source, ABC):
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
-        with EventTimer(self.name) as timer:
+        with create_timer(self.name) as timer:
             try:
                 for configured_stream in catalog.streams:
                     try:

@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 from unittest import mock
 
 from base_python.cdk.utils.event_timing import create_timer
@@ -51,4 +52,3 @@ def test_double_finish_is_safely_ignored():
         timer.finish_event()
         timer.finish_event()
         assert timer.count == 1
-
