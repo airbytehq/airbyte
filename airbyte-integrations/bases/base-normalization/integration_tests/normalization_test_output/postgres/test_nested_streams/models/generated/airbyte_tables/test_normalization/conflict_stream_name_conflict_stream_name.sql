@@ -5,6 +5,7 @@
     tags = [ "nested" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('conflict_stream_name_conflict_stream_name_ab3') }}
 select
     _airbyte_conflict_stream_name_hashid,
     conflict_stream_name,
