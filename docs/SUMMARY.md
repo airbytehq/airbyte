@@ -179,6 +179,7 @@
     * [Pulsar](integrations/destinations/pulsar.md)
     * [Redshift](integrations/destinations/redshift.md)
     * [S3](integrations/destinations/s3.md)
+    * [SFTP JSON](integrations/destinations/sftp-json.md)
     * [Snowflake](integrations/destinations/snowflake.md)
     * [Cassandra](integrations/destinations/cassandra.md)
     * [Scylla](integrations/destinations/scylla.md)
