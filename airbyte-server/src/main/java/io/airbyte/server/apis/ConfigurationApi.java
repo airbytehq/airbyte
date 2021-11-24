@@ -223,7 +223,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // WORKSPACE
 
   @GET
-  @Path("/test")
+  @javax.ws.rs.Path("/test")
   @Produces({"application/json"})
   public HealthCheckRead getHealthCheckTest() {
     return healthCheckHandler.health();
