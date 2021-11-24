@@ -6,6 +6,7 @@ from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
+from pendulum.tz.timezone import Timezone
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.v8.services.services.google_ads_service.pagers import SearchPager
 
@@ -71,6 +72,14 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         self._start_date = start_date
         super().__init__(**kwargs)
 
+    @property
+    def time_zone(self):
+        account = next(Accounts(self.google_ads_client).read_records(sync_mode=None), {})
+        time_zone_name = account.get("customer.time_zone")
+        if time_zone_name:
+            return Timezone(time_zone_name)
+        return "local"
+
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         start_date = stream_state.get(self.cursor_field) or self._start_date
@@ -83,9 +92,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             days_of_data_storage=self.days_of_data_storage,
         )
 
-    @staticmethod
-    def get_date_params(stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None, time_unit: str = "months"):
-        end_date = end_date or pendulum.yesterday()
+    def get_date_params(self, stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None, time_unit: str = "months"):
+        end_date = end_date or pendulum.today(tz=self.time_zone)
         start_date = pendulum.parse(stream_slice.get(cursor_field))
         if start_date > pendulum.now():
             return start_date.to_date_string(), start_date.add(days=1).to_date_string()
