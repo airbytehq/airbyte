@@ -1,6 +1,10 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
 from pandas.io.json import build_table_schema, read_json
+
 from .abstract_file_parser import AbstractFileParser
 
 # All possible json data types
@@ -18,8 +22,8 @@ JSON_TYPES = {
     "any": ("string", lambda v: v.isoformat()),
 }
 
-class JsonParser(AbstractFileParser):
 
+class JsonParser(AbstractFileParser):
     @property
     def is_binary(self):
         return True
@@ -29,11 +33,11 @@ class JsonParser(AbstractFileParser):
         https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#reading-json
         """
         return {
-            "lines": self._format.get("lines", True), 
-            "chunksize": self._format.get("chunk_size", 10000), 
+            "lines": self._format.get("lines", True),
+            "chunksize": self._format.get("chunk_size", 10000),
             "nrows": self._format.get("nrows", None),
             "compression": self._format.get("compression", "infer"),
-            "encoding": self._format.get("encoding", 'utf8'),
+            "encoding": self._format.get("encoding", "utf8"),
         }
 
     def _parse_options(self):
@@ -42,9 +46,9 @@ class JsonParser(AbstractFileParser):
         """
         schema = self.json_schema_to_dtype_schema(self._master_schema) if self._master_schema is not None else None
         return {
-            **{"dtype": schema}, 
-            "convert_dates": self._format.get("convert_dates", True), 
-            "keep_default_dates": self._format.get("keep_default_dates", True), 
+            **{"dtype": schema},
+            "convert_dates": self._format.get("convert_dates", True),
+            "keep_default_dates": self._format.get("keep_default_dates", True),
             "orient": self._format.get("orient", "columns"),
         }
 
@@ -74,18 +78,12 @@ class JsonParser(AbstractFileParser):
         """
         https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#reading-json
         """
-        reader = read_json(
-            file,
-            **self._read_options(),
-            **self._parse_options()
-        )
+        reader = read_json(file, **self._read_options(), **self._parse_options())
 
         schema = build_table_schema(reader.read())
         # remove the first field which is the index
         schema_fields = schema["fields"][1:]
-        schema_dict = {
-            field["name"]: self.parse_field_type(field["type"]) for field in schema_fields
-        }
+        schema_dict = {field["name"]: self.parse_field_type(field["type"]) for field in schema_fields}
 
         if not schema_dict:
             # pandas can parse empty JSON files but a connector can't generate dynamic schema
@@ -106,9 +104,9 @@ class JsonParser(AbstractFileParser):
 
         is_empty = True
         for rows in streaming_reader:
-            if (len(rows) > 0 ):
+            if len(rows) > 0:
                 is_empty = False
-            for row in rows.to_dict(orient='records'):
+            for row in rows.to_dict(orient="records"):
                 yield row
         if is_empty:
-                raise OSError("empty JSON file")
+            raise OSError("empty JSON file")
