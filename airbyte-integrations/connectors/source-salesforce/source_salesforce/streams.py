@@ -152,7 +152,7 @@ class BulkSalesforceStream(SalesforceStream):
                         f"Cannot receive data for stream '{self.name}' using BULK API, error message: '{error_data.get('message')}'"
                     )
                 elif error.response.status_code == codes.FORBIDDEN and not error_data.get("errorCode", "") == "REQUEST_LIMIT_EXCEEDED":
-                    self.logger.error(f"Cannot receive data for stream '{self.name}', request limit reached: '{error_data.get('message')}'")
+                    self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
                 else:
                     raise error
             else:
