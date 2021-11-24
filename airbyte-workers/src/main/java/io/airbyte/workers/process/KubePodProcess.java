@@ -372,6 +372,7 @@ public class KubePodProcess extends Process {
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
+
     // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
     // main container completes
     final String heartbeatCommand = MoreResources.readResource("entrypoints/check.sh")
@@ -387,6 +388,7 @@ public class KubePodProcess extends Process {
         .withVolumeMounts(terminationVolumeMount)
         .build();
 
+
     List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
         : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
 
@@ -401,6 +403,7 @@ public class KubePodProcess extends Process {
         .withInitContainers(init)
         .withContainers(containers)
         .withVolumes(pipeVolume, configVolume, terminationVolume)
+        .addToNodeSelector("eks.amazonaws.com/nodegroup","managed-node")
         .endSpec()
         .build();
 
@@ -542,21 +545,8 @@ public class KubePodProcess extends Process {
     Exceptions.swallow(this.stderrServerSocket::close);
     Exceptions.swallow(this.executorService::shutdownNow);
 
-    var stdoutPortReleased = KubePortManagerSingleton.offer(stdoutLocalPort);
-    if (!stdoutPortReleased) {
-      LOGGER.warn(
-          "Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports. Ignore this error if running Kubernetes on docker for desktop.",
-          stdoutLocalPort,
-          podDefinition.getMetadata().getName());
-    }
-
-    var stderrPortReleased = KubePortManagerSingleton.offer(stderrLocalPort);
-    if (!stderrPortReleased) {
-      LOGGER.warn(
-          "Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports. Ignore this error if running Kubernetes on docker for desktop",
-          stderrLocalPort,
-          podDefinition.getMetadata().getName());
-    }
+    KubePortManagerSingleton.offer(stdoutLocalPort);
+    KubePortManagerSingleton.offer(stderrLocalPort);
 
     LOGGER.debug("Closed {}", podDefinition.getMetadata().getName());
   }

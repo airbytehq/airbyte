@@ -32,7 +32,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=[
-        "tap-appsflyer @ git+https://github.com/Muriloo/tap-appsflyer",
+        "tap-appsflyer @ git+https://github.com/blotoutio/tap-appsflyer",
         "airbyte-protocol",
         "base-singer",
         "base-python",

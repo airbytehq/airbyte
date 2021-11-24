@@ -53,12 +53,10 @@ public class KubePortManagerSingleton {
     return workerPorts.poll(10, TimeUnit.MINUTES);
   }
 
-  public static boolean offer(Integer port) {
+  public static void offer(Integer port) {
     if (!workerPorts.contains(port)) {
       workerPorts.add(port);
-      return true;
     }
-    return false;
   }
 
   public static int getNumAvailablePorts() {

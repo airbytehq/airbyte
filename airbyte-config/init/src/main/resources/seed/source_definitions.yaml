@@ -23,7 +23,7 @@
 - sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   name: Google Ads
   dockerRepository: blotout/source-google-ads
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.9
   documentationUrl: https://hub.docker.com/r/airbyte/source-google-ads
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
   name: Google Adwords (Deprecated)
@@ -114,8 +114,8 @@
   icon: mailchimp.svg
 - sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1
   name: Google Analytics
-  dockerRepository: airbyte/source-googleanalytics-singer
-  dockerImageTag: 0.2.6
+  dockerRepository: blotout/source-googleanalytics-singer
+  dockerImageTag: 0.2.12
   documentationUrl: https://hub.docker.com/r/airbyte/source-googleanalytics-singer
   icon: google-analytics.svg
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
@@ -404,3 +404,8 @@
   dockerRepository: blotout/source-mailgun-singer
   dockerImageTag: 0.1.2
   documentationUrl: https://github.com/streetteam/tap-mailgun
+- sourceDefinitionId: ac849ce0-3ad3-11ec-8d3d-0242ac130003
+  name: Apps Flyer
+  dockerRepository: blotout/source-appsflyer-singer
+  dockerImageTag: 0.1.6
+  documentationUrl: https://github.com/blotoutio/tap-appsflyer

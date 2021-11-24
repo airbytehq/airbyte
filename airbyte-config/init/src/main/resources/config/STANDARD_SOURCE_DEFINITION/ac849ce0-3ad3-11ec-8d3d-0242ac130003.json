@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "ac849ce0-3ad3-11ec-8d3d-0242ac130003",
+  "name": "Apps Flyer",
+  "dockerRepository": "blotout/source-appsflyer-singer",
+  "dockerImageTag": "0.1.6",
+  "documentationUrl": "https://github.com/blotoutio/tap-appsflyer"
+}

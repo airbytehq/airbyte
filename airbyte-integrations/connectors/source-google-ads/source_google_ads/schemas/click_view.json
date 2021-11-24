@@ -16,6 +16,9 @@
     },
     "customer.id": {
       "type": ["null", "integer"]
+    },
+    "campaign.name": {
+      "type": ["null", "string"]
     }
   }
 }
