@@ -103,8 +103,9 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
         <Formik
           initialValues={initialValues}
           validationSchema={existingEntityValidationSchema}
-          onSubmit={(values: { entityId: string }) => {
+          onSubmit={async (values: { entityId: string }, { resetForm }) => {
             onSubmit(values.entityId);
+            resetForm({});
           }}
         >
           {({ isSubmitting, setFieldValue }) => (
