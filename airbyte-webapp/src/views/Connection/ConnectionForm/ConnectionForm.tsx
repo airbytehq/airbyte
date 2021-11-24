@@ -161,30 +161,32 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
-          <ControlLabelsWithMargin>
-            <Field name="schedule">
-              {({ field, meta }: FieldProps<ScheduleProperties>) => (
-                <ConnectorLabel
-                  error={!!meta.error && meta.touched}
-                  label={formatMessage({
-                    id: "form.frequency",
-                  })}
-                >
-                  <DropDown
-                    {...field}
+          {!isEditMode && (
+            <ControlLabelsWithMargin>
+              <Field name="schedule">
+                {({ field, meta }: FieldProps<ScheduleProperties>) => (
+                  <ConnectorLabel
                     error={!!meta.error && meta.touched}
-                    options={frequencies}
-                    onChange={(item) => {
-                      if (onDropDownSelect) {
-                        onDropDownSelect(item);
-                      }
-                      setFieldValue(field.name, item.value);
-                    }}
-                  />
-                </ConnectorLabel>
-              )}
-            </Field>
-          </ControlLabelsWithMargin>
+                    label={formatMessage({
+                      id: "form.frequency",
+                    })}
+                  >
+                    <DropDown
+                      {...field}
+                      error={!!meta.error && meta.touched}
+                      options={frequencies}
+                      onChange={(item) => {
+                        if (onDropDownSelect) {
+                          onDropDownSelect(item);
+                        }
+                        setFieldValue(field.name, item.value);
+                      }}
+                    />
+                  </ConnectorLabel>
+                )}
+              </Field>
+            </ControlLabelsWithMargin>
+          )}
           <NamespaceField />
           <Field name="prefix">
             {({ field }: FieldProps<string>) => (

@@ -114,9 +114,7 @@ const TransferForm: React.FC<TransferFormProps> = ({
             isSubmitting={isSubmitting}
             dirty={dirty}
             resetForm={resetForm}
-            successMessage={
-              saved && formatMessage({ id: "settings.changeSaved" })
-            }
+            successMessage={saved && formatMessage({ id: "form.changesSaved" })}
             errorMessage={
               errorMessage || !isValid
                 ? formatMessage({ id: "connectionForm.validation.error" })
