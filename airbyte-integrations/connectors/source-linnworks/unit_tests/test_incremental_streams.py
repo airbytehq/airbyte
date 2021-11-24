@@ -11,7 +11,8 @@ import pendulum
 import pytest
 import requests
 import vcr
-from source_linnworks.streams import IncrementalLinnworksStream, ProcessedOrders
+from airbyte_cdk.models.airbyte_protocol import SyncMode
+from source_linnworks.streams import IncrementalLinnworksStream, ProcessedOrderDetails, ProcessedOrders
 
 
 @pytest.fixture
@@ -213,3 +214,31 @@ def test_processed_orders_request_cache(patch_incremental_base_class, mocker):
         serializer="yaml",
         match_on=["method", "scheme", "host", "port", "path", "query", "body"],
     )
+
+
+@pytest.mark.parametrize(
+    ("count"),
+    [
+        (5),
+        (205),
+    ],
+)
+def test_processed_order_details_stream_slices(patch_incremental_base_class, mocker, count):
+    parent_records = [{"pkOrderID": str(n)} for n in range(count)]
+
+    mocker.patch.object(ProcessedOrders, "stream_slices", MagicMock(return_value=[{}]))
+    mocker.patch.object(ProcessedOrders, "read_records", MagicMock(return_value=parent_records))
+
+    stream = ProcessedOrderDetails()
+    expected_slices = [[str(m) for m in range(count)[i : i + stream.page_size]] for i in range(0, count, stream.page_size)]
+
+    stream_slices = stream.stream_slices(sync_mode=SyncMode.full_refresh)
+
+    assert list(stream_slices) == list(expected_slices)
+
+
+def test_processed_order_details_request_body_data(patch_incremental_base_class):
+    stream = ProcessedOrderDetails()
+    request_body_data = stream.request_body_data(None, ["abc", "def", "ghi"])
+
+    assert request_body_data == {"pkOrderIds": '["abc","def","ghi"]'}

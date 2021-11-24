@@ -256,11 +256,12 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
         )
 
 
-class ProcessedOrderDetails(HttpSubStream, LinnworksStream):
+class ProcessedOrderDetails(HttpSubStream, IncrementalLinnworksStream):
     # https://apps.linnworks.net/Api/Method/Orders-GetOrdersById
     # Response: List<OrderDetails> https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-OrderManagement-ClassBase-OrderDetails
     # Allows 250 calls per minute
     primary_key = "NumOrderId"
+    cursor_field = "dProcessedOn"
     page_size = 100
 
     def __init__(self, **kwargs):
