@@ -13,7 +13,7 @@ from subprocess import run
 from typing import Any, List, MutableMapping, Optional
 
 import pytest
-from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
+from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type, ConfiguredAirbyteStream, DestinationSyncMode
 from docker import errors
 from source_acceptance_test.config import Config
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config
@@ -66,7 +66,14 @@ def configured_catalog_fixture(configured_catalog_path, discovered_catalog) -> O
         for configured_stream in catalog.streams:
             configured_stream.stream = discovered_catalog.get(configured_stream.stream.name, configured_stream.stream)
         return catalog
-    return None
+    streams = [
+        ConfiguredAirbyteStream(
+            stream=stream,
+            sync_mode=stream.supported_sync_modes[0],
+            destination_sync_mode=DestinationSyncMode.append
+        ) for _, stream in discovered_catalog.items()
+    ]
+    return ConfiguredAirbyteCatalog(streams=streams)
 
 
 @pytest.fixture(name="image_tag")
