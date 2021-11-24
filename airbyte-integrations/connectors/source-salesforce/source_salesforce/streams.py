@@ -3,7 +3,7 @@
 #
 
 import csv
-import json
+import math
 import time
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -12,6 +12,8 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from pendulum import DateTime
 from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
@@ -21,6 +23,8 @@ from .rate_limiting import default_backoff_handler
 class SalesforceStream(HttpStream, ABC):
 
     page_size = 2000
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, sf_api: Salesforce, pk: str, stream_name: str, schema: dict = None, **kwargs):
         super().__init__(**kwargs)
@@ -63,7 +67,7 @@ class SalesforceStream(HttpStream, ABC):
             selected_properties = {
                 key: value
                 for key, value in selected_properties.items()
-                if not (("format" in value and value["format"] == "base64") or "object" in value["type"])
+                if value.get("format") != "base64" and "object" not in value["type"]
             }
 
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
@@ -80,7 +84,7 @@ class SalesforceStream(HttpStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if not self.schema:
-            self.schema = self.sf_api.generate_schema(self.name)
+            self.schema = self.sf_api.generate_schema([self.name])
         return self.schema
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -97,11 +101,28 @@ class SalesforceStream(HttpStream, ABC):
 class BulkSalesforceStream(SalesforceStream):
 
     page_size = 30000
-    JOB_WAIT_TIMEOUT_MINS = 10
-    CHECK_INTERVAL_SECONDS = 2
+    DEFAULT_WAIT_TIMEOUT_MINS = 10
+    MAX_CHECK_INTERVAL_SECONDS = 2.0
+    MAX_RETRY_NUMBER = 3
+
+    def __init__(self, wait_timeout: Optional[int], **kwargs):
+        super().__init__(**kwargs)
+        self._wait_timeout = wait_timeout or self.DEFAULT_WAIT_TIMEOUT_MINS
 
     def path(self, **kwargs) -> str:
         return f"/services/data/{self.sf_api.version}/jobs/query"
+
+    transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
+
+    @transformer.registerCustomTransform
+    def transform_empty_string_to_none(instance, schema):
+        """
+        BULK API returns a `csv` file, where all values are initially as string type.
+        This custom transformer replaces empty lines with `None` value.
+        """
+        if isinstance(instance, str) and not instance.strip():
+            instance = None
+        return instance
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, json: dict = None):
@@ -111,9 +132,12 @@ class BulkSalesforceStream(SalesforceStream):
         return response
 
     def create_stream_job(self, query: str, url: str) -> Optional[str]:
+        """
+        docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.htm
+        """
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
-            response = self._send_http_request("POST", f"{self.url_base}/{url}", json=json)
+            response = self._send_http_request("POST", url, json=json)
             job_id = response.json()["id"]
             self.logger.info(f"Created Job: {job_id} to sync {self.name}")
             return job_id
@@ -132,20 +156,52 @@ class BulkSalesforceStream(SalesforceStream):
                 raise error
 
     def wait_for_job(self, url: str) -> str:
-        start_time = pendulum.now()
-        while True:
-            job_info = self._send_http_request("GET", url=url)
-            job_id = job_info.json()["id"]
-            job_status = job_info.json()["state"]
-
-            if job_info.json()["state"] in ["JobComplete", "Aborted", "Failed"]:
+        # using "seconds" argument because self._wait_timeout can be changed by tests
+        expiration_time: DateTime = pendulum.now().add(seconds=int(self._wait_timeout * 60.0))
+        job_status = "InProgress"
+        delay_timeout = 0
+        delay_cnt = 0
+        job_info = None
+        # minimal starting delay is 0.5 seconds.
+        # this value was received empirically
+        time.sleep(0.5)
+        while pendulum.now() < expiration_time:
+            job_info = self._send_http_request("GET", url=url).json()
+            job_status = job_info["state"]
+            if job_status in ["JobComplete", "Aborted", "Failed"]:
                 return job_status
 
-            if pendulum.now() > start_time.add(minutes=self.JOB_WAIT_TIMEOUT_MINS):
-                return job_status
+            if delay_timeout < self.MAX_CHECK_INTERVAL_SECONDS:
+                delay_timeout = 0.5 + math.exp(delay_cnt) / 1000.0
+                delay_cnt += 1
 
-            self.logger.info(f"Sleeping {self.CHECK_INTERVAL_SECONDS} seconds while waiting for Job: {job_id} to complete")
-            time.sleep(self.CHECK_INTERVAL_SECONDS)
+            time.sleep(delay_timeout)
+            job_id = job_info["id"]
+            self.logger.info(
+                f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id}" f" to complete. Current state: {job_status}"
+            )
+
+        self.logger.warning(f"Not wait the {self.name} data for {self._wait_timeout} minutes, data: {job_info}!!")
+        return job_status
+
+    def execute_job(self, query: Mapping[str, Any], url: str) -> str:
+        job_status = "Failed"
+        for i in range(0, self.MAX_RETRY_NUMBER):
+            job_id = self.create_stream_job(query=query, url=url)
+            if not job_id:
+                return None
+            job_full_url = f"{url}/{job_id}"
+            job_status = self.wait_for_job(url=job_full_url)
+            if job_status not in ["UploadComplete", "InProgress"]:
+                break
+            self.logger.error(f"Waiting error. Try to run this job again {i+1}/{self.MAX_RETRY_NUMBER}...")
+            self.abort_job(url=job_full_url)
+            job_status = "Aborted"
+
+        if job_status in ["Aborted", "Failed"]:
+            self.delete_job(url=job_full_url)
+            raise Exception(f"Job for {self.name} stream using BULK API was failed.")
+        return job_full_url
 
     def download_data(self, url: str) -> Tuple[int, dict]:
         job_data = self._send_http_request("GET", f"{url}/results")
@@ -160,6 +216,7 @@ class BulkSalesforceStream(SalesforceStream):
     def abort_job(self, url: str):
         data = {"state": "Aborted"}
         self._send_http_request("PATCH", url=url, json=data)
+        self.logger.warning("Broken job was aborted")
 
     def delete_job(self, url: str):
         self._send_http_request("DELETE", url=url)
@@ -167,52 +224,6 @@ class BulkSalesforceStream(SalesforceStream):
     def next_page_token(self, last_record: dict) -> str:
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "
-
-    def transform(self, record: dict, schema: dict = None):
-        """
-        BULK API always returns a CSV file, where all values are string. This function changes the data type according to the schema.
-        """
-        if not schema:
-            schema = self.get_json_schema().get("properties", {})
-
-        def transform_types(field_types: list = None):
-            """
-            Convert Jsonschema data types to Python data types.
-            """
-            convert_types_map = {
-                "boolean": bool,
-                "string": str,
-                "number": float,
-                "integer": int,
-                "object": dict,
-            }
-            return [convert_types_map[field_type] for field_type in field_types if field_type != "null"]
-
-        for key, value in record.items():
-            if key not in schema:
-                continue
-
-            if value is None or isinstance(value, str) and value.strip() == "":
-                record[key] = None
-            else:
-                types = transform_types(schema[key]["type"])
-                if len(types) != 1:
-                    continue
-
-                if types[0] == bool:
-                    record[key] = True if isinstance(value, str) and value.lower() == "true" else False
-                elif types[0] == dict:
-                    try:
-                        record[key] = json.loads(value)
-                    except Exception:
-                        record[key] = None
-                        continue
-                else:
-                    record[key] = types[0](value)
-
-                if isinstance(record[key], dict):
-                    self.transform(record[key], schema[key].get("properties", {}))
-        return record
 
     def read_records(
         self,
@@ -222,38 +233,28 @@ class BulkSalesforceStream(SalesforceStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
-        pagination_complete = False
         next_page_token = None
 
-        while not pagination_complete:
+        while True:
             params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
             path = self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            full_url = f"{self.url_base}/{path}"
-            job_id = self.create_stream_job(query=params["q"], url=path)
-            if not job_id:
+            job_full_url = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
+            if not job_full_url:
                 return
-            job_full_url = f"{full_url}/{job_id}"
-            job_status = self.wait_for_job(url=job_full_url)
-            if job_status == "JobComplete":
-                count = 0
-                for count, record in self.download_data(url=job_full_url):
-                    yield self.transform(record)
 
-                if count == self.page_size:
-                    next_page_token = self.next_page_token(record)
-                    if not next_page_token:
-                        pagination_complete = True
-                else:
-                    pagination_complete = True
+            count = 0
+            for count, record in self.download_data(url=job_full_url):
+                yield record
+            self.delete_job(url=job_full_url)
 
-            if job_status in ["UploadComplete", "InProgress"]:
-                self.abort_job(url=job_full_url)
-                job_status = "Aborted"
+            if count < self.page_size:
+                # this is a last page
+                break
 
-            if job_status in ["JobComplete", "Aborted", "Failed"]:
-                self.delete_job(url=job_full_url)
-                if job_status in ["Aborted", "Failed"]:
-                    raise Exception(f"Job for {self.name} stream using BULK API was failed")
+            next_page_token = self.next_page_token(record)
+            if not next_page_token:
+                # not found a next page data.
+                break
 
 
 class IncrementalSalesforceStream(SalesforceStream, ABC):
@@ -279,7 +280,7 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
             selected_properties = {
                 key: value
                 for key, value in selected_properties.items()
-                if not (("format" in value and value["format"] == "base64") or "object" in value["type"])
+                if value.get("format") != "base64" and "object" not in value["type"]
             }
 
         stream_date = stream_state.get(self.cursor_field)

@@ -14,11 +14,11 @@ from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapp
 import backoff
 import pendulum as pendulum
 import requests
+from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from base_python.entrypoint import logger
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
-# The value is obtained experimentally, Hubspot allows the URL length up to ~16300 symbols,
+# The value is obtained experimentally, HubSpot allows the URL length up to ~16300 symbols,
 # so it was decided to limit the length of the `properties` parameter to 15000 characters.
 PROPERTIES_PARAM_MAX_LENGTH = 15000
 
@@ -99,7 +99,7 @@ def retry_after_handler(**kwargs):
     def sleep_on_ratelimit(_details):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, HubspotRateLimited):
-            # Hubspot API does not always return Retry-After value for 429 HTTP error
+            # HubSpot API does not always return Retry-After value for 429 HTTP error
             retry_after = int(exc.response.headers.get("Retry-After", 3))
             logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
@@ -119,7 +119,7 @@ def retry_after_handler(**kwargs):
 
 
 class API:
-    """Hubspot API interface, authorize, retrieve and post, supports backoff logic"""
+    """HubSpot API interface, authorize, retrieve and post, supports backoff logic"""
 
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
@@ -153,7 +153,7 @@ class API:
             message = response.json().get("message")
 
         if response.status_code == HTTPStatus.FORBIDDEN:
-            """ Once hit the forbidden endpoint, we return the error message from response. """
+            """Once hit the forbidden endpoint, we return the error message from response."""
             pass
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
             raise HubspotInvalidAuth(message, response=response)
@@ -332,8 +332,8 @@ class Stream(ABC):
             properties_list = list(self.properties.keys())
             if properties_list:
                 # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
-                #  We will need to fix this code when the Hubspot developers add the ability to use a special parameter to get all properties for an entity.
-                #  According to Hubspot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
+                #  We will need to fix this code when the HubSpot developers add the ability to use a special parameter to get all properties for an entity.
+                #  According to HubSpot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
                 #  and the official documentation, this does not exist at the moment.
                 stream_records = {}
 
@@ -374,7 +374,7 @@ class Stream(ABC):
                     'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
                     'correlationId': '111111-2222-3333-4444-55555555555'}
                 """
-                logger.warn(f"Stream `{self.entity}` cannot be procced. {response.get('message')}")
+                logger.warning(f"Stream `{self.entity}` cannot be procced. {response.get('message')}")
                 return
 
             if response.get(self.data_field) is None:

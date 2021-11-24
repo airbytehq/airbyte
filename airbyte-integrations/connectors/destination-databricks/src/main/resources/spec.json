@@ -84,7 +84,7 @@
                 "examples": ["airbyte.staging"]
               },
               "s3_bucket_path": {
-                "Title": "S3 Bucket Path",
+                "title": "S3 Bucket Path",
                 "type": "string",
                 "description": "The directory under the S3 bucket where data will be written.",
                 "examples": ["data_sync/test"]
