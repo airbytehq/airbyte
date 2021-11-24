@@ -118,7 +118,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Trello](sources/trello.md) | Beta |
 | [Twilio](sources/twilio.md) | Beta |
 | [US Census](sources/us-census.md) | Alpha |
-| [WooCommerce](https://github.com/airbytehq/airbyte/tree/8d599c86a84726235c765c78db1ddd85c558bf7f/docs/integrations/sources/woo-commerce.md) | Beta |
+| [WooCommerce](sources/woocommerce.md) | Beta |
 | [Wordpress](sources/wordpress.md) | Beta |
 | [YouTube Analytics](sources/youtube-analytics.md) | Beta |
 | [Zencart](sources/zencart.md) | Beta |
@@ -146,6 +146,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | [Keen](destinations/keen.md) | Alpha |
 | [Local CSV](destinations/local-csv.md) | Certified |
 | [Local JSON](destinations/local-json.md) | Certified |
+| [MariaDB ColumnStore](destinations/mariadb-columnstore.md) | Alpha |
 | [MeiliSearch](destinations/meilisearch.md) | Beta |
 | [MongoDB](destinations/mongodb.md) | Alpha |
 | [MQTT](destinations/mqtt.md) | Alpha |
