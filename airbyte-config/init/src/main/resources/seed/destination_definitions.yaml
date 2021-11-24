@@ -120,6 +120,11 @@
   dockerRepository: airbyte/destination-s3
   dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
+- name: SFTP-JSON
+  destinationDefinitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
+  dockerRepository: airbyte/destination-sftp-json
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/sftp-json
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
