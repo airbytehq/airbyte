@@ -13,7 +13,7 @@
           },
           "StockLocationIntId": {
             "type": "integer",
-            "description": "Stock location integet id"
+            "description": "Stock location integer id"
           },
           "LocationName": {
             "type": "string",
@@ -21,7 +21,7 @@
           },
           "IsFulfillmentCenter": {
             "type": "boolean",
-            "description": "If location is a fulfilment center"
+            "description": "If location is a fulfillment center"
           },
           "LocationTag": {
             "type": "string",
@@ -33,7 +33,7 @@
           },
           "IsWarehouseManaged": {
             "type": ["null", "boolean"],
-            "description": "If the location is warehosue managed."
+            "description": "If the location is warehouse managed."
           },
           "location": {
             "type": "object",
@@ -65,7 +65,7 @@
               },
               "IsNotTrackable": {
                 "type": "boolean",
-                "description": "Not trackable"
+                "description": "Is the location trackable"
               },
               "LocationTag": {
                 "type": "string",
@@ -81,7 +81,7 @@
               },
               "IsWarehouseManaged": {
                 "type": "boolean",
-                "description": "Indicates if the location is warehosue managed."
+                "description": "Indicates if the location is warehouse managed"
               },
               "StockLocationId": {
                 "type": "string",
@@ -93,7 +93,7 @@
               },
               "IsFulfillmentCenter": {
                 "type": "boolean",
-                "description": "If location is a fulfilment center"
+                "description": "If location is a fulfillment center"
               },
               "StockLocationIntId": {
                 "type": "integer",
@@ -174,7 +174,7 @@
                 },
                 "SupplierCurrency": {
                   "type": "string",
-                  "description": "Supplier's default currency"
+                  "description": "Supplier default currency"
                 },
                 "StockItemId": {
                   "type": "string",
@@ -182,7 +182,7 @@
                 },
                 "StockItemIntId": {
                   "type": "integer",
-                  "description": "Stock Item interger Id"
+                  "description": "Stock Item integer Id"
                 }
               }
             }
@@ -205,7 +205,7 @@
                     },
                     "StockLocationIntId": {
                       "type": "integer",
-                      "description": "Stock location integet id"
+                      "description": "Stock location integer id"
                     },
                     "LocationName": {
                       "type": "string",
@@ -213,7 +213,7 @@
                     },
                     "IsFulfillmentCenter": {
                       "type": "boolean",
-                      "description": "If location is a fulfilment center"
+                      "description": "If location is a fulfillment center"
                     },
                     "LocationTag": {
                       "type": "string",
@@ -225,7 +225,7 @@
                     },
                     "IsWarehouseManaged": {
                       "type": ["null", "boolean"],
-                      "description": "If the location is warehosue managed."
+                      "description": "If the location is warehouse managed"
                     }
                   }
                 },
@@ -398,7 +398,7 @@
                 },
                 "StockItemIntId": {
                   "type": "integer",
-                  "description": "Stock Item interger Id"
+                  "description": "Stock Item integer Id"
                 }
               }
             }
