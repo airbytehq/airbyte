@@ -97,3 +97,56 @@ class AbstractFileParser(ABC):
         :return: converted schema dict
         """
         return {column: AbstractFileParser.json_type_to_pyarrow_type(json_type, reverse=reverse) for column, json_type in schema.items()}
+
+    @staticmethod
+    def json_schema_to_dtype_schema(schema: Mapping[str, Any], reverse: bool = False) -> Mapping[str, Any]:
+        """
+        Converts a schema with JsonSchema datatypes to one with Pandas dtypes (or the other way if reverse=True)
+        This utilises json_type_to_dtype() to convert each datatype
+
+        :param schema: json/pandas schema to convert
+        :param reverse: switch to True for Pandas schema -> Json schema, defaults to False
+        :return: converted schema dict
+        """
+        new_schema = {}
+
+        for column, json_type in schema.items():
+            new_schema[column] = AbstractFileParser.json_type_to_dtype(json_type, reverse=reverse)
+
+        return new_schema
+
+    @staticmethod
+    def json_type_to_dtype(typ: str, reverse: bool = False, logger: AirbyteLogger = AirbyteLogger()) -> str:
+        """
+        Converts Json Type to Pandas dtypes to (or the other way around if reverse=True)
+
+        :param typ: Json type if reverse is False, else Pandas dtype
+        :param reverse: switch to True for Pandas dtype -> Json type, defaults to False
+        :param logger: defaults to AirbyteLogger()
+        :return: Pandas dtype if reverse is False, else Json type
+        """
+        str_typ = str(typ)
+        # this is a map of airbyte types to pandas dtypes. The first list element of the pandas dtypes should be the one to use where required.
+        map = {
+            "boolean": ("bool", "boolean"),
+            "integer": ("int64", "int32", "int16", "int8", "uint64", "uint32", "uint16", "uint8"),
+            "number": ("float64", "float32"),
+            "string": ("object"),
+            # TODO: support object type rather than coercing to string
+            "object": ("object",),
+            # TODO: support array type rather than coercing to string
+            "array": ("object",),
+            "null": ("object",),
+        }
+        if not reverse:
+            for json_type, pandas_types in map.items():
+                if str_typ == json_type:
+                    return pandas_types[0]
+            logger.debug(f"JSON type '{str_typ}' is not mapped, falling back to default conversion to object")
+            return "object"
+        else:
+            for json_type, pandas_types in map.items():
+                if any([str_typ.startswith(pd_type) for pd_type in pandas_types]):
+                    return json_type
+            logger.debug(f"Pandas dtype '{str_typ}' is not mapped, falling back to default conversion to string")
+            return "string"  # default type if unspecified in map

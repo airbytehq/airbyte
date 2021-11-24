@@ -19,6 +19,7 @@ from airbyte_cdk.sources.streams import Stream
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
 from .formats.csv_parser import CsvParser
+from .formats.json_parser import JsonParser
 from .formats.parquet_parser import ParquetParser
 
 JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
@@ -36,6 +37,7 @@ class FileStream(Stream, ABC):
         """Mapping where every key is equal  'filetype' and values are  corresponding  parser classes."""
         return {
             "csv": CsvParser,
+            "json": JsonParser,
             "parquet": ParquetParser,
         }
 
