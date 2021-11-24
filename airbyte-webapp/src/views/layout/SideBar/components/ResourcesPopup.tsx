@@ -6,6 +6,7 @@ import { faSlack } from "@fortawesome/free-brands-svg-icons";
 
 import { useConfig } from "config";
 import { Popout } from "components";
+
 import DocsIcon from "./DocsIcon";
 import RecipesIcon from "./RecipesIcon";
 import StatusIcon from "./StatusIcon";
@@ -99,6 +100,13 @@ const ResourcesPopup: React.FC<{
       targetComponent={(targetProps) =>
         children({ onOpen: targetProps.onOpen })
       }
+      styles={{
+        menuPortal: (base) => ({
+          ...base,
+          // TODO: temporary dirty hack
+          transform: "translate3D(100px, -200px, 0px)",
+        }),
+      }}
       isSearchable={false}
       options={listData}
     />
