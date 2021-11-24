@@ -4,23 +4,23 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "date": {
+    "Date": {
       "type": ["null", "string"],
       "format": "date"
     },
-    "rating": {
+    "Rating": {
       "type": ["null", "number"]
     },
-    "comments": {
+    "Comments": {
       "type": ["null", "string"]
     },
-    "response": {
+    "Response": {
       "type": ["null", "string"]
     },
-    "order-id": {
+    "Order ID": {
       "type": ["null", "string"]
     },
-    "rater-email": {
+    "Rater Email": {
       "type": ["null", "string"]
     }
   }

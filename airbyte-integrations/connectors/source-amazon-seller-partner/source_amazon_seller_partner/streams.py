@@ -390,13 +390,8 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
 
     @transformer.registerCustomTransform
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-        logger.info('registerCustomTransform')
-        logger.info(original_value)
-        logger.info(field_schema)
         if original_value and "format" in field_schema and field_schema["format"] == "date":
             transformed_value = pendulum.from_format(original_value, "M/D/YY").to_date_string()
-            logger.info('transformed_value')
-            logger.info(transformed_value)
             return transformed_value
             
         return original_value    
