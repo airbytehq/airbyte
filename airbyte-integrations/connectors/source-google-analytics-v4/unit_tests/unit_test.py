@@ -98,7 +98,9 @@ def test_check_connection_fails_jwt(
     source = SourceGoogleAnalyticsV4()
     is_success, msg = source.check_connection(MagicMock(), test_config)
     assert is_success is False
-    assert msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}. No records have been fetched."
+    assert (
+        msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}. Cannot retrieve data from that view ID."
+    )
     jwt_encode_mock.encode.assert_called()
     assert mock_auth_call.called
     assert mock_api_returns_no_records.called
@@ -146,7 +148,9 @@ def test_check_connection_fails_oauth(
     source = SourceGoogleAnalyticsV4()
     is_success, msg = source.check_connection(MagicMock(), test_config)
     assert is_success is False
-    assert msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}. No records have been fetched."
+    assert (
+        msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}. Cannot retrieve data from that view ID."
+    )
     jwt_encode_mock.encode.assert_not_called()
     assert "https://www.googleapis.com/auth/analytics.readonly" in unquote(mock_auth_call.last_request.body)
     assert "client_id_val" in unquote(mock_auth_call.last_request.body)
