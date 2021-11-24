@@ -12,14 +12,14 @@ from google.ads.googleads.v8.services.services.google_ads_service.pagers import 
 from .google_ads import GoogleAds
 
 
-def chunk_date_range(
-    start_date: str, conversion_window: int, field: str, end_date: str = None, time_unit: str = "months", days_of_data_storage: int = None
-) -> Iterable[Mapping[str, any]]:
+def chunk_date_range(start_date: str, conversion_window: int, field: str, report_name: str, end_date: str = None,time_unit: str = "months", days_of_data_storage: int = None) -> Iterable[
+    Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
     Returns a list of the beginning and ending timetsamps of each month between the start date and now.
     The return value is a list of dicts {'date': str} which can be used directly with the Slack API
     """
+
     intervals = []
     end_date = pendulum.parse(end_date) if end_date else pendulum.now()
     start_date = pendulum.parse(start_date)
@@ -38,7 +38,10 @@ def chunk_date_range(
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date < end_date:
         intervals.append({field: start_date.to_date_string()})
-        start_date = start_date.add(**{time_unit: 1})
+        if report_name == 'click_view':
+            start_date = start_date.add(**{time_unit: 1})
+        else:
+            start_date = start_date.add(**{time_unit: 1})
 
     return intervals
 
@@ -75,13 +78,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         stream_state = stream_state or {}
         start_date = stream_state.get(self.cursor_field) or self._start_date
 
-        return chunk_date_range(
-            start_date=start_date,
-            conversion_window=self.conversion_window_days,
-            field=self.cursor_field,
-            time_unit=self.time_unit,
-            days_of_data_storage=self.days_of_data_storage,
-        )
+        return chunk_date_range(start_date=start_date, conversion_window=self.conversion_window_days,
+                                field=self.cursor_field, report_name=self.name,time_unit=self.time_unit,days_of_data_storage=self.days_of_data_storage)
 
     @staticmethod
     def get_date_params(stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None, time_unit: str = "months"):
@@ -97,7 +95,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             return start_date.add(days=1).to_date_string(), start_date.add(days=2).to_date_string()
         return start_date.add(days=1).to_date_string(), end_date.to_date_string()
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+    Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
 
         # When state is none return date from latest record
@@ -116,7 +115,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         start_date, end_date = self.get_date_params(stream_slice, self.cursor_field, time_unit=self.time_unit)
         query = GoogleAds.convert_schema_into_query(
-            schema=self.get_json_schema(), report_name=self.name, from_date=start_date, to_date=end_date, cursor_field=self.cursor_field
+            schema=self.get_json_schema(), report_name=self.name, from_date=start_date, to_date=end_date,
+            cursor_field=self.cursor_field
         )
         return query
 
@@ -199,6 +199,6 @@ class ClickView(IncrementalGoogleAdsStream):
     """
     ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView
     """
-
+    cursor_field = "segments.date"
+    primary_key = None
     time_unit = "days"
-    days_of_data_storage = 90

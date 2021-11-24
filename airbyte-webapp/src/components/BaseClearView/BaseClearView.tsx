@@ -29,7 +29,7 @@ const BaseClearView: React.FC = (props) => {
   return (
     <Content>
       <MainInfo>
-        <Img src="/logo.png" alt="logo" />
+        <Img src="/airbyte/logo.png" alt="logo" />
         {props.children}
       </MainInfo>
       <Version />

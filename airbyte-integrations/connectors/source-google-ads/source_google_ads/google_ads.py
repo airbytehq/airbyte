@@ -10,6 +10,7 @@ import pendulum
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v8.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from proto.marshal.collections import Repeated, RepeatedComposite
+import pendulum
 
 REPORT_MAPPING = {
     "accounts": "customer",
@@ -72,7 +73,8 @@ class GoogleAds:
 
     @staticmethod
     def convert_schema_into_query(
-        schema: Mapping[str, Any], report_name: str, from_date: str = None, to_date: str = None, cursor_field: str = None
+            schema: Mapping[str, Any], report_name: str, from_date: str = None, to_date: str = None,
+            cursor_field: str = None
     ) -> str:
         from_category = REPORT_MAPPING[report_name]
         fields = GoogleAds.get_fields_from_schema(schema)
@@ -82,9 +84,13 @@ class GoogleAds:
 
         if cursor_field:
             end_date_inclusive = "<=" if (pendulum.parse(to_date) - pendulum.parse(from_date)).days > 1 else "<"
-            query_template += (
-                f"WHERE {cursor_field} >= '{from_date}' AND {cursor_field} {end_date_inclusive} '{to_date}' ORDER BY {cursor_field} ASC"
-            )
+            if from_category == 'click_view':
+                # ClickView must have a filter limiting the results to one day.
+                to_date = pendulum.parse(from_date).add(days=1).to_date_string()
+                query_template += f"WHERE {cursor_field} > '{from_date}' AND {cursor_field} {end_date_inclusive} '{to_date}' ORDER BY {cursor_field} ASC"
+            else:
+                # Fix issue 5411: Make date_start and date_end inclusive.
+                query_template += f"WHERE {cursor_field} >= '{from_date}' AND {cursor_field} {end_date_inclusive} '{to_date}' ORDER BY {cursor_field} ASC"
 
         return query_template
 

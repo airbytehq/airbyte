@@ -1,0 +1,5 @@
+*
+!Dockerfile
+!main.py
+!destination_s3_parquet
+!setup.py

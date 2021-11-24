@@ -126,6 +126,8 @@ run {
     environment "AIRBYTE_VERSION", env.VERSION
     environment "AIRBYTE_ROLE", System.getenv('AIRBYTE_ROLE')
     environment "TEMPORAL_HOST", "localhost:7233"
+    environment "BLOTOUT_BASE_URL", env.BLOTOUT_BASE_URL
+    environment "BLOTOUT_AUTH_ENDPOINT", env.BLOTOUT_AUTH_ENDPOINT
 }
 
 task copyGeneratedTar(type: Copy) {

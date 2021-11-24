@@ -17,13 +17,14 @@ abstract class AirbyteRequestService {
     options?: Partial<RequestInit>
   ): Promise<T> {
     const path = `${this.rootUrl}${url}`;
-
+    const token = localStorage.getItem("bo_token");
     const requestOptions: RequestInit = merge(
       {
         method: "POST",
         body: body ? JSON.stringify(body) : undefined,
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       },
       options

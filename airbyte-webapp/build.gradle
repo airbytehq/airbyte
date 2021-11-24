@@ -30,7 +30,7 @@ task test(type: NpmTask) {
 }
 
 assemble.dependsOn npm_run_build
-build.finalizedBy test
+//build.finalizedBy test
 
 task copyBuild(type: Copy) {
     dependsOn copyDocker

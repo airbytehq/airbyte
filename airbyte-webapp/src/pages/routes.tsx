@@ -25,23 +25,25 @@ import { WithPageAnalytics } from "./withPageAnalytics";
 import { CompleteOauthRequest } from "./CompleteOauthRequest";
 
 export enum Routes {
-  Preferences = "/preferences",
-  Onboarding = "/onboarding",
+  Preferences = "/airbyte/preferences",
+  Onboarding = "/airbyte/onboarding",
 
-  Connections = "/connections",
-  Destination = "/destination",
-  Source = "/source",
-  Connection = "/connection",
+  Connections = "/airbyte/connections",
+  Destination = "/airbyte/destination",
+  Source = "/airbyte/source",
+  Connection = "/airbyte/connection",
   ConnectionNew = "/new-connection",
   SourceNew = "/new-source",
   DestinationNew = "/new-destination",
-  Settings = "/settings",
+  Settings = "/airbyte/settings",
+  SettingsDestination = "/destination",
+  SettingsSource = "/source",
   Configuration = "/configuration",
   Notifications = "/notifications",
   Metrics = "/metrics",
   Account = "/account",
   AuthFlow = "/auth_flow",
-  Root = "/",
+  Root = "/airbyte/",
 }
 
 const MainViewRoutes = () => {

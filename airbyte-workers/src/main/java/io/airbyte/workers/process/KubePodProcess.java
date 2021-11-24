@@ -349,6 +349,7 @@ public class KubePodProcess extends Process {
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
+
     // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
     // main container completes
     final String heartbeatCommand = MoreResources.readResource("entrypoints/check.sh")
@@ -381,6 +382,7 @@ public class KubePodProcess extends Process {
         .withInitContainers(init)
         .withContainers(containers)
         .withVolumes(pipeVolume, configVolume, terminationVolume)
+        .addToNodeSelector("eks.amazonaws.com/nodegroup","managed-node")
         .endSpec()
         .build();
 

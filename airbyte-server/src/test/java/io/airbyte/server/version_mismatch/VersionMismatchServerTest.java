@@ -60,7 +60,7 @@ public class VersionMismatchServerTest {
     assertEquals(HttpStatus.INTERNAL_SERVER_ERROR_500, http.getResponseCode());
 
     assertEquals(http.getHeaderField(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), "*");
-    assertEquals(http.getHeaderField(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), "Origin, Content-Type, Accept, Content-Encoding");
+    assertEquals(http.getHeaderField(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), "Origin, Content-Type, Accept, Content-Encoding, Authorization");
     assertEquals(http.getHeaderField(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS), "GET, POST, PUT, DELETE, OPTIONS, HEAD");
   }
 

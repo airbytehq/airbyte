@@ -68,6 +68,8 @@ public class EnvConfigs implements Configs {
   public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
+  private static final String BLOTOUT_AUTH_ENDPOINT = "BLOTOUT_AUTH_ENDPOINT";
+  private static final String BLOTOUT_BASE_URL = "BLOTOUT_BASE_URL";
   private static final String KUBE_NAMESPACE = "KUBE_NAMESPACE";
   private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
   private static final String RESOURCE_CPU_REQUEST = "RESOURCE_CPU_REQUEST";
@@ -168,6 +170,16 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDatabasePassword() {
     return getEnsureEnv(DATABASE_PASSWORD);
+  }
+
+  @Override
+  public String getBlotoutBaseUrl() {
+    return getEnsureEnv(BLOTOUT_BASE_URL);
+  }
+
+  @Override
+  public String getBlotoutAuthEndpoint() {
+    return getEnsureEnv(BLOTOUT_AUTH_ENDPOINT);
   }
 
   @Override

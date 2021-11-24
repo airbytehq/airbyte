@@ -1,0 +1,26 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/mailgun",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Source Mailgun Singer Spec",
+    "type": "object",
+    "required": ["private_key","start_date","event_availability"],
+    "additionalProperties": false,
+    "properties": {
+       "private_key": {
+           "type": "string",
+           "description": "Your Mailgun Private Key."
+      },
+      "start_date": {
+           "type": "string",
+           "description": "Data generated in Marketo after this date will be replicated. This date must be specified in the format YYYY-MM-DDT00:00:00Z.",
+           "examples": ["2020-09-25T00:00:00Z"],
+           "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      },
+      "event_availability": {
+           "type": "integer",
+           "description": "Amount of hours to subtract from the state timestamp, to catch any late-arriving events."
+      }
+    }
+  }
+}

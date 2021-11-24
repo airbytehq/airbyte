@@ -20,7 +20,11 @@ const Img = styled.img<PlaceholderProps>`
 
 const Placeholder: React.FC<PlaceholderProps> = ({ resource }) => {
   return (
-    <Img src={`/empty-${resource}.png`} alt="placeholder" resource={resource} />
+    <Img
+      src={`/airbyte/empty-${resource}.png`}
+      alt="placeholder"
+      resource={resource}
+    />
   );
 };
 
