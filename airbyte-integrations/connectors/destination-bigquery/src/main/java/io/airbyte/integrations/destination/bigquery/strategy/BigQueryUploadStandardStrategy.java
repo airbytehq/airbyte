@@ -38,21 +38,19 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryUploadBasicStrategy implements BigQueryUploadStrategy {
+public class BigQueryUploadStandardStrategy implements BigQueryUploadStrategy {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploadBasicStrategy.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploadStandardStrategy.class);
 
   private final BigQuery bigquery;
   private final ConfiguredAirbyteCatalog catalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private AirbyteMessage lastStateMessage;
 
-  public BigQueryUploadBasicStrategy(BigQuery bigquery, ConfiguredAirbyteCatalog catalog,
-      Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) {
+  public BigQueryUploadStandardStrategy(BigQuery bigquery, ConfiguredAirbyteCatalog catalog,
+      Consumer<AirbyteMessage> outputRecordCollector) {
     this.bigquery = bigquery;
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
-    this.lastStateMessage = lastStateMessage;
   }
 
   @Override
@@ -84,7 +82,7 @@ public class BigQueryUploadBasicStrategy implements BigQueryUploadStrategy {
   }
 
   @Override
-  public void close(List<BigQueryWriteConfig> writeConfigList, boolean hasFailed) {
+  public void close(List<BigQueryWriteConfig> writeConfigList, boolean hasFailed, AirbyteMessage lastStateMessage) {
     try {
       writeConfigList.parallelStream().forEach(bigQueryWriteConfig -> Exceptions.toRuntime(() -> {
         final TableDataWriteChannel writer = bigQueryWriteConfig.getWriter();

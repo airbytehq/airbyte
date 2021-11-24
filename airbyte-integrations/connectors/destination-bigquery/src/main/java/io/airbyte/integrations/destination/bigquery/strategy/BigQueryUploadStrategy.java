@@ -9,5 +9,5 @@ public interface BigQueryUploadStrategy {
 
   void upload(BigQueryWriteConfig writer, AirbyteMessage airbyteMessage, ConfiguredAirbyteCatalog catalog);
 
-  void close(List<BigQueryWriteConfig> writeConfigList, boolean hasFailed);
+  void close(List<BigQueryWriteConfig> writeConfigList, boolean hasFailed, AirbyteMessage lastStateMessage);
 }

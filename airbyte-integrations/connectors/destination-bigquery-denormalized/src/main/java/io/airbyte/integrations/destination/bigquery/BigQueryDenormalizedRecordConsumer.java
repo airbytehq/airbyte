@@ -7,8 +7,8 @@ package io.airbyte.integrations.destination.bigquery;
 import com.google.cloud.bigquery.BigQuery;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.destination.bigquery.strategy.BigQueryDenormalizedUploadBasicStrategy;
-import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadStrategy;
+import io.airbyte.integrations.destination.bigquery.BigQueryDestination.UploadingMethod;
+import io.airbyte.integrations.destination.bigquery.strategy.BigQueryDenormalizedUploadStandardStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.HashSet;
@@ -36,11 +36,9 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     this.fieldsWithRefDefinition = fieldsWithRefDefinition;
     this.namingResolver = namingResolver;
     invalidKeys = new HashSet<>();
-  }
-
-  @Override
-  protected void flushQueueToDestination(BigQueryWriteConfig writer, BigQueryUploadStrategy bigQueryUploadStrategy) {
-    super.flushQueueToDestination(writer, new BigQueryDenormalizedUploadBasicStrategy(namingResolver, invalidKeys, fieldsWithRefDefinition));
+    bigQueryUploadStrategyMap.put(UploadingMethod.STANDARD,
+        new BigQueryDenormalizedUploadStandardStrategy(bigquery, catalog, outputRecordCollector, namingResolver, invalidKeys,
+            fieldsWithRefDefinition));
   }
 
   @Override

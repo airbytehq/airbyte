@@ -2,6 +2,7 @@ package io.airbyte.integrations.destination.bigquery.strategy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.QueryParameterValue;
@@ -14,25 +15,32 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryDenormalizedUploadBasicStrategy extends BigQueryUploadBasicStrategy {
+public class BigQueryDenormalizedUploadStandardStrategy extends BigQueryUploadStandardStrategy {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedUploadBasicStrategy.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedUploadStandardStrategy.class);
 
   private final StandardNameTransformer namingResolver;
   private final Set<String> invalidKeys;
   private final Set<String> fieldsWithRefDefinition;
 
-  public BigQueryDenormalizedUploadBasicStrategy(StandardNameTransformer namingResolver, Set<String> invalidKeys,
+  public BigQueryDenormalizedUploadStandardStrategy(BigQuery bigquery,
+      ConfiguredAirbyteCatalog catalog,
+      Consumer<AirbyteMessage> outputRecordCollector,
+      StandardNameTransformer namingResolver, Set<String> invalidKeys,
       Set<String> fieldsWithRefDefinition) {
+    super(bigquery, catalog, outputRecordCollector);
     this.namingResolver = namingResolver;
     this.invalidKeys = invalidKeys;
     this.fieldsWithRefDefinition = fieldsWithRefDefinition;

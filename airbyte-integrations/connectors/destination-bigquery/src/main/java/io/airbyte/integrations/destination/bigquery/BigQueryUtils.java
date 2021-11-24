@@ -49,7 +49,7 @@ public class BigQueryUtils {
     return executeQuery(queryJob);
   }
 
-  static ImmutablePair<Job, String> executeQuery(final Job queryJob) {
+  public static ImmutablePair<Job, String> executeQuery(final Job queryJob) {
     final Job completedJob = waitForQuery(queryJob);
     if (completedJob == null) {
       LOGGER.error("Job no longer exists:" + queryJob);

@@ -4,52 +4,34 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static com.amazonaws.util.StringUtils.UTF8;
-import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.printHeapMemoryConsumption;
-
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.util.CollectionUtils;
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryException;
-import com.google.cloud.bigquery.CopyJobConfiguration;
-import com.google.cloud.bigquery.CsvOptions;
-import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.Job;
-import com.google.cloud.bigquery.JobInfo;
-import com.google.cloud.bigquery.JobInfo.CreateDisposition;
-import com.google.cloud.bigquery.JobInfo.WriteDisposition;
-import com.google.cloud.bigquery.LoadJobConfiguration;
-import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.Schema;
-import com.google.cloud.bigquery.TableDataWriteChannel;
-import com.google.cloud.bigquery.TableId;
 import io.airbyte.commons.bytes.ByteUtils;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadStrategy;
+import io.airbyte.integrations.destination.bigquery.BigQueryDestination.UploadingMethod;
 import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadGCSStrategy;
-import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadBasicStrategy;
+import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadStandardStrategy;
+import io.airbyte.integrations.destination.bigquery.strategy.BigQueryUploadStrategy;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
-import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.lucene.util.CollectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +54,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private AirbyteMessage lastFlushedState;
   private AirbyteMessage pendingState;
 
+  protected Map<UploadingMethod, BigQueryUploadStrategy> bigQueryUploadStrategyMap = new ConcurrentHashMap<>();
+
   public BigQueryRecordConsumer(final BigQuery bigquery,
       final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
       final ConfiguredAirbyteCatalog catalog,
@@ -86,6 +70,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     this.buffer = new ArrayList<>(10_000);
     this.isKeepFilesInGcs = isKeepFilesInGcs;
     this.bufferSizeInBytes = 0;
+    bigQueryUploadStrategyMap.put(UploadingMethod.STANDARD, new BigQueryUploadStandardStrategy(bigquery, catalog, outputRecordCollector));
+    bigQueryUploadStrategyMap.put(UploadingMethod.GCS, new BigQueryUploadGCSStrategy(bigquery));
   }
 
   @Override
@@ -95,6 +81,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   @Override
   public void acceptTracked(final AirbyteMessage message) throws IOException {
+
     if (message.getType() == Type.STATE) {
       lastStateMessage = message;
       pendingState = message;
@@ -126,10 +113,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
                 Jsons.serialize(catalog), Jsons.serialize(airbyteMessage.getRecord())));
       }
       final BigQueryWriteConfig writer = writeConfigs.get(pair);
-      if (writer.getGcsCsvWriter() != null) {
-        new BigQueryUploadGCSStrategy(bigquery).upload(writer, airbyteMessage, catalog);
+      if (isGcsUploadingMode) {
+        bigQueryUploadStrategyMap.get(UploadingMethod.GCS).upload(writer, airbyteMessage, catalog);
       } else {
-        new BigQueryUploadBasicStrategy(bigquery, catalog, outputRecordCollector, lastStateMessage);
+        bigQueryUploadStrategyMap.get(UploadingMethod.STANDARD).upload(writer, airbyteMessage, catalog);
       }
     });
 
@@ -144,14 +131,18 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   @Override
   public void close(final boolean hasFailed) {
     LOGGER.info("Started closing all connections");
-
+    if (!buffer.isEmpty()) {
+      flushQueueToDestination();
+    }
     // process gcs streams
     if (isGcsUploadingMode) {
       final List<BigQueryWriteConfig> gcsWritersList = writeConfigs.values().parallelStream()
           .filter(el -> el.getGcsCsvWriter() != null)
           .collect(Collectors.toList());
-      new BigQueryUploadGCSStrategy(bigquery).close(gcsWritersList, hasFailed);
+      bigQueryUploadStrategyMap.get(UploadingMethod.GCS).close(gcsWritersList, hasFailed, lastStateMessage);
     }
+
+    bigQueryUploadStrategyMap.get(UploadingMethod.STANDARD).close(new ArrayList<>(writeConfigs.values()), hasFailed, lastStateMessage);
 
     if (isGcsUploadingMode && !isKeepFilesInGcs) {
       deleteDataFromGcsBucket();

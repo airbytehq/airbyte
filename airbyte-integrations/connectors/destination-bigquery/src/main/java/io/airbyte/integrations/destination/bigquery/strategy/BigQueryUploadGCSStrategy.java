@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +57,7 @@ public class BigQueryUploadGCSStrategy implements BigQueryUploadStrategy {
   }
 
   @Override
-  public void close(List<BigQueryWriteConfig> writeConfigList, boolean hasFailed) {
+  public void close(List<BigQueryWriteConfig> writeConfigList, boolean hasFailed, AirbyteMessage lastStateMessage) {
     if (!writeConfigList.isEmpty()) {
       LOGGER.info("GCS connectors that need to be closed:" + writeConfigList);
       writeConfigList.parallelStream().forEach(writer -> {
@@ -99,7 +98,7 @@ public class BigQueryUploadGCSStrategy implements BigQueryUploadStrategy {
       LOGGER.info(String.format("Started copying data from %s GCS csv file to %s tmp BigQuery table with schema: \n %s",
           csvFile, tmpTable, schema));
 
-      final CsvOptions csvOptions = CsvOptions.newBuilder().setEncoding(UTF8).setSkipLeadingRows(1).build();
+      final var csvOptions = CsvOptions.newBuilder().setEncoding(UTF8).setSkipLeadingRows(1).build();
 
       final LoadJobConfiguration configuration =
           LoadJobConfiguration.builder(tmpTable, csvFile)
