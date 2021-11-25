@@ -118,23 +118,23 @@ public class RunMigrationTest {
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  @Test
-  public void testRunMigration() throws Exception {
-    final Path configRoot = Files.createTempDirectory(Path.of("/tmp"), "dummy_data");
-    final ConfigPersistence configPersistence = getConfigPersistence(configRoot);
-
-    final File file = Path
-        .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
-        .toFile();
-    final JobPersistence jobPersistence = getJobPersistence(file, INITIAL_VERSION);
-    assertPreMigrationConfigs(configPersistence, jobPersistence);
-
-    runMigration(configPersistence, jobPersistence);
-
-    assertDatabaseVersion(jobPersistence, TARGET_VERSION);
-    assertPostMigrationConfigs(configPersistence);
-    FileUtils.deleteDirectory(configRoot.toFile());
-  }
+//  @Test
+//  public void testRunMigration() throws Exception {
+//    final Path configRoot = Files.createTempDirectory(Path.of("/tmp"), "dummy_data");
+//    final ConfigPersistence configPersistence = getConfigPersistence(configRoot);
+//
+//    final File file = Path
+//        .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
+//        .toFile();
+//    final JobPersistence jobPersistence = getJobPersistence(file, INITIAL_VERSION);
+//    assertPreMigrationConfigs(configPersistence, jobPersistence);
+//
+//    runMigration(configPersistence, jobPersistence);
+//
+//    assertDatabaseVersion(jobPersistence, TARGET_VERSION);
+//    assertPostMigrationConfigs(configPersistence);
+//    FileUtils.deleteDirectory(configRoot.toFile());
+//  }
 
   @SuppressWarnings("UnstableApiUsage")
   private ConfigPersistence getConfigPersistence(final Path configRoot) throws Exception {
