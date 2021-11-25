@@ -121,25 +121,23 @@ class AbstractTestIncrementalFileStream(ABC):
 
             records = []
             for stream_slice in fs.stream_slices(sync_mode=sync_mode, stream_state=current_state):
-                if stream_slice is not None:
-                    # we need to do this in order to work out which extra columns (if any) we expect in this stream_slice
-                    expected_columns = []
-                    for file_dict in stream_slice:
-                        # TODO: if we ever test other filetypes in these tests this will need fixing
-                        file_reader = CsvParser(format)
-                        with file_dict["storagefile"].open(file_reader.is_binary) as f:
-                            expected_columns.extend(list(file_reader.get_inferred_schema(f).keys()))
-                    expected_columns = set(expected_columns)  # de-dupe
+                # we need to do this in order to work out which extra columns (if any) we expect in this stream_slice
+                expected_columns = []
+                # TODO: if we ever test other filetypes in these tests this will need fixing
+                file_reader = CsvParser(format)
+                with stream_slice["storage_file"].open(file_reader.is_binary) as f:
+                    expected_columns.extend(list(file_reader.get_inferred_schema(f).keys()))
+                expected_columns = set(expected_columns)  # de-dupe
 
-                    for record in fs.read_records(sync_mode, stream_slice=stream_slice):
-                        # check actual record values match expected schema
-                        assert all(
-                            [
-                                isinstance(record[col], JSONTYPE_TO_PYTHONTYPE[typ]) or record[col] is None
-                                for col, typ in full_expected_schema.items()
-                            ]
-                        )
-                        records.append(record)
+                for record in fs.read_records(sync_mode, stream_slice=stream_slice):
+                    # check actual record values match expected schema
+                    assert all(
+                        [
+                            isinstance(record[col], JSONTYPE_TO_PYTHONTYPE[typ]) or record[col] is None
+                            for col, typ in full_expected_schema.items()
+                        ]
+                    )
+                    records.append(record)
 
             assert all([len(r.keys()) == total_num_columns for r in records])
             assert len(records) == num_records

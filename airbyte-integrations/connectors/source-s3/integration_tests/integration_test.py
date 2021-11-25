@@ -10,8 +10,8 @@ from typing import Iterator, List, Mapping
 import boto3
 from airbyte_cdk.logger import AirbyteLogger
 from botocore.errorfactory import ClientError
-from source_s3.stream import IncrementalFileStreamS3
 
+from source_s3.stream import IncrementalFileStreamS3
 from .integration_test_abstract import HERE, SAMPLE_DIR, AbstractTestIncrementalFileStream
 
 LOGGER = AirbyteLogger()
@@ -44,17 +44,20 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
             region_name=region,
         )
         self.s3_resource = boto3.resource(
-            "s3", aws_access_key_id=credentials["aws_access_key_id"], aws_secret_access_key=credentials["aws_secret_access_key"]
+            "s3", aws_access_key_id=credentials["aws_access_key_id"],
+            aws_secret_access_key=credentials["aws_secret_access_key"]
         )
 
-    def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool = True) -> Iterator[str]:
+    def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool = True) -> \
+            Iterator[str]:
         self._s3_connect(credentials)
         region = "eu-west-3"
         location = {"LocationConstraint": region}
         bucket_name = cloud_bucket_name
 
         print("\n")
-        LOGGER.info(f"Uploading {len(files_to_upload)} file(s) to {'private' if private else 'public'} aws bucket '{bucket_name}'")
+        LOGGER.info(
+            f"Uploading {len(files_to_upload)} file(s) to {'private' if private else 'public'} aws bucket '{bucket_name}'")
         try:
             self.s3_client.head_bucket(Bucket=bucket_name)
         except ClientError:
@@ -91,6 +94,3 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
         bucket.objects.all().delete()
         bucket.delete()
         LOGGER.info(f"S3 Bucket {cloud_bucket_name} is now deleted")
-
-
-

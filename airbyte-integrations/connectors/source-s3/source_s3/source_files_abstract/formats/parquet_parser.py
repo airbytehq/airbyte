@@ -7,6 +7,7 @@ from typing import Any, BinaryIO, Iterator, List, Mapping, TextIO, Tuple, Union
 import pyarrow.parquet as pq
 from pyarrow.parquet import ParquetFile
 
+from ..file_info import FileInfo
 from .abstract_file_parser import AbstractFileParser
 from .parquet_spec import ParquetFormat
 
@@ -50,9 +51,7 @@ class ParquetParser(AbstractFileParser):
         Doc: https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
 
         """
-        options = self._select_options(
-            "buffer_size"
-        )
+        options = self._select_options("buffer_size")
         # Source is a file path and enabling memory_map can improve performance in some environments.
         options["memory_map"] = True
         return pq.ParquetFile(file, **options)
@@ -101,7 +100,7 @@ class ParquetParser(AbstractFileParser):
             raise OSError("empty Parquet file")
         return schema_dict
 
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
         PyArrow reads streaming batches from a Parquet file

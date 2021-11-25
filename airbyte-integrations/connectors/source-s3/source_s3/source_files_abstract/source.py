@@ -59,23 +59,20 @@ class SourceFilesAbstract(AbstractSource, ABC):
         The error object will be cast to string to display the problem to the user.
         """
 
-        found_a_file = False
         try:
-            for filepath in self.stream_class(**config).filepath_iterator():
-                found_a_file = True
+            for file_info in self.stream_class(**config).filepath_iterator():
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
                 # test that matching on the pattern doesn't error
-                globmatch(filepath, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
-                break  # just need first file here to test connection and valid patterns
+                globmatch(file_info.key, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
+                # just need first file here to test connection and valid patterns
+                return True, None
 
         except Exception as e:
             logger.error(format_exc())
-            return (False, e)
+            return False, e
 
-        else:
-            if not found_a_file:
-                logger.warn("Found 0 files (but connection is valid).")
-            return (True, None)
+        logger.warn("Found 0 files (but connection is valid).")
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """

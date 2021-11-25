@@ -6,10 +6,12 @@ from unittest.mock import patch
 
 import pytest
 from airbyte_cdk import AirbyteLogger
-from source_s3.source_files_abstract.stream import FileStream
+from source_s3.source_files_abstract.stream import FileInfo, FileStream
+
+from .abstract_test_parser import memory_limit
 
 LOGGER = AirbyteLogger()
-from .abstract_test_parser import memory_limit
+
 
 class TestFileStream:
     @pytest.mark.parametrize(  # set return_schema to None for an expected fail
@@ -89,7 +91,7 @@ class TestFileStream:
                 },
             ),
         ],
-        ids=["simple_case", "additional_columns", "missing_columns", "additional_and_missing_columns"]
+        ids=["simple_case", "additional_columns", "missing_columns", "additional_and_missing_columns"],
     )
     @patch(
         "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
@@ -122,7 +124,7 @@ class TestFileStream:
                 {"id": "1", "first_name": "Samwise", "last_name": "Gamgee"},
             ),
         ],
-        ids=["one_extra_field", "multiple_extra_fields", "empty_extra_map"]
+        ids=["one_extra_field", "multiple_extra_fields", "empty_extra_map"],
     )
     @patch(
         "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
@@ -305,8 +307,8 @@ class TestFileStream:
             "specific filetype at least 1 level deep",
             "everything with specific filename (any filetype)",
             "specific dir / any dir / specific dir / any file",
-            "specific file prefix and filetype, anywhere"
-        ]
+            "specific file prefix and filetype, anywhere",
+        ],
     )
     @patch(
         "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
@@ -314,4 +316,5 @@ class TestFileStream:
     @memory_limit(512)
     def test_pattern_matched_filepath_iterator(self, patterns, filepaths, expected_filepaths):
         fs = FileStream(dataset="dummy", provider={}, format={}, path_pattern=patterns)
-        assert set([p for p in fs.pattern_matched_filepath_iterator(filepaths)]) == set(expected_filepaths)
+        file_infos = [FileInfo.create_by_local_file(filepath) for filepath in filepaths]
+        assert set([p for p in fs.pattern_matched_filepath_iterator(file_infos)]) == set(expected_filepaths)

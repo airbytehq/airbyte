@@ -3,41 +3,39 @@
 #
 
 
-import shutil, os
+import shutil
 import tempfile
 from zipfile import ZipFile
-from unit_tests.test_csv_parser import TestCsvParser
+
 import docker
 import pytest
 
 pytest_plugins = ("source_acceptance_test.plugin",)
 
-
-@pytest.fixture(scope="session", autouse=True)
-def connector_setup():
-    """This fixture is a placeholder for external resources that acceptance test might require."""
-    yield
+TMP_FOLDER = tempfile.mkdtemp()
 
 
 @pytest.fixture(scope="session", autouse=True)
 def minio_setup():
-    client = docker.from_env()
-    tmp_dir = tempfile.mkdtemp()
+
     with ZipFile("./integration_tests/minio_data.zip") as archive:
-        archive.extractall(tmp_dir)
-    # generates a big CSV files separately
-    big_file_folder = os.path.join(tmp_dir, "big_files")
-    os.makedirs(big_file_folder)
-    filepath = os.path.join(big_file_folder, "file.csv")
-    _, file_size = TestCsvParser.generate_big_file(filepath, 0.2, 500)
+        archive.extractall(TMP_FOLDER)
+    client = docker.from_env()
+    for container in client.containers.list():
+        if container.name == "ci_test_minio":
+            container.stop()
+            break
 
     container = client.containers.run(
         "minio/minio",
-        f"server {tmp_dir}/minio_data",
-        network_mode="host",
-        volumes=["/tmp:/tmp", "/var/run/docker.sock:/var/run/docker.sock"],
+        f"server {TMP_FOLDER}",
+        name="ci_test_minio",
+        auto_remove=True,
+        # network_mode="host",
+        volumes=[f"/{TMP_FOLDER}/minio_data:/{TMP_FOLDER}", "/var/run/docker.sock:/var/run/docker.sock"],
         detach=True,
+        ports={"9000/tcp": ("127.0.0.1", 9000)},
     )
     yield
-    shutil.rmtree(tmp_dir)
+    shutil.rmtree(TMP_FOLDER)
     container.stop()

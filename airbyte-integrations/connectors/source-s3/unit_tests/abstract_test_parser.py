@@ -2,38 +2,53 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import linecache
+import os
+import random
+import sys
+import tracemalloc
 from abc import ABC, abstractmethod
-from typing import Any, List, Mapping
+from datetime import datetime, timedelta
+from functools import lru_cache, wraps
+from typing import Any, Callable, List, Mapping
 
 import pytest
 from airbyte_cdk import AirbyteLogger
 from smart_open import open as smart_open
-import resource, os, psutil
-from functools import wraps
-from typing import Callable, List
-import random
-import sys
-from datetime import datetime, timedelta
-import shutil
-from functools import lru_cache
-from memory_profiler import memory_usage
-import tempfile
-import psutil
-import pytest
+from source_s3.source_files_abstract.file_info import FileInfo
 
 
-
-def memory_limit(max_memory_in_megabytes: int) -> Callable:
+def memory_limit(max_memory_in_megabytes: int, print_limit: int = 20) -> Callable:
     """Runs a test function by a separate process with restricted memory"""
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
-            total_used_memory = psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2
-            used_memory, result = memory_usage((func, args, kwargs), max_usage=True, retval=True)
-            used_memory = used_memory - total_used_memory
-            total_used_memory = psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2
-            assert used_memory < max_memory_in_megabytes, f"Overuse of memory: total: {total_used_memory}Mb used: {used_memory}Mb, limit: {max_memory_in_megabytes}Mb!!"
+            tracemalloc.start()
+            result = func(*args, **kwargs)
+            snapshot = tracemalloc.take_snapshot()
+            snapshot = snapshot.filter_traces(
+                (
+                    tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
+                    tracemalloc.Filter(False, "<frozen importlib._bootstrap_external>"),
+                    tracemalloc.Filter(False, "<unknown>"),
+                )
+            )
+            log_messages = ["\n"]
+            top_stats = snapshot.statistics("lineno")
+            for index, stat in enumerate(top_stats[:print_limit], 1):
+                frame = stat.traceback[0]
+                filename = os.sep.join(frame.filename.split(os.sep)[-2:])
+                log_messages.append("#%s: %s:%s: %.1f KiB" % (index, filename, frame.lineno, stat.size / 1024))
+                line = linecache.getline(frame.filename, frame.lineno).strip()
+                if line:
+                    log_messages.append(f"    {line}")
+            total = sum(stat.size for stat in top_stats) / 1024 ** 2
+            log_messages.append("Total allocated size: %.4f Mb" % (total,))
+            log_messages = "\n".join(log_messages)
+            assert (
+                total < max_memory_in_megabytes
+            ), f"Overuse of memory, used: {total}Mb, limit: {max_memory_in_megabytes}Mb!!{log_messages}"
             return result
 
         return wrapper
@@ -122,14 +137,14 @@ class AbstractTestParser(ABC):
         filepath = file_info["filepath"]
         self.logger.info(f"read the file: {filepath}, size: {os.stat(filepath).st_size / (1024 ** 2)}Mb")
         with smart_open(filepath, self._get_readmode(file_info)) as f:
+            file_metadata = FileInfo.create_by_local_file(filepath)
             if "test_stream_records" in file_info["fails"]:
                 with pytest.raises(Exception) as e_info:
-                    [print(r) for r in file_info["AbstractFileParser"].stream_records(f)]
+                    [print(r) for r in file_info["AbstractFileParser"].stream_records(f, file_metadata)]
                     self.logger.debug(str(e_info))
             else:
-                records = [r for r in file_info["AbstractFileParser"].stream_records(f)]
+                records = [r for r in file_info["AbstractFileParser"].stream_records(f, file_metadata)]
 
                 assert len(records) == file_info["num_records"]
                 for index, expected_record in file_info["line_checks"].items():
                     assert records[index - 1] == expected_record
-

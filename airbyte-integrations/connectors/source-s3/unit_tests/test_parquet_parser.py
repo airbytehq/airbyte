@@ -6,18 +6,17 @@ import bz2
 import copy
 import gzip
 import os
-import sys
+import shutil
 from pathlib import Path
 from typing import Any, List, Mapping
-import shutil
+
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-import pytest
-from .conftest import TMP_FOLDER
 from source_s3.source_files_abstract.formats.parquet_parser import PARQUET_TYPES, ParquetParser
 
 from .abstract_test_parser import AbstractTestParser
+from .conftest import TMP_FOLDER
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/")
 
@@ -38,11 +37,9 @@ class TestParquetParser(AbstractTestParser):
     filetype = "parquet"
     record_types = PARQUET_TYPES
 
-
     @classmethod
     def generate_parquet_file(
-            cls, name: str, columns: Mapping[str, str], num_rows: int,
-            custom_rows: Mapping[int, Mapping[str, Any]] = None
+        cls, name: str, columns: Mapping[str, str], num_rows: int, custom_rows: Mapping[int, Mapping[str, Any]] = None
     ) -> str:
         """Generates  a random data and save it to a tmp file"""
         filename = os.path.join(TMP_FOLDER, name + "." + cls.filetype)
@@ -67,7 +64,6 @@ class TestParquetParser(AbstractTestParser):
         if not pq_writer:
             pq.write_table(pa.Table.from_arrays([]), filename)
         return filename
-
 
     @classmethod
     def cases(cls) -> List[Mapping[str, Any]]:
@@ -106,15 +102,15 @@ class TestParquetParser(AbstractTestParser):
         }
         num_records = 100
         cases["custom_parquet_parameters"] = {
-                "filepath": cls.generate_parquet_file("normal_params_test", schema, num_records),
-                "num_records": num_records,
-                "AbstractFileParser": ParquetParser(
-                    format=params,
-                    master_schema=master_schema,
-                ),
-                "inferred_schema": master_schema,
-                "line_checks": {},
-                "fails": [],
+            "filepath": cls.generate_parquet_file("normal_params_test", schema, num_records),
+            "num_records": num_records,
+            "AbstractFileParser": ParquetParser(
+                format=params,
+                master_schema=master_schema,
+            ),
+            "inferred_schema": master_schema,
+            "line_checks": {},
+            "fails": [],
         }
 
         # tests a big parquet file (100K records)
@@ -126,15 +122,15 @@ class TestParquetParser(AbstractTestParser):
         num_records = 100000
 
         cases["big_parquet_file"] = {
-                "filepath": cls.generate_parquet_file("big_parquet_file", schema, num_records),
-                "num_records": num_records,
-                "AbstractFileParser": ParquetParser(
-                    format=params,
-                    master_schema=master_schema,
-                ),
-                "inferred_schema": master_schema,
-                "line_checks": {},
-                "fails": [],
+            "filepath": cls.generate_parquet_file("big_parquet_file", schema, num_records),
+            "num_records": num_records,
+            "AbstractFileParser": ParquetParser(
+                format=params,
+                master_schema=master_schema,
+            ),
+            "inferred_schema": master_schema,
+            "line_checks": {},
+            "fails": [],
         }
 
         # extra columns in master schema
@@ -209,16 +205,29 @@ class TestParquetParser(AbstractTestParser):
         }
 
         expected_record = copy.deepcopy(test_record)
-        expected_record["created_date_at"] = ParquetParser.convert_field_data("date",
-                                                                              expected_record["created_date_at"])
-        expected_record["created_time_at"] = ParquetParser.convert_field_data("time",
-                                                                              expected_record["created_time_at"])
+        expected_record["created_date_at"] = ParquetParser.convert_field_data("date", expected_record["created_date_at"])
+        expected_record["created_time_at"] = ParquetParser.convert_field_data("time", expected_record["created_time_at"])
         expected_record["created_at"] = ParquetParser.convert_field_data("timestamp", expected_record["created_at"])
 
         cases["check_one_record"] = {
-                "filepath": cls.generate_parquet_file(
-                    "check_one_record", schema, num_records, custom_rows={7: list(test_record
-                                                                                  .values())}
+            "filepath": cls.generate_parquet_file("check_one_record", schema, num_records, custom_rows={7: list(test_record.values())}),
+            "num_records": num_records,
+            "AbstractFileParser": ParquetParser(
+                format=params,
+                master_schema=master_schema,
+            ),
+            "inferred_schema": master_schema,
+            "line_checks": {8: expected_record},
+            "fails": [],
+        }
+
+        # tests compression: gzip
+        num_records = 10
+        for archive_type in ["gz", "bz2"]:
+            cases[f"compression_{archive_type}"] = {
+                "filepath": compress(
+                    archive_type,
+                    cls.generate_parquet_file("compression_test", schema, num_records, custom_rows={7: list(test_record.values())}),
                 ),
                 "num_records": num_records,
                 "AbstractFileParser": ParquetParser(
@@ -228,25 +237,5 @@ class TestParquetParser(AbstractTestParser):
                 "inferred_schema": master_schema,
                 "line_checks": {8: expected_record},
                 "fails": [],
-        }
-
-        # tests compression: gzip
-        num_records = 10
-        for archive_type in ["gz", "bz2"]:
-            cases[f"compression_{archive_type}"] = {
-                    "filepath": compress(
-                        archive_type,
-                        cls.generate_parquet_file("compression_test", schema, num_records,
-                                                   custom_rows={7: list(test_record.values())}),
-                    ),
-                    "num_records": num_records,
-                    "AbstractFileParser": ParquetParser(
-                        format=params,
-                        master_schema=master_schema,
-                    ),
-                    "inferred_schema": master_schema,
-                    "line_checks": {8: expected_record},
-                    "fails": [],
-                }
+            }
         return cases
-

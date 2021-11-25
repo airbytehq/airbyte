@@ -8,8 +8,12 @@ from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 import pyarrow as pa
 from airbyte_cdk.logger import AirbyteLogger
 
+from ..file_info import FileInfo
+
 
 class AbstractFileParser(ABC):
+    logger = AirbyteLogger()
+
     def __init__(self, format: dict, master_schema: dict = None):
         """
         :param format: file format specific mapping as described in spec.json
@@ -19,7 +23,6 @@ class AbstractFileParser(ABC):
         self._master_schema = (
             master_schema  # this may need to be used differently by some formats, pyarrow allows extra columns in csv schema
         )
-        self.logger = AirbyteLogger()
 
     @property
     @abstractmethod
@@ -39,12 +42,13 @@ class AbstractFileParser(ABC):
         """
 
     @abstractmethod
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
         """
         Override this with format-specifc logic to stream each data row from the file as a mapping of {columns:values}
         Note: avoid loading the whole file into memory to avoid OOM breakages
 
         :param file: file-like object (opened via StorageFile)
+        :param file_info: file metadata
         :yield: data record as a mapping of {columns:values}
         """
 
