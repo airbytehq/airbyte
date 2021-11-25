@@ -639,17 +639,17 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/zuora
   sourceType: api
 - sourceDefinitionId: 522f40fe-e887-11eb-9a03-0242ac130003
-  name: Mailgun
+  name: Mailgun Singer
   dockerRepository: blotout/source-mailgun-singer
   dockerImageTag: 0.1.2
   documentationUrl: https://github.com/streetteam/tap-mailgun
 - sourceDefinitionId: ac849ce0-3ad3-11ec-8d3d-0242ac130003
-  name: Apps Flyer
+  name: Apps Flyer Singer
   dockerRepository: blotout/source-appsflyer-singer
   dockerImageTag: 0.1.6
   documentationUrl: https://github.com/blotoutio/tap-appsflyer
 - sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1
-  name: Google Analytics
+  name: Google Analytics Singer
   dockerRepository: blotout/source-googleanalytics-singer
   dockerImageTag: 0.2.12
   documentationUrl: https://hub.docker.com/r/airbyte/source-googleanalytics-singer

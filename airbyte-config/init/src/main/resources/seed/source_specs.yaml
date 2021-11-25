@@ -1740,7 +1740,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.15"
+- dockerImage: "blotout/source-google-ads:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-ads"
     connectionSpecification:
@@ -6166,3 +6166,78 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "blotout/source-googleanalytics-singer:0.2.12"
+  spec:
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/googleanalytics",
+    "connectionSpecification":
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Airbyte Google Analytics Source Spec",
+      "type": "object"
+      "required":
+      - "credentials_json"
+      -  "view_id"
+      -  "start_date"
+      "additionalProperties": false,
+      "properties":
+        "credentials_json":
+          "type": "string"
+          "title": "Credentials JSON"
+          "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/googleanalytics\">docs</a> if you need help generating this key."
+          "airbyte_secret": true
+        "view_id":
+          "type": "string"
+          "title": "View ID"
+          "description": "The ID for the Google Analytics View you want to fetch data from. This can be found from the <a href=\"https://ga-dev-tools.appspot.com/account-explorer/\">Google Analytics Account Explorer</a>."
+        "start_date":
+          "type": "string"
+          "title": "Start Date"
+          "description": "A date in the format YYYY-MM-DDT00:00:00Z."
+          "examples":
+          - "2020-06-01T00:00:00Z"
+        "custom_reports":
+          "title": "Custom Reports"
+          "type": "string"
+          "description": "A JSON array describing the custom reports you want to sync from GA. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/googleanalytics\">docs</a> to get more information about this field."
+- dockerImage: "blotout/source-appsflyer-singer:0.1.6"
+  spec:
+    "documentationUrl": "https://github.com/blotoutio/tap-appsflyer"
+    "connectionSpecification":
+      "$schema": "http://json-schema.org/draft-07/schema#"
+      "title": "Source Appsflyer Singer Spec"
+      "type": "object"
+      "required":
+      - "app_id"
+      - "api_token"
+      "additionalProperties": false
+      "properties":
+        "app_id":
+          "type": "string"
+          "description": "<a href=\"https://support.appsflyer.com/hc/en-us/articles/207034346-Using-Pull-API-aggregate-data#principles-of-implementation\">app_id</a> is an app identifier found in AppsFlyer."
+        "api_token":
+          "type": "string"
+          "description": "<a href=\"https://support.appsflyer.com/hc/en-us/articles/207034346-Using-Pull-API-aggregate-data#principles-of-implementation\">api_token</a> is the Pull API token for authentication."
+- dockerImage: "blotout/source-mailgun-singer:0.1.2"
+  spec:
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/mailgun"
+    "connectionSpecification":
+      "$schema": "http://json-schema.org/draft-07/schema#"
+      "title": "Source Mailgun Singer Spec"
+      "type": "object"
+      "required":
+      - "private_key"
+      - "start_date"
+      - "event_availability"
+      "additionalProperties": false,
+      "properties":
+        "private_key":
+          "type": "string",
+          "description": "Your Mailgun Private Key."
+        "start_date":
+          "type": "string"
+          "description": "Data generated in Marketo after this date will be replicated. This date must be specified in the format YYYY-MM-DDT00:00:00Z."
+          "examples":
+          - "2020-09-25T00:00:00Z"
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        "event_availability":
+          "type": "integer"
+          "description": "Amount of hours to subtract from the state timestamp, to catch any late-arriving events."
