@@ -144,7 +144,10 @@ class BulkSalesforceStream(SalesforceStream):
         except exceptions.HTTPError as error:
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
                 error_data = error.response.json()[0]
-                if error_data.get("message", "") == "Selecting compound data not supported in Bulk Query":
+                if (error_data.get("message", "") == "Selecting compound data not supported in Bulk Query") or (
+                    error_data.get("errorCode", "") == "INVALIDENTITY"
+                    and "is not supported by the Bulk API" in error_data.get("message", "")
+                ):
                     self.logger.error(
                         f"Cannot receive data for stream '{self.name}' using BULK API, error message: '{error_data.get('message')}'"
                     )
@@ -184,7 +187,7 @@ class BulkSalesforceStream(SalesforceStream):
         self.logger.warning(f"Not wait the {self.name} data for {self._wait_timeout} minutes, data: {job_info}!!")
         return job_status
 
-    def execute_job(self, query: Mapping[str, Any], url: str) -> str:
+    def execute_job(self, query: str, url: str) -> str:
         job_status = "Failed"
         for i in range(0, self.MAX_RETRY_NUMBER):
             job_id = self.create_stream_job(query=query, url=url)
