@@ -117,7 +117,7 @@ public class RunMigrationTest {
     }
   }
 
-  @SuppressWarnings("UnstableApiUsage")
+  //@SuppressWarnings("UnstableApiUsage")
 //  @Test
 //  public void testRunMigration() throws Exception {
 //    final Path configRoot = Files.createTempDirectory(Path.of("/tmp"), "dummy_data");
