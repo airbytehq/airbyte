@@ -429,8 +429,6 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
             })
             start_date = end_date_slice
 
-        logger.info(slices)            
-            
         return slices
 
 
