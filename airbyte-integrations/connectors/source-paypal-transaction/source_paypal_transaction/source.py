@@ -6,13 +6,13 @@ import logging
 import time
 from abc import ABC
 from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator, Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, Oauth2Authenticator
 from dateutil.parser import isoparse
 
 
@@ -52,15 +52,12 @@ class PaypalTransactionStream(HttpStream, ABC):
 
     def __init__(
         self,
-        authenticator: Union[Oauth2Authenticator, TokenAuthenticator],
+        authenticator: HttpAuthenticator,
         start_date: Union[datetime, str],
         end_date: Union[datetime, str] = None,
         is_sandbox: bool = False,
         **kwargs,
     ):
-        super().__init__(authenticator=authenticator)
-        self._authenticator = authenticator
-        
         now = datetime.now().replace(microsecond=0).astimezone()
 
         if end_date and isinstance(end_date, str):
@@ -92,6 +89,7 @@ class PaypalTransactionStream(HttpStream, ABC):
 
         self.is_sandbox = is_sandbox
 
+        super().__init__(authenticator=authenticator)
 
     def validate_input_dates(self):
         # Validate input dates
@@ -336,14 +334,6 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
 
-class PayPalAuthenticator:
-    
-    def __init__(self, config: Dict):
-        self.config = config
-
-    def get_auth(self):
-        access_token = self.config.get("access_token")
-        return TokenAuthenticator(token = access_token)
 
 class SourcePaypalTransaction(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -352,13 +342,12 @@ class SourcePaypalTransaction(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        #authenticator = PayPalOauth2Authenticator(config)
-        authenticator = PayPalAuthenticator(config).get_auth()
+        authenticator = PayPalOauth2Authenticator(config)
 
         # Try to get API TOKEN
-        #token = authenticator.get_access_token()
-        #if not token:
-        #    return False, "Unable to fetch Paypal API token due to incorrect client_id or secret"
+        token = authenticator.get_access_token()
+        if not token:
+            return False, "Unable to fetch Paypal API token due to incorrect client_id or secret"
 
         # Try to initiate a stream and validate input date params
         try:
@@ -372,9 +361,8 @@ class SourcePaypalTransaction(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # authenticator = PayPalOauth2Authenticator(config)
-        authenticator = PayPalAuthenticator(config).get_auth()
-        
+        authenticator = PayPalOauth2Authenticator(config)
+
         return [
             Transactions(authenticator=authenticator, **config),
             Balances(authenticator=authenticator, **config),
