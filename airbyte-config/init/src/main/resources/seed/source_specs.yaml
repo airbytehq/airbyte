@@ -6198,6 +6198,9 @@
           "title": "Custom Reports"
           "type": "string"
           "description": "A JSON array describing the custom reports you want to sync from GA. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/googleanalytics\">docs</a> to get more information about this field."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: [ ]
 - dockerImage: "blotout/source-appsflyer-singer:0.1.6"
   spec:
     "documentationUrl": "https://github.com/blotoutio/tap-appsflyer"
@@ -6216,6 +6219,9 @@
         "api_token":
           "type": "string"
           "description": "<a href=\"https://support.appsflyer.com/hc/en-us/articles/207034346-Using-Pull-API-aggregate-data#principles-of-implementation\">api_token</a> is the Pull API token for authentication."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: [ ]
 - dockerImage: "blotout/source-mailgun-singer:0.1.2"
   spec:
     "documentationUrl": "https://docs.airbyte.io/integrations/sources/mailgun"
@@ -6241,3 +6247,6 @@
         "event_availability":
           "type": "integer"
           "description": "Amount of hours to subtract from the state timestamp, to catch any late-arriving events."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: [ ]
