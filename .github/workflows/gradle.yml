@@ -20,7 +20,7 @@ jobs:
           java-version: '14'
       - uses: actions/setup-node@v1
         with:
-          node-version: '14.7'
+          node-version: '16.13.0'
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
