@@ -41,6 +41,7 @@ from source_facebook_marketing.streams import (
 logger = logging.getLogger("airbyte")
 
 # deprecated from ConnectorSpec, using default value of 1 = 1 day.
+# Related Issue here: https://github.com/airbytehq/airbyte/issues/8027
 INSIGHTS_DAYS_PER_JOB: int = 1
 
 
@@ -59,37 +60,49 @@ class ConnectorConfig(BaseModel):
     class Config:
         title = "Source Facebook Marketing"
 
-    account_id: str = Field(description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API.")
-
-    access_token: str = Field(
-        description='The value of the access token generated. See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information',
-        airbyte_secret=True,
-    )
-
     start_date: datetime = Field(
+        title="Start Date",
         description="The date from which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
+        order=0,
     )
 
     end_date: Optional[datetime] = Field(
+        title="End Date (Optional)",
         description="The date until which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the latest data.",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-26T00:00:00Z"],
         default_factory=pendulum.now,
+        order=1,
     )
 
-    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets.")
+    account_id: str = Field(
+        title="Account ID",
+        description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API.",
+        examples=["111111111111111"],
+        order=2,
+    )
+
+    access_token: str = Field(
+        title="Access Token",
+        description='The value of the access token generated. See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information',
+        airbyte_secret=True,
+        order=3,
+    )
+
+    include_deleted: bool = Field(
+        title="Include Deleted", default=False, description="Include data from deleted campaigns, ads, and adsets.", order=4
+    )
 
     insights_lookback_window: int = Field(
-        default=28,
-        description="The attribution window for the actions",
-        minimum=0,
-        maximum=28,
+        title="Insights Lookback Window", default=28, description="The attribution window for the actions", minimum=0, maximum=28, order=5
     )
 
     custom_insights: Optional[List[InsightConfig]] = Field(
-        description="A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
+        title="Custom Insights (Optional)",
+        description="A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)",
+        order=6,
     )
 
 
