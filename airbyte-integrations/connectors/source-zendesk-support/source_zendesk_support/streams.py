@@ -57,26 +57,12 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         return None
 
     def serialize_response(self, response: requests.Response) -> str:
-        headers = [
-            "Cache-Control",
-            "Connection",
-            "Content-Length",
-            "Content-Type",
-            "Date",
-            "Retry-After",
-            "Server",
-            "X-Rate-Limit",
-            "X-Rate-Limit-Remaining",
-            "X-Zendesk-Origin-Server",
-            "X-Zendesk-Zorg",
-        ]
-
-        record = {"url": response.url, "status_code": response.status_code, "headers": {}}
-
-        for header in headers:
-            value = response.headers.get(header)
-            if value:
-                record["headers"][header] = value
+        record = {
+            "url": response.url,
+            "status_code": response.status_code,
+            "text": response.text,
+            "headers": dict(response.headers),
+        }
         return json.dumps(record)
 
     def should_retry(self, response: requests.Response) -> bool:
@@ -84,7 +70,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         try:
             response.raise_for_status()
         except requests.HTTPError:
-            self.logger.info(self.serialize_response(response))
+            self.logger.error(self.serialize_response(response))
         return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
