@@ -37,15 +37,9 @@ jobs:
           docker tag airbyte/webapp:dev blotout/airbyte-webapp:${{ env.DOCKER_TAG }}
           docker push blotout/airbyte-webapp:${{ env.DOCKER_TAG }}
       - name: Push Server Docker
-
         run: |
           docker tag airbyte/server:dev blotout/airbyte-server:${{ env.DOCKER_TAG }}
           docker push blotout/airbyte-server:${{ env.DOCKER_TAG }}
-      - name: Push Seed Docker
-        run: |
-
-          docker tag airbyte/seed:dev blotout/airbyte-seed:${{ env.DOCKER_TAG }}
-          docker push blotout/airbyte-seed:${{ env.DOCKER_TAG }}
       - name: Push Scheduler Docker
         run: |
           docker tag airbyte/scheduler:dev blotout/airbyte-scheduler:${{ env.DOCKER_TAG }}
