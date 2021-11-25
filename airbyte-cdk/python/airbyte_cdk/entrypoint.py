@@ -15,6 +15,7 @@ from airbyte_cdk.logger import AirbyteLogFormatter, init_logger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
+from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets
 
 logger = init_logger("airbyte")
