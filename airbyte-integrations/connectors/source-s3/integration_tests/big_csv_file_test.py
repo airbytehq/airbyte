@@ -9,10 +9,10 @@ from typing import Mapping
 
 import pytest
 from airbyte_cdk import AirbyteLogger
-
 from source_s3.source import SourceS3
 from unit_tests.abstract_test_parser import memory_limit
 from unit_tests.test_csv_parser import generate_big_file
+
 from .acceptance import TMP_FOLDER
 
 HERE = Path(__file__).resolve().parent
@@ -28,7 +28,7 @@ def credentials() -> Mapping:
 class TestIntegrationCsvFiles:
     logger = AirbyteLogger()
 
-    @memory_limit(20)
+    @memory_limit(20)  # max used memory should be less than 20Mb
     def read_source(self, credentials, catalog):
         read_count = 0
         for msg in SourceS3().read(logger=self.logger, config=credentials, catalog=catalog):
@@ -38,7 +38,7 @@ class TestIntegrationCsvFiles:
 
     @pytest.mark.order(1)
     def test_big_file(self, credentials):
-        """tests a big csv file (>= 1.5G records)"""
+        """tests a big csv file (>= 1.0G records)"""
         # generates a big CSV files separately
         big_file_folder = os.path.join(TMP_FOLDER, "minio_data", "test-bucket", "big_files")
         os.makedirs(big_file_folder)
