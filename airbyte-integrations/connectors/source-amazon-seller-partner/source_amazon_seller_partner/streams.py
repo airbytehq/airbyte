@@ -14,6 +14,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
@@ -28,6 +29,8 @@ REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
 
+DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
 # 33min. taken from real world experience working with amazon seller partner reports
 REPORTS_MAX_WAIT_SECONDS = 1980
 
@@ -36,7 +39,7 @@ class AmazonSPStream(HttpStream, ABC):
     data_field = "payload"
 
     def __init__(
-        self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_ids: List[str], *args, **kwargs
+        self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_ids: List[str], period_in_days: Optional[int], *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
 
@@ -139,6 +142,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         aws_signature: AWSSignature,
         replication_start_date: str,
         marketplace_ids: List[str],
+        period_in_days: Optional[int],
         authenticator: HttpAuthenticator = NoAuth(),
     ):
         self._authenticator = authenticator
@@ -147,6 +151,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self._session.auth = aws_signature
         self._replication_start_date = replication_start_date
         self.marketplace_ids = marketplace_ids
+        self.period_in_days = period_in_days
 
     @property
     def url_base(self) -> str:
@@ -196,18 +201,30 @@ class ReportsAmazonSPStream(Stream, ABC):
 
         return self._session.prepare_request(requests.Request(**args))
 
-    def _report_data(self) -> Mapping[str, Any]:
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
         replication_start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
 
         return {
             "reportType": self.name,
             "marketplaceIds": self.marketplace_ids,
-            "createdSince": replication_start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "createdSince": replication_start_date.strftime(DATE_TIME_FORMAT),
         }
 
-    def _create_report(self) -> Mapping[str, Any]:
+    def _create_report(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
         request_headers = self.request_headers()
-        report_data = self._report_data()
+        report_data = self._report_data(sync_mode, cursor_field, stream_slice, stream_state)
         create_report_request = self._create_prepared_request(
             http_method="POST",
             path=f"{self.path_prefix}/reports",
@@ -260,7 +277,13 @@ class ReportsAmazonSPStream(Stream, ABC):
         document_records = csv.DictReader(StringIO(document), delimiter="\t")
         yield from document_records
 
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         """
         Create and retrieve the report.
         Decrypt and parse the report is its fully proceed, then yield the report document records.
@@ -270,7 +293,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         is_done = False
         start_time = pendulum.now("utc")
         seconds_waited = 0
-        report_id = self._create_report()["reportId"]
+        report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
 
         # create and retrieve the report
         while not is_processed and seconds_waited < REPORTS_MAX_WAIT_SECONDS:
@@ -294,25 +317,6 @@ class ReportsAmazonSPStream(Stream, ABC):
         else:
             logger.warn(f"There are no report document related in stream `{self.name}`. Report body {report_payload}")
 
-class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
-    @property
-    @abstractmethod
-    def cursor_field(self) -> Union[str, List[str]]:
-        pass
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-        logger.info('CURRENT STREAM STATE')
-        logger.info(current_stream_state)
-        logger.info('LATEST RECORD')
-        logger.info(latest_record)
-        latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
 
 class MerchantListingsReports(ReportsAmazonSPStream):
     name = "GET_MERCHANT_LISTINGS_ALL_DATA"
@@ -366,27 +370,74 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 
+class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
+    @property
+    @abstractmethod
+    def cursor_field(self) -> Union[str, List[str]]:
+        pass
+
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
+        if stream_slice:
+            data_times = {}
+            if stream_slice.get("dataStartTime"):
+                data_times["dataStartTime"] = stream_slice["dataStartTime"]
+            if stream_slice.get("dataEndTime"):
+                data_times["dataEndTime"] = stream_slice["dataEndTime"]
+            data.update(data_times)
+
+        return data
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        latest_benchmark = latest_record[self.cursor_field]
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+        return {self.cursor_field: latest_benchmark}
+
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        
+        start_date = pendulum.parse(self._replication_start_date)
+        end_date = pendulum.now()
+
+        if stream_state:
+            state = stream_state.get(self.cursor_field)            
+            start_date = pendulum.parse(state)
+
+        start_date = min(start_date, end_date)
+        slices = []
+
+        while start_date < end_date:
+            end_date_slice = start_date.add(days=self.period_in_days)
+            slices.append({
+                "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
+                "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT)
+            })
+            start_date = end_date_slice
+
+        logger.info(slices)            
+            
+        return slices
+
+
 class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
     name = "GET_SELLER_FEEDBACK_DATA"
     cursor_field = 'Date'
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
-
-    def __init__(self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_ids: List[str], data_start_time: Optional[str], data_end_time: Optional[str], authenticator: HttpAuthenticator = NoAuth()):
-        super().__init__(url_base, aws_signature, replication_start_date, marketplace_ids, authenticator=authenticator)
-        self._data_start_time = data_start_time
-        self._data_end_time = data_end_time
-
-    def _report_data(self) -> Mapping[str, Any]:
-        result = super()._report_data()
-        data_start_time = pendulum.now("utc") if self._data_start_time is None else pendulum.parse(self._data_start_time)
-        data_end_time = pendulum.now("utc") if self._data_end_time is None else pendulum.parse(self._data_end_time)
-        data_times = {
-            "dataStartTime": data_start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "dataEndTime": data_end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        }        
-        result.update(data_times)
-
-        return result
 
     @transformer.registerCustomTransform
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:

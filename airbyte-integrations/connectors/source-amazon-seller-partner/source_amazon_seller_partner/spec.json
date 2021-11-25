@@ -12,21 +12,12 @@
         "examples": ["2017-01-25T00:00:00Z"],
         "type": "string"
       },
-      "data_start_time": {
-        "title": "The start of a date and time range used for selecting the data to report.",
-        "description": "The start of a date and time range, in ISO 8601 date time format, used for selecting the data to report. The default is now. The value must be prior to or equal to the current date and time. Not all report types make use of this.",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "examples": ["2017-01-25T00:00:00Z"],
-        "type": "string",
-        "default": null
-      },
-      "data_end_time": {
-        "title": "The end of a date and time range used for selecting the data to report.",
-        "description": "The end of a date and time range, in ISO 8601 date time format, used for selecting the data to report. The default is now. The value must be prior to or equal to the current date and time. Not all report types make use of this.",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "examples": ["2017-01-26T00:00:00Z"],
-        "type": "string",
-        "default": null
+      "period_in_days": {
+        "title": "Period in days",
+        "description": "Will be used for date chunks for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
+        "examples": ["30", "365"],
+        "type": "integer",
+        "default": 30
       },
       "refresh_token": {
         "title": "Refresh Token",
