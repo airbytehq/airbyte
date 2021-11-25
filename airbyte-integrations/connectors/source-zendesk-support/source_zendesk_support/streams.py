@@ -56,13 +56,16 @@ class SourceZendeskSupportStream(HttpStream, ABC):
             return dict(parse_qsl(urlparse(next_page).query)).get("page")
         return None
 
-    def serialize_response(self, response: requests.Response) -> str:
+    def serialize_response(self, response: requests.Response, with_content=False) -> str:
         record = {
             "url": response.url,
             "status_code": response.status_code,
-            "text": response.text,
+            "elapsed_time": response.elapsed.total_seconds(),
             "headers": dict(response.headers),
+            "content_length": len(response.content),
         }
+        if with_content:
+            record["text"] = response.text
         return json.dumps(record)
 
     def should_retry(self, response: requests.Response) -> bool:
@@ -70,6 +73,8 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         try:
             response.raise_for_status()
         except requests.HTTPError:
+            self.logger.error(self.serialize_response(response, with_content=True))
+        else:
             self.logger.error(self.serialize_response(response))
         return super().should_retry(response)
 
