@@ -13,8 +13,8 @@
         "type": "string"
       },
       "period_in_days": {
-        "title": "Period in days",
-        "description": "Will be used for date chunks for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
+        "title": "Period In Days",
+        "description": "Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
         "examples": ["30", "365"],
         "type": "integer",
         "default": 30
