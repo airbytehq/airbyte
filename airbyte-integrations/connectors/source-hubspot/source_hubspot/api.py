@@ -225,11 +225,10 @@ class Stream(ABC):
         see https://github.com/airbytehq/airbyte/issues/2397
         """
         for record in records:
-            if self.unset_dynamic_fields:
-                if isinstance(record, Mapping) and "properties" in record:
-                    for key in record["properties"]:
-                        if key.startswith("hs_time_in_"):
-                            record["properties"][key] = None
+            if isinstance(record, Mapping) and "properties" in record:
+                for key in record["properties"]:
+                    if key.startswith("hs_time_in_"):
+                        record["properties"][key] = None
             yield record
 
     @staticmethod
@@ -360,7 +359,10 @@ class Stream(ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         default_params = {self.limit_field: self.limit}
         params = {**default_params, **params} if params else {**default_params}
-        yield from self._filter_dynamic_fields(self._filter_old_records(self._read(getter, params)))
+        g = self._filter_old_records(self._read(getter, params))
+        if self.unset_dynamic_fields:
+            g = self._filter_dynamic_fields(g)
+        yield from g
 
     def parse_response(self, response: Union[Mapping[str, Any], List[dict]]) -> Iterator:
         if isinstance(response, Mapping):
