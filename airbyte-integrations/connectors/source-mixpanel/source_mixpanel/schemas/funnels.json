@@ -77,17 +77,10 @@
                 "type": ["null", "integer"]
               },
               "buckets": {
-                "anyOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "type": "integer"
-                    }
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["null", "array"],
+                "items": {
+                  "type": "integer"
+                }
               }
             }
           },
@@ -102,17 +95,10 @@
                 "type": ["null", "integer"]
               },
               "buckets": {
-                "anyOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "type": "integer"
-                    }
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["null", "array"],
+                "items": {
+                  "type": "integer"
+                }
               }
             }
           }
