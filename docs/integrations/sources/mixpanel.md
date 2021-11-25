@@ -59,7 +59,7 @@ Select the correct region \(EU or US\) for your Mixpanel project. See detail [he
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| `0.1.6` | 2021-11-25 | [0000](https://github.com/airbytehq/airbyte/issues/0000) | Deleted `date_window_size` and fix schemas date type issue |
+| `0.1.6` | 2021-11-25 | [8256](https://github.com/airbytehq/airbyte/issues/8256) | Deleted `date_window_size` and fix schemas date type issue |
 | `0.1.5` | 2021-11-10 | [7451](https://github.com/airbytehq/airbyte/issues/7451) | Support `start_date` older than 1 year |
 | `0.1.4` | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies |
 | `0.1.3` | 2021-10-30 | [7505](https://github.com/airbytehq/airbyte/issues/7505) | Guarantee that standard and custom mixpanel properties in the `Engage` stream are written as strings |
