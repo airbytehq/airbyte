@@ -22,6 +22,7 @@
 with __dbt__CTE__exchange_rate_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: "test_normalization".test_normalization._airbyte_raw_exchange_rate
 select
     json_value(_airbyte_data, ''$."id"'') as id,
     json_value(_airbyte_data, ''$."currency"'') as currency,
@@ -41,6 +42,7 @@ where 1 = 1
 ),  __dbt__CTE__exchange_rate_ab2 as (
 
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: __dbt__CTE__exchange_rate_ab1
 select
     cast(id as 
     bigint
@@ -71,6 +73,7 @@ where 1 = 1
 ),  __dbt__CTE__exchange_rate_ab3 as (
 
 -- SQL model to build a hash column based on the values of this record
+-- depends_on: __dbt__CTE__exchange_rate_ab2
 select
     convert(varchar(32), HashBytes(''md5'',  coalesce(cast(
     
@@ -92,6 +95,7 @@ from __dbt__CTE__exchange_rate_ab2 tmp
 -- exchange_rate
 where 1 = 1
 )-- Final base SQL model
+-- depends_on: __dbt__CTE__exchange_rate_ab3
 select
     id,
     currency,
