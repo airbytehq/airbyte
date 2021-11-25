@@ -8,6 +8,7 @@ import tempfile
 from zipfile import ZipFile
 
 import docker
+import pytest
 from airbyte_cdk import AirbyteLogger
 
 pytest_plugins = ("source_acceptance_test.plugin",)
@@ -30,7 +31,7 @@ def minio_setup():
         name="ci_test_minio",
         auto_remove=True,
         # network_mode="host",
-        volumes=[f"/{TMP_FOLDER}/minio_data:/{TMP_FOLDER}", "/var/run/docker.sock:/var/run/docker.sock"],
+        volumes=[f"/{TMP_FOLDER}/minio_data:/{TMP_FOLDER}"],
         detach=True,
         ports={"9000/tcp": ("127.0.0.1", 9000)},
     )
@@ -38,3 +39,8 @@ def minio_setup():
     yield
     shutil.rmtree(TMP_FOLDER)
     container.stop()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    yield from minio_setup()
