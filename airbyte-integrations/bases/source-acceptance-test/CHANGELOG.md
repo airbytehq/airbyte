@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.29
+Take ConfiguredAirbyteCatalog from discover command by default
+
 ## 0.1.28
 Print stream name when incremental sync tests fail
 
