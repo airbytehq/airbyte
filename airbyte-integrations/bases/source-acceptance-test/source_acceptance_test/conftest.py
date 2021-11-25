@@ -70,7 +70,9 @@ def configured_catalog_fixture(configured_catalog_path, discovered_catalog) -> O
         ConfiguredAirbyteStream(
             stream=stream,
             sync_mode=stream.supported_sync_modes[0],
-            destination_sync_mode=DestinationSyncMode.append
+            destination_sync_mode=DestinationSyncMode.append,
+            cursor_field=stream.default_cursor_field,
+            primary_key=stream.source_defined_primary_key
         ) for _, stream in discovered_catalog.items()
     ]
     return ConfiguredAirbyteCatalog(streams=streams)
