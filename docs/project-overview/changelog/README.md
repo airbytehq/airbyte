@@ -13,13 +13,10 @@ Hey Airbyte Community! Let's go over all the changes from v.32.5 and prior!
 * ✨ Source Exchange Rates: add ignore_weekends option.
 * ✨ Source Facebook: add the videos stream.
 * ✨ Source Freshdesk: removed the limitation in streams pagination.
-* ✨ Source Harvest: support OAuth 2.0.
 * ✨ Source Jira: add option to render fields in HTML format.
-* ✨ Source Linkedin Ads: support OAuth 2.0.
 * ✨ Source MongoDB v2: improve read performance.
 * ✨ Source Pipedrive: specify schema for "persons" stream.
 * ✨ Source PostgreSQL: exclude tables on which user doesn't have select privileges.
-* ✨ Source Snapchat Marketing: support OAuth 2.0.
 * ✨ Source Survey Monkey: improve connection check.
 
 * 🐛 Source Salesforce:  improve resiliency of async bulk jobs.

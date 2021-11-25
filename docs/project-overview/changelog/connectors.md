@@ -25,9 +25,6 @@ New features:
 **Exchange Rates** Source: add `ignore_weekends` option.
 **Facebook** Source: add the videos stream.
 **Freshdesk** Source: removed the limitation in streams pagination.
-**Harvest** Source: support OAuth 2.0.
-**Linkedin Ads** Source: support OAuth 2.0.
-**Snapchat Marketing** Source: support OAuth 2.0.
 **Jira** Source: add option to render fields in HTML format. 
 **MongoDB v2** Source: improve read performance. 
 **Pipedrive** Source: specify schema for "persons" stream. 
