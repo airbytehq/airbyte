@@ -6,7 +6,7 @@ import logging
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
-from typing import Any, Dict, List, Mapping, MutableMapping, Set
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set
 
 import dpath.util
 import pytest
@@ -219,6 +219,90 @@ class TestBasicRead(BaseTest):
         streams_without_records = streams_without_records - allowed_empty_streams
         assert not streams_without_records, f"All streams should return some records, streams without records: {streams_without_records}"
 
+    def _unpack_record_with_schema(self, record: Dict, top_level_field: str, inner_props: dict):
+        inner_record = record.get(top_level_field)
+        inner_props_type = inner_props.get("type", [])
+        if isinstance(inner_props_type, list):
+            inner_props_type = {t.lower() for t in inner_props_type}
+            inner_props_type = list(inner_props_type - {"null"})[0]
+        return inner_record, inner_props_type
+
+    def _check_field_appears_at_least_once_in_record(
+        self,
+        stream_fields_appeared_count: Counter,
+        properties: Dict,
+        record: Dict,
+        parent_keys: Optional[List] = None,
+        prev_prop_type_is_nested: bool = False,
+    ):
+        """
+        Go through the nested stream structure. Count the non-null appearance of each field.
+        """
+
+        for top_level_field, inner_props in properties.items():
+            field_parent_keys = parent_keys or []
+            inner_record, inner_props_type = self._unpack_record_with_schema(
+                record=record, top_level_field=top_level_field, inner_props=inner_props
+            )
+
+            if inner_record:
+                if inner_props_type == "object":
+                    field_parent_keys.append(top_level_field)
+                    self._check_field_appears_at_least_once_in_record(
+                        stream_fields_appeared_count=stream_fields_appeared_count,
+                        properties=inner_props.get("properties", {}),
+                        record=inner_record,
+                        parent_keys=field_parent_keys,
+                        prev_prop_type_is_nested=True,
+                    )
+                elif inner_props_type == "array":
+                    field_parent_keys.append(top_level_field)
+                    for inner_record_array_item in inner_record:
+                        self._check_field_appears_at_least_once_in_record(
+                            stream_fields_appeared_count=stream_fields_appeared_count,
+                            properties=inner_props.get("items", {}).get("properties", {}),
+                            record=inner_record_array_item,
+                            parent_keys=field_parent_keys,
+                            prev_prop_type_is_nested=True,
+                        )
+
+            field_parent_keys = [*field_parent_keys, top_level_field] if prev_prop_type_is_nested else [top_level_field]
+            counter_field = tuple(field_parent_keys)
+            stream_fields_appeared_count[counter_field] = stream_fields_appeared_count[counter_field]
+            if inner_record:
+                stream_fields_appeared_count[counter_field] += 1
+        return stream_fields_appeared_count
+
+    def _validate_field_appears_at_least_once(self, records: List, configured_catalog: ConfiguredAirbyteCatalog):
+        """
+        Validate if each field in a stream has appeared it least once in some record.
+
+        Filter the `stream_to_empty_field_mapping` to get all paths of the fields which
+        does not have any non-null values in stream output records.
+        """
+
+        stream_to_empty_field_mapping = {}
+        for stream in configured_catalog.streams:
+            stream_fields_appeared_count = Counter()
+            stream_records = [record.data for record in records if record.stream == stream.stream.name]
+
+            for record in stream_records:
+                self._check_field_appears_at_least_once_in_record(
+                    stream_fields_appeared_count=stream_fields_appeared_count,
+                    record=record,
+                    properties=stream.stream.json_schema["properties"],
+                )
+
+            empty_fields_in_stream = [field for field, count in stream_fields_appeared_count.items() if count == 0]
+            if empty_fields_in_stream:
+                stream_to_empty_field_mapping[stream.stream.name] = empty_fields_in_stream
+
+        msg = "Following streams has records with fields, that are either null or not present in each output record:\n"
+        for stream_name, fields in stream_to_empty_field_mapping.items():
+            msg += f"`{stream_name}` stream has `{fields}` empty fields\n"
+
+        assert not stream_to_empty_field_mapping, msg
+
     def _validate_expected_records(
         self, records: List[AirbyteMessage], expected_records: List[AirbyteMessage], flags, detailed_logger: Logger
     ):
@@ -267,6 +351,8 @@ class TestBasicRead(BaseTest):
                 assert pk_value is not None, (
                     f"Primary key subkeys {repr(pk_path)} " f"have null values or not present in {record.stream} stream records."
                 )
+
+        self._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
 
         if expected_records:
             self._validate_expected_records(
