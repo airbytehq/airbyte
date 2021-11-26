@@ -3,5 +3,6 @@
   "name": "Google PubSub",
   "dockerRepository": "airbyte/destination-pubsub",
   "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/pubsub"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/pubsub",
+  "icon": "googlepubsub.svg"
 }
