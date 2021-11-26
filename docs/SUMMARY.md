@@ -98,6 +98,7 @@
     * [Mixpanel](integrations/sources/mixpanel.md)
     * [Monday](integrations/sources/monday.md)
     * [Mongo DB](integrations/sources/mongodb-v2.md)
+    * [My Hours](integrations/sources/myhours.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Notion](integrations/sources/notion.md)
     * [Okta](integrations/sources/okta.md)
