@@ -187,6 +187,7 @@ class GithubStream(HttpStream, ABC):
 
         return record
 
+
 class SemiIncrementalGithubStream(GithubStream):
     """
     Semi incremental streams are also incremental but with one difference, they:
@@ -689,12 +690,13 @@ class PullRequestSubstream(HttpSubStream, GithubStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = super().stream_slices(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
-        )
+        parent_stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
         for parent_stream_slice in parent_stream_slices:
-            yield {'pull_request_number': parent_stream_slice['parent']['number'], 'repository': parent_stream_slice['parent']['repository']}
+            yield {
+                "pull_request_number": parent_stream_slice["parent"]["number"],
+                "repository": parent_stream_slice["parent"]["repository"],
+            }
 
 
 class PullRequestStats(PullRequestSubstream):
@@ -704,7 +706,7 @@ class PullRequestStats(PullRequestSubstream):
 
     @property
     def record_keys(self) -> List[str]:
-        return list(self.get_json_schema()['properties'].keys())
+        return list(self.get_json_schema()["properties"].keys())
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -712,7 +714,7 @@ class PullRequestStats(PullRequestSubstream):
         return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield self.transform(response.json(), repository=stream_slice['repository'])
+        yield self.transform(response.json(), repository=stream_slice["repository"])
 
     def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)

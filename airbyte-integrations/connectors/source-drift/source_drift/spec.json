@@ -14,7 +14,12 @@
           {
             "type": "object",
             "title": "OAuth2.0",
-            "required": ["client_id", "client_secret", "access_token", "refresh_token"],
+            "required": [
+              "client_id",
+              "client_secret",
+              "access_token",
+              "refresh_token"
+            ],
             "properties": {
               "credentials": {
                 "type": "string",
@@ -83,4 +88,3 @@
     }
   }
 }
-
