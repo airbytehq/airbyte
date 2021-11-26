@@ -4738,10 +4738,10 @@
       title: "Postgres Source Spec"
       type: "object"
       required:
-        - "host"
-        - "port"
-        - "database"
-        - "username"
+      - "host"
+      - "port"
+      - "database"
+      - "username"
       additionalProperties: false
       properties:
         host:
