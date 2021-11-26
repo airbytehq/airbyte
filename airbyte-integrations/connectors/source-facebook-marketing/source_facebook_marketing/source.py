@@ -42,7 +42,7 @@ logger = logging.getLogger("airbyte")
 
 # deprecated from ConnectorSpec, using default value of 1 = 1 day.
 # Related Issue here: https://github.com/airbytehq/airbyte/issues/8027
-INSIGHTS_DAYS_PER_JOB: int = 1
+INSIGHTS_DAYS_PER_JOB: int = 7
 
 
 class InsightConfig(BaseModel):

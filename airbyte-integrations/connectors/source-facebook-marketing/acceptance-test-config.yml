@@ -14,7 +14,7 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 3600
+      timeout_seconds: 1200
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_without_insights.json"
@@ -22,7 +22,7 @@ tests:
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 3600
+      timeout_seconds: 1200
       # Ad Insights API has estimated metrics in response, which is calculated based on another metrics.
       # Sometimes API doesn't return estimated metrics. E.g, cost_per_estimated_ad_recallers is calculated
       # as total amount spent divided by estimated ad recall lift rate. When second metric is equal to zero
