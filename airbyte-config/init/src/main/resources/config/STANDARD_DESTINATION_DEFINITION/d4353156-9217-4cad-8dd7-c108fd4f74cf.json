@@ -3,5 +3,6 @@
   "name": "MS SQL Server",
   "dockerRepository": "airbyte/destination-mssql",
   "dockerImageTag": "0.1.10",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mssql"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mssql",
+  "icon": "mssql.svg"
 }

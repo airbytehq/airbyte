@@ -3,5 +3,6 @@
   "name": "Square",
   "dockerRepository": "airbyte/source-square",
   "dockerImageTag": "0.1.2",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/square"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/square",
+  "icon": "square.svg"
 }

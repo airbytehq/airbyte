@@ -3,5 +3,6 @@
   "name": "MeiliSearch",
   "dockerRepository": "airbyte/destination-meilisearch",
   "dockerImageTag": "0.2.10",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/meilisearch"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/meilisearch",
+  "icon": "meilisearch.svg"
 }

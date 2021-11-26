@@ -3,5 +3,6 @@
   "name": "MySQL",
   "dockerRepository": "airbyte/destination-mysql",
   "dockerImageTag": "0.1.13",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mysql"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mysql",
+  "icon": "mysql.svg"
 }

@@ -3,5 +3,6 @@
   "name": "Amazon Seller Partner",
   "dockerRepository": "airbyte/source-amazon-seller-partner",
   "dockerImageTag": "0.2.3",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/amazon-seller-partner"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
+  "icon": "amazonsellerpartner.svg"
 }
