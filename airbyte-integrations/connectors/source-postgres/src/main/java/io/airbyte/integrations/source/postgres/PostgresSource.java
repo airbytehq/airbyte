@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -22,6 +23,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -33,6 +35,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -222,6 +225,25 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     }
 
     return stream;
+  }
+
+  @Override
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(JdbcDatabase database, String schema) throws SQLException {
+    return database.query(connection -> {
+          final PreparedStatement ps = connection.prepareStatement(
+              "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
+                  + "FROM   information_schema.table_privileges\n"
+                  + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
+          ps.setString(1, database.getDatabaseConfig().get("username").asText());
+          return ps;
+        }, sourceOperations::rowToJson)
+        .collect(toSet())
+        .stream()
+        .map(e -> JdbcPrivilegeDto.builder()
+            .schemaName(e.get("table_schema").asText())
+            .tableName(e.get("table_name").asText())
+            .build())
+        .collect(toSet());
   }
 
   /*

@@ -3,5 +3,6 @@
   "name": "Paypal Transaction",
   "dockerRepository": "airbyte/source-paypal-transaction",
   "dockerImageTag": "0.1.2",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/paypal-transaction"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/paypal-transaction",
+  "icon": "paypal.svg"
 }

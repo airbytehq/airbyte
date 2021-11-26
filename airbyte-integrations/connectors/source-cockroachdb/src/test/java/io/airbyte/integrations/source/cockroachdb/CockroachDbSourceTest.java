@@ -96,7 +96,7 @@ class CockroachDbSourceTest {
 
   @BeforeAll
   static void init() {
-    PSQL_DB = new CockroachContainer("cockroachdb/cockroach");
+    PSQL_DB = new CockroachContainer("cockroachdb/cockroach:v20.2.18");
     PSQL_DB.start();
   }
 
@@ -168,7 +168,7 @@ class CockroachDbSourceTest {
   public void testCanReadUtf8() throws Exception {
     // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
     // default settings are in another encoding
-    try (final CockroachContainer db = new CockroachContainer("cockroachdb/cockroach")) {
+    try (final CockroachContainer db = new CockroachContainer("cockroachdb/cockroach:v20.2.18")) {
       // .withCommand("postgres -c client_encoding=sql_ascii")
       db.start();
       final JsonNode config = getConfig(db);

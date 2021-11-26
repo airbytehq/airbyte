@@ -43,7 +43,7 @@ Several output streams are available from this source:
 
 ### Performance considerations
 
-The Twilio connector will gracefully handle rate limits. For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests-).
+The Twilio connector will gracefully handle rate limits. For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests).
 
 Get in touch with [Twilio Sales](https://twilio.com/help/sales) to talk to them about your use case and request an increased concurrency limit.
 
