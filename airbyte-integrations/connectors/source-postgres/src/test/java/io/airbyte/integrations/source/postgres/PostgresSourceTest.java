@@ -106,8 +106,6 @@ class PostgresSourceTest {
       createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "Jack")),
       createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 3, "name", "Antuan")));
 
-  //1,'Zed'),  (2, 'Jack'), (3, 'Antuan')
-
   private static PostgreSQLContainer<?> PSQL_DB;
 
   private String dbName;
