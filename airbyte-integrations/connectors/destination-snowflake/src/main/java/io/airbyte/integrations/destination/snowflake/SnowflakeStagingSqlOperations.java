@@ -21,10 +21,12 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
-  private static final int MAX_PARTITION_SIZE = 10_000;
+  private static final int MAX_PARTITION_SIZE = 100_000;
 
   @Override
   protected void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String stage) throws Exception {
+    LOGGER.info("actual size of batch for staging: {}", records.size());
+
     if (records.isEmpty()) {
       return;
     }
@@ -41,7 +43,7 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
   private void loadDataIntoStage(JdbcDatabase database, String stage, List<AirbyteRecordMessage> partition) throws Exception {
     final File tempFile = Files.createTempFile(UUID.randomUUID().toString(), ".csv").toFile();
     writeBatchToFile(tempFile, partition);
-    database.execute(String.format("PUT file://%s @%s PARALLEL = 4", tempFile.getAbsolutePath(), stage));
+    database.execute(String.format("PUT file://%s @%s PARALLEL = %d", tempFile.getAbsolutePath(), stage, Runtime.getRuntime().availableProcessors()));
     Files.delete(tempFile.toPath());
   }
 
