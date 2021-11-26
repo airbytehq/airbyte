@@ -48,30 +48,46 @@ class PostgresSourceTest {
 
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME_PRIVILEGES_TEST_CASE = "id_and_name_3";
+  private static final String STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW = "id_and_name_3_view";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
-          STREAM_NAME,
-          SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING),
-          Field.of("power", JsonSchemaPrimitive.NUMBER))
+              STREAM_NAME,
+              SCHEMA_NAME,
+              Field.of("id", JsonSchemaPrimitive.NUMBER),
+              Field.of("name", JsonSchemaPrimitive.STRING),
+              Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
           SCHEMA_NAME,
           Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING),
-          Field.of("power", JsonSchemaPrimitive.NUMBER))
+              Field.of("name", JsonSchemaPrimitive.STRING),
+              Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
-          "names",
-          SCHEMA_NAME,
-          Field.of("first_name", JsonSchemaPrimitive.STRING),
-          Field.of("last_name", JsonSchemaPrimitive.STRING),
-          Field.of("power", JsonSchemaPrimitive.NUMBER))
+              "names",
+              SCHEMA_NAME,
+              Field.of("first_name", JsonSchemaPrimitive.STRING),
+              Field.of("last_name", JsonSchemaPrimitive.STRING),
+              Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
+          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name"))),
+      CatalogHelpers.createAirbyteStream(
+              STREAM_NAME_PRIVILEGES_TEST_CASE,
+              SCHEMA_NAME,
+              Field.of("id", JsonSchemaPrimitive.NUMBER),
+              Field.of("name", JsonSchemaPrimitive.STRING))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
+      CatalogHelpers.createAirbyteStream(
+              STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW,
+              SCHEMA_NAME,
+              Field.of("id", JsonSchemaPrimitive.NUMBER),
+              Field.of("name", JsonSchemaPrimitive.STRING))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
@@ -81,6 +97,14 @@ class PostgresSourceTest {
   private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")),
       createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
+
+  private static final Set<AirbyteMessage> PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES = Sets.newHashSet(
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "Zed")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "Jack")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", 3, "name", "Antuan")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "Zed")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "Jack")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 3, "name", "Antuan")));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -118,6 +142,18 @@ class PostgresSourceTest {
     database.close();
   }
 
+  private static Database getDatabaseWithSpecifiedUser(final JsonNode config, final String username, final String password) {
+    return Databases.createDatabase(
+        username,
+        password,
+        String.format("jdbc:postgresql://%s:%s/%s",
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("database").asText()),
+        "org.postgresql.Driver",
+        SQLDialect.POSTGRES);
+  }
+
   private static Database getDatabaseFromConfig(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
@@ -139,6 +175,21 @@ class PostgresSourceTest {
         .put("password", psqlDb.getPassword())
         .put("ssl", false)
         .build());
+  }
+
+  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName, final String user, final String password) {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", psqlDb.getHost())
+        .put("port", psqlDb.getFirstMappedPort())
+        .put("database", dbName)
+        .put("username", user)
+        .put("password", password)
+        .put("ssl", false)
+        .build());
+  }
+
+  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String user, final String password) {
+    return getConfig(psqlDb, psqlDb.getDatabaseName(), user, password);
   }
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb) {
@@ -182,12 +233,30 @@ class PostgresSourceTest {
         database.query(ctx -> {
           ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
           ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'John'),  (2, 'Alfred'), (3, 'Alex');");
-          ctx.fetch("REVOKE ALL PRIVILEGES ON TABLE public.id_and_name FROM " + db.getUsername() + ";");
+          ctx.fetch("CREATE USER test_user_3 password '132';");
+          ctx.fetch("GRANT CONNECT ON DATABASE test TO test_user_3;");
+          ctx.fetch("REVOKE ALL PRIVILEGES ON TABLE public.id_and_name FROM test_user_3");
           return null;
         });
       }
-      final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(config, CONFIGURED_CATALOG, null));
-      assertEquals(0, actualMessages.size());
+      try (final Database database = getDatabaseWithSpecifiedUser(config, "test_user_3", "132")) {
+        database.query(ctx -> {
+          ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
+          ctx.fetch("CREATE VIEW id_and_name_3_view(id, name) as\n"
+              + "SELECT id_and_name_3.id,\n"
+              + "       id_and_name_3.name\n"
+              + "FROM id_and_name_3;\n"
+              + "ALTER TABLE id_and_name_3_view\n"
+              + "    owner TO test_user_3");
+          ctx.fetch("INSERT INTO id_and_name_3 (id, name) VALUES (1,'Zed'),  (2, 'Jack'), (3, 'Antuan');");
+          return null;
+        });
+      }
+      final JsonNode anotherUserConfig = getConfig(db, "test_user_3", "132");
+      final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(anotherUserConfig, CONFIGURED_CATALOG, null));
+      setEmittedAtToNull(actualMessages);
+      assertEquals(6, actualMessages.size());
+      assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualMessages);
       db.stop();
     }
   }
