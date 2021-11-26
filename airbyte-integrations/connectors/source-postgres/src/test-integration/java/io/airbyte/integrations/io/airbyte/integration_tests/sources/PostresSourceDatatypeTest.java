@@ -58,7 +58,6 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       ctx.execute("CREATE SCHEMA TEST;");
       ctx.execute("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');");
       ctx.execute("CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);");
-      ctx.execute("SET lc_monetary TO 'en_US.utf8';");
       return null;
     });
 
@@ -298,9 +297,9 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("money")
-            .airbyteType(JsonSchemaPrimitive.STRING)
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "'999.99'", "'1001.01'", "'-92233720368547758.08'", "'92233720368547758.07'")
-            .addExpectedValues(null, "$999.99", "$1,001.01", "-$92,233,720,368,547,758.08", "$92,233,720,368,547,758.07")
+            .addExpectedValues(null, "999.99", "1001.01", Double.toString(-92233720368547758.08), Double.toString(92233720368547758.07))
             .build());
 
     // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
