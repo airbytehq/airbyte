@@ -20,7 +20,8 @@
       "start_date" : {
         "type" :"string",
         "description" : "Date from which to start fetching updates from YYYY-MM-DDTHH:MM:SS",
-        "airbyte_secret" : false
+        "airbyte_secret" : false,
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
       }
     }
   }
