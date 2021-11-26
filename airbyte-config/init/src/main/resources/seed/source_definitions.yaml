@@ -375,6 +375,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb-v2
   icon: mongodb.svg
   sourceType: database
+- name: My Hours
+  sourceDefinitionId: a90b8102-9ba2-4de1-b34d-a8d1fd2048d4
+  dockerRepository: airbyte/source-myhours
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/myhours
+  icon: myhours.svg
+  sourceType: api
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
