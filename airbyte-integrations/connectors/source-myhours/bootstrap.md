@@ -11,7 +11,3 @@ This connector has the following streams, and all of them support full refresh o
 ## Authentication
 
 My Hours exposes a REST API with username/password authorization. Giving the possibilities to use a refresh token aftwerwards. Since this refresh token is auto-rotating this connector only supports username/password.
-
-* Auth Token - The most common authentication method in Sentry. Connector only supports this method.
-* DSN Authentication - Only some API endpoints support this method. Not supported by this connector.
-* API Keys - Keys are passed using HTTP Basic auth, and a legacy means of authenticating. They will still be supported but are disabled for new accounts. Not supported by this connector.
