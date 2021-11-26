@@ -47,13 +47,24 @@ INSIGHTS_DAYS_PER_JOB: int = 1
 
 class InsightConfig(BaseModel):
 
-    name: str = Field(description="The name value of insight")
+    name: str = Field(
+        description="The name value of insight",
+    )
 
-    fields: Optional[List[str]] = Field(description="A list of chosen fields for fields parameter", default=[])
+    fields: Optional[List[str]] = Field(
+        description="A list of chosen fields for fields parameter",
+        default=[],
+    )
 
-    breakdowns: Optional[List[str]] = Field(description="A list of chosen breakdowns for breakdowns", default=[])
+    breakdowns: Optional[List[str]] = Field(
+        description="A list of chosen breakdowns for breakdowns",
+        default=[],
+    )
 
-    action_breakdowns: Optional[List[str]] = Field(description="A list of chosen action_breakdowns for action_breakdowns", default=[])
+    action_breakdowns: Optional[List[str]] = Field(
+        description="A list of chosen action_breakdowns for action_breakdowns",
+        default=[],
+    )
 
 
 class ConnectorConfig(BaseModel):
@@ -92,11 +103,19 @@ class ConnectorConfig(BaseModel):
     )
 
     include_deleted: bool = Field(
-        title="Include Deleted", default=False, description="Include data from deleted campaigns, ads, and adsets.", order=4
+        title="Include Deleted", 
+        default=False, 
+        description="Include data from deleted campaigns, ads, and adsets.", 
+        order=4,
     )
 
     insights_lookback_window: int = Field(
-        title="Insights Lookback Window", default=28, description="The attribution window for the actions", minimum=0, maximum=28, order=5
+        title="Insights Lookback Window",
+        default=28,
+        description="The attribution window for the actions",
+        minimum=0,
+        maximum=28,
+        order=5,
     )
 
     custom_insights: Optional[List[InsightConfig]] = Field(
