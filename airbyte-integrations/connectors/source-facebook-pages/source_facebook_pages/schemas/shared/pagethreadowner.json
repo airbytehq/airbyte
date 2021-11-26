@@ -1,14 +1,8 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": ["object", "null"],
   "properties": {
     "thread_owner": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     }
   }
 }

@@ -1,38 +1,20 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "type": ["object", "null"],
   "properties": {
     "breakfast": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     },
     "coffee": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     },
     "dinner": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     },
     "drinks": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     },
     "lunch": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     }
   }
 }

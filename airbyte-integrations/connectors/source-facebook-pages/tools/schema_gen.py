@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 """
 Docs: https://developers.facebook.com/docs/graph-api/reference/page
 
@@ -103,151 +107,126 @@ FACEBOOK schema:                            VS                  AIRBYTE schema:
 import json
 import os
 
-spec_path = 'facebook-business-sdk-codegen/api_specs/specs'
+spec_path = "facebook-business-sdk-codegen/api_specs/specs"
 fb_node_files = os.listdir(spec_path)
 fb_node_files.sort()
-FB_NODES = [name.split('.')[0] for name in fb_node_files]
+FB_NODES = [name.split(".")[0] for name in fb_node_files]
 
-print(f'FB SDK identifies specs for {len(FB_NODES)} nodes in ./{spec_path}')
+print(f"FB SDK identifies specs for {len(FB_NODES)} nodes in ./{spec_path}")
 
-FB_TYPE_DEFAULT = {
-    "type": ["string", "null"]
-}
+FB_TYPE_DEFAULT = {"type": ["string", "null"]}
 
 FB_TYPES = {
-  "int": {
-    "type": ["integer", "null"]
-  },
-  "int32": {
-    "type": ["integer", "null"]
-  },
-  "unsigned int32": {
-    "type": ["integer", "null"]
-  },
-  "unsigned int": {
-    "type": ["integer", "null"]
-  },
-  "float": {
-    "type": ["integer", "null"]
-  },
-  "string": {
-    "type": ["string", "null"]
-  },
-  "numeric string": {
-    "type": ["string", "null"]
-  },
-  "datetime": {
-    "type": ["string", "null"]
-  },
-  "id": {
-    "type": ["string", "null"]
-  },
-  "enum": {
-    "type": ["string", "null"]
-  },
-  "bool": {
-    "type": ["boolean", "null"]
-  },
-  "Object": {
-    "type": ["string", "null"]
-  },
-  "list": {
-    "type": ["array", "null"],
-    "items": {
-      "type": ["string", "null"],
-    }
-  },
-  "list<string>": {
-    "type": ["array", "null"],
-    "items": {
-      "type": ["string", "null"],
-    }
-  },
-  "list<numeric string>": {
-    "type": ["array", "null"],
-    "items": {
-      "type": ["string", "null"],
-    }
-  },
-  "list<int>": {
-    "type": ["array", "null"],
-    "items": {
-      "type": ["integer", "null"],
-    }
-  },
-  "list<unsigned int>": {
-    "type": ["array", "null"],
-    "items": {
-      "type": ["integer", "null"],
-    }
-  },
-  "list<list<int>>": {
-    "type": ["array", "null"],
-    "items": {
+    "int": {"type": ["integer", "null"]},
+    "int32": {"type": ["integer", "null"]},
+    "unsigned int32": {"type": ["integer", "null"]},
+    "unsigned int": {"type": ["integer", "null"]},
+    "float": {"type": ["integer", "null"]},
+    "string": {"type": ["string", "null"]},
+    "numeric string": {"type": ["string", "null"]},
+    "datetime": {"type": ["string", "null"]},
+    "id": {"type": ["string", "null"]},
+    "enum": {"type": ["string", "null"]},
+    "bool": {"type": ["boolean", "null"]},
+    "Object": {"type": ["string", "null"]},
+    "list": {
         "type": ["array", "null"],
         "items": {
-          "type": ["integer", "null"],
-        }
-    }
-  },
-  # 'map' is not supported because it is not possible to identify field names, which are required for destinations
-  # so 'map' attr will be converted and saved as string
-  # "map": {
-  #   "type": ["object", "null"],
-  #   "properties": {
-  #     "id": {
-  #       "type": ["string", "null"],
-  #     }
-  #   }
-  # },
-  # "map<string, unsigned int32>": {
-  #   "type": ["object", "null"],
-  #   "properties": {
-  #     "id": {
-  #       "type": ["integer", "null"],
-  #     }
-  #   }
-  # },
-  # "map<string, unsigned int>": {
-  #   "type": ["object", "null"],
-  #   "properties": {
-  #     "id": {
-  #       "type": ["integer", "null"],
-  #     }
-  #   }
-  # },
-  # "map<string, float>": {
-  #   "type": ["object", "null"],
-  #   "properties": {
-  #     "id": {
-  #       "type": ["integer", "null"],
-  #     }
-  #   }
-  # },
-  # "map<string, string>": {
-  #   "type": ["null", "object"],
-  #   "properties": {
-  #     "id": {
-  #       "type": ["string", "null"],
-  #     }
-  #   }
-  # },
-  # "map<string, bool>": {
-  #   "type": ["null", "object"],
-  #   "properties": {
-  #     "id": {
-  #       "type": ["string", "boolean"],
-  #     }
-  #   }
-  # }
+            "type": ["string", "null"],
+        },
+    },
+    "list<string>": {
+        "type": ["array", "null"],
+        "items": {
+            "type": ["string", "null"],
+        },
+    },
+    "list<numeric string>": {
+        "type": ["array", "null"],
+        "items": {
+            "type": ["string", "null"],
+        },
+    },
+    "list<int>": {
+        "type": ["array", "null"],
+        "items": {
+            "type": ["integer", "null"],
+        },
+    },
+    "list<unsigned int>": {
+        "type": ["array", "null"],
+        "items": {
+            "type": ["integer", "null"],
+        },
+    },
+    "list<list<int>>": {
+        "type": ["array", "null"],
+        "items": {
+            "type": ["array", "null"],
+            "items": {
+                "type": ["integer", "null"],
+            },
+        },
+    },
+    # 'map' is not supported because it is not possible to identify field names, which are required for destinations
+    # so 'map' attr will be converted and saved as string
+    # "map": {
+    #   "type": ["object", "null"],
+    #   "properties": {
+    #     "id": {
+    #       "type": ["string", "null"],
+    #     }
+    #   }
+    # },
+    # "map<string, unsigned int32>": {
+    #   "type": ["object", "null"],
+    #   "properties": {
+    #     "id": {
+    #       "type": ["integer", "null"],
+    #     }
+    #   }
+    # },
+    # "map<string, unsigned int>": {
+    #   "type": ["object", "null"],
+    #   "properties": {
+    #     "id": {
+    #       "type": ["integer", "null"],
+    #     }
+    #   }
+    # },
+    # "map<string, float>": {
+    #   "type": ["object", "null"],
+    #   "properties": {
+    #     "id": {
+    #       "type": ["integer", "null"],
+    #     }
+    #   }
+    # },
+    # "map<string, string>": {
+    #   "type": ["null", "object"],
+    #   "properties": {
+    #     "id": {
+    #       "type": ["string", "null"],
+    #     }
+    #   }
+    # },
+    # "map<string, bool>": {
+    #   "type": ["null", "object"],
+    #   "properties": {
+    #     "id": {
+    #       "type": ["string", "boolean"],
+    #     }
+    #   }
+    # }
 }
 
 # print(f'FB_TYPES: {len(FB_TYPES)} types')
 
-#%%
+#
+
 
 def is_node(name):
-    return name[0].isupper() and '_' not in name
+    return name[0].isupper() and "_" not in name
 
 
 def get_fields(fields, with_refs=False):
@@ -256,8 +235,8 @@ def get_fields(fields, with_refs=False):
     schema_fields = {}
     for attr in fields:
         is_list = False
-        attr_name = attr['name']
-        fb_type = attr['type']
+        attr_name = attr["name"]
+        fb_type = attr["type"]
 
         type_default = FB_TYPES.get(fb_type)
 
@@ -267,9 +246,9 @@ def get_fields(fields, with_refs=False):
             continue
 
         # list<PageCategory>"
-        if fb_type.startswith('list<'):
+        if fb_type.startswith("list<"):
             is_list = True
-            fb_type = fb_type.split('<')[1].strip('>')
+            fb_type = fb_type.split("<")[1].strip(">")
 
         # process attrs with unknown type as string
         if not is_node(fb_type):
@@ -281,13 +260,7 @@ def get_fields(fields, with_refs=False):
                 #     "name": "bid_strategy",
                 #     "type": "AdSet_bid_strategy"  <--- THIS IS ENUM
                 # },
-                schema_fields[attr_name] = {
-                    "type": ["array", "null"],
-                    "items": {
-                        "type": ["array", "null"],
-                        "items": FB_TYPE_DEFAULT
-                    }
-                }
+                schema_fields[attr_name] = {"type": ["array", "null"], "items": {"type": ["array", "null"], "items": FB_TYPE_DEFAULT}}
             print(f"    use 'string' type for UNSUPPORTED attr type '{fb_type}' in field: {attr}")
             continue
 
@@ -300,12 +273,7 @@ def get_fields(fields, with_refs=False):
             if not is_list:
                 schema_fields[attr_name] = {"$ref": f"{fb_type.lower()}.json"}
             else:
-                schema_fields[attr_name] = {
-                    "type": ["array", "null"],
-                    "items": {
-                          "$ref": f"{fb_type.lower()}.json"
-                    }
-                }
+                schema_fields[attr_name] = {"type": ["array", "null"], "items": {"$ref": f"{fb_type.lower()}.json"}}
 
         else:
             print(f"    skip UNKNOWN NODE type '{fb_type}' in field: {attr}")
@@ -318,19 +286,19 @@ def get_edges(edges):
     schema_edges = {}
     attrs = {}
     for attr in edges:
-        if attr['method'] == 'GET':
+        if attr["method"] == "GET":
             # {
             #     "method": "GET",
             #     "endpoint": "indexed_videos",
             #     "return": "AdVideo",
             #     "params": []
             # },
-            attr_name = attr.get('endpoint')
-            attr_type = attr.get('return')
+            attr_name = attr.get("endpoint")
+            attr_type = attr.get("return")
             if not attr_name:
                 print(f"    skip UNSUPPORTED edge format: {attr}")
                 continue
-            if not attr_type in FB_NODES:
+            if attr_type not in FB_NODES:
                 print(f"    skip UNKNOWN NODE type '{attr_type}' in edge: {attr}")
                 continue
 
@@ -340,37 +308,21 @@ def get_edges(edges):
     for attr_name, attr_type in attrs.items():
         # https://developers.facebook.com/docs/graph-api/results
         schema_edges[attr_name] = {
-          "type": ["object", "null"],
-          "properties": {
-            "data": {
-              "type": ["array", "null"],
-              "items": {
-                "$ref": f"{attr_type.lower()}.json"
-              }
-            },
-            "paging": {
-              "type": ["object", "null"],
-              "properties": {
-                "previous": {
-                  "type": ["string", "null"]
-                },
-                "next": {
-                  "type": ["string", "null"]
-                },
-                "cursors": {
-                  "type": "object",
-                  "properties": {
-                    "before": {
-                      "type": ["string", "null"]
+            "type": ["object", "null"],
+            "properties": {
+                "data": {"type": ["array", "null"], "items": {"$ref": f"{attr_type.lower()}.json"}},
+                "paging": {
+                    "type": ["object", "null"],
+                    "properties": {
+                        "previous": {"type": ["string", "null"]},
+                        "next": {"type": ["string", "null"]},
+                        "cursors": {
+                            "type": "object",
+                            "properties": {"before": {"type": ["string", "null"]}, "after": {"type": ["string", "null"]}},
+                        },
                     },
-                    "after": {
-                      "type": ["string", "null"]
-                    }
-                  }
-                }
-              }
-            }
-          }
+                },
+            },
         }
 
     return schema_edges
@@ -384,49 +336,42 @@ def build_schema(node_name, with_refs=False):
     fb_node_sdk = json.load(open(file_path))
 
     # process Node's fields
-    schema = get_fields(fb_node_sdk['fields'], with_refs=with_refs)
+    schema = get_fields(fb_node_sdk["fields"], with_refs=with_refs)
 
     if with_refs:
         # process Node's edges
-        schema_edges = get_edges(fb_node_sdk['apis'])
+        schema_edges = get_edges(fb_node_sdk["apis"])
         schema.update(schema_edges)
 
     return schema
 
 
-#%% get schema for main Page and Post nodes
+# get schema for main Page and Post nodes
 FOUND_SUBNODES = set()
 
-MAIN_NODES = ['Page', 'Post']
-print(f'Process main nodes: {MAIN_NODES}')
+MAIN_NODES = ["Page", "Post"]
+print(f"Process main nodes: {MAIN_NODES}")
 
 for node_name in MAIN_NODES:
 
     page_schema = build_schema(node_name=node_name, with_refs=True)
 
-    SCHEMA = {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "type": "object",
-      "properties": page_schema
-    }
+    SCHEMA = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": page_schema}
     file_name = node_name.lower()
-    json.dump(SCHEMA, open(f"./schemas/{file_name}.json", 'w'), indent=2)
+    json.dump(SCHEMA, open(f"./schemas/{file_name}.json", "w"), indent=2)
 
-print(f'Process found : {len(FOUND_SUBNODES)} SUBNODES')
+print(f"Process found : {len(FOUND_SUBNODES)} SUBNODES")
 
 
-#%% get schema for all found subnodes
+# get schema for all found subnodes
 
 for node_name in FOUND_SUBNODES:
     file_name = node_name.lower()
-    SCHEMA = {
-      "type": ["object", "null"],
-      "properties": build_schema(node_name=node_name)
-    }
-    json.dump(SCHEMA, open(f"./schemas/shared/{file_name}.json", 'w'), indent=2)
+    SCHEMA = {"type": ["object", "null"], "properties": build_schema(node_name=node_name)}
+    json.dump(SCHEMA, open(f"./schemas/shared/{file_name}.json", "w"), indent=2)
 
-#%%
-print('DONE!')
+#
+print("DONE!")
 
 """ OUTPUT EXAMPLE:
 
