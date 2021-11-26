@@ -5,6 +5,7 @@
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to build a hash column based on the values of this record
+-- depends_on: {{ ref('nested_stream_with_c___long_names_partition_ab2') }}
 select
     {{ dbt_utils.surrogate_key([
         '_airbyte_nested_stre__nto_long_names_hashid',

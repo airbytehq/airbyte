@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212",
+  "name": "Airtable",
+  "dockerRepository": "airbyte/source-airtable",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/airtable"
+}
