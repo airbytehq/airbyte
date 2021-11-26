@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "6e00b415-b02e-4160-bf02-58176a0ae687",
+  "name": "Notion",
+  "dockerRepository": "airbyte/source-notion",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-notion"
+}

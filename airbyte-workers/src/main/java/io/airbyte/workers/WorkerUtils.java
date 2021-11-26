@@ -37,6 +37,9 @@ public class WorkerUtils {
   public static final Map<String, String> DEFAULT_WORKER_POD_NODE_SELECTORS = CONFIGS.getWorkerNodeSelectors();
   public static final String DEFAULT_JOBS_IMAGE_PULL_SECRET = CONFIGS.getJobsImagePullSecret();
   public static final String DEFAULT_JOB_IMAGE_PULL_POLICY = CONFIGS.getJobImagePullPolicy();
+  public static final String JOB_SOCAT_IMAGE = CONFIGS.getJobSocatImage();
+  public static final String JOB_BUSYBOX_IMAGE = CONFIGS.getJobBusyboxImage();
+  public static final String JOB_CURL_IMAGE = CONFIGS.getJobCurlImage();
 
   public static void gentleClose(final Process process, final long timeout, final TimeUnit timeUnit) {
     if (process == null) {
@@ -56,7 +59,7 @@ public class WorkerUtils {
     }
 
     if (process.isAlive()) {
-      forceShutdown(process, Duration.of(1, ChronoUnit.MINUTES));
+      closeProcess(process, Duration.of(1, ChronoUnit.MINUTES));
     }
   }
 
@@ -87,7 +90,7 @@ public class WorkerUtils {
         gracefulShutdownDuration,
         checkHeartbeatDuration,
         forcedShutdownDuration,
-        WorkerUtils::forceShutdown);
+        WorkerUtils::closeProcess);
   }
 
   @VisibleForTesting
@@ -131,28 +134,15 @@ public class WorkerUtils {
     }
   }
 
-  @VisibleForTesting
-  static void forceShutdown(final Process process, final Duration lastChanceDuration) {
-    LOGGER.warn("Process is taking too long to finish. Killing it");
-    process.destroy();
-    try {
-      process.waitFor(lastChanceDuration.toMillis(), TimeUnit.MILLISECONDS);
-    } catch (final InterruptedException e) {
-      LOGGER.error("Exception while while killing the process", e);
-    }
-    if (process.isAlive()) {
-      LOGGER.error("Couldn't kill the process. You might have a zombie process.");
-    }
-  }
-
-  public static void closeProcess(final Process process, final int duration, final TimeUnit timeUnit) {
+  public static void closeProcess(final Process process, final Duration lastChanceDuration) {
     if (process == null) {
       return;
     }
     try {
       process.destroy();
-      process.waitFor(duration, timeUnit);
+      process.waitFor(lastChanceDuration.toMillis(), TimeUnit.MILLISECONDS);
       if (process.isAlive()) {
+        LOGGER.warn("Process is still alive after calling destroy. Attempting to destroy forcibly...");
         process.destroyForcibly();
       }
     } catch (final InterruptedException e) {
@@ -169,7 +159,7 @@ public class WorkerUtils {
   }
 
   public static void cancelProcess(final Process process) {
-    closeProcess(process, 10, TimeUnit.SECONDS);
+    closeProcess(process, Duration.of(10, ChronoUnit.SECONDS));
   }
 
   /**

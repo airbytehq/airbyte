@@ -75,6 +75,12 @@ public interface Configs {
 
   Map<String, String> getWorkerNodeSelectors();
 
+  String getJobSocatImage();
+
+  String getJobBusyboxImage();
+
+  String getJobCurlImage();
+
   MaxWorkersConfig getMaxWorkers();
 
   String getTemporalHost();
@@ -115,7 +121,7 @@ public interface Configs {
 
   boolean getPublishMetrics();
 
-  boolean getVersion31ForceUpgrade();
+  boolean getVersion32ForceUpgrade();
 
   SecretPersistenceType getSecretPersistenceType();
 

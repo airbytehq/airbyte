@@ -16,6 +16,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY = "_last_end_time"
@@ -26,13 +27,15 @@ class SourceZendeskException(Exception):
 
 
 class SourceZendeskSupportStream(HttpStream, ABC):
-    """"Basic Zendesk class"""
+    """ "Basic Zendesk class"""
 
     primary_key = "id"
 
     page_size = 100
     created_at_field = "created_at"
     updated_at_field = "updated_at"
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, subdomain: str, **kwargs):
         super().__init__(**kwargs)
@@ -321,7 +324,7 @@ class IncrementalUnsortedPageStream(IncrementalUnsortedStream, ABC):
 
 
 class FullRefreshStream(IncrementalUnsortedPageStream, ABC):
-    """"Stream for endpoints where there are not any created_at or updated_at fields"""
+    """ "Stream for endpoints where there are not any created_at or updated_at fields"""
 
     # reset to default value
     cursor_field = SourceZendeskSupportStream.cursor_field
@@ -442,7 +445,12 @@ class TicketComments(IncrementalSortedPageStream):
     ) -> Iterable[Mapping]:
         """Handle response status"""
         if response.status_code == 200:
-            yield from super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+            # Ticket ID not included in ticket comments response.
+            # Manually add ticket_id to ticket_comments dict.
+            ticket_id = stream_slice["id"]
+            result = super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+            enriched_result = map(lambda x: x.update({"ticket_id": ticket_id}) or x, result)
+            yield from enriched_result
         elif response.status_code == 404:
             ticket_id = stream_slice["id"]
             # skip 404 errors for not found tickets
