@@ -135,35 +135,8 @@ public class SnowflakeInternalStagingDestinatiomAcceptanceTest extends Destinati
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
-    SnowflakeDatabase.getDatabase(baseConfig).execute(createSchemaQuery);
-  }
-
-  /**
-   * This test is disabled because it is very slow, and should only be run manually for now.
-   */
-  @Disabled
-  @ParameterizedTest
-  @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncWithBillionRecords(final String messagesFilename, final String catalogFilename) throws Exception {
-    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-
-    final List<AirbyteMessage> largeNumberRecords =
-        Collections.nCopies(15000000, messages).stream().flatMap(List::stream).collect(Collectors.toList());
-
-    final JsonNode config = getConfig();
-    runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
-  }
-
-  private <T> T parseConfig(final String path, Class<T> clazz) throws IOException {
-    return Jsons.deserialize(MoreResources.readResource(path), clazz);
-  }
-
-  private JsonNode parseConfig(final String path) throws IOException {
-    return Jsons.deserialize(MoreResources.readResource(path));
+    final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
+    SnowflakeDatabase.getDatabase(baseConfig).execute(dropSchemaQuery);
   }
 
 }
