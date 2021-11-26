@@ -55,8 +55,7 @@ class ChildStreamMixin:
     parent_stream_class: Optional[TrelloStream] = None
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        config = self.config
-        board_ids = config.get("board_ids", [])
+        board_ids = self.config.get("board_ids", [])
         if len(board_ids) > 0:
             for id in board_ids:
                 yield {"id": id}
