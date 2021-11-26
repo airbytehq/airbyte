@@ -6,10 +6,8 @@ package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static org.jooq.tools.StringUtils.EMPTY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -236,18 +234,20 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(JdbcDatabase database, String schema) throws SQLException {
-    return database.bufferedResultSetQuery(
-        conn -> conn.getMetaData().getTablePrivileges(getCatalog(database), schema, null),
-        resultSet -> JdbcPrivilegeDto.builder()
-            .grantee(ofNullable(resultSet.getString(GRANTEE)).orElse(EMPTY))
-            // we need the schema as different schemas could have tables with the same names
-            .schemaName(ofNullable(resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)).orElse(EMPTY))
-            .tableName(ofNullable(resultSet.getString(JDBC_COLUMN_TABLE_NAME)).orElse(EMPTY))
-            .privilege(ofNullable(resultSet.getString(PRIVILEGE)).orElse(EMPTY))
-            .build())
+    return database.query(connection -> {
+          final PreparedStatement ps = connection.prepareStatement(
+              "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
+                  + "FROM   information_schema.table_privileges\n"
+                  + "WHERE  grantee = ? AND privilege_type = 'SELECT'");
+          ps.setString(1, database.getDatabaseConfig().get("username").asText());
+          return ps;
+        }, sourceOperations::rowToJson)
+        .collect(toSet())
         .stream()
-        .filter(jdbcPrivilegeDto -> jdbcPrivilegeDto.getGrantee().equals(database.getDatabaseConfig().get("username").asText())
-            && "SELECT".equals(jdbcPrivilegeDto.getPrivilege()))
+        .map(e -> JdbcPrivilegeDto.builder()
+            .schemaName(e.get("table_schema").asText())
+            .tableName(e.get("table_name").asText())
+            .build())
         .collect(toSet());
   }
 
