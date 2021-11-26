@@ -239,7 +239,12 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
         # we need to get the max date over all searchTypes but the current acceptance test YAML format doesn't
         # support that
-        current_stream_state[self.cursor_field] = current_stream_state[site_url][search_type][self.cursor_field]
+        if self.cursor_field in current_stream_state:
+            current_stream_state[self.cursor_field] = max(
+                current_stream_state[self.cursor_field], current_stream_state[site_url][search_type][self.cursor_field]
+            )
+        else:
+            current_stream_state[self.cursor_field] = current_stream_state[site_url][search_type][self.cursor_field]
 
         return current_stream_state
 

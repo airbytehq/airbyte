@@ -59,9 +59,10 @@ def configured_catalog_for_incremental_fixture(configured_catalog) -> Configured
     return catalog
 
 
-def records_with_state(records, state, stream_mapping, state_cursor_paths) -> Iterable[Tuple[Any, Any]]:
-    """Iterate over records and return cursor value with corresponding cursor value from state"""
-    for record in records:
+@pytest.mark.default_timeout(20 * 60)
+class TestIncremental(BaseTest):
+    @staticmethod
+    def extract_state(record, current_state, stream_mapping, state_cursor_paths) -> Tuple[str, str, str]:
         stream_name = record.record.stream
         stream = stream_mapping[stream_name]
         helper = JsonSchemaHelper(schema=stream.stream.json_schema)
@@ -69,15 +70,18 @@ def records_with_state(records, state, stream_mapping, state_cursor_paths) -> It
         record_value = cursor_field.parse(record=record.record.data)
         try:
             # first attempt to parse the state value assuming the state object is namespaced on stream names
-            state_value = cursor_field.parse(record=state[stream_name], path=state_cursor_paths[stream_name])
+            state_value = cursor_field.parse(record=current_state[stream_name], path=state_cursor_paths[stream_name])
         except KeyError:
             # try second time as an absolute path in state file (i.e. bookmarks -> stream_name -> column -> value)
-            state_value = cursor_field.parse(record=state, path=state_cursor_paths[stream_name])
-        yield record_value, state_value, stream_name
+            state_value = cursor_field.parse(record=current_state, path=state_cursor_paths[stream_name])
+        return record_value, state_value, stream_name
 
+    @staticmethod
+    def records_with_state(records, state, stream_mapping, state_cursor_paths) -> Iterable[Tuple[Any, Any]]:
+        """Iterate over records and return cursor value with corresponding cursor value from state"""
+        for record in records:
+            yield TestIncremental.extract_state(record, state, stream_mapping, state_cursor_paths)
 
-@pytest.mark.default_timeout(20 * 60)
-class TestIncremental(BaseTest):
     def test_two_sequential_reads(self, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner):
         stream_mapping = {stream.stream.name: stream for stream in configured_catalog_for_incremental.streams}
 
@@ -89,7 +93,9 @@ class TestIncremental(BaseTest):
         assert records_1, "Should produce at least one record"
 
         latest_state = states_1[-1].state.data
-        for record_value, state_value, stream_name in records_with_state(records_1, latest_state, stream_mapping, cursor_paths):
+        for record_value, state_value, stream_name in TestIncremental.records_with_state(
+            records_1, latest_state, stream_mapping, cursor_paths
+        ):
             assert (
                 record_value <= state_value
             ), f"First incremental sync should produce records younger or equal to cursor value from the state. Stream: {stream_name}"
@@ -97,7 +103,9 @@ class TestIncremental(BaseTest):
         output = docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=latest_state)
         records_2 = filter_output(output, type_=Type.RECORD)
 
-        for record_value, state_value, stream_name in records_with_state(records_2, latest_state, stream_mapping, cursor_paths):
+        for record_value, state_value, stream_name in TestIncremental.records_with_state(
+            records_2, latest_state, stream_mapping, cursor_paths
+        ):
             assert (
                 record_value >= state_value
             ), f"Second incremental sync should produce records older or equal to cursor value from the state. Stream: {stream_name}"

@@ -3,6 +3,7 @@
 #
 
 
+import inspect
 from pathlib import Path
 from typing import List
 
@@ -12,6 +13,7 @@ from _pytest.config.argparsing import Parser
 from source_acceptance_test.utils import diff_dicts, load_config
 
 HERE = Path(__file__).parent.absolute()
+OVERRIDES_KEYWORD = "sat_overrides"
 
 
 def pytest_configure(config):
@@ -47,6 +49,18 @@ def pytest_generate_tests(metafunc):
 
     Hook function will skip test_suite2 and test_suite3, but parametrize test_suite1 with two sets of inputs.
     """
+    overrides = getattr(pytest, OVERRIDES_KEYWORD, {})
+    if metafunc.cls.__name__ in overrides:
+        for function_to_override_name, new_function in overrides[metafunc.cls.__name__].items():
+            target_function = getattr(metafunc.cls, function_to_override_name, None)
+            assert callable(target_function) and callable(
+                new_function
+            ), f"{function_to_override_name} should exists in {metafunc.cls.__name__} and it should be a function"
+            assert (
+                inspect.signature(target_function).parameters.keys() == inspect.signature(new_function).parameters.keys()
+            ), "Function signatures should match"
+            setattr(metafunc.cls, function_to_override_name, new_function)
+        overrides.pop(metafunc.cls.__name__)
 
     if "inputs" in metafunc.fixturenames:
         config_key = metafunc.cls.config_key()
