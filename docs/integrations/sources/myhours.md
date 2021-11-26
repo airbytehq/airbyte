@@ -33,4 +33,4 @@ Depending on the amount of team members and time logs the source provides a prop
 
 | Version | Date       | Pull Request                                           | Subject |
 | :------ | :--------- | :----------------------------------------------------- | :------ |
-| 0.1.0   | 2021-11-26 | - | New Source: My Hours |
+| 0.1.0   | 2021-11-26 | [8270](https://github.com/airbytehq/airbyte/pull/8270) | New Source: My Hours |
