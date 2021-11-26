@@ -19,8 +19,8 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_myhours",
     description="Source implementation for Myhours.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Wisse Jelgersma",
+    author_email="wisse@vrowl.nl",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
