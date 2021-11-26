@@ -2,591 +2,1065 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": {
-      "type": ["null", "string"]
-    },
     "about": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "access_token": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "ad_campaign": {
-      "type": ["null", "object"]
+      "$ref": "adset.json"
     },
     "affiliation": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "app_id": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "artists_we_like": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "attire": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "awards": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "band_interests": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "band_members": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "best_page": {
-      "type": ["null", "object"]
+      "$ref": "page.json"
     },
     "bio": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "birthday": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "booking_agent": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "built": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "business": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "can_checkin": {
-      "type": ["null", "boolean"]
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "can_post": {
-      "type": ["null", "boolean"]
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "category": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "category_list": {
-      "type": ["null", "array"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
+        "$ref": "pagecategory.json"
       }
     },
     "checkins": {
-      "type": ["null", "integer"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "company_overview": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "connected_instagram_account": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
+      "$ref": "iguser.json"
     },
     "connected_page_backed_instagram_account": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
+      "$ref": "iguser.json"
     },
     "contact_address": {
-      "type": ["null", "object"]
-    },
-    "copyright_attribution_insights": {
-      "type": ["null", "object"]
+      "$ref": "mailingaddress.json"
     },
     "copyright_whitelisted_ig_partners": {
-      "type": ["null", "object"]
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
     },
     "country_page_likes": {
-      "type": ["null", "integer"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "cover": {
-      "type": ["null", "object"],
-      "properties": {
-        "cover_id": {
-          "type": "string"
-        },
-        "offset_x": {
-          "type": "integer"
-        },
-        "offset_y": {
-          "type": "integer"
-        },
-        "source": {
-          "type": "string"
-        },
-        "id": {
-          "type": "string"
-        }
-      }
+      "$ref": "coverphoto.json"
     },
     "culinary_team": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "current_location": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "delivery_and_pickup_option_info": {
-      "type": ["null", "object"]
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
     },
     "description": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "description_html": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "differently_open_offerings": {
-      "type": ["null", "object"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "directed_by": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "display_subtext": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "displayed_message_response_time": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "emails": {
-      "type": ["null", "array"],
-      "items": [
-        {
-          "type": "string"
-        }
-      ]
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
     },
     "engagement": {
-      "type": ["null", "object"],
-      "properties": {
-        "count": {
-          "type": "integer"
-        },
-        "social_sentence": {
-          "type": "string"
-        }
-      }
+      "$ref": "engagement.json"
     },
     "fan_count": {
-      "type": ["null", "integer"]
-    },
-    "featured_video": {
-      "type": ["null", "object"]
-    },
-    "features": {
-      "type": ["null", "string"]
-    },
-    "followers_count": {
-      "type": ["null", "integer"]
-    },
-    "food_styles": {
-      "type": ["null", "object"]
-    },
-    "founded": {
-      "type": ["null", "string"]
-    },
-    "general_info": {
-      "type": ["null", "string"]
-    },
-    "general_manager": {
-      "type": ["null", "string"]
-    },
-    "genre": {
-      "type": ["null", "string"]
-    },
-    "global_brand_page_name": {
-      "type": ["null", "string"]
-    },
-    "global_brand_root_id": {
-      "type": ["null", "string"]
-    },
-    "has_added_app": {
-      "type": ["null", "boolean"]
-    },
-    "has_transitioned_to_new_page_experience": {
-      "type": ["null", "boolean"]
-    },
-    "has_whatsapp_business_number": {
-      "type": ["null", "boolean"]
-    },
-    "has_whatsapp_number": {
-      "type": ["null", "boolean"]
-    },
-    "hometown": {
-      "type": ["null", "string"]
-    },
-    "hours": {
-      "type": ["null", "object"]
-    },
-    "impressum": {
-      "type": ["null", "string"]
-    },
-    "influences": {
-      "type": ["null", "string"]
-    },
-    "instagram_business_account": {
-      "type": ["null", "object"]
-    },
-    "instant_articles_review_status": {
-      "type": ["null", "array", "string"]
-    },
-    "is_always_open": {
-      "type": ["null", "boolean"]
-    },
-    "is_chain": {
-      "type": ["null", "boolean"]
-    },
-    "is_community_page": {
-      "type": ["null", "boolean"]
-    },
-    "is_eligible_for_branded_content": {
-      "type": ["null", "boolean"]
-    },
-    "is_messenger_bot_get_started_enabled": {
-      "type": ["null", "boolean"]
-    },
-    "is_messenger_platform_bot": {
-      "type": ["null", "boolean"]
-    },
-    "is_owned": {
-      "type": ["null", "boolean"]
-    },
-    "is_permanently_closed": {
-      "type": ["null", "boolean"]
-    },
-    "is_published": {
-      "type": ["null", "boolean"]
-    },
-    "is_unclaimed": {
-      "type": ["null", "boolean"]
-    },
-    "is_webhooks_subscribed": {
-      "type": ["null", "boolean"]
-    },
-    "leadgen_tos_acceptance_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "leadgen_tos_accepted": {
-      "type": ["null", "boolean"]
-    },
-    "leadgen_tos_accepting_user": {
-      "type": ["null", "object"]
-    },
-    "link": {
-      "type": ["null", "string"]
-    },
-    "location": {
-      "type": ["null", "object"],
-      "properties": {
-        "city": {
-          "type": "string"
-        },
-        "country": {
-          "type": "string"
-        },
-        "latitude": {
-          "type": "number"
-        },
-        "longitude": {
-          "type": "number"
-        },
-        "state": {
-          "type": "string"
-        },
-        "street": {
-          "type": "string"
-        },
-        "zip": {
-          "type": "string"
-        }
-      }
-    },
-    "members": {
-      "type": ["null", "string"]
-    },
-    "merchant_id": {
-      "type": ["null", "string"]
-    },
-    "merchant_review_status": {
-      "type": ["null", "array", "string"]
-    },
-    "messenger_ads_default_icebreakers": {
-      "type": ["null", "array"],
-      "items": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "string"
-        },
-        {
-          "type": "string"
-        }
+      "type": [
+        "integer",
+        "null"
       ]
     },
+    "featured_video": {
+      "$ref": "advideo.json"
+    },
+    "features": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "followers_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "food_styles": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "founded": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "general_info": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+
+    "genre": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "global_brand_page_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "global_brand_root_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "has_added_app": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "has_transitioned_to_new_page_experience": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "has_whatsapp_business_number": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "has_whatsapp_number": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "hometown": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hours": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "impressum": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "influences": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "instagram_business_account": {
+      "$ref": "iguser.json"
+    },
+    "instant_articles_review_status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "is_always_open": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_chain": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_community_page": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_eligible_for_branded_content": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_messenger_bot_get_started_enabled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_messenger_platform_bot": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_owned": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_permanently_closed": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_published": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_unclaimed": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_verified": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_webhooks_subscribed": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "keywords": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "leadgen_tos_acceptance_time": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "leadgen_tos_accepted": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "leadgen_tos_accepting_user": {
+      "$ref": "user.json"
+    },
+    "link": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "location": {
+      "$ref": "location.json"
+    },
+    "members": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "merchant_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "merchant_review_status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "messaging_feature_status": {
+      "$ref": "messagingfeaturestatus.json"
+    },
+    "messenger_ads_default_icebreakers": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
     "messenger_ads_default_page_welcome_message": {
-      "type": ["null", "object"]
+      "$ref": "messengerdestinationpagewelcomemessage.json"
     },
     "messenger_ads_default_quick_replies": {
-      "type": ["null", "object"]
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
     },
     "messenger_ads_quick_replies_type": {
-      "type": ["null", "array", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mini_shop_storefront": {
+      "$ref": "shop.json"
     },
     "mission": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "mpg": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "name": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "name_with_location_descriptor": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "network": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "new_like_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "offer_eligible": {
-      "type": ["null", "boolean"]
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "overall_star_rating": {
-      "type": ["null", "number"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "page_token": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "parent_page": {
-      "type": ["null", "object"]
+      "$ref": "page.json"
     },
     "parking": {
-      "type": ["null", "object"]
+      "$ref": "pageparking.json"
     },
     "payment_options": {
-      "type": ["null", "object"]
+      "$ref": "pagepaymentoptions.json"
     },
     "personal_info": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "personal_interests": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "pharma_safety_info": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "phone": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "pickup_options": {
-      "type": ["null", "array"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
-        "type": ["null", "array", "string"]
+        "type": [
+          "string",
+          "null"
+        ]
       }
     },
     "place_type": {
-      "type": ["null", "array", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "plot_outline": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "preferred_audience": {
-      "type": ["null", "object"]
+      "$ref": "targeting.json"
     },
     "press_contact": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "price_range": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "privacy_info_url": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "produced_by": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "products": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "promotion_eligible": {
-      "type": ["null", "boolean"]
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "promotion_ineligible_reason": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "public_transit": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "rating_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "recipient": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "record_label": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "release_date": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "restaurant_services": {
-      "type": ["null", "object"]
+      "$ref": "pagerestaurantservices.json"
     },
     "restaurant_specialties": {
-      "type": ["null", "object"]
+      "$ref": "pagerestaurantspecialties.json"
     },
     "schedule": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "screenplay_by": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "season": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "single_line_address": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "starring": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "start_info": {
-      "type": ["null", "object"],
-       "properties": {
-          "type": {
-            "type": "string"
-          }
-       }
+      "$ref": "pagestartinfo.json"
     },
     "store_code": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "store_location_descriptor": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "store_number": {
-      "type": ["null", "integer"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "studio": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "supports_donate_button_in_live_video": {
-      "type": ["null", "boolean"]
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "supports_instant_articles": {
-      "type": ["null", "boolean"]
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "talking_about_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "temporary_status": {
-      "type": ["null", "array", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "unread_message_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "unread_notif_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "unseen_message_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "username": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "verification_status": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "voip_info": {
-      "type": ["null", "object"],
-      "properties": {
-        "has_permission": {
-          "type": "boolean"
-        },
-        "has_mobile_app": {
-          "type": "boolean"
-        },
-        "is_pushable": {
-          "type": "boolean"
-        },
-        "is_callable": {
-          "type": "boolean"
-        },
-        "is_callable_webrtc": {
-          "type": "boolean"
-        },
-        "reason_code": {
-          "type": "integer"
-        },
-        "reason_description": {
-          "type": "string"
-        }
-      }
+      "$ref": "voipinfo.json"
     },
     "website": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "were_here_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "whatsapp_number": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "written_by": {
-      "type": ["null", "string"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "admin_notes": {
-      "type": ["null", "object"]
-    },
-    "ads_posts": {
-      "type": ["null", "object"]
-    },
-    "agencies": {
-      "type": ["null", "object"]
-    },
-    "albums": {
-      "type": ["null", "object"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
         "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "created_time": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                }
-              }
-            }
-          ]
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pageadminnote.json"
+          }
         },
         "paging": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "cursors": {
               "type": "object",
               "properties": {
                 "before": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "after": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ads_posts": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pagepost.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "agencies": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "business.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "albums": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "album.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               }
             }
@@ -595,207 +1069,1672 @@
       }
     },
     "assigned_users": {
-      "type": ["null", "object"]
-    },
-    "audio_media_copyrights": {
-      "type": ["null", "object"]
-    },
-    "blocked": {
-      "type": ["null", "object"]
-    },
-    "call_to_actions": {
-      "type": ["null", "object"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
         "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "type": {
-                  "type": "string"
-                },
-                "status": {
-                  "type": "string"
-                }
-              }
-            }
-          ]
-        }
-      }
-    },
-    "canvas_elements": {
-      "type": ["null", "object"]
-    },
-    "canvases": {
-      "type": ["null", "object"]
-    },
-    "claimed_urls": {
-      "type": ["null", "object"]
-    },
-    "commerce_merchant_settings": {
-      "type": ["null", "object"]
-    },
-    "commerce_orders": {
-      "type": ["null", "object"]
-    },
-    "commerce_payouts": {
-      "type": ["null", "object"]
-    },
-    "commerce_transactions": {
-      "type": ["null", "object"]
-    },
-    "conversations": {
-      "type": ["null", "object"]
-    },
-    "copyright_whitelisted_partners": {
-      "type": ["null", "object"]
-    },
-    "crosspost_whitelisted_pages": {
-      "type": ["null", "object"]
-    },
-    "custom_labels": {
-      "type": ["null", "object"]
-    },
-    "custom_user_settings": {
-      "type": ["null", "object"]
-    },
-    "events": {
-      "type": ["null", "object"]
-    },
-    "feed": {
-      "type": ["null", "object"],
-      "properties": {
-        "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "created_time": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                }
-              }
-            }
-          ]
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "assigneduser.json"
+          }
         },
         "paging": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "cursors": {
               "type": "object",
               "properties": {
                 "before": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "after": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               }
+            }
+          }
+        }
+      }
+    },
+    "blocked": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "profile.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "next": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "call_to_actions": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pagecalltoaction.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "canvas_elements": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "canvasbodyelement.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "canvases": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "canvas.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "chat_plugin": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "chatplugin.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "claimed_urls": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "url.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "commerce_eligibility": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pagecommerceeligibility.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "commerce_merchant_settings": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "commercemerchantsettings.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "commerce_orders": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "commerceorder.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "commerce_payouts": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "commercepayout.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "commerce_transactions": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "commerceordertransactiondetail.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "conversations": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "unifiedthread.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "copyright_whitelisted_partners": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "profile.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "crosspost_whitelisted_pages": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "page.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "custom_labels": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pageusermessagethreadlabel.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "custom_user_settings": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "customusersettings.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "events": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "event.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "feed": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pagepost.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
             }
           }
         }
       }
     },
     "global_brand_children": {
-      "type": ["null", "object"]
-    },
-    "groups": {
-      "type": ["null", "object"]
-    },
-    "image_copyrights": {
-      "type": ["null", "object"]
-    },
-    "indexed_videos": {
-      "type": ["null", "object"]
-    },
-    "insights": {
-      "type": ["null", "object"]
-    },
-    "insights_exports": {
-      "type": ["null", "object"]
-    },
-    "instagram_accounts": {
-      "type": ["null", "object"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
         "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              }
-            }
-          ]
-        }
-      }
-    },
-    "instant_articles": {
-      "type": ["null", "object"]
-    },
-    "instant_articles_insights": {
-      "type": ["null", "object"]
-    },
-    "leadgen_forms": {
-      "type": ["null", "object"]
-    },
-    "likes": {
-      "type": ["null", "object"]
-    },
-    "live_encoders": {
-      "type": ["null", "object"]
-    },
-    "live_videos": {
-      "type": ["null", "object"],
-      "properties": {
-        "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "status": {
-                  "type": "string"
-                },
-                "embed_html": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                }
-              }
-            }
-          ]
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "page.json"
+          }
         },
         "paging": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "cursors": {
               "type": "object",
               "properties": {
                 "before": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "after": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "groups": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "group.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "image_copyrights": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "imagecopyright.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "indexed_videos": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "advideo.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "insights": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "insightsresult.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "instagram_accounts": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "instagramuser.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "instant_articles": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "instantarticle.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "instant_articles_insights": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "instantarticleinsightsqueryresult.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "leadgen_forms": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "leadgenform.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "likes": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "page.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "live_encoders": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "liveencoder.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "live_videos": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "livevideo.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               }
             }
@@ -804,47 +2743,322 @@
       }
     },
     "locations": {
-      "type": ["null", "object"]
-    },
-    "media_fingerprints": {
-      "type": ["null", "object"]
-    },
-    "messaging_feature_review": {
-      "type": ["null", "object"]
-    },
-    "messenger_profile": {
-      "type": ["null", "object"]
-    },
-    "nativeoffers": {
-      "type": ["null", "object"]
-    },
-    "page_backed_instagram_accounts": {
-      "type": ["null", "object"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
         "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              }
-            }
-          ]
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "page.json"
+          }
         },
         "paging": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "cursors": {
               "type": "object",
               "properties": {
                 "before": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "after": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "media_fingerprints": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "mediafingerprint.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "messaging_feature_review": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "messagingfeaturereview.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "messenger_profile": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "messengerprofile.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "nativeoffers": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "nativeoffer.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "page_backed_instagram_accounts": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "instagramuser.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               }
             }
@@ -853,71 +3067,106 @@
       }
     },
     "personas": {
-      "type": ["null", "object"]
-    },
-    "photos": {
-      "type": ["null", "object"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
         "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "created_time": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "created_time": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "created_time": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "created_time": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                }
-              }
-            }
-          ]
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "persona.json"
+          }
         },
         "paging": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "cursors": {
               "type": "object",
               "properties": {
                 "before": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "after": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "photos": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "photo.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               }
             }
@@ -926,207 +3175,700 @@
       }
     },
     "picture": {
-      "type": ["null", "object"]
-    },
-    "posts": {
-      "type": ["null", "object"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
         "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "created_time": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                }
-              }
-            }
-          ]
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "profilepicturesource.json"
+          }
         },
         "paging": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "cursors": {
               "type": "object",
               "properties": {
                 "before": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "after": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               }
+            }
+          }
+        }
+      }
+    },
+    "posts": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pagepost.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "next": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
             }
           }
         }
       }
     },
     "product_catalogs": {
-      "type": ["null", "object"]
-    },
-    "published_posts": {
-      "type": ["null", "object"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
         "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "created_time": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "created_time",
-                "message",
-                "id"
-              ]
-            }
-          ]
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "productcatalog.json"
+          }
         },
         "paging": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "cursors": {
               "type": "object",
               "properties": {
                 "before": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "after": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               }
+            }
+          }
+        }
+      }
+    },
+    "published_posts": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pagepost.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "next": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
             }
           }
         }
       }
     },
     "ratings": {
-      "type": ["null", "object"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
         "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "created_time": {
-                  "type": "string"
-                },
-                "recommendation_type": {
-                  "type": "string"
-                },
-                "review_text": {
-                  "type": "string"
-                }
-              }
-            }
-          ]
-        }
-      }
-    },
-    "roles": {
-      "type": ["null", "object"]
-    },
-    "rtb_dynamic_posts": {
-      "type": ["null", "object"]
-    },
-    "scheduled_posts": {
-      "type": ["null", "object"]
-    },
-    "secondary_receivers": {
-      "type": ["null", "object"]
-    },
-    "settings": {
-      "type": ["null", "object"],
-      "properties": {
-        "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "setting": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "boolean"
-                }
-              }
-            }
-          ]
-        }
-      }
-    },
-    "shop_setup_status": {
-      "type": ["null", "object"]
-    },
-    "subscribed_apps": {
-      "type": ["null", "object"]
-    },
-    "tabs": {
-      "type": ["null", "object"],
-      "properties": {
-        "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "link": {
-                  "type": "string"
-                },
-                "is_permanent": {
-                  "type": "boolean"
-                },
-                "position": {
-                  "type": "integer"
-                },
-                "is_non_connection_landing_tab": {
-                  "type": "boolean"
-                }
-              }
-            }
-          ]
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "recommendation.json"
+          }
         },
         "paging": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "cursors": {
               "type": "object",
               "properties": {
                 "before": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "after": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "roles": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "user.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "rtb_dynamic_posts": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "rtbdynamicpost.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "scheduled_posts": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pagepost.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "secondary_receivers": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "application.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "settings": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pagesettings.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shop_setup_status": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "commercemerchantsettingssetupstatus.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "subscribed_apps": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "application.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tabs": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "tab.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               }
             }
@@ -1135,64 +3877,322 @@
       }
     },
     "tagged": {
-      "type": ["null", "object"]
-    },
-    "thread_owner": {
-      "type": ["null", "object"]
-    },
-    "threads": {
-      "type": ["null", "object"]
-    },
-    "video_copyright_rules": {
-      "type": ["null", "object"]
-    },
-    "video_copyrights": {
-      "type": ["null", "object"]
-    },
-    "video_lists": {
-      "type": ["null", "object"]
-    },
-    "video_media_copyrights": {
-      "type": ["null", "object"]
-    },
-    "videos": {
-      "type": ["null", "object"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
         "data": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "description": {
-                  "type": "string"
-                },
-                "updated_time": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "description",
-                "updated_time",
-                "id"
-              ]
-            }
-          ]
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pagepost.json"
+          }
         },
         "paging": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "cursors": {
               "type": "object",
               "properties": {
                 "before": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "after": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "thread_owner": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pagethreadowner.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "threads": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "unifiedthread.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "video_copyright_rules": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "videocopyrightrule.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "video_lists": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "videolist.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "videos": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "advideo.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               }
             }
@@ -1201,7 +4201,58 @@
       }
     },
     "visitor_posts": {
-      "type": ["null", "object"]
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "data": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "pagepost.json"
+          }
+        },
+        "paging": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "previous": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cursors": {
+              "type": "object",
+              "properties": {
+                "before": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

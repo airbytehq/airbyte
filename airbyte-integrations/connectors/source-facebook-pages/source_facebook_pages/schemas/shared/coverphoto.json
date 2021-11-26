@@ -1,0 +1,38 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "cover_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "offset_x": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "offset_y": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

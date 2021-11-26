@@ -1,0 +1,20 @@
+{
+  "type": [
+    "object",
+    "null"
+  ],
+  "properties": {
+    "offsite": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "onsite": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
