@@ -13,6 +13,11 @@
     "required": ["host", "routing_key"],
     "additionalProperties": false,
     "properties": {
+      "ssl": {
+        "type": "boolean",
+        "description": "SSL enabled.",
+        "default": true
+      },
       "host": {
         "type": "string",
         "description": "The RabbitMQ host name."

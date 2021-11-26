@@ -3,11 +3,15 @@
 #
 
 import json
+from os import name
 
 from typing import Any, Dict
 from unittest import mock
 
-from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStateMessage
+from airbyte_cdk.models.airbyte_protocol import (
+    AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream, ConfiguredAirbyteCatalog, 
+    ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+)
 from destination_rabbitmq.destination import DestinationRabbitmq
 from unittest.mock import Mock
 
@@ -72,9 +76,19 @@ def _record(stream: str, data: Dict[str, Any]) -> AirbyteMessage:
     )
 
 
+def _configured_catalog() -> ConfiguredAirbyteCatalog:
+    stream_schema = {"type": "object", "properties": {"name": {"type": "string"}, "email": {"type": "string"}}}
+    append_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="people", json_schema=stream_schema),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+    )
+    return ConfiguredAirbyteCatalog(streams=[append_stream])
+
+
 @mock.patch('destination_rabbitmq.destination.BlockingConnection')
 def test_write_succeeds(connection_init):
-    stream = 'messages'
+    stream = 'people'
     data = {'name': 'John Doe', 'email': 'john.doe@example.com'}
     channel = _init_mocks(connection_init=connection_init)
     input_messages = [
@@ -82,7 +96,7 @@ def test_write_succeeds(connection_init):
         _state()
     ]
     destination = DestinationRabbitmq()
-    for m in destination.write(config=config, configured_catalog=Mock(), input_messages=input_messages):
+    for m in destination.write(config=config, configured_catalog=_configured_catalog(), input_messages=input_messages):
         assert m.type == Type.STATE
     _, _, args = channel.basic_publish.mock_calls[0]
     assert args['exchange'] == 'test_exchange'
@@ -94,7 +108,7 @@ def test_write_succeeds(connection_init):
 
 @mock.patch('destination_rabbitmq.destination.BlockingConnection')
 def test_write_succeeds_with_direct_exchange(connection_init):
-    stream = 'messages'
+    stream = 'people'
     data = {'name': 'John Doe', 'email': 'john.doe@example.com'}
     channel = _init_mocks(connection_init=connection_init)
     input_messages = [
@@ -104,10 +118,23 @@ def test_write_succeeds_with_direct_exchange(connection_init):
     custom_config = dict(config)
     del custom_config['exchange']
     destination = DestinationRabbitmq()
-    for m in destination.write(config=custom_config, configured_catalog=Mock(), input_messages=input_messages):
+    for m in destination.write(config=custom_config, configured_catalog=_configured_catalog(), input_messages=input_messages):
         assert m.type == Type.STATE
     _, _, args = channel.basic_publish.mock_calls[0]
     assert args['exchange'] == ''
     assert json.loads(args['body']) == data
-    
-    
+
+
+@mock.patch('destination_rabbitmq.destination.BlockingConnection')
+def test_write_skips_message_from_unknown_stream(connection_init):
+    stream = 'shapes'
+    data = {'name': 'Rectangle', 'color': 'blue'}
+    channel = _init_mocks(connection_init=connection_init)
+    input_messages = [
+        _record(stream=stream, data=data),
+        _state()
+    ]
+    destination = DestinationRabbitmq()
+    for m in destination.write(config=config, configured_catalog=_configured_catalog(), input_messages=input_messages):
+        assert m.type == Type.STATE
+    channel.basic_publish.assert_not_called()

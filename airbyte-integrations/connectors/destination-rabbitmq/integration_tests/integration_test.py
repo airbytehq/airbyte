@@ -4,7 +4,10 @@
 
 import json
 
-from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStateMessage
+from airbyte_cdk.models.airbyte_protocol import (
+    AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream, ConfiguredAirbyteCatalog, 
+    ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+)
 from destination_rabbitmq.destination import DestinationRabbitmq, create_connection
 from unittest.mock import Mock
 
@@ -13,6 +16,17 @@ from airbyte_cdk.models import AirbyteMessage, Status, Type
 TEST_STREAM = 'animals'
 TEST_NAMESPACE = 'test_namespace'
 TEST_MESSAGE = {'name': 'cat'}
+
+
+def _configured_catalog() -> ConfiguredAirbyteCatalog:
+    stream_schema = {"type": "object", "properties": {"name": {"type": "string"}}}
+    append_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name=TEST_STREAM, json_schema=stream_schema),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+    )
+    return ConfiguredAirbyteCatalog(streams=[append_stream])
+
 
 def consume(config):
     connection = create_connection(config=config)
@@ -65,6 +79,6 @@ def test_write():
     config = json.load(f)
     messages = [_record(), _state()]
     destination = DestinationRabbitmq()
-    for m in destination.write(config=config, configured_catalog=Mock(), input_messages=messages):
+    for m in destination.write(config=config, configured_catalog=_configured_catalog(), input_messages=messages):
         assert m.type == Type.STATE
     consume(config)
