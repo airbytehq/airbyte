@@ -516,9 +516,6 @@
     "insights": {
       "type": ["null", "object"]
     },
-    "insights_exports": {
-      "type": ["null", "object"]
-    },
     "instagram_accounts": {
       "type": ["null", "object"]
     },
