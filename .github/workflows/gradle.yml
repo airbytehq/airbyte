@@ -48,3 +48,7 @@ jobs:
         run: |
           docker tag airbyte/db:dev blotout/airbyte-db:${{ env.DOCKER_TAG }}
           docker push blotout/airbyte-db:${{ env.DOCKER_TAG }}
+      - name: Push Worker Docker
+        run: |
+          docker tag airbyte/worker:dev blotout/airbyte-worker:${{ env.DOCKER_TAG }}
+          docker push blotout/airbyte-worker:${{ env.DOCKER_TAG }}
