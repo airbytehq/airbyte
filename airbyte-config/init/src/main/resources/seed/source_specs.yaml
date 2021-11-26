@@ -4741,7 +4741,7 @@
         - "host"
         - "port"
         - "database"
-      - "username"
+        - "username"
       additionalProperties: false
       properties:
         host:
