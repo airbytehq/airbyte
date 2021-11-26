@@ -125,6 +125,20 @@
           }
         }
       }
+    },
+    {
+      "name": "stream_with_binary_data",
+      "json_schema": {
+        "properties": {
+          "some_id": {
+            "type": "integer"
+          },
+          "binary_field_name": {
+            "type": "string",
+            "contentEncoding": "base64"
+          }
+        }
+      }
     }
   ]
 }

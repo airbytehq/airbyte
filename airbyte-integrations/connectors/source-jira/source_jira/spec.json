@@ -52,6 +52,12 @@
         "title": "Expand Issue Changelog",
         "description": "Expand the changelog when replicating issues",
         "default": false
+      },
+      "render_fields": {
+        "type": "boolean",
+        "title": "Render Issue Fields",
+        "description": "Render issue fields in HTML format in addition to Jira's JSON-like format",
+        "default": false
       }
     }
   }
