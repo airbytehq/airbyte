@@ -208,7 +208,7 @@ class Stream(ABC):
     def __init__(self, api: API, start_date: str = None, **kwargs):
         self._api: API = api
         self._start_date = pendulum.parse(start_date)
-        self.unset_dynamic_fields = kwargs.get("unset_dynamic_fields", False)
+        self.skip_dynamic_fields = kwargs.get("skip_dynamic_fields", False)
 
     @property
     def name(self) -> str:
@@ -360,7 +360,7 @@ class Stream(ABC):
         default_params = {self.limit_field: self.limit}
         params = {**default_params, **params} if params else {**default_params}
         g = self._filter_old_records(self._read(getter, params))
-        if self.unset_dynamic_fields:
+        if self.skip_dynamic_fields:
             g = self._filter_dynamic_fields(g)
         yield from g
 

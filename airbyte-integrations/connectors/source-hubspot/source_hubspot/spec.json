@@ -84,7 +84,7 @@
           }
         ]
       },
-      "unset_dynamic_fields": {
+      "skip_dynamic_fields": {
         "type": "boolean",
         "description": "Set 'hs_time_in_*' properties to 'null'.",
         "default": false,
