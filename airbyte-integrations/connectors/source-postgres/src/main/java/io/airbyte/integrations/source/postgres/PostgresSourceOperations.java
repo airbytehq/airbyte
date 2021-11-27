@@ -24,7 +24,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
       // checking for null values with jdbc.
 
-      if (metadata.getColumnTypeName(i).equals("money")) {
+      if (metadata.getColumnTypeName(i).equalsIgnoreCase("money")) {
         // when a column is of type MONEY, getObject will throw exception
         // this is a bug that will not be fixed:
         // https://github.com/pgjdbc/pgjdbc/issues/425
