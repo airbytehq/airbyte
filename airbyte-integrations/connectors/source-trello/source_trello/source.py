@@ -55,7 +55,17 @@ class ChildStreamMixin:
     parent_stream_class: Optional[TrelloStream] = None
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for item in self.parent_stream_class(config=self.config).read_records(sync_mode=sync_mode):
+        config = self.config
+        board_ids = config.get("board_ids", [])
+
+        # if custom trello board IDs provided
+        if board_ids:
+            for id in board_ids:
+                yield {"id": id}
+            # early exit to prevent returning all trello boards
+            return
+
+        for item in self.parent_stream_class(config=config).read_records(sync_mode=sync_mode):
             yield {"id": item["id"]}
 
         yield from []
