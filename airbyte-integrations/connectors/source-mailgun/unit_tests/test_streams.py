@@ -11,6 +11,12 @@ from source_mailgun.source import Domains, Events, MailgunStream
 from . import TEST_CONFIG
 
 
+DATES_RANGE = {
+    "start_timestamp": 10,
+    "end_timestamp": 20
+}
+
+
 @pytest.mark.parametrize(
     "stream,stream_slice,stream_state,next_page_token,expected",
     [
@@ -32,9 +38,10 @@ def test_path(stream, stream_slice, stream_state, next_page_token, expected):
 @pytest.mark.parametrize(
     "stream,stream_slice,stream_state,next_page_token,expected",
     [
-        (Domains(), None, None, None, {}),
-        (Events(TEST_CONFIG), None, {"timestamp": 1609452000.0}, None, {"ascending": "yes", "begin": 1609452000.0}),
-        (Events(TEST_CONFIG), {"begin": 1, "end": 2}, {"timestamp": 1609452000.0}, None, {"begin": 1, "end": 2}),
+        (Domains(), {}, None, None, {}),
+        (Events(TEST_CONFIG), {}, {"timestamp": 1609452000.0}, None, {"ascending": "yes", "begin": 1609452000.0}),
+        (Events(TEST_CONFIG), {"begin": 10, "end": 20}, {"timestamp": 15}, None, {"begin": 15, "end": 20}),
+        (Events(dict(**TEST_CONFIG, **DATES_RANGE)), {"begin": 10, "end": 20}, {}, None, {"begin": 10, "end": 20}),
     ]
 )
 def test_request_params(stream, stream_slice, stream_state, next_page_token, expected):

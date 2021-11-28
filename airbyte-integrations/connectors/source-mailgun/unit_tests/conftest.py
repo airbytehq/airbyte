@@ -12,13 +12,6 @@ def mocked_responses():
         yield r
 
 
-# @pytest.fixture
-# def test_config() -> Dict[str, Any]:
-#     return {
-#         "private_key": "test_private_key",
-#     }.copy()
-#
-
 @pytest.fixture
 def auth_header(test_config):
     encoded_auth = b64encode(f"api:{test_config['private_key']}".encode()).decode()

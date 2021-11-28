@@ -13,7 +13,7 @@ from . import TEST_CONFIG
 @pytest.mark.parametrize(
     "stream, cursor_field",
     [
-        (IncrementalMailgunStream(), []),
+        (IncrementalMailgunStream(TEST_CONFIG), []),
         (Domains(), []),
         (Events(TEST_CONFIG), "timestamp"),
     ]
@@ -25,7 +25,7 @@ def test_cursor_field(stream, cursor_field):
 @pytest.mark.parametrize(
     "stream, current_stream_state, latest_record, expected_state",
     [
-        (IncrementalMailgunStream(), None, None, {}),
+        (IncrementalMailgunStream(TEST_CONFIG), None, None, {}),
 
         (Events(TEST_CONFIG), {"timestamp": 1000}, {"timestamp": 2000}, {"timestamp": 2000}),
         (Events(TEST_CONFIG), {"timestamp": 2000}, {"timestamp": 1000}, {"timestamp": 2000}),
@@ -44,7 +44,7 @@ def test_get_updated_state_events_default_timestamp():
 @pytest.mark.parametrize(
     "stream, inputs, expected_stream_slice",
     [
-        (IncrementalMailgunStream(), {"sync_mode": SyncMode.incremental}, None),
+        (IncrementalMailgunStream(TEST_CONFIG), {"sync_mode": SyncMode.incremental}, None),
         (Events(TEST_CONFIG), {"stream_state": {"timestamp": 1000000}}, {'begin': 1000000, 'end': 1086400}),
     ]
 )

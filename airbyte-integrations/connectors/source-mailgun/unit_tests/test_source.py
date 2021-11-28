@@ -16,6 +16,8 @@ from . import TEST_CONFIG
 @pytest.fixture
 def check_connection_url():
     return "https://api.mailgun.net/v3/domains"
+
+
 @pytest.fixture
 def test_config():
     return TEST_CONFIG.copy()

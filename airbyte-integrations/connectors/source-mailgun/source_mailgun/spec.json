@@ -14,7 +14,11 @@
       },
       "start_timestamp": {
         "type": "number",
-        "description": "Initial timestamp to gather data from"
+        "description": "Initial timestamp to gather data from. If omitted, default timeshift (3 days before now ) will be used."
+      },
+      "end_timestamp": {
+        "type": "number",
+        "description": "End timestamp. If omitted, current timestamp will be used."
       }
     }
   }

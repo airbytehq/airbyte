@@ -69,17 +69,24 @@ class Domains(MailgunStream):
 # Basic incremental stream
 class IncrementalMailgunStream(MailgunStream, ABC):
 
-    @staticmethod
-    def chunk_timestamps_range(start_timestamp: float, interval: Number = None) -> Iterable[Tuple[float]]:
+    def __init__(self, config: Mapping[str, Any], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Messages are stored for 3 days, so it prevents occasional attempt to read from the start of the Epoch
+        default_shift = 60 * 60 * 24 * 3
+        self.start_timestamp = config.get("start_timestamp", time.time() - default_shift)
+        self.end_timestamp = config.get("end_timestamp")
+
+    def chunk_timestamps_range(self, start_timestamp: float, interval: Number = None) -> Iterable[Tuple[float]]:
         """
-        Yield a tuple of beginning and ending timestamps of each day between the start timestamp and now.
+        Yield a tuple of beginning and ending timestamps of each day between the start timestamp and end timestamp.
         """
         interval = interval or 60 * 60 * 24  # 1 day
-        now = time.time()
-        if start_timestamp > now:
+        end = self.end_timestamp or time.time()
+        if start_timestamp > end:
             yield start_timestamp, start_timestamp
 
-        while start_timestamp <= now:
+        while start_timestamp <= end:
             end_timestamp = start_timestamp + interval
             yield start_timestamp, end_timestamp
             start_timestamp = end_timestamp
@@ -92,22 +99,14 @@ class Events(IncrementalMailgunStream):
 
     primary_key = "id"
 
-    def __init__(self, config: Mapping[str, Any], *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Messages are stored for 3 days, so it prevents occasional attempt to read from the start of the Epoch
-        default_shift = 60 * 60 * 24 * 3
-        self.start_timestamp = config.get('timestamp', time.time() - default_shift)
-        self.ascending = True
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
             Mapping[str, Any]:
-        try:
-            current_parsed_timestamp = current_stream_state['timestamp']
-            latest_record_timestamp = latest_record['timestamp']
-            return {'timestamp': max(current_parsed_timestamp, latest_record_timestamp)}
-        except (KeyError, TypeError):
-            return {'timestamp': self.start_timestamp}
+        if current_stream_state and self.cursor_field in current_stream_state:
+            current_parsed_timestamp = current_stream_state[self.cursor_field]
+            latest_record_timestamp = latest_record[self.cursor_field]
+            return {self.cursor_field: max(current_parsed_timestamp, latest_record_timestamp)}
+        else:
+            return {self.cursor_field: self.start_timestamp}
 
     def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         # return super().path(*args, **kwargs) or "events"  # TODO: Requires the CDK update (see MailgunStream.path())
@@ -125,11 +124,11 @@ class Events(IncrementalMailgunStream):
         params = super().request_params(
             stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         )
-        stream_slice = stream_slice or {
-            "begin": stream_state["timestamp"],
-            "ascending": "yes" if self.ascending else "no",
-        }
         params.update(stream_slice)
+        if stream_state:
+            params["begin"] = stream_state[self.cursor_field]
+        if "end" not in params:
+            params["ascending"] = "yes"
         return params
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, float]]]:
@@ -162,7 +161,7 @@ class SourceMailgun(AbstractSource):
                 try:
                     message += response.json()['message']
                 except json.JSONDecodeError:
-                    message += "Unexpected response format from the server."
+                    message += f"Unexpected response format from the server. It returns:\n{response.text}"
                 finally:
                     return False, message
         except requests.RequestException as e:
