@@ -8,7 +8,7 @@ import time
 
 import backoff
 import requests
-from base_python.entrypoint import logger
+from airbyte_cdk.entrypoint import logger
 from source_freshdesk.errors import FreshdeskRateLimited
 
 

@@ -10,7 +10,7 @@ from typing import Any, Callable, Iterator, Mapping, MutableMapping, Optional, S
 
 import pendulum
 import requests
-from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
+from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): use standard logger
 from requests import HTTPError
 from source_freshdesk.errors import (
     FreshdeskAccessDenied,
