@@ -208,6 +208,7 @@ class Stream(ABC):
     def __init__(self, api: API, start_date: str = None, **kwargs):
         self._api: API = api
         self._start_date = pendulum.parse(start_date)
+        self.skip_dynamic_fields = kwargs.get("skip_dynamic_fields", False)
 
     @property
     def name(self) -> str:
@@ -225,9 +226,9 @@ class Stream(ABC):
         """
         for record in records:
             if isinstance(record, Mapping) and "properties" in record:
-                for key in list(record["properties"].keys()):
-                    if key.startswith("hs_time_in"):
-                        record["properties"].pop(key)
+                for key in record["properties"]:
+                    if key.startswith("hs_time_in_"):
+                        record["properties"][key] = None
             yield record
 
     @staticmethod
@@ -358,7 +359,10 @@ class Stream(ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         default_params = {self.limit_field: self.limit}
         params = {**default_params, **params} if params else {**default_params}
-        yield from self._filter_dynamic_fields(self._filter_old_records(self._read(getter, params)))
+        g = self._filter_old_records(self._read(getter, params))
+        if self.skip_dynamic_fields:
+            g = self._filter_dynamic_fields(g)
+        yield from g
 
     def parse_response(self, response: Union[Mapping[str, Any], List[dict]]) -> Iterator:
         if isinstance(response, Mapping):
