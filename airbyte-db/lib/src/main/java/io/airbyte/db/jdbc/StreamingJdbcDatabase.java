@@ -92,7 +92,7 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
       final PreparedStatement ps = statementCreator.apply(connection);
       // allow configuration of connection and prepared statement to make streaming possible.
       jdbcStreamingQueryConfiguration.accept(connection, ps);
-      return sourceOperations.toStream(ps.executeQuery(), recordTransform)
+      return toStream(ps.executeQuery(), recordTransform)
           .onClose(() -> {
             try {
               connection.setAutoCommit(true);

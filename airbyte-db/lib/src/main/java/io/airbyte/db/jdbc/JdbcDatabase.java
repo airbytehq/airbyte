@@ -15,7 +15,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Database object for interacting with a JDBC connection.
@@ -50,6 +54,33 @@ public abstract class JdbcDatabase extends SqlDatabase {
       connection.commit();
       connection.setAutoCommit(true);
     });
+  }
+
+  /**
+   * Map records returned in a result set.
+   *
+   * @param resultSet the result set
+   * @param mapper function to make each record of the result set
+   * @param <T> type that each record will be mapped to
+   * @return stream of records that the result set is mapped to.
+   */
+  public static <T> Stream<T> toStream(final ResultSet resultSet, final CheckedFunction<ResultSet, T, SQLException> mapper) {
+    return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
+
+      @Override
+      public boolean tryAdvance(final Consumer<? super T> action) {
+        try {
+          if (!resultSet.next()) {
+            return false;
+          }
+          action.accept(mapper.apply(resultSet));
+          return true;
+        } catch (final SQLException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+    }, false);
   }
 
   /**

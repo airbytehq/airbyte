@@ -4,6 +4,12 @@
 
 package io.airbyte.db.jdbc;
 
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
@@ -11,11 +17,15 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of source operations with standard JDBC types.
  */
 public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations<JDBCType> implements SourceOperations<ResultSet, JDBCType> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSourceOperations.class);
 
   private JDBCType safeGetJdbcType(final int columnTypeInt) {
     try {
@@ -72,6 +82,20 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
       // since cursor are expected to be comparable, handle cursor typing strictly and error on
       // unrecognized types
       default -> throw new IllegalArgumentException(String.format("%s is not supported.", cursorFieldType));
+    }
+  }
+
+  @Override
+  public JDBCType getFieldType(final JsonNode field) {
+    try {
+      return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
+    } catch (final IllegalArgumentException ex) {
+      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
+          field.get(INTERNAL_COLUMN_NAME),
+          field.get(INTERNAL_SCHEMA_NAME),
+          field.get(INTERNAL_TABLE_NAME),
+          field.get(INTERNAL_COLUMN_TYPE)));
+      return JDBCType.VARCHAR;
     }
   }
 

@@ -59,7 +59,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try (final Connection connection = connectionSupplier.getConnection()) {
-      return sourceOperations.toStream(query.apply(connection), recordTransform).collect(Collectors.toList());
+      return toStream(query.apply(connection), recordTransform).collect(Collectors.toList());
     }
   }
 
@@ -68,7 +68,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                                       final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = connectionSupplier.getConnection();
-    return sourceOperations.toStream(query.apply(connection), recordTransform)
+    return toStream(query.apply(connection), recordTransform)
         .onClose(() -> {
           try {
             connection.close();
@@ -105,7 +105,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                              final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     final Connection connection = connectionSupplier.getConnection();
-    return sourceOperations.toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
+    return toStream(statementCreator.apply(connection).executeQuery(), recordTransform)
         .onClose(() -> {
           try {
             LOGGER.info("closing connection");

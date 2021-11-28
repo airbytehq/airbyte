@@ -34,29 +34,11 @@ import javax.xml.bind.DatatypeConverter;
 public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implements JdbcCompatibleSourceOperations<Datatype> {
 
   /**
+   * Read from a result set, and copy the value of the column at colIndex to the Json object.
+   * <p/>
    * @param colIndex 1-based column index.
    */
   protected abstract void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException;
-
-  @Override
-  public <T> Stream<T> toStream(final ResultSet resultSet, final CheckedFunction<ResultSet, T, SQLException> mapper) {
-    return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
-
-      @Override
-      public boolean tryAdvance(final Consumer<? super T> action) {
-        try {
-          if (!resultSet.next()) {
-            return false;
-          }
-          action.accept(mapper.apply(resultSet));
-          return true;
-        } catch (final SQLException e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-    }, false);
-  }
 
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {

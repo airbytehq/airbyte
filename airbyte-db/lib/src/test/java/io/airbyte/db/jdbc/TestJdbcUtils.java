@@ -104,7 +104,7 @@ public class TestJdbcUtils {
   void testToStream() throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {
       final ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM id_and_name;");
-      final List<JsonNode> actual = sourceOperations.toStream(rs, sourceOperations::rowToJson).collect(Collectors.toList());
+      final List<JsonNode> actual = JdbcDatabase.toStream(rs, sourceOperations::rowToJson).collect(Collectors.toList());
       assertEquals(RECORDS_AS_JSON, actual);
     }
   }

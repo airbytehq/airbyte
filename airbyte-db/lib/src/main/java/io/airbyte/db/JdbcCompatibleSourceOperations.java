@@ -4,7 +4,9 @@
 
 package io.airbyte.db;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,14 +26,9 @@ public interface JdbcCompatibleSourceOperations<SourceType> extends SourceOperat
       throws SQLException;
 
   /**
-   * Map records returned in a result set.
-   *
-   * @param resultSet the result set
-   * @param mapper function to make each record of the result set
-   * @param <T> type that each record will be mapped to
-   * @return stream of records that the result set is mapped to.
+   * Determine the database specific type of the input field based on its column metadata.
    */
-  <T> Stream<T> toStream(final ResultSet resultSet, final CheckedFunction<ResultSet, T, SQLException> mapper);
+  SourceType getFieldType(final JsonNode field);
 
   /**
    * @return the input identifiers with quotes and delimiters.

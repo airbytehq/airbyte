@@ -30,7 +30,6 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
-import java.sql.JDBCType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -151,23 +150,6 @@ public class MySqlSource extends AbstractJdbcCompatibleSource<MysqlType> impleme
     });
 
     return checkOperations;
-  }
-
-  // TODO: update this method to return mysql specific type
-  @Override
-  public MysqlType getFieldType(final JsonNode field) {
-    JDBCType jdbcType;
-    try {
-      jdbcType = JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
-    } catch (final IllegalArgumentException ex) {
-      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
-          field.get(INTERNAL_COLUMN_NAME),
-          field.get(INTERNAL_SCHEMA_NAME),
-          field.get(INTERNAL_TABLE_NAME),
-          field.get(INTERNAL_COLUMN_TYPE)));
-      jdbcType = JDBCType.VARCHAR;
-    }
-    return MysqlType.getByJdbcType(jdbcType.getVendorTypeNumber());
   }
 
   @Override

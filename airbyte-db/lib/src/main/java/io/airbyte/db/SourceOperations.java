@@ -12,6 +12,9 @@ public interface SourceOperations<QueryResult, SourceType> {
 
   JsonNode rowToJson(QueryResult queryResult) throws SQLException;
 
+  /**
+   * Convert database specific type to {@link JsonSchemaPrimitive}.
+   */
   JsonSchemaPrimitive getType(SourceType sourceType);
 
 }
