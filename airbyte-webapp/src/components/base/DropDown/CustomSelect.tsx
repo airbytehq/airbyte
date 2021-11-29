@@ -1,10 +1,12 @@
 import styled from "styled-components";
-import Select from "react-select";
+import Select, { Props } from "react-select";
 
-export const CustomSelect = styled(Select)<{
-  $withBorder?: boolean;
-  $error?: boolean;
-}>`
+export const CustomSelect = styled(Select)<
+  {
+    $withBorder?: boolean;
+    $error?: boolean;
+  } & Props
+>`
   & > .react-select__control {
     height: ${({ $withBorder }) => ($withBorder ? 31 : 36)}px;
 

@@ -12,6 +12,12 @@
   "sidebar.settings": "Settings",
   "sidebar.update": "Update",
   "sidebar.onboarding": "Onboarding",
+  "sidebar.resources": "Resources",
+  "sidebar.documentation": "Documentation",
+  "sidebar.joinSlack": "Join our Slack",
+  "sidebar.status": "Airbyte status",
+  "sidebar.chat": "Chat with us",
+  "sidebar.recipes": "Recipes - Use cases",
 
   "form.continue": "Continue",
   "form.yourEmail": "Your email",
