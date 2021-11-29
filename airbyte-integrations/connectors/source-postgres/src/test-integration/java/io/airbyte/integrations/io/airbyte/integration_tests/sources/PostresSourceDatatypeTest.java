@@ -54,13 +54,17 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         "org.postgresql.Driver",
         SQLDialect.POSTGRES);
 
-    database.query(ctx -> ctx.fetch("CREATE SCHEMA TEST;"));
-    database.query(ctx -> ctx.fetch("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');"));
-    database.query(ctx -> ctx.fetch("CREATE TYPE inventory_item AS (\n"
-        + "    name            text,\n"
-        + "    supplier_id     integer,\n"
-        + "    price           numeric\n"
-        + ");"));
+    database.query(ctx -> {
+      ctx.execute("CREATE SCHEMA TEST;");
+      ctx.execute("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');");
+      ctx.execute("CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);");
+      // In one of the test case, we have some money values with currency symbol. Postgres can only understand
+      // those money values if the symbol corresponds to the monetary locale setting. For example, if the locale
+      // is 'en_GB', '£100' is valid, but '$100' is not. So setting the monetary locate is necessary here to
+      // make sure the unit test can pass, no matter what the locale the runner VM has.
+      ctx.execute("SET lc_monetary TO 'en_US.utf8';");
+      return null;
+    });
 
     return database;
   }
@@ -294,17 +298,23 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 "08:00:2b:01:02:03:04:07")
             .build());
 
-    // The Money type fails when amount is > 1,000. in JdbcUtils-> rowToJson as r.getObject(i);
-    // Bad value for type double : 1,000.01
-    // The reason is that in jdbc implementation money type is tried to get as Double (jdbc
-    // implementation)
-    // Max values for Money type: "-92233720368547758.08", "92233720368547758.07"
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("money")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'999.99'")
-            .addExpectedValues(null, "999.99")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues(
+                "null",
+                "'999.99'", "'1,001.01'", "'-1,000'",
+                "'$999.99'", "'$1001.01'", "'-$1,000'",
+                // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
+                "'-92233720368547758.08'", "'92233720368547758.07'")
+            .addExpectedValues(
+                null,
+                // Double#toString method is necessary here because sometimes the output
+                // has unexpected decimals, e.g. Double.toString(-1000) is -1000.0
+                "999.99", "1001.01", Double.toString(-1000),
+                "999.99", "1001.01", Double.toString(-1000),
+                Double.toString(-92233720368547758.08), Double.toString(92233720368547758.07))
             .build());
 
     // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
