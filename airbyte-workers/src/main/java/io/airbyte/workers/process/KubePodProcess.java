@@ -168,10 +168,9 @@ public class KubePodProcess extends Process {
         .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
         .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
 
-    final List<ContainerPort> containerPorts = internalToExternalPorts.entrySet().stream()
-        .map(entry -> new ContainerPortBuilder()
-            .withContainerPort(entry.getKey())
-            .withHostPort(entry.getValue())
+    final List<ContainerPort> containerPorts = internalToExternalPorts.keySet().stream()
+        .map(integer -> new ContainerPortBuilder()
+            .withContainerPort(integer)
             .build())
         .collect(Collectors.toList());
 
