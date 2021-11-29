@@ -49,10 +49,7 @@ class SourceCorebos(Source):
         client = WSClient(url)
         username = config["username"]
         key = config["access_token"]
-        logger.info(username)
-        logger.info(key)
-        login = client.do_login(username,key,withpassword=False)
-        logger.info(login)
+        login = client.do_login(username,key)
         if login:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         else:
@@ -62,18 +59,11 @@ class SourceCorebos(Source):
                 )
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
-        url = config["url"]
-        username = config["username"]
-        key = config["access_token"]
         stream_name = DATASET_ITEMS_STREAM_NAME
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
         }
-        client = WSClient(url)
-        login = client.do_login(username,key,withpassword=False)
-        if login:
-            result = client.do_listtypes
         return AirbyteCatalog(
             streams=[AirbyteStream(name=stream_name, json_schema=json_schema)]
         )
@@ -92,12 +82,7 @@ class SourceCorebos(Source):
         login = client.do_login(username,key,withpassword=False)
         query = config["query"]
         logger.info(query)
-
-        if login:
-            data = client.do_query(query)
-        else:
-            logger.info("authentication failed: {}",login)
-
+        data = client.do_query(query)
         try:
             for single_dict in data:    
                 yield AirbyteMessage(

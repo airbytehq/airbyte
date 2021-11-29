@@ -25,9 +25,7 @@ from typing import Mapping, Any, Iterable
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, Status
-from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, Type
-from base_python import logger
+from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, DestinationSyncMode, Status, Type
 from destination_corebos.libs.WSClient import *
 
 
@@ -41,37 +39,37 @@ class DestinationCorebos(Destination):
 
         url = config["url"]
         client = WSClient(url)
-        #TODO: change the query to Module name
-        module = config["query"]
-
-        for configured_stream in configured_catalog.streams:
-            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                logger.info("details in stream %s will be overrriden", configured_stream)
-
+        module = config["module"]
+        username = config["username"]
+        key = config["access_token"]
+        login = client.do_login(username, key)
+        if not login:
+            return
         for message in input_messages:
+            print(message)
             if message.type == Type.STATE:
                 yield message
             elif message.type == Type.RECORD:
                 record = message.record
+                print(record)
                 recordIfo = client.do_create(module, record)
-                logger.info(":: created %s", client.do_retrieve(recordIfo['id']))
+                print(recordIfo)
+                #AirbyteLogger.info(":: created %s", client.do_retrieve(recordIfo['id']))
             else:
                 continue
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        logger.info("***************************check****************")
         url = config["url"]
         client = WSClient(url)
         username = config["username"]
         key = config["access_token"]
-        login = client.do_login(username,key,withpassword=False)
+        login = client.do_login(username, key)
         logger.info(login)
         if login:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         else:
             return AirbyteConnectionStatus(
-                    status=Status.FAILED,
-                    message='An exception occurred, content: {}'.format(login),
-                )
-
-
-
+                status=Status.FAILED,
+                message='An exception occurred, content: {}'.format(login),
+            )
