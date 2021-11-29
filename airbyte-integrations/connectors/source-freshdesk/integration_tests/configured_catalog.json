@@ -1,0 +1,136 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "agents",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "companies",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "contacts",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "conversations",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "groups",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "roles",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "satisfaction_ratings",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "skills",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "surveys",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "tickets",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "time_entries",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": null,
+      "destination_sync_mode": "append"
+    }
+  ]
+}
