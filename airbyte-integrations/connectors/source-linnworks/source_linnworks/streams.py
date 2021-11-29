@@ -5,13 +5,12 @@
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import requests
 import vcr
-from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from requests.auth import AuthBase
@@ -70,50 +69,35 @@ class LinnworksGenericPagedResult(ABC):
             }
 
 
-class Location(LinnworksStream):
-    # https://apps.linnworks.net/Api/Method/Locations-GetLocation
-    # Response: StockLocation https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Locations-ClassBase-StockLocation
-    # Allows 150 calls per minute
-    primary_key = "StockLocationIntId"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "/api/Locations/GetLocation"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {"pkStockLocationId ": stream_state["pkStockLocationId"]}
-
-
 class StockLocations(LinnworksStream):
     # https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations
     # Response: List<StockLocation> https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Inventory-ClassBase-StockLocation
     # Allows 150 calls per minute
     primary_key = "StockLocationIntId"
+    use_cache = True
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "/api/Inventory/GetStockLocations"
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
-        for record in records:
-            location = Location(authenticator=self.authenticator)
-            stock_location_records = location.read_records(
-                sync_mode, cursor_field, stream_slice, {"pkStockLocationId": record["StockLocationId"]}
-            )
-            record["location"] = next(stock_location_records)
-            yield record
+class StockLocationDetails(HttpSubStream, StockLocations):
+    # https://apps.linnworks.net/Api/Method/Locations-GetLocation
+    # Response: StockLocation https://apps.linnworks.net/Api/Class/linnworks-spa-commondata-Locations-ClassBase-StockLocation
+    # Allows 150 calls per minute
+    primary_key = "StockLocationIntId"
+
+    def __init__(self, **kwargs):
+        super().__init__(StockLocations(**kwargs), **kwargs)
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "/api/Locations/GetLocation"
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any], **kwargs) -> MutableMapping[str, Any]:
+        return {"pkStockLocationId ": stream_slice["parent"]["StockLocationId"]}
 
 
 class StockItems(LinnworksStream):

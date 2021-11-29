@@ -7,7 +7,14 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from source_linnworks.streams import LinnworksStream, Location, ProcessedOrderDetails, ProcessedOrders, StockItems, StockLocations
+from source_linnworks.streams import (
+    LinnworksStream,
+    ProcessedOrderDetails,
+    ProcessedOrders,
+    StockItems,
+    StockLocationDetails,
+    StockLocations,
+)
 
 
 @pytest.fixture
@@ -68,22 +75,32 @@ def test_backoff_time(patch_base_class, requests_mock, header_name, header_value
     assert result == expected
 
 
-def test_stock_locations_read_records(mocker):
-    fake_stock_locations = [
-        {"StockLocationId": 1},
-        {"StockLocationId": 2},
-    ]
+def test_stock_locations_details_init(mocker):
+    stock_locations = MagicMock(return_value=None)
+    mocker.patch.object(StockLocations, "__init__", stock_locations)
+    kwargs = {"foo": "foo", "bar": "bar"}
 
-    mocker.patch.object(LinnworksStream, "read_records", lambda *args: iter(fake_stock_locations))
-    mocker.patch.object(Location, "read_records", lambda *args: iter([{"FakeLocationFor": args[-1]}]))
+    StockLocationDetails(**kwargs)
 
-    source = StockLocations()
-    records = source.read_records(SyncMode.full_refresh)
+    stock_locations.assert_called_with(**kwargs)
 
-    assert list(records) == [
-        {"StockLocationId": 1, "location": {"FakeLocationFor": {"pkStockLocationId": 1}}},
-        {"StockLocationId": 2, "location": {"FakeLocationFor": {"pkStockLocationId": 2}}},
-    ]
+
+@pytest.mark.parametrize(
+    ("stream_slice", "expected"),
+    [
+        (None, "'NoneType' object is not subscriptable"),
+        ({"parent": {"StockLocationId": 42}}, {"pkStockLocationId ": 42}),
+    ],
+)
+def test_stock_locations_details_request_params(mocker, stream_slice, expected):
+    source = StockLocationDetails()
+
+    if stream_slice:
+        params = source.request_params(None, stream_slice)
+        assert params == expected
+    else:
+        with pytest.raises(TypeError, match=expected):
+            source.request_params(None, stream_slice)
 
 
 @pytest.mark.parametrize(
