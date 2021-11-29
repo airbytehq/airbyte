@@ -14,21 +14,22 @@ import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.sql.SQLException;
+import java.util.Set;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
+public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
   private static final Logger LOGGER = LoggerFactory
-      .getLogger(PostresSourceDatatypeTest.class);
+      .getLogger(PostgresSourceDatatypeTest.class);
 
   @Override
   protected Database setupDatabase() throws SQLException {
-    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    container = new PostgreSQLContainer<>("postgres:14-alpine");
     container.start();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
@@ -58,14 +59,14 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       ctx.execute("CREATE SCHEMA TEST;");
       ctx.execute("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');");
       ctx.execute("CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);");
-      // In one of the test case, we have some money values with currency symbol. Postgres can only
-      // understand
-      // those money values if the symbol corresponds to the monetary locale setting. For example, if the
-      // locale
-      // is 'en_GB', '£100' is valid, but '$100' is not. So setting the monetary locate is necessary here
-      // to
-      // make sure the unit test can pass, no matter what the locale the runner VM has.
+      /*
+       * In one of the test case, we have some money values with currency symbol. Postgres can only
+       * understand those money values if the symbol corresponds to the monetary locale setting. For example,
+       * if the locale is 'en_GB', '£100' is valid, but '$100' is not. So setting the monetary locate is
+       * necessary here to make sure the unit test can pass, no matter what the locale the runner VM has.
+       */
       ctx.execute("SET lc_monetary TO 'en_US.utf8';");
+      ctx.execute("SET TIMEZONE TO 'America/Los_Angeles'");
       return null;
     });
 
@@ -93,7 +94,24 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
+  public boolean testCatalog() {
+    return true;
+  }
+
+  // Test cases are sorted alphabetically based on the source type
+  // See https://www.postgresql.org/docs/14/datatype.html
+  @Override
   protected void initTests() {
+    // array
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("text")
+            .fullSourceDataType("text[]")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'{10000, 10000, 10000, 10000}'", "null")
+            .addExpectedValues("{10000,10000,10000,10000}", null)
+            .build());
+
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
@@ -112,57 +130,58 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("serial")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("1", "2147483647", "0", "-2147483647")
-            .addExpectedValues("1", "2147483647", "0", "-2147483647")
+            .sourceType("bit")
+            .fullSourceDataType("BIT(1)")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("B'0'")
+            .addExpectedValues("0")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("smallserial")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("1", "32767", "0", "-32767")
-            .addExpectedValues("1", "32767", "0", "-32767")
+            .sourceType("bit")
+            .fullSourceDataType("BIT(3)")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("B'101'")
+            .addExpectedValues("101")
             .build());
-
-    // BUG https://github.com/airbytehq/airbyte/issues/3932
-    // BIT type is currently parsed as a Boolean which is incorrect
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("bit")
-    // .fullSourceDataType("BIT(3)")
-    // .airbyteType(JsonSchemaPrimitive.NUMBER)
-    // .addInsertValues("B'101'")
-    // //.addExpectedValues("101")
-    // - .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit_varying")
             .fullSourceDataType("BIT VARYING(5)")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("B'101'", "null")
             .addExpectedValues("101", null)
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("boolean")
-            .airbyteType(JsonSchemaPrimitive.BOOLEAN)
-            .addInsertValues("true", "'yes'", "'1'", "false", "'no'", "'0'", "null")
-            .addExpectedValues("true", "true", "true", "false", "false", "false", null)
-            .build());
+    for (final String type : Set.of("boolean", "bool")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(type)
+              .airbyteType(JsonSchemaPrimitive.BOOLEAN)
+              .addInsertValues("true", "'yes'", "'1'", "false", "'no'", "'0'", "null")
+              .addExpectedValues("true", "true", "true", "false", "false", "false", null)
+              .build());
+    }
 
     // BUG: The represented value is encoded by Base64
     // https://github.com/airbytehq/airbyte/issues/7905
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("bytea")
-            .airbyteType(JsonSchemaPrimitive.OBJECT)
-            .addInsertValues("decode('1234', 'hex')")
-            .addExpectedValues("EjQ=")
+            .sourceType("box")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
+            .addExpectedValues("(15,18),(3,7)", "(0,0),(0,0)", null)
             .build());
+
+//    addDataTypeTestData(
+//        TestDataHolder.builder()
+//            .sourceType("bytea")
+//            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+//            .addInsertValues("decode('1234', 'hex')")
+//            .addExpectedValues("EjQ=")
+//            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -193,12 +212,24 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varchar")
+            .sourceType("character")
+            .fullSourceDataType("character varying(10)")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "'Миші йдуть на південь, не питай чому;'", "'櫻花分店'",
-                "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
-            .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
-                null, "\\xF0\\x9F\\x9A\\x80")
+            .addInsertValues("'{asb123}'", "'{asb12}'")
+            .addExpectedValues("{asb123}", "{asb12} ")
             .build());
+
+    for (final String type : Set.of("varchar", "text")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(type)
+              .airbyteType(JsonSchemaPrimitive.STRING)
+              .addInsertValues("'a'", "'abc'", "'Миші йдуть на південь, не питай чому;'", "'櫻花分店'",
+                  "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
+              .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
+                  null, "\\xF0\\x9F\\x9A\\x80")
+              .build());
+    }
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -221,26 +252,21 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 "128.1.0.0/16", "2001:4f8:3:ba::/64")
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it doesnt suppose to handle BC
-    // dates
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("circle")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'(5,7),10'", "'(0,0),0'", "'(-10,-4),10'", "null")
+            .addExpectedValues("<(5,7),10>", "<(0,0),0>", "<(-10,-4),10>", null)
+            .build());
+
+    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it cannot handle BC dates
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'1999-01-08'", "null") // "'199-10-10 BC'"
-            .addExpectedValues("1999-01-08T00:00:00Z", null) // , "199-10-10 BC")
-            .build());
-
-    // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
-    // JdbcUtils -> setJsonField contains:
-    // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
-    // https://github.com/airbytehq/airbyte/issues/7871
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("float8")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'123'", "'1234567890.1234567'", "null")
-            .addExpectedValues("123.0", "1.2345678901234567E9", null)
+            .addInsertValues("'1999-01-08'", "null", "'199-10-10 BC'")
+            .addExpectedValues("1999-01-08", null, "199-10-10 BC")
             .build());
 
     addDataTypeTestData(
@@ -264,6 +290,23 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("123.0", "1.2345678901234567E9", null)
             .build());
 
+    for (final String fullSourceType : Set.of("double precision", "float", "float8")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("double")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaPrimitive.NUMBER)
+              .addInsertValues(
+                  "'123'", "'1234567890.1234567'", "null",
+                  "'infinity'", "'-infinity'", "'Nan'")
+              .addExpectedValues(
+                  "123.0", "1.2345678901234567E9", null,
+                  String.valueOf(Double.POSITIVE_INFINITY),
+                  String.valueOf(Double.NEGATIVE_INFINITY),
+                  String.valueOf(Double.NaN))
+              .build());
+    }
+
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("inet")
@@ -272,13 +315,15 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("198.24.10.0/24", "198.24.10.0", "198.10.0.0/8", null)
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("int")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "-2147483648", "2147483647")
-            .addExpectedValues(null, "-2147483648", "2147483647")
-            .build());
+    for (final String type : Set.of("integer", "int", "int4")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(type)
+              .airbyteType(JsonSchemaPrimitive.NUMBER)
+              .addInsertValues("null", "1001", "-2147483648", "2147483647")
+              .addExpectedValues(null, "1001", "-2147483648", "2147483647")
+              .build());
+    }
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -310,6 +355,22 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "'[1, 2, 3]'::jsonb")
             .addExpectedValues(null, "[1, 2, 3]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("line")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'{4,5,6}'", "'{0,1,0}'", "null")
+            .addExpectedValues("{4,5,6}", "{0,1,0}", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("lseg")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
+            .addExpectedValues("[(3,7),(15,18)]", "[(0,0),(0,0)]", null)
             .build());
 
     addDataTypeTestData(
@@ -350,10 +411,6 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 Double.toString(-92233720368547758.08), Double.toString(92233720368547758.07))
             .build());
 
-    // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
-    // we try to map it like this, so it fails
-    // case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
-    // https://github.com/airbytehq/airbyte/issues/7871
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("numeric")
@@ -378,71 +435,139 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("7/A25801C8", "0/0", null)
             .build());
 
-    // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
-    // we try to map it like this, so it fails
-    // case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
-    // https://github.com/airbytehq/airbyte/issues/7871
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("decimal")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("99999", "5.1", "0", "null")
-            .addExpectedValues("99999", "5.1", "0", null)
-            .build());
+    for (final String type : Set.of("numeric", "decimal")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(type)
+              .airbyteType(JsonSchemaPrimitive.NUMBER)
+              .addInsertValues("'99999'", "null", "'infinity'", "'-infinity'", "'Nan'")
+              .addExpectedValues("99999", null,
+                  String.valueOf(Double.POSITIVE_INFINITY),
+                  String.valueOf(Double.NEGATIVE_INFINITY),
+                  String.valueOf(Double.NaN))
+              .build());
+    }
 
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("smallint")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "-32768", "32767")
-            .addExpectedValues(null, "-32768", "32767")
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("text")
+            .sourceType("path")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
-                "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
-            .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
-            .build());
-
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
-    // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("time")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            .build());
-
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
-    // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("timetz")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
+            .addExpectedValues("((3,7),(15,18))", "((0,0),(0,0))", null)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("timestamp")
+            .sourceType("point")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "null")
-            .addExpectedValues("2004-10-19T10:23:54Z", null)
+            .addInsertValues("'(3,7)'", "'(0,0)'", "'(999999999999999999999999,0)'", "null")
+            .addExpectedValues("(3,7)", "(0,0)", "(1e+24,0)", null)
             .build());
 
-    // May be run locally, but correct the timezone aacording to your location
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("timestamptz")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("TIMESTAMP '2004-10-19 10:23:54+02'", "null")
-    // .addExpectedValues("2004-10-19T07:23:54Z", null)
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("polygon")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'",
+                "'((0,0),(999999999999999999999999,0))'", "null")
+            .addExpectedValues("((3,7),(15,18))", "((0,0),(0,0))", "((0,0),(1e+24,0))", null)
+            .build());
+
+    for (final String type : Set.of("real", "float4")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(type)
+              .airbyteType(JsonSchemaPrimitive.NUMBER)
+              .addInsertValues("null", "3.4145")
+              .addExpectedValues(null, "3.4145")
+              .build());
+    }
+
+    for (final String type : Set.of("smallint", "int2")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(type)
+              .airbyteType(JsonSchemaPrimitive.NUMBER)
+              .addInsertValues("null", "-32768", "32767")
+              .addExpectedValues(null, "-32768", "32767")
+              .build());
+    }
+
+    for (final String type : Set.of("smallserial", "serial2")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(type)
+              .airbyteType(JsonSchemaPrimitive.NUMBER)
+              .addInsertValues("1", "32767", "0", "-32767")
+              .addExpectedValues("1", "32767", "0", "-32767")
+              .build());
+    }
+
+    for (final String type : Set.of("serial", "serial4")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(type)
+              .airbyteType(JsonSchemaPrimitive.NUMBER)
+              .addInsertValues("1", "2147483647", "0", "-2147483647")
+              .addExpectedValues("1", "2147483647", "0", "-2147483647")
+              .build());
+    }
+
+    // time without time zone
+    for (final String fullSourceType : Set.of("time", "time without time zone")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("time")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaPrimitive.STRING)
+              .addInsertValues("null")
+              .addNullExpectedValue()
+              .build());
+    }
+
+    // time with time zone
+    for (final String fullSourceType : Set.of("timetz", "time with time zone")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("timetz")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaPrimitive.STRING)
+              .addInsertValues("null")
+              .addNullExpectedValue()
+              .build());
+    }
+
+    // timestamp without time zone
+    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("timestamp")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaPrimitive.STRING)
+              .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "null")
+              .addExpectedValues("2004-10-19T10:23:54Z", null)
+              .build());
+    }
+
+    // timestamp with time zone
+    for (final String fullSourceType : Set.of("timestamptz", "timestamp with time zone")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("timestamptz")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaPrimitive.STRING)
+              .addInsertValues("TIMESTAMP '2004-10-19 10:23:54-08'", "null")
+              .addExpectedValues("2004-10-19T10:23:54Z-8", null)
+              .build());
+    }
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("tsquery")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'fat & (rat | cat)'::tsquery")
+            .addExpectedValues("'fat' & ( 'rat' | 'cat' )")
+            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -478,7 +603,7 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("<book><title>Manual</title><chapter>...</chapter></book>", null, "")
             .build());
 
-    // preconditions for this test are set at the time of database creation (setupDatabase method)
+    // enum type
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("mood")
@@ -487,15 +612,7 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("happy", null)
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("text")
-            .fullSourceDataType("text[]")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'{10000, 10000, 10000, 10000}'", "null")
-            .addExpectedValues("{10000,10000,10000,10000}", null)
-            .build());
-
+    // composite type
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("inventory_item")
@@ -504,69 +621,13 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("(\"fuzzy dice\",42,1.99)", null)
             .build());
 
+    // range
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tsrange")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'(2010-01-01 14:30, 2010-01-01 15:30)'", "null")
             .addExpectedValues("(\"2010-01-01 14:30:00\",\"2010-01-01 15:30:00\")", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("box")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
-            .addExpectedValues("(15,18),(3,7)", "(0,0),(0,0)", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("circle")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'(5,7),10'", "'(0,0),0'", "'(-10,-4),10'", "null")
-            .addExpectedValues("<(5,7),10>", "<(0,0),0>", "<(-10,-4),10>", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("line")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'{4,5,6}'", "'{0,1,0}'", "null")
-            .addExpectedValues("{4,5,6}", "{0,1,0}", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("lseg")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
-            .addExpectedValues("[(3,7),(15,18)]", "[(0,0),(0,0)]", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("path")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
-            .addExpectedValues("((3,7),(15,18))", "((0,0),(0,0))", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("point")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'(3,7)'", "'(0,0)'", "'(999999999999999999999999,0)'", "null")
-            .addExpectedValues("(3,7)", "(0,0)", "(1e+24,0)", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("polygon")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'",
-                "'((0,0),(999999999999999999999999,0))'", "null")
-            .addExpectedValues("((3,7),(15,18))", "((0,0),(0,0))", "((0,0),(1e+24,0))", null)
             .build());
   }
 
