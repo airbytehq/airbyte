@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { Input, LoadingButton } from "components";
 import { FormContent } from "./PageComponents";
-import { Constants } from "../../../../../constants";
+import { Constants } from "constants/constants";
 
 type IProps = {
   version: string;

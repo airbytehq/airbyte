@@ -1,6 +1,6 @@
 import { isSourceDefinition, isSourceDefinitionSpecification } from "./source";
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "./types";
-import { Constants } from "../../../constants";
+import { Constants } from "constants/constants";
 
 export class Connector {
   static id(connector: ConnectorDefinition): string {
