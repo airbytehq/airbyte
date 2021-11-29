@@ -14,7 +14,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcCompatibleSource;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.sql.Connection;
@@ -96,7 +96,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcCompatibleSource<MysqlType> getJdbcSource() {
+  public AbstractJdbcSource<MysqlType> getJdbcSource() {
     return new MySqlSource();
   }
 

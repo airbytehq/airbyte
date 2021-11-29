@@ -16,13 +16,14 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CockroachDbSource extends AbstractJdbcSource {
+public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
 

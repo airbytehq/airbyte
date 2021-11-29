@@ -11,7 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcCompatibleSource;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -92,7 +92,7 @@ class MySqlStressTest extends JdbcStressTest {
   }
 
   @Override
-  public AbstractJdbcCompatibleSource<MysqlType> getSource() {
+  public AbstractJdbcSource<MysqlType> getSource() {
     return new MySqlSource();
   }
 

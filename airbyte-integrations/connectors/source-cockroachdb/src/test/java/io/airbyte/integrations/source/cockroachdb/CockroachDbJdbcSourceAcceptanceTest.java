@@ -36,6 +36,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.CockroachDBContainerHelper;
+import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -94,7 +95,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new CockroachDbSource();
   }
 

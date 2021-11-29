@@ -14,7 +14,7 @@ import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcCompatibleSource;
+import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -61,7 +61,7 @@ public abstract class JdbcStressTest {
 
   private BitSet bitSet;
   private JsonNode config;
-  private AbstractJdbcCompatibleSource<?> source;
+  private AbstractJdbcSource<?> source;
 
   /**
    * These tests write records without specifying a namespace (schema name). They will be written into
@@ -93,7 +93,7 @@ public abstract class JdbcStressTest {
    *
    * @return source
    */
-  public abstract AbstractJdbcCompatibleSource<?> getSource();
+  public abstract AbstractJdbcSource<?> getSource();
 
   protected String createTableQuery(final String tableName, final String columnClause) {
     return String.format("CREATE TABLE %s(%s)",

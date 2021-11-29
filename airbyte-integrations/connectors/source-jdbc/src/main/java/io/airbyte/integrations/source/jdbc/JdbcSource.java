@@ -5,19 +5,21 @@
 package io.airbyte.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import java.sql.JDBCType;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JdbcSource extends AbstractJdbcSource implements Source {
+public class JdbcSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSource.class);
 
   public JdbcSource() {
-    super("org.postgresql.Driver", new PostgresJdbcStreamingQueryConfiguration());
+    super("org.postgresql.Driver", new PostgresJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
   }
 
   // no-op for JdbcSource since the config it receives is designed to be use for JDBC.
