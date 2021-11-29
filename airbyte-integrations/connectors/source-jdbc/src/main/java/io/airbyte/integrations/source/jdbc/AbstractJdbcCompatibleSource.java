@@ -166,7 +166,7 @@ public abstract class AbstractJdbcCompatibleSource<Datatype> extends AbstractRel
 
   @Override
   public JsonSchemaPrimitive getType(final Datatype columnType) {
-    return sourceOperations.getType(columnType);
+    return sourceOperations.getJsonType(columnType);
   }
 
   @Override

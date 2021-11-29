@@ -5,16 +5,21 @@
 package io.airbyte.db;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.functional.CheckedFunction;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Stream;
 
 public interface JdbcCompatibleSourceOperations<SourceType> extends SourceOperations<ResultSet, SourceType> {
+
+  /**
+   * Read from a result set, and copy the value of the column at colIndex to the Json object.
+   * <p/>
+   * @param colIndex 1-based column index.
+   */
+  void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException;
 
   /**
    * Set the cursor field in incremental table query.

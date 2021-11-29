@@ -35,7 +35,8 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
     }
   }
 
-  protected void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  @Override
+  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final JDBCType columnType = safeGetJdbcType(columnTypeInt);
@@ -100,7 +101,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public JsonSchemaPrimitive getType(final JDBCType jdbcType) {
+  public JsonSchemaPrimitive getJsonType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
       case TINYINT, SMALLINT -> JsonSchemaPrimitive.NUMBER;

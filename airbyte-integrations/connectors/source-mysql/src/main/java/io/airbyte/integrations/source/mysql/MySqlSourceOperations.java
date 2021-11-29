@@ -4,6 +4,14 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mysql.cj.MysqlType;
@@ -17,14 +25,18 @@ import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperations<MysqlType> implements SourceOperations<ResultSet, MysqlType> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSourceOperations.class);
 
   /**
    * @param colIndex 1-based column index.
    */
   @Override
-  protected void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final ResultSetMetaData metaData = (ResultSetMetaData) resultSet.getMetaData();
     final Field field = metaData.getFields()[colIndex - 1];
     final String columnName = field.getName();
@@ -34,23 +46,21 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     switch (columnType) {
       case BIT -> {
         if (field.getLength() == 1L) {
-          // BIT(1) is interpreted as boolean
+          // BIT(1) is boolean
           putBoolean(json, columnName, resultSet, colIndex);
         } else {
-          // BIT(>1)
           putBinary(json, columnName, resultSet, colIndex);
         }
       }
+      case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
       case TINYINT, TINYINT_UNSIGNED -> {
         if (field.getLength() == 1L) {
-          // TINYINT(1)
+          // TINYINT(1) is boolean
           putBoolean(json, columnName, resultSet, colIndex);
         } else {
-          // TINYINT(>1)
           putShortInt(json, columnName, resultSet, colIndex);
         }
       }
-      case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
       case SMALLINT, SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED -> putInteger(json, columnName, resultSet, colIndex);
       case INT, INT_UNSIGNED -> {
         if (field.isUnsigned()) {
@@ -101,7 +111,6 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     node.put(columnName, resultSet.getInt(index) == 1);
   }
 
-  // TODO: update this method with mysql specific types
   @Override
   public void setStatementField(final PreparedStatement preparedStatement,
                                 final int parameterIndex,
@@ -109,44 +118,81 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
                                 final String value)
       throws SQLException {
     switch (cursorFieldType) {
-
-      case TIMESTAMP, DATETIME -> setTimestamp(preparedStatement, parameterIndex, value);
-      case YEAR -> setString(preparedStatement, parameterIndex, value);
-      case TIME -> setTime(preparedStatement, parameterIndex, value);
-      case DATE -> setDate(preparedStatement, parameterIndex, value);
       case BIT -> setBit(preparedStatement, parameterIndex, value);
       case BOOLEAN -> setBoolean(preparedStatement, parameterIndex, value);
-      case TINYINT, SMALLINT -> setShortInt(preparedStatement, parameterIndex, value);
-      case INT -> setInteger(preparedStatement, parameterIndex, value);
-      case BIGINT -> setBigInteger(preparedStatement, parameterIndex, value);
-      case FLOAT, DOUBLE -> setDouble(preparedStatement, parameterIndex, value);
-      case DECIMAL -> setDecimal(preparedStatement, parameterIndex, value);
-      case CHAR, VARCHAR -> setString(preparedStatement, parameterIndex, value);
-      case BINARY, BLOB -> setBinary(preparedStatement, parameterIndex, value);
+      case TINYINT, TINYINT_UNSIGNED,
+          SMALLINT, SMALLINT_UNSIGNED,
+          MEDIUMINT, MEDIUMINT_UNSIGNED -> setInteger(preparedStatement, parameterIndex, value);
+      case INT, INT_UNSIGNED, BIGINT,
+          BIGINT_UNSIGNED -> setBigInteger(preparedStatement, parameterIndex, value);
+      case FLOAT, FLOAT_UNSIGNED,
+          DOUBLE, DOUBLE_UNSIGNED -> setDouble(preparedStatement, parameterIndex, value);
+      case DECIMAL, DECIMAL_UNSIGNED -> setDecimal(preparedStatement, parameterIndex, value);
+      case DATE -> setDate(preparedStatement, parameterIndex, value);
+      case DATETIME, TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
+      case TIME -> setTime(preparedStatement, parameterIndex, value);
+      case YEAR,
+          CHAR, VARCHAR,
+          TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT,
+          ENUM, SET -> setString(preparedStatement, parameterIndex, value);
+      case TINYBLOB, BLOB,
+          MEDIUMBLOB, LONGBLOB,
+          BINARY, VARBINARY -> setBinary(preparedStatement, parameterIndex, value);
       // since cursor are expected to be comparable, handle cursor typing strictly and error on
       // unrecognized types
       default -> throw new IllegalArgumentException(String.format("%s is not supported.", cursorFieldType));
     }
   }
 
-  // TODO: update this method with mysql specific types
+  /**
+   * Convert ambiguous MySQL types to more specific ones, so that later on we can correctly map them to {@link JsonSchemaPrimitive}.
+   */
   @Override
-  public JsonSchemaPrimitive getType(final MysqlType mysqlType) {
+  public MysqlType getFieldType(final JsonNode field) {
+    try {
+      // MysqlType#getByName can handle the full MySQL type name
+      // e.g. MEDIUMINT UNSIGNED
+      final MysqlType literalType = MysqlType.getByName(field.get(INTERNAL_COLUMN_TYPE_NAME).asText());
+      final int columnSize = field.get(INTERNAL_COLUMN_SIZE).asInt();
+
+      switch (literalType) {
+        // BIT(1) and TINYINT(1) are interpreted as boolean
+        case BIT, TINYINT, TINYINT_UNSIGNED -> {
+          if (columnSize == 1) {
+            return MysqlType.BOOLEAN;
+          }
+        }
+      }
+
+      return literalType;
+    } catch (final IllegalArgumentException ex) {
+      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s (type name: %s). Casting to VARCHAR.",
+          field.get(INTERNAL_COLUMN_NAME),
+          field.get(INTERNAL_SCHEMA_NAME),
+          field.get(INTERNAL_TABLE_NAME),
+          field.get(INTERNAL_COLUMN_TYPE),
+          field.get(INTERNAL_COLUMN_TYPE_NAME)));
+      return MysqlType.VARCHAR;
+    }
+  }
+
+  @Override
+  public JsonSchemaPrimitive getJsonType(final MysqlType mysqlType) {
     return switch (mysqlType) {
-      case BIT, BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
-      case YEAR -> JsonSchemaPrimitive.STRING;
-      case TINYINT, SMALLINT -> JsonSchemaPrimitive.NUMBER;
-      case INT -> JsonSchemaPrimitive.NUMBER;
-      case BIGINT -> JsonSchemaPrimitive.NUMBER;
-      case FLOAT, DOUBLE -> JsonSchemaPrimitive.NUMBER;
-      case DECIMAL -> JsonSchemaPrimitive.NUMBER;
-      case CHAR, VARCHAR -> JsonSchemaPrimitive.STRING;
-      case DATE -> JsonSchemaPrimitive.STRING;
-      case TIME -> JsonSchemaPrimitive.STRING;
-      case TIMESTAMP -> JsonSchemaPrimitive.STRING;
-      case BLOB, BINARY, VARBINARY -> JsonSchemaPrimitive.STRING;
-      // since column types aren't necessarily meaningful to Airbyte, liberally convert all unrecgonised
-      // types to String
+      case
+          // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link getFieldType}
+          TINYINT, TINYINT_UNSIGNED,
+              SMALLINT, SMALLINT_UNSIGNED,
+              INT, INT_UNSIGNED,
+              MEDIUMINT, MEDIUMINT_UNSIGNED,
+              BIGINT, BIGINT_UNSIGNED,
+              FLOAT, FLOAT_UNSIGNED,
+              DOUBLE, DOUBLE_UNSIGNED,
+              DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaPrimitive.NUMBER;
+      case BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
+      case NULL -> JsonSchemaPrimitive.NULL;
+      // BIT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in the upstream method
+      case BIT -> JsonSchemaPrimitive.STRING;
       default -> JsonSchemaPrimitive.STRING;
     };
   }
