@@ -263,6 +263,7 @@ Postgres data types are mapped to the following data types when synchronizing da
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.3.15 | 2021-11-26 | [8066](https://github.com/airbytehq/airbyte/pull/8266) | Fixed the case, when Views are not listed during schema discovery |
 | 0.3.14 | 2021-11-17 | [8010](https://github.com/airbytehq/airbyte/pull/8010) | Added checking of privileges before table internal discovery |
 | 0.3.13 | 2021-10-26 | [7339](https://github.com/airbytehq/airbyte/pull/7339) | Support or improve support for Interval, Money, Date, various geometric data types, inventory_items, and others |
 | 0.3.12 | 2021-09-30 | [6585](https://github.com/airbytehq/airbyte/pull/6585) | Improved SSH Tunnel key generation steps |
