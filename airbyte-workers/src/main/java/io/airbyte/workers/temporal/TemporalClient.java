@@ -27,6 +27,9 @@ import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.client.WorkflowClient;
 import java.nio.file.Path;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 
@@ -122,14 +125,24 @@ public class TemporalClient {
     log.error("Starting submission  ________________________");
     final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowStub(ConnectionUpdaterWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER);
-    // TODO: proper jobId
-    final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig("connection_id", 3);
-    log.error("Executing submission  ________________________");
-    execute(jobRunConfig, () -> connectionUpdaterWorkflow.run());
+    final ExecutorService threadpool = Executors.newCachedThreadPool();
+    final Future<Void> futureTask = threadpool.submit(() -> {
+      // TODO: proper jobId
+      final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig("connection_id", 3);
+      log.error("Executing submission  ________________________");
+      execute(jobRunConfig, () -> connectionUpdaterWorkflow.run());
 
-    log.error("Signal submission  ________________________");
-    connectionUpdaterWorkflow.readyToStart();
-    log.error("Signal done  ________________________");
+      return null;
+    });
+
+    try {
+      Thread.sleep(10000);
+      log.error("Signal submission  ________________________");
+      connectionUpdaterWorkflow.readyToStart();
+      log.error("Signal done  ________________________");
+    } catch (final InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
