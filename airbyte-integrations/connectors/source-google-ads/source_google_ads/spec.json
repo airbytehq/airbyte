@@ -93,7 +93,7 @@
         "order": 4
       },
       "conversion_window_days": {
-        "title": "Conversion Window",
+        "title": "Conversion Window (Optional)",
         "type": "integer",
         "description": "Define the historical replication lookback window in days",
         "minimum": 0,
