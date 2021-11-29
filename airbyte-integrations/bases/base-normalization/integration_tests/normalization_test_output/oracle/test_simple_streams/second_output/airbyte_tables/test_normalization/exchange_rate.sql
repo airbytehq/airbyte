@@ -7,6 +7,7 @@
 with dbt__cte__exchange_rate_ab1__ as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: test_normalization.airbyte_raw_exchange_rate
 select
     json_value("_AIRBYTE_DATA", '$."id"') as id,
     json_value("_AIRBYTE_DATA", '$."currency"') as currency,
@@ -28,6 +29,7 @@ where 1 = 1
 ),  dbt__cte__exchange_rate_ab2__ as (
 
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: dbt__cte__exchange_rate_ab1__
 select
     cast(id as 
     numeric
@@ -61,6 +63,7 @@ where 1 = 1
 ),  dbt__cte__exchange_rate_ab3__ as (
 
 -- SQL model to build a hash column based on the values of this record
+-- depends_on: dbt__cte__exchange_rate_ab2__
 select
     ora_hash(
             
@@ -96,6 +99,7 @@ from dbt__cte__exchange_rate_ab2__ tmp
 -- exchange_rate
 where 1 = 1
 )-- Final base SQL model
+-- depends_on: dbt__cte__exchange_rate_ab3__
 select
     id,
     currency,

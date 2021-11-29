@@ -272,7 +272,7 @@ public class TestJdbcUtils {
         .put("date", JsonSchemaPrimitive.STRING)
         .put("time", JsonSchemaPrimitive.STRING)
         .put("timestamp", JsonSchemaPrimitive.STRING)
-        .put("binary1", JsonSchemaPrimitive.STRING)
+        .put("binary1", JsonSchemaPrimitive.STRING_BINARY)
         .build();
 
     assertEquals(actual, expected);

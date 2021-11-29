@@ -114,7 +114,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case DATE -> JsonSchemaPrimitive.STRING;
       case TIME -> JsonSchemaPrimitive.STRING;
       case TIMESTAMP -> JsonSchemaPrimitive.STRING;
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaPrimitive.STRING;
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaPrimitive.STRING_BINARY;
       // since column types aren't necessarily meaningful to Airbyte, liberally convert all unrecgonised
       // types to String
       default -> JsonSchemaPrimitive.STRING;

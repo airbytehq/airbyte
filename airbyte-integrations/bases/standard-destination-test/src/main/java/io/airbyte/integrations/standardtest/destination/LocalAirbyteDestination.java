@@ -12,8 +12,10 @@ import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import java.nio.file.Path;
 import java.util.Optional;
 
-// Simple class to host a Destination in-memory rather than spinning up a container for it.
-// For debugging and testing purposes only; not recommended to use this for real code
+/**
+ * Simple class to host a Destination in-memory rather than spinning up a container for it. For
+ * debugging and testing purposes only; not recommended to use this for real code
+ */
 public class LocalAirbyteDestination implements AirbyteDestination {
 
   private final Destination dest;

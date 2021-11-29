@@ -15,14 +15,23 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTes
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.SQLDialect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
 
 public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSourceDatatypeTest.class);
 
   private MySQLContainer<?> container;
   private JsonNode config;
@@ -368,6 +377,14 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .build());
     }
 
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("blob")
+            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .addInsertValues("null", "'test'", "'тест'", String.format("FROM_BASE64('%s')", getFileDataInBase64()))
+            .addExpectedValues(null, "dGVzdA==", "0YLQtdGB0YI=", getFileDataInBase64())
+            .build());
+
     // binary appends '\0' to the end of the string
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -388,6 +405,15 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues(null, "QWlyYnl0ZQ==")
             .build());
 
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("varbinary")
+            .airbyteType(JsonSchemaPrimitive.STRING_BINARY)
+            .fullSourceDataType("varbinary(20000)")// size should be enough to save test.png
+            .addInsertValues("null", "'test'", "'тест'", String.format("FROM_BASE64('%s')", getFileDataInBase64()))
+            .addExpectedValues(null, "dGVzdA==", "0YLQtdGB0YI=", getFileDataInBase64())
+            .build());
+
     final Set<String> textTypes = Stream
         .of(MysqlType.TINYTEXT, MysqlType.TEXT, MysqlType.MEDIUMTEXT, MysqlType.LONGTEXT)
         .map(Enum::name)
@@ -405,6 +431,14 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
     addDataTypeTestData(
         TestDataHolder.builder()
+            .sourceType("mediumtext")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues(getLogString(1048000), "'test'")
+            .addExpectedValues(StringUtils.leftPad("0", 1048000, "0"), "test")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
             .sourceType("json")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "'{\"a\": 10, \"b\": 15}'")
@@ -418,6 +452,27 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addInsertValues("null", "(ST_GeomFromText('POINT(1 1)'))")
             .build());
 
+  }
+
+  private String getLogString(final int length) {
+    final int maxLpadLength = 262144;
+    final StringBuilder stringBuilder = new StringBuilder("concat(");
+    final int fullChunks = length / maxLpadLength;
+    for (int i = 1; i <= fullChunks; i++) {
+      stringBuilder.append("lpad('0', 262144, '0'),");
+    }
+    stringBuilder.append("lpad('0', ").append(length % maxLpadLength).append(", '0'))");
+    return stringBuilder.toString();
+  }
+
+  private String getFileDataInBase64() {
+    final File file = new File(getClass().getClassLoader().getResource("test.png").getFile());
+    try {
+      return Base64.encodeBase64String(FileUtils.readFileToByteArray(file));
+    } catch (final IOException e) {
+      LOGGER.error(String.format("Fail to read the file: %s. Error: %s", file.getAbsoluteFile(), e.getMessage()));
+    }
+    return null;
   }
 
 }

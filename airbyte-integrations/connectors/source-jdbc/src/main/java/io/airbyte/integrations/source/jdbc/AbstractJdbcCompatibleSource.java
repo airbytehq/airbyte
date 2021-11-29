@@ -31,6 +31,7 @@ import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
@@ -46,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -110,13 +112,14 @@ public abstract class AbstractJdbcCompatibleSource<Datatype> extends AbstractRel
   @Override
   protected List<TableInfo<CommonField<Datatype>>> discoverInternal(final JdbcDatabase database, final String schema) throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
+    final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
     return database.bufferedResultSetQuery(
         // retrieve column metadata from the database
         conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
         // store essential column metadata to a Json object from the result set about each column
         this::getColumnMetadata)
         .stream()
-        .filter(t -> !internalSchemas.contains(t.get(INTERNAL_SCHEMA_NAME).asText()))
+        .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
         // group by schema and table name to handle the case where a table with the same name exists in
         // multiple schemas.
         .collect(Collectors.groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
@@ -131,6 +134,19 @@ public abstract class AbstractJdbcCompatibleSource<Datatype> extends AbstractRel
                 .collect(Collectors.toList()))
             .build())
         .collect(Collectors.toList());
+  }
+
+  private Predicate<JsonNode> excludeNotAccessibleTables(final Set<String> internalSchemas, final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
+    return jsonNode -> {
+      if (tablesWithSelectGrantPrivilege.isEmpty()) {
+        return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
+      }
+      return tablesWithSelectGrantPrivilege.stream()
+          .anyMatch(e -> e.getSchemaName().equals(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
+          && tablesWithSelectGrantPrivilege.stream()
+          .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
+          && !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
+    };
   }
 
   /**
