@@ -27,7 +27,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSourceOperations.class);
 
-  private JDBCType safeGetJdbcType(final int columnTypeInt) {
+  protected JDBCType safeGetJdbcType(final int columnTypeInt) {
     try {
       return JDBCType.valueOf(columnTypeInt);
     } catch (final Exception e) {

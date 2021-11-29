@@ -113,7 +113,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
         final AirbyteStream airbyteStream = streams.get(testDataHolder.getNameWithTestPrefix());
         final String testColumnType = airbyteStream.getJsonSchema().get("properties").get(getTestColumnName()).get("type").asText();
         assertEquals(testDataHolder.getAirbyteType().name().toLowerCase(), testColumnType,
-            "Expected column type for " + testDataHolder.getNameWithTestPrefix());
+            "Incorrect json type for field " + testDataHolder.getNameWithTestPrefix());
       }
 
       if (!testDataHolder.getExpectedValues().isEmpty()) {
