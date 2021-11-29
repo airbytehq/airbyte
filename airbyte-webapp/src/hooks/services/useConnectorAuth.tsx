@@ -1,7 +1,5 @@
-import { useFormikContext } from "formik";
 import { useCallback, useMemo, useRef } from "react";
 import { useAsyncFn, useEffectOnce, useEvent } from "react-use";
-import merge from "lodash.merge";
 
 import {
   ConnectorDefinitionSpecification,
@@ -18,6 +16,7 @@ import { useGetService } from "core/servicesProvider";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import useRouter from "../useRouter";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 let windowObjectReference: Window | null = null; // global variable
 
@@ -99,13 +98,15 @@ export function useConnectorAuth() {
 }
 
 export function useRunOauthFlow(
-  connector: ConnectorDefinitionSpecification
+  connector: ConnectorDefinitionSpecification,
+  onDone?: (values: {
+    connectionConfiguration: ConnectionConfiguration;
+  }) => void
 ): {
   loading: boolean;
   done?: boolean;
   run: () => void;
 } {
-  const { values, setValues } = useFormikContext();
   const { getConsentUrl, completeOauthRequest } = useConnectorAuth();
   const param = useRef<
     SourceGetConsentPayload | DestinationGetConsentPayload
@@ -128,13 +129,13 @@ export function useRunOauthFlow(
           queryParams
         );
 
-        setValues(merge(values, { connectionConfiguration }));
+        onDone?.({ connectionConfiguration });
         return true;
       }
 
-      return false;
+      return !!oauthStartedPayload;
     },
-    [connector, values]
+    [connector]
   );
 
   const onOathGranted = useCallback(

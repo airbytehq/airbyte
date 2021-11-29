@@ -10,6 +10,7 @@ import GlobalStyle from "../src/global-styles";
 import messages from "../src/locales/en.json";
 import { FeatureService } from "../src/hooks/services/Feature";
 import { ConfigServiceProvider, defaultConfig } from "../src/config";
+import { ServicesProvider } from "../src/core/servicesProvider";
 
 interface Props {
   theme?: Theme;
@@ -25,21 +26,23 @@ class WithProviders extends React.Component<Props> {
     const { children } = this.props;
 
     return (
-      <Router history={createMemoryHistory()}>
-        <FeatureService>
-          <IntlProvider messages={messages} locale={"en"}>
-            <ThemeProvider theme={theme}>
-              <ConfigServiceProvider
-                defaultConfig={defaultConfig}
-                providers={[]}
-              >
-                <GlobalStyle />
-                {children}
-              </ConfigServiceProvider>
-            </ThemeProvider>
-          </IntlProvider>
-        </FeatureService>
-      </Router>
+      <ServicesProvider>
+        <Router history={createMemoryHistory()}>
+          <FeatureService features={[{ id: "ALLOW_OAUTH_CONNECTOR" }]}>
+            <IntlProvider messages={messages} locale={"en"}>
+              <ThemeProvider theme={theme}>
+                <ConfigServiceProvider
+                  defaultConfig={defaultConfig}
+                  providers={[]}
+                >
+                  <GlobalStyle />
+                  {children}
+                </ConfigServiceProvider>
+              </ThemeProvider>
+            </IntlProvider>
+          </FeatureService>
+        </Router>
+      </ServicesProvider>
     );
   }
 }

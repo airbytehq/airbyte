@@ -5,17 +5,34 @@ import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
 export type ConnectorDefinition = SourceDefinition | DestinationDefinition;
 
+interface AuthSpecification {
+  type: "oauth2.0";
+  oauth2Specification: {
+    rootObject?: string[];
+    oauthFlowInitParameters?: string[][];
+    oauthFlowOutputParameters?: string[][];
+  };
+}
+
+type AdvancedAuthInput = {};
+
+interface AdvancedAuth {
+  auth_flow_type: "oauth2.0";
+  predicate_key: string[];
+  predicate_value: string;
+  oauth_config_specification: {
+    complete_oauth_output_specification?: AdvancedAuthInput;
+    complete_oauth_server_input_specification?: AdvancedAuthInput;
+    complete_oauth_server_output_specification?: AdvancedAuthInput;
+    oauthUserInputFromConnectorConfigSpecification?: AdvancedAuthInput;
+  };
+}
+
 interface ConnectorDefinitionSpecificationBase {
   connectionSpecification: ConnectionSpecification;
   documentationUrl: string;
-  authSpecification?: {
-    type: "oauth2.0";
-    oauth2Specification: {
-      rootObject?: string[];
-      oauthFlowInitParameters?: string[][];
-      oauthFlowOutputParameters?: string[][];
-    };
-  };
+  authSpecification?: AuthSpecification;
+  advancedAuth?: AdvancedAuth;
 }
 
 export type ConnectorDefinitionSpecification =
