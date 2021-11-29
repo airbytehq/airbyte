@@ -351,7 +351,7 @@
 - name: Linnworks
   sourceDefinitionId: 7b86879e-26c5-4ef6-a5ce-2be5c7b46d1e
   dockerRepository: airbyte/source-linnworks
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/linnworks
   icon: linnworks.svg
   sourceType: api
@@ -505,7 +505,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.3.15
+  dockerImageTag: 0.3.16
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
