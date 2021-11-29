@@ -435,7 +435,8 @@ class Programs(IncrementalMarketoStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, stream_state, **kwargs):
-            record["updatedAt"] = record["updatedAt"][:-5]  # delete +00:00 part from the end of updatedAt
+            # delete +00:00 part from the end of createdAt and updatedAt
+            record["updatedAt"], record["createdAt"] = record["updatedAt"][:-5], record["createdAt"][:-5]
             yield record
 
 
