@@ -19,7 +19,6 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalResponse;
-import io.airbyte.workers.temporal.scheduling.SyncResult;
 import java.nio.file.Path;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -54,7 +53,9 @@ public class TemporalWorkerRunFactory {
          * attemptId, job.getConfig().getSync(), connectionId); return toOutputAndStatus(output);
          */
 
-        return toOutputAndStatusConnector(temporalClient.submitConnectionUpdater());
+        temporalClient.submitConnectionUpdater();
+
+        return toOutputAndStatusConnector();
       };
       case RESET_CONNECTION -> () -> {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
@@ -102,7 +103,7 @@ public class TemporalWorkerRunFactory {
     return new OutputAndStatus<>(status, new JobOutput().withSync(response.getOutput().orElse(null)));
   }
 
-  private OutputAndStatus<JobOutput> toOutputAndStatusConnector(final TemporalResponse<SyncResult> response) {
+  private OutputAndStatus<JobOutput> toOutputAndStatusConnector() {
     final JobStatus status = JobStatus.SUCCEEDED;
     /*
      * if (!response.isSuccess()) { status = JobStatus.FAILED; } else { final ReplicationStatus

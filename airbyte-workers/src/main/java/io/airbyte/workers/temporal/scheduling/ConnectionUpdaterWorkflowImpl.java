@@ -76,6 +76,11 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     isDeleted = true;
   }
 
+  @Override
+  public void readyToStart() {
+    canStart = true;
+  }
+
   private Boolean canStart() {
     return canStart;
   }

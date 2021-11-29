@@ -22,14 +22,15 @@ import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterWorkflow;
-import io.airbyte.workers.temporal.scheduling.SyncResult;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.client.WorkflowClient;
 import java.nio.file.Path;
 import java.util.UUID;
 import java.util.function.Supplier;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class TemporalClient {
 
   private final Path workspaceRoot;
@@ -117,21 +118,42 @@ public class TemporalClient {
             connectionId));
   }
 
-  public TemporalResponse<SyncResult> submitConnectionUpdater() {
+  public void submitConnectionUpdaterAsync() {
+    log.error("Starting submission  ________________________");
     final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowStub(ConnectionUpdaterWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER);
     // TODO: proper jobId
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig("connection_id", 3);
+    log.error("Executing submission  ________________________");
+    execute(jobRunConfig, () -> connectionUpdaterWorkflow.run());
 
-    return execute(jobRunConfig, () -> connectionUpdaterWorkflow.run());
+    log.error("Signal submission  ________________________");
+    connectionUpdaterWorkflow.readyToStart();
+    log.error("Signal done  ________________________");
   }
 
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
   }
 
-  @VisibleForTesting
-  <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+  @VisibleForTesting <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+    final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
+    final Path logPath = WorkerUtils.getLogPath(jobRoot);
+
+    T operationOutput = null;
+    RuntimeException exception = null;
+
+    try {
+      operationOutput = executor.get();
+    } catch (final RuntimeException e) {
+      exception = e;
+    }
+
+    final JobMetadata metadata = new JobMetadata(exception == null, logPath);
+    return new TemporalResponse<>(operationOutput, metadata);
+  }
+
+  @VisibleForTesting <T> void executeAsync(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
     final Path logPath = WorkerUtils.getLogPath(jobRoot);
 

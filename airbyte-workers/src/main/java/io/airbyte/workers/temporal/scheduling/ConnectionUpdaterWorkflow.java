@@ -24,4 +24,7 @@ public interface ConnectionUpdaterWorkflow {
   @SignalMethod
   void deleteConnection();
 
+  @SignalMethod
+  void readyToStart();
+
 }
