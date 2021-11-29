@@ -3,5 +3,6 @@
   "name": "Local CSV",
   "dockerRepository": "airbyte/destination-csv",
   "dockerImageTag": "0.2.8",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/local-csv"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/local-csv",
+  "icon": "file.svg"
 }

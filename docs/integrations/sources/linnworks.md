@@ -13,6 +13,7 @@ This Source is capable of syncing the following data as streams:
 * [StockLocations](https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations)
 * [StockItems](https://apps.linnworks.net//Api/Method/Stock-GetStockItemsFull)
 * [ProcessedOrders](https://apps.linnworks.net/Api/Method/ProcessedOrders-SearchProcessedOrders)
+* [ProcessedOrderDetails](https://apps.linnworks.net/Api/Method/Orders-GetOrdersById)
 
 ### Data type mapping
 
@@ -52,5 +53,6 @@ Authentication credentials can be obtained on developer portal section Applicati
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.2 | 2021-11-23 | [8177](https://github.com/airbytehq/airbyte/pull/8177) | Source Linnworks: add stream ProcessedOrderDetails |
 | 0.1.0 | 2021-11-09 | [7588](https://github.com/airbytehq/airbyte/pull/7588) | New Source: Linnworks |
 

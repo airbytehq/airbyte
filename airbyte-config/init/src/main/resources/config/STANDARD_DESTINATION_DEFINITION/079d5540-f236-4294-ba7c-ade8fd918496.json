@@ -3,5 +3,6 @@
   "name": "BigQuery (denormalized typed struct)",
   "dockerRepository": "airbyte/destination-bigquery-denormalized",
   "dockerImageTag": "0.1.8",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
+  "icon": "bigquery.svg"
 }

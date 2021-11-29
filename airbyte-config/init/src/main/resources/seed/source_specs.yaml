@@ -439,6 +439,45 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+- dockerImage: "airbyte/source-azure-table:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Azure Data Table Spec"
+      type: "object"
+      required:
+      - "storage_account_name"
+      - "storage_access_key"
+      additionalProperties: false
+      properties:
+        storage_account_name:
+          title: "Account Name"
+          type: "string"
+          description: "The name of your storage account."
+          order: 0
+          airbyte_secret: false
+        storage_access_key:
+          title: "Access Key"
+          type: "string"
+          description: "The access key to your storage account. Read more about access\
+            \ keys here - https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal#view-account-access-keys"
+          order: 1
+          airbyte_secret: true
+        storage_endpoint_suffix:
+          title: "Endpoint Suffix"
+          type: "string"
+          description: "The Table service account URL suffix. Read more about suffixes\
+            \ here - https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string#create-a-connection-string-with-an-endpoint-suffix"
+          order: 2
+          default: "core.windows.net"
+          examples:
+          - "core.windows.net"
+          - "core.chinacloudapi.cn"
+          airbyte_secret: false
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-bamboo-hr:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bamboo-hr"
@@ -954,7 +993,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-cockroachdb:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/postgres"
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Cockroach Source Spec"
@@ -1112,25 +1151,89 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-drift:0.2.3"
+- dockerImage: "airbyte/source-drift:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/drift"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Drift Spec"
       type: "object"
-      required:
-      - "access_token"
-      additionalProperties: false
+      required: []
+      additionalProperties: true
       properties:
-        access_token:
-          type: "string"
-          description: "Drift Access Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/drift\"\
-            >docs</a> for more information on how to generate this key."
-          airbyte_secret: true
+        credentials:
+          title: "Authorization Method"
+          type: "object"
+          oneOf:
+          - type: "object"
+            title: "OAuth2.0"
+            required:
+            - "client_id"
+            - "client_secret"
+            - "access_token"
+            - "refresh_token"
+            properties:
+              credentials:
+                type: "string"
+                const: "oauth2.0"
+                enum:
+                - "oauth2.0"
+                default: "oauth2.0"
+                order: 0
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "The Client ID of your Drift developer application."
+                airbyte_secret: true
+              client_secret:
+                type: "string"
+                title: "Client Secret"
+                description: "The Client Secret of your Drift developer application."
+                airbyte_secret: true
+              access_token:
+                type: "string"
+                title: "Access Token"
+                description: "Access Token for making authenticated requests."
+                airbyte_secret: true
+              refresh_token:
+                type: "string"
+                title: "Refresh Token"
+                description: "Refresh Token to renew the expired access_token."
+                default: ""
+                airbyte_secret: true
+          - title: "Access Token"
+            type: "object"
+            required:
+            - "access_token"
+            properties:
+              credentials:
+                type: "string"
+                const: "access_token"
+                enum:
+                - "access_token"
+                default: "access_token"
+                order: 0
+              access_token:
+                type: "string"
+                title: "Access Token"
+                description: "Drift Access Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/drift\"\
+                  >docs</a> for more information on how to generate this key."
+                airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    authSpecification:
+      auth_type: "oauth2.0"
+      oauth2Specification:
+        rootObject:
+        - "credentials"
+        - "0"
+        oauthFlowInitParameters:
+        - - "client_id"
+        - - "client_secret"
+        oauthFlowOutputParameters:
+        - - "access_token"
+        - - "refresh_token"
 - dockerImage: "airbyte/source-exchange-rates:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/exchangeratesapi"
@@ -1314,7 +1417,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-facebook-pages:0.1.3"
+- dockerImage: "airbyte/source-facebook-pages:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-pages"
     connectionSpecification:
@@ -1643,7 +1746,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.4"
+- dockerImage: "airbyte/source-github:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/github"
     connectionSpecification:
@@ -1902,7 +2005,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.9"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -2113,7 +2216,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-search-console:0.1.6"
+- dockerImage: "airbyte/source-google-search-console:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-search-console"
     connectionSpecification:
@@ -2491,7 +2594,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-hubspot:0.1.24"
+- dockerImage: "airbyte/source-hubspot:0.1.25"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -2577,6 +2680,11 @@
                   >docs</a> if you need help finding this key."
                 type: "string"
                 airbyte_secret: true
+        skip_dynamic_fields:
+          type: "boolean"
+          description: "Set 'hs_time_in_*' properties to 'null'."
+          default: false
+          airbyte_hidden: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -2759,7 +2867,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-iterable:0.1.12"
+- dockerImage: "airbyte/source-iterable:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/iterable"
     connectionSpecification:
@@ -3225,7 +3333,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-linnworks:0.1.1"
+- dockerImage: "airbyte/source-linnworks:0.1.2"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -3690,7 +3798,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mongodb-v2:0.1.6"
+- dockerImage: "airbyte/source-mongodb-v2:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/mongodb-v2"
@@ -3810,7 +3918,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.4.9"
+- dockerImage: "airbyte/source-mysql:0.4.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -4285,6 +4393,46 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-outreach:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/outreach"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Source Outreach Spec"
+      type: "object"
+      required:
+      - "client_id"
+      - "client_secret"
+      - "refresh_token"
+      - "redirect_uri"
+      - "start_date"
+      additionalProperties: false
+      properties:
+        client_id:
+          type: "string"
+          description: "Outreach client id."
+        client_secret:
+          type: "string"
+          description: "Outreach client secret."
+          airbyte_secret: true
+        refresh_token:
+          type: "string"
+          description: "Outreach refresh token."
+          airbyte_secret: true
+        redirect_uri:
+          type: "string"
+          description: "Outreach redirect URI."
+        start_date:
+          type: "string"
+          description: "The date from which you'd like to replicate data for Outreach\
+            \ API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this\
+            \ date will be replicated."
+          examples:
+          - "2020-11-16T00:00:00Z"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-paypal-transaction:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/paypal-transactions"
@@ -4587,7 +4735,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.3.14"
+- dockerImage: "airbyte/source-postgres:0.3.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/postgres"
     connectionSpecification:
@@ -5235,7 +5383,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:0.1.6"
+- dockerImage: "airbyte/source-salesforce:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/salesforce"
     connectionSpecification:
@@ -5795,7 +5943,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:0.1.23"
+- dockerImage: "airbyte/source-stripe:0.1.25"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
@@ -5808,23 +5956,28 @@
       - "start_date"
       additionalProperties: false
       properties:
+        account_id:
+          type: "string"
+          title: "Account ID"
+          description: "Your Stripe account ID (starts with 'acct_', find yours <a\
+            \ href=\"https://dashboard.stripe.com/settings/account\">here</a>)."
+          order: 0
         client_secret:
           type: "string"
-          pattern: "^(s|r)k_(live|test)_[a-zA-Z0-9]+$"
+          title: "Client Secret"
           description: "Stripe API key (usually starts with 'sk_live_'; find yours\
             \ <a href=\"https://dashboard.stripe.com/apikeys\">here</a>)."
           airbyte_secret: true
-        account_id:
-          type: "string"
-          description: "Your Stripe account ID (starts with 'acct_', find yours <a\
-            \ href=\"https://dashboard.stripe.com/settings/account\">here</a>)."
+          order: 1
         start_date:
           type: "string"
+          title: "Start Date"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
             \ data before this date will not be replicated."
           examples:
           - "2017-01-25T00:00:00Z"
+          order: 2
         lookback_window_days:
           type: "integer"
           title: "Lookback Window (in days)"
@@ -5833,6 +5986,7 @@
           description: "When set, the connector will always reload data from the past\
             \ N days, where N is the value set here. This is useful if your data is\
             \ updated after creation."
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -6155,7 +6309,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-zendesk-chat:0.1.3"
+- dockerImage: "airbyte/source-zendesk-chat:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-chat"
     connectionSpecification:
@@ -6217,7 +6371,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zendesk-support:0.1.6"
+- dockerImage: "airbyte/source-zendesk-support:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
@@ -6260,13 +6414,31 @@
                 type: "string"
                 const: "api_token"
               email:
+                title: "Email"
                 type: "string"
                 description: "The user email for your Zendesk account"
               api_token:
+                title: "API Token"
                 type: "string"
                 description: "The value of the API token generated. See the <a href=\"\
                   https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a>\
                   \ for more information"
+                airbyte_secret: true
+          - title: "OAuth2.0"
+            type: "object"
+            required:
+            - "access_token"
+            additionalProperties: false
+            properties:
+              auth_method:
+                type: "string"
+                const: "access_token"
+              access_token:
+                title: "Access Token"
+                type: "string"
+                description: "The value of the Access token generated. See the <a\
+                  \ href=\"https://docs.airbyte.io/integrations/sources/zendesk-support\"\
+                  >docs</a> for more information"
                 airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
@@ -6444,45 +6616,6 @@
           title: "Client Secret"
           description: "Your OAuth user Client Secret"
           airbyte_secret: true
-    supportsNormalization: false
-    supportsDBT: false
-    supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-azure-table:0.1.0"
-  spec:
-    documentationUrl: "https://docsurl.com"
-    connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Azure Data Table Spec"
-      type: "object"
-      required:
-      - "storage_account_name"
-      - "storage_access_key"
-      additionalProperties: false
-      properties:
-        storage_account_name:
-          title: "Account Name"
-          type: "string"
-          description: "The name of your storage account."
-          order: 0
-          airbyte_secret: false
-        storage_access_key:
-          title: "Access Key"
-          type: "string"
-          description: "The access key to your storage account. Read more about access\
-            \ keys here - https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal#view-account-access-keys"
-          order: 1
-          airbyte_secret: true
-        storage_endpoint_suffix:
-          title: "Endpoint Suffix"
-          type: "string"
-          description: "The Table service account URL suffix. Read more about suffixes\
-            \ here - https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string#create-a-connection-string-with-an-endpoint-suffix"
-          order: 2
-          default: "core.windows.net"
-          examples:
-          - "core.windows.net"
-          - "core.chinacloudapi.cn"
-          airbyte_secret: false
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
