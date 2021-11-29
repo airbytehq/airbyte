@@ -47,6 +47,8 @@ def test_discovery(schema, cursors, should_fail):
     "schema, should_fail",
     [
         ({}, False),
+        ({"$ref": None}, True),
+        ({"properties": {"user": {"$ref": None}}}, True),
         ({"properties": {"user": {"$ref": "user.json"}}}, True),
         ({"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}}, False),
         ({"properties": {"fake_items": {"type": "array", "items": {"$ref": "fake_item.json"}}}}, True),

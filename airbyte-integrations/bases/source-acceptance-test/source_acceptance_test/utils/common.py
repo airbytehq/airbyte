@@ -77,7 +77,7 @@ def find_key_inside_schema(schema_item: Union[dict, list, str], key: str = "$ref
     elif isinstance(schema_item, dict):
         if key in schema_item:
             return schema_item
-        for schema_object_key, schema_object_value in schema_item.items():
+        for schema_object_value in schema_item.values():
             item = find_key_inside_schema(schema_object_value, key)
             if item is not None:
                 return item
