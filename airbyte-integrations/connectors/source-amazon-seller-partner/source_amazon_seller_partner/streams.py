@@ -14,6 +14,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
@@ -30,12 +31,13 @@ VENDORS_API_VERSION = "v1"
 # 33min. taken from real world experience working with amazon seller partner reports
 REPORTS_MAX_WAIT_SECONDS = 1980
 
+DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 class AmazonSPStream(HttpStream, ABC):
     data_field = "payload"
 
     def __init__(
-        self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_ids: List[str], *args, **kwargs
+        self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_ids: List[str], report_options: Optional[str], *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
 
@@ -138,6 +140,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         aws_signature: AWSSignature,
         replication_start_date: str,
         marketplace_ids: List[str],
+        report_options: Optional[str],
         authenticator: HttpAuthenticator = NoAuth(),
     ):
         self._authenticator = authenticator
@@ -146,6 +149,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self._session.auth = aws_signature
         self._replication_start_date = replication_start_date
         self.marketplace_ids = marketplace_ids
+        self._report_options = report_options
 
     @property
     def url_base(self) -> str:
@@ -201,7 +205,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         return {
             "reportType": self.name,
             "marketplaceIds": self.marketplace_ids,
-            "createdSince": replication_start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "createdSince": replication_start_date.strftime(DATE_TIME_FORMAT),
         }    
 
     def _create_report(self) -> Mapping[str, Any]:
@@ -256,8 +260,11 @@ class ReportsAmazonSPStream(Stream, ABC):
             payload,
         )
 
-        document_records = csv.DictReader(StringIO(document), delimiter="\t")
+        document_records = self.parse_document(document)
         yield from document_records
+
+    def parse_document(self, document):
+        return csv.DictReader(StringIO(document), delimiter="\t")
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         """
@@ -347,30 +354,55 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
 
 class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
     name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
-
-    def __init__(self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_ids: List[str], data_start_time: Optional[str], data_end_time: Optional[str], report_options: Optional[str], authenticator: HttpAuthenticator = NoAuth()):
-         super().__init__(url_base, aws_signature, replication_start_date, marketplace_ids, authenticator=authenticator)
-         self._data_start_time = data_start_time
-         self._data_end_time = data_end_time
-         self._report_options = report_options
+    
+    def parse_document(self, document):
+        parsed = json_lib.loads(document)
+        return parsed.get("dataByDepartmentAndSearchTerm", {})
 
     def _report_data(self) -> Mapping[str, Any]:
-        result = super()._report_data()
-        data_start_time = pendulum.now("utc") if self._data_start_time is None else pendulum.parse(self._data_start_time)
-        data_end_time = pendulum.now("utc") if self._data_end_time is None else pendulum.parse(self._data_end_time)
-        data_times = {
-            "dataStartTime": data_start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "dataEndTime": data_end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        }        
-        result.update(data_times)
-        
-        if self._report_options is not None:
-            report_options = {
-                "reportOptions": json_lib.loads(self._report_options)
-            }
-            result.update(report_options)
+         data = super()._report_data()
+         if self._report_options is not None:
+             report_options = json_lib.loads(self._report_options)
+             data.update(self._augmented_data(report_options))
 
-        return result
+         return data
+
+    def _augmented_data(self, report_options) -> Mapping[str, Any]:
+        if report_options.get("reportPeriod") is None:
+            return {}
+        else:
+            now = pendulum.now("utc")
+            if report_options["reportPeriod"] == "DAY":
+                now = now.subtract(days=1)
+                data_start_time = now.start_of("day")
+                data_end_time = now.end_of("day")
+            elif report_options["reportPeriod"] == "WEEK":
+                now = now.subtract(weeks=1)
+                
+                # According to report api docs
+                # dataStartTime must be a Sunday and dataEndTime must be the following Saturday
+                pendulum.week_starts_at(pendulum.SUNDAY)
+                pendulum.week_ends_at(pendulum.SATURDAY)
+                
+                data_start_time = now.start_of("week")
+                data_end_time = now.end_of("week")
+
+                # Reset week start and end
+                pendulum.week_starts_at(pendulum.MONDAY)
+                pendulum.week_ends_at(pendulum.SUNDAY)
+            elif report_options["reportPeriod"] == "MONTH":
+                now = now.subtract(months=1)
+                data_start_time = now.start_of("month")
+                data_end_time = now.end_of("month")
+            else:
+                raise Exception([{"message": "This reportPeriod is not implemented."}])
+
+            return {
+                "dataStartTime": data_start_time.strftime(DATE_TIME_FORMAT),
+                "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
+                "reportOptions": report_options,
+            }
+
 
 class Orders(IncrementalAmazonSPStream):
     """
