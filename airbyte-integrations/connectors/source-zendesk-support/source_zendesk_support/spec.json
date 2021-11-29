@@ -49,7 +49,7 @@
           {
             "title": "OAuth2.0",
             "type": "object",
-            "required": [ "access_token"],
+            "required": ["access_token"],
             "additionalProperties": false,
             "properties": {
               "auth_method": {
