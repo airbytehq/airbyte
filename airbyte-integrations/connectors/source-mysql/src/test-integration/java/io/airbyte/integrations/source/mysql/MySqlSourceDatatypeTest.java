@@ -80,12 +80,17 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
+  public boolean testCatalog() {
+    return true;
+  }
+
+  @Override
   protected void initTests() {
     // bit defaults to bit(1), which is equivalent to boolean
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .airbyteType(JsonSchemaPrimitive.BOOLEAN)
             .addInsertValues("null", "1", "0")
             .addExpectedValues(null, "true", "false")
             .build());
@@ -145,7 +150,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(booleanType)
-              .airbyteType(JsonSchemaPrimitive.STRING)
+              .airbyteType(JsonSchemaPrimitive.BOOLEAN)
               // MySql booleans are tinyint(1), and only 1 is true
               .addInsertValues("null", "1", "0", "127", "-128")
               .addExpectedValues(null, "true", "false", "false", "false")
@@ -409,7 +414,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("point")
-            .airbyteType(JsonSchemaPrimitive.OBJECT)
+            .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "(ST_GeomFromText('POINT(1 1)'))")
             .build());
 

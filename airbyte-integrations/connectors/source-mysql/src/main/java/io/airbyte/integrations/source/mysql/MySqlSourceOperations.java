@@ -146,6 +146,10 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
 
   /**
    * Convert ambiguous MySQL types to more specific ones, so that later on we can correctly map them to {@link JsonSchemaPrimitive}.
+   * TODO (liren): Currently, for columns like CHAR, the field json does not contain information about its charset, which
+   * is needed to determine whether the column is a string or binary. We don't distinguish between string vs binary
+   * in {@link JsonSchemaPrimitive} for now. So it is fine. However, in the future, if we want to separate these two types,
+   * we need to update the column metadata query for MySQL. See https://dev.mysql.com/doc/refman/8.0/en/show-columns.html.
    */
   @Override
   public MysqlType getFieldType(final JsonNode field) {
