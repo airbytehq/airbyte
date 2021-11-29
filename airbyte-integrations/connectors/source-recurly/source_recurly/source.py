@@ -7,7 +7,8 @@ import json
 from datetime import datetime
 from typing import Dict, Generator
 
-from airbyte_protocol import (
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models.airbyte_protocol import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -16,7 +17,7 @@ from airbyte_protocol import (
     Status,
     Type,
 )
-from base_python import AirbyteLogger, Source
+from airbyte_cdk.sources.source import Source
 
 from .client import Client
 

@@ -9,7 +9,7 @@ from base64 import b64encode
 from typing import List, Tuple
 
 import requests
-from airbyte_protocol import AirbyteStream
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream
 from recurly import USER_AGENT
 from recurly import Client as RecurlyClient
 from recurly.base_errors import ApiError
