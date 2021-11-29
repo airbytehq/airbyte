@@ -178,8 +178,9 @@ public class WorkerApp {
   }
 
   /**
-   * Create the worker option that limit the number of activity and workflow. Note that it is concerning the number of running workflow, meaning that
-   * if a workflow is awaitng, it won't be concerned by the limitation.
+   * Create the worker option that limit the number of activity and workflow. Note that it is
+   * concerning the number of running workflow, meaning that if a workflow is awaitng, it won't be
+   * concerned by the limitation.
    */
   private static WorkerOptions getWorkerOptions(final int maxConcurrentActivity, @NonNull final Optional<Integer> maybeMaxRunningWorkflow) {
     final WorkerOptions.Builder builder = WorkerOptions.newBuilder()
@@ -213,7 +214,7 @@ public class WorkerApp {
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
-        .getInitialized();
+            .getInitialized();
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);

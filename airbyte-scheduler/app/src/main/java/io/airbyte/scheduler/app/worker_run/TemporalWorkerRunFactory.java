@@ -4,6 +4,8 @@
 
 package io.airbyte.scheduler.app.worker_run;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -49,15 +51,17 @@ public class TemporalWorkerRunFactory {
     final UUID connectionId = UUID.fromString(job.getScope());
     return switch (job.getConfigType()) {
       case SYNC -> () -> {
-        /*
-         * final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync( job.getId(),
-         * attemptId, job.getConfig().getSync(), connectionId); return toOutputAndStatus(output);
-         */
+        final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
-        LOGGER.error("Call temporal client ________________");
-        temporalClient.submitConnectionUpdaterAsync();
+        if (featureFlags.usesScheduler2()) {
+          LOGGER.error("Call temporal client ________________");
+          temporalClient.submitConnectionUpdaterAsync();
 
-        return toOutputAndStatusConnector();
+          return toOutputAndStatusConnector();
+        }
+        final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(),
+            attemptId, job.getConfig().getSync(), connectionId);
+        return toOutputAndStatus(output);
       };
       case RESET_CONNECTION -> () -> {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
