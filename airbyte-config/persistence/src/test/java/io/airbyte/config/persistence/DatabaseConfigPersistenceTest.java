@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
@@ -54,6 +55,17 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
+  public void testMultiWriteAndGetConfig() throws Exception {
+    writeDestinations(configPersistence, Lists.newArrayList(DESTINATION_S3, DESTINATION_SNOWFLAKE));
+    assertRecordCount(2);
+    assertHasDestination(DESTINATION_S3);
+    assertHasDestination(DESTINATION_SNOWFLAKE);
+    assertEquals(
+        List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3),
+        configPersistence.listConfigs(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+  }
+
+  @Test
   public void testWriteAndGetConfig() throws Exception {
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
@@ -67,10 +79,10 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
 
   @Test
   public void testListConfigWithMetadata() throws Exception {
-    Instant now = Instant.now().minus(Duration.ofSeconds(1));
+    final Instant now = Instant.now().minus(Duration.ofSeconds(1));
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
-    List<ConfigWithMetadata<StandardDestinationDefinition>> configWithMetadata = configPersistence
+    final List<ConfigWithMetadata<StandardDestinationDefinition>> configWithMetadata = configPersistence
         .listConfigsWithMetadata(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
     assertEquals(2, configWithMetadata.size());
     assertEquals("STANDARD_DESTINATION_DEFINITION", configWithMetadata.get(0).getConfigType());

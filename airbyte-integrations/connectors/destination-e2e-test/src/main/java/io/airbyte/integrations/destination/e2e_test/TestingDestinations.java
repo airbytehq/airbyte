@@ -27,7 +27,8 @@ public class TestingDestinations extends BaseConnector implements Destination {
   public enum TestDestinationType {
     LOGGING,
     THROTTLED,
-    SILENT
+    SILENT,
+    FAILING
   }
 
   public TestingDestinations() {
@@ -35,6 +36,7 @@ public class TestingDestinations extends BaseConnector implements Destination {
         .put(TestDestinationType.LOGGING, new LoggingDestination())
         .put(TestDestinationType.THROTTLED, new ThrottledDestination())
         .put(TestDestinationType.SILENT, new SilentDestination())
+        .put(TestDestinationType.FAILING, new FailAfterNDestination())
         .build());
   }
 

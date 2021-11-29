@@ -5,6 +5,7 @@
     tags = [ "top-level-intermediate" ]
 ) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ ref('DEDUP_EXCHANGE_RATE_AB1') }}
 select
     cast(ID as {{ dbt_utils.type_bigint() }}) as ID,
     cast(CURRENCY as {{ dbt_utils.type_string() }}) as CURRENCY,
