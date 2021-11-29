@@ -1639,40 +1639,85 @@
           "order_adjustments": {
             "type": ["null", "array"],
             "items": {
-              "oneOf": [
-                {
+              "type": ["null","object"],
+              "properties": {
+                "amount": {
                   "type": ["null", "string"]
+                },  
+                "amount_set": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "presentment_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "string"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    },
+                    "shop_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "string"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  } 
                 },
-                {
+                "id": {
                   "type": ["null", "integer"]
                 },
-                {
-                  "type": ["null", "number"]
+                "kind": {
+                  "type": ["null", "string"]
                 },
-                {
-                  "type": ["null", "boolean"]
+                "order_id": {
+                  "type": ["null", "integer"]
                 },
-                {
-                  "type": ["null", "array"],
-                  "items": {
-                    "oneOf": [
-                      {
-                        "type": ["null", "string"]
-                      },
-                      {
-                        "type": ["null", "integer"]
-                      },
-                      {
-                        "type": ["null", "number"]
-                      },
-                      {
-                        "type": ["null", "boolean"]
+                "reason": {
+                  "type": ["null", "string"]
+                },
+                "refund_id": {
+                  "type": ["null", "integer"]
+                },
+                "tax_amount": {
+                  "type": ["null", "string"]
+                },
+                "tax_amount_set": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "presentment_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "string"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
                       }
-                    ]
-                  }
+                    },
+                    "shop_money": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "type": ["null", "string"]
+                        },
+                        "currency_code": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
                 }
-              ]
+              }
             }
+          }
           },
           "transactions": {
             "type": ["null", "array"],

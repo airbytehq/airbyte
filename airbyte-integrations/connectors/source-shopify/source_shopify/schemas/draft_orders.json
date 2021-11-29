@@ -114,12 +114,6 @@
             "string"
           ]
         },
-        "tax_exemptions": {
-          "type": [
-            "null",
-            "boolean"
-          ]
-        },
         "phone": {
           "type": [
             "null",
@@ -1682,6 +1676,18 @@
           "string"
         ]
       }
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }
