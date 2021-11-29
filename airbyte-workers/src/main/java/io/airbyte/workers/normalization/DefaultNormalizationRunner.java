@@ -22,6 +22,7 @@ import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -112,8 +113,17 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       throws Exception {
     try {
       LOGGER.info("Running with normalization version: {}", normalizationImageName);
-      process = processFactory.create(jobId, attempt, jobRoot, normalizationImageName, false, files, null, resourceRequirements,
-          Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP), args);
+      process = processFactory.create(
+          jobId,
+          attempt,
+          jobRoot,
+          normalizationImageName,
+          false, files,
+          null,
+          resourceRequirements,
+          Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP),
+          Collections.emptyMap(),
+          args);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);

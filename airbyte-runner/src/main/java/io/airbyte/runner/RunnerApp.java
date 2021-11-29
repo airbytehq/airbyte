@@ -24,7 +24,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -110,11 +109,11 @@ public class RunnerApp {
     final Map<String, String> envMap = (Map<String, String>) Jsons.deserialize(Files.readString(Path.of("envMap.json")), Map.class);
     final Configs configs = new EnvConfigs(envMap::get);
 
-    if(System.getenv().containsKey("LOG_LEVEL")) {
+    if (System.getenv().containsKey("LOG_LEVEL")) {
       System.setProperty("LOG_LEVEL", System.getenv("LOG_LEVEL"));
     }
 
-    if(System.getenv().containsKey("S3_PATH_STYLE_ACCESS")) {
+    if (System.getenv().containsKey("S3_PATH_STYLE_ACCESS")) {
       System.setProperty("S3_PATH_STYLE_ACCESS", System.getenv("S3_PATH_STYLE_ACCESS"));
     }
 
@@ -131,14 +130,14 @@ public class RunnerApp {
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
     Executors.newSingleThreadExecutor().submit(
-            () -> {
-              MDC.setContextMap(mdc);
-              try {
-                new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT).start();
-              } catch (final Exception e) {
-                throw new RuntimeException(e);
-              }
-            });
+        () -> {
+          MDC.setContextMap(mdc);
+          try {
+            new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT).start();
+          } catch (final Exception e) {
+            throw new RuntimeException(e);
+          }
+        });
 
     switch (application) {
       case "replication" -> Exceptions.toRuntime(() -> replicationRunner(configs));

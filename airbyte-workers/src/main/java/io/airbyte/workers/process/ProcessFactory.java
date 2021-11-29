@@ -7,7 +7,6 @@ package io.airbyte.workers.process;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 
 public interface ProcessFactory {

@@ -180,7 +180,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               fileMap,
               null,
               null, // todo: allow resource requirements for this pod to be configurable
-              Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_RUNNER));
+              Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_RUNNER),
+              Map.of(WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT));
 
           final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
 

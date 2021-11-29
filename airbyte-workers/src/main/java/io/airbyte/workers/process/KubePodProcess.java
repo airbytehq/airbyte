@@ -33,7 +33,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
@@ -170,11 +169,11 @@ public class KubePodProcess extends Process {
         .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
 
     final List<ContainerPort> containerPorts = internalToExternalPorts.entrySet().stream()
-            .map(entry -> new ContainerPortBuilder()
-                    .withContainerPort(entry.getKey())
-                    .withHostPort(entry.getValue())
-                    .build())
-            .collect(Collectors.toList());
+        .map(entry -> new ContainerPortBuilder()
+            .withContainerPort(entry.getKey())
+            .withHostPort(entry.getValue())
+            .build())
+        .collect(Collectors.toList());
 
     final ContainerBuilder containerBuilder = new ContainerBuilder()
         .withName("main")
