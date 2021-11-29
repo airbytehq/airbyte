@@ -13,22 +13,28 @@
 #         └── Campaigns
 
 import json
-from abc import ABC
-from enum import Enum
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeVar, Union
-
 import pendulum
 import pydantic
 import requests
+from abc import ABC, abstractmethod
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from datetime import datetime
+from enum import Enum
+from functools import total_ordering
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeVar, Union, Tuple
 
-from .spec import DEFAULT_START_DATE
+# TikTok Initial release date is September 2016
+DEFAULT_START_DATE = "2016-09-01"
 
 T = TypeVar("T")
 
 
+@total_ordering
 class JsonUpdatedState(pydantic.BaseModel):
     current_stream_state: str
     stream: T
@@ -46,6 +52,16 @@ class JsonUpdatedState(pydantic.BaseModel):
         max_updated_at = self.stream.max_cursor_date or ""
         return max(max_updated_at, self.current_stream_state)
 
+    def __eq__(self, other):
+        if isinstance(other, JsonUpdatedState):
+            return self.current_stream_state == other.current_stream_state
+        return self.current_stream_state == other
+
+    def __lt__(self, other):
+        if isinstance(other, JsonUpdatedState):
+            return self.current_stream_state < other.current_stream_state
+        return self.current_stream_state < other
+
 
 class ReportLevel(str, Enum):
     ADVERTISER = "ADVERTISER"
@@ -58,6 +74,10 @@ class ReportGranularity(str, Enum):
     LIFETIME = "LIFETIME"
     DAY = "DAY"
     HOUR = "HOUR"
+
+    @classmethod
+    def default(cls):
+        return cls.DAY
 
 
 class TiktokException(Exception):
@@ -161,7 +181,7 @@ class ListAdvertiserIdsStream(TiktokStream):
         return self._advertiser_id > 0
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+            self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
 
         return {
@@ -185,11 +205,14 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
     primary_key = "id"
     fields: List[str] = None
 
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     def __init__(self, advertiser_id: int, app_id: int, secret: str, start_date: str, **kwargs):
         super().__init__(**kwargs)
         # convert a start date to TikTok format
         # example:  "2021-08-24" => "2021-08-24 00:00:00"
         self._start_time = pendulum.parse(start_date or DEFAULT_START_DATE).strftime("%Y-%m-%d 00:00:00")
+
         self._advertiser_storage = ListAdvertiserIdsStream(
             advertiser_id=advertiser_id, app_id=app_id, secret=secret, access_token=self.authenticator.token
         )
@@ -215,11 +238,11 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
             yield {"advertiser_id": advertiser_id}
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        **kwargs
+            self,
+            stream_state: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            **kwargs
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.page_size}
         if self.fields:
@@ -262,31 +285,49 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             params.update(next_page_token)
         return params
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def select_cursor_field_value(self, data: Mapping[str, Any] = None) -> str:
+        if not data or not self.cursor_field:
+            return None
+        cursor_field_path = self.cursor_field if isinstance(self.cursor_field, list) else [self.cursor_field]
+
+        result = data
+        for key in cursor_field_path:
+            result = result.get(key)
+        return result
+
+    def parse_response(self, response: requests.Response,
+                       stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """Additional data filtering"""
-        state = stream_state.get(self.cursor_field) or self._start_time
-        for record in super().parse_response(response, **kwargs):
-            updated = record[self.cursor_field]
-            if isinstance(state, JsonUpdatedState):
-                current_state = state.current_stream_state
-            else:
-                current_state = state
+        state = self.select_cursor_field_value(stream_state) or self._start_time
 
-            if updated <= current_state:
+        for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
+            updated = self.select_cursor_field_value(record)
+            if updated is None:
+                yield record
+            elif updated <= state:
                 continue
-            elif not self.max_cursor_date or self.max_cursor_date < updated:
-                self.max_cursor_date = updated
-            yield record
+            else:
+                if not self.max_cursor_date or self.max_cursor_date < updated:
+                    self.max_cursor_date = updated
+                yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any],
+                          latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # needs to save a last state if all advertisers are used before only
-        current_stream_state_value = (current_stream_state or {}).get(self.cursor_field, "")
+        current_stream_state_value = (self.select_cursor_field_value(current_stream_state)) or ""
 
-        # a object JsonUpdatedState is related with a currect stream and should return a new updated state if needed
+        # a object JsonUpdatedState is related with a current stream and should return a new updated state if needed
         if not isinstance(current_stream_state_value, JsonUpdatedState):
             current_stream_state_value = JsonUpdatedState(stream=self, current_stream_state=current_stream_state_value)
 
-        return {self.cursor_field: current_stream_state_value}
+        # reports streams have cursor fields which be allocated into a nested object
+        cursor_field_path = self.cursor_field if isinstance(self.cursor_field, list) else [self.cursor_field]
+        # generate a dict with nested items
+        # ["key1", "key1"] => {"key1": {"key2": <value>}}
+        tree_dict = current_stream_state_value
+        for key in reversed(cursor_field_path):
+            tree_dict = {key: tree_dict}
+        return tree_dict
 
 
 class Advertisers(FullRefreshTiktokStream):
@@ -332,23 +373,31 @@ class Ads(IncrementalTiktokStream):
         return "ad/get/"
 
 
-class BasicReports(IncrementalTiktokStream):
+class BasicReports(IncrementalTiktokStream, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957200780290"""
 
-    cursor_field = ""
+    @property
+    @abstractmethod
+    def report_level(self) -> ReportLevel:
+        """
+        Returns a necessary level value
+        """
 
-    def __init__(self, report_level, report_granularity, **kwargs):
+    def __init__(self, report_granularity: ReportGranularity, **kwargs):
         super().__init__(**kwargs)
-        self.report_level = report_level
         self.report_granularity = report_granularity
 
+    @property
+    def cursor_field(self):
         if self.report_granularity == ReportGranularity.DAY:
-            self.cursor_field = "stat_time_day"
-        elif self.report_granularity == ReportGranularity.HOUR:
-            self.cursor_field = "stat_time_hour"
+            return ["dimensions", "stat_time_day"]
+        if self.report_granularity == ReportGranularity.HOUR:
+            return ["dimensions", "stat_time_hour"]
+        return []
 
     @staticmethod
-    def _get_time_interval(start_date, granularity):
+    def _get_time_interval(start_date: Union[datetime, str],
+                           granularity: ReportGranularity) -> Iterable[Tuple[datetime, datetime]]:
         """Due to time range restrictions based on the level of granularity of reports, we have to chunk API calls in order
         to get the desired time range.
         Docs: https://ads.tiktok.com/marketing_api/docs?id=1714590313280513
@@ -395,7 +444,6 @@ class BasicReports(IncrementalTiktokStream):
 
         if self.report_granularity and self.report_granularity in spec_time_dimensions:
             result.append(spec_time_dimensions[self.report_granularity])
-
         return result
 
     def _get_metrics(self):
@@ -448,50 +496,58 @@ class BasicReports(IncrementalTiktokStream):
         return result
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        slices = super().stream_slices(**kwargs)
-        stream_start = stream_state.get(self.cursor_field) or self._start_time
-        for slice in slices:
+        stream_start = self.select_cursor_field_value(stream_state) or self._start_time
+
+        for slice in super().stream_slices(**kwargs):
             for start_date, end_date in self._get_time_interval(stream_start, self.report_granularity):
                 slice["start_date"] = start_date.strftime("%Y-%m-%d")
                 slice["end_date"] = end_date.strftime("%Y-%m-%d")
+                self.logger.debug(
+                    f'name: {self.name}, advertiser_id: {slice["advertiser_id"]}, slice: {slice["start_date"]} - {slice["end_date"]}')
                 yield slice
 
     def path(self, *args, **kwargs) -> str:
         return "reports/integrated/get/"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
 
-        params["advertiser_id"] = stream_slice.get("advertiser_id")
+        params["advertiser_id"] = stream_slice["advertiser_id"]
         params["service_type"] = "AUCTION"
         params["report_type"] = "BASIC"
-        params["data_level"] = "_".join(["AUCTION", self.report_level])
+        params["data_level"] = f"AUCTION_{self.report_level}"
         params["dimensions"] = json.dumps(self._get_reporting_dimensions())
         params["metrics"] = json.dumps(self._get_metrics())
-
-        params["start_date"] = stream_slice.get("start_date")
-        params["end_date"] = stream_slice.get("end_date")
+        if self.report_granularity == ReportGranularity.LIFETIME:
+            params["lifetime"] = "true"
+        else:
+            params["start_date"] = stream_slice["start_date"]
+            params["end_date"] = stream_slice["end_date"]
 
         return params
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        """Additional data filtering"""
-        state = stream_state.get(self.cursor_field) or self._start_time
-        for record in TiktokStream.parse_response(self, response, **kwargs):
-            # for lifetime granularity we do not have any cursor_field
-            if not self.cursor_field:
-                yield record
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """All reports have same schema"""
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("basic_reports")
 
-            updated = record.get("dimensions").get(self.cursor_field, "")
-            if isinstance(state, JsonUpdatedState):
-                current_state = state.current_stream_state
-            else:
-                current_state = state
 
-            if updated <= current_state:
-                continue
-            elif not self.max_cursor_date or self.max_cursor_date < updated:
-                self.max_cursor_date = updated
-            yield record
+class AdsReports(BasicReports):
+    """Custom reports for ads"""
+    report_level = ReportLevel.AD
+
+
+class AdvertisersReports(BasicReports):
+    """Custom reports for advertiser"""
+    report_level = ReportLevel.ADVERTISER
+
+
+class CampaignsReports(BasicReports):
+    """Custom reports for campaigns"""
+    report_level = ReportLevel.CAMPAIGN
+
+
+class AdGroupsReports(BasicReports):
+    """Custom reports for adgroups"""
+    report_level = ReportLevel.ADGROUP

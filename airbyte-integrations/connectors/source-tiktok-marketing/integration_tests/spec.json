@@ -8,6 +8,7 @@
       "environment": {
         "title": "Environment",
         "default": "Production",
+        "order": 2,
         "oneOf": [
           {
             "title": "Production",
@@ -30,7 +31,10 @@
                 "type": "string"
               }
             },
-            "required": ["app_id", "secret"]
+            "required": [
+              "app_id",
+              "secret"
+            ]
           },
           {
             "title": "Sandbox",
@@ -47,7 +51,9 @@
                 "type": "string"
               }
             },
-            "required": ["advertiser_id"]
+            "required": [
+              "advertiser_id"
+            ]
           }
         ],
         "type": "object"
@@ -55,42 +61,39 @@
       "access_token": {
         "title": "Access Token",
         "description": "Long-term Authorized Access Token.",
+        "order": 1,
         "airbyte_secret": true,
         "type": "string"
       },
       "start_date": {
         "title": "Start Date",
         "description": "Start Date in format: YYYY-MM-DD.",
-        "default": "01-09-2016",
+        "default": "2016-09-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "order": 3,
         "type": "string"
       },
-      "report_level": {
-        "titel": "Report Level",
-        "description": "Until which entity level should be reported",
-        "default": "CAMPAIGN",
-        "type": "string",
-        "enum": [
-          "ADVERTISER",
-          "CAMPAIGN",
-          "ADGROUP",
-          "AD"
-        ]
-      },
       "report_granularity": {
-        "titel": "Report Granularity",
+        "title": "Report Granularity",
         "description": "Which time granularity should be grouped by; for LIFETIME there will be no grouping",
         "default": "DAY",
-        "type": "string",
         "enum": [
+          "LIFETIME",
           "DAY",
-          "HOUR",
-          "LIFETIME"
-        ]
+          "HOUR"
+        ],
+        "order": 4,
+        "type": "string"
       }
     },
-    "required": ["access_token"]
+    "required": [
+      "access_token"
+    ]
   },
   "supportsIncremental": true,
-  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+  "supported_destination_sync_modes": [
+    "overwrite",
+    "append",
+    "append_dedup"
+  ]
 }

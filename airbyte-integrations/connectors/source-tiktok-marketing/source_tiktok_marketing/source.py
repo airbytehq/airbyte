@@ -2,17 +2,18 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
-
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from typing import Any, List, Mapping, Tuple
 
 from .spec import SourceTiktokMarketingSpec
-from .streams import AdGroups, Ads, Advertisers, BasicReports, Campaigns
+from .streams import AdGroups, Ads, Advertisers, Campaigns
+from .streams import AdGroupsReports, AdsReports, AdvertisersReports, CampaignsReports
+from .streams import ReportGranularity, DEFAULT_START_DATE
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
 
@@ -31,13 +32,15 @@ class TiktokTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceTiktokMarketing(AbstractSource):
+
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """Returns the spec for this integration."""
         return ConnectorSpecification(
             documentationUrl=DOCUMENTATION_URL,
             changelogUrl=DOCUMENTATION_URL,
             supportsIncremental=True,
-            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
+            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append,
+                                              DestinationSyncMode.append_dedup],
             connectionSpecification=SourceTiktokMarketingSpec.schema(),
         )
 
@@ -46,7 +49,7 @@ class SourceTiktokMarketing(AbstractSource):
         """Converts an input configure to stream arguments"""
         return {
             "authenticator": TiktokTokenAuthenticator(config["access_token"]),
-            "start_date": config.get("start_date") or "2021-01-01",
+            "start_date": config.get("start_date") or DEFAULT_START_DATE,
             "advertiser_id": int(config["environment"].get("advertiser_id", 0)),
             "app_id": int(config["environment"].get("app_id", 0)),
             "secret": config["environment"].get("secret"),
@@ -64,14 +67,16 @@ class SourceTiktokMarketing(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self._prepare_stream_args(config)
-        report_args = {
-            "report_level": config.get("report_level"),
-            "report_granularity": config.get("report_granularity"),
-        }
+        report_granularity = config.get("report_granularity") or ReportGranularity.default()
+        report_args = dict(report_granularity=report_granularity, **args)
+
         return [
             Ads(**args),
+            AdsReports(**report_args),
             Advertisers(**args),
+            AdvertisersReports(**report_args),
             AdGroups(**args),
+            AdGroupsReports(**report_args),
             Campaigns(**args),
-            BasicReports(**{**args, **report_args}),
+            CampaignsReports(**report_args),
         ]
