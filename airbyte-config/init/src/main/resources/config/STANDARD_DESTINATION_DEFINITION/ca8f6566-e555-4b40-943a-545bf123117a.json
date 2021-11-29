@@ -3,5 +3,6 @@
   "name": "Google Cloud Storage (GCS)",
   "dockerRepository": "airbyte/destination-gcs",
   "dockerImageTag": "0.1.3",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/gcs"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/gcs",
+  "icon": "googlecloudstorage.svg"
 }
