@@ -10,6 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
+from pendulum.tz.timezone import Timezone
 
 from .custom_query_stream import CustomQuery
 from .google_ads import GoogleAds
@@ -37,6 +38,14 @@ class SourceGoogleAds(AbstractSource):
             credentials["login_customer_id"] = config["login_customer_id"]
         return credentials
 
+    @staticmethod
+    def get_time_zone(google_api):
+        account = next(Accounts(api=google_api).read_records(sync_mode=None), {})
+        time_zone_name = account.get("customer.time_zone")
+        if time_zone_name:
+            return Timezone(time_zone_name)
+        return "local"
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             logger.info("Checking the config")
@@ -56,8 +65,12 @@ class SourceGoogleAds(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
+        time_zone = self.get_time_zone(google_api)
         incremental_stream_config = dict(
-            api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"]
+            api=google_api,
+            conversion_window_days=config["conversion_window_days"],
+            start_date=config["start_date"],
+            time_zone=time_zone
         )
 
         custom_query_streams = [

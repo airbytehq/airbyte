@@ -67,18 +67,11 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     primary_key = None
     time_unit = "months"
 
-    def __init__(self, start_date: str, conversion_window_days: int, **kwargs):
+    def __init__(self, start_date: str, conversion_window_days: int, time_zone: [Timezone, str], **kwargs):
         self.conversion_window_days = conversion_window_days
         self._start_date = start_date
+        self.time_zone = time_zone
         super().__init__(**kwargs)
-
-    @property
-    def time_zone(self):
-        account = next(Accounts(self.google_ads_client).read_records(sync_mode=None), {})
-        time_zone_name = account.get("customer.time_zone")
-        if time_zone_name:
-            return Timezone(time_zone_name)
-        return "local"
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
