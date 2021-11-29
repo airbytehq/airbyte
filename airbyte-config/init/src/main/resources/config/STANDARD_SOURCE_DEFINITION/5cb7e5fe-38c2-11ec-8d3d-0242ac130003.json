@@ -3,5 +3,6 @@
   "name": "Pinterest",
   "dockerRepository": "airbyte/source-pinterest",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/pinterest"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/pinterest",
+  "icon": "pinterest.svg"
 }
