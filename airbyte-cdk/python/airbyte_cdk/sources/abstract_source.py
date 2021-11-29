@@ -229,7 +229,7 @@ class AbstractSource(Source, ABC):
         return stream_instance.transformer, stream_instance.get_json_schema()
 
     def _as_airbyte_record(self, stream_name: str, data: Mapping[str, Any]):
-        now_millis = int(datetime.now().timestamp()) * 1000
+        now_millis = int(datetime.now().timestamp() * 1000)
         transformer, schema = self._get_stream_transformer_and_schema(stream_name)
         # Transform object fields according to config. Most likely you will
         # need it to normalize values against json schema. By default no action
