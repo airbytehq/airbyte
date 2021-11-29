@@ -93,7 +93,9 @@ class ParcelPerformStream(HttpStream, ABC):
 
 
 class Shipments(ParcelPerformStream, ABC):
-
+    '''Stream for getting a list of shipments that have been updated between two timestamps
+    Full documentation here https://developers.parcelperform.com/docs/api-guides-reference/b3A6Njc0NTE4NQ-list-shipments-get
+    '''
     raise_on_http_errors = False
     state_checkpoint_interval = None
 
@@ -160,6 +162,9 @@ class Shipments(ParcelPerformStream, ABC):
 
 
 class ShipmentsDetails(Shipments, ABC):
+    '''Stream for getting details of an individual shipment based on it's identifier.
+    Full documentation here https://developers.parcelperform.com/docs/api-guides-reference/b3A6Njc1MDE5NQ-retrieve-shipment-details-get
+    '''
     shipment_ids_index = 0
     state_checkpoint_interval = None
     config = {}
