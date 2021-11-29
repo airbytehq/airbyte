@@ -40,6 +40,7 @@ public class TemporalWorkerRunFactory {
 
   public WorkerRun create(final Job job) {
     final int attemptId = job.getAttemptsCount();
+    LOGGER.error("Creating Supplier ________________");
     return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId), airbyteVersionOrWarnings);
   }
 
@@ -53,7 +54,8 @@ public class TemporalWorkerRunFactory {
          * attemptId, job.getConfig().getSync(), connectionId); return toOutputAndStatus(output);
          */
 
-        temporalClient.submitConnectionUpdater();
+        LOGGER.error("Call temporal client ________________");
+        temporalClient.submitConnectionUpdaterAsync();
 
         return toOutputAndStatusConnector();
       };
