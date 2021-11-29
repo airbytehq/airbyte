@@ -297,7 +297,9 @@ class TestBasicRead(BaseTest):
                     f"Primary key subkeys {repr(pk_path)} " f"have null values or not present in {record.stream} stream records."
                 )
 
-        self._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
+        # TODO: remove this condition after https://github.com/airbytehq/airbyte/issues/8312 is done
+        if inputs.validate_data_points:
+            self._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
 
         if expected_records:
             self._validate_expected_records(
