@@ -22,7 +22,7 @@ Select the Subnet &gt; Security List &gt; Add Ingress Rules
 
 ### Connection Method 1 : Create SSH Tunnel via a Bastion Host to Login to the Instance 
 
-it is highly recommended to not have a Public IP for the Instance where you are running Airbyte\).
+Keep in mind that it is highly recommended to not have a Public IP for the Instance where you are running Airbyte.
 
 #### SSH Local Port Forward to Airbyte VM
 
