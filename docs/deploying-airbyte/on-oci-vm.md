@@ -26,7 +26,7 @@ Keep in mind that it is highly recommended to not have a Public IP for the Insta
 
 #### SSH Local Port Forward to Airbyte VM
 
-From your local workstation
+On your local workstation:
 
 ```text
 ssh opc@bastion-host-public-ip -i <private-key-file.key> -L 2200:oci-private-instance-ip:22
