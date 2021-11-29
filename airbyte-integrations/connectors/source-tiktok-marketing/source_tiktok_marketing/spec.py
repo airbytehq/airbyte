@@ -6,13 +6,11 @@
 import json
 import re
 from copy import deepcopy
-from typing import Union
-
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
+from typing import Union
 
-# TikTok Initial release date is September 2016
-DEFAULT_START_DATE = "01-09-2016"
+from .streams import ReportGranularity, DEFAULT_START_DATE
 
 
 class SandboxEnvSpec(BaseModel):
@@ -44,22 +42,22 @@ class SourceTiktokMarketingSpec(BaseModel):
     class Config:
         title = "TikTok Marketing Source Spec"
 
-    environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(default=ProductionEnvSpec.Config.title)
+    environment: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(default=ProductionEnvSpec.Config.title, order=2)
 
-    access_token: str = Field(description="Long-term Authorized Access Token.", airbyte_secret=True)
+    access_token: str = Field(description="Long-term Authorized Access Token.", order=1, airbyte_secret=True)
 
     start_date: str = Field(
-        description="Start Date in format: YYYY-MM-DD.", default=DEFAULT_START_DATE, pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-    )
-
-    report_level: str = Field(
-        description="Until which entity level should be reported", default="AD",
-        enum=["ADVERTISER", "CAMPAIGN", "ADGROUP", "AD"]
+        description="Start Date in format: YYYY-MM-DD.",
+        default=DEFAULT_START_DATE,
+        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        order=3,
     )
 
     report_granularity: str = Field(
         description="Which time granularity should be grouped by; for LIFETIME there will be no grouping",
-        default="DAY", enum=["LIFETIME", "DAY", "HOUR"]
+        default=ReportGranularity.default().value,
+        enum=[g.value for g in ReportGranularity],
+        order=4,
     )
 
     @staticmethod
