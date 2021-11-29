@@ -4,11 +4,12 @@
   create  table "postgres".test_normalization."renamed_dedup_cdc_excluded_scd"
   as (
     
+-- depends_on: ref('renamed_dedup_cdc_excluded_stg')
 with
 
 input_data as (
     select *
-    from "postgres"._airbyte_test_normalization."renamed_dedup_cdc_excluded_ab3"
+    from "postgres"._airbyte_test_normalization."renamed_dedup_cdc_excluded_stg"
     -- renamed_dedup_cdc_excluded from "postgres".test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
 ),
 
@@ -29,13 +30,13 @@ scd_data as (
             _airbyte_emitted_at desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
-      case when lag(_airbyte_emitted_at) over (
+      case when row_number() over (
         partition by "id"
         order by
             _airbyte_emitted_at is null asc,
             _airbyte_emitted_at desc,
             _airbyte_emitted_at desc
-      ) is null  then 1 else 0 end as _airbyte_active_row,
+      ) = 1 then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_renamed_dedup_cdc_excluded_hashid

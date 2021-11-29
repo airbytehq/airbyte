@@ -74,6 +74,9 @@ If you would like to test Airbyte using test data on Stripe, `sk_test_` and `rk_
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.25 | 2021-11-25 | [8250](https://github.com/airbytehq/airbyte/pull/8250) | Rearrange setup fields |
+| 0.1.24 | 2021-11-08 | [7729](https://github.com/airbytehq/airbyte/pull/7729) | Include tax data in `checkout_sessions_line_items` stream |
+| 0.1.23 | 2021-11-08 | [7729](https://github.com/airbytehq/airbyte/pull/7729) | Correct `payment_intents` schema |
 | 0.1.22 | 2021-11-05 | [7345](https://github.com/airbytehq/airbyte/pull/7345) | Add 3 new streams |
 | 0.1.21 | 2021-10-07 | [6841](https://github.com/airbytehq/airbyte/pull/6841) | Fix missing `start_date` argument + update json files for SAT |
 | 0.1.20 | 2021-09-30 | [6017](https://github.com/airbytehq/airbyte/pull/6017) | Add lookback\_window\_days parameter |

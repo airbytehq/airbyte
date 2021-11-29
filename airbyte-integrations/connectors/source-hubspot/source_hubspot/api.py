@@ -18,7 +18,7 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
-# The value is obtained experimentally, Hubspot allows the URL length up to ~16300 symbols,
+# The value is obtained experimentally, HubSpot allows the URL length up to ~16300 symbols,
 # so it was decided to limit the length of the `properties` parameter to 15000 characters.
 PROPERTIES_PARAM_MAX_LENGTH = 15000
 
@@ -99,7 +99,7 @@ def retry_after_handler(**kwargs):
     def sleep_on_ratelimit(_details):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, HubspotRateLimited):
-            # Hubspot API does not always return Retry-After value for 429 HTTP error
+            # HubSpot API does not always return Retry-After value for 429 HTTP error
             retry_after = int(exc.response.headers.get("Retry-After", 3))
             logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
@@ -119,7 +119,7 @@ def retry_after_handler(**kwargs):
 
 
 class API:
-    """Hubspot API interface, authorize, retrieve and post, supports backoff logic"""
+    """HubSpot API interface, authorize, retrieve and post, supports backoff logic"""
 
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
@@ -153,7 +153,7 @@ class API:
             message = response.json().get("message")
 
         if response.status_code == HTTPStatus.FORBIDDEN:
-            """ Once hit the forbidden endpoint, we return the error message from response. """
+            """Once hit the forbidden endpoint, we return the error message from response."""
             pass
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
             raise HubspotInvalidAuth(message, response=response)
@@ -208,6 +208,7 @@ class Stream(ABC):
     def __init__(self, api: API, start_date: str = None, **kwargs):
         self._api: API = api
         self._start_date = pendulum.parse(start_date)
+        self.skip_dynamic_fields = kwargs.get("skip_dynamic_fields", False)
 
     @property
     def name(self) -> str:
@@ -225,9 +226,9 @@ class Stream(ABC):
         """
         for record in records:
             if isinstance(record, Mapping) and "properties" in record:
-                for key in list(record["properties"].keys()):
-                    if key.startswith("hs_time_in"):
-                        record["properties"].pop(key)
+                for key in record["properties"]:
+                    if key.startswith("hs_time_in_"):
+                        record["properties"][key] = None
             yield record
 
     @staticmethod
@@ -332,8 +333,8 @@ class Stream(ABC):
             properties_list = list(self.properties.keys())
             if properties_list:
                 # TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams (issues #3977 and #5835).
-                #  We will need to fix this code when the Hubspot developers add the ability to use a special parameter to get all properties for an entity.
-                #  According to Hubspot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
+                #  We will need to fix this code when the HubSpot developers add the ability to use a special parameter to get all properties for an entity.
+                #  According to HubSpot Community (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
                 #  and the official documentation, this does not exist at the moment.
                 stream_records = {}
 
@@ -358,7 +359,10 @@ class Stream(ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         default_params = {self.limit_field: self.limit}
         params = {**default_params, **params} if params else {**default_params}
-        yield from self._filter_dynamic_fields(self._filter_old_records(self._read(getter, params)))
+        g = self._filter_old_records(self._read(getter, params))
+        if self.skip_dynamic_fields:
+            g = self._filter_dynamic_fields(g)
+        yield from g
 
     def parse_response(self, response: Union[Mapping[str, Any], List[dict]]) -> Iterator:
         if isinstance(response, Mapping):

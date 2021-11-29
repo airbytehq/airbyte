@@ -714,15 +714,21 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void testCustomDbtTransformations() throws Exception {
-    if (!normalizationFromSpec() || !dbtFromSpec()) {
-      // we require normalization implementation for this destination, because we make sure to install
-      // required dbt dependency in the normalization docker image in order to run this test successfully
-      // (we don't actually rely on normalization running anything here though)
+    if (!dbtFromSpec()) {
       return;
     }
 
     final JsonNode config = getConfig();
 
+    // This may throw IllegalStateException "Requesting normalization, but it is not included in the
+    // normalization mappings"
+    // We indeed require normalization implementation of the 'transform_config' function for this
+    // destination,
+    // because we make sure to install required dbt dependency in the normalization docker image in
+    // order to run
+    // this test successfully and that we are able to convert a destination 'config.json' into a dbt
+    // 'profiles.yml'
+    // (we don't actually rely on normalization running anything else here though)
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
         getImageName(),
         processFactory));
@@ -731,7 +737,7 @@ public abstract class DestinationAcceptanceTest {
     final OperatorDbt dbtConfig = new OperatorDbt()
         .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
         .withGitRepoBranch("main")
-        .withDockerImage("airbyte/normalization:dev");
+        .withDockerImage(NormalizationRunnerFactory.getNormalizationInfoForConnector(getImageName()).getLeft());
     //
     // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
     //
@@ -1121,7 +1127,9 @@ public abstract class DestinationAcceptanceTest {
           "EMITTED_AT",
           "AB_ID",
           "NORMALIZED_AT",
-          "HASHID");
+          "HASHID",
+          "unique_key",
+          "UNIQUE_KEY");
       if (airbyteInternalFields.stream().anyMatch(internalField -> key.toLowerCase().contains(internalField.toLowerCase()))
           || json.get(key).isNull()) {
         ((ObjectNode) json).remove(key);
