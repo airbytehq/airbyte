@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
-  private static final int MAX_PARTITION_SIZE = 100_000;
 
   @Override
   protected void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String stage) throws Exception {
@@ -30,14 +29,12 @@ public class SnowflakeStagingSqlOperations extends JdbcSqlOperations implements 
     if (records.isEmpty()) {
       return;
     }
-    for (List<AirbyteRecordMessage> partition : Iterables.partition(records, MAX_PARTITION_SIZE)) {
       try {
-        loadDataIntoStage(database, stage, partition);
+        loadDataIntoStage(database, stage, records);
       } catch (Exception e) {
         LOGGER.error("Failed to upload records into stage {}", stage, e);
         throw new RuntimeException(e);
       }
-    }
   }
 
   private void loadDataIntoStage(JdbcDatabase database, String stage, List<AirbyteRecordMessage> partition) throws Exception {
