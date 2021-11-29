@@ -19,6 +19,7 @@ This Source is capable of syncing the following core Streams:
 * [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields)
 * [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms)
 * [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics)
+* [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/)
 * [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships)
 * [Macros](https://developer.zendesk.com/rest_api/docs/support/macros)
 * [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings)
@@ -33,7 +34,6 @@ This Source is capable of syncing the following core Streams:
 
 * [Ticket Attachments](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket-attachments/)
 * [Ticket Requests](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket-requests/)
-* [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/)
 * [Ticket Activities](https://developer.zendesk.com/api-reference/ticketing/tickets/activity_stream/)
 * [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/)
 
@@ -97,6 +97,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.8` | 2021-11-23 | [8050](https://github.com/airbytehq/airbyte/pull/8168) | Adds TicketMetricEvents |
 | `0.1.7` | 2021-11-23 | [8058](https://github.com/airbytehq/airbyte/pull/8058) | support AccessToken auth |
 | `0.1.6` | 2021-11-18 | [8050](https://github.com/airbytehq/airbyte/pull/8050) | Fix wrong types for schemas, add Transformer |
 | `0.1.5` | 2021-10-26 | [7679](https://github.com/airbytehq/airbyte/pull/7679) | Add ticket_id and ticket_comments |
