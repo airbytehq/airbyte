@@ -304,14 +304,16 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues(
                 "null",
-                "'999.99'", "'1001.01'",
-                "'$999.99'", "'$1001.01'",
+                "'999.99'", "'1,001.01'", "'-1,000'",
+                "'$999.99'", "'$1001.01'", "'-$1,000'",
                 // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
                 "'-92233720368547758.08'", "'92233720368547758.07'")
             .addExpectedValues(
                 null,
-                "999.99", "1001.01",
-                "999.99", "1001.01",
+                // Double#toString method is necessary here because sometimes the output
+                // has unexpected decimals, e.g. Double.toString(-1000) is -1000.0
+                "999.99", "1001.01", Double.toString(-1000),
+                "999.99", "1001.01", Double.toString(-1000),
                 Double.toString(-92233720368547758.08), Double.toString(92233720368547758.07))
             .build());
 
