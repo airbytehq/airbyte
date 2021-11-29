@@ -19,6 +19,36 @@ from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
 
 
+class ShopifySingleRecordStream(HttpStream, ABC):
+    # Latest Stable Release
+    api_version = "2021-07"
+    # Define primary key as sort key for full_refresh, or very first sync for incremental_refresh
+    primary_key = "id"
+
+    def __init__(self, config: Dict):
+        super().__init__(authenticator=config["authenticator"])
+        self.config = config
+
+    @staticmethod
+    def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pass
+
+    @property
+    def url_base(self) -> str:
+        return f"https://{self.config['shop']}.myshopify.com/admin/api/{self.api_version}/"
+
+    @limiter.balance_rate_limit()
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = response.json()
+        records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+        return [records]
+
+    @property
+    @abstractmethod
+    def data_field(self) -> str:
+        """The name of the field in the response which contains the data"""
+
+
 class ShopifyStream(HttpStream, ABC):
 
     # Latest Stable Release
@@ -394,6 +424,13 @@ class Fulfillments(ChildSubstream):
         return f"orders/{order_id}/{self.data_field}.json"
 
 
+class Shop(ShopifySingleRecordStream):
+    data_field = "shop"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
@@ -438,4 +475,5 @@ class SourceShopify(AbstractSource):
             InventoryLevels(config),
             FulfillmentOrders(config),
             Fulfillments(config),
+            Shop(config),
         ]
