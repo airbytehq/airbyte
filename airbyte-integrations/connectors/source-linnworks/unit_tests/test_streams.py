@@ -7,7 +7,14 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from source_linnworks.streams import LinnworksStream, ProcessedOrderDetails, ProcessedOrders, StockItems, StockLocationDetails
+from source_linnworks.streams import (
+    LinnworksStream,
+    ProcessedOrderDetails,
+    ProcessedOrders,
+    StockItems,
+    StockLocationDetails,
+    StockLocations,
+)
 
 
 @pytest.fixture
@@ -66,6 +73,16 @@ def test_backoff_time(patch_base_class, requests_mock, header_name, header_value
     requests_mock.get("https://dummy", headers={header_name: header_value}, status_code=429)
     result = stream.backoff_time(requests.get("https://dummy"))
     assert result == expected
+
+
+def test_stock_locations_details_init(mocker):
+    stock_locations = MagicMock(return_value=None)
+    mocker.patch.object(StockLocations, "__init__", stock_locations)
+    kwargs = {"foo": "foo", "bar": "bar"}
+
+    StockLocationDetails(**kwargs)
+
+    stock_locations.assert_called_with(**kwargs)
 
 
 @pytest.mark.parametrize(
