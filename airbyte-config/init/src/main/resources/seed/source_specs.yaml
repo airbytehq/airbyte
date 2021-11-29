@@ -3333,7 +3333,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-linnworks:0.1.2"
+- dockerImage: "airbyte/source-linnworks:0.1.3"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
