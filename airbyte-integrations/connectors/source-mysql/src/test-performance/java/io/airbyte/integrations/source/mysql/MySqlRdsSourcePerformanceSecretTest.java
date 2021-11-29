@@ -145,4 +145,34 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
     validateNumberOfReceivedMsgs(checkStatusMap);
   }
 
+  @Test
+  public void testSmall1000tableswith10000recordsDb() throws Exception {
+    numberOfDummyRecords = 10000 - 1;
+    numberOfStreams = 1000;
+
+    setupDatabase("newsmall1000tableswith10000rows");
+
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
+        numberOfStreams, numberOfDummyRecords);
+    final Map<String, Integer> checkStatusMap =
+        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
+    validateNumberOfReceivedMsgs(checkStatusMap);
+  }
+
+  @Test
+  public void testInterim15tableswith50000recordsDb() throws Exception {
+    numberOfDummyRecords = 50000 - 1;
+    numberOfStreams = 15;
+
+    setupDatabase("newinterim15tableswith50000records");
+
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    final Map<String, Integer> mapOfExpectedRecordsCount = prepareMapWithExpectedRecords(
+        numberOfStreams, numberOfDummyRecords);
+    final Map<String, Integer> checkStatusMap =
+        runReadVerifyNumberOfReceivedMsgs(catalog, null, mapOfExpectedRecordsCount);
+    validateNumberOfReceivedMsgs(checkStatusMap);
+  }
+
 }
