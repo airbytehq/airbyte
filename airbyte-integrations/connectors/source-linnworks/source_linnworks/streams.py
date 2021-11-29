@@ -96,9 +96,7 @@ class StockLocationDetails(HttpSubStream, StockLocations):
     ) -> str:
         return "/api/Locations/GetLocation"
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any], **kwargs) -> MutableMapping[str, Any]:
         return {"pkStockLocationId ": stream_slice["parent"]["StockLocationId"]}
 
 

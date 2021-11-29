@@ -79,8 +79,8 @@ def test_stock_locations_details_request_params(mocker, stream_slice, expected):
     source = StockLocationDetails()
 
     if stream_slice:
-        records = source.request_params(None, stream_slice)
-        assert records == expected
+        params = source.request_params(None, stream_slice)
+        assert params == expected
     else:
         with pytest.raises(TypeError, match=expected):
             source.request_params(None, stream_slice)
