@@ -213,7 +213,6 @@ read_secrets source-facebook-marketing "$FACEBOOK_MARKETING_TEST_INTEGRATION_CRE
 read_secrets source-facebook-pages "$FACEBOOK_PAGES_INTEGRATION_TEST_CREDS"
 read_secrets source-gitlab "$GITLAB_INTEGRATION_TEST_CREDS"
 read_secrets source-github "$GH_NATIVE_INTEGRATION_TEST_CREDS"
-read_secrets source-google-ads "$GOOGLE_ADS_TEST_CREDS"
 read_secrets source-google-analytics-v4 "$GOOGLE_ANALYTICS_V4_TEST_CREDS"
 read_secrets source-google-analytics-v4 "$GOOGLE_ANALYTICS_V4_TEST_CREDS_SRV_ACC" "service_config.json"
 read_secrets source-google-analytics-v4 "$GOOGLE_ANALYTICS_V4_TEST_CREDS_OLD" "old_config.json"
