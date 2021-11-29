@@ -3,5 +3,6 @@
   "name": "Bigcommerce",
   "dockerRepository": "airbyte/source-bigcommerce",
   "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/bigcommerce"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/bigcommerce",
+  "icon": "bigcommerce.svg"
 }
