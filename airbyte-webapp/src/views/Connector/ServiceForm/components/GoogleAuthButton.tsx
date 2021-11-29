@@ -1,20 +1,22 @@
-import { IProps } from "components/base/Button/types";
+import React from "react";
+
 import styled from "styled-components";
+import { IProps } from "components/base/Button/types";
 
 const StyledButton = styled.button<IProps>`
   align-items: center;
   background: #4285f4;
-  border: 0px solid #4285f4;
+  border: 0 solid #4285f4;
   color: #ffffff;
   cursor: pointer;
   display: flex;
-  font-family: "Roboto", sans-serif;
+  font-family: Roboto, sans-serif;
   font-weight: 500;
   font-size: 14px;
   font-style: normal;
   line-height: 15px;
   outline: none;
-  padding: 0px 10px 0px 0px;
+  padding: 0 10px 0 0;
   pointer-events: ${(props) =>
     props.wasActive && !props.clickable ? "none" : "all"};
   text-align: center;
