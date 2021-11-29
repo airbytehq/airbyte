@@ -38,6 +38,7 @@ dependencies {
     testImplementation 'org.testcontainers:postgresql:1.15.3'
 
     testImplementation project(':airbyte-commons-docker')
+    testImplementation project(':airbyte-test-utils')
 
     integrationTestJavaImplementation project(':airbyte-workers')
 }
