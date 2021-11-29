@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_linnworks.streams import (LinnworksStream, StockItems, StockLocationDetails, StockLocations)
+from source_linnworks.streams import LinnworksStream, StockItems, StockLocationDetails, StockLocations
 
 
 @pytest.fixture

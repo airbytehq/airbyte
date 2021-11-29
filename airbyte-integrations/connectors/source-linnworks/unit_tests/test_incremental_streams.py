@@ -6,13 +6,13 @@
 import json
 import os
 from unittest.mock import MagicMock
-from airbyte_cdk.sources.streams.http.http import HttpSubStream
 
 import pendulum
 import pytest
 import requests
 import vcr
 from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.sources.streams.http.http import HttpSubStream
 from source_linnworks.streams import IncrementalLinnworksStream, ProcessedOrderDetails, ProcessedOrders
 
 
@@ -239,7 +239,6 @@ def test_processed_order_details_stream_slices(patch_incremental_base_class, moc
     actual_state = parent_stream_slices.call_args.kwargs["stream_state"]
     if actual_state:
         assert actual_state["dProcessedOn"] == stream_state["ProcessedDateTime"]
-
 
 
 def test_processed_order_details_request_body_data(patch_incremental_base_class):
