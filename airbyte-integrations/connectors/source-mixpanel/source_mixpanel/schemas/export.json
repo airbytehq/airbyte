@@ -14,17 +14,10 @@
       "format": "date-time"
     },
     "labels": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        {
-          "type": "null"
+      "type": ["null", "array"],
+      "items": {
+            "type": ["null", "string"]
         }
-      ]
     },
     "sampling_factor": {
       "type": ["null", "integer"]
