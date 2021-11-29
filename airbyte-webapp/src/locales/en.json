@@ -120,6 +120,7 @@
   "connectionForm.destinationTitle": "Destination",
 
   "connectorForm.authenticate": "Authenticate your {connector} account",
+  "connectorForm.signInWithGoogle": "Sign in with Google",
   "connectorForm.authenticate.succeeded": "Authentication succeeded!",
   "connectorForm.reauthenticate": "Re-authenticate",
 
