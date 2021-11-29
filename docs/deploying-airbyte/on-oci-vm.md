@@ -28,7 +28,7 @@ Keep in mind that it is highly recommended to not have a Public IP for the Insta
 
 On your local workstation:
 
-```text
+```bash
 ssh opc@bastion-host-public-ip -i <private-key-file.key> -L 2200:oci-private-instance-ip:22
 ssh opc@localhost -i <private-key-file.key> -p 2200
 ```
