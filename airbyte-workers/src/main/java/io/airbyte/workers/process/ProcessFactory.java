@@ -38,21 +38,8 @@ public interface ProcessFactory {
                  final String entrypoint,
                  final ResourceRequirements resourceRequirements,
                  final Map<String, String> labels,
+                 final Map<Integer, Integer> portMapping,
                  final String... args)
       throws WorkerException;
-
-  default Process create(final String jobId,
-                         final int attempt,
-                         final Path jobPath,
-                         final String imageName,
-                         final boolean usesStdin,
-                         final Map<String, String> files,
-                         final String entrypoint,
-                         final ResourceRequirements resourceRequirements,
-                         final Map<String, String> labels,
-                         final List<String> args)
-      throws WorkerException {
-    return create(jobId, attempt, jobPath, imageName, usesStdin, files, entrypoint, resourceRequirements, labels, args.toArray(new String[0]));
-  }
 
 }

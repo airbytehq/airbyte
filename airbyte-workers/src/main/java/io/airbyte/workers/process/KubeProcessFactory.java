@@ -86,13 +86,14 @@ public class KubeProcessFactory implements ProcessFactory {
   @Override
   public Process create(final String jobId,
                         final int attempt,
-                        final Path jobRoot,
+                        final Path jobRoot, // todo: remove unused
                         final String imageName,
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
                         final Map<String, String> customLabels,
+                        final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws WorkerException {
     try {
@@ -134,6 +135,7 @@ public class KubeProcessFactory implements ProcessFactory {
           WorkerUtils.JOB_SOCAT_IMAGE,
           WorkerUtils.JOB_BUSYBOX_IMAGE,
           WorkerUtils.JOB_CURL_IMAGE,
+          internalToExternalPorts,
           args);
     } catch (final Exception e) {
       throw new WorkerException(e.getMessage(), e);

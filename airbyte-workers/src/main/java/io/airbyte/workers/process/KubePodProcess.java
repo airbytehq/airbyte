@@ -8,20 +8,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerPodToleration;
-import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.ContainerBuilder;
-import io.fabric8.kubernetes.api.model.DeletionPropagation;
-import io.fabric8.kubernetes.api.model.LocalObjectReference;
-import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.PodBuilder;
-import io.fabric8.kubernetes.api.model.Quantity;
-import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
-import io.fabric8.kubernetes.api.model.Toleration;
-import io.fabric8.kubernetes.api.model.TolerationBuilder;
-import io.fabric8.kubernetes.api.model.Volume;
-import io.fabric8.kubernetes.api.model.VolumeBuilder;
-import io.fabric8.kubernetes.api.model.VolumeMount;
-import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import io.kubernetes.client.Copy;
@@ -45,6 +32,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
@@ -124,6 +113,7 @@ public class KubePodProcess extends Process {
   private final ServerSocket stdoutServerSocket;
   private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
+  private final Map<Integer, Integer> internalToExternalPorts;
   private final int stderrLocalPort;
   private final ExecutorService executorService;
 
@@ -161,6 +151,7 @@ public class KubePodProcess extends Process {
                                    final String entrypointOverride,
                                    final List<VolumeMount> mainVolumeMounts,
                                    final ResourceRequirements resourceRequirements,
+                                   final Map<Integer, Integer> internalToExternalPorts,
                                    final String[] args)
       throws IOException {
     final var argsStr = String.join(" ", args);
@@ -178,8 +169,16 @@ public class KubePodProcess extends Process {
         .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
         .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
 
+    final List<ContainerPort> containerPorts = internalToExternalPorts.entrySet().stream()
+            .map(entry -> new ContainerPortBuilder()
+                    .withContainerPort(entry.getKey())
+                    .withHostPort(entry.getValue())
+                    .build())
+            .collect(Collectors.toList());
+
     final ContainerBuilder containerBuilder = new ContainerBuilder()
         .withName("main")
+        .withPorts(containerPorts)
         .withImage(image)
         .withImagePullPolicy(imagePullPolicy)
         .withCommand("sh", "-c", mainCommand)
@@ -269,15 +268,17 @@ public class KubePodProcess extends Process {
                         final String socatImage,
                         final String busyboxImage,
                         final String curlImage,
+                        final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
 
-    stdoutServerSocket = new ServerSocket(stdoutLocalPort);
-    stderrServerSocket = new ServerSocket(stderrLocalPort);
-    executorService = Executors.newFixedThreadPool(2);
+    this.stdoutServerSocket = new ServerSocket(stdoutLocalPort);
+    this.stderrServerSocket = new ServerSocket(stderrLocalPort);
+    this.internalToExternalPorts = internalToExternalPorts;
+    this.executorService = Executors.newFixedThreadPool(2);
     setupStdOutAndStdErrListeners();
 
     if (entrypointOverride != null) {
@@ -326,6 +327,7 @@ public class KubePodProcess extends Process {
         entrypointOverride,
         List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
         resourceRequirements,
+        internalToExternalPorts,
         args);
 
     final Container remoteStdin = new ContainerBuilder()

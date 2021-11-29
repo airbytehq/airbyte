@@ -80,7 +80,7 @@ class AirbyteIntegrationLauncherTest {
             "read",
             "--config", "config",
             "--catalog", "catalog",
-            "--state", "state"));
+            "--state", "state").toArray(new String[0]));
   }
 
   @Test

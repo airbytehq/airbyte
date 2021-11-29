@@ -130,7 +130,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         null,
         resourceRequirement,
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
-        arguments);
+        arguments.toArray(new String[0]));
   }
 
   @Override

@@ -23,8 +23,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class RunnerApp {
 
@@ -101,6 +104,7 @@ public class RunnerApp {
   }
 
   public static void main(String[] args) throws Exception {
+
     final String application = Files.readString(Path.of("application.txt"));
 
     final Map<String, String> envMap = (Map<String, String>) Jsons.deserialize(Files.readString(Path.of("envMap.json")), Map.class);
@@ -124,6 +128,17 @@ public class RunnerApp {
 
     final var logPath = LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot());
     LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(), logPath);
+
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
+    Executors.newSingleThreadExecutor().submit(
+            () -> {
+              MDC.setContextMap(mdc);
+              try {
+                new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT).start();
+              } catch (final Exception e) {
+                throw new RuntimeException(e);
+              }
+            });
 
     switch (application) {
       case "replication" -> Exceptions.toRuntime(() -> replicationRunner(configs));

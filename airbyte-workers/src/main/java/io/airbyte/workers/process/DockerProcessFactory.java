@@ -85,6 +85,7 @@ public class DockerProcessFactory implements ProcessFactory {
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
                         final Map<String, String> labels,
+                        final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws WorkerException {
     try {
@@ -101,6 +102,8 @@ public class DockerProcessFactory implements ProcessFactory {
       }
 
       List<String> cmd;
+
+      // todo: add --expose 80 to each
 
       if (isOrchestrator) {
         cmd = Lists.newArrayList(
