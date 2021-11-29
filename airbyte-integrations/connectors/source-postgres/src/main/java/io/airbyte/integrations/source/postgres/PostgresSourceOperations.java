@@ -2,6 +2,7 @@ package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
@@ -54,10 +55,16 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   private void putMoney(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final String moneyString = resultSet.getString(index);
-    // remove any currency symbol
-    final String moneyValue = moneyString.replaceAll("[^\\d.-]", "");
+    final String moneyValue = parseMoneyValue(resultSet.getString(index));
     node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite));
+  }
+
+  /**
+   * @return monetary value in numbers without the currency symbol or thousands separators.
+   */
+  @VisibleForTesting
+  static String parseMoneyValue(final String moneyString) {
+    return moneyString.replaceAll("[^\\d.-]", "");
   }
 
 }
