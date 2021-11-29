@@ -29,7 +29,7 @@ class MarketoStream(HttpStream, ABC):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
         self.start_date = config["start_date"]
-        self.window_in_days = config["window_in_days"]
+        self.window_in_days = config.get("window_in_days", 30)
         self._url_base = config["domain_url"]
         self.stream_name = stream_name
         self.param = param
