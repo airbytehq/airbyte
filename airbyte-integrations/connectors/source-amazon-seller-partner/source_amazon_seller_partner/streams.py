@@ -410,12 +410,12 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
         cursor_field: List[str] = None,
         stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        
+
         start_date = pendulum.parse(self._replication_start_date)
         end_date = pendulum.now()
 
         if stream_state:
-            state = stream_state.get(self.cursor_field)            
+            state = stream_state.get(self.cursor_field)
             start_date = pendulum.parse(state)
 
         start_date = min(start_date, end_date)
@@ -433,6 +433,10 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
 
 
 class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202125660
+    """
+
     name = "GET_SELLER_FEEDBACK_DATA"
     cursor_field = 'Date'
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
@@ -442,8 +446,8 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
         if original_value and "format" in field_schema and field_schema["format"] == "date":
             transformed_value = pendulum.from_format(original_value, "M/D/YY").to_date_string()
             return transformed_value
-            
-        return original_value    
+
+        return original_value
 
 
 class Orders(IncrementalAmazonSPStream):
