@@ -177,7 +177,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
 
   @Test
   public void testRegular25tables50000recordsDb() throws Exception {
-    numberOfDummyRecords = 49960;
+    numberOfDummyRecords = 50003;
     numberOfStreams = 25;
 
     setupDatabase("newregular25tables50000records");
