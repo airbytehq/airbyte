@@ -58,6 +58,11 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       ctx.execute("CREATE SCHEMA TEST;");
       ctx.execute("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');");
       ctx.execute("CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);");
+      // In one of the test case, we have some money values with currency symbol. Postgres can only understand
+      // those money values if the symbol corresponds to the monetary locale setting. For example, if the locale
+      // is 'en_GB', '£100' is valid, but '$100' is not. So setting the monetary locate is necessary here to
+      // make sure the unit test can pass, no matter what the locale the runner VM has.
+      ctx.execute("SET lc_monetary TO 'en_US.utf8';");
       return null;
     });
 
@@ -293,13 +298,21 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 "08:00:2b:01:02:03:04:07")
             .build());
 
-    // Max values for Money type: "-92233720368547758.08", "92233720368547758.07"
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("money")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "'999.99'", "'1001.01'", "'-92233720368547758.08'", "'92233720368547758.07'")
-            .addExpectedValues(null, "999.99", "1001.01", Double.toString(-92233720368547758.08), Double.toString(92233720368547758.07))
+            .addInsertValues(
+                "null",
+                "'999.99'", "'1001.01'",
+                "'$999.99'", "'$1001.01'",
+                // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
+                "'-92233720368547758.08'", "'92233720368547758.07'")
+            .addExpectedValues(
+                null,
+                "999.99", "1001.01",
+                "999.99", "1001.01",
+                Double.toString(-92233720368547758.08), Double.toString(92233720368547758.07))
             .build());
 
     // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
