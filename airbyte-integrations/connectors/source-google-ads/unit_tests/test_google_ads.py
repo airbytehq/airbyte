@@ -115,6 +115,7 @@ def test_get_date_params():
         conversion_window_days=mock_conversion_window_days,
         start_date=mock_start_date,
         api=MockGoogleAdsClient(SAMPLE_CONFIG),
+        time_zone="local"
     )
 
     start_date, end_date = IncrementalGoogleAdsStream(**incremental_stream_config).get_date_params(

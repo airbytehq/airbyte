@@ -20,7 +20,7 @@ def test_chunk_date_range():
 # this requires the config because instantiating a stream creates a google client. TODO refactor so client can be mocked.
 def test_get_updated_state(config):
     google_api = GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
-    client = AdGroupAdReport(start_date=config["start_date"], api=google_api, conversion_window_days=config["conversion_window_days"])
+    client = AdGroupAdReport(start_date=config["start_date"], api=google_api, conversion_window_days=config["conversion_window_days"], time_zone="local")
     current_state_stream = {}
     latest_record = {"segments.date": "2020-01-01"}
 
@@ -43,6 +43,7 @@ def get_instance_from_config(config, query):
         conversion_window_days=conversion_window_days,
         start_date=start_date,
         custom_query_config={"query": query, "table_name": "whatever_table"},
+        time_zone = "local"
     )
     return instance
 
