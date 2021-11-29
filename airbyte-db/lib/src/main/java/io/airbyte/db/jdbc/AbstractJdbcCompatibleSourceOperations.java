@@ -6,7 +6,6 @@ package io.airbyte.db.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -20,12 +19,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.StringJoiner;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import javax.xml.bind.DatatypeConverter;
 
 /**

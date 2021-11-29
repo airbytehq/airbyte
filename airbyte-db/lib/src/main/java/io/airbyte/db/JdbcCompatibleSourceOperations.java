@@ -17,6 +17,7 @@ public interface JdbcCompatibleSourceOperations<SourceType> extends SourceOperat
   /**
    * Read from a result set, and copy the value of the column at colIndex to the Json object.
    * <p/>
+   *
    * @param colIndex 1-based column index.
    */
   void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException;

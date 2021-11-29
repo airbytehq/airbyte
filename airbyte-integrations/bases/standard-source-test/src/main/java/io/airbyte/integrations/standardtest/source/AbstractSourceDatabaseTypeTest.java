@@ -33,8 +33,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This abstract class contains common helpers and boilerplate for comprehensively testing that all data types in a source can be read and handled
- * correctly by the connector and within Airbyte's type system.
+ * This abstract class contains common helpers and boilerplate for comprehensively testing that all
+ * data types in a source can be read and handled correctly by the connector and within Airbyte's
+ * type system.
  */
 public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConnectorTest {
 
@@ -43,7 +44,8 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   private final List<TestDataHolder> testDataHolders = new ArrayList<>();
 
   /**
-   * The column name will be used for a PK column in the test tables. Override it if default name is not valid for your source.
+   * The column name will be used for a PK column in the test tables. Override it if default name is
+   * not valid for your source.
    *
    * @return Id column name
    */
@@ -52,7 +54,8 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   }
 
   /**
-   * The column name will be used for a test column in the test tables. Override it if default name is not valid for your source.
+   * The column name will be used for a test column in the test tables. Override it if default name is
+   * not valid for your source.
    *
    * @return Test column name
    */
@@ -79,16 +82,16 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   }
 
   /**
-   * Provide a source namespace. It's allocated place for table creation. It also known ask "Database Schema" or "Dataset"
+   * Provide a source namespace. It's allocated place for table creation. It also known ask "Database
+   * Schema" or "Dataset"
    *
    * @return source name space
    */
   protected abstract String getNameSpace();
 
   /**
-   * Test the discover command.
-   * TODO (liren): This is a new unit test. Some existing databases may fail it, so it is
-   *   turned off by default. It should be enabled for all databases eventually.
+   * Test the discover command. TODO (liren): This is a new unit test. Some existing databases may
+   * fail it, so it is turned off by default. It should be enabled for all databases eventually.
    */
   protected boolean testCatalog() {
     return false;
@@ -150,7 +153,8 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   /**
    * Creates all tables and insert data described in the registered data type tests.
    *
-   * @throws Exception might raise exception if configuration goes wrong or tables creation/insert scripts failed.
+   * @throws Exception might raise exception if configuration goes wrong or tables creation/insert
+   *         scripts failed.
    */
   private void setupDatabaseInternal() throws Exception {
     final Database database = setupDatabase();
@@ -183,10 +187,10 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
                 .withCursorField(Lists.newArrayList(getIdColumnName()))
                 .withDestinationSyncMode(DestinationSyncMode.APPEND)
                 .withStream(CatalogHelpers.createAirbyteStream(
-                        String.format("%s", test.getNameWithTestPrefix()),
-                        String.format("%s", getNameSpace()),
-                        Field.of(getIdColumnName(), JsonSchemaPrimitive.NUMBER),
-                        Field.of(getTestColumnName(), test.getAirbyteType()))
+                    String.format("%s", test.getNameWithTestPrefix()),
+                    String.format("%s", getNameSpace()),
+                    Field.of(getIdColumnName(), JsonSchemaPrimitive.NUMBER),
+                    Field.of(getTestColumnName(), test.getAirbyteType()))
                     .withSourceDefinedCursor(true)
                     .withSourceDefinedPrimaryKey(List.of(List.of(getIdColumnName())))
                     .withSupportedSyncModes(
@@ -195,8 +199,9 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   }
 
   /**
-   * Register your test in the run scope. For each test will be created a table with one column of specified type. Note! If you register more than one
-   * test with the same type name, they will be run as independent tests with own streams.
+   * Register your test in the run scope. For each test will be created a table with one column of
+   * specified type. Note! If you register more than one test with the same type name, they will be
+   * run as independent tests with own streams.
    *
    * @param test comprehensive data type test
    */
@@ -213,7 +218,8 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   }
 
   /**
-   * Builds a table with all registered test cases with values using Markdown syntax (can be used in the github).
+   * Builds a table with all registered test cases with values using Markdown syntax (can be used in
+   * the github).
    *
    * @return formatted list of test cases
    */

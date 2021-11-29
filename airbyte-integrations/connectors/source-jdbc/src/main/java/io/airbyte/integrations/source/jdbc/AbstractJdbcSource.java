@@ -136,7 +136,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         .collect(Collectors.toList());
   }
 
-  private Predicate<JsonNode> excludeNotAccessibleTables(final Set<String> internalSchemas, final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
+  private Predicate<JsonNode> excludeNotAccessibleTables(final Set<String> internalSchemas,
+                                                         final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
     return jsonNode -> {
       if (tablesWithSelectGrantPrivilege.isEmpty()) {
         return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
@@ -144,7 +145,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
       return tablesWithSelectGrantPrivilege.stream()
           .anyMatch(e -> e.getSchemaName().equals(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
           && tablesWithSelectGrantPrivilege.stream()
-          .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
+              .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
           && !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
     };
   }
@@ -168,7 +169,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   /**
-   * @param field Essential column information returned from {@link AbstractJdbcSource#getColumnMetadata}.
+   * @param field Essential column information returned from
+   *        {@link AbstractJdbcSource#getColumnMetadata}.
    */
   public Datatype getFieldType(final JsonNode field) {
     return sourceOperations.getFieldType(field);

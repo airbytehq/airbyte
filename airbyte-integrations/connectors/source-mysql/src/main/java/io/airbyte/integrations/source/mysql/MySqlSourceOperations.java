@@ -120,24 +120,16 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     switch (cursorFieldType) {
       case BIT -> setBit(preparedStatement, parameterIndex, value);
       case BOOLEAN -> setBoolean(preparedStatement, parameterIndex, value);
-      case TINYINT, TINYINT_UNSIGNED,
-          SMALLINT, SMALLINT_UNSIGNED,
-          MEDIUMINT, MEDIUMINT_UNSIGNED -> setInteger(preparedStatement, parameterIndex, value);
-      case INT, INT_UNSIGNED, BIGINT,
-          BIGINT_UNSIGNED -> setBigInteger(preparedStatement, parameterIndex, value);
-      case FLOAT, FLOAT_UNSIGNED,
-          DOUBLE, DOUBLE_UNSIGNED -> setDouble(preparedStatement, parameterIndex, value);
+      case TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED -> setInteger(preparedStatement, parameterIndex,
+          value);
+      case INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED -> setBigInteger(preparedStatement, parameterIndex, value);
+      case FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED -> setDouble(preparedStatement, parameterIndex, value);
       case DECIMAL, DECIMAL_UNSIGNED -> setDecimal(preparedStatement, parameterIndex, value);
       case DATE -> setDate(preparedStatement, parameterIndex, value);
       case DATETIME, TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
       case TIME -> setTime(preparedStatement, parameterIndex, value);
-      case YEAR,
-          CHAR, VARCHAR,
-          TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT,
-          ENUM, SET -> setString(preparedStatement, parameterIndex, value);
-      case TINYBLOB, BLOB,
-          MEDIUMBLOB, LONGBLOB,
-          BINARY, VARBINARY -> setBinary(preparedStatement, parameterIndex, value);
+      case YEAR, CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET -> setString(preparedStatement, parameterIndex, value);
+      case TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY -> setBinary(preparedStatement, parameterIndex, value);
       // since cursor are expected to be comparable, handle cursor typing strictly and error on
       // unrecognized types
       default -> throw new IllegalArgumentException(String.format("%s is not supported.", cursorFieldType));
@@ -145,11 +137,13 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   /**
-   * Convert ambiguous MySQL types to more specific ones, so that later on we can correctly map them to {@link JsonSchemaPrimitive}.
-   * TODO (liren): Currently, for columns like CHAR, the field json does not contain information about its charset, which
-   * is needed to determine whether the column is a string or binary. We don't distinguish between string vs binary
-   * in {@link JsonSchemaPrimitive} for now. So it is fine. However, in the future, if we want to separate these two types,
-   * we need to update the column metadata query for MySQL. See https://dev.mysql.com/doc/refman/8.0/en/show-columns.html.
+   * Convert ambiguous MySQL types to more specific ones, so that later on we can correctly map them
+   * to {@link JsonSchemaPrimitive}. TODO (liren): Currently, for columns like CHAR, the field json
+   * does not contain information about its charset, which is needed to determine whether the column
+   * is a string or binary. We don't distinguish between string vs binary in
+   * {@link JsonSchemaPrimitive} for now. So it is fine. However, in the future, if we want to
+   * separate these two types, we need to update the column metadata query for MySQL. See
+   * https://dev.mysql.com/doc/refman/8.0/en/show-columns.html.
    */
   @Override
   public MysqlType getFieldType(final JsonNode field) {
@@ -184,15 +178,9 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   public JsonSchemaPrimitive getJsonType(final MysqlType mysqlType) {
     return switch (mysqlType) {
       case
-          // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link getFieldType}
-          TINYINT, TINYINT_UNSIGNED,
-              SMALLINT, SMALLINT_UNSIGNED,
-              INT, INT_UNSIGNED,
-              MEDIUMINT, MEDIUMINT_UNSIGNED,
-              BIGINT, BIGINT_UNSIGNED,
-              FLOAT, FLOAT_UNSIGNED,
-              DOUBLE, DOUBLE_UNSIGNED,
-              DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaPrimitive.NUMBER;
+      // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link
+      // getFieldType}
+      TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, INT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaPrimitive.NUMBER;
       case BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
       case NULL -> JsonSchemaPrimitive.NULL;
       // BIT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in the upstream method
