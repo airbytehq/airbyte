@@ -16,6 +16,7 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthenticator
@@ -400,6 +401,9 @@ class Engage(MixpanelStream):
     primary_key = "distinct_id"
     page_size = 1000  # min 100
     _total = None
+
+    # enable automatic object mutation to align with desired schema before outputting to the destination
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def path(self, **kwargs) -> str:
         return "engage"
