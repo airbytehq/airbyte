@@ -43,15 +43,11 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final boolean isGcsUploadingMode;
   private final boolean isKeepFilesInGcs;
-  private long bufferSizeInBytes;
 
-  private final List<AirbyteMessage> buffer;
-  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256 mib
   private final ConfiguredAirbyteCatalog catalog;
 
   private AirbyteMessage lastStateMessage = null;
-  private AirbyteMessage lastFlushedState;
-  private AirbyteMessage pendingState;
+
 
   protected final Map<UploadingMethod, BigQueryUploadStrategy> bigQueryUploadStrategyMap = new ConcurrentHashMap<>();
 
@@ -66,9 +62,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
     this.isGcsUploadingMode = isGcsUploadingMode;
-    this.buffer = new ArrayList<>(10_000);
     this.isKeepFilesInGcs = isKeepFilesInGcs;
-    this.bufferSizeInBytes = 0;
     bigQueryUploadStrategyMap.put(UploadingMethod.STANDARD, new BigQueryUploadStandardStrategy(bigquery, catalog, outputRecordCollector));
     bigQueryUploadStrategyMap.put(UploadingMethod.GCS, new BigQueryUploadGCSStrategy(bigquery));
   }
@@ -82,7 +76,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   public void acceptTracked(final AirbyteMessage message) throws IOException {
     if (message.getType() == Type.STATE) {
       lastStateMessage = message;
-      pendingState = message;
     } else if (message.getType() == Type.RECORD) {
       processRecord(message);
     } else {
@@ -91,47 +84,19 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   private void processRecord(AirbyteMessage message) {
-    long messageSizeInBytes = ByteUtils.getSizeInBytes(Jsons.serialize(message));
-    if (bufferSizeInBytes + messageSizeInBytes >= MAX_BATCH_SIZE_BYTES) {
-      // select the way of uploading - normal or through the GCS
-      flushQueueToDestination();
-      bufferSizeInBytes = 0;
-    }
-    buffer.add(message);
-    bufferSizeInBytes += messageSizeInBytes;
-  }
-
-  protected void flushQueueToDestination() {
-    // ignore other message types.
-    buffer.forEach(airbyteMessage -> {
-      final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(airbyteMessage.getRecord());
-      if (!writeConfigs.containsKey(pair)) {
-        throw new IllegalArgumentException(
-            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                Jsons.serialize(catalog), Jsons.serialize(airbyteMessage.getRecord())));
-      }
-      final BigQueryWriteConfig writer = writeConfigs.get(pair);
-      if (isGcsUploadingMode) {
-        bigQueryUploadStrategyMap.get(UploadingMethod.GCS).upload(writer, airbyteMessage, catalog);
-      } else {
-        bigQueryUploadStrategyMap.get(UploadingMethod.STANDARD).upload(writer, airbyteMessage, catalog);
-      }
-    });
-
-    buffer.clear();
-
-    if (pendingState != null) {
-      lastFlushedState = pendingState;
-      pendingState = null;
+    final var pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
+    final var writer = writeConfigs.get(pair);
+    if (isGcsUploadingMode) {
+      bigQueryUploadStrategyMap.get(UploadingMethod.GCS).upload(writer, message, catalog);
+    } else {
+      bigQueryUploadStrategyMap.get(UploadingMethod.STANDARD).upload(writer, message, catalog);
     }
   }
+
 
   @Override
   public void close(final boolean hasFailed) {
     LOGGER.info("Started closing all connections");
-    if (!buffer.isEmpty()) {
-      flushQueueToDestination();
-    }
     // process gcs streams
     if (isGcsUploadingMode) {
       final List<BigQueryWriteConfig> gcsWritersList = writeConfigs.values().parallelStream()
@@ -144,10 +109,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
     if (isGcsUploadingMode && !isKeepFilesInGcs) {
       deleteDataFromGcsBucket();
-    }
-
-    if (lastFlushedState != null) {
-      outputRecordCollector.accept(lastFlushedState);
     }
   }
 
