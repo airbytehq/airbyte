@@ -29,7 +29,7 @@ def stream_bulk_config():
 
 @pytest.fixture(scope="module")
 def stream_bulk_config_without_start_date():
-    """Generates streams settings for BULK logic"""
+    """Generates streams settings for BULK logic without start_date"""
     return {
         "client_id": "fake_client_id",
         "client_secret": "fake_client_secret",
@@ -70,7 +70,7 @@ def stream_rest_config_date_format():
 
 @pytest.fixture(scope="module")
 def stream_rest_config_without_start_date():
-    """Generates streams settings for BULK logic"""
+    """Generates streams settings for REST logic without start_date"""
     return {
         "client_id": "fake_client_id",
         "client_secret": "fake_client_secret",
