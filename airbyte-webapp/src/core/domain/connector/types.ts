@@ -14,7 +14,11 @@ interface AuthSpecification {
   };
 }
 
-type AdvancedAuthInput = {};
+type AdvancedAuthInput = {
+  properties: {
+    [key: string]: { path_in_connector_config: string[] };
+  };
+};
 
 interface AdvancedAuth {
   auth_flow_type: "oauth2.0";

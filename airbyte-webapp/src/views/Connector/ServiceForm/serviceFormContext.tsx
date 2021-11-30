@@ -10,6 +10,7 @@ import {
 
 type Context = {
   formType: "source" | "destination";
+  authFieldsToHide: string[];
   selectedService?: ConnectorDefinition;
   selectedConnector?: ConnectorDefinitionSpecification;
   isLoadingSchema?: boolean;
@@ -28,6 +29,7 @@ const context: Context = {
   formType: "source",
   isRequestConnectorModalOpen: false,
   widgetsInfo: {},
+  authFieldsToHide: [],
   setUiWidgetsInfo: (_path: string, _value: Record<string, unknown>) => ({}),
   unfinishedFlows: {},
   addUnfinishedFlow: (_key: string, _info?: Record<string, unknown>) => ({}),
@@ -54,30 +56,45 @@ const ServiceFormContextProvider: React.FC<{
   children,
   widgetsInfo,
   setUiWidgetsInfo,
+  selectedConnector,
   ...props
 }) => {
   const selectedService = availableServices.find(
     (s) => Connector.id(s) === serviceType
   );
   const { values } = useFormikContext();
-  const isAuthFlowSelected = props.selectedConnector?.advancedAuth
+  const isAuthFlowSelected = selectedConnector?.advancedAuth
     ? getIn(
         values,
         [
           "connectionConfiguration",
-          ...(props.selectedConnector?.advancedAuth.predicate_key ?? []),
+          ...(selectedConnector?.advancedAuth.predicate_key ?? []),
         ].join(".")
-      ) === props.selectedConnector?.advancedAuth.predicate_value
+      ) === selectedConnector?.advancedAuth.predicate_value
     : false;
+
+  const authFieldsToHide = useMemo(
+    () =>
+      Object.values({
+        ...(selectedConnector?.advancedAuth?.oauth_config_specification
+          .complete_oauth_output_specification?.properties ?? {}),
+        ...(selectedConnector?.advancedAuth?.oauth_config_specification
+          .complete_oauth_server_output_specification?.properties ?? {}),
+      }).map(
+        (f) => `connectionConfiguration.${f.path_in_connector_config.join(".")}`
+      ),
+    [selectedConnector]
+  );
 
   const ctx = useMemo<Context>(() => {
     const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};
     return {
       widgetsInfo,
       isAuthFlowSelected,
+      authFieldsToHide: isAuthFlowSelected ? authFieldsToHide : [],
       setUiWidgetsInfo,
       selectedService,
-      selectedConnector: props.selectedConnector,
+      selectedConnector,
       formType: props.formType,
       isLoadingSchema: props.isLoadingSchema,
       isEditMode: props.isEditMode,
@@ -102,7 +119,9 @@ const ServiceFormContextProvider: React.FC<{
   }, [
     props,
     widgetsInfo,
+    selectedConnector,
     isAuthFlowSelected,
+    authFieldsToHide,
     selectedService,
     setUiWidgetsInfo,
   ]);

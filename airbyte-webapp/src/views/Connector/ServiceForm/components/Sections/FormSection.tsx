@@ -52,13 +52,23 @@ const FormSection: React.FC<{
     return flattenedBlocks;
   }, [blocks]);
 
-  const { selectedConnector, isAuthFlowSelected } = useServiceForm();
+  const {
+    selectedConnector,
+    isAuthFlowSelected,
+    authFieldsToHide,
+  } = useServiceForm();
 
   return (
     <>
       {hasOauth && <LegacyAuthSection key="authSection" />}
       {sections
         .filter((formField) => !formField.airbyte_hidden)
+        // TODO: check that it is a good idea to add authFieldsToHide
+        .filter(
+          (formField) =>
+            !isAuthFlowSelected ||
+            (isAuthFlowSelected && !authFieldsToHide.includes(formField.path))
+        )
         .map((formField) => {
           const sectionPath = path
             ? skipAppend
