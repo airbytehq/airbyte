@@ -1,0 +1,252 @@
+{
+  "_airbyte_schema_test.adcreatives.adcreatives": {
+    "file": "adcreatives",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives"
+  },
+  "_airbyte_schema_test.adcreatives_adlabels.adlabels": {
+    "file": "adcreatives_adlabels",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_adlabels"
+  },
+  "_airbyte_schema_test.adcreatives_image_crops.image_crops": {
+    "file": "adcreatives_image_crops",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_image_crops"
+  },
+  "_airbyte_schema_test.adcreatives_image_crops_100x100.100x100": {
+    "file": "adcreatives_image_crops_100x100",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_image_crops_100x100"
+  },
+  "_airbyte_schema_test.adcreatives_image_crops_100x72.100x72": {
+    "file": "adcreatives_image_crops_100x72",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_image_crops_100x72"
+  },
+  "_airbyte_schema_test.adcreatives_image_crops_191x100.191x100": {
+    "file": "adcreatives_image_crops_191x100",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_image_crops_191x100"
+  },
+  "_airbyte_schema_test.adcreatives_image_crops_400x150.400x150": {
+    "file": "adcreatives_image_crops_400x150",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_image_crops_400x150"
+  },
+  "_airbyte_schema_test.adcreatives_image_crops_400x500.400x500": {
+    "file": "adcreatives_image_crops_400x500",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_image_crops_400x500"
+  },
+  "_airbyte_schema_test.adcreatives_image_crops_600x360.600x360": {
+    "file": "adcreatives_image_crops_600x360",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_image_crops_600x360"
+  },
+  "_airbyte_schema_test.adcreatives_image_crops_90x160.90x160": {
+    "file": "adcreatives_image_crops_90x160",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_image_crops_90x160"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec.object_story_spec": {
+    "file": "adcreatives_object_story_spec",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_story_spec"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data.link_data": {
+    "file": "adcreatives_object_story_spec_link_data",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_story_spec_link_data"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_app_link_spec.app_link_spec": {
+    "file": "adcreatives_object_s__nk_data_app_link_spec",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s__nk_data_app_link_spec"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_app_link_spec_android.android": {
+    "file": "adcreatives_object_s__app_link_spec_android",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s__app_link_spec_android"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_app_link_spec_ios.ios": {
+    "file": "adcreatives_object_s__ata_app_link_spec_ios",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s__ata_app_link_spec_ios"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_app_link_spec_ipad.ipad": {
+    "file": "adcreatives_object_s__ta_app_link_spec_ipad",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s__ta_app_link_spec_ipad"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_app_link_spec_iphone.iphone": {
+    "file": "adcreatives_object_s___app_link_spec_iphone",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s___app_link_spec_iphone"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_image_crops.image_crops": {
+    "file": "adcreatives_object_s__link_data_image_crops",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s__link_data_image_crops"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_image_crops_100x100.100x100": {
+    "file": "adcreatives_object_s__a_image_crops_100x100",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s__a_image_crops_100x100"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_image_crops_100x72.100x72": {
+    "file": "adcreatives_object_s__ta_image_crops_100x72",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s__ta_image_crops_100x72"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_image_crops_191x100.191x100": {
+    "file": "adcreatives_object_s__a_image_crops_191x100",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s__a_image_crops_191x100"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_image_crops_400x150.400x150": {
+    "file": "adcreatives_object_s__a_image_crops_400x150",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s__a_image_crops_400x150"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_image_crops_400x500.400x500": {
+    "file": "adcreatives_object_s__a_image_crops_400x500",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s__a_image_crops_400x500"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_image_crops_600x360.600x360": {
+    "file": "adcreatives_object_s__a_image_crops_600x360",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s__a_image_crops_600x360"
+  },
+  "_airbyte_schema_test.adcreatives_object_story_spec_link_data_image_crops_90x160.90x160": {
+    "file": "adcreatives_object_s__ta_image_crops_90x160",
+    "schema": "_airbyte_schema_test",
+    "table": "adcreatives_object_s__ta_image_crops_90x160"
+  },
+  "schema_test.adcreatives.adcreatives": {
+    "file": "adcreatives",
+    "schema": "schema_test",
+    "table": "adcreatives"
+  },
+  "schema_test.adcreatives_adlabels.adlabels": {
+    "file": "adcreatives_adlabels",
+    "schema": "schema_test",
+    "table": "adcreatives_adlabels"
+  },
+  "schema_test.adcreatives_image_crops.image_crops": {
+    "file": "adcreatives_image_crops",
+    "schema": "schema_test",
+    "table": "adcreatives_image_crops"
+  },
+  "schema_test.adcreatives_image_crops_100x100.100x100": {
+    "file": "adcreatives_image_crops_100x100",
+    "schema": "schema_test",
+    "table": "adcreatives_image_crops_100x100"
+  },
+  "schema_test.adcreatives_image_crops_100x72.100x72": {
+    "file": "adcreatives_image_crops_100x72",
+    "schema": "schema_test",
+    "table": "adcreatives_image_crops_100x72"
+  },
+  "schema_test.adcreatives_image_crops_191x100.191x100": {
+    "file": "adcreatives_image_crops_191x100",
+    "schema": "schema_test",
+    "table": "adcreatives_image_crops_191x100"
+  },
+  "schema_test.adcreatives_image_crops_400x150.400x150": {
+    "file": "adcreatives_image_crops_400x150",
+    "schema": "schema_test",
+    "table": "adcreatives_image_crops_400x150"
+  },
+  "schema_test.adcreatives_image_crops_400x500.400x500": {
+    "file": "adcreatives_image_crops_400x500",
+    "schema": "schema_test",
+    "table": "adcreatives_image_crops_400x500"
+  },
+  "schema_test.adcreatives_image_crops_600x360.600x360": {
+    "file": "adcreatives_image_crops_600x360",
+    "schema": "schema_test",
+    "table": "adcreatives_image_crops_600x360"
+  },
+  "schema_test.adcreatives_image_crops_90x160.90x160": {
+    "file": "adcreatives_image_crops_90x160",
+    "schema": "schema_test",
+    "table": "adcreatives_image_crops_90x160"
+  },
+  "schema_test.adcreatives_object_story_spec.object_story_spec": {
+    "file": "adcreatives_object_story_spec",
+    "schema": "schema_test",
+    "table": "adcreatives_object_story_spec"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data.link_data": {
+    "file": "adcreatives_object_story_spec_link_data",
+    "schema": "schema_test",
+    "table": "adcreatives_object_story_spec_link_data"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_app_link_spec.app_link_spec": {
+    "file": "adcreatives_object_s__nk_data_app_link_spec",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s__nk_data_app_link_spec"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_app_link_spec_android.android": {
+    "file": "adcreatives_object_s__app_link_spec_android",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s__app_link_spec_android"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_app_link_spec_ios.ios": {
+    "file": "adcreatives_object_s__ata_app_link_spec_ios",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s__ata_app_link_spec_ios"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_app_link_spec_ipad.ipad": {
+    "file": "adcreatives_object_s__ta_app_link_spec_ipad",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s__ta_app_link_spec_ipad"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_app_link_spec_iphone.iphone": {
+    "file": "adcreatives_object_s___app_link_spec_iphone",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s___app_link_spec_iphone"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_image_crops.image_crops": {
+    "file": "adcreatives_object_s__link_data_image_crops",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s__link_data_image_crops"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_image_crops_100x100.100x100": {
+    "file": "adcreatives_object_s__a_image_crops_100x100",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s__a_image_crops_100x100"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_image_crops_100x72.100x72": {
+    "file": "adcreatives_object_s__ta_image_crops_100x72",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s__ta_image_crops_100x72"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_image_crops_191x100.191x100": {
+    "file": "adcreatives_object_s__a_image_crops_191x100",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s__a_image_crops_191x100"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_image_crops_400x150.400x150": {
+    "file": "adcreatives_object_s__a_image_crops_400x150",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s__a_image_crops_400x150"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_image_crops_400x500.400x500": {
+    "file": "adcreatives_object_s__a_image_crops_400x500",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s__a_image_crops_400x500"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_image_crops_600x360.600x360": {
+    "file": "adcreatives_object_s__a_image_crops_600x360",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s__a_image_crops_600x360"
+  },
+  "schema_test.adcreatives_object_story_spec_link_data_image_crops_90x160.90x160": {
+    "file": "adcreatives_object_s__ta_image_crops_90x160",
+    "schema": "schema_test",
+    "table": "adcreatives_object_s__ta_image_crops_90x160"
+  }
+}

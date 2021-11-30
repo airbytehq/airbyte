@@ -3,6 +3,7 @@
 #
 
 
+from typing import Set
 from normalization import DestinationType
 
 # https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical#reserved_keywords
@@ -2533,6 +2534,10 @@ MSSQL = {
     "REGR_SYY",
 }
 
+# In ClickHouse, keywords are not reserved.
+# Ref: https://clickhouse.com/docs/en/sql-reference/syntax/#syntax-keywords
+CLICKHOUSE: Set[str] = set()
+
 RESERVED_KEYWORDS = {
     DestinationType.BIGQUERY.value: BIGQUERY,
     DestinationType.POSTGRES.value: POSTGRES,
@@ -2541,6 +2546,7 @@ RESERVED_KEYWORDS = {
     DestinationType.MYSQL.value: MYSQL,
     DestinationType.ORACLE.value: ORACLE,
     DestinationType.MSSQL.value: MSSQL,
+    DestinationType.CLICKHOUSE.value: CLICKHOUSE,
 }
 
 

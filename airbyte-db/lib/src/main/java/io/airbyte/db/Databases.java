@@ -75,6 +75,10 @@ public class Databases {
     return createDatabase(username, password, jdbcConnectionString, "oracle.jdbc.OracleDriver", SQLDialect.DEFAULT);
   }
 
+  public static Database createClickhouseDatabase(final String username, final String password, final String jdbcConnectionString) {
+    return createDatabase(username, password, jdbcConnectionString, "ru.yandex.clickhouse.ClickHouseDriver", SQLDialect.DEFAULT);
+  }
+
   public static Database createMariaDbDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "org.mariadb.jdbc.Driver", SQLDialect.MARIADB);
   }
