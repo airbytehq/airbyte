@@ -1,7 +1,9 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/corebos",
   "supported_destination_sync_modes": [
-    "overwrite", "append","append_dedup"
+    "overwrite",
+    "append",
+    "append_dedup"
   ],
   "supportsIncremental": true,
   "supportsDBT": false,
@@ -10,19 +12,24 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "CoreBOS Destination Spec",
     "type": "object",
-    "required": ["url","username","access_token","module"],
+    "required": [
+      "url",
+      "username",
+      "access_token",
+      "module"
+    ],
     "additionalProperties": false,
     "properties": {
       "url": {
         "description": "a coreBOS server instance url http:// or https://",
         "type": "string",
         "pattern": "^http(s)?:\\/\\/.*$",
-        "example":"http://test.coreboscrm.com/denorm/webservice.php"
+        "example": "http://test.coreboscrm.com/denorm/webservice.php"
       },
-      "access_token":{
-          "description":"The user access token.",
-          "type":"string",
-          "example": "aj49tFk90nGdm3Aui"
+      "access_token": {
+        "description": "The user access token.",
+        "type": "string",
+        "example": "aj49tFk90nGdm3Aui"
       },
       "username": {
         "description": "User name to be included in the request.",
@@ -32,9 +39,65 @@
       "module": {
         "description": "coreBOS wenservice modue for the incoming stream ",
         "type": "string",
-        "example": "helpdesk"
+        "enum": [
+          "Campaigns",
+          "Vendors",
+          "Faq",
+          "Quotes",
+          "PurchaseOrder",
+          "SalesOrder",
+          "Invoice",
+          "PriceBooks",
+          "Leads",
+          "Accounts",
+          "Contacts",
+          "Potentials",
+          "Products",
+          "Documents",
+          "Emails",
+          "HelpDesk",
+          "PBXManager",
+          "ServiceContracts",
+          "Services",
+          "cbupdater",
+          "CobroPago",
+          "Assets",
+          "ModComments",
+          "ProjectMilestone",
+          "ProjectTask",
+          "Project",
+          "GlobalVariable",
+          "InventoryDetails",
+          "cbMap",
+          "cbTermConditions",
+          "cbCalendar",
+          "cbtranslation",
+          "BusinessActions",
+          "cbSurvey",
+          "cbSurveyQuestion",
+          "cbSurveyDone",
+          "cbSurveyAnswer",
+          "cbCompany",
+          "cbCVManagement",
+          "cbQuestion",
+          "ProductComponent",
+          "Messages",
+          "cbPulse",
+          "MsgTemplate",
+          "cbCredentials",
+          "Timecontrol",
+          "TCTotals",
+          "Groups",
+          "Currency",
+          "DocumentFolders",
+          "CompanyDetails",
+          "Workflow",
+          "AuditTrail",
+          "LoginHistory",
+          "ModTracker"
+       ],
+        "example": "HelpDesk"
       }
     }
   }
 }
-

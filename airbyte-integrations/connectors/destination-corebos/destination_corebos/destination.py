@@ -46,20 +46,15 @@ class DestinationCorebos(Destination):
         if not login:
             return
         for message in input_messages:
-            print(message)
             if message.type == Type.STATE:
                 yield message
             elif message.type == Type.RECORD:
                 record = message.record
-                print(record)
-                recordIfo = client.do_create(module, record)
-                print(recordIfo)
-                #AirbyteLogger.info(":: created %s", client.do_retrieve(recordIfo['id']))
+                recordIfo = client.do_create(module, record.data)
             else:
                 continue
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        logger.info("***************************check****************")
         url = config["url"]
         client = WSClient(url)
         username = config["username"]
