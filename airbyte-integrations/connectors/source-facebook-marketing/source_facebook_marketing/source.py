@@ -40,9 +40,9 @@ from source_facebook_marketing.streams import (
 
 logger = logging.getLogger("airbyte")
 
-# deprecated from ConnectorSpec, using default value of 1 = 1 day.
+# deprecated from ConnectorSpec, using default value of 5 = 5 days.
 # Related Issue here: https://github.com/airbytehq/airbyte/issues/8027
-INSIGHTS_DAYS_PER_JOB: int = 7
+INSIGHTS_DAYS_PER_JOB: int = 5
 
 
 class InsightConfig(BaseModel):
