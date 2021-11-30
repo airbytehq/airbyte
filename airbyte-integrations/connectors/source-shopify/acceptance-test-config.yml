@@ -17,6 +17,7 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: ["abandoned_checkouts"]
       timeout_seconds: 1200
   incremental:
     - config_path: "secrets/config.json"
