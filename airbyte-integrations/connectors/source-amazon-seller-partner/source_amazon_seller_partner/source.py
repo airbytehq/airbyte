@@ -40,7 +40,7 @@ class ConnectorConfig(BaseModel):
     )
     report_options: str = Field(
         None,
-        description="Additional information passed to reports. This varies by report type. Must be valid json string.",
+        description="Additional information passed to reports. This varies by report type. Must be a valid json string.",
         examples=['{"reportPeriod": "WEEK"}', '{"custom": "true"}'],
     )
     refresh_token: str = Field(
