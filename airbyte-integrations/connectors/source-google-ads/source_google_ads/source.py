@@ -48,11 +48,12 @@ class SourceGoogleAds(AbstractSource):
                 q = q.get("query")
                 if CustomQuery.cursor_field in q:
                     raise Exception(f"Custom query should not contain {CustomQuery.cursor_field}")
-                req_q = CustomQuery.insert_segments_date_expr(q, "1980-01-01", "1980-01-01")
-                google_api.send_request(req_q)
+                #req_q = CustomQuery.insert_segments_date_expr(q, "1980-01-01", "1980-01-01")
+                #google_api.send_request(req_q)
+                google_api.send_request(q)
             return True, None
         except GoogleAdsException as error:
-            return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error.failure)}"
+            return False, f"Exception returned from Google Ads API - {repr(error.failure)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])

@@ -82,6 +82,12 @@
               "type": "string",
               "title": "Destination table name",
               "description": "The table name in your destination database for choosen query."
+            },
+            "segmentable": {
+              "type": "boolean",
+              "default": false,
+              "title": "Toggle on if query can be segmented by segments.date",
+              "description": "Queries that are valid when segmented by segments.date will be eligible for incremental syncs"
             }
           }
         }

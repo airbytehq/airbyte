@@ -13,6 +13,11 @@ class CustomQuery(IncrementalGoogleAdsStream):
     def __init__(self, custom_query_config, **kwargs):
         self.custom_query_config = custom_query_config
         self.user_defined_query = custom_query_config["query"]
+        # This parameter only comes through if it's been toggled
+        if "segmentable" in custom_query_config:
+          self.segmentable = custom_query_config["segmentable"]
+        else:
+          self.segmentable = False
         super().__init__(**kwargs)
 
     @property
@@ -31,7 +36,10 @@ class CustomQuery(IncrementalGoogleAdsStream):
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
-        return self.insert_segments_date_expr(self.user_defined_query, start_date, end_date)
+        if self.segmentable:
+          return self.insert_segments_date_expr(self.user_defined_query, start_date, end_date)
+        else:
+          return self.user_defined_query
 
     # IncrementalGoogleAdsStream uses get_json_schema a lot while parsing
     # responses, caching plaing crucial role for performance here.
@@ -59,7 +67,8 @@ class CustomQuery(IncrementalGoogleAdsStream):
             "DATE": "string",
         }
         fields = CustomQuery.get_query_fields(self.user_defined_query)
-        fields.append(self.cursor_field)
+        if self.segmentable:
+            fields.append(self.cursor_field)
         google_schema = self.google_ads_client.get_fields_metadata(fields)
 
         for field in fields:
