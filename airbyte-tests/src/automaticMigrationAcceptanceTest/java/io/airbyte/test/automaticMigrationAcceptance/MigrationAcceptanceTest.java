@@ -39,7 +39,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -66,7 +65,7 @@ public class MigrationAcceptanceTest {
 
   @Test
   public void testAutomaticMigration() throws Exception {
-    // run version 17 (oldest version of airbyte that supports auto migration)
+    // run version 17 (the oldest version of airbyte that supports auto migration)
     final File version17DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-17-0-alpha.yaml");
     final Properties version17EnvVariables = MoreProperties
         .envFileToProperties(MoreResources.readResourceAsFile("env-file-migration-test-0-17-0.env"));
@@ -77,26 +76,19 @@ public class MigrationAcceptanceTest {
 
     // attempt to run from pre-version bump version to post-version bump version. expect failure.
     final File currentDockerComposeFile = MoreResources.readResourceAsFile("docker-compose.yaml");
+    // piggybacks off of whatever the existing .env file is, so override default filesystem values in to
+    // point at test paths.
     final Properties envFileProperties = overrideDirectoriesForTest(MoreProperties.envFileToProperties(ENV_FILE));
     runAirbyteAndWaitForUpgradeException(currentDockerComposeFile, envFileProperties);
 
     // run "faux" major version bump version
-    final File version32DockerComposeFile = MoreResources.readResourceAsFile("docker-compose.yaml");
+    final File version32DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-32-0.yaml");
     final Properties version32EnvFileProperties = MoreProperties
         .envFileToProperties(MoreResources.readResourceAsFile("env-file-migration-test-0-32-0.env"));
     runAirbyte(version32DockerComposeFile, version32EnvFileProperties, MigrationAcceptanceTest::assertHealthy);
 
     // run from last major version bump to current version.
     runAirbyte(currentDockerComposeFile, envFileProperties, MigrationAcceptanceTest::assertHealthy, false);
-  }
-
-  private Consumer<String> logConsumerForServer(final Set<String> expectedLogs) {
-    return logLine -> expectedLogs.removeIf(entry -> {
-      if (logLine.contains("Migrating from version")) {
-        System.out.println("logLine = " + logLine);
-      }
-      return logLine.contains(entry);
-    });
   }
 
   private Properties overrideDirectoriesForTest(final Properties properties) {
@@ -115,7 +107,7 @@ public class MigrationAcceptanceTest {
 
   private void runAirbyte(final File dockerComposeFile,
                           final Properties env,
-                          final VoidCallable assertionExecutable,
+                          final VoidCallable postStartupExecutable,
                           final boolean retainVolumesOnStop)
       throws Exception {
     LOGGER.info("Start up Airbyte at version {}", env.get("VERSION"));
@@ -124,7 +116,7 @@ public class MigrationAcceptanceTest {
         .build();
 
     airbyteTestContainer.startBlocking();
-    assertionExecutable.call();
+    postStartupExecutable.call();
     if (retainVolumesOnStop) {
       airbyteTestContainer.stopRetainVolumes();
     } else {
@@ -149,7 +141,8 @@ public class MigrationAcceptanceTest {
   }
 
   /**
-   * Allows the test to listen for a specific log line so that the test can end as soon as that log line has been encountered.
+   * Allows the test to listen for a specific log line so that the test can end as soon as that log
+   * line has been encountered.
    */
   private static class WaitForLogLine {
 
@@ -214,7 +207,7 @@ public class MigrationAcceptanceTest {
     assertTrue(destinationDefinitions.size() >= 10);
     boolean foundPostgresDestinationDefinition = false;
     boolean foundLocalCSVDestinationDefinition = false;
-    boolean foundSnowflakeDestinationDefintion = false;
+    boolean foundSnowflakeDestinationDefinition = false;
     for (final DestinationDefinitionRead destinationDefinitionRead : destinationDefinitions) {
       switch (destinationDefinitionRead.getDestinationDefinitionId().toString()) {
         case "25c5221d-dce2-4163-ade9-739ef790f503" -> {
@@ -234,14 +227,14 @@ public class MigrationAcceptanceTest {
           assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
           assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 9);
           assertTrue(destinationDefinitionRead.getName().contains("Snowflake"));
-          foundSnowflakeDestinationDefintion = true;
+          foundSnowflakeDestinationDefinition = true;
         }
       }
     }
 
     assertTrue(foundPostgresDestinationDefinition);
     assertTrue(foundLocalCSVDestinationDefinition);
-    assertTrue(foundSnowflakeDestinationDefintion);
+    assertTrue(foundSnowflakeDestinationDefinition);
   }
 
   private static void assertConnectionInformation(final ApiClient apiClient, final WorkspaceIdRequestBody workspaceIdRequestBody)
