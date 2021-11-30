@@ -148,6 +148,10 @@ Therefore, Airbyte Snowflake destination will create tables and schemas using th
 
 By default, Airbyte uses batches of `INSERT` commands to add data to a temporary table before copying it over to the final table in Snowflake. This is too slow for larger/multi-GB replications. For those larger replications we recommend configuring using cloud storage to allow batch writes and loading.
 
+### Internal Staging
+
+Internal named stages are storage location objects within a Snowflake database/schema. Because they are database objects, the same security permissions apply as with any other database objects. No need to provide additional properties for internal staging
+
 ### AWS S3
 
 For AWS S3, you will need to create a bucket and provide credentials to access the bucket. We recommend creating a bucket that is only used for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this bucket.
