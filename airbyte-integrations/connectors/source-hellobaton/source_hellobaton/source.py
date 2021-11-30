@@ -76,11 +76,12 @@ class SourceHellobaton(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+        url_template="https://{company}.hellobaton.com/api/"
         try:
             params = {
                 "api_key": config["api_key"],
                 }
-            base_url = HellobatonStream.url_template.format(company=config["company"])
+            base_url = url_template.format(company=config["company"])
             #This is just going to return a mapping of available endpoints
             response = requests.get(base_url, params=params)
             status_code = response.status_code
