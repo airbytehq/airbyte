@@ -5,7 +5,7 @@ from typing import Any, List
 import dill
 
 
-def _run_in_external_process(fn, timeout: int, max_timeout: int, logger, args:List[Any]) -> Any:
+def run_in_external_process(fn, timeout: int, max_timeout: int, logger, args:List[Any]) -> Any:
     """
     fn passed in must return a tuple of (desired return value, Exception OR None)
     This allows propagating any errors from the process up and raising accordingly

@@ -12,7 +12,7 @@ from pyarrow import csv as pa_csv
 
 from .abstract_file_parser import AbstractFileParser
 from .csv_spec import CsvFormat
-from ...utils import _run_in_external_process
+from ...utils import run_in_external_process
 
 
 class CsvParser(AbstractFileParser):
@@ -117,7 +117,7 @@ class CsvParser(AbstractFileParser):
             return self._get_schema_dict_without_inference(file)
         self.logger.debug("inferring schema")
         file_sample = file.read(self._read_options()["block_size"] * 2)
-        return _run_in_external_process(
+        return run_in_external_process(
             fn=infer_schema_process,
             timeout=4,
             max_timeout=60,
