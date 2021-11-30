@@ -82,7 +82,7 @@ public class MigrationAcceptanceTest {
     runAirbyteAndWaitForUpgradeException(currentDockerComposeFile, envFileProperties);
 
     // run "faux" major version bump version
-    final File version32DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-32-0.yaml");
+    final File version32DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-32-0-alpha.yaml");
     final Properties version32EnvFileProperties = MoreProperties
         .envFileToProperties(MoreResources.readResourceAsFile("env-file-migration-test-0-32-0.env"));
     runAirbyte(version32DockerComposeFile, version32EnvFileProperties, MigrationAcceptanceTest::assertHealthy);
