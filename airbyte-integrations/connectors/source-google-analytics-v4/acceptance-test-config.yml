@@ -1,8 +1,10 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-# The line below is commented out to skip the test `test_state_with_abnormally_large_values`
-# as a temporary solution not to block publishing of new versions:
-# future_state_path: "integration_tests/abnormal_state.json"
+
+# The 'future_state_path' field is commented out to skip the test `test_state_with_abnormally_large_values`
+# as a temporary solution not to block publishing of new versions. The reason is
+# When specifying future date in the state the current implementation of the connector produces records for [current_date, current_date] slice, 
+# and it makes SAT fail, because it should produce no records with the state with abnormally large values
 connector_image: airbyte/source-google-analytics-v4:dev
 tests:
   spec:
