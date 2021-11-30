@@ -44,6 +44,37 @@ def test_discovery(schema, cursors, should_fail):
 
 
 @pytest.mark.parametrize(
+    "schema, should_fail",
+    [
+        ({}, False),
+        ({"$ref": None}, True),
+        ({"properties": {"user": {"$ref": None}}}, True),
+        ({"properties": {"user": {"$ref": "user.json"}}}, True),
+        ({"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}}, False),
+        ({"properties": {"fake_items": {"type": "array", "items": {"$ref": "fake_item.json"}}}}, True),
+        (
+            {
+                "properties": {
+                    "fake_items": {
+                        "oneOf": [{"type": "object", "$ref": "fake_items_1.json"}, {"type": "object", "$ref": "fake_items_2.json"}]
+                    }
+                }
+            },
+            True,
+        ),
+    ],
+)
+def test_ref_in_discovery_schemas(schema, should_fail):
+    t = _TestDiscovery()
+    discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema})}
+    if should_fail:
+        with pytest.raises(AssertionError):
+            t.test_defined_refs_exist_in_schema(None, discovered_catalog)
+    else:
+        t.test_defined_refs_exist_in_schema(None, discovered_catalog)
+
+
+@pytest.mark.parametrize(
     "schema, record, should_fail",
     [
         ({"type": "object"}, {"aa": 23}, False),

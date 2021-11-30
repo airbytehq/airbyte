@@ -16,6 +16,7 @@ from jsonschema import validate
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
+from source_acceptance_test.utils.common import find_key_inside_schema
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
@@ -147,6 +148,16 @@ class TestDiscovery(BaseTest):
                 assert dpath.util.search(
                     properties, cursor_path
                 ), f"Some of defined cursor fields {stream.default_cursor_field} are not specified in discover schema properties for {stream_name} stream"
+
+    def test_defined_refs_exist_in_schema(self, connector_config, discovered_catalog):
+        """Checking for the presence of unresolved `$ref`s values within each json schema"""
+        schemas_errors = []
+        for stream_name, stream in discovered_catalog.items():
+            check_result = find_key_inside_schema(schema_item=stream.json_schema, key="$ref")
+            if check_result is not None:
+                schemas_errors.append({stream_name: check_result})
+
+        assert not schemas_errors, f"Found unresolved `$refs` values for selected streams: {tuple(schemas_errors)}."
 
 
 def primary_keys_for_records(streams, records):
