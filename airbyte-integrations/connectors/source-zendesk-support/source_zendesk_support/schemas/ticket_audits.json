@@ -125,7 +125,9 @@
           "formatted_to": {
             "type": ["null", "string"]
           },
-          "transcription_visible": {},
+          "transcription_visible": {
+            "type": ["null", "boolean"]
+          },
           "trusted": {
             "type": ["null", "boolean"]
           },
@@ -142,10 +144,7 @@
             "type": ["null", "integer"]
           },
           "value": {
-            "type": ["null", "array", "string"],
-            "items": {
-              "type": ["null", "string"]
-            }
+            "type": ["null", "string"]
           },
           "author_id": {
             "type": ["null", "integer"]
@@ -237,10 +236,7 @@
             "type": ["null", "integer"]
           },
           "previous_value": {
-            "type": ["null", "array", "string"],
-            "items": {
-              "type": ["null", "string"]
-            }
+            "type": ["null", "string"]
           },
           "macro_title": {
             "type": ["null", "string"]
@@ -260,7 +256,9 @@
     "metadata": {
       "type": ["null", "object"],
       "properties": {
-        "custom": {},
+        "custom": {
+          "type": ["null", "object"]
+        },
         "trusted": {
           "type": ["null", "boolean"]
         },
