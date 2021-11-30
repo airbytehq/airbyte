@@ -1051,7 +1051,7 @@ where 1 = 1
                 config["cluster_by"] = '["_AIRBYTE_EMITTED_AT"]'
         if unique_key:
             config["unique_key"] = f'"{unique_key}"'
-        elif not self.is_nested_array:
+        elif not self.parent:
             # in nested arrays, each element is sharing the same _airbyte_ab_id, so it's not unique
             config["unique_key"] = self.get_ab_id(in_jinja=True)
         return config
