@@ -58,8 +58,6 @@ class ChildStreamMixin:
         for item in self.parent_stream_class(config=self.config).read_records(sync_mode=sync_mode):
             yield {"id": item["id"]}
 
-        yield from []
-
 
 class IncrementalTrelloStream(TrelloStream, ABC):
     cursor_field = "date"
