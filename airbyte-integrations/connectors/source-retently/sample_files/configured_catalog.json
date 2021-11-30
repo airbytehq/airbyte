@@ -1,0 +1,40 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "customers",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "companies",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "reports",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

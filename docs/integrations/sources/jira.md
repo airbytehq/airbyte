@@ -85,6 +85,8 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.15 | 2021-11-01 | [\#7398](https://github.com/airbytehq/airbyte/pull/7398) | Add option to render fields in HTML format and fix sprint_issue ids |
+| 0.2.14 | 2021-10-27 | [\#7408](https://github.com/airbytehq/airbyte/pull/7408) | Fix normalization step error. Fix schemas. Fix `acceptance-test-config.yml`. Fix `streams.py`. |
 | 0.2.13 | 2021-10-20 | [\#7222](https://github.com/airbytehq/airbyte/pull/7222) | Source Jira: Make recently added configs optional for backwards compatibility |
 | 0.2.12 | 2021-10-19 | [\#6621](https://github.com/airbytehq/airbyte/pull/6621) | Add Board, Epic, and Sprint streams |
 | 0.2.11 | 2021-09-02 | [\#6523](https://github.com/airbytehq/airbyte/pull/6523) | Add cache and more streams \(boards and sprints\) |

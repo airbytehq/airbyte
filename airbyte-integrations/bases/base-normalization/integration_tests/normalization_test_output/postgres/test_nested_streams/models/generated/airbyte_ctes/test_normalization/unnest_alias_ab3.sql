@@ -1,5 +1,11 @@
-{{ config(schema="_airbyte_test_normalization", tags=["top-level-intermediate"]) }}
+{{ config(
+    indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
+    unique_key = '_airbyte_ab_id',
+    schema = "_airbyte_test_normalization",
+    tags = [ "top-level-intermediate" ]
+) }}
 -- SQL model to build a hash column based on the values of this record
+-- depends_on: {{ ref('unnest_alias_ab2') }}
 select
     {{ dbt_utils.surrogate_key([
         adapter.quote('id'),
@@ -8,4 +14,5 @@ select
     tmp.*
 from {{ ref('unnest_alias_ab2') }} tmp
 -- unnest_alias
+where 1 = 1
 

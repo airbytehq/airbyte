@@ -10,8 +10,8 @@ Airbyte allows scaling sync workloads horizontally using Kubernetes. The core co
 
 For local testing we recommend following one of the following setup guides:
 
-* [Docker Desktop \(Mac\)](https://docs.docker.com/desktop/kubernetes/)
-* [Minikube](https://minikube.sigs.k8s.io/docs/start/)
+* [Docker Desktop \(Mac\)](https://docs.docker.com/desktop/kubernetes)
+* [Minikube](https://minikube.sigs.k8s.io/docs/start)
   * NOTE: Start Minikube with at least 4gb RAM with `minikube start --memory=4000`
 * [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
@@ -46,42 +46,39 @@ Configure `kubectl` to connect to your cluster by using `kubectl use-context my-
 
 ### Configure Logs
 
+#### Default Configuration
 Both `dev` and `stable` versions of Airbyte include a stand-alone `Minio` deployment. Airbyte publishes logs to this `Minio` deployment by default. This means Airbyte comes as a **self-contained Kubernetes deployment - no other configuration is required**.
 
-Airbyte currently supports logging to `Minio`, `S3` or `GCS`. The following instructions are for users wishing to log to their own `Minio` layer, `S3` bucket or `GCS` bucket.
+So if you just want logs to be sent to the local `Minio` deployment, you do not need to change the values of any environment variables from what is currently on master.
+
+#### Custom Configuration
+
+Alternatively, if you want logs to be sent to a custom location, Airbyte currently supports logging to `Minio`, `S3` or `GCS`. The following instructions are for users wishing to log to their own `Minio` layer, `S3` bucket or `GCS` bucket.
 
 The provided credentials require both read and write permissions. The logger attempts to create the log bucket if it does not exist.
 
-#### Configuring Custom Minio Log Location
+##### Configuring Custom Minio Log Location
 
-Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
+To write to a custom minio log location, replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
 
 ```text
-# The Minio bucket to write logs in.
-S3_LOG_BUCKET=
-# Minio Access Key.
-AWS_ACCESS_KEY_ID=
-# Minio Secret Key.
-AWS_SECRET_ACCESS_KEY=
-# Endpoint where Minio is deployed at.
-S3_MINIO_ENDPOINT=
+S3_LOG_BUCKET=<your_minio_bucket_to_write_logs_in>
+AWS_ACCESS_KEY_ID=<your_minio_access_key>
+AWS_SECRET_ACCESS_KEY=<your_minio_secret_key>
+S3_MINIO_ENDPOINT=<endpoint_where_minio_is_deployed_at>
 ```
 
 The `S3_PATH_STYLE_ACCESS` variable should remain `true`. The `S3_LOG_BUCKET_REGION` variable should remain empty.
 
-#### Configuring Custom S3 Log Location
+##### Configuring Custom S3 Log Location
 
-Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
+To write to a custom S3 log location, replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
 
 ```text
-# The S3 bucket to write logs in.
-S3_LOG_BUCKET=
-# The S3 bucket region.
-S3_LOG_BUCKET_REGION=
-# Aws Access Key Id.
-AWS_ACCESS_KEY_ID=
-# Aws Secret Access Key
-AWS_SECRET_ACCESS_KEY=
+S3_LOG_BUCKET=<your_s3_bucket_to_write_logs_in>
+S3_LOG_BUCKET_REGION=<your_s3_bucket_region>
+AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
+AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key>
 # Set this to empty.
 S3_MINIO_ENDPOINT=
 # Set this to empty.
@@ -90,7 +87,7 @@ S3_PATH_STYLE_ACCESS=
 
 See [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) for instructions on creating an S3 bucket and [here](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) for instructions on creating AWS credentials.
 
-#### Configuring Custom GCS Log Location
+##### Configuring Custom GCS Log Location
 
 Create the GCP service account with read/write permission to the GCS log bucket.
 
@@ -116,8 +113,7 @@ data:
 3\) Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
 
 ```text
-# The GCS bucket to write logs in.
-GCP_STORAGE_BUCKET=
+GCP_STORAGE_BUCKET=<your_GCS_bucket_to_write_logs_in>
 # The path the GCS creds are written to. Unless you know what you are doing, use the below default value.
 GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs-log-creds/gcp.json
 ```

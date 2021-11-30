@@ -26,6 +26,9 @@
   "ticket_metrics": {
     "updated_at": "2022-07-19T22:21:26Z"
   },
+  "ticket_metric_events": {
+    "time": "2022-07-19T22:21:26Z"
+  },
   "macros": {
     "updated_at": "2022-12-11T19:34:06Z"
   },

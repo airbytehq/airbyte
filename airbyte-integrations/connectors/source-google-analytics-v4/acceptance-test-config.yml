@@ -5,8 +5,6 @@ tests:
   spec:
     - spec_path: "source_google_analytics_v4/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
     - config_path: "secrets/service_config.json"
       status: "succeed"
     - config_path: "secrets/old_config.json"

@@ -1,6 +1,6 @@
 {
-  "authorization": { "auth_type": "Apikey", "api_key": "some_api_key" },
+  "api_key": "API_KEY",
   "is_sandbox": true,
-  "start_date": "2021-06-01",
+  "start_date": "2200-01-01",
   "include_deleted_objects": false
 }

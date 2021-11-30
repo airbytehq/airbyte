@@ -6,11 +6,34 @@ dbt_modules/
 secrets/
 dist/
 
-integration_tests/normalization_test_output/*/*/*.log
-integration_tests/normalization_test_output/*/*/*.yml
-integration_tests/normalization_test_output/*/*/*.json
-integration_tests/normalization_test_output/*/*/*.md
-integration_tests/normalization_test_output/*/*/macros/
-integration_tests/normalization_test_output/*/*/tests/
-integration_tests/normalization_test_output/*/*/models/dbt_schema_tests/
+integration_tests/normalization_test_output/*/*/macros
+integration_tests/normalization_test_output/*/*/tests
+integration_tests/normalization_test_output/**/*.json
+integration_tests/normalization_test_output/**/*.log
+integration_tests/normalization_test_output/**/*.md
+integration_tests/normalization_test_output/**/*.sql
+integration_tests/normalization_test_output/**/*.yml
+!integration_tests/normalization_test_output/**/*dbt_project.yml
+!integration_tests/normalization_test_output/**/generated/sources.yml
 
+# We keep a minimal/restricted subset of sql files for all destinations to avoid noise in diff
+# Simple Streams
+!integration_tests/normalization_test_output/**/dedup_exchange_rate*.sql
+!integration_tests/normalization_test_output/**/exchange_rate.sql
+# Nested Streams
+# Parent table
+!integration_tests/normalization_test_output/**/nested_stream_with*_names_ab*.sql
+!integration_tests/normalization_test_output/**/nested_stream_with*_names_scd.sql
+!integration_tests/normalization_test_output/**/nested_stream_with*_names.sql
+# Nested table
+!integration_tests/normalization_test_output/**/nested_stream_with_*_partition_ab1.sql
+!integration_tests/normalization_test_output/**/nested_stream_with_*_data_ab1.sql
+!integration_tests/normalization_test_output/**/nested_stream_with*_partition_scd.sql
+!integration_tests/normalization_test_output/**/nested_stream_with*_data_scd.sql
+!integration_tests/normalization_test_output/**/nested_stream_with*_partition.sql
+!integration_tests/normalization_test_output/**/nested_stream_with*_data.sql
+
+# but we keep all sql files for Postgres
+!integration_tests/normalization_test_output/postgres/**/*.sql
+integration_tests/normalization_test_output/postgres/**/dbt_data_tests
+integration_tests/normalization_test_output/postgres/**/dbt_schema_tests

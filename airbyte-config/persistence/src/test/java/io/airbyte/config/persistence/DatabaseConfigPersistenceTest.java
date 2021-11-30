@@ -4,20 +4,26 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.config.ConfigSchema.STANDARD_DESTINATION_DEFINITION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +55,17 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
+  public void testMultiWriteAndGetConfig() throws Exception {
+    writeDestinations(configPersistence, Lists.newArrayList(DESTINATION_S3, DESTINATION_SNOWFLAKE));
+    assertRecordCount(2);
+    assertHasDestination(DESTINATION_S3);
+    assertHasDestination(DESTINATION_SNOWFLAKE);
+    assertEquals(
+        List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3),
+        configPersistence.listConfigs(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+  }
+
+  @Test
   public void testWriteAndGetConfig() throws Exception {
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
@@ -57,7 +74,27 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertHasDestination(DESTINATION_SNOWFLAKE);
     assertEquals(
         List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3),
-        configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+        configPersistence.listConfigs(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+  }
+
+  @Test
+  public void testListConfigWithMetadata() throws Exception {
+    final Instant now = Instant.now().minus(Duration.ofSeconds(1));
+    writeDestination(configPersistence, DESTINATION_S3);
+    writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
+    final List<ConfigWithMetadata<StandardDestinationDefinition>> configWithMetadata = configPersistence
+        .listConfigsWithMetadata(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
+    assertEquals(2, configWithMetadata.size());
+    assertEquals("STANDARD_DESTINATION_DEFINITION", configWithMetadata.get(0).getConfigType());
+    assertEquals("STANDARD_DESTINATION_DEFINITION", configWithMetadata.get(1).getConfigType());
+    assertTrue(configWithMetadata.get(0).getCreatedAt().isAfter(now));
+    assertTrue(configWithMetadata.get(0).getUpdatedAt().isAfter(now));
+    assertTrue(configWithMetadata.get(1).getCreatedAt().isAfter(now));
+    assertNotNull(configWithMetadata.get(0).getConfigId());
+    assertNotNull(configWithMetadata.get(1).getConfigId());
+    assertEquals(
+        List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3),
+        List.of(configWithMetadata.get(0).getConfig(), configWithMetadata.get(1).getConfig()));
   }
 
   @Test
@@ -69,12 +106,12 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertHasDestination(DESTINATION_SNOWFLAKE);
     assertEquals(
         List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3),
-        configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+        configPersistence.listConfigs(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
     deleteDestination(configPersistence, DESTINATION_S3);
     assertThrows(ConfigNotFoundException.class, () -> assertHasDestination(DESTINATION_S3));
     assertEquals(
         List.of(DESTINATION_SNOWFLAKE),
-        configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+        configPersistence.listConfigs(STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
   }
 
   @Test
@@ -105,7 +142,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     final Map<String, Stream<JsonNode>> actual = configPersistence.dumpConfigs();
     final Map<String, Stream<JsonNode>> expected = Map.of(
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
-        ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3)));
+        STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3)));
     assertSameConfigDump(expected, actual);
   }
 

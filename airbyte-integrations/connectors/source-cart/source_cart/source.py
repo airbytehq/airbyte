@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from pendulum.parsing.exceptions import ParserError
 
-from .streams import CustomersCart, OrderItems, OrderPayments, Orders, Products
+from .streams import Addresses, CustomersCart, OrderItems, OrderPayments, Orders, Products
 
 
 class CustomHeaderAuthenticator(HttpAuthenticator):
@@ -74,4 +74,4 @@ class SourceCart(AbstractSource):
             "store_name": config["store_name"],
             "end_date": config.get("end_date"),
         }
-        return [CustomersCart(**args), Orders(**args), OrderPayments(**args), OrderItems(**args), Products(**args)]
+        return [CustomersCart(**args), Orders(**args), OrderPayments(**args), OrderItems(**args), Products(**args), Addresses(**args)]

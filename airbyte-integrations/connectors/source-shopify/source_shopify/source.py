@@ -72,7 +72,6 @@ class ShopifyStream(HttpStream, ABC):
         """The name of the field in the response which contains the data"""
 
 
-# Basic incremental stream
 class IncrementalShopifyStream(ShopifyStream, ABC):
 
     # Setting the check point interval to the limit of the records output
@@ -103,7 +102,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         # Getting records >= state
         if stream_state:
             for record in records_slice:
-                if record.get(self.cursor_field) >= stream_state.get(self.cursor_field):
+                if record.get(self.cursor_field, "") >= stream_state.get(self.cursor_field):
                     yield record
         else:
             yield from records_slice
@@ -173,7 +172,7 @@ class ChildSubstream(IncrementalShopifyStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
-        """ Reading child streams records for each `id` """
+        """Reading child streams records for each `id`"""
 
         self.logger.info(f"Reading {self.name} for {self.slice_key}: {stream_slice.get(self.slice_key)}")
         records = super().read_records(stream_slice=stream_slice, **kwargs)
@@ -343,7 +342,6 @@ class Locations(ShopifyStream):
 class InventoryLevels(ChildSubstream):
     parent_stream_class: object = Locations
     slice_key = "location_id"
-    cursor_field = "updated_at"
 
     data_field = "inventory_levels"
 
@@ -359,10 +357,49 @@ class InventoryLevels(ChildSubstream):
             return record
 
         # associate the surrogate key
-        yield from map(
-            generate_key,
-            records_stream,
-        )
+        yield from map(generate_key, records_stream)
+
+
+class InventoryItems(ChildSubstream):
+
+    parent_stream_class: object = Products
+    slice_key = "id"
+    record_field_name = "variants"
+
+    data_field = "inventory_items"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        ids = ",".join(str(x["inventory_item_id"]) for x in stream_slice[self.slice_key])
+        return f"inventory_items.json?ids={ids}"
+
+
+class FulfillmentOrders(ChildSubstream):
+
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
+    data_field = "fulfillment_orders"
+
+    cursor_field = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice[self.slice_key]
+        return f"orders/{order_id}/{self.data_field}.json"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
+
+
+class Fulfillments(ChildSubstream):
+
+    parent_stream_class: object = Orders
+    slice_key = "order_id"
+
+    data_field = "fulfillments"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice[self.slice_key]
+        return f"orders/{order_id}/{self.data_field}.json"
 
 
 class SourceShopify(AbstractSource):
@@ -406,5 +443,8 @@ class SourceShopify(AbstractSource):
             PriceRules(config),
             DiscountCodes(config),
             Locations(config),
+            InventoryItems(config),
             InventoryLevels(config),
+            FulfillmentOrders(config),
+            Fulfillments(config),
         ]

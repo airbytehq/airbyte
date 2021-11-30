@@ -10,6 +10,8 @@ Go to OCI Console &gt; Compute &gt; Instances &gt; Create Instance
 
 ![](../.gitbook/assets/OCIScreen2.png)
 
+Ensure you select shape as 'Intel' 
+
 ## Whitelist Port 8000 for a CIDR range in Security List of OCI VM Subnet
 
 Go to OCI Console &gt; Networking &gt; Virtual Cloud Network
@@ -30,6 +32,7 @@ ssh -i private-key-file opc@oci-private-instance-ip -p 2200
 
 ### Install Docker
 
+```text
 sudo yum update -y
 
 sudo yum install -y docker
@@ -37,24 +40,32 @@ sudo yum install -y docker
 sudo service docker start
 
 sudo usermod -a -G docker $USER
+```
+
 
 ### Install Docker Compose
 
-sudo wget [https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$\(uname](https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$%28uname) -s\)-$\(uname -m\) -O /usr/local/bin/docker-compose
+```text
+sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
 
 sudo chmod +x /usr/local/bin/docker-compose
 
-docker-compose --version
+sudo /usr/local/bin/docker-compose up -d
+```
+
 
 ### Install Airbyte
 
+```text
 mkdir airbyte && cd airbyte
 
-wget [https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}](https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml})
+wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
 
 which docker-compose
 
-sudo /usr/local/bin/docker-compose up -d
+docker-compose up -d
+```
+
 
 ## Create SSH Tunnel to Login to the Instance
 

@@ -69,6 +69,8 @@ import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SyncMode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
@@ -184,7 +186,7 @@ public class AcceptanceTests {
     if (!USE_EXTERNAL_DEPLOYMENT) {
       LOGGER.info("Using deployment of airbyte managed by test containers.");
       airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
-          .setEnv(ENV_FILE)
+          .setEnv(MoreProperties.envFileToProperties(ENV_FILE))
           // override env VERSION to use dev to test current build of airbyte.
           .setEnvVariable("VERSION", "dev")
           // override to use test mounts.
@@ -194,7 +196,7 @@ public class AcceptanceTests {
           .setEnvVariable("LOCAL_ROOT", "/tmp/airbyte_local_migration_test")
           .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
           .build();
-      airbyteTestContainer.start();
+      airbyteTestContainer.startBlocking();
     } else {
       LOGGER.info("Using external deployment of airbyte.");
     }
@@ -243,7 +245,7 @@ public class AcceptanceTests {
     // seed database.
     if (IS_GKE) {
       final Database database = getSourceDatabase();
-      final Path path = Path.of(Resources.getResource("postgres_init.sql").toURI());
+      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
       final StringBuilder query = new StringBuilder();
       for (final String line : java.nio.file.Files.readAllLines(path, UTF8)) {
         if (line != null && !line.isEmpty()) {
@@ -921,6 +923,9 @@ public class AcceptanceTests {
           new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream))));
       if (withScdTable) {
         explodedStreamNames
+            .add(new SchemaTableNamePair("_airbyte_" + OUTPUT_NAMESPACE_PREFIX + x.schemaName,
+                String.format("%s%s_stg", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
+        explodedStreamNames
             .add(new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s_scd", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
       }
       return explodedStreamNames.stream();
@@ -1102,6 +1107,7 @@ public class AcceptanceTests {
     dbConfig.put("port", psql.getFirstMappedPort());
     dbConfig.put("database", psql.getDatabaseName());
     dbConfig.put("username", psql.getUsername());
+    dbConfig.put("ssl", false);
 
     if (withSchema) {
       dbConfig.put("schema", "public");
@@ -1149,7 +1155,7 @@ public class AcceptanceTests {
     final Database database = getDestinationDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
+      database.query(context -> context.execute(String.format("DROP TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
     }
   }
 

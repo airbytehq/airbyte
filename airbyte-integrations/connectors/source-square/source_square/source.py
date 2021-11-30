@@ -19,7 +19,7 @@ from source_square.utils import separate_items_by_count
 
 
 class SquareException(Exception):
-    """ Just for formatting the exception as Square"""
+    """Just for formatting the exception as Square"""
 
     def __init__(self, status_code, errors):
         self.status_code = status_code
@@ -213,7 +213,7 @@ class ModifierList(IncrementalSquareCatalogObjectsStream):
 
 
 class Refunds(IncrementalSquareStream):
-    """ Docs: https://developer.squareup.com/reference/square_2021-06-16/refunds-api/list-payment-refunds """
+    """Docs: https://developer.squareup.com/reference/square_2021-06-16/refunds-api/list-payment-refunds"""
 
     data_field = "refunds"
 
@@ -228,7 +228,7 @@ class Refunds(IncrementalSquareStream):
 
 
 class Payments(IncrementalSquareStream):
-    """ Docs: https://developer.squareup.com/reference/square_2021-06-16/payments-api/list-payments """
+    """Docs: https://developer.squareup.com/reference/square_2021-06-16/payments-api/list-payments"""
 
     data_field = "payments"
 
@@ -243,7 +243,7 @@ class Payments(IncrementalSquareStream):
 
 
 class Locations(SquareStream):
-    """ Docs: https://developer.squareup.com/explorer/square/locations-api/list-locations """
+    """Docs: https://developer.squareup.com/explorer/square/locations-api/list-locations"""
 
     data_field = "locations"
 
@@ -252,7 +252,7 @@ class Locations(SquareStream):
 
 
 class Shifts(SquareStreamPageJsonAndLimit):
-    """ Docs: https://developer.squareup.com/reference/square/labor-api/search-shifts """
+    """Docs: https://developer.squareup.com/reference/square/labor-api/search-shifts"""
 
     data_field = "shifts"
     http_method = "POST"
@@ -263,7 +263,7 @@ class Shifts(SquareStreamPageJsonAndLimit):
 
 
 class TeamMembers(SquareStreamPageJsonAndLimit):
-    """ Docs: https://developer.squareup.com/reference/square/team-api/search-team-members """
+    """Docs: https://developer.squareup.com/reference/square/team-api/search-team-members"""
 
     data_field = "team_members"
     http_method = "POST"
@@ -273,7 +273,7 @@ class TeamMembers(SquareStreamPageJsonAndLimit):
 
 
 class TeamMemberWages(SquareStreamPageParam):
-    """ Docs: https://developer.squareup.com/reference/square_2021-06-16/labor-api/list-team-member-wages """
+    """Docs: https://developer.squareup.com/reference/square_2021-06-16/labor-api/list-team-member-wages"""
 
     data_field = "team_member_wages"
     items_per_page_limit = 200
@@ -298,7 +298,7 @@ class TeamMemberWages(SquareStreamPageParam):
 
 
 class Customers(SquareStreamPageParam):
-    """ Docs: https://developer.squareup.com/reference/square_2021-06-16/customers-api/list-customers """
+    """Docs: https://developer.squareup.com/reference/square_2021-06-16/customers-api/list-customers"""
 
     data_field = "customers"
 
@@ -315,7 +315,7 @@ class Customers(SquareStreamPageParam):
 
 
 class Orders(SquareStreamPageJson):
-    """ Docs: https://developer.squareup.com/reference/square/orders-api/search-orders """
+    """Docs: https://developer.squareup.com/reference/square/orders-api/search-orders"""
 
     data_field = "orders"
     http_method = "POST"
