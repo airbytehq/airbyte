@@ -130,24 +130,24 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
           throw new RuntimeException("The variable binlog_format should be set to ROW, but it is : " + binlogFormat);
         }
       });
+
+      checkOperations.add(database -> {
+        final List<String> image = database.resultSetQuery(connection -> {
+          final String sql = "show variables where Variable_name = 'binlog_row_image'";
+
+          return connection.createStatement().executeQuery(sql);
+        }, resultSet -> resultSet.getString("Value")).collect(toList());
+
+        if (image.size() != 1) {
+          throw new RuntimeException("Could not query the variable binlog_row_image");
+        }
+
+        final String binlogRowImage = image.get(0);
+        if (!binlogRowImage.equalsIgnoreCase("FULL")) {
+          throw new RuntimeException("The variable binlog_row_image should be set to FULL, but it is : " + binlogRowImage);
+        }
+      });
     }
-
-    checkOperations.add(database -> {
-      final List<String> image = database.resultSetQuery(connection -> {
-        final String sql = "show variables where Variable_name = 'binlog_row_image'";
-
-        return connection.createStatement().executeQuery(sql);
-      }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-      if (image.size() != 1) {
-        throw new RuntimeException("Could not query the variable binlog_row_image");
-      }
-
-      final String binlogRowImage = image.get(0);
-      if (!binlogRowImage.equalsIgnoreCase("FULL")) {
-        throw new RuntimeException("The variable binlog_row_image should be set to FULL, but it is : " + binlogRowImage);
-      }
-    });
 
     return checkOperations;
   }
