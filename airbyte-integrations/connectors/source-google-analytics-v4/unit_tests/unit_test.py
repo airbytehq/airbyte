@@ -8,9 +8,9 @@ from unittest.mock import MagicMock, patch
 from urllib.parse import unquote
 
 import pendulum
-from freezegun import freeze_time
 import pytest
 from airbyte_cdk.sources.streams.http.auth import NoAuth
+from freezegun import freeze_time
 from source_google_analytics_v4.source import (
     GoogleAnalyticsV4IncrementalObjectsBase,
     GoogleAnalyticsV4Stream,
