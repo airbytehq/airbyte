@@ -58,6 +58,16 @@ public class TemporalUtils {
 
   }
 
+  public static WorkflowOptions getWorkflowOptionsWithName(final TemporalJobType jobType, final String name) {
+    return WorkflowOptions.newBuilder()
+        .setWorkflowId(name)
+        .setRetryOptions(NO_RETRY)
+        .setTaskQueue(jobType.name())
+        // todo (cgardens) we do not leverage Temporal retries.
+        .setRetryOptions(RetryOptions.newBuilder().setMaximumAttempts(1).build())
+        .build();
+  }
+
   public static WorkflowOptions getWorkflowOptions(final TemporalJobType jobType) {
     return WorkflowOptions.newBuilder()
         .setRetryOptions(NO_RETRY)

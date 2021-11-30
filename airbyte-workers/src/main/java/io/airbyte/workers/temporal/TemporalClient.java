@@ -21,6 +21,7 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
+import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterWorkflow;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
@@ -119,13 +120,14 @@ public class TemporalClient {
             connectionId));
   }
 
-  public void submitConnectionUpdaterAsync(final long jobId, final int attemptId) {
-    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowStub(ConnectionUpdaterWorkflow.class,
-        TemporalJobType.CONNECTION_UPDATER);
+  public void submitConnectionUpdaterAsync(final long jobId, final int attemptId, final UUID connectionId) {
+    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowStubWithName(ConnectionUpdaterWorkflow.class,
+        TemporalJobType.CONNECTION_UPDATER, "connection_updater_" + connectionId);
     final ExecutorService threadpool = Executors.newCachedThreadPool();
     final Future<Void> futureTask = threadpool.submit(() -> {
       final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attemptId);
-      execute(jobRunConfig, () -> connectionUpdaterWorkflow.run());
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId);
+      execute(jobRunConfig, () -> connectionUpdaterWorkflow.run(input));
 
       return null;
     });
@@ -140,6 +142,10 @@ public class TemporalClient {
 
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
+  }
+
+  private <T> T getWorkflowStubWithName(final Class<T> workflowClass, final TemporalJobType jobType, final String name) {
+    return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptionsWithName(jobType, name));
   }
 
   @VisibleForTesting

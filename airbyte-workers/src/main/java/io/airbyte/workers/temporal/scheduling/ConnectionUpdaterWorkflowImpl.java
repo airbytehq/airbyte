@@ -23,7 +23,6 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private boolean isRunning = false;
   private boolean isDeleted = false;
   private final boolean skipScheduling = false;
-  // private Optional<SyncWorkflow> childSync = Optional.empty();
   CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
   public ConnectionUpdaterWorkflowImpl() {
@@ -35,8 +34,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   }
 
   @Override
-  public SyncResult run() {
-    Workflow.await(() -> canStart());
+  public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) {
+    // Workflow.await(() -> canStart());
 
     // TODO: bmoric get time to wait through an activity
     final Duration timeToWait = Duration.ofSeconds(5);
@@ -48,7 +47,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
-
+            .setWorkflowId("sync_" + connectionUpdaterInput.getConnectionId())
             // This will cancel the child workflow when the parent is terminated
             .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_ABANDON)
             .build());
@@ -57,7 +56,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig();
     final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig();
     final StandardSyncInput syncInput = new StandardSyncInput();
-    final UUID connectionId = UUID.randomUUID();
+    final UUID connectionId = connectionUpdaterInput.getConnectionId();
 
     log.error("Running for: " + connectionId);
     childSync.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, connectionId);
@@ -67,7 +66,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     if (isDeleted) {
       return new SyncResult(true);
     } else {
-      Workflow.continueAsNew(new ConnectionUpdaterWorkflowConfig(false));
+      canStart = true;
+      Workflow.continueAsNew(connectionUpdaterInput);
     }
     // This should not be reachable
     return null;

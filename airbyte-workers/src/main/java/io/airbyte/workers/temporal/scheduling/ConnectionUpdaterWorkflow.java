@@ -13,7 +13,7 @@ import io.temporal.workflow.WorkflowMethod;
 public interface ConnectionUpdaterWorkflow {
 
   @WorkflowMethod
-  SyncResult run();
+  SyncResult run(ConnectionUpdaterInput connectionUpdaterInput);
 
   @SignalMethod
   void updateSchedule(SchedulingInput input);
