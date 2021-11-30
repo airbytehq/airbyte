@@ -31,9 +31,8 @@ class Client(BaseClient):
     def __init__(self, start_date, credentials, **kwargs):
         self._start_date = start_date
         self._api = API(credentials=credentials)
-        skip_dynamic_fields = kwargs.get("skip_dynamic_fields", False)
 
-        common_params = dict(api=self._api, start_date=self._start_date, skip_dynamic_fields=skip_dynamic_fields)
+        common_params = dict(api=self._api, start_date=self._start_date)
         self._apis = {
             "campaigns": CampaignStream(**common_params),
             "companies": CRMObjectStream(entity="company", associations=["contacts"], **common_params),
