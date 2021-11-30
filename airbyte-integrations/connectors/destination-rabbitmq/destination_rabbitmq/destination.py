@@ -5,7 +5,7 @@
 
 from typing import Mapping, Any, Iterable
 
-from airbyte_cdk import AirbyteLogger
+from airbyte_cdk import AirbyteLogger, logger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, Status, Type
 
@@ -13,23 +13,25 @@ import json
 import pika
 from pika.adapters.blocking_connection import BlockingConnection
 from pika.spec import BasicProperties
-from pika.credentials import PlainCredentials
 
 _DEFAULT_PORT = 5672
 
 
 def create_connection(config: Mapping[str, Any]) -> BlockingConnection:
+    host = config.get('host')
+    port = config.get('port') or _DEFAULT_PORT
     username = config.get('username')
     password = config.get('password')
-    virtual_host = config.get('virtual_host')
-    params = pika.ConnectionParameters(
-        host=config['host'],
-        port=config.get('port') or _DEFAULT_PORT
-    )
-    if username and password:
-        params.credentials = PlainCredentials(username=username, password=password)
-    if virtual_host:
-        params.virtual_host = virtual_host
+    virtual_host = config.get('virtual_host', '')
+    ssl_enabled = config.get('ssl', False)
+    amqp_protocol = 'amqp'
+    host_url = host
+    if ssl_enabled:
+        amqp_protocol = 'amqps'
+    if port:
+        host_url = host + ':' + str(port)
+    credentials = f'{username}:{password}@' if username and password else ''
+    params = pika.URLParameters(f'{amqp_protocol}://{credentials}{host_url}/{virtual_host}')
     return BlockingConnection(params)
 
 
@@ -45,6 +47,7 @@ class DestinationRabbitmq(Destination):
         connection = create_connection(config=config)
         channel = connection.channel()
 
+        streams = {s.stream.name for s in configured_catalog.streams}
         try:
             for message in input_messages:
                 if message.type == Type.STATE:
@@ -53,6 +56,9 @@ class DestinationRabbitmq(Destination):
                     yield message
                 elif message.type == Type.RECORD:
                     record = message.record
+                    if record.stream not in streams:
+                        # Message contains record from a stream that is not in the catalog. Skip it!
+                        continue
                     headers = {'stream': record.stream, 'emitted_at': record.emitted_at, 'namespace': record.namespace}
                     properties = BasicProperties(content_type='application/json', headers=headers)
                     channel.basic_publish(exchange=exchange or '',
