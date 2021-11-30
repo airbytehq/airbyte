@@ -361,6 +361,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 yield {"job": running_jobs.popleft()}
 
         while running_jobs:
+            #print(f"\nTEST: 'job': {running_jobs.popleft()}\n")
             yield {"job": running_jobs.popleft()}
 
     @retry_pattern(backoff.expo, JobException, max_tries=10, factor=5)
