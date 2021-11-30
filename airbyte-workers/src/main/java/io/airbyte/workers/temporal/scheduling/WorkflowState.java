@@ -9,7 +9,6 @@ import lombok.Value;
 @Value
 public class WorkflowState {
 
-  private boolean canStart;
   private boolean isRunning;
   private boolean isDeleted;
   private boolean skipScheduling;

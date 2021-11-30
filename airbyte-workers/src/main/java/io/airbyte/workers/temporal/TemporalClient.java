@@ -134,7 +134,7 @@ public class TemporalClient {
 
     try {
       Thread.sleep(10000);
-      connectionUpdaterWorkflow.readyToStart();
+      connectionUpdaterWorkflow.skipWaitForScheduling();
     } catch (final InterruptedException e) {
       e.printStackTrace();
     }

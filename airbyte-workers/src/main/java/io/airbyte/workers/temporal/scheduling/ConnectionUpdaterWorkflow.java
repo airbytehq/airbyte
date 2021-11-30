@@ -19,14 +19,13 @@ public interface ConnectionUpdaterWorkflow {
   void updateSchedule(SchedulingInput input);
 
   @SignalMethod
-  // Maybe query to have a return type??
   void submitManualSync();
 
   @SignalMethod
-  void deleteConnection();
+  void skipWaitForScheduling();
 
   @SignalMethod
-  void readyToStart();
+  void deleteConnection();
 
   @QueryMethod
   WorkflowState getState();
