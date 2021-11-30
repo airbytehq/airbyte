@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.29
+Add assert that output catalog does not have any `$ref` in it
+
 ## 0.1.28
 Print stream name when incremental sync tests fail
 
