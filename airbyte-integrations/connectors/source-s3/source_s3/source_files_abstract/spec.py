@@ -73,7 +73,7 @@ class SourceFilesAbstractSpec(BaseModel):
         return schema
 
     @staticmethod
-    def check_provider_added(schema: dict) -> dict:
+    def check_provider_added(schema: dict) -> None:
         if "provider" not in schema["properties"]:
             raise RuntimeError("You must add the 'provider' property in your child spec class")
 
