@@ -81,14 +81,12 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   @Override
   public void submitManualSync() {
     if (isRunning) {
-      log.info("Can't schedule a manual workflow is a sync is running for this connection");
-      // return new ManualSyncOutput(false);
+      log.info("Can't schedule a manual workflow if a sync is running for this connection");
+      return;
     }
 
     isRunning = true;
     canStart = true;
-
-    // return new ManualSyncOutput(true);
   }
 
   @Override

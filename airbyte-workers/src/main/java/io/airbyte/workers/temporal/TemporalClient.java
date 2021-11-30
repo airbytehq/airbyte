@@ -31,9 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class TemporalClient {
 
   private final Path workspaceRoot;
@@ -121,15 +119,12 @@ public class TemporalClient {
             connectionId));
   }
 
-  public void submitConnectionUpdaterAsync() {
-    log.error("Starting submission  ________________________");
+  public void submitConnectionUpdaterAsync(final long jobId, final int attemptId) {
     final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowStub(ConnectionUpdaterWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER);
     final ExecutorService threadpool = Executors.newCachedThreadPool();
     final Future<Void> futureTask = threadpool.submit(() -> {
-      // TODO: proper jobId
-      final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig("connection_id", 3);
-      log.error("Executing submission  ________________________");
+      final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attemptId);
       execute(jobRunConfig, () -> connectionUpdaterWorkflow.run());
 
       return null;
@@ -137,9 +132,7 @@ public class TemporalClient {
 
     try {
       Thread.sleep(10000);
-      log.error("Signal submission  ________________________");
       connectionUpdaterWorkflow.readyToStart();
-      log.error("Signal done  ________________________");
     } catch (final InterruptedException e) {
       e.printStackTrace();
     }
@@ -149,8 +142,7 @@ public class TemporalClient {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
   }
 
-  @VisibleForTesting
-  <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+  @VisibleForTesting <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
     final Path logPath = WorkerUtils.getLogPath(jobRoot);
 
@@ -167,8 +159,7 @@ public class TemporalClient {
     return new TemporalResponse<>(operationOutput, metadata);
   }
 
-  @VisibleForTesting
-  <T> void executeAsync(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+  @VisibleForTesting <T> void executeAsync(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
     final Path logPath = WorkerUtils.getLogPath(jobRoot);
 

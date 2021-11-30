@@ -7,7 +7,7 @@ package io.airbyte.commons.features;
 public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
-  public boolean usesScheduler2() {
+  public boolean usesNewScheduler() {
     return System.getenv().containsKey("NEW_SCHEDULER");
   }
 

@@ -5,11 +5,10 @@
 package io.airbyte.commons.features;
 
 /**
- * Interface that describe which features are activated in airbyte. Currently the only
- * implementation relies on env. Ideally it should be on some DB.
+ * Interface that describe which features are activated in airbyte. Currently the only implementation relies on env. Ideally it should be on some DB.
  */
 public interface FeatureFlags {
 
-  boolean usesScheduler2();
+  boolean usesNewScheduler();
 
 }

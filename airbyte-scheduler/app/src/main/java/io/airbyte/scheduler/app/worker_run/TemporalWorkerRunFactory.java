@@ -42,7 +42,6 @@ public class TemporalWorkerRunFactory {
 
   public WorkerRun create(final Job job) {
     final int attemptId = job.getAttemptsCount();
-    LOGGER.error("Creating Supplier ________________");
     return WorkerRun.create(workspaceRoot, job.getId(), attemptId, createSupplier(job, attemptId), airbyteVersionOrWarnings);
   }
 
@@ -53,9 +52,8 @@ public class TemporalWorkerRunFactory {
       case SYNC -> () -> {
         final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
-        if (featureFlags.usesScheduler2()) {
-          LOGGER.error("Call temporal client ________________");
-          temporalClient.submitConnectionUpdaterAsync();
+        if (featureFlags.usesNewScheduler()) {
+          temporalClient.submitConnectionUpdaterAsync(job.getId(), attemptId);
 
           return toOutputAndStatusConnector();
         }
@@ -110,14 +108,9 @@ public class TemporalWorkerRunFactory {
   }
 
   private OutputAndStatus<JobOutput> toOutputAndStatusConnector() {
+    // Since we are async we technically can't fail
     final JobStatus status = JobStatus.SUCCEEDED;
-    /*
-     * if (!response.isSuccess()) { status = JobStatus.FAILED; } else { final ReplicationStatus
-     * replicationStatus = response.getOutput().orElseThrow().getStandardSyncSummary().getStatus(); if
-     * (replicationStatus == ReplicationStatus.FAILED || replicationStatus ==
-     * ReplicationStatus.CANCELLED) { status = JobStatus.FAILED; } else { status = JobStatus.SUCCEEDED;
-     * } }
-     */
+
     return new OutputAndStatus<>(status, new JobOutput().withSync(null));
   }
 

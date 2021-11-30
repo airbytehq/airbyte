@@ -51,7 +51,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
-import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -147,7 +146,6 @@ public class WorkerApp {
             databasePassword, databaseUrl, airbyteVersion),
         new PersistStateActivityImpl(workspaceRoot, configRepository));
 
-    // TODO: bmoric add real number for the max number of wf.
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionUpdaterWorkflowImpl.class);
@@ -179,21 +177,6 @@ public class WorkerApp {
         .build();
   }
 
-  /**
-   * Create the worker option that limit the number of activity and workflow. Note that it is
-   * concerning the number of running workflow, meaning that if a workflow is awaitng, it won't be
-   * concerned by the limitation.
-   */
-  private static WorkerOptions getWorkerOptions(final int maxConcurrentActivity, @NonNull final Optional<Integer> maybeMaxRunningWorkflow) {
-    final WorkerOptions.Builder builder = WorkerOptions.newBuilder()
-        .setMaxConcurrentActivityExecutionSize(maxConcurrentActivity);
-
-    maybeMaxRunningWorkflow.stream().forEach(maxRunningWorkflow -> builder.setMaxConcurrentWorkflowTaskExecutionSize(maxRunningWorkflow));
-
-    return builder
-        .build();
-  }
-
   public static void main(final String[] args) throws IOException, InterruptedException {
     final Configs configs = new EnvConfigs();
 
@@ -216,7 +199,7 @@ public class WorkerApp {
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
-            .getInitialized();
+        .getInitialized();
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
