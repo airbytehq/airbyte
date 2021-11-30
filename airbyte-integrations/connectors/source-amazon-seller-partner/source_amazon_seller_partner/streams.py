@@ -353,6 +353,10 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
+    """
+
     name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
     
     def parse_document(self, document):
