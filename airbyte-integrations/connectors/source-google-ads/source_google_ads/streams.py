@@ -8,7 +8,6 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import pendulum
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.v8.services.services.google_ads_service.pagers import SearchPager
-from pendulum.tz.timezone import Timezone
 
 from .google_ads import GoogleAds
 
@@ -67,7 +66,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     primary_key = None
     time_unit = "months"
 
-    def __init__(self, start_date: str, conversion_window_days: int, time_zone: [Timezone, str], **kwargs):
+    def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], **kwargs):
         self.conversion_window_days = conversion_window_days
         self._start_date = start_date
         self.time_zone = time_zone
