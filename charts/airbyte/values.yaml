@@ -540,3 +540,10 @@ minio:
 externalMinio:
   host: localhost
   port: 9000
+
+## Google Cloud Storage (GCS) Log Location Configuration
+## @param gcsLogs.bucket GCS bucket name
+## @param gcsLogs.credentials The path the GCS creds are written to
+gcsLogs:
+  bucket: ""
+  credentials: ""
