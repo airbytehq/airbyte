@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 from urllib.parse import unquote
 
 import pendulum
+from freezegun import freeze_time
 import pytest
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_google_analytics_v4.source import (
@@ -199,6 +200,7 @@ def test_check_connection_success_oauth(
     assert mock_api_returns_valid_records.called
 
 
+@freeze_time("2021-11-30")
 def test_stream_slices_limited_by_current_date(test_config):
     g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
     stream_state = {"ga_date": "2050-05-01"}
@@ -210,6 +212,7 @@ def test_stream_slices_limited_by_current_date(test_config):
     assert slices[0]["endDate"] == current_date
 
 
+@freeze_time("2021-11-30")
 def test_stream_slices_start_from_current_date_if_abnornal_state_is_passed(test_config):
     g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
     stream_state = {"ga_date": "2050-05-01"}
