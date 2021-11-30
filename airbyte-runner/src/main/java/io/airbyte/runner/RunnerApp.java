@@ -5,7 +5,6 @@
 package io.airbyte.runner;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.*;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -23,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +33,16 @@ public class RunnerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(RunnerApp.class);
 
   private static void replicationRunner(final Configs configs) throws IOException, WorkerException {
+
     LOGGER.info("Starting replication runner app...");
 
     if (configs.getWorkerEnvironment().equals(Configs.WorkerEnvironment.KUBERNETES)) {
       KubePortManagerSingleton.init(configs.getTemporalWorkerPorts());
     }
 
-    final ProcessFactory processFactory = getProcessBuilderFactory(configs);
+    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
+
+    final ProcessFactory processFactory = getProcessBuilderFactory(configs, workerConfigs);
 
     LOGGER.info("Attempting to retrieve files...");
 
@@ -67,12 +70,15 @@ public class RunnerApp {
 
     LOGGER.info("connectionId = " + connectionId);
 
+    LOGGER.info("Setting up source launcher...");
     final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
         sourceLauncherConfig.getJobId(),
         Math.toIntExact(sourceLauncherConfig.getAttemptId()),
         sourceLauncherConfig.getDockerImage(),
         processFactory,
         syncInput.getResourceRequirements());
+
+    LOGGER.info("Setting up destination launcher...");
     final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
         destinationLauncherConfig.getJobId(),
         Math.toIntExact(destinationLauncherConfig.getAttemptId()),
@@ -81,25 +87,33 @@ public class RunnerApp {
         syncInput.getResourceRequirements());
 
     // reset jobs use an empty source to induce resetting all data in destination.
+
+    LOGGER.info("Setting up source...");
     final AirbyteSource airbyteSource =
         sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
-            : new DefaultAirbyteSource(sourceLauncher);
+            : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
 
+    LOGGER.info("Setting up replication worker...");
     final ReplicationWorker replicationWorker = new DefaultReplicationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
         airbyteSource,
         new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
-        new DefaultAirbyteDestination(destinationLauncher),
+        new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
         new AirbyteMessageTracker(),
         new AirbyteMessageTracker());
 
     final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
 
+    LOGGER.info("Running replication worker...");
     final ReplicationOutput replicationOutput = replicationWorker.run(syncInput, jobRoot);
 
-    // todo: send output on stdout for now
+    LOGGER.info("Sending output...");
+
+    // this uses std out because it shouldn't have the logging related prefix
     System.out.println(Jsons.serialize(replicationOutput));
+
+    LOGGER.info("Replication runner complete!");
   }
 
   public static void main(String[] args) throws Exception {
@@ -129,7 +143,10 @@ public class RunnerApp {
     LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(), logPath);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
-    Executors.newSingleThreadExecutor().submit(
+
+    final ExecutorService heartbeatExecutorService = Executors.newSingleThreadExecutor();
+
+    heartbeatExecutorService.submit(
         () -> {
           MDC.setContextMap(mdc);
           try {
@@ -139,22 +156,31 @@ public class RunnerApp {
           }
         });
 
-    switch (application) {
-      case "replication" -> Exceptions.toRuntime(() -> replicationRunner(configs));
-      default -> throw new IllegalStateException("Unexpected value: " + application);
+    try {
+      if (application.equals("replication")) {
+        replicationRunner(configs);
+      } else {
+        throw new IllegalStateException("Unexpected value: " + application);
+      }
+    } finally {
+      LOGGER.info("Shutting down heartbeatExecutorService...");
+      heartbeatExecutorService.shutdown();
     }
+
+    LOGGER.info("Runner closing...");
   }
 
-  private static ProcessFactory getProcessBuilderFactory(final Configs configs) throws IOException {
+  private static ProcessFactory getProcessBuilderFactory(final Configs configs, final WorkerConfigs workerConfigs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final ApiClient officialClient = Config.defaultClient();
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + WorkerApp.KUBE_HEARTBEAT_PORT;
       LOGGER.info("Using Kubernetes namespace: {}", configs.getKubeNamespace());
-      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl);
+      return new KubeProcessFactory(workerConfigs, configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl);
     } else {
       return new DockerProcessFactory(
+          workerConfigs,
           configs.getWorkspaceRoot(),
           configs.getWorkspaceDockerMount(),
           configs.getLocalDockerMount(),

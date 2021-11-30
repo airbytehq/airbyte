@@ -48,6 +48,7 @@ import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.version_mismatch.VersionMismatchServer;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -285,6 +286,7 @@ public class ServerApp implements ServerRunnable {
           trackingClient,
           configs.getWorkerEnvironment(),
           configs.getLogConfigs(),
+          new WorkerConfigs(configs),
           configs.getWebappUrl(),
           configs.getAirbyteVersion(),
           configs.getWorkspaceRoot(),

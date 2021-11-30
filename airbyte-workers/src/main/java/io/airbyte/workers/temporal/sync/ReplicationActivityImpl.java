@@ -35,6 +35,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
 
+  private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
   private final SecretsHydrator secretsHydrator;
   private final Path workspaceRoot;
@@ -49,9 +50,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
   private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
       .setLogPrefix("runner") // todo: uniquely identify runner since we'll eventually have multiple runners
-      .setPrefixColor(LoggingHelper.Color.YELLOW);
+      .setPrefixColor(LoggingHelper.Color.MAGENTA);
 
-  public ReplicationActivityImpl(
+  public ReplicationActivityImpl(final WorkerConfigs workerConfigs,
                                  final ProcessFactory processFactory,
                                  final SecretsHydrator secretsHydrator,
                                  final Path workspaceRoot,
@@ -61,12 +62,13 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final String databasePassword,
                                  final String databaseUrl,
                                  final String airbyteVersion) {
-    this(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, new AirbyteConfigValidator(), databaseUser,
+    this(workerConfigs, processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, new AirbyteConfigValidator(), databaseUser,
         databasePassword, databaseUrl, airbyteVersion);
   }
 
   @VisibleForTesting
-  ReplicationActivityImpl(final ProcessFactory processFactory,
+  ReplicationActivityImpl(final WorkerConfigs workerConfigs,
+                          final ProcessFactory processFactory,
                           final SecretsHydrator secretsHydrator,
                           final Path workspaceRoot,
                           final WorkerEnvironment workerEnvironment,
@@ -76,6 +78,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                           final String databasePassword,
                           final String databaseUrl,
                           final String airbyteVersion) {
+    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
@@ -108,11 +111,17 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     };
 
     final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
-        workspaceRoot, workerEnvironment, logConfigs,
+        workspaceRoot,
+        workerEnvironment,
+        logConfigs,
         jobRunConfig,
         getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput, connectionId),
         inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
+        new CancellationHandler.TemporalCancellationHandler(),
+        databaseUser,
+        databasePassword,
+        databaseUrl,
+        airbyteVersion);
 
     final ReplicationOutput attemptOutput = temporalAttempt.get();
     final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
@@ -168,6 +177,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               "syncInput.json", Jsons.serialize(syncInput),
               "connectionId.json", Jsons.serialize(connectionId),
               "envMap.json", Jsons.serialize(System.getenv()));
+
+          // todo: logs for this process should also make it to kubernetes logging!
 
           // for now keep same failure behavior where this is heartbeating and depends on the parent worker to
           // exist
@@ -229,7 +240,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
         }
 
         LOGGER.debug("Closing sync runner process");
-        WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+        WorkerUtils.gentleClose(workerConfigs, process, 1, TimeUnit.MINUTES);
         if (process.isAlive() || process.exitValue() != 0) {
           LOGGER.error("Sync runner process wasn't successful");
         }

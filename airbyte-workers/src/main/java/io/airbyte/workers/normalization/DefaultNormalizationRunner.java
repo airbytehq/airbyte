@@ -16,6 +16,7 @@ import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
@@ -35,6 +36,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       .setLogPrefix("normalization")
       .setPrefixColor(Color.GREEN);
 
+  private final WorkerConfigs workerConfigs;
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
   private final String normalizationImageName;
@@ -51,7 +53,11 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     SNOWFLAKE
   }
 
-  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory, final String normalizationImageName) {
+  public DefaultNormalizationRunner(final WorkerConfigs workerConfigs,
+                                    final DestinationType destinationType,
+                                    final ProcessFactory processFactory,
+                                    final String normalizationImageName) {
+    this.workerConfigs = workerConfigs;
     this.destinationType = destinationType;
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImageName;
@@ -147,7 +153,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     }
 
     LOGGER.debug("Closing normalization process");
-    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(workerConfigs, process, 1, TimeUnit.MINUTES);
     if (process.isAlive() || process.exitValue() != 0) {
       throw new WorkerException("Normalization process wasn't successful");
     }

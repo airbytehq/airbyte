@@ -15,6 +15,7 @@ import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
@@ -39,6 +40,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
       .setLogPrefix("source")
       .setPrefixColor(Color.BLUE);
 
+  private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
   private final HeartbeatMonitor heartbeatMonitor;
@@ -46,14 +48,17 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
 
-  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
+  public DefaultAirbyteSource(final WorkerConfigs workerConfigs, final IntegrationLauncher integrationLauncher) {
+    this(workerConfigs, integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
+        new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
   @VisibleForTesting
-  DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
+  DefaultAirbyteSource(final WorkerConfigs workerConfigs,
+                       final IntegrationLauncher integrationLauncher,
                        final AirbyteStreamFactory streamFactory,
                        final HeartbeatMonitor heartbeatMonitor) {
+    this.workerConfigs = workerConfigs;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.heartbeatMonitor = heartbeatMonitor;
@@ -108,6 +113,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
     LOGGER.debug("Closing source process");
     WorkerUtils.gentleClose(
+        workerConfigs,
         sourceProcess,
         GRACEFUL_SHUTDOWN_DURATION.toMillis(),
         TimeUnit.MILLISECONDS);

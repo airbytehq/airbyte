@@ -12,6 +12,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
@@ -33,6 +34,7 @@ public class DockerProcessFactory implements ProcessFactory {
   private static final String IMAGE_EXISTS_SCRIPT = "image_exists.sh";
 
   private final String workspaceMountSource;
+  private final WorkerConfigs workerConfigs;
   private final Path workspaceRoot;
   private final String localMountSource;
   private final String networkName;
@@ -48,11 +50,13 @@ public class DockerProcessFactory implements ProcessFactory {
    * @param networkName docker network
    * @param isOrchestrator if the process needs to be able to launch containers
    */
-  public DockerProcessFactory(final Path workspaceRoot,
+  public DockerProcessFactory(final WorkerConfigs workerConfigs,
+                              final Path workspaceRoot,
                               final String workspaceMountSource,
                               final String localMountSource,
                               final String networkName,
                               final boolean isOrchestrator) {
+    this.workerConfigs = workerConfigs;
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
@@ -184,7 +188,7 @@ public class DockerProcessFactory implements ProcessFactory {
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
 
-      WorkerUtils.gentleClose(process, 10, TimeUnit.MINUTES);
+      WorkerUtils.gentleClose(workerConfigs, process, 10, TimeUnit.MINUTES);
 
       if (process.isAlive()) {
         throw new WorkerException("Process to check if image exists is stuck. Exiting.");

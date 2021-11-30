@@ -7,8 +7,8 @@ package io.airbyte.workers.process;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
 import java.net.InetAddress;
@@ -45,6 +45,7 @@ public class KubeProcessFactory implements ProcessFactory {
   private static final String WORKER_POD_LABEL_KEY = "airbyte";
   private static final String WORKER_POD_LABEL_VALUE = "worker-pod";
 
+  private final WorkerConfigs workerConfigs;
   private final String namespace;
   private final ApiClient officialClient;
   private final KubernetesClient fabricClient;
@@ -54,11 +55,13 @@ public class KubeProcessFactory implements ProcessFactory {
   /**
    * Sets up a process factory with the default processRunnerHost.
    */
-  public KubeProcessFactory(final String namespace,
+  public KubeProcessFactory(final WorkerConfigs workerConfigs,
+                            final String namespace,
                             final ApiClient officialClient,
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl) {
-    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()));
+    this(workerConfigs, namespace, officialClient, fabricClient, kubeHeartbeatUrl,
+        Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()));
   }
 
   /**
@@ -71,11 +74,13 @@ public class KubeProcessFactory implements ProcessFactory {
    *        injectable for testing.
    */
   @VisibleForTesting
-  public KubeProcessFactory(final String namespace,
+  public KubeProcessFactory(final WorkerConfigs workerConfigs,
+                            final String namespace,
                             final ApiClient officialClient,
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
                             final String processRunnerHost) {
+    this.workerConfigs = workerConfigs;
     this.namespace = namespace;
     this.officialClient = officialClient;
     this.fabricClient = fabricClient;
@@ -120,7 +125,7 @@ public class KubeProcessFactory implements ProcessFactory {
           podName,
           namespace,
           imageName,
-          WorkerUtils.DEFAULT_JOB_IMAGE_PULL_POLICY,
+          workerConfigs.getJobImagePullPolicy(),
           stdoutLocalPort,
           stderrLocalPort,
           kubeHeartbeatUrl,
@@ -128,13 +133,13 @@ public class KubeProcessFactory implements ProcessFactory {
           files,
           entrypoint,
           resourceRequirements,
-          WorkerUtils.DEFAULT_JOBS_IMAGE_PULL_SECRET,
-          WorkerUtils.DEFAULT_WORKER_POD_TOLERATIONS,
-          WorkerUtils.DEFAULT_WORKER_POD_NODE_SELECTORS,
+          workerConfigs.getJobImagePullSecret(),
+          workerConfigs.getWorkerPodTolerations(),
+          workerConfigs.getWorkerPodNodeSelectors(),
           allLabels,
-          WorkerUtils.JOB_SOCAT_IMAGE,
-          WorkerUtils.JOB_BUSYBOX_IMAGE,
-          WorkerUtils.JOB_CURL_IMAGE,
+          workerConfigs.getJobSocatImage(),
+          workerConfigs.getJobBusyboxImage(),
+          workerConfigs.getJobCurlImage(),
           internalToExternalPorts,
           args);
     } catch (final Exception e) {

@@ -35,11 +35,15 @@ public class DbtTransformationRunner implements AutoCloseable {
       .setLogPrefix("dbt")
       .setPrefixColor(Color.CYAN);
 
+  private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
   private final NormalizationRunner normalizationRunner;
   private Process process = null;
 
-  public DbtTransformationRunner(final ProcessFactory processFactory, final NormalizationRunner normalizationRunner) {
+  public DbtTransformationRunner(final WorkerConfigs workerConfigs,
+                                 final ProcessFactory processFactory,
+                                 final NormalizationRunner normalizationRunner) {
+    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.normalizationRunner = normalizationRunner;
   }
@@ -125,7 +129,7 @@ public class DbtTransformationRunner implements AutoCloseable {
     }
 
     LOGGER.debug("Closing dbt transformation process");
-    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(workerConfigs, process, 1, TimeUnit.MINUTES);
     if (process.isAlive() || process.exitValue() != 0) {
       throw new WorkerException("Dbt transformation process wasn't successful");
     }

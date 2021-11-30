@@ -15,7 +15,7 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -26,6 +26,7 @@ import java.util.function.Supplier;
 
 public class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
+  private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
   private final SecretsHydrator secretsHydrator;
   private final Path workspaceRoot;
@@ -36,7 +37,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   private final String databaseUrl;
   private final String airbyteVersion;
 
-  public CheckConnectionActivityImpl(final ProcessFactory processFactory,
+  public CheckConnectionActivityImpl(final WorkerConfigs workerConfigs,
+                                     final ProcessFactory processFactory,
                                      final SecretsHydrator secretsHydrator,
                                      final Path workspaceRoot,
                                      final WorkerEnvironment workerEnvironment,
@@ -45,6 +47,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
                                      final String databasePassword,
                                      final String databaseUrl,
                                      final String airbyteVersion) {
+    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
@@ -86,9 +89,9 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           Math.toIntExact(launcherConfig.getAttemptId()),
           launcherConfig.getDockerImage(),
           processFactory,
-          WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+          workerConfigs.getResourceRequirements());
 
-      return new DefaultCheckConnectionWorker(integrationLauncher);
+      return new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher);
     };
   }
 

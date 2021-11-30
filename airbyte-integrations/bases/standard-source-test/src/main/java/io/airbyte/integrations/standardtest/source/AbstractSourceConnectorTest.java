@@ -127,6 +127,7 @@ public abstract class AbstractSourceConnectorTest {
 
   protected void checkEntrypointEnvVariable() throws Exception {
     final String entrypoint = EntrypointEnvChecker.getEntrypointEnvVariable(
+        new WorkerConfigs(new EnvConfigs()),
         processFactory,
         String.valueOf(JOB_ID),
         JOB_ATTEMPT,

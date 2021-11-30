@@ -43,7 +43,7 @@ import io.airbyte.server.handlers.helpers.ConnectionMatcher;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
 import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.WorkerConfigs;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -63,20 +63,26 @@ public class ConnectionsHandler {
   private final Supplier<UUID> uuidGenerator;
   private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
+  private final WorkerConfigs workerConfigs;
 
   @VisibleForTesting
   ConnectionsHandler(final ConfigRepository configRepository,
                      final Supplier<UUID> uuidGenerator,
                      final WorkspaceHelper workspaceHelper,
-                     final TrackingClient trackingClient) {
+                     final TrackingClient trackingClient,
+                     final WorkerConfigs workerConfigs) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
     this.trackingClient = trackingClient;
+    this.workerConfigs = workerConfigs;
   }
 
-  public ConnectionsHandler(final ConfigRepository configRepository, final WorkspaceHelper workspaceHelper, final TrackingClient trackingClient) {
-    this(configRepository, UUID::randomUUID, workspaceHelper, trackingClient);
+  public ConnectionsHandler(final ConfigRepository configRepository,
+                            final WorkspaceHelper workspaceHelper,
+                            final TrackingClient trackingClient,
+                            final WorkerConfigs workerConfigs) {
+    this(configRepository, UUID::randomUUID, workspaceHelper, trackingClient, workerConfigs);
   }
 
   private void validateWorkspace(final UUID sourceId, final UUID destinationId, final Set<UUID> operationIds) {
@@ -131,7 +137,7 @@ public class ConnectionsHandler {
           .withMemoryRequest(connectionCreate.getResourceRequirements().getMemoryRequest())
           .withMemoryLimit(connectionCreate.getResourceRequirements().getMemoryLimit()));
     } else {
-      standardSync.withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+      standardSync.withResourceRequirements(workerConfigs.getResourceRequirements());
     }
 
     // TODO Undesirable behavior: sending a null configured catalog should not be valid?
@@ -217,7 +223,7 @@ public class ConnectionsHandler {
           .withMemoryRequest(connectionUpdate.getResourceRequirements().getMemoryRequest())
           .withMemoryLimit(connectionUpdate.getResourceRequirements().getMemoryLimit()));
     } else {
-      newConnection.withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+      newConnection.withResourceRequirements(workerConfigs.getResourceRequirements());
     }
 
     // update sync schedule
@@ -392,11 +398,12 @@ public class ConnectionsHandler {
           .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
           .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()));
     } else {
+      final io.airbyte.config.ResourceRequirements resourceRequirements = workerConfigs.getResourceRequirements();
       connectionRead.resourceRequirements(new ResourceRequirements()
-          .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
-          .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
-          .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
-          .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+          .cpuRequest(resourceRequirements.getCpuRequest())
+          .cpuLimit(resourceRequirements.getCpuLimit())
+          .memoryRequest(resourceRequirements.getMemoryRequest())
+          .memoryLimit(resourceRequirements.getMemoryLimit()));
     }
     return connectionRead;
   }

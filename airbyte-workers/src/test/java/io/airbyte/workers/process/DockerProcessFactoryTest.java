@@ -12,6 +12,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
@@ -42,7 +44,7 @@ class DockerProcessFactoryTest {
     LineGobbler.gobble(process.getInputStream(), out::append);
     LineGobbler.gobble(process.getErrorStream(), err::append);
 
-    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(new WorkerConfigs(new EnvConfigs()), process, 1, TimeUnit.MINUTES);
 
     assertEquals(0, process.exitValue(),
         String.format("Error while checking for jq. STDOUT: %s STDERR: %s Please make sure jq is installed (used by testImageExists)", out, err));
@@ -57,7 +59,7 @@ class DockerProcessFactoryTest {
   public void testImageExists() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
-    final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "", false);
+    final DockerProcessFactory processFactory = new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, "", "", "", false);
     assertTrue(processFactory.checkImageExists("busybox"));
   }
 
@@ -65,7 +67,7 @@ class DockerProcessFactoryTest {
   public void testImageDoesNotExist() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
-    final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "", false);
+    final DockerProcessFactory processFactory = new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, "", "", "", false);
     assertFalse(processFactory.checkImageExists("airbyte/fake:0.1.2"));
   }
 
@@ -75,9 +77,10 @@ class DockerProcessFactoryTest {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
     final Path jobRoot = workspaceRoot.resolve("job");
 
-    final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "", isOrchestrator);
+    final DockerProcessFactory processFactory =
+        new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, "", "", "", isOrchestrator);
     processFactory.create("job_id", 0, jobRoot, "busybox", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of());
+        new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(), Map.of());
 
     assertEquals(
         Jsons.jsonNode(ImmutableMap.of("data", 2)),

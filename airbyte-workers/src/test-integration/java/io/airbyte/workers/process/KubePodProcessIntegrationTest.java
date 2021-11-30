@@ -10,8 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -63,7 +64,7 @@ public class KubePodProcessIntegrationTest {
     fabricClient = new DefaultKubernetesClient();
 
     KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
-    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost());
+    processFactory = new KubeProcessFactory(new WorkerConfigs(new EnvConfigs()), "default", officialClient, fabricClient, heartbeatUrl, getHost());
   }
 
   @BeforeEach
@@ -186,7 +187,10 @@ public class KubePodProcessIntegrationTest {
         "busybox:latest",
         false,
         files,
-        entrypoint, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, Map.of());
+        entrypoint,
+        new WorkerConfigs(new EnvConfigs()).getResourceRequirements(),
+        Map.of(),
+        Map.of());
   }
 
   private static Set<Integer> getOpenPorts(final int count) {
