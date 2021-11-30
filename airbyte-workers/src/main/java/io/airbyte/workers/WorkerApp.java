@@ -152,6 +152,8 @@ public class WorkerApp {
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionUpdaterWorkflowImpl.class);
     connectionUpdaterWorker.registerWorkflowImplementationTypes(EmptySyncWorkflow.class);
+
+    factory.start();
   }
 
   private static ProcessFactory getProcessBuilderFactory(final Configs configs) throws IOException {
