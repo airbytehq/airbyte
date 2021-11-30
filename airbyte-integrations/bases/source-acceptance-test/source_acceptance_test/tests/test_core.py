@@ -254,7 +254,7 @@ class TestBasicRead(BaseTest):
 
     def _validate_field_appears_at_least_once(self, records: List, configured_catalog: ConfiguredAirbyteCatalog):
         """
-        Validate if each field in a stream has appeared it least once in some record.
+        Validate if each field in a stream has appeared at least once in some record.
         """
 
         stream_name_to_empty_fields_mapping = {}
