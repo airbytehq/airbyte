@@ -87,14 +87,11 @@
           "type": ["null", "number"],
           "multipleOf": 1e-10
         }
-      },
-      "patternProperties": {
-        ".+": {}
       }
     },
     "location_id": {
       "type": ["null", "integer"]
     }
   },
-  "type": "object"
+  "type": ["null", "object"]
 }
