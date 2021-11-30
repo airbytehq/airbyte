@@ -50,8 +50,16 @@ class MyFacebookAdsApi(FacebookAdsApi):
             usage_header_business_loaded = json.loads(usage_header_business)
             for business_object_id in usage_header_business_loaded:
                 usage_limits = usage_header_business_loaded.get(business_object_id)[0]
-                usage = max(usage, usage_limits.get("call_count"), usage_limits.get("total_cputime"), usage_limits.get("total_time"))
-                pause_interval = max(pause_interval, pendulum.duration(minutes=usage_limits.get("estimated_time_to_regain_access", 0)))
+                usage = max(
+                    usage,
+                    usage_limits.get("call_count"),
+                    usage_limits.get("total_cputime"),
+                    usage_limits.get("total_time"),
+                )
+                pause_interval = max(
+                    pause_interval,
+                    pendulum.duration(minutes=usage_limits.get("estimated_time_to_regain_access", 0)),
+                )
 
         return usage, pause_interval
 
