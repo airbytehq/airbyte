@@ -139,7 +139,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
 - name: SFTP-JSON
