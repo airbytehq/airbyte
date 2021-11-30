@@ -98,6 +98,12 @@ class Boards(TrelloStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "members/me/boards"
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        board_ids = self.config.get("board_ids", [])
+        for record in super().parse_response(response, **kwargs):
+            if not board_ids or record["id"] in board_ids:
+                yield record
+
 
 class Cards(ChildStreamMixin, TrelloStream):
     """Return list of all cards of a boards.
