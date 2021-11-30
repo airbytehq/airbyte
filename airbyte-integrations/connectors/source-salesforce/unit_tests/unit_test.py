@@ -89,6 +89,28 @@ def test_bulk_sync_creation_failed(stream_bulk_config, stream_bulk_api):
         assert err.value.response.json()[0]["message"] == "test_error"
 
 
+def test_bulk_sync_unsupported_stream(stream_bulk_config, stream_bulk_api, caplog):
+    stream_name = "AcceptedEventRelation"
+    stream: BulkIncrementalSalesforceStream = _generate_stream(stream_name, stream_bulk_config, stream_bulk_api)
+    with requests_mock.Mocker() as m:
+        m.register_uri(
+            "POST",
+            stream.path(),
+            status_code=400,
+            json=[{"errorCode": "INVALIDENTITY", "message": f"Entity '{stream_name}' is not supported by the Bulk API."}],
+        )
+        list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+        logs = caplog.records
+
+        assert logs
+        assert logs[1].levelname == "ERROR"
+        assert (
+            logs[1].msg
+            == f"Cannot receive data for stream '{stream_name}' using BULK API, error message: 'Entity '{stream_name}' is not supported by the Bulk API.'"
+        )
+
+
 @pytest.mark.parametrize("item_number", [0, 15, 2000, 2324, 193434])
 def test_bulk_sync_pagination(item_number, stream_bulk_config, stream_bulk_api):
     stream: BulkIncrementalSalesforceStream = _generate_stream("Account", stream_bulk_config, stream_bulk_api)
