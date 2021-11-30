@@ -483,7 +483,7 @@
     },
     "avroObject": {
       "user": {
-        "created_at": "1634982000",
+        "created_at": 1634982000,
         "_airbyte_additional_properties": null
       },
       "_airbyte_additional_properties": null

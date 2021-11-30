@@ -41,6 +41,7 @@ public class JsonToAvroSchemaConverter {
   private static final Schema UUID_SCHEMA = LogicalTypes.uuid()
       .addToSchema(Schema.create(Schema.Type.STRING));
   private static final Schema NULL_SCHEMA = Schema.create(Schema.Type.NULL);
+  private static final Schema STRING_SCHEMA = Schema.create(Schema.Type.STRING);
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonToAvroSchemaConverter.class);
   private static final Schema TIMESTAMP_MILLIS_SCHEMA = LogicalTypes.timestampMillis()
       .addToSchema(Schema.create(Schema.Type.LONG));
@@ -234,7 +235,7 @@ public class JsonToAvroSchemaConverter {
    */
   Schema getNullableFieldTypes(final String fieldName, final JsonNode fieldDefinition) {
     // Filter out null types, which will be added back in the end.
-    final LinkedList<Schema> nonNullFieldTypes = getNonNullTypes(fieldName, fieldDefinition)
+    final List<Schema> nonNullFieldTypes = getNonNullTypes(fieldName, fieldDefinition)
         .stream()
         .flatMap(fieldType -> {
           final Schema singleFieldSchema = getSingleFieldType(fieldName, fieldType, fieldDefinition);
@@ -245,7 +246,7 @@ public class JsonToAvroSchemaConverter {
           }
         })
         .distinct()
-        .collect(Collectors.toCollection(LinkedList::new));
+        .collect(Collectors.toList());
 
     if (nonNullFieldTypes.isEmpty()) {
       return Schema.create(Schema.Type.NULL);
@@ -254,10 +255,11 @@ public class JsonToAvroSchemaConverter {
       if (!nonNullFieldTypes.contains(NULL_SCHEMA)) {
         nonNullFieldTypes.add(0, NULL_SCHEMA);
       }
+      // Logical types are converted to a union of logical type itself and string. The purpose is to default the logical type field to a string, if the value of the logical type field is invalid and cannot be properly processed.
       if ((nonNullFieldTypes
           .stream().anyMatch(schema -> schema.getLogicalType() != null)) &&
-          (!nonNullFieldTypes.contains(Schema.create(Schema.Type.STRING)))) {
-        nonNullFieldTypes.addLast(Schema.create(Schema.Type.STRING));
+          (!nonNullFieldTypes.contains(STRING_SCHEMA))) {
+        nonNullFieldTypes.add(STRING_SCHEMA);
       }
       return Schema.createUnion(nonNullFieldTypes);
     }
