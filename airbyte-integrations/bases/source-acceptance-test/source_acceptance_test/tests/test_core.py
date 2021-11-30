@@ -3,7 +3,9 @@
 #
 
 import logging
+import re
 from collections import Counter, defaultdict
+from copy import copy
 from functools import reduce
 from logging import Logger
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set
@@ -221,11 +223,22 @@ class TestBasicRead(BaseTest):
         assert not streams_without_records, f"All streams should return some records, streams without records: {streams_without_records}"
 
     def _validate_field_appears_at_least_once_in_stream(self, records: List, schema: Dict):
+        """
+        Get all possible schema paths, then diff with existing record paths.
+        In case of `oneOf` or `anyOf` schema props, compare only choice which is present in records.
+        """
         expected_paths = get_expected_schema_structure(schema, annotate_one_of=True)
         expected_paths = set(flatten(tuple(expected_paths)))
+
         for record in records:
             record_paths = set(get_object_structure(record))
-            expected_paths -= record_paths
+            paths_to_remove = {path for path in expected_paths if re.sub(r"\([0-9]*\)", "", path) in record_paths}
+            for path in paths_to_remove:
+                path_parts = re.split(r"\([0-9]*\)", path)
+                if len(path_parts) > 1:
+                    expected_paths -= {path for path in expected_paths if path_parts[0] in path}
+            expected_paths -= paths_to_remove
+
         return sorted(list(expected_paths))
 
     def _validate_field_appears_at_least_once(self, records: List, configured_catalog: ConfiguredAirbyteCatalog):
