@@ -206,12 +206,12 @@ class SourceTrello(AbstractSource):
 
             authenticator = self._get_authenticator(config)
 
-            session = requests.get(url, headers=authenticator.get_auth_header())
-            session.raise_for_status()
-            available_boards = {row.get("id") for row in session.json()}
+            response = requests.get(url, headers=authenticator.get_auth_header())
+            response.raise_for_status()
+            available_boards = {row.get("id") for row in response.json()}
             for board_id in config.get("board_ids", []):
                 if board_id not in available_boards:
-                    raise Exception(f"board_id {board_id} not found")
+                    return False, f"board_id {board_id} not found"
 
             return True, None
         except requests.exceptions.RequestException as e:
