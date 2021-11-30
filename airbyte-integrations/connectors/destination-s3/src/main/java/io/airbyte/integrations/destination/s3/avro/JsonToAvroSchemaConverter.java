@@ -12,7 +12,6 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -255,7 +254,9 @@ public class JsonToAvroSchemaConverter {
       if (!nonNullFieldTypes.contains(NULL_SCHEMA)) {
         nonNullFieldTypes.add(0, NULL_SCHEMA);
       }
-      // Logical types are converted to a union of logical type itself and string. The purpose is to default the logical type field to a string, if the value of the logical type field is invalid and cannot be properly processed.
+      // Logical types are converted to a union of logical type itself and string. The purpose is to
+      // default the logical type field to a string, if the value of the logical type field is invalid and
+      // cannot be properly processed.
       if ((nonNullFieldTypes
           .stream().anyMatch(schema -> schema.getLogicalType() != null)) &&
           (!nonNullFieldTypes.contains(STRING_SCHEMA))) {
