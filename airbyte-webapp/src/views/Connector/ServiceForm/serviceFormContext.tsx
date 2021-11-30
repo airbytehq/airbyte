@@ -1,7 +1,9 @@
 import React, { useContext, useMemo } from "react";
+import { getIn, useFormikContext } from "formik";
 
 import { WidgetConfigMap } from "core/form/types";
 import {
+  Connector,
   ConnectorDefinition,
   ConnectorDefinitionSpecification,
 } from "core/domain/connector";
@@ -12,6 +14,7 @@ type Context = {
   selectedConnector?: ConnectorDefinitionSpecification;
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
+  isAuthFlowSelected?: boolean;
   isRequestConnectorModalOpen: boolean;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
@@ -40,17 +43,40 @@ const ServiceFormContextProvider: React.FC<{
   widgetsInfo: WidgetConfigMap;
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
-  selectedService?: ConnectorDefinition;
+  serviceType?: string;
+  availableServices: ConnectorDefinition[];
   selectedConnector?: ConnectorDefinitionSpecification;
   isEditMode?: boolean;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
-}> = ({ children, widgetsInfo, setUiWidgetsInfo, ...props }) => {
+}> = ({
+  availableServices,
+  serviceType,
+  children,
+  widgetsInfo,
+  setUiWidgetsInfo,
+  ...props
+}) => {
+  const selectedService = availableServices.find(
+    (s) => Connector.id(s) === serviceType
+  );
+  const { values } = useFormikContext();
+  const isAuthFlowSelected = props.selectedConnector?.advancedAuth
+    ? getIn(
+        values,
+        [
+          "connectionConfiguration",
+          ...(props.selectedConnector?.advancedAuth.predicate_key ?? []),
+        ].join(".")
+      ) === props.selectedConnector?.advancedAuth.predicate_value
+    : false;
+
   const ctx = useMemo<Context>(() => {
     const unfinishedFlows = widgetsInfo["_common.unfinishedFlows"] ?? {};
     return {
       widgetsInfo,
+      isAuthFlowSelected,
       setUiWidgetsInfo,
-      selectedService: props.selectedService,
+      selectedService,
       selectedConnector: props.selectedConnector,
       formType: props.formType,
       isLoadingSchema: props.isLoadingSchema,
@@ -73,7 +99,13 @@ const ServiceFormContextProvider: React.FC<{
         setUiWidgetsInfo("_common.unfinishedFlows", {});
       },
     };
-  }, [props, widgetsInfo, setUiWidgetsInfo]);
+  }, [
+    props,
+    widgetsInfo,
+    isAuthFlowSelected,
+    selectedService,
+    setUiWidgetsInfo,
+  ]);
 
   return (
     <FormWidgetContext.Provider value={ctx}>

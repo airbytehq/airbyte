@@ -15,14 +15,15 @@ export const buildPathInitialState = (
           formValues,
           widgetStateBuilder
         );
-      case "formItem":
+      case "formItem": {
         widgetStateBuilder[formItem.path] = {};
         return widgetStateBuilder;
-      case "formCondition":
+      }
+      case "formCondition": {
         const defaultCondition = Object.entries(formItem.conditions).find(
           ([key, subConditionItems]) => {
             switch (subConditionItems._type) {
-              case "formGroup":
+              case "formGroup": {
                 const selectedValues = get(formValues, subConditionItems.path);
 
                 const subPathSchema = buildYupFormForJsonSchema({
@@ -34,6 +35,7 @@ export const buildPathInitialState = (
                   return key;
                 }
                 return null;
+              }
               case "formItem":
                 return key;
             }
@@ -56,6 +58,7 @@ export const buildPathInitialState = (
             widgetStateBuilder
           );
         }
+      }
     }
 
     return widgetStateBuilder;

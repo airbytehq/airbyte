@@ -69,9 +69,9 @@ function applyFuncAt(
   schema: JSONSchema7Definition,
   path: (string | number)[],
   f: (schema: JSONSchema7Definition) => JSONSchema7
-): JSONSchema7 {
+): JSONSchema7Definition {
   if (typeof schema === "boolean") {
-    return schema as any;
+    return schema;
   }
 
   const [pathElem, ...restPath] = path;
