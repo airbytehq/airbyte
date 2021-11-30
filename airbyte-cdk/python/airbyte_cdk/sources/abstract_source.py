@@ -28,6 +28,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
+from airbyte_cdk.utils.event_timing import create_timer
 
 
 class AbstractSource(Source, ABC):
@@ -90,24 +91,28 @@ class AbstractSource(Source, ABC):
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
         self._stream_to_instance_map = stream_instances
-        for configured_stream in catalog.streams:
-            stream_instance = stream_instances.get(configured_stream.stream.name)
-            if not stream_instance:
-                raise KeyError(
-                    f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
-                )
+        with create_timer(self.name) as timer:
+            for configured_stream in catalog.streams:
+                stream_instance = stream_instances.get(configured_stream.stream.name)
+                if not stream_instance:
+                    raise KeyError(
+                        f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
+                    )
 
-            try:
-                yield from self._read_stream(
-                    logger=logger,
-                    stream_instance=stream_instance,
-                    configured_stream=configured_stream,
-                    connector_state=connector_state,
-                    internal_config=internal_config,
-                )
-            except Exception as e:
-                logger.exception(f"Encountered an exception while reading stream {self.name}")
-                raise e
+                try:
+                    yield from self._read_stream(
+                        logger=logger,
+                        stream_instance=stream_instance,
+                        configured_stream=configured_stream,
+                        connector_state=connector_state,
+                        internal_config=internal_config,
+                    )
+                except Exception as e:
+                    logger.exception(f"Encountered an exception while reading stream {self.name}")
+                    raise e
+                finally:
+                    logger.info(f"Finished syncing {self.name}")
+                    logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
 
