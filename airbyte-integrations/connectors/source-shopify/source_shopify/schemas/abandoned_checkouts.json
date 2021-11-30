@@ -215,39 +215,7 @@
           "applied_discounts": {
             "type": ["null", "array"],
             "items": {
-              "oneOf": [
-                {
-                  "type": ["null", "string"]
-                },
-                {
-                  "type": ["null", "integer"]
-                },
-                {
-                  "type": ["null", "number"]
-                },
-                {
-                  "type": ["null", "boolean"]
-                },
-                {
-                  "type": ["null", "array"],
-                  "items": {
-                    "oneOf": [
-                      {
-                        "type": ["null", "string"]
-                      },
-                      {
-                        "type": ["null", "integer"]
-                      },
-                      {
-                        "type": ["null", "number"]
-                      },
-                      {
-                        "type": ["null", "boolean"]
-                      }
-                    ]
-                  }
-                }
-              ]
+              "type": ["null", "string"]
             }
           },
           "total_discount_set": {
@@ -621,39 +589,7 @@
           "applied_discounts": {
             "type": ["null", "array"],
             "items": {
-              "oneOf": [
-                {
-                  "type": ["null", "string"]
-                },
-                {
-                  "type": ["null", "integer"]
-                },
-                {
-                  "type": ["null", "number"]
-                },
-                {
-                  "type": ["null", "boolean"]
-                },
-                {
-                  "type": ["null", "array"],
-                  "items": {
-                    "oneOf": [
-                      {
-                        "type": ["null", "string"]
-                      },
-                      {
-                        "type": ["null", "integer"]
-                      },
-                      {
-                        "type": ["null", "number"]
-                      },
-                      {
-                        "type": ["null", "boolean"]
-                      }
-                    ]
-                  }
-                }
-              ]
+              "type": ["null", "string"]
             }
           },
           "phone": {

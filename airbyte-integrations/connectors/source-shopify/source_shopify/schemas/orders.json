@@ -1938,47 +1938,7 @@
                     "properties": {
                       "type": ["null", "array"],
                       "items": {
-                        "oneOf": [
-                          {
-                            "type": ["null", "string"]
-                          },
-                          {
-                            "type": ["null", "object"],
-                            "additionaProperties": true
-                          },
-                          {
-                            "type": ["null", "integer"]
-                          },
-                          {
-                            "type": ["null", "number"]
-                          },
-                          {
-                            "type": ["null", "boolean"]
-                          },
-                          {
-                            "type": ["null", "array"],
-                            "items": {
-                              "oneOf": [
-                                {
-                                  "type": ["null", "string"]
-                                },
-                                {
-                                  "type": ["null", "object"],
-                                  "additionaProperties": true
-                                },
-                                {
-                                  "type": ["null", "integer"]
-                                },
-                                {
-                                  "type": ["null", "number"]
-                                },
-                                {
-                                  "type": ["null", "boolean"]
-                                }
-                              ]
-                            }
-                          }
-                        ]
+                        "type": ["null", "string"]
                       }
                     },
                     "quantity": {
