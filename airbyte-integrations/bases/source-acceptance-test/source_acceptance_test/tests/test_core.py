@@ -5,10 +5,9 @@
 import logging
 import re
 from collections import Counter, defaultdict
-from copy import copy
 from functools import reduce
 from logging import Logger
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set
+from typing import Any, Dict, List, Mapping, MutableMapping, Set
 
 import dpath.util
 import pytest
