@@ -65,14 +65,19 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -1133,11 +1138,15 @@ public abstract class DestinationAcceptanceTest {
         .peek(recordMessage -> recordMessage.setEmittedAt(null))
         .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
         .map(AirbyteRecordMessage::getData)
+        .peek(this::sortDataFields)
+        .sorted(Comparator.comparing(JsonNode::toString))
         .collect(Collectors.toList());
 
     final List<JsonNode> actualProcessed = actual.stream()
         .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
         .map(AirbyteRecordMessage::getData)
+        .peek(this::sortDataFields)
+        .sorted(Comparator.comparing(JsonNode::toString))
         .collect(Collectors.toList());
 
     assertSameData(expectedProcessed, actualProcessed);
@@ -1173,6 +1182,21 @@ public abstract class DestinationAcceptanceTest {
         assertSameValue(expectedValue, actualValue);
       }
     }
+  }
+
+  /**
+   * Method that will sort all fields by name and rewrite JsonNode in sorted order
+   *
+   * @param data - data node from AirbyteMessage
+   */
+  private void sortDataFields(JsonNode data) {
+    var sortedFields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
+        Spliterator.ORDERED), false)
+        .sorted(Entry.comparingByKey(Comparator.comparing(String::toLowerCase)))
+        .collect(Collectors.toList());
+    ((ObjectNode) data).removeAll();
+    IntStream.range(0, sortedFields.size())
+        .forEach(i -> ((ObjectNode) data).set(sortedFields.get(i).getKey(), sortedFields.get(i).getValue()));
   }
 
   // Allows subclasses to implement custom comparison asserts
