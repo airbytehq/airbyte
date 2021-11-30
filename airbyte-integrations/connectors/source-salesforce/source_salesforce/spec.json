@@ -4,12 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Salesforce Source Spec",
     "type": "object",
-    "required": [
-      "client_id",
-      "client_secret",
-      "refresh_token",
-      "api_type"
-    ],
+    "required": ["client_id", "client_secret", "refresh_token", "api_type"],
     "additionalProperties": false,
     "properties": {
       "client_id": {

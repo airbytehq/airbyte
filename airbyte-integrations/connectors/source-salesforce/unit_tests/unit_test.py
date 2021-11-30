@@ -228,13 +228,27 @@ def test_bulk_sync_failed_retry(stream_bulk_config, stream_bulk_api):
         ("REST", False, "ActiveFeatureLicenseMetric", None),
     ],
 )
-def test_stream_start_date(api_type, start_date_provided, stream_name, expected_start_date, 
-    stream_bulk_config, stream_bulk_api, stream_rest_config, stream_rest_api, stream_rest_config_without_start_date, stream_bulk_config_without_start_date):
+def test_stream_start_date(
+    api_type,
+    start_date_provided,
+    stream_name,
+    expected_start_date,
+    stream_bulk_config,
+    stream_bulk_api,
+    stream_rest_config,
+    stream_rest_api,
+    stream_rest_config_without_start_date,
+    stream_bulk_config_without_start_date,
+):
     if start_date_provided:
         stream_config, stream_api = (stream_rest_config, stream_rest_api) if api_type == "REST" else (stream_bulk_config, stream_bulk_api)
         stream = _generate_stream(stream_name, stream_config, stream_api)
     else:
-        stream_config, stream_api = (stream_rest_config_without_start_date, stream_rest_api) if api_type == "REST" else (stream_bulk_config_without_start_date, stream_bulk_api)
+        stream_config, stream_api = (
+            (stream_rest_config_without_start_date, stream_rest_api)
+            if api_type == "REST"
+            else (stream_bulk_config_without_start_date, stream_bulk_api)
+        )
         stream = _generate_stream(stream_name, stream_config, stream_api)
 
     assert stream.start_date == expected_start_date

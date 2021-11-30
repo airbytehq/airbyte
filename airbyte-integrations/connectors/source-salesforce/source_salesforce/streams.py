@@ -269,7 +269,7 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
     def format_start_date(start_date: Optional[str]) -> Optional[str]:
         """Transform the format `2021-07-25` into the format `2021-07-25T00:00:00Z`"""
         if start_date:
-            return pendulum.parse(start_date).strftime('%Y-%m-%dT%H:%M:%SZ')
+            return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def next_page_token(self, response: requests.Response) -> str:
         response_data = response.json()
