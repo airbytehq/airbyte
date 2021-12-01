@@ -96,9 +96,4 @@ class AbstractFileParser(ABC):
         :param reverse: switch to True for PyArrow schema -> Json schema, defaults to False
         :return: converted schema dict
         """
-        return {
-            column: AbstractFileParser.json_type_to_pyarrow_type(
-                json_type, reverse=reverse
-            )
-            for column, json_type in schema.items()
-        }
+        return {column: AbstractFileParser.json_type_to_pyarrow_type(json_type, reverse=reverse) for column, json_type in schema.items()}
