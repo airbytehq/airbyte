@@ -14,7 +14,6 @@ import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceSearch;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -111,14 +110,7 @@ public class SourceHandler {
 
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    final UUID sourceId = sourceIdRequestBody.getSourceId();
-    final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
-
-    if (sourceConnection.getTombstone()) {
-      throw new ConfigNotFoundException(ConfigSchema.SOURCE_CONNECTION, sourceId.toString());
-    }
-
-    return buildSourceRead(sourceId);
+    return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
