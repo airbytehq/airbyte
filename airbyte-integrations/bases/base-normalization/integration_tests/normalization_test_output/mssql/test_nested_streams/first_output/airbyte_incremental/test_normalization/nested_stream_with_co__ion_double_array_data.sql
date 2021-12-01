@@ -36,8 +36,8 @@ from "test_normalization".test_normalization."nested_stream_with_co___long_names
 -- double_array_data at nested_stream_with_complex_columns_resulting_into_long_names/partition/double_array_data
 
     CROSS APPLY (
-	    SELECT [value] = CASE 
-			WHEN [type] = 4 THEN (SELECT [value] FROM OPENJSON([value])) 
+	    SELECT [value] = CASE
+			WHEN [type] = 4 THEN (SELECT [value] FROM OPENJSON([value]))
 			WHEN [type] = 5 THEN [value]
 			END
 	    FROM OPENJSON(double_array_data)

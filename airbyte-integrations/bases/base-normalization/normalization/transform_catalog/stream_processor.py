@@ -397,7 +397,7 @@ where 1 = 1
             col_emitted_at=self.get_emitted_at(),
             col_normalized_at=self.get_normalized_at(),
             table_alias=table_alias,
-            unnesting_before_query=self.unnesting_before_query(),
+            unnesting_before_query=self.unnesting_before_query(from_table),
             parent_hash_id=self.parent_hash_id(),
             fields=self.extract_json_columns(column_names),
             from_table=jinja_call(from_table),
@@ -1051,7 +1051,7 @@ where 1 = 1
                 config["cluster_by"] = '["_AIRBYTE_EMITTED_AT"]'
         if unique_key:
             config["unique_key"] = f'"{unique_key}"'
-        elif not self.is_nested_array:
+        elif not self.parent:
             # in nested arrays, each element is sharing the same _airbyte_ab_id, so it's not unique
             config["unique_key"] = self.get_ab_id(in_jinja=True)
         return config
@@ -1107,14 +1107,11 @@ where 1 = 1
             return self.parent.hash_id(in_jinja)
         return ""
 
-    def unnesting_before_query(self) -> str:
+    def unnesting_before_query(self, from_table: str) -> str:
         if self.parent and self.is_nested_array:
-            parent_file_name = (
-                f"'{self.tables_registry.get_file_name(self.parent.get_schema(False), self.parent.json_path, self.parent.stream_name, '')}'"
-            )
             parent_stream_name = f"'{self.parent.normalized_stream_name()}'"
             quoted_field = self.name_transformer.normalize_column_name(self.stream_name, in_jinja=True)
-            return jinja_call(f"unnest_cte({parent_file_name}, {parent_stream_name}, {quoted_field})")
+            return jinja_call(f"unnest_cte({from_table}, {parent_stream_name}, {quoted_field})")
         return ""
 
     def unnesting_from(self) -> str:
