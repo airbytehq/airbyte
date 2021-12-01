@@ -5,7 +5,6 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,8 +12,6 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
@@ -28,19 +25,16 @@ import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
-import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.ConnectorSpecificationHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -137,35 +131,6 @@ class DestinationHandlerTest {
   }
 
   @Test
-  void testDeleteDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final JsonNode newConfiguration = destinationConnection.getConfiguration();
-    ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
-
-    final DestinationConnection expectedDestinationConnection = Jsons.clone(destinationConnection).withTombstone(true);
-    final DestinationIdRequestBody destinationId = new DestinationIdRequestBody().destinationId(destinationConnection.getDestinationId());
-    final StandardSync standardSync = ConnectionHelpers.generateSyncWithDestinationId(destinationConnection.getDestinationId());
-    final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
-    final ConnectionReadList connectionReadList = new ConnectionReadList().connections(Collections.singletonList(connectionRead));
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destinationConnection.getWorkspaceId());
-
-    when(configRepository.getDestinationConnectionWithSecrets(destinationConnection.getDestinationId()))
-        .thenReturn(destinationConnection)
-        .thenReturn(expectedDestinationConnection);
-    when(configRepository.getDestinationConnection(destinationConnection.getDestinationId()))
-        .thenReturn(destinationConnection)
-        .thenReturn(expectedDestinationConnection);
-    when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
-        .thenReturn(standardDestinationDefinition);
-    when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
-
-    destinationHandler.deleteDestination(destinationId);
-
-    verify(configRepository).writeDestinationConnection(expectedDestinationConnection, connectorSpecification);
-    verify(connectionsHandler).listConnectionsForWorkspace(workspaceIdRequestBody);
-    verify(connectionsHandler).deleteConnection(connectionRead);
-  }
-
-  @Test
   void testUpdateDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
     final String updatedDestName = "my updated dest name";
     final JsonNode newConfiguration = destinationConnection.getConfiguration();
@@ -230,18 +195,6 @@ class DestinationHandlerTest {
     assertEquals(expectedDestinationRead, actualDestinationRead);
     verify(secretsProcessor)
         .maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
-  }
-
-  @Test
-  void testGetDeletedDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final UUID destinationId = destinationConnection.getDestinationId();
-    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(destinationId);
-    final DestinationConnection deleted = DestinationHelpers.generateDestination(destinationId, true);
-
-    when(configRepository.getDestinationConnection(destinationId))
-        .thenReturn(deleted);
-
-    assertThrows(ConfigNotFoundException.class, () -> destinationHandler.getDestination(destinationIdRequestBody));
   }
 
   @Test
