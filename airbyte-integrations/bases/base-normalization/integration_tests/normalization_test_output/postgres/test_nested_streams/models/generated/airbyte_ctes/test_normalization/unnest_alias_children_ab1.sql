@@ -5,7 +5,7 @@
 ) }}
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 -- depends_on: {{ ref('unnest_alias') }}
-{{ unnest_cte('unnest_alias', 'unnest_alias', 'children') }}
+{{ unnest_cte(ref('unnest_alias'), 'unnest_alias', 'children') }}
 select
     _airbyte_unnest_alias_hashid,
     {{ json_extract_scalar(unnested_column_value('children'), ['ab_id'], ['ab_id']) }} as ab_id,
