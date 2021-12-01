@@ -17,8 +17,10 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 3600
+      # some streams hold data only for some time, therefore certain streams could be empty while sync.
+      # 'abandoned_checkouts' stream holds data up to 1 month.
       empty_streams: ["abandoned_checkouts"]
-      timeout_seconds: 1200
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
@@ -26,4 +28,4 @@ tests:
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 1200
+      timeout_seconds: 3600

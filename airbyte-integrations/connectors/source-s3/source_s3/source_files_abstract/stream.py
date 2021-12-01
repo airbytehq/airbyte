@@ -84,10 +84,12 @@ class FileStream(Stream, ABC):
             error_msg = f"Failed to parse schema {repr(err)}\n{schema}\n{format_exc()}"
             raise ConfigurationError(error_msg) from err
         # enforce all keys and values are of type string as required (i.e. no nesting)
-        if not all([isinstance(k, str) and isinstance(v, str) for k, v in py_schema.items()]):
+        if not all(
+            isinstance(k, str) and isinstance(v, str) for k, v in py_schema.items()
+        ):
             raise ConfigurationError("Invalid schema provided, all column names and datatypes must be in string format")
         # enforce all values (datatypes) are valid JsonSchema datatypes
-        if not all([datatype in JSON_TYPES for datatype in py_schema.values()]):
+        if any(datatype not in JSON_TYPES for datatype in py_schema.values()):
             raise ConfigurationError(f"Invalid schema provided, datatypes must each be one of {JSON_TYPES}")
 
         return py_schema
@@ -123,7 +125,7 @@ class FileStream(Stream, ABC):
         """
 
     @abstractmethod
-    def filepath_iterator() -> Iterator[str]:
+    def filepath_iterator(self) -> Iterator[str]:
         """
         Provider-specific method to iterate through bucket/container/etc. and yield each full filepath.
         This should supply the 'url' to use in StorageFile(). This is possibly better described as blob or file path.
@@ -190,9 +192,13 @@ class FileStream(Stream, ABC):
         """
         # note: making every non-airbyte column nullable for compatibility
         # TODO: ensure this behaviour still makes sense as we add new file formats
-        properties = {}
-        for column, typ in self._get_schema_map().items():
-            properties[column] = {"type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ}
+        properties = {
+            column: {"type": ["null", typ]}
+            if column not in self.airbyte_columns
+            else {"type": typ}
+            for column, typ in self._get_schema_map().items()
+        }
+
         properties[self.ab_last_mod_col]["format"] = "date-time"
         return {"type": "object", "properties": properties}
 
@@ -302,7 +308,7 @@ class FileStream(Stream, ABC):
                 record[c] = None
         # additional columns
         record[self.ab_additional_col] = {c: deepcopy(record[c]) for c in record.keys() if c not in compare_columns}
-        for c in record[self.ab_additional_col].keys():
+        for c in record[self.ab_additional_col]:
             del record[c]
 
         return record
@@ -448,7 +454,7 @@ class IncrementalFileStream(FileStream, ABC):
                 prev_file_last_mod = last_mod
 
             # now yield the final stream_slice. This is required because our loop only yields the slice previous to its current iteration.
-            if len(stream_slice) > 0:
+            if stream_slice:
                 yield stream_slice
 
             # in case we have no files
