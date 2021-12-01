@@ -377,8 +377,8 @@ class SourceSquare(AbstractSource):
     @staticmethod
     def get_auth(config: Mapping[str, Any]) -> AuthBase:
 
-        authorization = config.get("authorization", {})
-        auth_type = authorization.get("auth_type")
+        credential = config.get("credentials", {})
+        auth_type = credential.get("auth_type")
         if auth_type == "Oauth":
             # scopes needed for all currently supported streams:
             scopes = [
@@ -405,14 +405,14 @@ class SourceSquare(AbstractSource):
 
             auth = Oauth2AuthenticatorSquare(
                 token_refresh_endpoint="https://connect.squareup.com/oauth2/token",
-                client_secret=authorization.get("client_secret"),
-                client_id=authorization.get("client_id"),
-                refresh_token=authorization.get("refresh_token"),
+                client_secret=credential.get("client_secret"),
+                client_id=credential.get("client_id"),
+                refresh_token=credential.get("refresh_token"),
                 scopes=scopes,
                 expires_in_name="expires_at",
             )
         elif auth_type == "Apikey":
-            auth = TokenAuthenticator(token=authorization.get("api_key"))
+            auth = TokenAuthenticator(token=credential.get("api_key"))
         elif not auth_type and config.get("api_key"):
             auth = TokenAuthenticator(token=config.get("api_key"))
         else:

@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Square Source CDK Specifications",
     "type": "object",
-    "required": ["authorization", "is_sandbox"],
+    "required": ["is_sandbox"],
     "additionalProperties": true,
     "properties": {
       "is_sandbox": {
@@ -26,9 +26,9 @@
         "examples": [true, false],
         "default": false
       },
-      "authorization": {
+      "credentials": {
         "type": "object",
-        "title": "Authentication Type",
+        "title": "Credential Type",
         "oneOf": [
           {
             "title": "Oauth authentication",
@@ -94,7 +94,7 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": ["authorization", 0],
+      "rootObject": ["credentials", 0],
       "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
       "oauthFlowOutputParameters": [["refresh_token"]]
     }

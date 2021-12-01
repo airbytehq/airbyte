@@ -9,7 +9,7 @@ from source_square.source import SourceSquare
 def test_source_wrong_credentials():
     source = SourceSquare()
     config = {
-        "authorization": {"auth_type": "Apikey", "api_key": "bla"},
+        "credentials": {"auth_type": "Apikey", "api_key": "bla"},
         "is_sandbox": True,
         "start_date": "2021-06-01",
         "include_deleted_objects": False,
