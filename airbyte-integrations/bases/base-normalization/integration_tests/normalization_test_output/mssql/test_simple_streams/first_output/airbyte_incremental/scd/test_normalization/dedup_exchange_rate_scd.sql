@@ -20,11 +20,12 @@
    USE [test_normalization];
    EXEC('create view test_normalization."dedup_exchange_rate_scd_temp_view" as
     
+-- depends_on: ref(''dedup_exchange_rate_stg'')
 with
 
 input_data as (
     select *
-    from "test_normalization"._airbyte_test_normalization."dedup_exchange_rate_ab3"
+    from "test_normalization"._airbyte_test_normalization."dedup_exchange_rate_stg"
     -- dedup_exchange_rate from "test_normalization".test_normalization._airbyte_raw_dedup_exchange_rate
 ),
 

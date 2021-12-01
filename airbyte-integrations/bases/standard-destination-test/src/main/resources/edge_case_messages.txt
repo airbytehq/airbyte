@@ -14,6 +14,7 @@
 {"type": "RECORD", "record": {"stream": "stream_name_next", "emitted_at": 1602637589400, "data": { "next_field_name" : "next_field_name_1", "some_id" : 201 }}}
 {"type": "RECORD", "record": {"stream": "stream_name_next", "emitted_at": 1602637589450, "data": { "next_field_name" : "next_field_name_2", "some_id" : 202 }}}
 {"type": "RECORD", "record": {"stream": "stream_name_next", "emitted_at": 1602637589500, "data": { "some_id" : 203 }}}
+{"type": "RECORD", "record": {"stream": "stream_with_binary_data", "emitted_at": 1602637589500, "data": { "some_id" : 303, "binary_field_name":"dGVzdA==" }}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "date" : "2021-1-1"}}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "date" : "1/1/2021"}}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "date" : "20210101"}}}

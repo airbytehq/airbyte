@@ -5,6 +5,7 @@
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('conflict_stream_name_ab3') }}
 select
     {{ adapter.quote('id') }},
     conflict_stream_name,

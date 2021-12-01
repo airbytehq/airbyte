@@ -30,7 +30,7 @@ function read_secrets() {
   fi
   local key="${connector_name}#${cred_filename}"
   [[ -z "${creds}" ]] && error "Empty credential for the connector '${key} from ${secrets_provider_name}"
-  
+
   if [ -v SECRET_MAP[${key}] ]; then
     echo "The connector '${key}' was added before"
     return 0
@@ -65,8 +65,8 @@ function write_all_secrets() {
     local connector_name=$(echo ${key} | cut -d'#' -f1)
     local cred_filename=$(echo ${key} | cut -d'#' -f2)
     local creds=${SECRET_MAP[${key}]}
-    write_secret_to_disk ${connector_name} ${cred_filename} "${creds}" 
-    
+    write_secret_to_disk ${connector_name} ${cred_filename} "${creds}"
+
   done
   return 0
 }
@@ -77,7 +77,7 @@ function export_github_secrets(){
   local pairs=`echo ${GITHUB_PROVIDED_SECRETS_JSON} | jq -c 'keys[] as $k | {"name": $k, "value": .[$k]} | @base64'`
   while read row; do
     pair=$(echo "${row}" | tr -d '"' | base64 -d)
-    local key=$(echo ${pair} | jq -r .name)  
+    local key=$(echo ${pair} | jq -r .name)
     local value=$(echo ${pair} | jq -r .value)
     if [[ "$key" == *"_CREDS"* ]]; then
       declare -gxr "${key}"="$(echo ${value})"
@@ -95,7 +95,7 @@ function export_gsm_secrets(){
 
   # docs: https://cloud.google.com/secret-manager/docs/filtering#api
   local filter="name:SECRET_"
-  [[ ${CONNECTOR_NAME} != "all" ]] && filter="${filter} AND labels.connector:${CONNECTOR_NAME}"
+  [[ ${CONNECTOR_NAME} != "all" ]] && filter="${filter} AND labels.connector=${CONNECTOR_NAME}"
   local uri="https://secretmanager.googleapis.com/v1/projects/${project_id}/secrets"
   local next_token=''
   while true; do
@@ -107,7 +107,7 @@ function export_gsm_secrets(){
       --header "x-goog-user-project: ${project_id}")
     [[ -z ${data} ]] && error "Can't load secret for connector ${CONNECTOR_NAME}"
     # GSM returns an empty JSON object if secrets are not found.
-    # It breaks JSON parsing by the 'jq' utility. The simplest fix is response normalization 
+    # It breaks JSON parsing by the 'jq' utility. The simplest fix is response normalization
     [[ ${data} == "{}" ]] && data='{"secrets": []}'
 
     for row in $(echo "${data}" | jq -r '.secrets[] | @base64'); do
@@ -152,6 +152,7 @@ export_github_secrets
 read_secrets destination-bigquery "$BIGQUERY_INTEGRATION_TEST_CREDS" "credentials.json"
 read_secrets destination-bigquery-denormalized "$BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS" "credentials.json"
 read_secrets destination-databricks "$DESTINATION_DATABRICKS_CREDS"
+read_secrets destination-firestore "$DESTINATION_FIRESTORE_CREDS"
 read_secrets destination-gcs "$DESTINATION_GCS_CREDS"
 read_secrets destination-kvdb "$DESTINATION_KVDB_TEST_CREDS"
 read_secrets destination-keen "$DESTINATION_KEEN_TEST_CREDS"
@@ -175,6 +176,7 @@ read_secrets base-normalization "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "snowflake.j
 read_secrets base-normalization "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" "redshift.json"
 read_secrets base-normalization "$AWS_ORACLE_INTEGRATION_TEST_CREDS" "oracle.json"
 
+read_secrets source-airtable "$SOURCE_AIRTABLE_TEST_CREDS"
 read_secrets source-amazon-seller-partner "$AMAZON_SELLER_PARTNER_TEST_CREDS"
 read_secrets source-amazon-sqs "$SOURCE_AMAZON_SQS_TEST_CREDS"
 read_secrets source-amplitude "$AMPLITUDE_INTEGRATION_TEST_CREDS"
@@ -196,6 +198,7 @@ read_secrets source-commercetools "$SOURCE_COMMERCETOOLS_TEST_CREDS"
 read_secrets source-confluence "$SOURCE_CONFLUENCE_TEST_CREDS"
 read_secrets source-delighted "$SOURCE_DELIGHTED_TEST_CREDS"
 read_secrets source-drift "$DRIFT_INTEGRATION_TEST_CREDS"
+read_secrets source-drift "$DRIFT_INTEGRATION_TEST_OAUTH_CREDS" "config_oauth.json"
 read_secrets source-dixa "$SOURCE_DIXA_TEST_CREDS"
 read_secrets source-exchange-rates "$EXCHANGE_RATES_TEST_CREDS"
 read_secrets source-file "$GOOGLE_CLOUD_STORAGE_TEST_CREDS" "gcs.json"
@@ -210,7 +213,6 @@ read_secrets source-facebook-marketing "$FACEBOOK_MARKETING_TEST_INTEGRATION_CRE
 read_secrets source-facebook-pages "$FACEBOOK_PAGES_INTEGRATION_TEST_CREDS"
 read_secrets source-gitlab "$GITLAB_INTEGRATION_TEST_CREDS"
 read_secrets source-github "$GH_NATIVE_INTEGRATION_TEST_CREDS"
-read_secrets source-google-ads "$GOOGLE_ADS_TEST_CREDS"
 read_secrets source-google-analytics-v4 "$GOOGLE_ANALYTICS_V4_TEST_CREDS"
 read_secrets source-google-analytics-v4 "$GOOGLE_ANALYTICS_V4_TEST_CREDS_SRV_ACC" "service_config.json"
 read_secrets source-google-analytics-v4 "$GOOGLE_ANALYTICS_V4_TEST_CREDS_OLD" "old_config.json"
@@ -224,9 +226,6 @@ read_secrets source-google-sheets "$GOOGLE_SHEETS_TESTS_CREDS_OLD" "old_config.j
 read_secrets source-google-workspace-admin-reports "$GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS"
 read_secrets source-greenhouse "$GREENHOUSE_TEST_CREDS"
 read_secrets source-greenhouse "$GREENHOUSE_TEST_CREDS_LIMITED" "config_users_only.json"
-read_secrets source-harvest "$HARVEST_INTEGRATION_TESTS_CREDS"
-read_secrets source-hubspot "$HUBSPOT_INTEGRATION_TESTS_CREDS"
-read_secrets source-hubspot "$HUBSPOT_INTEGRATION_TESTS_CREDS_OAUTH" "config_oauth.json"
 read_secrets source-instagram "$INSTAGRAM_INTEGRATION_TESTS_CREDS"
 read_secrets source-intercom "$INTERCOM_INTEGRATION_TEST_CREDS"
 read_secrets source-intercom "$INTERCOM_INTEGRATION_OAUTH_TEST_CREDS" "config_apikey.json"
@@ -236,7 +235,7 @@ read_secrets source-klaviyo "$KLAVIYO_TEST_CREDS"
 read_secrets source-lemlist "$SOURCE_LEMLIST_TEST_CREDS"
 read_secrets source-lever-hiring "$LEVER_HIRING_INTEGRATION_TEST_CREDS"
 read_secrets source-looker "$LOOKER_INTEGRATION_TEST_CREDS"
-read_secrets source-linkedin-ads "$SOURCE_LINKEDIN_ADS_TEST_CREDS"
+read_secrets source-linnworks "$SOURCE_LINNWORKS_TEST_CREDS"
 read_secrets source-mailchimp "$MAILCHIMP_TEST_CREDS"
 read_secrets source-marketo "$SOURCE_MARKETO_TEST_CREDS"
 read_secrets source-microsoft-teams "$MICROSOFT_TEAMS_TEST_CREDS"
@@ -245,8 +244,10 @@ read_secrets source-monday "$SOURCE_MONDAY_TEST_CREDS"
 read_secrets source-mongodb-strict-encrypt "$MONGODB_TEST_CREDS" "credentials.json"
 read_secrets source-mongodb-v2 "$MONGODB_TEST_CREDS" "credentials.json"
 read_secrets source-mssql "$MSSQL_RDS_TEST_CREDS"
+read_secrets source-notion "$SOURCE_NOTION_TEST_CREDS"
 read_secrets source-okta "$SOURCE_OKTA_TEST_CREDS"
 read_secrets source-onesignal "$SOURCE_ONESIGNAL_TEST_CREDS"
+read_secrets source-outreach "$SOURCE_OUTREACH_TEST_CREDS"
 read_secrets source-plaid "$PLAID_INTEGRATION_TEST_CREDS"
 read_secrets source-paypal-transaction "$PAYPAL_TRANSACTION_CREDS"
 read_secrets source-pinterest "$PINTEREST_TEST_CREDS"
@@ -263,8 +264,6 @@ read_secrets source-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
 read_secrets source-retently "$SOURCE_RETENTLY_TEST_CREDS"
 read_secrets source-s3 "$SOURCE_S3_TEST_CREDS"
 read_secrets source-s3 "$SOURCE_S3_PARQUET_CREDS" "parquet_config.json"
-read_secrets source-salesforce "$SALESFORCE_BULK_INTEGRATION_TESTS_CREDS" "config_bulk.json"
-read_secrets source-salesforce "$SALESFORCE_INTEGRATION_TESTS_CREDS"
 read_secrets source-salesloft "$SOURCE_SALESLOFT_TEST_CREDS"
 read_secrets source-sendgrid "$SENDGRID_INTEGRATION_TEST_CREDS"
 read_secrets source-shopify "$SHOPIFY_INTEGRATION_TEST_CREDS"
@@ -273,7 +272,6 @@ read_secrets source-shortio "$SOURCE_SHORTIO_TEST_CREDS"
 read_secrets source-slack "$SOURCE_SLACK_TEST_CREDS"
 read_secrets source-slack "$SOURCE_SLACK_OAUTH_TEST_CREDS" "config_oauth.json"
 read_secrets source-smartsheets "$SMARTSHEETS_TEST_CREDS"
-read_secrets source-snapchat-marketing "$SOURCE_SNAPCHAT_MARKETING_CREDS"
 read_secrets source-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "config.json"
 read_secrets source-square "$SOURCE_SQUARE_CREDS"
 read_secrets source-strava "$SOURCE_STRAVA_TEST_CREDS"
@@ -294,6 +292,7 @@ read_secrets source-zendesk-sunshine "$ZENDESK_SUNSHINE_TEST_CREDS"
 read_secrets source-zendesk-support "$ZENDESK_SUPPORT_TEST_CREDS"
 read_secrets source-zendesk-support "$ZENDESK_SUPPORT_OAUTH_TEST_CREDS" "config_oauth.json"
 read_secrets source-zendesk-talk "$ZENDESK_TALK_TEST_CREDS"
+read_secrets source-zenloop "$SOURCE_ZENLOOP_TEST_CREDS"
 read_secrets source-zoom-singer "$ZOOM_INTEGRATION_TEST_CREDS"
 read_secrets source-zuora "$SOURCE_ZUORA_TEST_CREDS"
 

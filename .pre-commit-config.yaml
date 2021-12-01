@@ -22,7 +22,11 @@ repos:
     hooks:
       - id: prettier
         types_or: [yaml, json]
-        exclude: ^.github/
+        exclude: |
+          (?x)^.*(
+              .github/|
+              source_specs.yaml
+          ).?$
 
   - repo: https://gitlab.com/pycqa/flake8
     rev: 3.8.4
