@@ -87,6 +87,7 @@ def createSpotlessTarget = { pattern ->
         'tools',
         'secrets',
         'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+        'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -126,7 +127,7 @@ check.dependsOn 'spotlessApply'
 
 @SuppressWarnings('GroovyAssignabilityCheck')
 def Task getDockerBuildTask(String artifactName, String projectDir) {
-    return task ("buildDockerImage-$artifactName" (type: DockerBuildImage) {
+    return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
         def buildTag = System.getenv('VERSION') ?: 'dev'
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
@@ -196,8 +197,13 @@ subprojects {
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
     }
 
+    def integrationTagName = 'platform-integration'
+    def slowIntegrationTagName = 'platform-slow-integration'
+
     test {
-        useJUnitPlatform()
+        useJUnitPlatform {
+            excludeTags(integrationTagName, slowIntegrationTagName)
+        }
         testLogging() {
             events 'failed'
             exceptionFormat 'full'
@@ -206,8 +212,35 @@ subprojects {
         finalizedBy jacocoTestReport
     }
 
-    jacocoTestReport {
-        dependsOn test
+    task newIntegrationTests(type: Test) {
+        useJUnitPlatform {
+            includeTags integrationTagName
+        }
+        testLogging() {
+            events 'failed'
+            exceptionFormat 'full'
+        }
+        finalizedBy jacocoTestReport
+    }
+
+    task slowIntegrationTests(type: Test) {
+        useJUnitPlatform {
+            includeTags slowIntegrationTagName
+        }
+        testLogging() {
+            events 'failed'
+            exceptionFormat 'full'
+        }
+        finalizedBy jacocoTestReport
+    }
+
+    task allTests(type: Test) {
+        useJUnitPlatform()
+        testLogging() {
+            events 'failed'
+            exceptionFormat 'full'
+        }
+        finalizedBy jacocoTestReport
     }
 
     dependencies {
@@ -253,6 +286,12 @@ subprojects {
 
         implementation 'software.amazon.awssdk:s3:2.16.84'
 
+        // Lombok dependencies
+        compileOnly 'org.projectlombok:lombok:1.18.22'
+        annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+        testCompileOnly 'org.projectlombok:lombok:1.18.22'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
@@ -269,6 +308,8 @@ subprojects {
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
+
+    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 }
 
 task('generate') {
@@ -316,6 +357,7 @@ task('generate-docker') {
     dependsOn(':airbyte-migration:assemble')
     dependsOn(':airbyte-db:lib:assemble')
     dependsOn(':airbyte-config:init:assemble')
+    dependsOn(':airbyte-temporal:assemble')
 }
 
 // produce reproducible archives
