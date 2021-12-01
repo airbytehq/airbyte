@@ -77,7 +77,7 @@ class LinkedinAdsStream(HttpStream, ABC):
                 f"Also quotas and usage are here: https://www.linkedin.com/developers/apps."
             )
             self.logger.error(error_message)
-        super().should_retry(response)
+        return super().should_retry(response)
 
 
 class Accounts(LinkedinAdsStream):
