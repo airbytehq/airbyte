@@ -19,12 +19,12 @@ RUN add-apt-repository \
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 
 ENV APPLICATION airbyte-runner
-ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-0.32.2-alpha/bin/${APPLICATION}"
+ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-0.32.8-alpha/bin/${APPLICATION}"
 
 WORKDIR /app
 
 # Move worker app
-ADD bin/${APPLICATION}-0.32.2-alpha.tar /app
+ADD bin/${APPLICATION}-0.32.8-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
 ENTRYPOINT ["/bin/bash", "-c", "/app/${APPLICATION}-0.32.2-alpha/bin/${APPLICATION}"]
