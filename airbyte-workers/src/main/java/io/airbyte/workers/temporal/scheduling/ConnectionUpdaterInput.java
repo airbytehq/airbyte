@@ -15,5 +15,6 @@ import lombok.NoArgsConstructor;
 public class ConnectionUpdaterInput {
 
   private UUID connectionId;
+  private long jobId;
 
 }

@@ -126,7 +126,7 @@ public class TemporalClient {
     final ExecutorService threadpool = Executors.newCachedThreadPool();
     final Future<Void> futureTask = threadpool.submit(() -> {
       final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attemptId);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId);
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId);
       execute(jobRunConfig, () -> connectionUpdaterWorkflow.run(input));
 
       return null;
