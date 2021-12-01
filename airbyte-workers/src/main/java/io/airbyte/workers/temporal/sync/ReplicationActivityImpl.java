@@ -33,6 +33,14 @@ import org.slf4j.LoggerFactory;
 
 public class ReplicationActivityImpl implements ReplicationActivity {
 
+  public static final String INIT_FILE_APPLICATION = "application.txt";
+  public static final String INIT_FILE_JOB_RUN_CONFIG = "jobRunConfig.json";
+  public static final String INIT_FILE_SOURCE_LAUNCHER_CONFIG = "sourceLauncherConfig.json";
+  public static final String INIT_FILE_DESTINATION_LAUNCHER_CONFIG = "destinationLauncherConfig.json";
+  public static final String INIT_FILE_SYNC_INPUT = "syncInput.json";
+  public static final String INIT_FILE_CONNECTION_ID = "connectionId.json";
+  public static final String INIT_FILE_ENV_MAP = "envMap.json";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
 
   private final WorkerConfigs workerConfigs;
@@ -170,13 +178,13 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
           // todo: don't use magic strings
           final Map<String, String> fileMap = Map.of(
-              "application.txt", "replication",
-              "jobRunConfig.json", Jsons.serialize(jobRunConfig),
-              "sourceLauncherConfig.json", Jsons.serialize(sourceLauncherConfig),
-              "destinationLauncherConfig.json", Jsons.serialize(destinationLauncherConfig),
-              "syncInput.json", Jsons.serialize(syncInput),
-              "connectionId.json", Jsons.serialize(connectionId),
-              "envMap.json", Jsons.serialize(System.getenv()));
+              INIT_FILE_APPLICATION, "replication",
+              INIT_FILE_JOB_RUN_CONFIG, Jsons.serialize(jobRunConfig),
+              INIT_FILE_SOURCE_LAUNCHER_CONFIG, Jsons.serialize(sourceLauncherConfig),
+              INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig),
+              INIT_FILE_SYNC_INPUT, Jsons.serialize(syncInput),
+              INIT_FILE_CONNECTION_ID, Jsons.serialize(connectionId),
+              INIT_FILE_ENV_MAP, Jsons.serialize(System.getenv()));
 
           // todo: logs for this process should also make it to kubernetes logging!
 

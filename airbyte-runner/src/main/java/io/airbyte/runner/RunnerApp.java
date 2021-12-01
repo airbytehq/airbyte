@@ -12,6 +12,7 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.*;
 import io.airbyte.workers.process.*;
 import io.airbyte.workers.protocols.airbyte.*;
+import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -22,11 +23,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public class RunnerApp {
 
@@ -48,25 +46,28 @@ public class RunnerApp {
 
     // retrieve files
     // todo: don't use magic strings
-    final JobRunConfig jobRunConfig = Jsons.deserialize(Files.readString(Path.of("jobRunConfig.json")), JobRunConfig.class);
+    final JobRunConfig jobRunConfig =
+        Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_JOB_RUN_CONFIG)), JobRunConfig.class);
 
     LOGGER.info("jobRunConfig = " + jobRunConfig);
 
     final IntegrationLauncherConfig sourceLauncherConfig =
-        Jsons.deserialize(Files.readString(Path.of("sourceLauncherConfig.json")), IntegrationLauncherConfig.class);
+        Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_SOURCE_LAUNCHER_CONFIG)), IntegrationLauncherConfig.class);
 
     LOGGER.info("sourceLauncherConfig = " + sourceLauncherConfig);
 
     final IntegrationLauncherConfig destinationLauncherConfig =
-        Jsons.deserialize(Files.readString(Path.of("destinationLauncherConfig.json")), IntegrationLauncherConfig.class);
+        Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_DESTINATION_LAUNCHER_CONFIG)), IntegrationLauncherConfig.class);
 
     LOGGER.info("destinationLauncherConfig = " + destinationLauncherConfig);
 
-    final StandardSyncInput syncInput = Jsons.deserialize(Files.readString(Path.of("syncInput.json")), StandardSyncInput.class);
+    final StandardSyncInput syncInput =
+        Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_SYNC_INPUT)), StandardSyncInput.class);
 
     LOGGER.info("syncInput = " + syncInput);
 
-    final UUID connectionId = Jsons.deserialize(Files.readString(Path.of("connectionId.json")), UUID.class); // todo: does this work?
+    final UUID connectionId = Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_CONNECTION_ID)), UUID.class); // todo: does
+                                                                                                                                         // this work?
 
     LOGGER.info("connectionId = " + connectionId);
 
@@ -118,46 +119,36 @@ public class RunnerApp {
 
   public static void main(String[] args) throws Exception {
 
-    final String application = Files.readString(Path.of("application.txt"));
-
-    final Map<String, String> envMap = (Map<String, String>) Jsons.deserialize(Files.readString(Path.of("envMap.json")), Map.class);
-    final Configs configs = new EnvConfigs(envMap::get);
-
-    if (System.getenv().containsKey("LOG_LEVEL")) {
-      System.setProperty("LOG_LEVEL", System.getenv("LOG_LEVEL"));
-    }
-
-    if (System.getenv().containsKey("S3_PATH_STYLE_ACCESS")) {
-      System.setProperty("S3_PATH_STYLE_ACCESS", System.getenv("S3_PATH_STYLE_ACCESS"));
-    }
-
-    System.setProperty(LogClientSingleton.S3_LOG_BUCKET, configs.getLogConfigs().getS3LogBucket());
-    System.setProperty(LogClientSingleton.S3_LOG_BUCKET_REGION, configs.getLogConfigs().getS3LogBucketRegion());
-    System.setProperty(LogClientSingleton.AWS_ACCESS_KEY_ID, configs.getLogConfigs().getAwsAccessKey());
-    System.setProperty(LogClientSingleton.AWS_SECRET_ACCESS_KEY, configs.getLogConfigs().getAwsSecretAccessKey());
-    System.setProperty(LogClientSingleton.S3_MINIO_ENDPOINT, configs.getLogConfigs().getS3MinioEndpoint());
-    System.setProperty(LogClientSingleton.GCP_STORAGE_BUCKET, configs.getLogConfigs().getGcpStorageBucket());
-    System.setProperty(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, configs.getLogConfigs().getGoogleApplicationCredentials());
-
-    final var logPath = LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot());
-    LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(), logPath);
-
-    // todo: remove these logs
-    LOGGER.info("Listing entries...");
-    for (Map.Entry<String, String> entry : envMap.entrySet()) {
-      LOGGER.info("entry = " + entry);
-    }
-    LOGGER.info("Done listing entries...");
-
-    final Map<String, String> mdc = MDC.getCopyOfContextMap();
-
-    final ExecutorService heartbeatExecutorService = Executors.newSingleThreadExecutor();
-
     final WorkerHeartbeatServer heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
 
-    heartbeatServer.startBackground();
-
     try {
+      final String application = Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_APPLICATION));
+
+      final Map<String, String> envMap =
+          (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_ENV_MAP)), Map.class);
+      final Configs configs = new EnvConfigs(envMap::get);
+
+      if (System.getenv().containsKey("LOG_LEVEL")) {
+        System.setProperty("LOG_LEVEL", System.getenv("LOG_LEVEL"));
+      }
+
+      if (System.getenv().containsKey("S3_PATH_STYLE_ACCESS")) {
+        System.setProperty("S3_PATH_STYLE_ACCESS", System.getenv("S3_PATH_STYLE_ACCESS"));
+      }
+
+      System.setProperty(LogClientSingleton.S3_LOG_BUCKET, configs.getLogConfigs().getS3LogBucket());
+      System.setProperty(LogClientSingleton.S3_LOG_BUCKET_REGION, configs.getLogConfigs().getS3LogBucketRegion());
+      System.setProperty(LogClientSingleton.AWS_ACCESS_KEY_ID, configs.getLogConfigs().getAwsAccessKey());
+      System.setProperty(LogClientSingleton.AWS_SECRET_ACCESS_KEY, configs.getLogConfigs().getAwsSecretAccessKey());
+      System.setProperty(LogClientSingleton.S3_MINIO_ENDPOINT, configs.getLogConfigs().getS3MinioEndpoint());
+      System.setProperty(LogClientSingleton.GCP_STORAGE_BUCKET, configs.getLogConfigs().getGcpStorageBucket());
+      System.setProperty(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, configs.getLogConfigs().getGoogleApplicationCredentials());
+
+      final var logPath = LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot());
+      LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(), logPath);
+
+      heartbeatServer.startBackground();
+
       if (application.equals("replication")) {
         replicationRunner(configs);
       } else {
