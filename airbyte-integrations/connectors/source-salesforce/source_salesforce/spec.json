@@ -8,7 +8,7 @@
     "additionalProperties": false,
     "properties": {
       "client_id": {
-        "title": "Client Id",
+        "title": "Client ID",
         "description": "The Consumer Key that can be found when viewing your app in Salesforce",
         "type": "string"
       },
@@ -25,14 +25,14 @@
         "airbyte_secret": true
       },
       "start_date": {
-        "title": "Start Date",
-        "description": "Date in the format 2017-01-25. Any data before this date will not be replicated. This field uses the \"updated\" field if available, otherwise the \"created\" fields if they are available for a stream.",
+        "title": "Replication Start Date",
+        "description": "Date in the format 2017-01-25. Any data before this date will not be replicated. This field uses the \"updated\" field if available, otherwise the \"created\" fields if they are available for a stream. If not set, then by default all your data is replicated.",
         "type": "string",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "examples": ["2021-07-25", "2021-07-25T00:00:00Z"]
       },
       "is_sandbox": {
-        "title": "Is Sandbox?",
+        "title": "Sandbox",
         "description": "Whether or not the the app is in a Salesforce sandbox. If you do not know what this, assume it is false. We provide more info on this field in the <a href=\"https://docs.airbyte.io/integrations/destinations/salesforce#is_sandbox\">docs</a>.",
         "type": "boolean",
         "default": false
