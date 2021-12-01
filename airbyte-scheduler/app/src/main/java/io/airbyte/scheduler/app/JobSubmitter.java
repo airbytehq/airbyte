@@ -116,6 +116,7 @@ public class JobSubmitter implements Runnable {
   @VisibleForTesting
   void submitJob(final Job job) {
 
+    // job.
     final WorkerRun workerRun = temporalWorkerRunFactory.create(job);
     // we need to know the attempt number before we begin the job lifecycle. thus we state what the
     // attempt number should be. if it is not, that the lifecycle will fail. this should not happen as
