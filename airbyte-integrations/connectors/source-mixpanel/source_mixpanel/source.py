@@ -94,8 +94,9 @@ class MixpanelStream(HttpStream, ABC):
         # parse the whole response
         yield from self.process_response(response, **kwargs)
 
-        # wait for X seconds to match API limitations
-        time.sleep(3600 / self.reqs_per_hour_limit)
+        if self.reqs_per_hour_limit > 0:
+            # wait for X seconds to match API limitations
+            time.sleep(3600 / self.reqs_per_hour_limit)
 
     def get_stream_params(self) -> Mapping[str, Any]:
         """
@@ -355,12 +356,14 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
 class EngageSchema(MixpanelStream):
     """
     Engage helper stream for dynamic schema extraction.
-    :: reqs_per_hour_limit: int - property is set to the value of 1 million, to get the sleep time close to the zero, while generating dynamic schema.
+    :: reqs_per_hour_limit: int - property is set to the value of 1 million, 
+       to get the sleep time close to the zero, while generating dynamic schema.
+       When `reqs_per_hour_limit = 0` - it means we skip this limits.
     """
 
     primary_key: str = None
     data_field: str = "results"
-    reqs_per_hour_limit: int = 1000000  # see the docstring
+    reqs_per_hour_limit: int = 0  # see the docstring
 
     def path(self, **kwargs) -> str:
         return "engage/properties"
@@ -630,12 +633,14 @@ class Revenue(DateSlicesMixin, IncrementalMixpanelStream):
 class ExportSchema(MixpanelStream):
     """
     Export helper stream for dynamic schema extraction.
-    :: reqs_per_hour_limit: int - property is set to the value of 1 million, to get the sleep time close to the zero, while generating dynamic schema.
+    :: reqs_per_hour_limit: int - property is set to the value of 1 million, 
+       to get the sleep time close to the zero, while generating dynamic schema.
+       When `reqs_per_hour_limit = 0` - it means we skip this limits.
     """
 
     primary_key: str = None
     data_field: str = None
-    reqs_per_hour_limit: int = 1000000  # see the docstring
+    reqs_per_hour_limit: int = 0  # see the docstring
 
     def path(self, **kwargs) -> str:
         return "events/properties/top"
