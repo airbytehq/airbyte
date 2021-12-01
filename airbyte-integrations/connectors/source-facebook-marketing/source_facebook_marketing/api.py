@@ -8,7 +8,7 @@ from time import sleep
 from typing import List, Type
 
 import pendulum
-from cached_property import cached_property_with_ttl
+from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
@@ -106,7 +106,7 @@ class API:
         self.api = MyFacebookAdsApi.init(access_token=self.__config.access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)
 
-    @cached_property_with_ttl(3600)
+    @cached_property
     def accounts(self) -> List[Type[AdAccount]]:
         """Find current accounts"""
         return self._find_accounts()
