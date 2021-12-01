@@ -483,27 +483,27 @@ public class EnvConfigs implements Configs {
     return SecretPersistenceType.valueOf(secretPersistenceStr);
   }
 
-  protected String getEnvOrDefault(final String key, final String defaultValue) {
+  public String getEnvOrDefault(final String key, final String defaultValue) {
     return getEnvOrDefault(key, defaultValue, Function.identity(), false);
   }
 
-  private String getEnvOrDefault(final String key, final String defaultValue, final boolean isSecret) {
+  public String getEnvOrDefault(final String key, final String defaultValue, final boolean isSecret) {
     return getEnvOrDefault(key, defaultValue, Function.identity(), isSecret);
   }
 
-  private long getEnvOrDefault(final String key, final long defaultValue) {
+  public long getEnvOrDefault(final String key, final long defaultValue) {
     return getEnvOrDefault(key, defaultValue, Long::parseLong, false);
   }
 
-  private boolean getEnvOrDefault(final String key, final boolean defaultValue) {
+  public boolean getEnvOrDefault(final String key, final boolean defaultValue) {
     return getEnvOrDefault(key, defaultValue, Boolean::parseBoolean);
   }
 
-  private <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
+  public <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
     return getEnvOrDefault(key, defaultValue, parser, false);
   }
 
-  private <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser, final boolean isSecret) {
+  public <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser, final boolean isSecret) {
     final String value = getEnv.apply(key);
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
@@ -513,11 +513,11 @@ public class EnvConfigs implements Configs {
     }
   }
 
-  private String getEnv(final String name) {
+  public String getEnv(final String name) {
     return getEnv.apply(name);
   }
 
-  private String getEnsureEnv(final String name) {
+  public String getEnsureEnv(final String name) {
     final String value = getEnv(name);
     Preconditions.checkArgument(value != null, "'%s' environment variable cannot be null", name);
 
