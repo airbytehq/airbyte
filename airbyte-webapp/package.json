@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.32.5-alpha",
+  "version": "0.32.8-alpha",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
@@ -89,6 +89,8 @@
     "prettier": "^2.2.1",
     "react-scripts": "4.0.2",
     "storybook-addon-styled-component-theme": "^2.0.0",
+    "tar": "^6.1.11",
+    "tmpl": "^1.0.5",
     "typescript": "4.2.4"
   },
   "husky": {
