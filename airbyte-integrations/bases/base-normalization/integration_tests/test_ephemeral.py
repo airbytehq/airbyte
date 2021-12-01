@@ -129,7 +129,7 @@ def setup_test_dir(integration_type: str) -> str:
     print(f"Setting up test folder {test_root_dir}")
     copy_tree("../dbt-project-template", test_root_dir)
     if integration_type == DestinationType.MSSQL.value:
-        copy_tree("../dbt-project-template-mysql", test_root_dir)
+        copy_tree("../dbt-project-template-mssql", test_root_dir)
     elif integration_type == DestinationType.MYSQL.value:
         copy_tree("../dbt-project-template-mysql", test_root_dir)
     elif integration_type == DestinationType.ORACLE.value:

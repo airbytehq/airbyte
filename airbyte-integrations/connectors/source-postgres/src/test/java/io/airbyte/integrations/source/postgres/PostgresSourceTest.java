@@ -52,40 +52,40 @@ class PostgresSourceTest {
   private static final String STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW = "id_and_name_3_view";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
-              STREAM_NAME,
-              SCHEMA_NAME,
-              Field.of("id", JsonSchemaPrimitive.NUMBER),
-              Field.of("name", JsonSchemaPrimitive.STRING),
-              Field.of("power", JsonSchemaPrimitive.NUMBER))
+          STREAM_NAME,
+          SCHEMA_NAME,
+          Field.of("id", JsonSchemaPrimitive.NUMBER),
+          Field.of("name", JsonSchemaPrimitive.STRING),
+          Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
           SCHEMA_NAME,
           Field.of("id", JsonSchemaPrimitive.NUMBER),
-              Field.of("name", JsonSchemaPrimitive.STRING),
-              Field.of("power", JsonSchemaPrimitive.NUMBER))
+          Field.of("name", JsonSchemaPrimitive.STRING),
+          Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
-              "names",
-              SCHEMA_NAME,
-              Field.of("first_name", JsonSchemaPrimitive.STRING),
-              Field.of("last_name", JsonSchemaPrimitive.STRING),
-              Field.of("power", JsonSchemaPrimitive.NUMBER))
+          "names",
+          SCHEMA_NAME,
+          Field.of("first_name", JsonSchemaPrimitive.STRING),
+          Field.of("last_name", JsonSchemaPrimitive.STRING),
+          Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name"))),
       CatalogHelpers.createAirbyteStream(
-              STREAM_NAME_PRIVILEGES_TEST_CASE,
-              SCHEMA_NAME,
-              Field.of("id", JsonSchemaPrimitive.NUMBER),
-              Field.of("name", JsonSchemaPrimitive.STRING))
+          STREAM_NAME_PRIVILEGES_TEST_CASE,
+          SCHEMA_NAME,
+          Field.of("id", JsonSchemaPrimitive.NUMBER),
+          Field.of("name", JsonSchemaPrimitive.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
-              STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW,
-              SCHEMA_NAME,
-              Field.of("id", JsonSchemaPrimitive.NUMBER),
-              Field.of("name", JsonSchemaPrimitive.STRING))
+          STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW,
+          SCHEMA_NAME,
+          Field.of("id", JsonSchemaPrimitive.NUMBER),
+          Field.of("name", JsonSchemaPrimitive.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);

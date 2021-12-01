@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import csv
 import json
 from typing import Any, BinaryIO, Iterator, Mapping, Optional, TextIO, Tuple, Union
@@ -10,16 +11,15 @@ import pyarrow as pa
 import six
 from pyarrow import csv as pa_csv
 
+from ...utils import run_in_external_process
 from .abstract_file_parser import AbstractFileParser
 from .csv_spec import CsvFormat
-from ...utils import run_in_external_process
 
 
 class CsvParser(AbstractFileParser):
     @property
     def is_binary(self):
         return True
-
 
     @property
     def format(self) -> CsvFormat:
@@ -57,9 +57,7 @@ class CsvParser(AbstractFileParser):
         build ConvertOptions object like: pa.csv.ConvertOptions(**self._convert_options())
         :param json_schema: if this is passed in, pyarrow will attempt to enforce this schema on read, defaults to None
         """
-        check_utf8 = (
-            self.format.encoding.lower().replace("-", "") == "utf8"
-        )
+        check_utf8 = self.format.encoding.lower().replace("-", "") == "utf8"
 
         convert_schema = self.json_schema_to_pyarrow_schema(json_schema) if json_schema is not None else None
         return {
@@ -122,10 +120,12 @@ class CsvParser(AbstractFileParser):
             timeout=4,
             max_timeout=60,
             logger=self.logger,
-            args=[file_sample,
-            self._read_options(),
-            self._parse_options(),
-            self._convert_options(),]
+            args=[
+                file_sample,
+                self._read_options(),
+                self._parse_options(),
+                self._convert_options(),
+            ],
         )
 
     # TODO Rename this here and in `_get_schema_dict`

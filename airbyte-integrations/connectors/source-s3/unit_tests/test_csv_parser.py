@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any, List, Mapping
 
 import pytest
-
 from source_s3.source_files_abstract.formats.csv_parser import CsvParser
 
 from .abstract_test_parser import AbstractTestParser
@@ -49,8 +48,7 @@ test_files = [
         # tests custom CSV parameters (odd delimiter, quote_char, escape_char & newlines in values in the file)
         "test_alias": "custom csv parameters",
         "AbstractFileParser": CsvParser(
-            format={"filetype": "csv", "delimiter": "^", "quote_char": "|", "escape_char": "!",
-                    "newlines_in_values": True},
+            format={"filetype": "csv", "delimiter": "^", "quote_char": "|", "escape_char": "!", "newlines_in_values": True},
             master_schema={
                 "id": "integer",
                 "name": "string",
@@ -79,8 +77,7 @@ test_files = [
         # tests encoding: Big5
         "test_alias": "encoding: Big5",
         "AbstractFileParser": CsvParser(
-            format={"filetype": "csv", "encoding": "big5"},
-            master_schema={"id": "integer", "name": "string", "valid": "boolean"}
+            format={"filetype": "csv", "encoding": "big5"}, master_schema={"id": "integer", "name": "string", "valid": "boolean"}
         ),
         "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_3_enc_Big5.csv"),
         "num_records": 8,
@@ -257,9 +254,7 @@ test_files = [
         "AbstractFileParser": CsvParser(
             format={
                 "filetype": "csv",
-                "advanced_options": json.dumps(
-                    {"column_names": ["id", "name", "valid", "code", "degrees", "birthday", "last_seen"]}
-                ),
+                "advanced_options": json.dumps({"column_names": ["id", "name", "valid", "code", "degrees", "birthday", "last_seen"]}),
             },
             master_schema={},
         ),
@@ -280,10 +275,7 @@ test_files = [
     {
         # tests if infer_datatype parameter set to false disables data type inference on schema
         "test_alias": "infer_datatype set to false without custom schema",
-        "AbstractFileParser": CsvParser(
-            format={"filetype": "csv", "infer_datatypes": False,
-                    "newlines_in_values": True}
-        ),
+        "AbstractFileParser": CsvParser(format={"filetype": "csv", "infer_datatypes": False, "newlines_in_values": True}),
         "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/infer_schema_test.csv"),
         "num_records": 18,
         "inferred_schema": {
@@ -292,17 +284,16 @@ test_files = [
             "street_address": "string",
             "customer_code": "string",
             "email": "string",
-            "dob": "string"
+            "dob": "string",
         },
         "line_checks": {},
         "fails": [],
     },
-{
+    {
         # tests if infer_datatype parameter set to false disables data type inference on schema
         "test_alias": "infer_datatype set to false with custom delimiter and quote",
         "AbstractFileParser": CsvParser(
-            format={"filetype": "csv", "infer_datatypes": False, "quote_char": "|", "delimiter":";",
-                    "newlines_in_values": True}
+            format={"filetype": "csv", "infer_datatypes": False, "quote_char": "|", "delimiter": ";", "newlines_in_values": True}
         ),
         "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/infer_schema_test_quote_delim.csv"),
         "num_records": 18,
@@ -312,18 +303,15 @@ test_files = [
             "street_address": "string",
             "customer_code": "string",
             "email": "string",
-            "dob": "string"
+            "dob": "string",
         },
         "line_checks": {},
         "fails": [],
     },
-
 ]
 
 
-@pytest.mark.parametrize("test_file",
-                         argvalues=test_files,
-                         ids=[file["test_alias"] for file in test_files])
+@pytest.mark.parametrize("test_file", argvalues=test_files, ids=[file["test_alias"] for file in test_files])
 class TestCsvParser(AbstractTestParser):
     @property
     def test_files(self) -> List[Mapping[str, Any]]:
