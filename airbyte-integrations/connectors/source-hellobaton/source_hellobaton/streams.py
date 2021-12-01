@@ -78,6 +78,17 @@ class HellobatonStream(HttpStream, ABC):
             yield results
 
 
+class Activity(HellobatonStream):
+    """
+    Activity stream class
+    """
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+  
+        return "activity"
+
 class Companies(HellobatonStream):
     """
     Companies stream class

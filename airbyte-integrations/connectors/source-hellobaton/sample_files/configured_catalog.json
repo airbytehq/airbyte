@@ -1,6 +1,72 @@
 {
     "streams": [{
             "stream": {
+                "name": "activity",
+                "json_schema": {
+                    "properties": {
+                        "id": {
+                            "type": "integer"
+                        },
+                        "_self": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": ["string", "null"]
+                        },
+                        "group": {
+                            "type": "string"
+                        },
+                        "parent": {
+                            "type": ["string", "null"]
+                        },
+                        "child": {
+                            "type": ["string", "null"]
+                        },
+                        "actor": {
+                            "type": "string"
+                        },
+                        "project": {
+                            "type": "string"
+                        },
+                        "parent_type": {
+                            "type": "string"
+                        },
+                        "child_type": {
+                            "type": "string"
+                        },
+                        "meta": {
+                            "type": "string"
+                        },
+                        "created": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "modified": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                }
+
+            },
+            "supported_sync_modes": [
+                "full_refresh"
+            ],
+            "source_defined_primary_key": [
+                [
+                    "id"
+                ]
+            ],
+            "user_defined_primary_key": [
+                [
+                    "id"
+                ]
+            ],
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
+        },
+        {
+            "stream": {
                 "name": "companies",
                 "json_schema": {
                     "properties": {
