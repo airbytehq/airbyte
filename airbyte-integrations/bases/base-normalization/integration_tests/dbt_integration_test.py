@@ -186,24 +186,24 @@ class DbtIntegrationTest(object):
             # wait for service is available
             print(f"....Waiting for MS SQL Server to start...{wait_sec} sec")
             time.sleep(wait_sec)
-        # Run additional commands to prepare the table
-        command_create_db = [
-            "docker",
-            "exec",
-            f"{self.container_prefix}_mssql",
-            "/opt/mssql-tools/bin/sqlcmd",
-            "-S",
-            config["host"],
-            "-U",
-            config["username"],
-            "-P",
-            config["password"],
-            "-Q",
-            f"CREATE DATABASE [{config['database']}]",
-        ]
-        # create test db
-        print("Executing: ", " ".join(command_create_db))
-        subprocess.call(command_create_db)
+            # Run additional commands to prepare the table
+            command_create_db = [
+                "docker",
+                "exec",
+                f"{self.container_prefix}_mssql",
+                "/opt/mssql-tools/bin/sqlcmd",
+                "-S",
+                config["host"],
+                "-U",
+                config["username"],
+                "-P",
+                config["password"],
+                "-Q",
+                f"CREATE DATABASE [{config['database']}]",
+            ]
+            # create test db
+            print("Executing: ", " ".join(command_create_db))
+            subprocess.call(command_create_db)
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
         with open("../secrets/mssql.json", "w") as fh:

@@ -19,7 +19,6 @@ class AbstractTestParser(ABC):
         self.logger.info(f"testing {test_name}() with {test_file.get('test_alias', test_file['filepath'].split('/')[-1])} ...")
         return "rb" if test_file["AbstractFileParser"].is_binary else "r"
 
-
     def test_get_inferred_schema(self, test_file):
         with smart_open(test_file["filepath"], self._get_readmode("get_inferred_schema", test_file)) as f:
             if "test_get_inferred_schema" in test_file["fails"]:
