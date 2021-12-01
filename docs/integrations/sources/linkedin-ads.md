@@ -47,7 +47,7 @@ This Source is capable of syncing the following data as streams:
 
 ### Performance considerations
 
-There are official Rate Limits for LinkedIn Ads API Usage, [more information here](https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits?context=linkedin/marketing/context). Rate limited requests will receive a 429 response. In rare cases, LinkedIn may also return a 429 response as part of infrastructure protection. API service will return to normal automatically. In such cases you will receive the next error message:
+There are official Rate Limits for LinkedIn Ads API Usage, [more information here](https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits?context=linkedin/marketing/context). Rate limited requests will receive a 429 response. Rate limits specify the maximum number of API calls that can be made in a 24 hour period. These limits reset at midnight UTC every day. In rare cases, LinkedIn may also return a 429 response as part of infrastructure protection. API service will return to normal automatically. In such cases you will receive the next error message:
 
 ```text
 "Caught retryable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
@@ -59,7 +59,7 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 "Max try rate limit exceded..."
 ```
 
-After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose you app &gt; Analytics
+After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose you app &gt; Analytics. 
 
 ## Getting started
 The API user account should be assigned the following permissions for the API endpoints:
