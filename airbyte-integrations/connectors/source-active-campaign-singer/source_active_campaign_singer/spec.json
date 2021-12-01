@@ -1,0 +1,30 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/active_campaign",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Source Active Campaign Singer Spec",
+    "type": "object",
+    "required": ["api_url","api_token","start_date","user_agent"],
+    "additionalProperties": true,
+    "properties": {
+      "api_url": {
+        "type": "string",
+        "description": "Your Active Campaign API URL"
+      },
+      "api_token": {
+        "type": "string",
+        "description": "Your Active Campaign API TOKEN"
+      },
+      "start_date": {
+        "type": "string",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "examples": ["2020-11-16T00:00:00Z"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      },
+      "user_agent": {
+        "type": "string",
+        "description": "tap-activecampaign <api_user_email@your_company.com>"
+      }
+    }
+  }
+}

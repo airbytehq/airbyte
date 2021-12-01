@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!Dockerfile.test
+!main.py
+!source_active_campaign_singer
+!setup.py
+!secrets

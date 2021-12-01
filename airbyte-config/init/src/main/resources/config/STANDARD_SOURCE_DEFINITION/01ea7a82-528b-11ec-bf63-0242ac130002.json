@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "01ea7a82-528b-11ec-bf63-0242ac130002",
+  "name": "Active Campaign",
+  "dockerRepository": "blotout/source-active-campaign-singer",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://github.com/singer-io/tap-activecampaign"
+}
