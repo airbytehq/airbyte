@@ -6299,7 +6299,7 @@
         - - "refresh_token"
 - dockerImage: "airbyte/source-zenloop:0.1.0"
   spec:
-    documentationUrl: "https://docsurl.com"
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/zenloop"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Zenloop Spec"
