@@ -21,9 +21,10 @@ and coalesce(
 {# -- see https://on-systems.tech/113-beware-dbt-incremental-updates-against-snowflake-external-tables/ #}
 {%- macro snowflake__incremental_clause(col_emitted_at) -%}
 {% if is_incremental() %}
-and coalesce(
-    cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >= cast('{{ get_max_normalized_cursor(col_emitted_at) }}' as {{ type_timestamp_with_timezone() }}),
-    true)
+    {% if get_max_normalized_cursor(col_emitted_at) %}
+and cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >=
+    cast('{{ get_max_normalized_cursor(col_emitted_at) }}' as {{ type_timestamp_with_timezone() }})
+    {% endif %}
 {% endif %}
 {%- endmacro -%}
 
