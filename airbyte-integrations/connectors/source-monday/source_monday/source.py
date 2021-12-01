@@ -127,28 +127,12 @@ class Users(MondayStream):
         return
 
 
-class SourceMondayAuthenticator:
-    @staticmethod
-    def get_auth(config):
-        credentials = config.get("credentials", {})
-        auth_method = credentials.get("auth_method")
-        if auth_method == "api_token" or not credentials:
-            api_token = credentials.get("api_token") or config.get("api_token")
-            if not api_token:
-                raise Exception("No api_token in creds")
-            return TokenAuthenticator(token=api_token)
-        elif auth_method == "oauth2.0":
-            return TokenAuthenticator(token=credentials["access_token"])
-        else:
-            raise Exception(f"Invalid auth method: {auth_method}")
-
-
 # Source
 class SourceMonday(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         url = "https://api.monday.com/v2"
         params = {"query": "query { me { is_guest created_at name id}}"}
-        auth = SourceMondayAuthenticator.get_auth(config).get_auth_header()
+        auth = TokenAuthenticator(config["api_token"]).get_auth_header()
         try:
             response = requests.post(url, params=params, headers=auth)
             response.raise_for_status()
@@ -157,7 +141,7 @@ class SourceMonday(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = SourceMondayAuthenticator.get_auth(config)
+        auth = TokenAuthenticator(config["api_token"])
         return [
             Items(authenticator=auth),
             Boards(authenticator=auth),

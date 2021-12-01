@@ -7,15 +7,7 @@ tests:
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
-    - config_path: "secrets/config_oauth.json"
-      status: "succeed"
-    - config_path: "secrets/config_api_token.json"
-      status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
-    - config_path: "integration_tests/invalid_oauth_config.json"
-      status: "failed"
-    - config_path: "integration_tests/invalid_api_token_config.json"
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
