@@ -142,32 +142,36 @@ public class RunnerApp {
     final var logPath = LogClientSingleton.getInstance().getSchedulerLogsRoot(configs.getWorkspaceRoot());
     LogClientSingleton.getInstance().setWorkspaceMdc(configs.getWorkerEnvironment(), configs.getLogConfigs(), logPath);
 
+    // todo: remove these logs
+    LOGGER.info("Listing entries...");
+    for (Map.Entry<String, String> entry : envMap.entrySet()) {
+      LOGGER.info("entry = " + entry);
+    }
+    LOGGER.info("Done listing entries...");
+
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
     final ExecutorService heartbeatExecutorService = Executors.newSingleThreadExecutor();
 
-    heartbeatExecutorService.submit(
-        () -> {
-          MDC.setContextMap(mdc);
-          try {
-            new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT).start();
-          } catch (final Exception e) {
-            throw new RuntimeException(e);
-          }
-        });
+    final WorkerHeartbeatServer heartbeatServer = new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT);
+
+    heartbeatServer.startBackground();
 
     try {
       if (application.equals("replication")) {
         replicationRunner(configs);
       } else {
-        throw new IllegalStateException("Unexpected value: " + application);
+        LOGGER.error("Runner failed", new IllegalStateException("Unexpected value: " + application));
+        System.exit(1);
       }
     } finally {
-      LOGGER.info("Shutting down heartbeatExecutorService...");
-      heartbeatExecutorService.shutdown();
+      LOGGER.info("Shutting down heartbeat server...");
+      heartbeatServer.stop();
     }
 
+    // required to kill s3 logger
     LOGGER.info("Runner closing...");
+    System.exit(0);
   }
 
   private static ProcessFactory getProcessBuilderFactory(final Configs configs, final WorkerConfigs workerConfigs) throws IOException {
