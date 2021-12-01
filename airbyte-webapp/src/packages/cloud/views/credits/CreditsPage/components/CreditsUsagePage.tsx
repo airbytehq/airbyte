@@ -24,10 +24,13 @@ const CreditsUsagePage: React.FC = () => {
   const chartData = useMemo(
     () =>
       data?.creditConsumptionByDay?.map(({ creditsConsumed, date }) => ({
-        name: formatDate(new Date(...date), {
-          month: "short",
-          day: "numeric",
-        }),
+        name: formatDate(
+          new Date(date[0], date[1] - 1 /* zero-indexed */, date[2]),
+          {
+            month: "short",
+            day: "numeric",
+          }
+        ),
         value: creditsConsumed,
       })),
     [data, formatDate]

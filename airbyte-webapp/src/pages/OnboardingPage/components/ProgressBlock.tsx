@@ -100,7 +100,7 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({
     <Bar>
       <Img src={"/process-arrow.svg"} width={20} />
       <FormattedMessage
-        id="onboarding.synchronisationProgress"
+        id="onboarding.synchronizationProgress"
         values={{
           sr: (...sr: React.ReactNode[]) => (
             <>
