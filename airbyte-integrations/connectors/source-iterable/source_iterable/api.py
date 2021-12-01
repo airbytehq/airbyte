@@ -3,6 +3,7 @@
 #
 
 import csv
+import re
 import urllib.parse as urlparse
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
@@ -38,7 +39,14 @@ class ListUsers(IterableStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         list_id = self._get_list_id(response.url)
         for user in response.iter_lines():
-            yield {"email": user.decode(), "listId": list_id}
+            user_email = user.decode()
+            if self._check_email_is_valid(user_email):
+                yield {"email": user_email, "listId": list_id}
+
+    @staticmethod
+    def _check_email_is_valid(email):
+        email_regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+        return re.fullmatch(email_regex, email)
 
     @staticmethod
     def _get_list_id(url: str) -> int:
