@@ -3,7 +3,6 @@
 #
 
 import json
-import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -57,6 +56,16 @@ class ReportInfo:
     report_id: str
     profile_id: int
     record_type: str
+    status: Status
+    metric_objects: List[dict]
+
+
+class ReportGenerationFailure(Exception):
+    pass
+
+
+class ReportGenerationInProgress(Exception):
+    pass
 
 
 class TooManyRequests(Exception):
@@ -77,7 +86,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     # Async report generation time is 15 minutes according to docs:
     # https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes
     # (Service limits section)
-    REPORT_WAIT_TIMEOUT = timedelta(minutes=20)
+    REPORT_WAIT_TIMEOUT = timedelta(minutes=20).total_seconds
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "%Y%m%d"
     cursor_field = "reportDate"
@@ -120,37 +129,43 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         report_date = stream_slice[self.cursor_field]
         report_infos = self._init_reports(report_date)
         logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
-        # According to Amazon Ads API docs metric generation takes maximum 15
-        # minutes. But in case reports wont be generated we dont want this stream to
-        # hung forever. Store timepoint when report generation has started to
-        # check if it takes to long to break a loop.
-        start_time_point = datetime.now()
-        while report_infos and datetime.now() <= start_time_point + self.REPORT_WAIT_TIMEOUT:
-            completed_reports = []
-            logger.info(f"Checking report status, {len(report_infos)} report(s) remained")
-            for report_info in report_infos:
-                report_status, download_url = self._check_status(report_info)
-                if report_status == Status.FAILURE:
-                    raise Exception(f"Report for {report_info.profile_id} with {report_info.record_type} type generation failed")
-                elif report_status == Status.SUCCESS:
-                    metric_objects = self._download_report(report_info, download_url)
-                    for metric_object in metric_objects:
-                        yield self._model(
-                            profileId=report_info.profile_id,
-                            recordType=report_info.record_type,
-                            reportDate=report_date,
-                            metric=metric_object,
-                        ).dict()
-                    completed_reports.append(report_info)
-            for completed_report in completed_reports:
-                report_infos.remove(completed_report)
-            if report_infos:
-                logger.info(f"{len(report_infos)} report(s) remained, taking {self.CHECK_INTERVAL_SECONDS} seconds timeout")
-                time.sleep(self.CHECK_INTERVAL_SECONDS)
-        if not report_infos:
-            logger.info("All reports have been processed")
-        else:
-            raise Exception("Not all reports has been processed due to timeout")
+
+        self._try_read_records(report_infos)
+
+        for report_info in report_infos:
+            for metric_object in report_info.metric_objects:
+                yield self._model(
+                    profileId=report_info.profile_id,
+                    recordType=report_info.record_type,
+                    reportDate=report_date,
+                    metric=metric_object,
+                ).dict()
+
+    @backoff.on_exception(
+        backoff.constant,
+        (ReportGenerationFailure, ReportGenerationInProgress),
+        max_time=REPORT_WAIT_TIMEOUT,
+    )
+    def _try_read_records(self, report_infos):
+        incomplete_report_infos = [r for r in report_infos if r.status != Status.SUCCESS]
+        completed_reports = 0
+
+        logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remained")
+        for report_info in incomplete_report_infos:
+            report_status, download_url = self._check_status(report_info)
+            report_info.status = report_status
+
+            if report_status == Status.FAILURE:
+                message = f"Report for {report_info.profile_id} with {report_info.record_type} type generation failed"
+                raise ReportGenerationFailure(message)
+            elif report_status == Status.SUCCESS:
+                report_info.metric_objects = self._download_report(report_info, download_url)
+                completed_reports += 1
+
+        incomplete_count = len(incomplete_report_infos) - completed_reports
+        if incomplete_count > 0:
+            message = f"Report generation in progress, {incomplete_count} report(s) remained"
+            raise ReportGenerationInProgress(message)
 
     def _generate_model(self):
         """
@@ -302,6 +317,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                         report_id=response.reportId,
                         record_type=record_type,
                         profile_id=profile.profileId,
+                        status=Status.IN_PROGRESS,
+                        metric_objects=[],
                     )
                 )
                 logger.info("Initiated successfully")
