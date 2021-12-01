@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
+import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.scheduling.activities.GetSyncInputActivity;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
@@ -23,7 +24,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private boolean skipScheduling = false;
   CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
-  public ConnectionUpdaterWorkflowImpl() {}
+  public ConnectionUpdaterWorkflowImpl() {
+  }
 
   private final GetSyncInputActivity getSyncInputActivity = Workflow.newActivityStub(GetSyncInputActivity.class, ActivityConfiguration.OPTIONS);
 
@@ -47,6 +49,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
             .setWorkflowId("sync_" + connectionUpdaterInput.getJobId())
+            .setTaskQueue(TemporalJobType.SYNC.name())
             // This will cancel the child workflow when the parent is terminated
             .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_ABANDON)
             .build());
@@ -66,6 +69,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     if (isDeleted) {
       return new SyncResult(true);
     } else {
+      // TODO: Create a new job here
       Workflow.continueAsNew(connectionUpdaterInput);
     }
     // This should not be reachable

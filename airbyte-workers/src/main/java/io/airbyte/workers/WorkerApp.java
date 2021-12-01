@@ -151,15 +151,7 @@ public class WorkerApp {
     connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionUpdaterWorkflowImpl.class);
     connectionUpdaterWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     connectionUpdaterWorker.registerActivitiesImplementations(
-        new GetSyncInputActivityImpl(),
-        // Needed by the child sync workflow
-        new ReplicationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-            databasePassword, databaseUrl, airbyteVersion),
-        new NormalizationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-            databasePassword, databaseUrl, airbyteVersion),
-        new DbtTransformationActivityImpl(processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs, databaseUser,
-            databasePassword, databaseUrl, airbyteVersion),
-        new PersistStateActivityImpl(workspaceRoot, configRepository));
+        new GetSyncInputActivityImpl());
 
     factory.start();
   }
