@@ -49,7 +49,7 @@
               "refresh_token": {
                 "type": "string",
                 "title": "Refresh Token",
-                "description": "Refresh Token to renew the expired access_token.",
+                "description": "Refresh Token to renew the expired Access Token.",
                 "default": "",
                 "airbyte_secret": true
               }

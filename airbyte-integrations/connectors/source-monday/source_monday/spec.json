@@ -9,7 +9,8 @@
     "properties": {
       "api_token": {
         "type": "string",
-        "description": "This is the API token to authenticate requests to Monday. Profile picture (bottom left) => Admin => API",
+		"title": "Personal Access Token"
+        "description": "Access Token for making authenticated requests.",
         "airbyte_secret": true
       }
     }

@@ -9,19 +9,19 @@
     "properties": {
       "start_date": {
         "type": "string",
-        "title": "Replication start date",
+        "title": "Start Date",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2017-01-25T00:00:00Z"]
       },
       "credentials": {
         "title": "Authentication mechanism",
-        "description": "Choose either to provide the API key or the OAuth2.0 credentials",
+        "description": "Choose how to authenticate to HubSpot.",
         "type": "object",
         "oneOf": [
           {
             "type": "object",
-            "title": "Authenticate via HubSpot (Oauth)",
+            "title": "Authenticate via HubSpot (OAuth)",
             "required": [
               "client_id",
               "client_secret",
@@ -31,7 +31,7 @@
             "properties": {
               "credentials_title": {
                 "type": "string",
-                "title": "Credentials title",
+                "title": "Credentials Title",
                 "description": "Name of the credentials set",
                 "const": "OAuth Credentials",
                 "enum": ["OAuth Credentials"],

@@ -10,21 +10,22 @@
       "tenant_id": {
         "title": "Directory (tenant) ID",
         "type": "string",
-        "description": "Directory (tenant) ID"
+        "description": "A globally unique identifier (GUID) that is different than your organization name or domain."
       },
       "client_id": {
-        "title": "Application (client) ID",
+        "title": "Client ID",
         "type": "string",
-        "description": "Application (client) ID"
+        "description": "The Client ID of your Microsoft Teams developer application."
       },
       "client_secret": {
         "title": "Client Secret",
         "type": "string",
-        "description": "Client secret",
+        "description": "The Client Secret of your Microsoft Teams developer application.",
         "airbyte_secret": true
       },
       "period": {
         "type": "string",
+		"title": "Period",
         "description": "Specifies the length of time over which the Team Device Report stream is aggregated. The supported values are: D7, D30, D90, and D180.",
         "examples": ["D7"]
       }
