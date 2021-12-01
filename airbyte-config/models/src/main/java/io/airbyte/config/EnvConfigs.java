@@ -54,6 +54,9 @@ public class EnvConfigs implements Configs {
   public static final String JOB_IMAGE_PULL_POLICY = "JOB_IMAGE_PULL_POLICY";
   public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
   public static final String WORKER_POD_NODE_SELECTORS = "WORKER_POD_NODE_SELECTORS";
+  public static final String JOB_SOCAT_IMAGE = "JOB_SOCAT_IMAGE";
+  public static final String JOB_BUSYBOX_IMAGE = "JOB_BUSYBOX_IMAGE";
+  public static final String JOB_CURL_IMAGE = "JOB_CURL_IMAGE";
   public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
   public static final String MAX_SYNC_TIMEOUT_DAYS = "MAX_SYNC_TIMEOUT_DAYS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
@@ -83,6 +86,9 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
+  private static final String DEFAULT_JOB_SOCAT_IMAGE = "alpine/socat:1.7.4.1-r1";
+  private static final String DEFAULT_JOB_BUSYBOX_IMAGE = "busybox:1.28";
+  private static final String DEFAULT_JOB_CURL_IMAGE = "curlimages/curl:7.77.0";
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
@@ -95,7 +101,7 @@ public class EnvConfigs implements Configs {
   public static final String DEFAULT_NETWORK = "host";
 
   private final Function<String, String> getEnv;
-  private LogConfiguration logConfiguration;
+  private final LogConfiguration logConfiguration;
 
   public EnvConfigs() {
     this(System::getenv);
@@ -281,12 +287,14 @@ public class EnvConfigs implements Configs {
         .collect(Collectors.toMap(s -> s[0], s -> s[1]));
 
     if (tolerationMap.containsKey("key") && tolerationMap.containsKey("effect") && tolerationMap.containsKey("operator")) {
-      return new WorkerPodToleration(tolerationMap.get("key"),
+      return new WorkerPodToleration(
+          tolerationMap.get("key"),
           tolerationMap.get("effect"),
           tolerationMap.get("value"),
           tolerationMap.get("operator"));
     } else {
-      LOGGER.warn("Ignoring toleration {}, missing one of key,effect or operator",
+      LOGGER.warn(
+          "Ignoring toleration {}, missing one of key,effect or operator",
           tolerationStr);
       return null;
     }
@@ -345,6 +353,21 @@ public class EnvConfigs implements Configs {
         .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
         .map(s -> s.split("="))
         .collect(Collectors.toMap(s -> s[0], s -> s[1]));
+  }
+
+  @Override
+  public String getJobSocatImage() {
+    return getEnvOrDefault(JOB_SOCAT_IMAGE, DEFAULT_JOB_SOCAT_IMAGE);
+  }
+
+  @Override
+  public String getJobBusyboxImage() {
+    return getEnvOrDefault(JOB_BUSYBOX_IMAGE, DEFAULT_JOB_BUSYBOX_IMAGE);
+  }
+
+  @Override
+  public String getJobCurlImage() {
+    return getEnvOrDefault(JOB_CURL_IMAGE, DEFAULT_JOB_CURL_IMAGE);
   }
 
   @Override

@@ -1,0 +1,28 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/airtable",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Airtable Source Spec",
+    "type": "object",
+    "required": ["api_key", "base_id", "tables"],
+    "additionalProperties": false,
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "description": "The API key for the Airtable account. https://support.airtable.com/hc/en-us/articles/219046777-How-do-I-get-my-API-key-",
+        "airbyte_secret": true,
+        "examples": ["key1234567890"]
+      },
+      "base_id": {
+        "type": "string",
+        "description": "The base ID to integrate data from",
+        "examples": ["app1234567890"]
+      },
+      "tables": {
+        "type": "array",
+        "description": "The list of tables to integrate",
+        "examples": ["table 1", "table 2"]
+      }
+    }
+  }
+}

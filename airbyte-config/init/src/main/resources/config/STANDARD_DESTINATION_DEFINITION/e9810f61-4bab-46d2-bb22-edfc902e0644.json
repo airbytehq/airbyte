@@ -1,0 +1,8 @@
+{
+  "destinationDefinitionId": "e9810f61-4bab-46d2-bb22-edfc902e0644",
+  "name": "SFTP-JSON",
+  "dockerRepository": "airbyte/destination-sftp-json",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/sftp-json",
+  "icon": "sftp.svg"
+}

@@ -276,7 +276,7 @@ class StreamProcessor(object):
                 self.generate_id_hashing_model(from_table, column_names),
                 forced_materialization_type,
                 is_intermediate=True,
-                suffix="ab3",
+                suffix="stg",
             )
             from_table = self.add_to_outputs(
                 self.generate_scd_type_2_model(from_table, column_names),
@@ -373,6 +373,7 @@ class StreamProcessor(object):
         template = Template(
             """
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: {{ from_table }}
 {{ unnesting_before_query }}
 select
   {%- if parent_hash_id %}
@@ -396,7 +397,7 @@ where 1 = 1
             col_emitted_at=self.get_emitted_at(),
             col_normalized_at=self.get_normalized_at(),
             table_alias=table_alias,
-            unnesting_before_query=self.unnesting_before_query(),
+            unnesting_before_query=self.unnesting_before_query(from_table),
             parent_hash_id=self.parent_hash_id(),
             fields=self.extract_json_columns(column_names),
             from_table=jinja_call(from_table),
@@ -451,6 +452,7 @@ where 1 = 1
         template = Template(
             """
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ from_table }}
 select
   {%- if parent_hash_id %}
     {{ parent_hash_id }},
@@ -573,6 +575,7 @@ where 1 = 1
         template = Template(
             """
 -- SQL model to build a hash column based on the values of this record
+-- depends_on: {{ from_table }}
 select
     {{ '{{' }} dbt_utils.surrogate_key([
       {%- if parent_hash_id %}
@@ -634,6 +637,7 @@ where 1 = 1
 
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         scd_sql_template = """
+-- depends_on: {{ from_table }}
 with
 {{ '{% if is_incremental() %}' }}
 new_data as (
@@ -655,6 +659,10 @@ new_data_ids as (
         ]) {{ '}}' }} as {{ unique_key }}
     from new_data
 ),
+empty_new_data as (
+    -- build an empty table to only keep the table's column types
+    select * from new_data where 1 = 0
+),
 previous_active_scd_data as (
     -- retrieve "incomplete old" data that needs to be updated with an end date because of new changes
     select
@@ -662,8 +670,8 @@ previous_active_scd_data as (
     from {{ '{{ this }}' }} as this_data
     -- make a join with new_data using primary key to filter active data that need to be updated only
     join new_data_ids on this_data.{{ unique_key }} = new_data_ids.{{ unique_key }}
-    -- force left join to NULL values (we just need to transfer column types only for the star_intersect macro)
-    left join {{'{{'}} {{ from_table }}  {{'}}'}} as inc_data on 1 = 0
+    -- force left join to NULL values (we just need to transfer column types only for the star_intersect macro on schema changes)
+    left join empty_new_data as inc_data on this_data.{{ col_ab_id }} = inc_data.{{ col_ab_id }}
     where {{ active_row }} = 1
 ),
 input_data as (
@@ -867,6 +875,7 @@ from dedup_data where {{ airbyte_row_num }} = 1
         template = Template(
             """
 -- Final base SQL model
+-- depends_on: {{ from_table }}
 select
   {%- if parent_hash_id %}
     {{ parent_hash_id }},
@@ -948,12 +957,10 @@ where 1 = 1
             config["schema"] = f'"{schema}"'
         if self.is_incremental_mode(self.destination_sync_mode):
             if suffix == "scd":
-                if self.destination_type == DestinationType.POSTGRES:
-                    # because of https://github.com/dbt-labs/docs.getdbt.com/issues/335, we avoid VIEW for postgres
-                    # so we need to clean up temporary table materialization...
-                    ab3_schema = self.get_schema(True)
-                    ab3_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "ab3", truncate_name)
-                    config["post_hook"] = f"['drop table if exists {ab3_schema}.{ab3_table}']"
+                if self.destination_type != DestinationType.POSTGRES:
+                    stg_schema = self.get_schema(True)
+                    stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
+                    config["post_hook"] = f"['drop view {stg_schema}.{stg_table}']"
             else:
                 # incremental is handled in the SCD SQL already
                 sql = self.add_incremental_clause(sql)
@@ -1044,7 +1051,7 @@ where 1 = 1
                 config["cluster_by"] = '["_AIRBYTE_EMITTED_AT"]'
         if unique_key:
             config["unique_key"] = f'"{unique_key}"'
-        elif not self.is_nested_array:
+        elif not self.parent:
             # in nested arrays, each element is sharing the same _airbyte_ab_id, so it's not unique
             config["unique_key"] = self.get_ab_id(in_jinja=True)
         return config
@@ -1100,14 +1107,11 @@ where 1 = 1
             return self.parent.hash_id(in_jinja)
         return ""
 
-    def unnesting_before_query(self) -> str:
+    def unnesting_before_query(self, from_table: str) -> str:
         if self.parent and self.is_nested_array:
-            parent_file_name = (
-                f"'{self.tables_registry.get_file_name(self.parent.get_schema(False), self.parent.json_path, self.parent.stream_name, '')}'"
-            )
             parent_stream_name = f"'{self.parent.normalized_stream_name()}'"
             quoted_field = self.name_transformer.normalize_column_name(self.stream_name, in_jinja=True)
-            return jinja_call(f"unnest_cte({parent_file_name}, {parent_stream_name}, {quoted_field})")
+            return jinja_call(f"unnest_cte({from_table}, {parent_stream_name}, {quoted_field})")
         return ""
 
     def unnesting_from(self) -> str:

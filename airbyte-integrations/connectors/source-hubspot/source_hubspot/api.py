@@ -153,7 +153,7 @@ class API:
             message = response.json().get("message")
 
         if response.status_code == HTTPStatus.FORBIDDEN:
-            """ Once hit the forbidden endpoint, we return the error message from response. """
+            """Once hit the forbidden endpoint, we return the error message from response."""
             pass
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
             raise HubspotInvalidAuth(message, response=response)
@@ -218,17 +218,6 @@ class Stream(ABC):
 
     def list(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
-
-    def _filter_dynamic_fields(self, records: Iterable) -> Iterable:
-        """Skip certain fields because they are too dynamic and change every call (timers, etc),
-        see https://github.com/airbytehq/airbyte/issues/2397
-        """
-        for record in records:
-            if isinstance(record, Mapping) and "properties" in record:
-                for key in list(record["properties"].keys()):
-                    if key.startswith("hs_time_in"):
-                        record["properties"].pop(key)
-            yield record
 
     @staticmethod
     def _cast_value(declared_field_types: List, field_name: str, field_value: Any, declared_format: str = None) -> Any:
@@ -358,7 +347,7 @@ class Stream(ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         default_params = {self.limit_field: self.limit}
         params = {**default_params, **params} if params else {**default_params}
-        yield from self._filter_dynamic_fields(self._filter_old_records(self._read(getter, params)))
+        yield from self._filter_old_records(self._read(getter, params))
 
     def parse_response(self, response: Union[Mapping[str, Any], List[dict]]) -> Iterator:
         if isinstance(response, Mapping):

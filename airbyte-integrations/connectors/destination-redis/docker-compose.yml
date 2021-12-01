@@ -1,0 +1,24 @@
+version: "3.2"
+services:
+  redis:
+    image: "redis:6.2.6"
+    command: redis-server --requirepass pw
+    ports:
+      - "6379:6379"
+#    uncomment if you want to mount volumes for persistence
+#    volumes:
+#      - $PWD/redis-data:/var/lib/redis
+#      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      node_net:
+        ipv4_address: 172.28.1.4
+
+# networking for the Redis container
+networks:
+  node_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16

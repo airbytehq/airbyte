@@ -1,10 +1,10 @@
 {{ config(
     cluster_by = ["_AIRBYTE_EMITTED_AT"],
-    unique_key = '_AIRBYTE_AB_ID',
     schema = "TEST_NORMALIZATION",
     tags = [ "nested" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_AB3') }}
 select
     _AIRBYTE_NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_HASHID,
     DOUBLE_ARRAY_DATA,

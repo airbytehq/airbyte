@@ -113,23 +113,28 @@ class AuthSpecification(BaseModel):
     )
 
 
-class ConnectorSpecification(BaseModel):
-    class Config:
-        extra = Extra.allow
+class AuthFlowType(Enum):
+    oauth2_0 = "oauth2.0"
+    oauth1_0 = "oauth1.0"
 
-    documentationUrl: Optional[AnyUrl] = None
-    changelogUrl: Optional[AnyUrl] = None
-    connectionSpecification: Dict[str, Any] = Field(
-        ...,
-        description="ConnectorDefinition specific blob. Must be a valid JSON string.",
+
+class OAuthConfigSpecification(BaseModel):
+    oauth_user_input_from_connector_config_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.\nMust be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification\nusing special annotation 'path_in_connector_config'.\nThese are input values the user is entering through the UI to authenticate to the connector, that might also shared\nas inputs for syncing data via the connector.\n\nExamples:\n\nif no connector values is shared during oauth flow, oauth_user_input_from_connector_config_specification=[]\nif connector values such as 'app_id' inside the top level are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['app_id']\n    }\n  }\nif connector values such as 'info.app_id' nested inside another object are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['info', 'app_id']\n    }\n  }",
     )
-    supportsIncremental: Optional[bool] = Field(None, description="If the connector supports incremental mode or not.")
-    supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
-    supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
-    supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
-        None, description="List of destination sync modes supported by the connector"
+    complete_oauth_output_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations produced by the OAuth flows as they are\nreturned by the distant OAuth APIs.\nMust be a valid JSON describing the fields to merge back to `ConnectorSpecification.connectionSpecification`.\nFor each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,\n\nExamples:\n\n    complete_oauth_output_specification={\n      refresh_token: {\n        type: string,\n        path_in_connector_config: ['credentials', 'refresh_token']\n      }\n    }",
     )
-    authSpecification: Optional[AuthSpecification] = None
+    complete_oauth_server_input_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations.\nMust be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the\nserver when completing an OAuth flow (typically exchanging an auth code for refresh token).\n\nExamples:\n\n    complete_oauth_server_input_specification={\n      client_id: {\n        type: string\n      },\n      client_secret: {\n        type: string\n      }\n    }",
+    )
+    complete_oauth_server_output_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description="OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that\nalso need to be merged back into the connector configuration at runtime.\nThis is a subset configuration of `complete_oauth_server_input_specification` that filters fields out to retain only the ones that\nare necessary for the connector to function with OAuth. (some fields could be used during oauth flows but not needed afterwards, therefore\nthey would be listed in the `complete_oauth_server_input_specification` but not `complete_oauth_server_output_specification`)\nMust be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the\nconnector when using OAuth flow APIs.\nThese fields are to be merged back to `ConnectorSpecification.connectionSpecification`.\nFor each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,\n\nExamples:\n\n      complete_oauth_server_output_specification={\n        client_id: {\n          type: string,\n          path_in_connector_config: ['credentials', 'client_id']\n        },\n        client_secret: {\n          type: string,\n          path_in_connector_config: ['credentials', 'client_secret']\n        }\n      }",
+    )
 
 
 class AirbyteStream(BaseModel):
@@ -171,6 +176,42 @@ class ConfiguredAirbyteStream(BaseModel):
     primary_key: Optional[List[List[str]]] = Field(
         None,
         description="Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.",
+    )
+
+
+class AdvancedAuth(BaseModel):
+    auth_flow_type: Optional[AuthFlowType] = None
+    predicate_key: Optional[List[str]] = Field(
+        None,
+        description="Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.",
+    )
+    predicate_value: Optional[str] = Field(
+        None,
+        description="Value of the predicate_key fields for the advanced auth to be applicable.",
+    )
+    oauth_config_specification: Optional[OAuthConfigSpecification] = None
+
+
+class ConnectorSpecification(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    documentationUrl: Optional[AnyUrl] = None
+    changelogUrl: Optional[AnyUrl] = None
+    connectionSpecification: Dict[str, Any] = Field(
+        ...,
+        description="ConnectorDefinition specific blob. Must be a valid JSON string.",
+    )
+    supportsIncremental: Optional[bool] = Field(None, description="If the connector supports incremental mode or not.")
+    supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
+    supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
+    supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
+        None, description="List of destination sync modes supported by the connector"
+    )
+    authSpecification: Optional[AuthSpecification] = Field(None, description="deprecated, switching to advanced_auth instead")
+    advanced_auth: Optional[AdvancedAuth] = Field(
+        None,
+        description="Additional and optional specification object to describe what an 'advanced' Auth flow would need to function.\n  - A connector should be able to fully function with the configuration as described by the ConnectorSpecification in a 'basic' mode.\n  - The 'advanced' mode provides easier UX for the user with UI improvements and automations. However, this requires further setup on the\n  server side by instance or workspace admins beforehand. The trade-off is that the user does not have to provide as many technical\n  inputs anymore and the auth process is faster and easier to complete.",
     )
 
 
