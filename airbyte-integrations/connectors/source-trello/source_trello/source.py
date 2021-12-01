@@ -110,7 +110,9 @@ class Cards(ChildStreamMixin, TrelloStream):
     extra_params = {
         "customFieldItems": "true",
         "pluginData": "true",
-        "actions_display": "true"
+        "actions_display": "true",
+        "members": "true",
+        "list": "true",
     }
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
