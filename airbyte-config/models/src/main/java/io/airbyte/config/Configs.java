@@ -76,11 +76,11 @@ public interface Configs {
 
   int getMaxSyncTimeoutDays();
 
-  String getJobImagePullPolicy();
-
   List<WorkerPodToleration> getWorkerPodTolerations();
 
   Map<String, String> getWorkerNodeSelectors();
+
+  String getJobImagePullPolicy();
 
   String getJobsImagePullSecret();
 
