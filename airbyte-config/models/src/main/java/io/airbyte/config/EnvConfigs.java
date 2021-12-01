@@ -433,41 +433,6 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(JOBS_IMAGE_PULL_SECRET, "");
   }
 
-  @Override
-  public String getS3LogBucket() {
-    return logConfiguration.getS3LogBucket();
-  }
-
-  @Override
-  public String getS3LogBucketRegion() {
-    return logConfiguration.getS3LogBucketRegion();
-  }
-
-  @Override
-  public String getAwsAccessKey() {
-    return logConfiguration.getAwsAccessKey();
-  }
-
-  @Override
-  public String getAwsSecretAccessKey() {
-    return logConfiguration.getAwsSecretAccessKey();
-  }
-
-  @Override
-  public String getS3MinioEndpoint() {
-    return logConfiguration.getS3MinioEndpoint();
-  }
-
-  @Override
-  public String getGcpStorageBucket() {
-    return logConfiguration.getGcpStorageBucket();
-  }
-
-  @Override
-  public String getGoogleApplicationCredentials() {
-    return logConfiguration.getGoogleApplicationCredentials();
-  }
-
   public LogConfigs getLogConfigs() {
     return logConfiguration;
   }
