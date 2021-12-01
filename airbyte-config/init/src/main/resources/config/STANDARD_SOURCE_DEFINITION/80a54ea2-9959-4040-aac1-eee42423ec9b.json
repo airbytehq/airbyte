@@ -3,5 +3,6 @@
   "name": "Monday",
   "dockerRepository": "airbyte/source-zendesk-monday",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/monday"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/monday",
+  "icon": "monday.svg"
 }

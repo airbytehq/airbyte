@@ -245,7 +245,6 @@ PAGE_FIELDS = ",".join(
         "groups",
         "image_copyrights",
         "indexed_videos",
-        "insights_exports",
         "instagram_accounts",
         "likes",
         "live_encoders",
