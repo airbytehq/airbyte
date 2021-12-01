@@ -8,7 +8,6 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -28,18 +27,14 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.scheduler.client.BucketSpecCacheSchedulerClient;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
-import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
-import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
@@ -217,9 +212,6 @@ public class ServerApp implements ServerRunnable {
         new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence, configRepository));
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
-    final SynchronousSchedulerClient bucketSpecCacheSchedulerClient =
-        new BucketSpecCacheSchedulerClient(syncSchedulerClient, configs.getSpecCacheBucket());
-    final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
 
     // version in the database when the server main method is called. may be empty if this is the first
@@ -249,20 +241,9 @@ public class ServerApp implements ServerRunnable {
     configPersistence.loadData(seed);
     LOGGER.info("Loaded seed data...");
 
-    // todo (lmossman) - this will only exist temporarily to ensure all definitions contain specs. It
-    // will be removed after the faux major version bump
-    ConnectorDefinitionSpecBackfiller.migrateAllDefinitionsToContainSpec(
-        configRepository,
-        configPersistence,
-        seed,
-        cachingSchedulerClient,
-        trackingClient,
-        configs);
-    LOGGER.info("Migrated all definitions to contain specs...");
-
     return apiFactory.create(
         schedulerJobClient,
-        cachingSchedulerClient,
+        syncSchedulerClient,
         temporalService,
         configRepository,
         jobPersistence,
@@ -306,21 +287,16 @@ public class ServerApp implements ServerRunnable {
                                                  final AirbyteVersion initialAirbyteDatabaseVersion,
                                                  final ConfigRepository configRepository,
                                                  final ConfigPersistence seed,
-                                                 final SpecFetcher specFetcher,
                                                  final JobPersistence jobPersistence,
                                                  final Configs configs)
       throws IOException {
-    // required before migration
-    // TODO: remove this specFetcherFn logic once file migrations are deprecated
-    configRepository.setSpecFetcher(dockerImage -> Exceptions.toRuntime(() -> specFetcher.getSpec(dockerImage)));
-
     // version in the database after migration is run.
     AirbyteVersion airbyteDatabaseVersion = null;
     if (initialAirbyteDatabaseVersion != null && isDatabaseVersionBehindAppVersion(airbyteVersion, initialAirbyteDatabaseVersion)) {
       final boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
       final boolean versionSupportsAutoMigrate = initialAirbyteDatabaseVersion.greaterThanOrEqualTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION);
       if (!isKubernetes || versionSupportsAutoMigrate) {
-        runAutomaticMigration(configRepository, jobPersistence, seed, specFetcher, airbyteVersion, initialAirbyteDatabaseVersion);
+        runAutomaticMigration(configRepository, jobPersistence, seed, airbyteVersion, initialAirbyteDatabaseVersion);
         // After migration, upgrade the DB version
         airbyteDatabaseVersion = jobPersistence.getVersion().map(AirbyteVersion::new).orElseThrow();
       } else {
@@ -342,7 +318,6 @@ public class ServerApp implements ServerRunnable {
   private static void runAutomaticMigration(final ConfigRepository configRepository,
                                             final JobPersistence jobPersistence,
                                             final ConfigPersistence seed,
-                                            final SpecFetcher specFetcher,
                                             final AirbyteVersion airbyteVersion,
                                             final AirbyteVersion airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion.serialize() + " to version : " + airbyteVersion.serialize());
@@ -350,8 +325,7 @@ public class ServerApp implements ServerRunnable {
         jobPersistence,
         configRepository,
         airbyteVersion,
-        seed,
-        specFetcher)) {
+        seed)) {
       runMigration.run();
     } catch (final Exception e) {
       LOGGER.error("Automatic Migration failed ", e);

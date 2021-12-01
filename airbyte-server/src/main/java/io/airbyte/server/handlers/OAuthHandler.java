@@ -25,7 +25,6 @@ import io.airbyte.oauth.OAuthImplementationFactory;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.TrackingMetadata;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -41,16 +40,13 @@ public class OAuthHandler {
   private final ConfigRepository configRepository;
   private final OAuthImplementationFactory oAuthImplementationFactory;
   private final TrackingClient trackingClient;
-  private final SpecFetcher specFetcher;
 
   public OAuthHandler(final ConfigRepository configRepository,
                       final HttpClient httpClient,
-                      final TrackingClient trackingClient,
-                      final SpecFetcher specFetcher) {
+                      final TrackingClient trackingClient) {
     this.configRepository = configRepository;
     this.oAuthImplementationFactory = new OAuthImplementationFactory(configRepository, httpClient);
     this.trackingClient = trackingClient;
-    this.specFetcher = specFetcher;
   }
 
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceDefinitionIdRequestBody)
@@ -58,7 +54,7 @@ public class OAuthHandler {
     final StandardSourceDefinition sourceDefinition =
         configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
-    final ConnectorSpecification spec = specFetcher.getSpec(sourceDefinition);
+    final ConnectorSpecification spec = sourceDefinition.getSpec();
     final ImmutableMap<String, Object> metadata = generateSourceMetadata(sourceDefinitionIdRequestBody.getSourceDefinitionId());
     final OAuthConsentRead result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
@@ -87,7 +83,7 @@ public class OAuthHandler {
     final StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
-    final ConnectorSpecification spec = specFetcher.getSpec(destinationDefinition);
+    final ConnectorSpecification spec = destinationDefinition.getSpec();
     final ImmutableMap<String, Object> metadata = generateDestinationMetadata(destinationDefinitionIdRequestBody.getDestinationDefinitionId());
     final OAuthConsentRead result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
@@ -115,7 +111,7 @@ public class OAuthHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(oauthSourceRequestBody.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
-    final ConnectorSpecification spec = specFetcher.getSpec(sourceDefinition);
+    final ConnectorSpecification spec = sourceDefinition.getSpec();
     final ImmutableMap<String, Object> metadata = generateSourceMetadata(oauthSourceRequestBody.getSourceDefinitionId());
     final Map<String, Object> result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
@@ -147,7 +143,7 @@ public class OAuthHandler {
     final StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinition(oauthDestinationRequestBody.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
-    final ConnectorSpecification spec = specFetcher.getSpec(destinationDefinition);
+    final ConnectorSpecification spec = destinationDefinition.getSpec();
     final ImmutableMap<String, Object> metadata = generateDestinationMetadata(oauthDestinationRequestBody.getDestinationDefinitionId());
     final Map<String, Object> result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {

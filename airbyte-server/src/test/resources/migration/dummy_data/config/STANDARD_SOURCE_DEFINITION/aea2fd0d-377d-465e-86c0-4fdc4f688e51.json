@@ -3,5 +3,9 @@
   "name": "Zoom",
   "dockerRepository": "airbyte/source-zoom-singer",
   "dockerImageTag": "0.2.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-zoom-singer"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-zoom-singer",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/zoom",
+    "connectionSpecification": {}
+  }
 }

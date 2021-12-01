@@ -16,8 +16,8 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
@@ -38,18 +38,18 @@ public class DestinationDefinitionsHandler {
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
-  private final CachingSynchronousSchedulerClient schedulerSynchronousClient;
+  private final SynchronousSchedulerClient schedulerSynchronousClient;
   private final AirbyteGithubStore githubStore;
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
-                                       final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
+                                       final SynchronousSchedulerClient schedulerSynchronousClient) {
     this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
   }
 
   @VisibleForTesting
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final Supplier<UUID> uuidSupplier,
-                                       final CachingSynchronousSchedulerClient schedulerSynchronousClient,
+                                       final SynchronousSchedulerClient schedulerSynchronousClient,
                                        final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
@@ -128,9 +128,7 @@ public class DestinationDefinitionsHandler {
         .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
 
     final boolean imageTagHasChanged = !currentDestination.getDockerImageTag().equals(destinationDefinitionUpdate.getDockerImageTag());
-    // TODO (lmossman): remove null spec condition when the spec field becomes required on the
-    // definition struct
-    final ConnectorSpecification spec = (imageTagHasChanged || currentDestination.getSpec() == null)
+    final ConnectorSpecification spec = imageTagHasChanged
         ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag())
         : currentDestination.getSpec();
 
@@ -144,8 +142,6 @@ public class DestinationDefinitionsHandler {
         .withSpec(spec);
 
     configRepository.writeStandardDestinationDefinition(newDestination);
-    // we want to re-fetch the spec for updated definitions.
-    schedulerSynchronousClient.resetCache();
     return buildDestinationDefinitionRead(newDestination);
   }
 

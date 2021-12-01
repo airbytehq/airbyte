@@ -26,9 +26,9 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -48,7 +48,7 @@ class SourceDefinitionsHandlerTest {
   private StandardSourceDefinition source;
   private SourceDefinitionsHandler sourceHandler;
   private Supplier<UUID> uuidSupplier;
-  private CachingSynchronousSchedulerClient schedulerSynchronousClient;
+  private SynchronousSchedulerClient schedulerSynchronousClient;
   private AirbyteGithubStore githubStore;
 
   @SuppressWarnings("unchecked")
@@ -56,7 +56,7 @@ class SourceDefinitionsHandlerTest {
   void setUp() {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
-    schedulerSynchronousClient = spy(CachingSynchronousSchedulerClient.class);
+    schedulerSynchronousClient = spy(SynchronousSchedulerClient.class);
     githubStore = mock(AirbyteGithubStore.class);
 
     source = generateSource();
@@ -190,7 +190,6 @@ class SourceDefinitionsHandlerTest {
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
     verify(configRepository).writeStandardSourceDefinition(updatedSource);
-    verify(schedulerSynchronousClient).resetCache();
   }
 
   @Nested

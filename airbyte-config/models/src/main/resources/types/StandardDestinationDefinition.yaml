@@ -10,7 +10,8 @@ required:
   - dockerRepository
   - dockerImageTag
   - documentationUrl
-additionalProperties: false
+  - spec
+additionalProperties: true
 properties:
   destinationDefinitionId:
     type: string
