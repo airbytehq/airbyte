@@ -60,10 +60,12 @@ export interface SourceGetConsentPayload {
   redirectUrl: string;
   sourceDefinitionId: string;
   workspaceId: string;
+  oAuthInputConfiguration: Record<string, unknown>;
 }
 
 export interface DestinationGetConsentPayload {
   redirectUrl: string;
   destinationDefinitionId: string;
   workspaceId: string;
+  oAuthInputConfiguration: Record<string, unknown>;
 }

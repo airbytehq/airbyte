@@ -2,14 +2,10 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 import { Button } from "components";
 import { useServiceForm } from "../serviceFormContext";
 import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
-import { Button } from "components/base/Button";
-import { isSourceDefinition } from "core/domain/connector/source";
-import { ConnectorDefinition } from "core/domain/connector";
-import { isDestinationDefinition } from "core/domain/connector/destination";
+import { ConnectorSpecification } from "core/domain/connector";
 import GoogleAuthButton from "./GoogleAuthButton";
 
 const AuthSectionRow = styled.div`
@@ -37,24 +33,6 @@ function isGoogleConnector(connectorDefinitionId: string): boolean {
   ].includes(connectorDefinitionId);
 }
 
-function getDefinitionId(
-  connectorDefinition: ConnectorDefinition
-): string | undefined {
-  if (connectorDefinition && isSourceDefinition(connectorDefinition)) {
-    return connectorDefinition.sourceDefinitionId;
-  } else if (
-    connectorDefinition &&
-    isDestinationDefinition(connectorDefinition)
-  ) {
-    return connectorDefinition.destinationDefinitionId;
-  } else {
-    console.error(
-      "Could not find connector definition ID -- this is probably a programmer error"
-    );
-    return;
-  }
-}
-
 function getButtonComponent(connectorDefinitionId: string) {
   if (isGoogleConnector(connectorDefinitionId)) {
     return GoogleAuthButton;
@@ -75,8 +53,14 @@ export const AuthButton: React.FC = () => {
   const { selectedService, selectedConnector } = useServiceForm();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loading, done, run } = useFormikOauthAdapter(selectedConnector!);
-  const definitionId = getDefinitionId(selectedService!);
-  const Component = getButtonComponent(definitionId!);
+
+  if (!selectedConnector) {
+    console.error("Entered non-auth flow while no connector is selected");
+    return null;
+  }
+
+  const definitionId = ConnectorSpecification.id(selectedConnector);
+  const Component = getButtonComponent(definitionId);
   return (
     <AuthSectionRow>
       <Component isLoading={loading} type="button" onClick={() => run()}>
@@ -84,7 +68,7 @@ export const AuthButton: React.FC = () => {
           <FormattedMessage id="connectorForm.reauthenticate" />
         ) : (
           <FormattedMessage
-            id={getAuthenticateMessageId(definitionId!)}
+            id={getAuthenticateMessageId(definitionId)}
             values={{ connector: selectedService?.name }}
           />
         )}

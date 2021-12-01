@@ -1,5 +1,6 @@
 import { useFormikContext } from "formik";
 import merge from "lodash.merge";
+import pick from "lodash.pick";
 
 import { ServiceFormValues } from "../types";
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
@@ -12,7 +13,12 @@ function useFormikOauthAdapter(
   done?: boolean;
   run: () => Promise<void>;
 } {
-  const { values, setValues } = useFormikContext<ServiceFormValues>();
+  const {
+    values,
+    setValues,
+    errors,
+    setFieldTouched,
+  } = useFormikContext<ServiceFormValues>();
 
   const onDone = (v: Pick<ServiceFormValues, "connectionConfiguration">) =>
     setValues(merge(values, v));
@@ -23,32 +29,33 @@ function useFormikOauthAdapter(
     loading,
     done,
     run: async () => {
-      // const oauthInputFields =
-      //   connector?.authSpecification?.oauth2Specification?.oauthFlowInputFields?.map(
-      //     (value) => value.join(".")
-      //   ) ?? [];
-      //
-      // if (oauthInputFields.length) {
-      //   oauthInputFields.forEach((path) =>
-      //     setFieldTouched(`connectionConfiguration.${path}`, true, true)
-      //   );
-      //
-      //   const oAuthErrors = pick(
-      //     errors.connectionConfiguration,
-      //     oauthInputFields
-      //   );
-      //
-      //   if (Object.keys(oAuthErrors).length) {
-      //     return;
-      //   }
-      // }
-      //
-      // const oauthInputParams = pick(
-      //   values.connectionConfiguration,
-      //   oauthInputFields
-      // );
+      const oauthInputFields =
+        Object.values(
+          connector?.advancedAuth?.oauth_config_specification
+            ?.oauthUserInputFromConnectorConfigSpecification?.properties ?? {}
+        )?.map((property) => property.path_in_connector_config.join(".")) ?? [];
 
-      await run();
+      if (oauthInputFields.length) {
+        oauthInputFields.forEach((path) =>
+          setFieldTouched(`connectionConfiguration.${path}`, true, true)
+        );
+
+        const oAuthErrors = pick(
+          errors.connectionConfiguration,
+          oauthInputFields
+        );
+
+        if (Object.keys(oAuthErrors).length) {
+          return;
+        }
+      }
+
+      const oauthInputParams = pick(
+        values.connectionConfiguration,
+        oauthInputFields
+      );
+
+      await run(oauthInputParams);
     },
   };
 }

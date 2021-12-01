@@ -1,14 +1,17 @@
 import React, { useCallback, useMemo } from "react";
 import styled from "styled-components";
+import { useFormikContext, setIn } from "formik";
 
 import { Label, DropDown } from "components";
 
-import { FormConditionItem } from "core/form/types";
 import { useServiceForm } from "../../serviceFormContext";
+import { ServiceFormValues } from "../../types";
+
+import { FormBlock, FormConditionItem } from "core/form/types";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import GroupControls from "components/GroupControls";
 import { FormSection } from "./FormSection";
-import { useFormikContext, setIn } from "formik";
+import { isDefined } from "utils/common";
 
 const GroupLabel = styled(Label)`
   width: auto;
@@ -28,7 +31,7 @@ export const ConditionSection: React.FC<{
   path?: string;
 }> = ({ formField, path }) => {
   const { widgetsInfo, setUiWidgetsInfo } = useServiceForm();
-  const { values, setValues } = useFormikContext();
+  const { values, setValues } = useFormikContext<ServiceFormValues>();
 
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
 
@@ -46,22 +49,22 @@ export const ConditionSection: React.FC<{
         selectedItem: selectedItem.value,
       });
 
-      const newValues =
-        // @ts-ignore
-        formField.conditions[selectedItem.value].properties?.reduce(
-          (acc: any, property: any) => {
-            return property.const
-              ? setIn(acc, property.path, property.const)
-              : acc;
-          },
-          values
-        ) ?? values;
+      const newSelectedPath = formField.conditions[selectedItem.value];
 
-      console.log(newValues);
+      const newValues =
+        newSelectedPath._type === "formGroup"
+          ? newSelectedPath.properties?.reduce(
+              (acc: ServiceFormValues, property: FormBlock) =>
+                property._type === "formItem" && isDefined(property.const)
+                  ? setIn(acc, property.path, property.const)
+                  : acc,
+              values
+            )
+          : values;
 
       setValues(newValues);
     },
-    [values, setUiWidgetsInfo, formField.path]
+    [values, formField.conditions, setValues, setUiWidgetsInfo, formField.path]
   );
 
   const label = formField.title || formField.fieldKey;

@@ -57,7 +57,8 @@ export function useConnectorAuth() {
 
   return {
     getConsentUrl: async (
-      connector: ConnectorDefinitionSpecification
+      connector: ConnectorDefinitionSpecification,
+      oAuthInputConfiguration: Record<string, unknown>
     ): Promise<{
       payload: SourceGetConsentPayload | DestinationGetConsentPayload;
       consentUrl: string;
@@ -67,6 +68,7 @@ export function useConnectorAuth() {
           workspaceId,
           sourceDefinitionId: ConnectorSpecification.id(connector),
           redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+          oAuthInputConfiguration,
         };
         const response = await sourceAuthService.getConsentUrl(payload);
 
@@ -76,6 +78,7 @@ export function useConnectorAuth() {
           workspaceId,
           destinationDefinitionId: ConnectorSpecification.id(connector),
           redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+          oAuthInputConfiguration,
         };
         const response = await destinationAuthService.getConsentUrl(payload);
 
@@ -105,19 +108,25 @@ export function useRunOauthFlow(
 ): {
   loading: boolean;
   done?: boolean;
-  run: () => void;
+  run: (oauthInputParams: Record<string, unknown>) => void;
 } {
   const { getConsentUrl, completeOauthRequest } = useConnectorAuth();
   const param = useRef<
     SourceGetConsentPayload | DestinationGetConsentPayload
   >();
 
-  const [{ loading }, onStartOauth] = useAsyncFn(async () => {
-    const consentRequestInProgress = await getConsentUrl(connector);
+  const [{ loading }, onStartOauth] = useAsyncFn(
+    async (oauthInputParams: Record<string, unknown>) => {
+      const consentRequestInProgress = await getConsentUrl(
+        connector,
+        oauthInputParams
+      );
 
-    param.current = consentRequestInProgress.payload;
-    openWindow(consentRequestInProgress.consentUrl);
-  }, [connector]);
+      param.current = consentRequestInProgress.payload;
+      openWindow(consentRequestInProgress.consentUrl);
+    },
+    [connector]
+  );
 
   const [{ loading: loadingCompleteOauth, value }, completeOauth] = useAsyncFn(
     async (queryParams: Record<string, unknown>) => {

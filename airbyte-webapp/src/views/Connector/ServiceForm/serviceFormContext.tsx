@@ -7,6 +7,7 @@ import {
   ConnectorDefinition,
   ConnectorDefinitionSpecification,
 } from "core/domain/connector";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
 type Context = {
   formType: "source" | "destination";
@@ -63,15 +64,18 @@ const ServiceFormContextProvider: React.FC<{
     (s) => Connector.id(s) === serviceType
   );
   const { values } = useFormikContext();
-  const isAuthFlowSelected = selectedConnector?.advancedAuth
-    ? getIn(
-        values,
-        [
-          "connectionConfiguration",
-          ...(selectedConnector?.advancedAuth.predicate_key ?? []),
-        ].join(".")
-      ) === selectedConnector?.advancedAuth.predicate_value
-    : false;
+  const { hasFeature } = useFeatureService();
+  const isAuthFlowSelected =
+    hasFeature(FeatureItem.AllowOAuthConnector) &&
+    selectedConnector?.advancedAuth
+      ? getIn(
+          values,
+          [
+            "connectionConfiguration",
+            ...(selectedConnector?.advancedAuth.predicate_key ?? []),
+          ].join(".")
+        ) === selectedConnector?.advancedAuth.predicate_value
+      : false;
 
   const authFieldsToHide = useMemo(
     () =>

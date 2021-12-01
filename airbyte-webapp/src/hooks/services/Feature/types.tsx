@@ -11,7 +11,7 @@ type Feature = {
 
 type FeatureServiceApi = {
   features: Feature[];
-  hasFeature: (featureId: string) => boolean;
+  hasFeature: (featureId: FeatureItem) => boolean;
 };
 
 export type { Feature, FeatureServiceApi };
