@@ -8,29 +8,29 @@ from typing import Any, Mapping
 
 import backoff
 import pendulum
+from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
 
-from .common import JobException, JobTimeoutException, retry_pattern
+from .common import JobException, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 logger = logging.getLogger("airbyte")
 
 
-class Status(Enum):
+class Status(str, Enum):
     """Async job statuses"""
 
     COMPLETED = "Job Completed"
     FAILED = "Job Failed"
     SKIPPED = "Job Skipped"
     STARTED = "Job Started"
+    RUNNING = "Job Running"
+    NOT_STARTED = "Job Not Started"
 
 
 class AsyncJob:
     """AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job"""
-
-    MAX_WAIT_TO_START = pendulum.duration(minutes=5)
-    MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
 
     def __init__(self, api: API, params: Mapping[str, Any]):
         """Initialize
@@ -40,7 +40,7 @@ class AsyncJob:
         """
         self._params = params
         self._api = api
-        self._job = None
+        self._job: AdReportRun = None
         self._start_time = None
         self._finish_time = None
         self._failed = False
@@ -90,7 +90,7 @@ class AsyncJob:
             return self._check_status()
         except JobException:
             self._failed = True
-            raise
+            return True
 
     @property
     def failed(self) -> bool:
@@ -113,25 +113,14 @@ class AsyncJob:
         job_progress_pct = self._job["async_percent_completion"]
         logger.info(f"{self} is {job_progress_pct}% complete ({self._job['async_status']})")
         runtime = self.elapsed_time
+        job_status = self._job["async_status"]
 
-        if self._job["async_status"] == Status.COMPLETED.value:
+        if job_status == Status.COMPLETED:
             self._finish_time = pendulum.now()
             return True
-        elif self._job["async_status"] == Status.FAILED.value:
-            raise JobException(f"{self._job} failed after {runtime.in_seconds()} seconds.")
-        elif self._job["async_status"] == Status.SKIPPED.value:
-            raise JobException(f"{self._job} skipped after {runtime.in_seconds()} seconds.")
+        elif job_status in [Status.FAILED, Status.SKIPPED]:
+            raise JobException(f"{self._job} has status {job_status} after {runtime.in_seconds()} seconds.")
 
-        if runtime > self.MAX_WAIT_TO_START and self._job["async_percent_completion"] == 0:
-            raise JobTimeoutException(
-                f"{self._job} did not start after {runtime.in_seconds()} seconds."
-                f" This is an intermittent error which may be fixed by retrying the job. Aborting."
-            )
-        elif runtime > self.MAX_WAIT_TO_FINISH:
-            raise JobTimeoutException(
-                f"{self._job} did not finish after {runtime.in_seconds()} seconds."
-                f" This is an intermittent error which may be fixed by retrying the job. Aborting."
-            )
         return False
 
     @backoff_policy

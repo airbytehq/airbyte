@@ -2,10 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import time
 import urllib.parse as urlparse
 from abc import ABC
-from collections import deque
 from datetime import datetime
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence
 
@@ -21,9 +19,9 @@ from cached_property import cached_property
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
+from source_facebook_marketing.async_job_manager import InsightsAsyncJobManager
 
-from .async_job import AsyncJob
-from .common import FacebookAPIException, JobException, batch, deep_merge, retry_pattern
+from .common import FacebookAPIException, batch, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
@@ -290,9 +288,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         "action_destination",
     ]
 
-    MAX_ASYNC_SLEEP = pendulum.duration(minutes=5)
-    MAX_ASYNC_JOBS = 10
-    INSIGHTS_RETENTION_PERIOD = pendulum.duration(days=37 * 30)
+    INSIGHTS_RETENTION_PERIOD_MONTHES = 37
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
     level = "ad"
@@ -314,7 +310,6 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         super().__init__(**kwargs)
         self.lookback_window = pendulum.duration(days=buffer_days)
-        self._days_per_job = days_per_job
         self._fields = fields
         self.action_breakdowns = action_breakdowns or self.action_breakdowns
         self.breakdowns = breakdowns or self.breakdowns
@@ -336,7 +331,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
-        job = self.wait_for_job(stream_slice["job"])
+        job = stream_slice["job"]
         # because we query `lookback_window` days before actual cursor we might get records older then cursor
 
         for obj in job.get_result():
@@ -349,50 +344,38 @@ class AdsInsights(FBMarketingIncrementalStream):
         2. we should run as many job as possible before checking for result
         3. we shouldn't proceed to consumption of the next job before previous succeed
         """
-        stream_state = stream_state or {}
-        running_jobs = deque()
-        date_ranges = list(self._date_ranges(stream_state=stream_state))
-        for params in date_ranges:
-            params = deep_merge(params, self.request_params(stream_state=stream_state))
-            job = AsyncJob(api=self._api, params=params)
-            job.start()
-            running_jobs.append(job)
-            if len(running_jobs) >= self.MAX_ASYNC_JOBS:
-                yield {"job": running_jobs.popleft()}
+        DAYS_PER_JOB = 7
 
-        while running_jobs:
-            yield {"job": running_jobs.popleft()}
+        job_params = self.request_params(stream_state=stream_state)
+        job_manager = InsightsAsyncJobManager(
+            api=self._api,
+            job_params=job_params,
+            start_days_per_job=DAYS_PER_JOB,
+            from_date=self.get_start_date(stream_state),
+            to_date=self._end_date,
+        )
+        job_manager.add_async_jobs()
 
-    @retry_pattern(backoff.expo, JobException, max_tries=10, factor=5)
-    def wait_for_job(self, job: AsyncJob) -> AsyncJob:
-        if job.failed:
-            job.restart()
+        while not job_manager.done():
+            yield {"job": job_manager.get_next_completed_job()}
 
-        factor = 2
-        sleep_seconds = factor
-        while not job.completed:
-            self.logger.info(f"{job}: sleeping {sleep_seconds} seconds while waiting for completion")
-            time.sleep(sleep_seconds)
-            if sleep_seconds < self.MAX_ASYNC_SLEEP.in_seconds():
-                sleep_seconds *= factor
-
-        return job
+    def get_start_date(self, stream_state: Mapping[str, Any]) -> pendulum.Date:
+        state_value = stream_state.get(self.cursor_field) if stream_state else None
+        if state_value:
+            start_date = pendulum.parse(state_value) - self.lookback_window
+        else:
+            start_date = self._start_date
+        return max(self._end_date.subtract(months=self.INSIGHTS_RETENTION_PERIOD_MONTHES), start_date)
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        params = deep_merge(
-            params,
-            {
-                "level": self.level,
-                "action_breakdowns": self.action_breakdowns,
-                "breakdowns": self.breakdowns,
-                "fields": self.fields,
-                "time_increment": self.time_increment,
-                "action_attribution_windows": self.action_attribution_windows,
-            },
-        )
-
-        return params
+        return {
+            "level": self.level,
+            "action_breakdowns": self.action_breakdowns,
+            "breakdowns": self.breakdowns,
+            "fields": self.fields,
+            "time_increment": self.time_increment,
+            "action_attribution_windows": self.action_attribution_windows,
+        }
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Works differently for insights, so remove it"""
@@ -434,26 +417,6 @@ class AdsInsights(FBMarketingIncrementalStream):
             breakdowns.append("placement")
 
         return {breakdown: schemas[breakdown] for breakdown in self.breakdowns}
-
-    def _date_ranges(self, stream_state: Mapping[str, Any]) -> Iterator[dict]:
-        """Iterate over period between start_date/state and now
-
-        Notes: Facebook freezes insight data 28 days after it was generated, which means that all data
-            from the past 28 days may have changed since we last emitted it, so we retrieve it again.
-        """
-        state_value = stream_state.get(self.cursor_field)
-        if state_value:
-            start_date = pendulum.parse(state_value) - self.lookback_window
-        else:
-            start_date = self._start_date
-        end_date = self._end_date
-        start_date = max(end_date - self.INSIGHTS_RETENTION_PERIOD, start_date)
-
-        for since in pendulum.period(start_date, end_date).range("days", self._days_per_job):
-            until = min(since.add(days=self._days_per_job - 1), end_date)  # -1 because time_range is inclusive
-            yield {
-                "time_range": {"since": since.to_date_string(), "until": until.to_date_string()},
-            }
 
 
 class AdsInsightsAgeAndGender(AdsInsights):

@@ -4,11 +4,10 @@
 
 import time
 
-import pendulum
 import pytest
 from source_facebook_marketing.api import API
 from source_facebook_marketing.async_job import AsyncJob, Status
-from source_facebook_marketing.common import JobException, JobTimeoutException
+from source_facebook_marketing.common import JobException
 
 
 @pytest.fixture(name="adreport")
@@ -110,33 +109,28 @@ class TestAsyncJob:
         assert not job.failed, "failed should be set to False"
 
     def test_completed_failed(self, failed_job, api, adreport):
-        with pytest.raises(JobException, match=r"failed after \d* seconds."):
-            _ = failed_job.completed
+        assert failed_job.completed
+        assert failed_job.failed
 
     def test_completed_skipped(self, failed_job, api, adreport):
         adreport["async_status"] = Status.SKIPPED.value
-        with pytest.raises(JobException, match=r"skipped after \d* seconds."):
-            _ = failed_job.completed
+        assert failed_job.completed
+        assert failed_job.failed
 
     def test_completed_timeout(self, job, adreport, mocker):
         job.start()
         adreport["async_status"] = Status.STARTED.value
         adreport["async_percent_completion"] = 1
-        mocker.patch.object(job, "MAX_WAIT_TO_FINISH", pendulum.duration())
-        mocker.patch.object(job, "MAX_WAIT_TO_START", pendulum.duration())
 
-        with pytest.raises(JobTimeoutException, match=r" did not finish after \d* seconds."):
-            _ = job.completed
+        assert not job.completed
+        assert not job.failed
 
     def test_completed_timeout_not_started(self, job, adreport, mocker):
         job.start()
         adreport["async_status"] = Status.STARTED.value
         adreport["async_percent_completion"] = 0
-        mocker.patch.object(job, "MAX_WAIT_TO_FINISH", pendulum.duration())
-        mocker.patch.object(job, "MAX_WAIT_TO_START", pendulum.duration())
-
-        with pytest.raises(JobTimeoutException, match=r" did not start after \d* seconds."):
-            _ = job.completed
+        assert not job.completed
+        assert not job.failed
 
     def test_failed_no(self, job):
         assert not job.failed, "should return False for active job"

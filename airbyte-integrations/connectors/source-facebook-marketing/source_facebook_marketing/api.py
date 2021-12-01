@@ -23,6 +23,17 @@ class MyFacebookAdsApi(FacebookAdsApi):
     call_rate_threshold = 90  # maximum percentage of call limit utilization
     pause_interval_minimum = pendulum.duration(minutes=1)  # default pause interval if reached or close to call rate limit
 
+    # from 0 to 1.0
+    _ads_insights_throttle: float = None
+
+    @property
+    def ads_insights_throttle(self):
+        return self._ads_insights_throttle
+
+    @ads_insights_throttle.setter
+    def ads_insights_throttle(self, value):
+        self._ads_insights_throttle = value
+
     @staticmethod
     def parse_call_rate_header(headers):
         usage = 0
@@ -90,6 +101,10 @@ class MyFacebookAdsApi(FacebookAdsApi):
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
         response = super().call(method, path, params, headers, files, url_override, api_version)
+        ads_insights_throttle = response.headers().get("x-fb-ads-insights-throttle")
+        if ads_insights_throttle:
+            ads_insights_throttle = json.loads(ads_insights_throttle)
+            self.ads_insights_throttle = max(ads_insights_throttle.get("app_id_util_pct"), ads_insights_throttle.get("acc_id_util_pct"))
         self.handle_call_rate_limit(response, params)
         return response
 
