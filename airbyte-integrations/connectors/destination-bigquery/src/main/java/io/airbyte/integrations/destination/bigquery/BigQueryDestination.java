@@ -50,6 +50,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +67,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   private final BigQuerySQLNameTransformer namingResolver;
 
+  private static final Pattern datasetIdPattern = Pattern.compile("^(([a-z]([a-z0-9\\-]*[a-z0-9])?):)?([a-zA-Z0-9_]+)$");
+
   public BigQueryDestination() {
     namingResolver = new BigQuerySQLNameTransformer();
   }
@@ -72,7 +76,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      final String datasetId = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+      final String datasetId = getDatasetId(config);
       final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
       final BigQuery bigquery = getBigQuery(config);
       final UploadingMethod uploadingMethod = getLoadingMethod(config);
@@ -277,7 +281,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   private static String getSchema(final JsonNode config, final ConfiguredAirbyteStream stream) {
-    final String defaultSchema = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+    final String defaultSchema = getDatasetId(config);
     final String srcNamespace = stream.getStream().getNamespace();
     if (srcNamespace == null) {
       return defaultSchema;
@@ -322,6 +326,27 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       LOGGER.info("All tmp files will be removed from GCS when replication is finished");
       return false;
     }
+  }
+
+  public static String getDatasetId(final JsonNode config) {
+    String datasetId = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
+    Matcher matcher = datasetIdPattern.matcher(datasetId);
+
+    if (matcher.matches()) {
+      if (!isNull(matcher.group(1))) {
+        final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+        if (!(projectId.equals(matcher.group(2)))) {
+          throw new IllegalArgumentException(String.format(
+              "Project ID included in Dataset ID must match Project ID field's value: Project ID is %s, but you specified %s in Dataset ID",
+              projectId,
+              matcher.group(2)));
+        }
+      }
+      return matcher.group(4);
+    }
+    throw new IllegalArgumentException(String.format(
+        "BigQuery Dataset ID format must match '[project-id:]dataset_id': %s",
+        datasetId));
   }
 
   public enum UploadingMethod {
