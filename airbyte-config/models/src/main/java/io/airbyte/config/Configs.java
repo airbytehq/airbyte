@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 public interface Configs {
+
   // CORE
   // General
   String getAirbyteRole();
