@@ -95,7 +95,8 @@ class MixpanelStream(HttpStream, ABC):
         yield from self.process_response(response, **kwargs)
 
         if self.reqs_per_hour_limit > 0:
-            # wait for X seconds to match API limitations
+            # we skip this block, if self.reqs_per_hour_limit = 0,
+            # in all other cases wait for X seconds to match API limitations
             time.sleep(3600 / self.reqs_per_hour_limit)
 
     def get_stream_params(self) -> Mapping[str, Any]:
