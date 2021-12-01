@@ -4,9 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
-import io.airbyte.config.StandardSyncInput;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.temporal.scheduling.activities.GetSyncInputActivity;
+import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.api.enums.v1.ParentClosePolicy;
 import io.temporal.workflow.CancellationScope;
@@ -26,6 +25,8 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
   public ConnectionUpdaterWorkflowImpl() {}
 
+  private final GetSyncInputActivity getSyncInputActivity = Workflow.newActivityStub(GetSyncInputActivity.class, ActivityConfiguration.OPTIONS);
+
   @Override
   public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) {
     // TODO: bmoric get time to wait through an activity
@@ -36,6 +37,13 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     // TODO: Fetch config (maybe store it in GCS)
     log.info("Starting child WF");
 
+    final GetSyncInputActivity.Input getSyncInputActivityInput = new GetSyncInputActivity.Input(
+        connectionUpdaterInput.getAttemptId(),
+        connectionUpdaterInput.getJobId(),
+        connectionUpdaterInput.getJobConfig());
+
+    final GetSyncInputActivity.Output syncWorkflowInputs = getSyncInputActivity.getSyncWorkflowInput(getSyncInputActivityInput);
+
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
             .setWorkflowId("sync_" + connectionUpdaterInput.getJobId())
@@ -43,14 +51,15 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
             .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_ABANDON)
             .build());
 
-    final JobRunConfig jobRunConfig = new JobRunConfig();
-    final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig();
-    final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig();
-    final StandardSyncInput syncInput = new StandardSyncInput();
     final UUID connectionId = connectionUpdaterInput.getConnectionId();
 
     log.error("Running for: " + connectionId);
-    childSync.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, connectionId);
+    childSync.run(
+        syncWorkflowInputs.getJobRunConfig(),
+        syncWorkflowInputs.getSourceLauncherConfig(),
+        syncWorkflowInputs.getDestinationLauncherConfig(),
+        syncWorkflowInputs.getSyncInput(),
+        connectionId);
 
     syncWorkflowCancellationScope = Workflow.newCancellationScope(() -> childSync.run(null, null, null, null, null));
 

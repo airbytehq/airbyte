@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.JobCheckConnectionConfig;
+import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobSyncConfig;
@@ -120,13 +121,13 @@ public class TemporalClient {
             connectionId));
   }
 
-  public void submitConnectionUpdaterAsync(final long jobId, final int attemptId, final UUID connectionId) {
+  public void submitConnectionUpdaterAsync(final long jobId, final int attemptId, final UUID connectionId, final JobConfig jobConfig) {
     final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowStubWithName(ConnectionUpdaterWorkflow.class,
         TemporalJobType.CONNECTION_UPDATER, "connection_updater_" + connectionId);
     final ExecutorService threadpool = Executors.newCachedThreadPool();
     final Future<Void> futureTask = threadpool.submit(() -> {
       final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attemptId);
-      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId);
+      final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId, jobConfig, attemptId);
       execute(jobRunConfig, () -> connectionUpdaterWorkflow.run(input));
 
       return null;

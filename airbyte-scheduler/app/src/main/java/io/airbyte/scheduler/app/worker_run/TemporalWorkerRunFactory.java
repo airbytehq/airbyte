@@ -53,7 +53,7 @@ public class TemporalWorkerRunFactory {
         final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
         if (featureFlags.usesNewScheduler()) {
-          temporalClient.submitConnectionUpdaterAsync(job.getId(), attemptId, connectionId);
+          temporalClient.submitConnectionUpdaterAsync(job.getId(), attemptId, connectionId, job.getConfig());
 
           return toOutputAndStatusConnector();
         }
