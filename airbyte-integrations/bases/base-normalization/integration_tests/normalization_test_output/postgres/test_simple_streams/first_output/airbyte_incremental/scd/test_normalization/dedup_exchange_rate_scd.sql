@@ -4,11 +4,12 @@
   create  table "postgres".test_normalization."dedup_exchange_rate_scd"
   as (
     
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 
 input_data as (
     select *
-    from "postgres"._airbyte_test_normalization."dedup_exchange_rate_ab3"
+    from "postgres"._airbyte_test_normalization."dedup_exchange_rate_stg"
     -- dedup_exchange_rate from "postgres".test_normalization._airbyte_raw_dedup_exchange_rate
 ),
 

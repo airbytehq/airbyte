@@ -5,6 +5,7 @@
 
 from abc import ABC, abstractmethod
 from functools import partial
+from itertools import count
 from typing import Any, Callable, Iterator, Mapping, MutableMapping, Optional, Sequence
 
 import pendulum
@@ -114,7 +115,6 @@ class StreamAPI(ABC):
     """Basic stream API that allows to iterate over entities"""
 
     result_return_limit = 100  # maximum value
-    maximum_page = 500  # see https://developers.freshdesk.com/api/#best_practices
     call_credit = 1  # see https://developers.freshdesk.com/api/#embedding
 
     def __init__(self, api: API, *args, **kwargs):
@@ -134,7 +134,7 @@ class StreamAPI(ABC):
         """Read using getter"""
         params = params or {}
 
-        for page in range(1, self.maximum_page):
+        for page in count(start=1):
             batch = list(
                 getter(
                     params={
@@ -264,7 +264,8 @@ class TicketsAPI(IncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        params = {"include": "description"}
+        includes = ["description", "requester", "stats"]
+        params = {"include": ",".join(includes)}
         yield from self.read(partial(self._api_get, url="tickets"), params=params)
 
     @staticmethod

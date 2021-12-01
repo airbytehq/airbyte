@@ -9,10 +9,11 @@ from urllib.parse import urlencode
 
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
 from .utils import get_parent_stream_values, transform_data
@@ -33,11 +34,11 @@ class LinkedinAdsStream(HttpStream, ABC):
 
     @property
     def accounts(self):
-        """ Property to return the list of the user Account Ids from input """
+        """Property to return the list of the user Account Ids from input"""
         return ",".join(map(str, self.config.get("account_ids")))
 
     def path(self, **kwargs) -> str:
-        """ Returns the API endpoint path for stream, from `endpoint` class attribute. """
+        """Returns the API endpoint path for stream, from `endpoint` class attribute."""
         return self.endpoint
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -112,11 +113,11 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
 
     @abstractproperty
     def parent_stream(self) -> object:
-        """ Defines the parrent stream for slicing, the class object should be provided. """
+        """Defines the parrent stream for slicing, the class object should be provided."""
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        """ Define the checkpoint from the records output size. """
+        """Define the checkpoint from the records output size."""
         return super().records_limit
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -146,7 +147,7 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
         return params
 
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
-        """ For the streams that provide the cursor_field `lastModified`, we filter out the old records. """
+        """For the streams that provide the cursor_field `lastModified`, we filter out the old records."""
         if stream_state:
             for record in records_slice:
                 if record[self.cursor_field] >= stream_state.get(self.cursor_field):
@@ -248,7 +249,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream):
 
     @property
     def base_analytics_params(self) -> MutableMapping[str, Any]:
-        """ Define the base parameters for analytics streams """
+        """Define the base parameters for analytics streams"""
         return {"q": "analytics", "pivot": self.pivot_by, "timeGranularity": "DAILY"}
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -303,6 +304,29 @@ class SourceLinkedinAds(AbstractSource):
     - implementation to call each stream with it's input parameters.
     """
 
+    @classmethod
+    def get_authenticator(cls, config: Mapping[str, Any]) -> TokenAuthenticator:
+        """
+        Validate input parameters and generate a necessary Authentication object
+        This connectors support 2 auth methods:
+        1) direct access token with TTL = 2 months
+        2) refresh token (TTL = 1 year) which can be converted to access tokens
+           Every new refresh revokes all previous access tokens q
+        """
+        auth_method = config.get("credentials", {}).get("auth_method")
+        if not auth_method or auth_method == "access_token":
+            # support of backward compatibility with old exists configs
+            access_token = config["credentials"]["access_token"] if auth_method else config["access_token"]
+            return TokenAuthenticator(token=access_token)
+        elif auth_method == "oAuth2.0":
+            return Oauth2Authenticator(
+                token_refresh_endpoint="https://www.linkedin.com/oauth/v2/accessToken",
+                client_id=config["credentials"]["client_id"],
+                client_secret=config["credentials"]["client_secret"],
+                refresh_token=config["credentials"]["refresh_token"],
+            )
+        raise Exception("incorrect input parameters")
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
@@ -310,24 +334,22 @@ class SourceLinkedinAds(AbstractSource):
         :: more info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin
         """
 
-        header = TokenAuthenticator(token=config["access_token"]).get_auth_header()
-        profile_url = "https://api.linkedin.com/v2/me"
-
+        config["authenticator"] = self.get_authenticator(config)
+        stream = Accounts(config)
+        # need to load the first item only
+        stream.records_limit = 1
         try:
-            response = requests.get(url=profile_url, headers=header)
-            response.raise_for_status()
+            next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
             return True, None
-        except requests.exceptions.RequestException as e:
-            return False, f"{e}, {response.json().get('message')}"
+        except Exception as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         Mapping a input config of the user input configuration as defined in the connector spec.
         Passing config to the streams.
         """
-
-        config["authenticator"] = TokenAuthenticator(token=config["access_token"])
-
+        config["authenticator"] = self.get_authenticator(config)
         return [
             Accounts(config),
             AccountUsers(config),
