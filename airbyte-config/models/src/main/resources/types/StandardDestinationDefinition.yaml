@@ -11,7 +11,7 @@ required:
   - dockerImageTag
   - documentationUrl
   - spec
-additionalProperties: false
+additionalProperties: true
 properties:
   destinationDefinitionId:
     type: string
