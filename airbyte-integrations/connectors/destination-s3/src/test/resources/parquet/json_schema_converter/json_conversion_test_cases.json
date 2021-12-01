@@ -388,7 +388,12 @@
       "fields": [
         {
           "name": "created_at",
-          "type": ["null", "string", "int"],
+          "type": [
+            "null",
+            { "type": "long", "logicalType": "timestamp-micros" },
+            "string",
+            "int"
+          ],
           "default": null
         },
         {
@@ -451,7 +456,12 @@
               "fields": [
                 {
                   "name": "created_at",
-                  "type": ["null", "string", "int"],
+                  "type": [
+                    "null",
+                    { "type": "long", "logicalType": "timestamp-micros" },
+                    "string",
+                    "int"
+                  ],
                   "default": null
                 },
                 {
@@ -473,7 +483,7 @@
     },
     "avroObject": {
       "user": {
-        "created_at": "1634982000",
+        "created_at": 1634982000,
         "_airbyte_additional_properties": null
       },
       "_airbyte_additional_properties": null
