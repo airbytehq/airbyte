@@ -1,0 +1,3 @@
+{"type":"RECORD","record":{"stream":"some_stream_that_was_empty","data":{"id":1,"date": "2020-11-05"},"emitted_at":1623871660}}
+{"type":"RECORD","record":{"stream":"some_stream_that_was_empty","data":{"id":2,"date": "2020-11-06"},"emitted_at":1623872660}}
+{"type":"RECORD","record":{"stream":"some_stream_that_was_empty","data":{"id":3,"date": "2020-11-06"},"emitted_at":1623873660}}

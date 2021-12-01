@@ -75,6 +75,29 @@
     },
     {
       "stream": {
+        "name": "some_stream_that_was_empty",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "number", "string"]
+            },
+            "date": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
         "name": "simple_stream_with_namespace_resulting_into_long_names",
         "namespace": "test_normalization_namespace",
         "json_schema": {
