@@ -76,28 +76,40 @@ public interface Configs {
 
   int getSyncJobMaxTimeoutDays();
 
+  // getJobPodTolerations
   List<WorkerPodToleration> getWorkerPodTolerations();
 
+  // getJobPodNodeSelectors
   Map<String, String> getWorkerNodeSelectors();
 
+  // getJobPodMainContainerImagePullPolicy
   String getJobImagePullPolicy();
 
+  // getJobPodMainContainerImagePullSecret
   String getJobsImagePullSecret();
 
+  // getJobPodSocatImage
   String getJobSocatImage();
 
+  // getJobPodBusyboxImage
   String getJobBusyboxImage();
 
+  // getJobPodCurlImage
   String getJobCurlImage();
 
+  // getJobPodKubeNamespace
   String getKubeNamespace();
 
+  // getJobPodMainContainerCpuRequest
   String getCpuRequest();
 
+  // getJobPodMainContainerCpuLimit
   String getCpuLimit();
 
+  // getJobPodMainContainerMemoryRequest
   String getMemoryRequest();
 
+  // getJobPodMainContainerMemoryLimit
   String getMemoryLimit();
 
   // Logging/Monitoring/Tracking
