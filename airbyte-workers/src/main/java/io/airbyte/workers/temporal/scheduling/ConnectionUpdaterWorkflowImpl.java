@@ -22,12 +22,11 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private boolean isRunning = false;
   private boolean isDeleted = false;
   private boolean skipScheduling = false;
-  CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
+  private final GetSyncInputActivity getSyncInputActivity = Workflow.newActivityStub(GetSyncInputActivity.class, ActivityConfiguration.OPTIONS);
+  private CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
   public ConnectionUpdaterWorkflowImpl() {
   }
-
-  private final GetSyncInputActivity getSyncInputActivity = Workflow.newActivityStub(GetSyncInputActivity.class, ActivityConfiguration.OPTIONS);
 
   @Override
   public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) {
@@ -51,7 +50,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
             .setWorkflowId("sync_" + connectionUpdaterInput.getJobId())
             .setTaskQueue(TemporalJobType.SYNC.name())
             // This will cancel the child workflow when the parent is terminated
-            .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_ABANDON)
+            .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
             .build());
 
     final UUID connectionId = connectionUpdaterInput.getConnectionId();
