@@ -11,6 +11,7 @@ TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "requests-mock",
     "pytest-mock",
+    "freezegun",
     "source-acceptance-test",
 ]
 
