@@ -38,7 +38,7 @@ Our first focus is to support batch-type ELT integrations. We feel that we can p
 
 Before we move on to the next phase, we want to make sure we are supporting all the major integrations and that we are in a state where we can address the long tail, with the help of the community.
 
-We also want to fully integrate with the open-source ecosystem, including Airflow, dbt, Kubernetes, GreatExpectations, etc., so teams have the ability to fully build the data infrastructure they need.
+We also want to fully integrate with the ecosystem, including Airflow, dbt, Kubernetes, GreatExpectations, Prefect, Dagster, etc., so teams have the ability to fully build the data infrastructure they need.
 
 ### **2. Reverse-ETL from warehouses / databases**
 
