@@ -35,9 +35,9 @@ class ProductionEnvSpec(BaseModel):
 
     # it is float because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
     app_id: str = Field(
-        description="The App id applied by the developer.",
+        description="The App ID applied by the developer.",
     )
-    secret: str = Field(description="The private key of the developer's application.", airbyte_secret=True)
+    secret: str = Field(description="The private key of the developer application.", airbyte_secret=True)
 
 
 class SourceTiktokMarketingSpec(BaseModel):
@@ -49,7 +49,7 @@ class SourceTiktokMarketingSpec(BaseModel):
     access_token: str = Field(description="The Long-term Authorized Access Token.", airbyte_secret=True)
 
     start_date: str = Field(
-        description="The Start Date in format: YYYY-MM-DD. Any data created after this date will be replicated. If this date is not set, the connector replicates data from 1 year ago by default.", default=DEFAULT_START_DATE, pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated.", default=DEFAULT_START_DATE, pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
     )
 
     @staticmethod

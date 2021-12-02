@@ -16,14 +16,14 @@
       "client_id": {
         "type": "string",
         "description": "The Client ID of your Strava developer application.",
-		"title": "Client ID",
+        "title": "Client ID",
         "pattern": "^[0-9_\\-]+$",
         "examples": ["12345"]
       },
       "client_secret": {
         "type": "string",
         "description": "The Client Secret of your Strava developer application.",
-		"title": "Client Secret",
+        "title": "Client Secret",
         "pattern": "^[0-9a-fA-F]+$",
         "examples": ["fc6243f283e51f6ca989aab298b17da125496f50"],
         "airbyte_secret": true
@@ -31,7 +31,7 @@
       "refresh_token": {
         "type": "string",
         "description": "The Refresh Token with the activity: read_all permissions.",
-		"title": "Refresh Token",
+        "title": "Refresh Token",
         "pattern": "^[0-9a-fA-F]+$",
         "examples": ["fc6243f283e51f6ca989aab298b17da125496f50"],
         "airbyte_secret": true
@@ -39,14 +39,14 @@
       "athlete_id": {
         "type": "integer",
         "description": "The Athlete ID of your Strava developer application.",
-		"title": "Athlete ID",
+        "title": "Athlete ID",
         "pattern": "^[0-9_\\-]+$",
         "examples": ["17831421"]
       },
       "start_date": {
         "type": "string",
-        "description": "UTC date and time. Any data created after this date will be replicated. If this date is not set, the connector replicates data from 1 year ago by default.",
-		"title": "Start Date",
+        "description": "UTC date and time. Any data before this date will not be replicated.",
+        "title": "Start Date",
         "examples": ["2016-12-31 23:59:59"]
       }
     }
