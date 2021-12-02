@@ -56,13 +56,11 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /**
- * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
- * them. The current implementation uses two thread pools to do so. One pool is responsible for all
- * job launching operations. The other pool is responsible for clean up operations.
+ * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch them. The current implementation uses two thread
+ * pools to do so. One pool is responsible for all job launching operations. The other pool is responsible for clean up operations.
  * <p>
- * Operations can have thread pools under the hood. An important thread pool to note is that the job
- * submitter thread pool. This pool does the work of submitting jobs to temporal - the size of this
- * pool determines the number of concurrent jobs that can be run. This is controlled via the
+ * Operations can have thread pools under the hood. An important thread pool to note is that the job submitter thread pool. This pool does the work of
+ * submitting jobs to temporal - the size of this pool determines the number of concurrent jobs that can be run. This is controlled via the
  * SUBMITTER_NUM_THREADS variable of EnvConfigs.
  */
 public class SchedulerApp {
@@ -130,12 +128,16 @@ public class SchedulerApp {
         new JobTracker(configRepository, jobPersistence, trackingClient),
         jobNotifier, workerEnvironment, logConfigs, configRepository);
     final NewJobScheduler newJobScheduler = new NewJobScheduler(
+        workerThreadPool,
         jobPersistence,
         configRepository,
         trackingClient,
         temporalClient,
         workspaceRoot,
-        airbyteVersionOrWarnings);
+        airbyteVersionOrWarnings,
+        workerEnvironment,
+        logConfigs,
+        jobPersistence);
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -236,13 +238,13 @@ public class SchedulerApp {
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl())
-            .getInitialized();
+        .getInitialized();
 
     final Database configDatabase = new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
-            .getInitialized();
+        .getInitialized();
     final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
@@ -285,7 +287,7 @@ public class SchedulerApp {
         Integer.parseInt(configs.getSubmitterNumThreads()),
         configs.getMaxSyncJobAttempts(),
         configs.getAirbyteVersionOrWarning(), configs.getWorkerEnvironment(), configs.getLogConfigs())
-            .start();
+        .start();
   }
 
 }
