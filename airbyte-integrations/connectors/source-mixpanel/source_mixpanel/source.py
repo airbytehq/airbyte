@@ -8,7 +8,7 @@ import json
 import time
 from abc import ABC
 from datetime import date, datetime, timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlparse
 
 import pendulum
@@ -16,10 +16,10 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class MixpanelStream(HttpStream, ABC):
@@ -37,7 +37,7 @@ class MixpanelStream(HttpStream, ABC):
         return f"https://{prefix}mixpanel.com/api/2.0/"
 
     # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-    reqs_per_hour_limit = 400  # 1 req in 9 secs
+    reqs_per_hour_limit: int = 400  # 1 req in 9 secs
 
     def __init__(
         self,
@@ -94,8 +94,10 @@ class MixpanelStream(HttpStream, ABC):
         # parse the whole response
         yield from self.process_response(response, **kwargs)
 
-        # wait for X seconds to match API limitations
-        time.sleep(3600 / self.reqs_per_hour_limit)
+        if self.reqs_per_hour_limit > 0:
+            # we skip this block, if self.reqs_per_hour_limit = 0,
+            # in all other cases wait for X seconds to match API limitations
+            time.sleep(3600 / self.reqs_per_hour_limit)
 
     def get_stream_params(self) -> Mapping[str, Any]:
         """
@@ -139,8 +141,8 @@ class Cohorts(MixpanelStream):
 
     """
 
-    data_field = None
-    primary_key = "id"
+    data_field: str = None
+    primary_key: str = "id"
 
     def path(self, **kwargs) -> str:
         return "cohorts/list"
@@ -152,8 +154,8 @@ class FunnelsList(MixpanelStream):
     Endpoint: https://mixpanel.com/api/2.0/funnels/list
     """
 
-    primary_key = "funnel_id"
-    data_field = None
+    primary_key: str = "funnel_id"
+    data_field: str = None
 
     def path(self, **kwargs) -> str:
         return "funnels/list"
@@ -163,7 +165,7 @@ class DateSlicesMixin:
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        date_slices = []
+        date_slices: list = []
 
         # use the latest date between self.start_date and stream_state
         start_date = self.start_date
@@ -207,10 +209,10 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
     Endpoint: https://mixpanel.com/api/2.0/funnels
     """
 
-    primary_key = ["funnel_id", "date"]
-    data_field = "data"
-    cursor_field = "date"
-    min_date = "90"  # days
+    primary_key: List[str] = ["funnel_id", "date"]
+    data_field: str = "data"
+    cursor_field: str = "date"
+    min_date: str = "90"  # days
 
     def path(self, **kwargs) -> str:
         return "funnels"
@@ -252,10 +254,10 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         #    - int in funnel_slice
         #    - str in stream_state
         """
-        stream_state = stream_state or {}
+        stream_state: Dict = stream_state or {}
 
         # One stream slice is a combination of all funnel_slices and date_slices
-        stream_slices = []
+        stream_slices: List = []
         funnel_slices = self.funnel_slices(sync_mode)
         for funnel_slice in funnel_slices:
             # get single funnel state
@@ -353,10 +355,16 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
 
 
 class EngageSchema(MixpanelStream):
-    """Engage helper stream for dynamic schema extraction"""
+    """
+    Engage helper stream for dynamic schema extraction.
+    :: reqs_per_hour_limit: int - property is set to the value of 1 million, 
+       to get the sleep time close to the zero, while generating dynamic schema.
+       When `reqs_per_hour_limit = 0` - it means we skip this limits.
+    """
 
-    primary_key = None
-    data_field = "results"
+    primary_key: str = None
+    data_field: str = "results"
+    reqs_per_hour_limit: int = 0  # see the docstring
 
     def path(self, **kwargs) -> str:
         return "engage/properties"
@@ -396,11 +404,11 @@ class Engage(MixpanelStream):
     Endpoint: https://mixpanel.com/api/2.0/engage
     """
 
-    http_method = "POST"
-    data_field = "results"
-    primary_key = "distinct_id"
-    page_size = 1000  # min 100
-    _total = None
+    http_method: str = "POST"
+    data_field: str = "results"
+    primary_key: str = "distinct_id"
+    page_size: int = 1000  # min 100
+    _total: Any = None
 
     # enable automatic object mutation to align with desired schema before outputting to the destination
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -569,8 +577,8 @@ class Annotations(DateSlicesMixin, MixpanelStream):
     That's why stream does not support incremental sync.
     """
 
-    data_field = "annotations"
-    primary_key = "id"
+    data_field: str = "annotations"
+    primary_key: str = "id"
 
     def path(self, **kwargs) -> str:
         return "annotations"
@@ -624,10 +632,16 @@ class Revenue(DateSlicesMixin, IncrementalMixpanelStream):
 
 
 class ExportSchema(MixpanelStream):
-    """Export helper stream for dynamic schema extraction"""
+    """
+    Export helper stream for dynamic schema extraction.
+    :: reqs_per_hour_limit: int - property is set to the value of 1 million, 
+       to get the sleep time close to the zero, while generating dynamic schema.
+       When `reqs_per_hour_limit = 0` - it means we skip this limits.
+    """
 
-    primary_key = None
-    data_field = None
+    primary_key: str = None
+    data_field: str = None
+    reqs_per_hour_limit: int = 0  # see the docstring
 
     def path(self, **kwargs) -> str:
         return "events/properties/top"
@@ -677,9 +691,9 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
      3 queries per second and 60 queries per hour.
     """
 
-    primary_key = None
-    cursor_field = "time"
-    reqs_per_hour_limit = 60  # 1 query per minute
+    primary_key: str = None
+    cursor_field: str = "time"
+    reqs_per_hour_limit: str = 60  # 1 query per minute
 
     @property
     def url_base(self):
