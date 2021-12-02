@@ -89,4 +89,4 @@ def test_companies_scroll(stream_attributes):
     # read all records again
     records = list(stream3.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 3
-    assert (time.time() - start_time) < 1.0
+    assert (time.time() - start_time) < 5.0

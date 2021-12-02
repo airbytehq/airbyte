@@ -150,16 +150,13 @@ class Companies(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/companies/scroll
     """
 
-    # response can have any of these fields with target data
-    data_fields = ["companies", "data"]
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """For reset scroll needs to iterate pages untill the last.
         Another way need wait 1 min for the scroll to expire to get a new list for companies segments."""
 
         data = response.json()
         scroll_param = data.get("scroll_param")
-        if scroll_param and (data.get("data") or data.get("companies")):
+        if scroll_param and data.get("data"):
             return {"scroll_param": scroll_param}
 
     def path(self, **kwargs) -> str:
