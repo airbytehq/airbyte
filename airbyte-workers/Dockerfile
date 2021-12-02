@@ -23,7 +23,7 @@ ENV APPLICATION airbyte-workers
 WORKDIR /app
 
 # Move worker app
-ADD bin/${APPLICATION}-0.32.10-alpha.tar /app
+ADD bin/${APPLICATION}-0.32.11-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.32.10-alpha/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.32.11-alpha/bin/${APPLICATION}"]
