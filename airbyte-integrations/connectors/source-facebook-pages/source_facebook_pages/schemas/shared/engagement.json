@@ -1,0 +1,26 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "count": {
+      "type": ["integer", "null"]
+    },
+    "count_string": {
+      "type": ["string", "null"]
+    },
+    "count_string_with_like": {
+      "type": ["string", "null"]
+    },
+    "count_string_without_like": {
+      "type": ["string", "null"]
+    },
+    "social_sentence": {
+      "type": ["string", "null"]
+    },
+    "social_sentence_with_like": {
+      "type": ["string", "null"]
+    },
+    "social_sentence_without_like": {
+      "type": ["string", "null"]
+    }
+  }
+}
