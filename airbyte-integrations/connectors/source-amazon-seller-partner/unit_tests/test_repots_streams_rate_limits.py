@@ -27,7 +27,7 @@ def reports_stream():
         replication_start_date="2017-01-25T00:00:00Z",
         marketplace_ids=["id"],
         authenticator=NoAuth(),
-        period_in_days=0
+        period_in_days=0,
     )
     return stream
 
