@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import multiprocessing as mp
 import traceback
 from typing import Any, List
@@ -5,7 +9,7 @@ from typing import Any, List
 import dill
 
 
-def run_in_external_process(fn, timeout: int, max_timeout: int, logger, args:List[Any]) -> Any:
+def run_in_external_process(fn, timeout: int, max_timeout: int, logger, args: List[Any]) -> Any:
     """
     fn passed in must return a tuple of (desired return value, Exception OR None)
     This allows propagating any errors from the process up and raising accordingly
@@ -24,9 +28,7 @@ def run_in_external_process(fn, timeout: int, max_timeout: int, logger, args:Lis
             result, potential_error = q_worker.get(timeout=min(timeout, max_timeout))
         except mp.queues.Empty:
             if timeout >= max_timeout:  # if we've got to max_timeout and tried once with that value
-                raise TimeoutError(
-                    f"Timed out too many times while running {fn.__name__}, max timeout of {max_timeout} seconds reached."
-                )
+                raise TimeoutError(f"Timed out too many times while running {fn.__name__}, max timeout of {max_timeout} seconds reached.")
             logger.info(f"timed out while running {fn.__name__} after {timeout} seconds, retrying...")
             timeout *= 2  # double timeout and try again
         else:
@@ -42,5 +44,5 @@ def run_in_external_process(fn, timeout: int, max_timeout: int, logger, args:Lis
 
 
 def multiprocess_queuer(func, queue: mp.Queue, *args, **kwargs):
-    """ this is our multiprocesser helper function, lives at top-level to be Windows-compatible """
+    """this is our multiprocesser helper function, lives at top-level to be Windows-compatible"""
     queue.put(dill.loads(func)(*args, **kwargs))

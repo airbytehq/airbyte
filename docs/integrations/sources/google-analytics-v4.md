@@ -132,6 +132,7 @@ The Google Analytics connector should not run into Google Analytics API limitati
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.11 | 2021-11-30 | [8264](https://github.com/airbytehq/airbyte/pull/8264) | Corrected date range |
 | 0.1.10 | 2021-11-19 | [8087](https://github.com/airbytehq/airbyte/pull/8087) | Support `start_date` before the account has any data |
 | 0.1.9 | 2021-10-27 | [7410](https://github.com/airbytehq/airbyte/pull/7410) | Add check for correct permission for requested `view_id` |
 | 0.1.8 | 2021-10-13 | [7020](https://github.com/airbytehq/airbyte/pull/7020) | Add intermediary auth config support |

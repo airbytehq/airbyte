@@ -8,7 +8,7 @@
     "additionalProperties": true,
     "properties": {
       "api_secret": {
-        "title": "Api Secret",
+        "title": "API Secret",
         "type": "string",
         "description": "Mixpanel API Secret. See the <a href=\"https://docs.airbyte.io/integrations/sources/mixpanel\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
@@ -29,7 +29,7 @@
       "select_properties_by_default": {
         "title": "Select Properties By Default",
         "type": "boolean",
-        "description": "Setting this config parameter to true ensures that new properties on events and engage records are captured. Otherwise new properties will be ignored",
+        "description": "Setting this config parameter to TRUE ensures that new properties on events and engage records are captured. Otherwise new properties will be ignored",
         "default": true
       },
       "start_date": {
@@ -41,6 +41,7 @@
       },
       "region": {
         "title": "Region",
+        "description": "The region of mixpanel domain instance either US or EU.",
         "type": "string",
         "enum": ["US", "EU"],
         "default": "US"
