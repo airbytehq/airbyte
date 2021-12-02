@@ -80,7 +80,7 @@ class TrimForms(TypeformStream):
         params["page"] = next_page_token or 1
         return params
 
-
+# same loop logic
 class TrimFormsMixin:
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         form_ids = self.config.get("form_ids", [])
