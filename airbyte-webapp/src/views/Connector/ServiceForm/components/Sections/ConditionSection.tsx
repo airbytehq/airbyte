@@ -35,20 +35,8 @@ export const ConditionSection: React.FC<{
 
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
 
-  const options = useMemo(
-    () =>
-      Object.keys(formField.conditions).map((dataItem) => ({
-        label: dataItem,
-        value: dataItem,
-      })),
-    [formField.conditions]
-  );
   const onOptionChange = useCallback(
     (selectedItem: IDataItem) => {
-      setUiWidgetsInfo(formField.path, {
-        selectedItem: selectedItem.value,
-      });
-
       const newSelectedPath = formField.conditions[selectedItem.value];
 
       const newValues =
@@ -62,11 +50,22 @@ export const ConditionSection: React.FC<{
             )
           : values;
 
+      setUiWidgetsInfo(formField.path, {
+        selectedItem: selectedItem.value,
+      });
       setValues(newValues);
     },
     [values, formField.conditions, setValues, setUiWidgetsInfo, formField.path]
   );
 
+  const options = useMemo(
+    () =>
+      Object.keys(formField.conditions).map((dataItem) => ({
+        label: dataItem,
+        value: dataItem,
+      })),
+    [formField.conditions]
+  );
   const label = formField.title || formField.fieldKey;
 
   return (
