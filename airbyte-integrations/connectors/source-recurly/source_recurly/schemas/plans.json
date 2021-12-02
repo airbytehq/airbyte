@@ -60,7 +60,7 @@
       "type": "number"
     },
     "tax_code": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "tax_exempt": {
       "type": "boolean"
@@ -72,10 +72,10 @@
       "type": "object",
       "properties": {
         "success_url": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "cancel_url": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "bypass_confirmation": {
           "type": "boolean"
@@ -95,7 +95,7 @@
       "type": "string"
     },
     "deleted_at": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }
