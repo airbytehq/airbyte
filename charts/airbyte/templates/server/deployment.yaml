@@ -148,11 +148,11 @@ spec:
             configMapKeyRef:
               name: airbyte-env
               key: GOOGLE_APPLICATION_CREDENTIALS
-        - name: GCP_STORAGE_BUCKET
+        - name: GCS_LOG_BUCKET
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
-              key: GCP_STORAGE_BUCKET
+              key: GCS_LOG_BUCKET
         {{- if .Values.server.extraEnv }}
         {{ .Values.server.extraEnv | toYaml | nindent 8 }}
         {{- end }}

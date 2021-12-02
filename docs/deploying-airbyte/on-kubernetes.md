@@ -113,7 +113,7 @@ data:
 3\) Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
 
 ```text
-GCP_STORAGE_BUCKET=<your_GCS_bucket_to_write_logs_in>
+GCS_LOG_BUCKET=<your_GCS_bucket_to_write_logs_in>
 # The path the GCS creds are written to. Unless you know what you are doing, use the below default value.
 GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs-log-creds/gcp.json
 ```

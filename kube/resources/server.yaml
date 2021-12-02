@@ -138,11 +138,11 @@ spec:
                 secretKeyRef:
                   name: airbyte-secrets
                   key: GOOGLE_APPLICATION_CREDENTIALS
-            - name: GCP_STORAGE_BUCKET
+            - name: GCS_LOG_BUCKET
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: GCP_STORAGE_BUCKET
+                  key: GCS_LOG_BUCKET
           ports:
             - containerPort: 8001
           volumeMounts:
