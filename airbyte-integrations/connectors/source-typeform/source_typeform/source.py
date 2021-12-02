@@ -211,7 +211,7 @@ class SourceTypeform(AbstractSource):
                     session = requests.get(url, headers=auth_headers)
                     session.raise_status()
                 except:
-                    return False, "The Form Id informed doesn't exist"
+                    return False, f"Cannot find forms with ID: {form}. Please make sure they are valid form IDs and try again."
                 return True, None
 
         except requests.exceptions.RequestException as e:
