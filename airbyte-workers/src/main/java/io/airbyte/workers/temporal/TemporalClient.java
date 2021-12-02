@@ -145,11 +145,10 @@ public class TemporalClient {
   }
 
   private <T> T getWorkflowStubWithName(final Class<T> workflowClass, final TemporalJobType jobType, final String name) {
-    return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptionsWithName(jobType, name));
+    return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptionsWithWorkflowId(jobType, name));
   }
 
-  @VisibleForTesting
-  <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+  @VisibleForTesting <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
     final Path logPath = WorkerUtils.getLogPath(jobRoot);
 
@@ -166,8 +165,7 @@ public class TemporalClient {
     return new TemporalResponse<>(operationOutput, metadata);
   }
 
-  @VisibleForTesting
-  <T> void executeAsync(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+  @VisibleForTesting <T> void executeAsync(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
     final Path logPath = WorkerUtils.getLogPath(jobRoot);
 
