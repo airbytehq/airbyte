@@ -25,13 +25,14 @@ def init_filtered_logger(name: str = None, secrets: List[Any] = []) -> logging.L
 
 
 def init_unhandled_exception_output_filtering(logger: logging.Logger) -> None:
-    original_handler = sys.excepthooks
 
     def hook_fn(_logger, exception_type, exception_value, traceback):
-        # For developer ergonomics, we want to see the stack trace in the logs.
+        # For developer ergonomics, we want to see the stack trace in the logs when we do a ctrl-c
         if issubclass(exception_type, KeyboardInterrupt):
             sys.__excepthook__(exception_type, exception_value, traceback)
             return
+
+        logger.critical(str(exception_value), exc_info=(exception_type, Exception(), traceback))
 
     sys.excepthook = partial(hook_fn, logger)
 
