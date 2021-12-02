@@ -156,7 +156,10 @@ class Companies(IncrementalIntercomStream):
 
         data = response.json()
         scroll_param = data.get("scroll_param")
-        if scroll_param and data.get("data"):
+
+        # this stream always has only one data field
+        data_field = self.data_fields[0]
+        if scroll_param and data.get(data_field):
             return {"scroll_param": scroll_param}
 
     def path(self, **kwargs) -> str:

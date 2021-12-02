@@ -28,26 +28,31 @@ def stream_attributes() -> Mapping[str, str]:
 
 
 @pytest.mark.parametrize(
-    "version,not_supported_streams",
+    "version,not_supported_streams,custom_companies_data_field",
     (
-        (1.0, ["company_segments", "company_attributes", "contact_attributes"]),
-        (1.1, ["company_segments", "company_attributes", "contact_attributes"]),
-        (1.2, ["company_segments", "company_attributes", "contact_attributes"]),
-        (1.3, ["company_segments", "company_attributes", "contact_attributes"]),
-        (1.4, ["company_segments"]),
-        (2.0, []),
-        (2.1, []),
-        (2.2, []),
-        (2.3, []),
+        (1.0, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
+        (1.1, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
+        (1.2, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
+        (1.3, ["company_segments", "company_attributes", "contact_attributes"], "companies"),
+        (1.4, ["company_segments"], "companies"),
+        (2.0, [], "data"),
+        (2.1, [], "data"),
+        (2.2, [], "data"),
+        (2.3, [], "data"),
     ),
 )
-def test_supported_versions(stream_attributes, version, not_supported_streams):
+def test_supported_versions(stream_attributes, version, not_supported_streams, custom_companies_data_field):
     class CustomVersionApiAuthenticator(VersionApiAuthenticator):
         relevant_supported_version = str(version)
 
     authenticator = CustomVersionApiAuthenticator(token=stream_attributes["access_token"])
     for stream in SourceIntercom().streams(deepcopy(stream_attributes)):
         stream._authenticator = authenticator
+
+        if stream.name == "companies":
+            stream.data_fields = [custom_companies_data_field]
+        elif hasattr(stream, "parent_stream_class") and stream.parent_stream_class == Companies:
+            stream.parent_stream_class.data_fields = [custom_companies_data_field]
 
         slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
         if stream.name in not_supported_streams:
