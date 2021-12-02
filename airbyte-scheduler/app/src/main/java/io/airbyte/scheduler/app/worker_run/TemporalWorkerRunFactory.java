@@ -4,7 +4,6 @@
 
 package io.airbyte.scheduler.app.worker_run;
 
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
@@ -23,9 +22,11 @@ import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.nio.file.Path;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@AllArgsConstructor
 public class TemporalWorkerRunFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalWorkerRunFactory.class);
@@ -33,12 +34,7 @@ public class TemporalWorkerRunFactory {
   private final TemporalClient temporalClient;
   private final Path workspaceRoot;
   private final String airbyteVersionOrWarnings;
-
-  public TemporalWorkerRunFactory(final TemporalClient temporalClient, final Path workspaceRoot, final String airbyteVersionOrWarnings) {
-    this.temporalClient = temporalClient;
-    this.workspaceRoot = workspaceRoot;
-    this.airbyteVersionOrWarnings = airbyteVersionOrWarnings;
-  }
+  private final FeatureFlags featureFlags;
 
   public WorkerRun create(final Job job) {
     final int attemptId = job.getAttemptsCount();
@@ -50,7 +46,6 @@ public class TemporalWorkerRunFactory {
     final UUID connectionId = UUID.fromString(job.getScope());
     return switch (job.getConfigType()) {
       case SYNC -> () -> {
-        final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
         if (featureFlags.usesNewScheduler()) {
           temporalClient.submitConnectionUpdaterAsync(job.getId(), attemptId, connectionId);
