@@ -31,7 +31,7 @@
       },
       "start_date": {
         "type": "string",
-"title": "Start Date",
+	"title": "Start Date",
         "description": "The date you would like to replicate data. Data in ClouTraid is available for last 90 days only. Format: YYYY-MM-DD.",
         "examples": ["2021-01-01"],
         "default": "1970-01-01",
