@@ -178,7 +178,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         params = deep_merge(params, self._state_filter(stream_state=stream_state or {}))
         return params
 
-    def _single_state_filter(self, single_stream_state: Mapping[str, Any]):
+    def _single_account_state_filter(self, single_stream_state: Mapping[str, Any]):
         """Extracts a valid state_filter for a single account"""
         state_value = single_stream_state.get(self.cursor_field)
         filter_value = self._start_date if not state_value else pendulum.parse(state_value)
@@ -201,7 +201,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
         result_filtering_custom = {}
         for account_id in stream_state.keys():
-            result_filtering_custom[account_id] = self._single_state_filter(stream_state[account_id])
+            result_filtering_custom[account_id] = self._single_account_state_filter(stream_state[account_id])
 
         return {
             f"filtering_by_{self.partition_field}": result_filtering_custom,
