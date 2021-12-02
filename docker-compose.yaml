@@ -154,7 +154,7 @@ services:
       - SECRET_PERSISTENCE=${SECRET_PERSISTENCE}
       - VERSION_0_32_0_FORCE_UPGRADE=${VERSION_0_32_0_FORCE_UPGRADE}
     ports:
-      - 6667:6667
+      - 8001:8001
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
@@ -165,7 +165,7 @@ services:
     container_name: airbyte-webapp
     restart: unless-stopped
     ports:
-      - 6666:6666
+      - 8000:80
     environment:
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - AIRBYTE_VERSION=${VERSION}
