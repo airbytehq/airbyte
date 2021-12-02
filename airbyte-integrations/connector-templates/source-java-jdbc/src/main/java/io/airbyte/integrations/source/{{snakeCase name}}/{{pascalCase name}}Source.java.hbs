@@ -5,11 +5,11 @@
 package io.airbyte.integrations.source.{{snakeCase name}};
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.db.jdbc.JdbcUtils;
 import java.sql.JDBCType;
 import java.util.Set;
 import org.slf4j.Logger;
