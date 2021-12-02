@@ -357,7 +357,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
 class EngageSchema(MixpanelStream):
     """
     Engage helper stream for dynamic schema extraction.
-    :: reqs_per_hour_limit: int - property is set to the value of 1 million, 
+    :: reqs_per_hour_limit: int - property is set to the value of 1 million,
        to get the sleep time close to the zero, while generating dynamic schema.
        When `reqs_per_hour_limit = 0` - it means we skip this limits.
     """
@@ -634,7 +634,7 @@ class Revenue(DateSlicesMixin, IncrementalMixpanelStream):
 class ExportSchema(MixpanelStream):
     """
     Export helper stream for dynamic schema extraction.
-    :: reqs_per_hour_limit: int - property is set to the value of 1 million, 
+    :: reqs_per_hour_limit: int - property is set to the value of 1 million,
        to get the sleep time close to the zero, while generating dynamic schema.
        When `reqs_per_hour_limit = 0` - it means we skip this limits.
     """
