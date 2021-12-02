@@ -203,6 +203,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         date_slices = []
         while start_date <= end_date:
             end_date_slice = start_date.add(days=self.window_in_days)
+            # limit the slice range with end_date
+            end_date_slice = min(end_date_slice, end_date)
             date_slices.append({"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date_slice)})
             # add 1 day for start next slice from next day and not duplicate data from previous slice end date.
             start_date = end_date_slice.add(days=1)

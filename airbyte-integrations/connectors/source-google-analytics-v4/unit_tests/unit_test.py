@@ -7,9 +7,16 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 from urllib.parse import unquote
 
+import pendulum
 import pytest
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_google_analytics_v4.source import GoogleAnalyticsV4Stream, GoogleAnalyticsV4TypesList, SourceGoogleAnalyticsV4
+from freezegun import freeze_time
+from source_google_analytics_v4.source import (
+    GoogleAnalyticsV4IncrementalObjectsBase,
+    GoogleAnalyticsV4Stream,
+    GoogleAnalyticsV4TypesList,
+    SourceGoogleAnalyticsV4,
+)
 
 
 def read_file(file_name):
@@ -49,6 +56,15 @@ def mock_api_returns_valid_records(requests_mock):
     )
 
 
+@pytest.fixture()
+def test_config():
+    test_config = json.loads(read_file("../integration_tests/sample_config.json"))
+    test_config["authenticator"] = NoAuth()
+    test_config["metrics"] = []
+    test_config["dimensions"] = []
+    return test_config
+
+
 def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
     test_metrics, test_dimensions = GoogleAnalyticsV4TypesList().read_records(sync_mode=None)
 
@@ -67,12 +83,7 @@ def get_metrics_dimensions_mapping():
 
 
 @pytest.mark.parametrize("metrics_dimensions_mapping", get_metrics_dimensions_mapping())
-def test_lookup_metrics_dimensions_data_type(metrics_dimensions_mapping, mock_metrics_dimensions_type_list_link):
-    test_config = json.loads(read_file("../integration_tests/sample_config.json"))
-    test_config["authenticator"] = NoAuth()
-    test_config["metrics"] = []
-    test_config["dimensions"] = []
-
+def test_lookup_metrics_dimensions_data_type(test_config, metrics_dimensions_mapping, mock_metrics_dimensions_type_list_link):
     field_type, attribute, expected = metrics_dimensions_mapping
     g = GoogleAnalyticsV4Stream(config=test_config)
 
@@ -187,3 +198,27 @@ def test_check_connection_success_oauth(
     assert "refresh_token_val" in unquote(mock_auth_call.last_request.body)
     assert mock_auth_call.called
     assert mock_api_returns_valid_records.called
+
+
+@freeze_time("2021-11-30")
+def test_stream_slices_limited_by_current_date(test_config):
+    g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
+    stream_state = {"ga_date": "2050-05-01"}
+    slices = g.stream_slices(stream_state=stream_state)
+    current_date = pendulum.now().date().strftime("%Y-%m-%d")
+
+    assert len(slices) == 1
+    assert slices[0]["startDate"] == slices[0]["endDate"]
+    assert slices[0]["endDate"] == current_date
+
+
+@freeze_time("2021-11-30")
+def test_stream_slices_start_from_current_date_if_abnornal_state_is_passed(test_config):
+    g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
+    stream_state = {"ga_date": "2050-05-01"}
+    slices = g.stream_slices(stream_state=stream_state)
+    current_date = pendulum.now().date().strftime("%Y-%m-%d")
+
+    assert len(slices) == 1
+    assert slices[0]["startDate"] == slices[0]["endDate"]
+    assert slices[0]["startDate"] == current_date
