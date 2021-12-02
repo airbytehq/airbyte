@@ -24,7 +24,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "tap-activecampaign @ git+https://github.com/singer-io/tap-activecampaign",
-    "airbyte-cdk",
+    "airbyte-cdk==0.1.2",
 ]
 
 TEST_REQUIREMENTS = [

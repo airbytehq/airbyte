@@ -5,7 +5,7 @@
     "title": "Source Active Campaign Singer Spec",
     "type": "object",
     "required": ["api_url","api_token","start_date","user_agent"],
-    "additionalProperties": true,
+    "additionalProperties": false,
     "properties": {
       "api_url": {
         "type": "string",
@@ -13,7 +13,8 @@
       },
       "api_token": {
         "type": "string",
-        "description": "Your Active Campaign API TOKEN"
+        "description": "Your Active Campaign API TOKEN",
+        "airbyte_secret": true
       },
       "start_date": {
         "type": "string",
