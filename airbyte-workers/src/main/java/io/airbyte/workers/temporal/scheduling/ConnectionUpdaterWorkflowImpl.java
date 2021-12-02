@@ -23,8 +23,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private boolean isRunning = false;
   private boolean isDeleted = false;
   private final boolean skipScheduling = false;
-  // private Optional<SyncWorkflow> childSync = Optional.empty();
-  CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
+  private CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
   public ConnectionUpdaterWorkflowImpl() {
     canStart = false;
@@ -50,7 +49,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
         ChildWorkflowOptions.newBuilder()
 
             // This will cancel the child workflow when the parent is terminated
-            .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_ABANDON)
+            .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
             .build());
 
     final JobRunConfig jobRunConfig = new JobRunConfig();
