@@ -2,18 +2,28 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, List, Mapping, Tuple
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from typing import Any, List, Mapping, Tuple
 
 from .spec import SourceTiktokMarketingSpec
-from .streams import AdGroups, Ads, Advertisers, Campaigns
-from .streams import AdGroupsReports, AdsReports, AdvertisersReports, CampaignsReports
-from .streams import ReportGranularity, DEFAULT_START_DATE
+from .streams import (
+    DEFAULT_START_DATE,
+    AdGroups,
+    AdGroupsReports,
+    Ads,
+    AdsReports,
+    Advertisers,
+    AdvertisersReports,
+    Campaigns,
+    CampaignsReports,
+    ReportGranularity,
+)
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
 
@@ -32,15 +42,13 @@ class TiktokTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceTiktokMarketing(AbstractSource):
-
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """Returns the spec for this integration."""
         return ConnectorSpecification(
             documentationUrl=DOCUMENTATION_URL,
             changelogUrl=DOCUMENTATION_URL,
             supportsIncremental=True,
-            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append,
-                                              DestinationSyncMode.append_dedup],
+            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
             connectionSpecification=SourceTiktokMarketingSpec.schema(),
         )
 

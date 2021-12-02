@@ -31,10 +31,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "app_id",
-              "secret"
-            ]
+            "required": ["app_id", "secret"]
           },
           {
             "title": "Sandbox",
@@ -51,9 +48,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "advertiser_id"
-            ]
+            "required": ["advertiser_id"]
           }
         ],
         "type": "object"
@@ -77,23 +72,13 @@
         "title": "Report Granularity",
         "description": "Which time granularity should be grouped by; for LIFETIME there will be no grouping",
         "default": "DAY",
-        "enum": [
-          "LIFETIME",
-          "DAY",
-          "HOUR"
-        ],
+        "enum": ["LIFETIME", "DAY", "HOUR"],
         "order": 4,
         "type": "string"
       }
     },
-    "required": [
-      "access_token"
-    ]
+    "required": ["access_token"]
   },
   "supportsIncremental": true,
-  "supported_destination_sync_modes": [
-    "overwrite",
-    "append",
-    "append_dedup"
-  ]
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
 }

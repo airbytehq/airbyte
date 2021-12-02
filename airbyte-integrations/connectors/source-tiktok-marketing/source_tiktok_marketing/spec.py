@@ -6,11 +6,12 @@
 import json
 import re
 from copy import deepcopy
-from jsonschema import RefResolver
-from pydantic import BaseModel, Field
 from typing import Union
 
-from .streams import ReportGranularity, DEFAULT_START_DATE
+from jsonschema import RefResolver
+from pydantic import BaseModel, Field
+
+from .streams import DEFAULT_START_DATE, ReportGranularity
 
 
 class SandboxEnvSpec(BaseModel):
