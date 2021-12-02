@@ -34,21 +34,22 @@ class ConnectorConfig(BaseModel):
 
     replication_start_date: str = Field(
         description="UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        title="Start Date",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
     )
     refresh_token: str = Field(
-        description="The refresh token used obtained via authorization (can be passed to the client instead)", airbyte_secret=True
+        description="The Refresh Token obtained via authorization (can be passed to the client instead).", title="Refresh Token", airbyte_secret=True
     )
-    lwa_app_id: str = Field(description="Your login with amazon app id", airbyte_secret=True)
-    lwa_client_secret: str = Field(description="Your login with amazon client secret", airbyte_secret=True)
-    aws_access_key: str = Field(description="AWS user access key", airbyte_secret=True)
-    aws_secret_key: str = Field(description="AWS user secret key", airbyte_secret=True)
-    role_arn: str = Field(description="The role's arn (needs permission to 'Assume Role' STS)", airbyte_secret=True)
+    lwa_app_id: str = Field(description="Your Login with Amazon App ID", title="LwA App Id", airbyte_secret=True)
+    lwa_client_secret: str = Field(description="Your Login with Amazon Client Secret.", title="LwA Client Secret", airbyte_secret=True)
+    aws_access_key: str = Field(description="Specifies the AWS access key used as part of the credentials to authenticate the user.", title="AWS Access Key", airbyte_secret=True)
+    aws_secret_key: str = Field(description="Specifies the AWS secret key used as part of the credentials to authenticate the user.", title="AWS Secret Access Key", airbyte_secret=True)
+    role_arn: str = Field(description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).", title="Role ARN", airbyte_secret=True)
     aws_environment: AWSEnvironment = Field(
-        description="Affects the AWS base url to be used",
+        description="Select the AWS Environment.", title="AWS Environment"
     )
-    region: AWSRegion = Field(description="Region to pull data from")
+    region: AWSRegion = Field(description="Select the AWS Region.", title="AWS Region")
 
 
 class SourceAmazonSellerPartner(AbstractSource):
