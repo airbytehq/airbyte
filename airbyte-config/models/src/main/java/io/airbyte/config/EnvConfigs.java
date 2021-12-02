@@ -58,7 +58,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_BUSYBOX_IMAGE = "JOB_BUSYBOX_IMAGE";
   public static final String JOB_CURL_IMAGE = "JOB_CURL_IMAGE";
   public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
-  public static final String MAX_SYNC_TIMEOUT_DAYS = "MAX_SYNC_TIMEOUT_DAYS";
+  public static final String SYNC_JOB_MAX_TIMEOUT_DAYS = "SYNC_JOB_MAX_TIMEOUT_DAYS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
@@ -273,8 +273,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public int getMaxSyncTimeoutDays() {
-    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_TIMEOUT_DAYS, "3"));
+  public int getSyncJobMaxTimeoutDays() {
+    return Integer.parseInt(getEnvOrDefault(SYNC_JOB_MAX_TIMEOUT_DAYS, "3"));
   }
 
   /**

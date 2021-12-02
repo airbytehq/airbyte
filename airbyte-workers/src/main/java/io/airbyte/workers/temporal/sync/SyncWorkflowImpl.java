@@ -29,10 +29,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final String VERSION_LABEL = "sync-workflow";
   private static final int CURRENT_VERSION = 1;
 
-  private static final int MAX_SYNC_TIMEOUT_DAYS = new EnvConfigs().getMaxSyncTimeoutDays();
+  private static final int SYNC_JOB_MAX_TIMEOUT_DAYS = new EnvConfigs().getSyncJobMaxTimeoutDays();
 
   private static final ActivityOptions options = ActivityOptions.newBuilder()
-      .setScheduleToCloseTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))
+      .setScheduleToCloseTimeout(Duration.ofDays(SYNC_JOB_MAX_TIMEOUT_DAYS))
       .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
       .setRetryOptions(TemporalUtils.NO_RETRY)
       .build();

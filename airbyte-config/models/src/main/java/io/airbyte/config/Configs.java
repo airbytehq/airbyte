@@ -74,7 +74,7 @@ public interface Configs {
   // Jobs
   int getSyncJobMaxAttempts();
 
-  int getMaxSyncTimeoutDays();
+  int getSyncJobMaxTimeoutDays();
 
   List<WorkerPodToleration> getWorkerPodTolerations();
 
