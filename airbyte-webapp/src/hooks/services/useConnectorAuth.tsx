@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useAsyncFn } from "react-use";
+import { useCallback, useMemo, useRef } from "react";
+import { useAsyncFn, useEffectOnce, useEvent } from "react-use";
 import merge from "lodash.merge";
 
 import {
@@ -18,6 +18,27 @@ import { useGetService } from "core/servicesProvider";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import useRouter from "../useRouter";
+
+let windowObjectReference: Window | null = null; // global variable
+
+function openWindow(url: string): void {
+  if (windowObjectReference == null || windowObjectReference.closed) {
+    /* if the pointer to the window object in memory does not exist
+       or if such pointer exists but the window was closed */
+
+    const strWindowFeatures =
+      "toolbar=no,menubar=no,width=600,height=700,top=100,left=100";
+    windowObjectReference = window.open(url, "name", strWindowFeatures);
+    /* then create it. The new window will be created and
+       will be brought on top of any other window. */
+  } else {
+    windowObjectReference.focus();
+    /* else the window reference must exist and the window
+       is not closed; therefore, we can bring it back on top of any other
+       window with the focus() method. There would be no need to re-create
+       the window or to reload the referenced resource. */
+  }
+}
 
 export function useConnectorAuth() {
   const { workspaceId } = useCurrentWorkspace();
@@ -77,27 +98,6 @@ export function useConnectorAuth() {
   };
 }
 
-let windowObjectReference: Window | null = null; // global variable
-
-function openWindow(url: string): void {
-  if (windowObjectReference == null || windowObjectReference.closed) {
-    /* if the pointer to the window object in memory does not exist
-       or if such pointer exists but the window was closed */
-
-    const strWindowFeatures =
-      "toolbar=no,menubar=no,width=600,height=700,top=100,left=100";
-    windowObjectReference = window.open(url, "name", strWindowFeatures);
-    /* then create it. The new window will be created and
-       will be brought on top of any other window. */
-  } else {
-    windowObjectReference.focus();
-    /* else the window reference must exist and the window
-       is not closed; therefore, we can bring it back on top of any other
-       window with the focus() method. There would be no need to re-create
-       the window or to reload the referenced resource. */
-  }
-}
-
 export function useRunOauthFlow(
   connector: ConnectorDefinitionSpecification
 ): {
@@ -152,11 +152,7 @@ export function useRunOauthFlow(
     [completeOauth]
   );
 
-  useEffect(() => {
-    window.addEventListener("message", onOathGranted, false);
-
-    return () => window.removeEventListener("message", onOathGranted);
-  }, [onOathGranted]);
+  useEvent("message", onOathGranted);
 
   return {
     loading: loadingCompleteOauth || loading,
@@ -168,8 +164,8 @@ export function useRunOauthFlow(
 export function useResolveRedirect(): void {
   const { query } = useRouter();
 
-  useEffect(() => {
+  useEffectOnce(() => {
     window.opener.postMessage(query);
     window.close();
-  }, [query]);
+  });
 }

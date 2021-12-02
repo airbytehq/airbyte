@@ -24,7 +24,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -39,7 +38,6 @@ public class DestinationHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationHandler.class);
 
   private final ConnectionsHandler connectionsHandler;
-  private final SpecFetcher specFetcher;
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
   private final JsonSchemaValidator validator;
@@ -49,14 +47,12 @@ public class DestinationHandler {
   @VisibleForTesting
   DestinationHandler(final ConfigRepository configRepository,
                      final JsonSchemaValidator integrationSchemaValidation,
-                     final SpecFetcher specFetcher,
                      final ConnectionsHandler connectionsHandler,
                      final Supplier<UUID> uuidGenerator,
                      final JsonSecretsProcessor secretsProcessor,
                      final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
-    this.specFetcher = specFetcher;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
@@ -65,16 +61,14 @@ public class DestinationHandler {
 
   public DestinationHandler(final ConfigRepository configRepository,
                             final JsonSchemaValidator integrationSchemaValidation,
-                            final SpecFetcher specFetcher,
                             final ConnectionsHandler connectionsHandler) {
     this(
         configRepository,
         integrationSchemaValidation,
-        specFetcher,
         connectionsHandler,
         UUID::randomUUID,
         new JsonSecretsProcessor(),
-        new ConfigurationUpdate(configRepository, specFetcher));
+        new ConfigurationUpdate(configRepository));
   }
 
   public DestinationRead createDestination(final DestinationCreate destinationCreate)
@@ -207,12 +201,7 @@ public class DestinationHandler {
 
   public ConnectorSpecification getSpec(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return getSpec(specFetcher, configRepository.getStandardDestinationDefinition(destinationDefinitionId));
-  }
-
-  public static ConnectorSpecification getSpec(final SpecFetcher specFetcher, final StandardDestinationDefinition destinationDef)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return specFetcher.getSpec(destinationDef);
+    return configRepository.getStandardDestinationDefinition(destinationDefinitionId).getSpec();
   }
 
   private void persistDestinationConnection(final String name,
