@@ -65,11 +65,13 @@
       },
       "client_id": {
         "type": "string",
+		"title": "Client ID",
         "description": "The Client ID of your Microsoft Advertising developer application.",
         "airbyte_secret": true
       },
       "client_secret": {
         "type": "string",
+		"title": "Client Secret"
         "description": "The Client Secret of your Microsoft Advertising developer application.",
         "airbyte_secret": true
       },
