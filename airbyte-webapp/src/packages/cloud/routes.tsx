@@ -83,8 +83,8 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
 
   const analyticsContext = useMemo(
     () => ({
-      workspaceId: workspace.workspaceId,
-      customerId: workspace.customerId,
+      workspace_id: workspace.workspaceId,
+      customer_id: workspace.customerId,
     }),
     [workspace]
   );
@@ -132,29 +132,27 @@ const MainViewRoutes = () => {
   const { currentWorkspaceId } = useWorkspaceService();
 
   return (
-    <>
-      <Switch>
-        <Route path={Routes.AuthFlow}>
-          <CompleteOauthRequest />
-        </Route>
-        <Route>
-          {currentWorkspaceId ? (
-            <MainView>
-              <Suspense fallback={<LoadingPage />}>
-                <MainRoutes currentWorkspaceId={currentWorkspaceId} />
-              </Suspense>
-            </MainView>
-          ) : (
-            <Switch>
-              <Route exact path={Routes.SelectWorkspace}>
-                <WorkspacesPage />
-              </Route>
-              <Redirect to={Routes.SelectWorkspace} />
-            </Switch>
-          )}
-        </Route>
-      </Switch>
-    </>
+    <Switch>
+      <Route path={Routes.AuthFlow}>
+        <CompleteOauthRequest />
+      </Route>
+      <Route>
+        {currentWorkspaceId ? (
+          <MainView>
+            <Suspense fallback={<LoadingPage />}>
+              <MainRoutes currentWorkspaceId={currentWorkspaceId} />
+            </Suspense>
+          </MainView>
+        ) : (
+          <Switch>
+            <Route exact path={Routes.SelectWorkspace}>
+              <WorkspacesPage />
+            </Route>
+            <Redirect to={Routes.SelectWorkspace} />
+          </Switch>
+        )}
+      </Route>
+    </Switch>
   );
 };
 

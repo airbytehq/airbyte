@@ -54,13 +54,20 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         "org.postgresql.Driver",
         SQLDialect.POSTGRES);
 
-    database.query(ctx -> ctx.fetch("CREATE SCHEMA TEST;"));
-    database.query(ctx -> ctx.fetch("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');"));
-    database.query(ctx -> ctx.fetch("CREATE TYPE inventory_item AS (\n"
-        + "    name            text,\n"
-        + "    supplier_id     integer,\n"
-        + "    price           numeric\n"
-        + ");"));
+    database.query(ctx -> {
+      ctx.execute("CREATE SCHEMA TEST;");
+      ctx.execute("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');");
+      ctx.execute("CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);");
+      // In one of the test case, we have some money values with currency symbol. Postgres can only
+      // understand
+      // those money values if the symbol corresponds to the monetary locale setting. For example, if the
+      // locale
+      // is 'en_GB', '£100' is valid, but '$100' is not. So setting the monetary locate is necessary here
+      // to
+      // make sure the unit test can pass, no matter what the locale the runner VM has.
+      ctx.execute("SET lc_monetary TO 'en_US.utf8';");
+      return null;
+    });
 
     return database;
   }
@@ -147,6 +154,8 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("true", "true", "true", "false", "false", "false", null)
             .build());
 
+    // BUG: The represented value is encoded by Base64
+    // https://github.com/airbytehq/airbyte/issues/7905
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bytea")
@@ -170,6 +179,15 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'{asb123}'", "'{asb12}'")
             .addExpectedValues("{asb123}", "{asb12} ")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("character_varying")
+            .fullSourceDataType("character varying(8)")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'{asb123}'", "'{asb12}'")
+            .addExpectedValues("{asb123}", "{asb12}")
             .build());
 
     addDataTypeTestData(
@@ -216,6 +234,7 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
     // JdbcUtils -> setJsonField contains:
     // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
+    // https://github.com/airbytehq/airbyte/issues/7871
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float8")
@@ -224,9 +243,19 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("123.0", "1.2345678901234567E9", null)
             .build());
 
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("double_precision")
+            .fullSourceDataType("double precision")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("'123'", "'1234567890.1234567'", "null")
+            .addExpectedValues("123.0", "1.2345678901234567E9", null)
+            .build());
+
     // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
     // JdbcUtils -> setJsonField contains:
     // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
+    // https://github.com/airbytehq/airbyte/issues/7871
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float")
@@ -246,6 +275,14 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("null", "-2147483648", "2147483647")
+            .addExpectedValues(null, "-2147483648", "2147483647")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("integer")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "-2147483648", "2147483647")
             .addExpectedValues(null, "-2147483648", "2147483647")
@@ -294,33 +331,57 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 "08:00:2b:01:02:03:04:07")
             .build());
 
-    // The Money type fails when amount is > 1,000. in JdbcUtils-> rowToJson as r.getObject(i);
-    // Bad value for type double : 1,000.01
-    // The reason is that in jdbc implementation money type is tried to get as Double (jdbc
-    // implementation)
-    // Max values for Money type: "-92233720368547758.08", "92233720368547758.07"
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("money")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'999.99'")
-            .addExpectedValues(null, "999.99")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues(
+                "null",
+                "'999.99'", "'1,001.01'", "'-1,000'",
+                "'$999.99'", "'$1001.01'", "'-$1,000'",
+                // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
+                "'-92233720368547758.08'", "'92233720368547758.07'")
+            .addExpectedValues(
+                null,
+                // Double#toString method is necessary here because sometimes the output
+                // has unexpected decimals, e.g. Double.toString(-1000) is -1000.0
+                "999.99", "1001.01", Double.toString(-1000),
+                "999.99", "1001.01", Double.toString(-1000),
+                Double.toString(-92233720368547758.08), Double.toString(92233720368547758.07))
             .build());
 
     // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
     // we try to map it like this, so it fails
     // case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
+    // https://github.com/airbytehq/airbyte/issues/7871
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("numeric")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'99999'", "null")
-            .addExpectedValues("99999", null)
+            .addInsertValues("'99999'", "999999999999.9999999999", "10000000000000000000000000000000000000", "null")
+            .addExpectedValues("99999", "1.0E12", "1.0E37", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("real")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'123'", "'1234567890.1234567'", "null")
+            .addExpectedValues("123.0", "1.23456794E9", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("pg_lsn")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'7/A25801C8'::pg_lsn", "'0/0'::pg_lsn", "null")
+            .addExpectedValues("7/A25801C8", "0/0",null)
             .build());
 
     // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
     // we try to map it like this, so it fails
     // case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
+    // https://github.com/airbytehq/airbyte/issues/7871
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
@@ -389,6 +450,14 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
             .addExpectedValues("'brown':3 'dog':9 'fox':4 'jump':5 'lazi':8 'quick':2")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("tsquery")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("to_tsquery('fat & rat')", "to_tsquery('Fat:ab & Cats')", "null")
+            .addExpectedValues("'fat' & 'rat'", "'fat':AB & 'cat'", null)
             .build());
 
     addDataTypeTestData(

@@ -3,11 +3,12 @@
       create or replace transient table "AIRBYTE_DATABASE".TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_SCD"  as
       (select * from(
             
+-- depends_on: ref('DEDUP_EXCHANGE_RATE_STG')
 with
 
 input_data as (
     select *
-    from "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_AB3"
+    from "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_STG"
     -- DEDUP_EXCHANGE_RATE from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_DEDUP_EXCHANGE_RATE
 ),
 
@@ -61,7 +62,7 @@ dedup_data as (
         -- additionally, we generate a unique key for the scd table
         row_number() over (
             partition by _AIRBYTE_UNIQUE_KEY, _AIRBYTE_START_AT, _AIRBYTE_EMITTED_AT
-            order by _AIRBYTE_AB_ID
+            order by _AIRBYTE_ACTIVE_ROW desc, _AIRBYTE_AB_ID
         ) as _AIRBYTE_ROW_NUM,
         md5(cast(coalesce(cast(_AIRBYTE_UNIQUE_KEY as 
     varchar

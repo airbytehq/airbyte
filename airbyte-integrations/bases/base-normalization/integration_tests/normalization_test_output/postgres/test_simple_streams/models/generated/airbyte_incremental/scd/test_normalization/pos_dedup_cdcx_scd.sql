@@ -2,16 +2,17 @@
     indexes = [{'columns':['_airbyte_active_row','_airbyte_unique_key_scd','_airbyte_emitted_at'],'type': 'btree'}],
     unique_key = "_airbyte_unique_key_scd",
     schema = "test_normalization",
-    post_hook = ['drop table if exists _airbyte_test_normalization.pos_dedup_cdcx_ab3'],
+    post_hook = ['delete from _airbyte_test_normalization.pos_dedup_cdcx_stg where _airbyte_emitted_at != (select max(_airbyte_emitted_at) from _airbyte_test_normalization.pos_dedup_cdcx_stg)'],
     tags = [ "top-level" ]
 ) }}
+-- depends_on: ref('pos_dedup_cdcx_stg')
 with
 {% if is_incremental() %}
 new_data as (
     -- retrieve incremental "new" data
     select
         *
-    from {{ ref('pos_dedup_cdcx_ab3')  }}
+    from {{ ref('pos_dedup_cdcx_stg')  }}
     -- pos_dedup_cdcx from {{ source('test_normalization', '_airbyte_raw_pos_dedup_cdcx') }}
     where 1 = 1
     {{ incremental_clause('_airbyte_emitted_at') }}
@@ -24,26 +25,30 @@ new_data_ids as (
         ]) }} as _airbyte_unique_key
     from new_data
 ),
+empty_new_data as (
+    -- build an empty table to only keep the table's column types
+    select * from new_data where 1 = 0
+),
 previous_active_scd_data as (
     -- retrieve "incomplete old" data that needs to be updated with an end date because of new changes
     select
-        {{ star_intersect(ref('pos_dedup_cdcx_ab3'), this, from_alias='inc_data', intersect_alias='this_data') }}
+        {{ star_intersect(ref('pos_dedup_cdcx_stg'), this, from_alias='inc_data', intersect_alias='this_data') }}
     from {{ this }} as this_data
     -- make a join with new_data using primary key to filter active data that need to be updated only
     join new_data_ids on this_data._airbyte_unique_key = new_data_ids._airbyte_unique_key
-    -- force left join to NULL values (we just need to transfer column types only for the star_intersect macro)
-    left join {{ ref('pos_dedup_cdcx_ab3')  }} as inc_data on 1 = 0
+    -- force left join to NULL values (we just need to transfer column types only for the star_intersect macro on schema changes)
+    left join empty_new_data as inc_data on this_data._airbyte_ab_id = inc_data._airbyte_ab_id
     where _airbyte_active_row = 1
 ),
 input_data as (
-    select {{ dbt_utils.star(ref('pos_dedup_cdcx_ab3')) }} from new_data
+    select {{ dbt_utils.star(ref('pos_dedup_cdcx_stg')) }} from new_data
     union all
-    select {{ dbt_utils.star(ref('pos_dedup_cdcx_ab3')) }} from previous_active_scd_data
+    select {{ dbt_utils.star(ref('pos_dedup_cdcx_stg')) }} from previous_active_scd_data
 ),
 {% else %}
 input_data as (
     select *
-    from {{ ref('pos_dedup_cdcx_ab3')  }}
+    from {{ ref('pos_dedup_cdcx_stg')  }}
     -- pos_dedup_cdcx from {{ source('test_normalization', '_airbyte_raw_pos_dedup_cdcx') }}
 ),
 {% endif %}
@@ -85,7 +90,7 @@ dedup_data as (
         -- additionally, we generate a unique key for the scd table
         row_number() over (
             partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at, cast(_ab_cdc_deleted_at as {{ dbt_utils.type_string() }}), cast(_ab_cdc_updated_at as {{ dbt_utils.type_string() }}), cast(_ab_cdc_log_pos as {{ dbt_utils.type_string() }})
-            order by _airbyte_ab_id
+            order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         {{ dbt_utils.surrogate_key([
           '_airbyte_unique_key',

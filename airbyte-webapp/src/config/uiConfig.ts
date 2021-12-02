@@ -13,6 +13,8 @@ type UiConfig = {
   normalizationLink: string;
   tutorialLink: string;
   technicalSupport: string;
+  statusLink: string;
+  recipesLink: string;
 };
 
 const uiConfig: UiConfig = {
@@ -28,6 +30,8 @@ const uiConfig: UiConfig = {
   normalizationLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections#airbyte-basic-normalization`,
   namespaceLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces`,
   tutorialLink: "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
+  statusLink: "https://status.airbyte.io/",
+  recipesLink: "https://airbyte.io/recipes",
 };
 
 export type { UiConfig };

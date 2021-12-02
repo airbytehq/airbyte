@@ -209,11 +209,12 @@ class Accounts(Stream):
         return "account"
 
 
-class Chats(Stream):
+class Chats(TimeIncrementalStream):
     """
-    Chats Stream: https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats
+    Chats Stream: https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-chat-export
     """
 
+    cursor_field = "update_timestamp"
     data_field = "chats"
 
 

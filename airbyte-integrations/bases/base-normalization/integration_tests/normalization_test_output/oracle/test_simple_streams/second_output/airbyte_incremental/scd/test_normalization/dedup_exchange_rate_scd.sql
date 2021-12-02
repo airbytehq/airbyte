@@ -4,11 +4,12 @@
   
   as
     
+-- depends_on: ref('dedup_exchange_rate_stg')
 with
 
 input_data as (
     select *
-    from test_normalization.dedup_exchange_rate_ab3
+    from test_normalization.dedup_exchange_rate_stg
     -- dedup_exchange_rate from test_normalization.airbyte_raw_dedup_exchange_rate
 ),
 
@@ -60,7 +61,7 @@ dedup_data as (
         -- additionally, we generate a unique key for the scd table
         row_number() over (
             partition by "_AIRBYTE_UNIQUE_KEY", "_AIRBYTE_START_AT", "_AIRBYTE_EMITTED_AT"
-            order by "_AIRBYTE_AB_ID"
+            order by "_AIRBYTE_ACTIVE_ROW" desc, "_AIRBYTE_AB_ID"
         ) as "_AIRBYTE_ROW_NUM",
         ora_hash(
             
