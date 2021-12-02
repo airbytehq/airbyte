@@ -212,7 +212,7 @@ class SourceTypeform(AbstractSource):
                     session.raise_status()
                 except:
                     return False, f"Cannot find forms with ID: {form}. Please make sure they are valid form IDs and try again."
-                return True, None
+            return True, None
 
         except requests.exceptions.RequestException as e:
             return False, e
