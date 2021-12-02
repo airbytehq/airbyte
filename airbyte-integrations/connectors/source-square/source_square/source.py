@@ -4,7 +4,7 @@
 
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 import requests
@@ -13,6 +13,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from requests.auth import AuthBase
 from source_square.utils import separate_items_by_count
@@ -37,8 +38,9 @@ def parse_square_error_response(error: requests.exceptions.HTTPError) -> SquareE
 
 
 class SquareStream(HttpStream, ABC):
-    def __init__(self, is_sandbox: bool, api_version: str, start_date: str, include_deleted_objects: bool, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, is_sandbox: bool, api_version: str, start_date: str, include_deleted_objects: bool, authenticator: Union[AuthBase, HttpAuthenticator]):
+        super().__init__(authenticator)
+        self._authenticator = authenticator
         self.is_sandbox = is_sandbox
         self.api_version = api_version
         # Converting users ISO 8601 format (YYYY-MM-DD) to RFC 3339 (2021-06-14T13:47:56.799Z)
