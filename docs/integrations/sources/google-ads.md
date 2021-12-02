@@ -95,6 +95,7 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.16` | 2021-11-22 | [8178](https://github.com/airbytehq/airbyte/pull/8178) | clarify setup fields |
 | `0.1.15` | 2021-10-07 | [6684](https://github.com/airbytehq/airbyte/pull/6684) | Add new stream `click_view` |
 | `0.1.14` | 2021-10-01 | [6565](https://github.com/airbytehq/airbyte/pull/6565) | Fix OAuth Spec File |
 | `0.1.13` | 2021-09-27 | [6458](https://github.com/airbytehq/airbyte/pull/6458) | Update OAuth Spec File |

@@ -182,6 +182,18 @@
     },
     {
       "stream": {
+        "name": "inventory_items",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "inventory_levels",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],

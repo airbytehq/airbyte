@@ -6,14 +6,11 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk~=0.1.33",
     "vcrpy==4.1.1",
 ]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "source-acceptance-test",
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "responses==0.13.3"]
 
 setup(
     name="source_github",
