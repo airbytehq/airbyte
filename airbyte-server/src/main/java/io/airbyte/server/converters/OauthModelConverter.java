@@ -9,7 +9,6 @@ import io.airbyte.api.model.AdvancedAuth.AuthFlowTypeEnum;
 import io.airbyte.api.model.AuthSpecification;
 import io.airbyte.api.model.OAuth2Specification;
 import io.airbyte.api.model.OAuthConfigSpecification;
-import io.airbyte.commons.enums.Enums;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.List;
 import java.util.Optional;
@@ -41,9 +40,15 @@ public class OauthModelConverter {
     final AdvancedAuth advancedAuth = new AdvancedAuth();
     if (List.of(io.airbyte.protocol.models.AdvancedAuth.AuthFlowType.OAUTH_1_0, io.airbyte.protocol.models.AdvancedAuth.AuthFlowType.OAUTH_2_0)
         .contains(incomingAdvancedAuth.getAuthFlowType())) {
+      final AuthFlowTypeEnum oauthFlowType;
+      if (io.airbyte.protocol.models.AdvancedAuth.AuthFlowType.OAUTH_1_0.equals(incomingAdvancedAuth.getAuthFlowType())) {
+        oauthFlowType = AuthFlowTypeEnum.OAUTH1_0;
+      } else {
+        oauthFlowType = AuthFlowTypeEnum.OAUTH2_0;
+      }
       final io.airbyte.protocol.models.OAuthConfigSpecification incomingOAuthConfigSpecification = incomingAdvancedAuth.getOauthConfigSpecification();
       advancedAuth
-          .authFlowType(Enums.convertTo(incomingAdvancedAuth.getAuthFlowType(), AuthFlowTypeEnum.class))
+          .authFlowType(oauthFlowType)
           .predicateKey(incomingAdvancedAuth.getPredicateKey())
           .predicateValue(incomingAdvancedAuth.getPredicateValue())
           .oauthConfigSpecification(new OAuthConfigSpecification()
