@@ -178,25 +178,26 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         params = deep_merge(params, self._state_filter(stream_state=stream_state or {}))
         return params
 
+    def _single_state_filter(self, single_stream_state: Mapping[str, Any]):
+        """Extracts a valid state_filter for a single account"""
+        state_value = single_stream_state.get(self.cursor_field)
+        filter_value = self._start_date if not state_value else pendulum.parse(state_value)
+
+        if potentially_new_records_in_the_past:
+            filter_value = self._start_date
+
+        return {
+            "field": f"{self.entity_prefix}.{self.cursor_field}",
+            "operator": "GREATER_THAN",
+            "value": filter_value.int_timestamp,
+        }
+
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
 
         potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
-
-        def _single_state_filter(single_stream_state: Mapping[str, Any]):
-            state_value = single_stream_state.get(self.cursor_field)
-            filter_value = self._start_date if not state_value else pendulum.parse(state_value)
-
-            if potentially_new_records_in_the_past:
-                filter_value = self._start_date
-
-            return {
-                "field": f"{self.entity_prefix}.{self.cursor_field}",
-                "operator": "GREATER_THAN",
-                "value": filter_value.int_timestamp,
-            }
 
         result_filtering_custom = {}
         for account_stream_state in stream_state.keys():
