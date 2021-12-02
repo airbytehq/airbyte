@@ -27,7 +27,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class ReplicationOrchestratorWorkflowTest {
+class ReplicatorWorkflowTest {
 
   // TEMPORAL
 
@@ -62,8 +62,8 @@ class ReplicationOrchestratorWorkflowTest {
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
 
-    replicationOrchestratorWorker = testEnv.newWorker(TemporalJobType.REPLICATION_ORCHESTRATOR.name());
-    replicationOrchestratorWorker.registerWorkflowImplementationTypes(ReplicationOrchestratorWorkflowImpl.class);
+    replicationOrchestratorWorker = testEnv.newWorker(TemporalJobType.REPLICATOR.name());
+    replicationOrchestratorWorker.registerWorkflowImplementationTypes(ReplicatorWorkflowImpl.class);
 
     client = testEnv.getWorkflowClient();
 
@@ -79,8 +79,8 @@ class ReplicationOrchestratorWorkflowTest {
   private StandardSyncOutput execute() {
     replicationOrchestratorWorker.registerActivitiesImplementations(replicationActivity);
     testEnv.start();
-    final ReplicationOrchestratorWorkflow workflow = client.newWorkflowStub(ReplicationOrchestratorWorkflow.class,
-        WorkflowOptions.newBuilder().setTaskQueue(TemporalJobType.REPLICATION_ORCHESTRATOR.name()).build());
+    final ReplicatorWorkflow workflow = client.newWorkflowStub(ReplicatorWorkflow.class,
+        WorkflowOptions.newBuilder().setTaskQueue(TemporalJobType.REPLICATOR.name()).build());
 
     return workflow.run(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput, sync.getConnectionId());
   }

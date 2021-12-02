@@ -14,9 +14,8 @@ import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
-import java.util.UUID;
 
-public class ReplicationOrchestratorWorkflowImpl implements ReplicationOrchestratorWorkflow {
+public class ReplicatorWorkflowImpl implements ReplicatorWorkflow {
 
   private static final int MAX_SYNC_TIMEOUT_DAYS = new EnvConfigs().getMaxSyncTimeoutDays();
 
@@ -32,9 +31,8 @@ public class ReplicationOrchestratorWorkflowImpl implements ReplicationOrchestra
   public StandardSyncOutput run(JobRunConfig jobRunConfig,
                                 IntegrationLauncherConfig sourceLauncherConfig,
                                 IntegrationLauncherConfig destinationLauncherConfig,
-                                StandardSyncInput syncInput,
-                                UUID connectionId) {
-    return replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, connectionId);
+                                StandardSyncInput syncInput) {
+    return replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
   }
 
 }

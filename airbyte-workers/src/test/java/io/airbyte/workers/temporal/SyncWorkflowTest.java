@@ -22,7 +22,17 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
-import io.airbyte.workers.temporal.sync.*;
+import io.airbyte.workers.temporal.sync.DbtTransformationActivity;
+import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
+import io.airbyte.workers.temporal.sync.NormalizationActivity;
+import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
+import io.airbyte.workers.temporal.sync.PersistStateActivity;
+import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
+import io.airbyte.workers.temporal.sync.ReplicationActivity;
+import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
+import io.airbyte.workers.temporal.sync.ReplicatorWorkflowImpl;
+import io.airbyte.workers.temporal.sync.SyncWorkflow;
+import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import io.temporal.api.workflowservice.v1.WorkflowServiceGrpc.WorkflowServiceBlockingStub;
@@ -80,8 +90,8 @@ class SyncWorkflowTest {
     syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
 
-    replicationOrchestratorWorker = testEnv.newWorker(TemporalJobType.REPLICATION_ORCHESTRATOR.name());
-    replicationOrchestratorWorker.registerWorkflowImplementationTypes(ReplicationOrchestratorWorkflowImpl.class);
+    replicationOrchestratorWorker = testEnv.newWorker(TemporalJobType.REPLICATOR.name());
+    replicationOrchestratorWorker.registerWorkflowImplementationTypes(ReplicatorWorkflowImpl.class);
 
     client = testEnv.getWorkflowClient();
 
@@ -121,8 +131,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput,
-        sync.getConnectionId());
+        syncInput);
 
     final StandardSyncOutput actualOutput = execute();
     assertEquals(replicationSuccessOutput, actualOutput);
@@ -139,8 +148,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput,
-        sync.getConnectionId());
+        syncInput);
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
@@ -156,8 +164,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput,
-        sync.getConnectionId());
+        syncInput);
 
     doThrow(new IllegalArgumentException("induced exception")).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
@@ -181,8 +188,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput,
-        sync.getConnectionId());
+        syncInput);
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
@@ -198,8 +204,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput,
-        sync.getConnectionId());
+        syncInput);
 
     doAnswer(ignored -> {
       cancelWorkflow();
@@ -239,8 +244,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput,
-        connectionId);
+        syncInput);
   }
 
   private static void verifyPersistState(final PersistStateActivity persistStateActivity,

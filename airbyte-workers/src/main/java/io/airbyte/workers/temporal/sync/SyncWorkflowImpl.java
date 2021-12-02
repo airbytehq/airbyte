@@ -55,9 +55,9 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
 
-    final ReplicationOrchestratorWorkflow replicationOrchestrator = Workflow.newChildWorkflowStub(
-        ReplicationOrchestratorWorkflow.class,
-        TemporalUtils.getChildWorkflowOptions(TemporalJobType.REPLICATION_ORCHESTRATOR));
+    final ReplicatorWorkflow replicationOrchestrator = Workflow.newChildWorkflowStub(
+        ReplicatorWorkflow.class,
+        TemporalUtils.getChildWorkflowOptions(TemporalJobType.REPLICATOR));
 
     final StandardSyncOutput run =
         replicationOrchestrator.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, connectionId);

@@ -145,10 +145,10 @@ public class WorkerApp {
             databasePassword, databaseUrl, airbyteVersion),
         new PersistStateActivityImpl(workspaceRoot, configRepository));
 
-    final Worker replicationOrchestratorWorker =
-        factory.newWorker(TemporalJobType.REPLICATION_ORCHESTRATOR.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    replicationOrchestratorWorker.registerWorkflowImplementationTypes(ReplicationOrchestratorWorkflowImpl.class);
-    replicationOrchestratorWorker.registerActivitiesImplementations(
+    final Worker replicatorWorker =
+        factory.newWorker(TemporalJobType.REPLICATOR.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+    replicatorWorker.registerWorkflowImplementationTypes(ReplicatorWorkflowImpl.class);
+    replicatorWorker.registerActivitiesImplementations(
         new ReplicationActivityImpl(workerConfigs, orchestratorProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
             databaseUser,
             databasePassword, databaseUrl, airbyteVersion));

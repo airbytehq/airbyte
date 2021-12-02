@@ -45,7 +45,6 @@ include ':airbyte-test-utils'
 
 // airbyte-workers has a lot of dependencies.
 include ':airbyte-workers' // reused by acceptance tests in connector base.
-include ':airbyte-runner' // todo: check if this should go here
 include ':airbyte-analytics' // transitively used by airbyte-workers.
 include ':airbyte-config:persistence' // transitively used by airbyte-workers.
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
@@ -55,10 +54,12 @@ include ':airbyte-scheduler:persistence' // used by airbyte-workers.
 
 // platform
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+
     include ':airbyte-cli'
     include ':airbyte-e2e-testing'
     include ':airbyte-migration'
     include ':airbyte-oauth'
+    include ':airbyte-runner'
     include ':airbyte-scheduler:app'
     include ':airbyte-scheduler:client'
     include ':airbyte-server'

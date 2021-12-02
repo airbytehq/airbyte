@@ -10,13 +10,22 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper;
 import io.airbyte.commons.logging.MdcScope;
-import io.airbyte.config.*;
+import io.airbyte.config.AirbyteConfigValidator;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.ReplicationOutput;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.*;
+import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerApp;
+import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
@@ -57,8 +66,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final String airbyteVersion;
 
   private static final MdcScope.Builder LOG_MDC_BUILDER = new MdcScope.Builder()
-      .setLogPrefix("runner") // todo: uniquely identify runner since we'll eventually have multiple runners
-      .setPrefixColor(LoggingHelper.Color.MAGENTA);
+      .setLogPrefix("replication-runner")
+      .setPrefixColor(LoggingHelper.Color.BLACK);
 
   public ReplicationActivityImpl(final WorkerConfigs workerConfigs,
                                  final ProcessFactory processFactory,
@@ -103,8 +112,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   public StandardSyncOutput replicate(final JobRunConfig jobRunConfig,
                                       final IntegrationLauncherConfig sourceLauncherConfig,
                                       final IntegrationLauncherConfig destinationLauncherConfig,
-                                      final StandardSyncInput syncInput,
-                                      final UUID connectionId) {
+                                      final StandardSyncInput syncInput) {
 
     final var fullSourceConfig = secretsHydrator.hydrate(syncInput.getSourceConfiguration());
     final var fullDestinationConfig = secretsHydrator.hydrate(syncInput.getDestinationConfiguration());

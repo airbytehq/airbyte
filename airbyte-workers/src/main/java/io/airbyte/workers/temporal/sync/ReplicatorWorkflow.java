@@ -10,16 +10,14 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
-import java.util.UUID;
 
 @WorkflowInterface
-public interface ReplicationOrchestratorWorkflow {
+public interface ReplicatorWorkflow {
 
   @WorkflowMethod
   StandardSyncOutput run(JobRunConfig jobRunConfig,
                          IntegrationLauncherConfig sourceLauncherConfig,
                          IntegrationLauncherConfig destinationLauncherConfig,
-                         StandardSyncInput syncInput,
-                         UUID connectionId);
+                         StandardSyncInput syncInput);
 
 }

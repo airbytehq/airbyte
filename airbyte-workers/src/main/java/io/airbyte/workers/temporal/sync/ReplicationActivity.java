@@ -10,7 +10,6 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
-import java.util.UUID;
 
 @ActivityInterface
 public interface ReplicationActivity {
@@ -19,7 +18,6 @@ public interface ReplicationActivity {
   StandardSyncOutput replicate(JobRunConfig jobRunConfig,
                                IntegrationLauncherConfig sourceLauncherConfig,
                                IntegrationLauncherConfig destinationLauncherConfig,
-                               StandardSyncInput syncInput,
-                               UUID connectionId);
+                               StandardSyncInput syncInput);
 
 }
