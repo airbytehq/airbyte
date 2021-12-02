@@ -9,13 +9,13 @@
     "properties": {
       "access_token": {
         "type": "string",
-		"title": "Access Token",
+        "title": "Access Token",
         "description": "Access Token for making authenticated requests, see the <a href=\"https://developers.notion.com/docs/authorization\">docs</a> for more information on how to obtain this token.",
         "airbyte_secret": true
       },
       "start_date": {
         "type": "string",
-	    "title": "Start Date",
+        "title": "Start Date",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2020-11-16T00:00:00.000Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$"

@@ -42,12 +42,12 @@
                 "order": 0
               },
               "client_id": {
-                "title": "Client ID",
+              "title": "Client ID",
                 "type": "string",
                 "description": "The Client ID of your Harvest developer application."
               },
               "client_secret": {
-                "title": "Client Secret",
+              "title": "Client Secret",
                 "type": "string",
                 "description": "The Client Secret of your Harvest developer application.",
                 "airbyte_secret": true

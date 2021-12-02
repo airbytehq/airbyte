@@ -8,7 +8,7 @@
     "additionalProperties": false,
     "properties": {
       "tenant_id": {
-        "title": "Directory (tenant) ID",
+      "title": "Directory (tenant) ID",
         "type": "string",
         "description": "A globally unique identifier (GUID) that is different than your organization name or domain."
       },
@@ -25,7 +25,7 @@
       },
       "period": {
         "type": "string",
-		"title": "Period",
+        "title": "Period",
         "description": "Specifies the length of time over which the Team Device Report stream is aggregated. The supported values are: D7, D30, D90, and D180.",
         "examples": ["D7"]
       }

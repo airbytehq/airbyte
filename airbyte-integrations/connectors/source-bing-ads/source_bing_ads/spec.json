@@ -51,7 +51,7 @@
               },
               "ids": {
                 "type": "array",
-				"title": "IDs",
+                "title": "IDs",
                 "description": "List of accounts from which data will be fetched.",
                 "items": {
                   "type": "string"
@@ -65,41 +65,41 @@
       },
       "client_id": {
         "type": "string",
-		"title": "Client ID",
+        "title": "Client ID",
         "description": "The Client ID of your Microsoft Advertising developer application.",
         "airbyte_secret": true
       },
       "client_secret": {
         "type": "string",
-		"title": "Client Secret"
+        "title": "Client Secret"
         "description": "The Client Secret of your Microsoft Advertising developer application.",
         "airbyte_secret": true
       },
       "customer_id": {
         "type": "string",
-		"title": "Customer ID",
+        "title": "Customer ID",
         "description": "User's Customer ID."
       },
       "developer_token": {
         "type": "string",
-		"title": "Developer Token",
+        "title": "Developer Token",
         "description": "Developer token associated with user.",
         "airbyte_secret": true
       },
       "refresh_token": {
         "type": "string",
-		"title": "Refresh Token",
+        "title": "Refresh Token",
         "description": "Refresh Token to renew the expired Access Token.",
         "airbyte_secret": true
       },
       "user_id": {
         "type": "string",
-		"title": "User ID"
+        "title": "User ID"
         "description": "Unique user identifier."
       },
       "reports_start_date": {
         "type": "string",
-		"title": "Reports Start Date"
+        "title": "Reports Start Date"
         "format": "date",
         "default": "2020-01-01",
         "description": "UTC date in YYYY-MM-DD format. Any reports before this date will not be replicated."

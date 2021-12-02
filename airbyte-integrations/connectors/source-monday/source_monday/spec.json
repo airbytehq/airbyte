@@ -9,7 +9,7 @@
     "properties": {
       "api_token": {
         "type": "string",
-		"title": "Personal Access Token"
+        "title": "Personal Access Token"
         "description": "Access Token for making authenticated requests.",
         "airbyte_secret": true
       }
