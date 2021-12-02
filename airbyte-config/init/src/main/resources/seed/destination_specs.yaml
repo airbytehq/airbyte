@@ -629,6 +629,7 @@
           - ""
           - "-- North America --"
           - "northamerica-northeast1"
+          - "northamerica-northeast2"
           - "us-central1"
           - "us-east1"
           - "us-east4"
