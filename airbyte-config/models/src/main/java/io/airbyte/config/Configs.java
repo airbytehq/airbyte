@@ -13,22 +13,41 @@ import java.util.Set;
 
 public interface Configs {
 
+  // CORE
+  // General
   String getAirbyteRole();
 
   AirbyteVersion getAirbyteVersion();
 
-  String getAirbyteApiHost();
-
-  int getAirbyteApiPort();
-
   String getAirbyteVersionOrWarning();
+
+  String getSpecCacheBucket();
+
+  DeploymentMode getDeploymentMode();
+
+  WorkerEnvironment getWorkerEnvironment();
 
   Path getConfigRoot();
 
   Path getWorkspaceRoot();
 
+  // Docker Only
+  String getWorkspaceDockerMount();
+
+  String getLocalDockerMount();
+
+  String getDockerNetwork();
+
   Path getLocalRoot();
 
+  // Secrets
+  String getSecretStoreGcpProjectId();
+
+  String getSecretStoreGcpCredentials();
+
+  SecretPersistenceType getSecretPersistenceType();
+
+  // Database
   String getDatabaseUser();
 
   String getDatabasePassword();
@@ -41,39 +60,29 @@ public interface Configs {
 
   String getConfigDatabaseUrl();
 
-  String getSecretStoreGcpProjectId();
-
-  String getSecretStoreGcpCredentials();
-
   boolean runDatabaseMigrationOnStartup();
 
+  // Airbyte Services
+  String getTemporalHost();
+
+  String getAirbyteApiHost();
+
+  int getAirbyteApiPort();
+
+  String getWebappUrl();
+
+  // Jobs
   int getMaxSyncJobAttempts();
 
   int getMaxSyncTimeoutDays();
 
-  String getWebappUrl();
-
-  String getWorkspaceDockerMount();
-
-  String getLocalDockerMount();
-
-  String getDockerNetwork();
-
-  TrackingStrategy getTrackingStrategy();
-
-  DeploymentMode getDeploymentMode();
-
-  WorkerEnvironment getWorkerEnvironment();
-
-  String getSpecCacheBucket();
-
-  WorkspaceRetentionConfig getWorkspaceRetentionConfig();
-
-  String getJobImagePullPolicy();
-
   List<WorkerPodToleration> getWorkerPodTolerations();
 
   Map<String, String> getWorkerNodeSelectors();
+
+  String getJobImagePullPolicy();
+
+  String getJobsImagePullSecret();
 
   String getJobSocatImage();
 
@@ -81,19 +90,8 @@ public interface Configs {
 
   String getJobCurlImage();
 
-  MaxWorkersConfig getMaxWorkers();
-
-  String getTemporalHost();
-
-  Set<Integer> getTemporalWorkerPorts();
-
   String getKubeNamespace();
 
-  String getSubmitterNumThreads();
-
-  String getJobsImagePullSecret();
-
-  // Resources
   String getCpuRequest();
 
   String getCpuLimit();
@@ -102,26 +100,23 @@ public interface Configs {
 
   String getMemoryLimit();
 
-  // Logging
+  // Logging/Monitoring/Tracking
   LogConfigs getLogConfigs();
-
-  String getS3LogBucket();
-
-  String getS3LogBucketRegion();
-
-  String getAwsAccessKey();
-
-  String getAwsSecretAccessKey();
-
-  String getS3MinioEndpoint();
-
-  String getGcpStorageBucket();
-
-  String getGoogleApplicationCredentials();
 
   boolean getPublishMetrics();
 
-  SecretPersistenceType getSecretPersistenceType();
+  TrackingStrategy getTrackingStrategy();
+
+  // APPLICATIONS
+  // Worker
+  MaxWorkersConfig getMaxWorkers();
+
+  Set<Integer> getTemporalWorkerPorts();
+
+  // Scheduler
+  WorkspaceRetentionConfig getWorkspaceRetentionConfig();
+
+  String getSubmitterNumThreads();
 
   enum TrackingStrategy {
     SEGMENT,

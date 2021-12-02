@@ -265,7 +265,7 @@ class StreamProcessor(object):
         else:
             if self.is_incremental_mode(self.destination_sync_mode):
                 # Force different materialization here because incremental scd models rely on star* macros that requires it
-                if DestinationType.POSTGRES.value == self.destination_type.value:
+                if self.destination_type.value == DestinationType.POSTGRES.value:
                     # because of https://github.com/dbt-labs/docs.getdbt.com/issues/335, we avoid VIEW for postgres
                     forced_materialization_type = TableMaterializationType.INCREMENTAL
                 else:
@@ -284,7 +284,7 @@ class StreamProcessor(object):
                 is_intermediate=False,
                 suffix="scd",
                 subdir="scd",
-                unique_key=self.name_transformer.normalize_column_name("_airbyte_unique_key_scd"),
+                unique_key=self.name_transformer.normalize_column_name(f"{self.airbyte_unique_key}_scd"),
                 partition_by=PartitionScheme.ACTIVE_ROW,
             )
             where_clause = f"\nand {self.name_transformer.normalize_column_name('_airbyte_active_row')} = 1"
@@ -505,7 +505,7 @@ where 1 = 1
                 # in this case [cast] operator is not needed as data already converted to timestamp type
                 return self.generate_snowflake_timestamp_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
-            if self.destination_type == DestinationType.MSSQL:
+            if self.destination_type.value == DestinationType.MSSQL.value:
                 # in case of datetime, we don't need to use [cast] function, use try_parse instead.
                 sql_type = jinja_call("type_timestamp_with_timezone()")
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
@@ -513,11 +513,11 @@ where 1 = 1
             sql_type = jinja_call("type_timestamp_with_timezone()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_date(definition):
-            if self.destination_type == DestinationType.MYSQL:
+            if self.destination_type.value == DestinationType.MYSQL.value:
                 # MySQL does not support [cast] and [nullif] functions together
                 return self.generate_mysql_date_format_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
-            if self.destination_type == DestinationType.MSSQL:
+            if self.destination_type.value == DestinationType.MSSQL.value:
                 # in case of date, we don't need to use [cast] function, use try_parse instead.
                 sql_type = jinja_call("type_date()")
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
@@ -726,7 +726,7 @@ dedup_data as (
         -- additionally, we generate a unique key for the scd table
         row_number() over (
             partition by {{ unique_key }}, {{ airbyte_start_at }}, {{ col_emitted_at }}{{ cdc_cols }}
-            order by {{ col_ab_id }}
+            order by {{ active_row }} desc, {{ col_ab_id }}
         ) as {{ airbyte_row_num }},
         {{ '{{' }} dbt_utils.surrogate_key([
           {{ quoted_unique_key }},
@@ -757,9 +757,9 @@ from dedup_data where {{ airbyte_row_num }} = 1
         template = Template(scd_sql_template)
 
         order_null = "is null asc"
-        if self.destination_type == DestinationType.ORACLE:
+        if self.destination_type.value == DestinationType.ORACLE.value:
             order_null = "asc nulls last"
-        if self.destination_type == DestinationType.MSSQL:
+        if self.destination_type.value == DestinationType.MSSQL.value:
             # SQL Server treats NULL values as the lowest values, then sorted in ascending order, NULLs come first.
             order_null = "desc"
 
@@ -798,7 +798,7 @@ from dedup_data where {{ airbyte_row_num }} = 1
             active_row=self.name_transformer.normalize_column_name("_airbyte_active_row"),
             airbyte_row_num=self.name_transformer.normalize_column_name("_airbyte_row_num"),
             quoted_airbyte_row_num=self.name_transformer.normalize_column_name("_airbyte_row_num", in_jinja=True),
-            airbyte_unique_key_scd=self.name_transformer.normalize_column_name("_airbyte_unique_key_scd"),
+            airbyte_unique_key_scd=self.name_transformer.normalize_column_name(f"{self.airbyte_unique_key}_scd"),
             unique_key=self.get_unique_key(),
             quoted_unique_key=self.get_unique_key(in_jinja=True),
             col_ab_id=self.get_ab_id(),
@@ -822,7 +822,7 @@ from dedup_data where {{ airbyte_row_num }} = 1
 
     def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]], in_jinja: bool = False) -> str:
         if not self.cursor_field:
-            cursor = self.name_transformer.normalize_column_name("_airbyte_emitted_at", in_jinja)
+            cursor = self.name_transformer.normalize_column_name(self.airbyte_emitted_at, in_jinja)
         elif len(self.cursor_field) == 1:
             if not is_airbyte_column(self.cursor_field[0]):
                 cursor = column_names[self.cursor_field[0]][0]
@@ -957,9 +957,16 @@ where 1 = 1
             config["schema"] = f'"{schema}"'
         if self.is_incremental_mode(self.destination_sync_mode):
             if suffix == "scd":
-                if self.destination_type != DestinationType.POSTGRES:
-                    stg_schema = self.get_schema(True)
-                    stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
+                stg_schema = self.get_schema(True)
+                stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
+                if self.destination_type.value == DestinationType.POSTGRES.value:
+                    # Keep only rows with the max emitted_at to keep incremental behavior
+                    config["post_hook"] = (
+                        f"['delete from {stg_schema}.{stg_table} "
+                        + f"where {self.airbyte_emitted_at} != (select max({self.airbyte_emitted_at}) "
+                        + f"from {stg_schema}.{stg_table})']"
+                    )
+                else:
                     config["post_hook"] = f"['drop view {stg_schema}.{stg_table}']"
             else:
                 # incremental is handled in the SCD SQL already
@@ -1008,11 +1015,11 @@ where 1 = 1
         if self.destination_type == DestinationType.BIGQUERY:
             # see https://docs.getdbt.com/reference/resource-configs/bigquery-configs
             if partition_by == PartitionScheme.UNIQUE_KEY:
-                config["cluster_by"] = '["_airbyte_unique_key","_airbyte_emitted_at"]'
+                config["cluster_by"] = f'["{self.airbyte_unique_key}","{self.airbyte_emitted_at}"]'
             elif partition_by == PartitionScheme.ACTIVE_ROW:
-                config["cluster_by"] = '["_airbyte_unique_key_scd","_airbyte_emitted_at"]'
+                config["cluster_by"] = f'["{self.airbyte_unique_key}_scd","{self.airbyte_emitted_at}"]'
             else:
-                config["cluster_by"] = '"_airbyte_emitted_at"'
+                config["cluster_by"] = f'"{self.airbyte_emitted_at}"'
             if partition_by == PartitionScheme.ACTIVE_ROW:
                 config["partition_by"] = (
                     '{"field": "_airbyte_active_row", "data_type": "int64", ' '"range": {"start": 0, "end": 1, "interval": 1}}'
@@ -1020,35 +1027,43 @@ where 1 = 1
             elif partition_by == PartitionScheme.NOTHING:
                 pass
             else:
-                config["partition_by"] = '{"field": "_airbyte_emitted_at", "data_type": "timestamp", "granularity": "day"}'
+                config["partition_by"] = '{"field": "' + self.airbyte_emitted_at + '", "data_type": "timestamp", "granularity": "day"}'
         elif self.destination_type == DestinationType.POSTGRES:
             # see https://docs.getdbt.com/reference/resource-configs/postgres-configs
             if partition_by == PartitionScheme.ACTIVE_ROW:
-                config["indexes"] = "[{'columns':['_airbyte_active_row','_airbyte_unique_key_scd','_airbyte_emitted_at'],'type': 'btree'}]"
+                config["indexes"] = (
+                    "[{'columns':['_airbyte_active_row','"
+                    + self.airbyte_unique_key
+                    + "_scd','"
+                    + self.airbyte_emitted_at
+                    + "'],'type': 'btree'}]"
+                )
             elif partition_by == PartitionScheme.UNIQUE_KEY:
-                config["indexes"] = "[{'columns':['_airbyte_unique_key'],'unique':True}]"
+                config["indexes"] = "[{'columns':['" + self.airbyte_unique_key + "'],'unique':True}]"
             else:
-                config["indexes"] = "[{'columns':['_airbyte_emitted_at'],'type':'hash'}]"
+                config["indexes"] = "[{'columns':['" + self.airbyte_emitted_at + "'],'type':'btree'}]"
         elif self.destination_type == DestinationType.REDSHIFT:
             # see https://docs.getdbt.com/reference/resource-configs/redshift-configs
             if partition_by == PartitionScheme.ACTIVE_ROW:
-                config["sort"] = '["_airbyte_active_row", "_airbyte_unique_key_scd", "_airbyte_emitted_at"]'
+                config["sort"] = f'["_airbyte_active_row", "{self.airbyte_unique_key}_scd", "{self.airbyte_emitted_at}"]'
             elif partition_by == PartitionScheme.UNIQUE_KEY:
-                config["sort"] = '["_airbyte_unique_key", "_airbyte_emitted_at"]'
+                config["sort"] = f'["{self.airbyte_unique_key}", "{self.airbyte_emitted_at}"]'
             elif partition_by == PartitionScheme.NOTHING:
                 pass
             else:
-                config["sort"] = '"_airbyte_emitted_at"'
+                config["sort"] = f'"{self.airbyte_emitted_at}"'
         elif self.destination_type == DestinationType.SNOWFLAKE:
             # see https://docs.getdbt.com/reference/resource-configs/snowflake-configs
             if partition_by == PartitionScheme.ACTIVE_ROW:
-                config["cluster_by"] = '["_AIRBYTE_ACTIVE_ROW", "_AIRBYTE_UNIQUE_KEY_SCD", "_AIRBYTE_EMITTED_AT"]'
+                config[
+                    "cluster_by"
+                ] = f'["_AIRBYTE_ACTIVE_ROW", "{self.airbyte_unique_key.upper()}_SCD", "{self.airbyte_emitted_at.upper()}"]'
             elif partition_by == PartitionScheme.UNIQUE_KEY:
-                config["cluster_by"] = '["_AIRBYTE_UNIQUE_KEY", "_AIRBYTE_EMITTED_AT"]'
+                config["cluster_by"] = f'["{self.airbyte_unique_key.upper()}", "{self.airbyte_emitted_at.upper()}"]'
             elif partition_by == PartitionScheme.NOTHING:
                 pass
             else:
-                config["cluster_by"] = '["_AIRBYTE_EMITTED_AT"]'
+                config["cluster_by"] = f'["{self.airbyte_emitted_at.upper()}"]'
         if unique_key:
             config["unique_key"] = f'"{unique_key}"'
         elif not self.parent:
