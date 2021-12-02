@@ -25,8 +25,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
   private final GetSyncInputActivity getSyncInputActivity = Workflow.newActivityStub(GetSyncInputActivity.class, ActivityConfiguration.OPTIONS);
   private CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
-  public ConnectionUpdaterWorkflowImpl() {
-  }
+  public ConnectionUpdaterWorkflowImpl() {}
 
   @Override
   public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) {
