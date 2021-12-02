@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.30
+Validate if each field in a stream has appeared at least once in some record.
+
 ## 0.1.29
 Add assert that output catalog does not have any `$ref` in it
 
