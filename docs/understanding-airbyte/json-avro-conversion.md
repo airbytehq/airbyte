@@ -14,7 +14,77 @@ When an Airbyte data stream is synced to the Avro or Parquet format (e.g. Parque
    | object | record |
    | array | array |
 
-2. Built-in Json schema formats are not mapped to Avro logical types at this moment.
+2. Built-in Json schema date-time formats will be mapped to Avro logical types
+  
+**Date**
+
+The date logical type represents a date within the calendar, with no reference to a particular time zone or time of day.
+
+A date logical type annotates an Avro int, where the int stores the number of days from the unix epoch, 1 January 1970 (ISO calendar).
+
+
+   ```json
+   {
+    "type": "string",
+    "format": "date"
+   }
+   ```
+
+   will become in Avro schema:
+
+   ```json
+   {
+    "type": "int",
+    "logicalType": "date"
+   }
+   ```
+
+**Time (microsecond precision)**
+
+The time-micros logical type represents a time of day, with no reference to a particular calendar, time zone or date, with a precision of one microsecond.
+
+A time-micros logical type annotates an Avro long, where the long stores the number of microseconds after midnight, 00:00:00.000000.
+
+
+   ```json
+   {
+    "type": "string",
+    "format": "time"
+   }
+   ```
+
+will become in Avro schema:
+
+   ```json
+   {
+    "type": "long",
+    "logicalType": "time-micros"
+   }
+   ```
+
+**Timestamp (microsecond precision)**
+
+The timestamp-micros logical type represents an instant on the global timeline, independent of a particular time zone or calendar, with a precision of one microsecond.
+
+A timestamp-micros logical type annotates an Avro long, where the long stores the number of microseconds from the unix epoch, 1 January 1970 00:00:00.000000 UTC.
+
+
+   ```json
+   {
+    "type": "string",
+    "format": "date-time"
+   }
+   ```
+
+will become in Avro schema:
+
+   ```json
+   {
+    "type": "long",
+    "logicalType": "timestamp-micros"
+   }
+   ```
+
 3. Combined restrictions \("allOf", "anyOf", and "oneOf"\) will be converted to type unions. The corresponding Avro schema can be less stringent. For example, the following Json schema
 
    ```json
