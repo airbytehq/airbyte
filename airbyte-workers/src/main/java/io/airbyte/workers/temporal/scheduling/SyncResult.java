@@ -4,11 +4,15 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Value
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class SyncResult {
 
-  private final boolean success;
+  private boolean success;
 
 }

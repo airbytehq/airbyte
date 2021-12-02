@@ -5,11 +5,13 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import java.time.Duration;
-import lombok.Value;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Value
+@Data
+@NoArgsConstructor
 public class SchedulingInput {
 
-  private final Duration schedulingPeriod;
+  private Duration schedulingPeriod;
 
 }

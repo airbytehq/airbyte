@@ -19,26 +19,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow {
 
-  private boolean canStart;
   private boolean isRunning = false;
   private boolean isDeleted = false;
-  private final boolean skipScheduling = false;
+  private boolean skipScheduling = false;
   private CancellationScope syncWorkflowCancellationScope = CancellationScope.current();
 
-  public ConnectionUpdaterWorkflowImpl() {
-    canStart = false;
-  }
-
-  public ConnectionUpdaterWorkflowImpl(final ConnectionUpdaterWorkflowConfig connectionUpdaterWorkflowConfig) {
-    canStart = !connectionUpdaterWorkflowConfig.isFirstStart();
-  }
+  public ConnectionUpdaterWorkflowImpl() {}
 
   @Override
-  public SyncResult run() {
-    Workflow.await(() -> canStart());
-
+  public SyncResult run(final ConnectionUpdaterInput connectionUpdaterInput) {
     // TODO: bmoric get time to wait through an activity
-    final Duration timeToWait = Duration.ofSeconds(5);
+    final Duration timeToWait = Duration.ofMinutes(5);
 
     Workflow.await(timeToWait, () -> skipScheduling());
 
@@ -47,7 +38,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
-
+            .setWorkflowId("sync_" + connectionUpdaterInput.getJobId())
             // This will cancel the child workflow when the parent is terminated
             .setParentClosePolicy(ParentClosePolicy.PARENT_CLOSE_POLICY_TERMINATE)
             .build());
@@ -56,7 +47,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig();
     final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig();
     final StandardSyncInput syncInput = new StandardSyncInput();
-    final UUID connectionId = UUID.randomUUID();
+    final UUID connectionId = connectionUpdaterInput.getConnectionId();
 
     log.error("Running for: " + connectionId);
     childSync.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, connectionId);
@@ -66,7 +57,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     if (isDeleted) {
       return new SyncResult(true);
     } else {
-      Workflow.continueAsNew(new ConnectionUpdaterWorkflowConfig(false));
+      Workflow.continueAsNew(connectionUpdaterInput);
     }
     // This should not be reachable
     return null;
@@ -74,7 +65,7 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
 
   @Override
   public void updateSchedule(final SchedulingInput input) {
-    canStart = true;
+
   }
 
   @Override
@@ -85,32 +76,25 @@ public class ConnectionUpdaterWorkflowImpl implements ConnectionUpdaterWorkflow 
     }
 
     isRunning = true;
-    canStart = true;
+  }
+
+  @Override
+  public void skipWaitForScheduling() {
+    skipScheduling = true;
   }
 
   @Override
   public void deleteConnection() {
     syncWorkflowCancellationScope.cancel("The parent workflow got deleted");
-    canStart = false;
     isDeleted = true;
-  }
-
-  @Override
-  public void readyToStart() {
-    canStart = true;
   }
 
   @Override
   public WorkflowState getState() {
     return new WorkflowState(
-        canStart,
         isRunning,
         isDeleted,
         skipScheduling);
-  }
-
-  private Boolean canStart() {
-    return canStart;
   }
 
   private Boolean skipScheduling() {

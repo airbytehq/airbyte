@@ -21,6 +21,7 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
+import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterWorkflow;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
@@ -120,13 +121,14 @@ public class TemporalClient {
             connectionId));
   }
 
-  public void submitConnectionUpdaterAsync(final long jobId, final int attemptId) {
-    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowStub(ConnectionUpdaterWorkflow.class,
-        TemporalJobType.CONNECTION_UPDATER);
+  public void submitConnectionUpdaterAsync(final long jobId, final int attemptId, final UUID connectionId) {
+    final ConnectionUpdaterWorkflow connectionUpdaterWorkflow = getWorkflowStubWithName(ConnectionUpdaterWorkflow.class,
+        TemporalJobType.CONNECTION_UPDATER, "connection_updater_" + connectionId);
     final BatchRequest signalRequest = client.newSignalWithStartRequest();
-    signalRequest.add(connectionUpdaterWorkflow::run);
+    final ConnectionUpdaterInput input = new ConnectionUpdaterInput(connectionId, jobId);
+    signalRequest.add(connectionUpdaterWorkflow::run, input);
     // TODO: Only if not manual
-    signalRequest.add(connectionUpdaterWorkflow::readyToStart);
+    signalRequest.add(connectionUpdaterWorkflow::skipWaitForScheduling);
     final ExecutorService threadpool = Executors.newCachedThreadPool();
     final Future<Void> futureTask = threadpool.submit(() -> {
       final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attemptId);
@@ -140,7 +142,12 @@ public class TemporalClient {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
   }
 
-  @VisibleForTesting <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+  private <T> T getWorkflowStubWithName(final Class<T> workflowClass, final TemporalJobType jobType, final String name) {
+    return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptionsWithWorkflowId(jobType, name));
+  }
+
+  @VisibleForTesting
+  <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
     final Path logPath = WorkerUtils.getLogPath(jobRoot);
 
@@ -157,7 +164,8 @@ public class TemporalClient {
     return new TemporalResponse<>(operationOutput, metadata);
   }
 
-  @VisibleForTesting <T> void executeAsync(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
+  @VisibleForTesting
+  <T> void executeAsync(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
     final Path logPath = WorkerUtils.getLogPath(jobRoot);
 

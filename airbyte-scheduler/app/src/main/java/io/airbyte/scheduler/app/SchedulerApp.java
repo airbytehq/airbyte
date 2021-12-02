@@ -13,6 +13,7 @@ import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -115,7 +116,11 @@ public class SchedulerApp {
     final ScheduledExecutorService scheduleJobsPool = Executors.newSingleThreadScheduledExecutor();
     final ScheduledExecutorService executeJobsPool = Executors.newSingleThreadScheduledExecutor();
     final ScheduledExecutorService cleanupJobsPool = Executors.newSingleThreadScheduledExecutor();
-    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot, airbyteVersionOrWarnings);
+    final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
+        temporalClient,
+        workspaceRoot,
+        airbyteVersionOrWarnings,
+        new EnvVariableFeatureFlags());
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);

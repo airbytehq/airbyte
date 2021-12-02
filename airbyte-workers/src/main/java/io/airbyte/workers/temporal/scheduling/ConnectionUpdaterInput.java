@@ -4,13 +4,17 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
+import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
-public class ManualSyncOutput {
+public class ConnectionUpdaterInput {
 
-  private boolean submitted;
+  private UUID connectionId;
+  private long jobId;
 
 }
