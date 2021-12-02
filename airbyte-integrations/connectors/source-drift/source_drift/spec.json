@@ -9,7 +9,7 @@
     "properties": {
       "credentials": {
         "title": "Authorization Method",
-		"description": "Choose how to authenticate to Drift."
+        "description": "Choose how to authenticate to Drift."
         "type": "object",
         "oneOf": [
           {

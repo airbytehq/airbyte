@@ -8,7 +8,7 @@
     "additionalProperties": false,
     "properties": {
       "tenant_id": {
-      "title": "Directory (tenant) ID",
+        "title": "Directory (tenant) ID",
         "type": "string",
         "description": "A globally unique identifier (GUID) that is different than your organization name or domain."
       },

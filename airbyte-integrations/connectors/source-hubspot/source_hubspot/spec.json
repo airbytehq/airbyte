@@ -45,7 +45,7 @@
                 "examples": ["123456789000"]
               },
               "client_secret": {
-              "title": "Client Secret",
+                "title": "Client Secret",
                 "description": "The Client Secret of your HubSpot developer application. See our <a href=\"https://docs.airbyte.io/integrations/sources/hubspot\">docs</a> if you need help finding this secret.",
                 "type": "string",
                 "examples": ["secret"],

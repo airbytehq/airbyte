@@ -14,8 +14,8 @@
         "type": "string",
         "order": 0
       },
-      "Start Date": {
-        "title": "Replication Start Date",
+      "replication_start_date": {
+        "title": "Start Date",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-25T00:00:00Z"],
@@ -42,12 +42,12 @@
                 "order": 0
               },
               "client_id": {
-              "title": "Client ID",
+                "title": "Client ID",
                 "type": "string",
                 "description": "The Client ID of your Harvest developer application."
               },
               "client_secret": {
-              "title": "Client Secret",
+                "title": "Client Secret",
                 "type": "string",
                 "description": "The Client Secret of your Harvest developer application.",
                 "airbyte_secret": true
