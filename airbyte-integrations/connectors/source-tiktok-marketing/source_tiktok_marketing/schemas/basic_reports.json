@@ -25,7 +25,7 @@
         "ad_text": {
           "type": ["null", "string"]
         },
-        "tt_app_id":{
+        "tt_app_id": {
           "type": ["null", "number"]
         },
         "tt_app_name": {
@@ -116,7 +116,7 @@
           "type": ["null", "number"]
         },
         "frequency": {
-          "type":["null", "number"]
+          "type": ["null", "number"]
         }
       }
     },
