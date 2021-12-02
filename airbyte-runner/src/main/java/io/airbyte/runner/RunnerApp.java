@@ -22,7 +22,6 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,7 +107,8 @@ public class RunnerApp {
           (Map<String, String>) Jsons.deserialize(Files.readString(Path.of(ReplicationActivityImpl.INIT_FILE_ENV_MAP)), Map.class);
       final Configs configs = new EnvConfigs(envMap::get);
 
-      // set logging-related vars as properties so (at runtime) we can read these when processing log4j2.xml
+      // set logging-related vars as properties so (at runtime) we can read these when processing
+      // log4j2.xml
       setPropertyFromEnvVar(EnvConfigs.LOG_LEVEL);
       setPropertyFromEnvVar(EnvConfigs.S3_PATH_STYLE_ACCESS);
       System.setProperty(LogClientSingleton.S3_LOG_BUCKET, configs.getLogConfigs().getS3LogBucket());
@@ -132,7 +132,7 @@ public class RunnerApp {
         System.exit(1);
       }
     } finally {
-      if(heartbeatServer != null) {
+      if (heartbeatServer != null) {
         LOGGER.info("Shutting down heartbeat server...");
         heartbeatServer.stop();
       }
