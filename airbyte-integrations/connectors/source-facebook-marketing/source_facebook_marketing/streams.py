@@ -200,8 +200,8 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
 
         result_filtering_custom = {}
-        for account_stream_state in stream_state.keys():
-            result_filtering_custom[account_stream_state] = _single_state_filter(stream_state[account_stream_state])
+        for account_id in stream_state.keys():
+            result_filtering_custom[account_id] = self._single_state_filter(stream_state[account_id])
 
         return {
             f"filtering_by_{self.partition_field}": result_filtering_custom,
