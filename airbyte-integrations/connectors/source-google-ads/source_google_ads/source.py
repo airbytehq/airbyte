@@ -26,6 +26,8 @@ from .streams import (
     DisplayTopicsPerformanceReport,
     ShoppingPerformanceReport,
     UserLocationReport,
+    GeographicReport,
+    KeywordReport,
 )
 
 
@@ -119,6 +121,8 @@ class SourceGoogleAds(AbstractSource):
                 DisplayTopicsPerformanceReport(**incremental_stream_config),
                 DisplayKeywordPerformanceReport(**incremental_stream_config),
                 ShoppingPerformanceReport(**incremental_stream_config),
-                AdGroupAdReport(**incremental_stream_config)
+                AdGroupAdReport(**incremental_stream_config),
+                GeographicReport(**incremental_stream_config),
+                KeywordReport(**incremental_stream_config)
             ])
         return streams
