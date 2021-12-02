@@ -35,6 +35,7 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceConnec
 
   protected static final Logger c = LoggerFactory.getLogger(AbstractSourcePerformanceTest.class);
   private static final String TEST_VALUE_TEMPLATE = "\"Some test value %s\"";
+  private static final String TEST_VALUE_TEMPLATE_POSTGRES = "\'Value id_placeholder\'";
   protected String databaseName = "test";
 
   protected int numberOfColumns; // 240 is near the max value for varchar(8) type
@@ -168,6 +169,40 @@ public abstract class AbstractSourcePerformanceTest extends AbstractSourceConnec
     for (int currentRecordNumber = 0; currentRecordNumber < recordsNumber; currentRecordNumber++) {
       insertGroupValuesJoiner
           .add("(" + String.format(baseInsertQuery.toString(), currentRecordNumber) + ")");
+    }
+
+    return String
+        .format(getInsertQueryTemplate(), databaseName, "%s", fieldsNames.toString(),
+            insertGroupValuesJoiner.toString());
+  }
+
+  // ex. INSERT INTO "test100tables100recordsDb".test_0 (id,test_column0)
+  // VALUES (0,'Value t0'), (1,'Value t1');
+  protected String prepareInsertQueryTemplatePostgres(final int batchNumber,
+                                                      final int numberOfColumns,
+                                                      final int recordsNumber) {
+
+    StringJoiner fieldsNames = new StringJoiner(",");
+    fieldsNames.add("id");
+
+    StringJoiner baseInsertQuery = new StringJoiner(",");
+    baseInsertQuery.add("id_placeholder");
+
+    for (int i = 0; i < numberOfColumns; i++) {
+      fieldsNames.add(getTestColumnName() + i);
+      baseInsertQuery.add(TEST_VALUE_TEMPLATE_POSTGRES);
+    }
+
+    StringJoiner insertGroupValuesJoiner = new StringJoiner(",");
+
+    int batchMessages = batchNumber * 100;
+
+    for (int currentRecordNumber = batchMessages;
+        currentRecordNumber < recordsNumber + batchMessages;
+        currentRecordNumber++) {
+      insertGroupValuesJoiner
+          .add("(" + baseInsertQuery.toString()
+              .replaceAll("id_placeholder", String.valueOf(currentRecordNumber)) + ")");
     }
 
     return String
