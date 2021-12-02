@@ -51,7 +51,7 @@ public class LogClientSingleton {
   public static final String S3_MINIO_ENDPOINT = "S3_MINIO_ENDPOINT";
 
   // GCS
-  public static final String GCP_STORAGE_BUCKET = "GCP_STORAGE_BUCKET";
+  public static final String GCS_LOG_BUCKET = "GCS_LOG_BUCKET";
   public static final String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
 
   public static final int DEFAULT_PAGE_SIZE = 1000;

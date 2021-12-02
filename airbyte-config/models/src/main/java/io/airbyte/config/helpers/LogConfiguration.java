@@ -18,7 +18,7 @@ public class LogConfiguration implements LogConfigs {
   private final String awsAccessKey;
   private final String awsSecretAccessKey;
   private final String s3MinioEndpoint;
-  private final String gcpStorageBucket;
+  private final String gcsLogBucket;
   private final String googleApplicationCredentials;
 
   public LogConfiguration(final String s3LogBucket,
@@ -26,14 +26,14 @@ public class LogConfiguration implements LogConfigs {
                           final String awsAccessKey,
                           final String awsSecretAccessKey,
                           final String s3MinioEndpoint,
-                          final String gcpStorageBucket,
+                          final String gcsLogBucket,
                           final String googleApplicationCredentials) {
     this.s3LogBucket = s3LogBucket;
     this.s3LogBucketRegion = s3LogBucketRegion;
     this.awsAccessKey = awsAccessKey;
     this.awsSecretAccessKey = awsSecretAccessKey;
     this.s3MinioEndpoint = s3MinioEndpoint;
-    this.gcpStorageBucket = gcpStorageBucket;
+    this.gcsLogBucket = gcsLogBucket;
     this.googleApplicationCredentials = googleApplicationCredentials;
   }
 
@@ -63,8 +63,8 @@ public class LogConfiguration implements LogConfigs {
   }
 
   @Override
-  public String getGcpStorageBucket() {
-    return gcpStorageBucket;
+  public String getGcsLogBucket() {
+    return gcsLogBucket;
   }
 
   @Override

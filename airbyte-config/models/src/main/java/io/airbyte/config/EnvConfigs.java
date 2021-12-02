@@ -115,7 +115,7 @@ public class EnvConfigs implements Configs {
         getEnvOrDefault(LogClientSingleton.AWS_ACCESS_KEY_ID, ""),
         getEnvOrDefault(LogClientSingleton.AWS_SECRET_ACCESS_KEY, ""),
         getEnvOrDefault(LogClientSingleton.S3_MINIO_ENDPOINT, ""),
-        getEnvOrDefault(LogClientSingleton.GCP_STORAGE_BUCKET, ""),
+        getEnvOrDefault(LogClientSingleton.GCS_LOG_BUCKET, ""),
         getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, ""));
   }
 

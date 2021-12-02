@@ -25,7 +25,7 @@ public class GcsLogsTest {
   public void testMissingConfiguration() {
     final var configs = mock(LogConfigs.class);
     when(configs.getGoogleApplicationCredentials()).thenReturn("");
-    when(configs.getGcpStorageBucket()).thenReturn("");
+    when(configs.getGcsLogBucket()).thenReturn("");
 
     assertThrows(RuntimeException.class, () -> new GcsLogs().downloadCloudLog(configs, "this-path-should-not-matter"));
   }
