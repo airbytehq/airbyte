@@ -18,12 +18,12 @@
       },
       "dataset_id": {
         "type": "string",
-        "description": "The BigQuery Dataset ID to look for tables to replicate from.",
-        "title": "Default Dataset ID"
+        "description": "The schema name if only one schema is interested. Dramatically boost source discover operation.",
+        "title": "Default Dataset ID [Optional]"
       },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\">docs</a> if you need help generating this key.",
+        "description": "The contents of your Service Account Key JSON file. See the <a href=\"https://docs.airbyte.io/integrations/sources/bigquery\">docs</a> for more information on how to obtain this key.",
         "title": "Credentials JSON",
         "airbyte_secret": true
       }
