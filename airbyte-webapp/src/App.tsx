@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
-import { QueryClientProvider, QueryClient } from "react-query";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 import en from "./locales/en.json";
 import GlobalStyle from "./global-styles";
@@ -14,29 +14,18 @@ import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import NotificationService from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { usePickFirstWorkspace } from "hooks/services/useWorkspace";
-import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
+import { FeatureService } from "hooks/services/Feature";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { ServicesProvider } from "core/servicesProvider";
 import { useApiServices } from "core/defaultServices";
-import { envConfigProvider, windowConfigProvider } from "./config";
 import {
   Config,
   ConfigServiceProvider,
   defaultConfig,
+  envConfigProvider,
   ValueProvider,
+  windowConfigProvider,
 } from "./config";
-
-const Features: Feature[] = [
-  {
-    id: FeatureItem.AllowUploadCustomImage,
-  },
-  {
-    id: FeatureItem.AllowCustomDBT,
-  },
-  {
-    id: FeatureItem.AllowUpdateConnectors,
-  },
-];
 
 const StyleProvider: React.FC = ({ children }) => (
   <ThemeProvider theme={theme}>
@@ -92,7 +81,7 @@ const App: React.FC = () => {
               >
                 <AnalyticsProvider>
                   <ApiErrorBoundary>
-                    <FeatureService features={Features}>
+                    <FeatureService>
                       <NotificationService>
                         <AppServices>
                           <OnboardingServiceProvider>

@@ -1,5 +1,6 @@
 import React, { useContext, useMemo } from "react";
 import { Feature, FeatureItem, FeatureServiceApi } from "./types";
+import { useConfig } from "config";
 
 const featureServiceContext = React.createContext<FeatureServiceApi | null>(
   null
@@ -7,11 +8,11 @@ const featureServiceContext = React.createContext<FeatureServiceApi | null>(
 
 export function FeatureService({
   children,
-  features = [],
 }: {
   children: React.ReactNode;
   features?: Feature[];
 }) {
+  const { features } = useConfig();
   const featureService = useMemo(
     () => ({
       features,
