@@ -22,7 +22,7 @@ You can remove the examples bellow and fill out with your information.
 
 --> 
 
-## Enviroment
+## Environment
 - **Airbyte version**:  example is 0.22.0-alpha
 - **OS Version / Instance**: example macOS, Windows 7/10, Ubuntu 18.04, GCP n2. , AWS EC2
 - **Deployment**: example are Docker or Kubernetes deploy env
