@@ -5,8 +5,6 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.api.client.util.Preconditions;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.lang.MoreBooleans;
@@ -57,7 +55,6 @@ public class ConfigRepository {
   private final SecretsHydrator secretsHydrator;
   private final Optional<SecretPersistence> longLivedSecretPersistence;
   private final Optional<SecretPersistence> ephemeralSecretPersistence;
-  private Function<String, ConnectorSpecification> specFetcherFn;
 
   public ConfigRepository(final ConfigPersistence persistence,
                           final SecretsHydrator secretsHydrator,
@@ -547,7 +544,6 @@ public class ConfigRepository {
 
   public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     if (longLivedSecretPersistence.isPresent()) {
-      Preconditions.checkNotNull(specFetcherFn);
       final var augmentedMap = new HashMap<>(configs);
 
       // get all source defs so that we can use their specs when storing secrets.
@@ -558,11 +554,7 @@ public class ConfigRepository {
       augmentedMap.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefs.stream());
       final Map<UUID, ConnectorSpecification> sourceDefIdToSpec = sourceDefs
           .stream()
-          .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, sourceDefinition -> {
-            final String imageName = DockerUtils
-                .getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
-            return specFetcherFn.apply(imageName);
-          }));
+          .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, StandardSourceDefinition::getSpec));
 
       // get all destination defs so that we can use their specs when storing secrets.
       @SuppressWarnings("unchecked")
@@ -571,11 +563,7 @@ public class ConfigRepository {
       augmentedMap.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefs.stream());
       final Map<UUID, ConnectorSpecification> destinationDefIdToSpec = destinationDefs
           .stream()
-          .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, destinationDefinition -> {
-            final String imageName = DockerUtils
-                .getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
-            return specFetcherFn.apply(imageName);
-          }));
+          .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, StandardDestinationDefinition::getSpec));
 
       if (augmentedMap.containsKey(ConfigSchema.SOURCE_CONNECTION)) {
         final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.SOURCE_CONNECTION)
@@ -638,10 +626,6 @@ public class ConfigRepository {
 
   public void loadData(final ConfigPersistence seedPersistence) throws IOException {
     persistence.loadData(seedPersistence);
-  }
-
-  public void setSpecFetcher(final Function<String, ConnectorSpecification> specFetcherFn) {
-    this.specFetcherFn = specFetcherFn;
   }
 
 }

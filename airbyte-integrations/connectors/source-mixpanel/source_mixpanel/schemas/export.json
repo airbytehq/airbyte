@@ -16,8 +16,8 @@
     "labels": {
       "type": ["null", "array"],
       "items": {
-            "type": ["null", "string"]
-        }
+        "type": ["null", "string"]
+      }
     },
     "sampling_factor": {
       "type": ["null", "integer"]

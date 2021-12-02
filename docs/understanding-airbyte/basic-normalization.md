@@ -350,6 +350,8 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- | :--- |
+| 0.32.11-alpha | 0.1.61 | 2021-12-02 | [\#8394](https://github.com/airbytehq/airbyte/pull/8394) | Fix incremental queries not updating empty tables |
+| | 0.1.61 | 2021-12-01 | [\#8378](https://github.com/airbytehq/airbyte/pull/8378) | Fix un-nesting queries and add proper ref hints |
 | 0.32.5-alpha | 0.1.60 | 2021-11-22 | [\#8088](https://github.com/airbytehq/airbyte/pull/8088) | Speed-up incremental queries for SCD table on Snowflake |
 | 0.30.32-alpha | 0.1.59 | 2021-11-08 | [\#7669](https://github.com/airbytehq/airbyte/pull/7169) | Fix nested incremental dbt |
 | 0.30.24-alpha | 0.1.57 | 2021-10-26 | [\#7162](https://github.com/airbytehq/airbyte/pull/7162) | Implement incremental dbt updates |
