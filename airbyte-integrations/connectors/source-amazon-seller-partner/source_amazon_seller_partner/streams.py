@@ -9,17 +9,19 @@ import time
 import zlib
 from abc import ABC, abstractmethod
 from io import StringIO
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from Crypto.Cipher import AES
 from source_amazon_seller_partner.auth import AWSSignature
 
@@ -27,14 +29,17 @@ REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
 
-REPORTS_MAX_WAIT_SECONDS = 50
+# 33min. taken from real world experience working with amazon seller partner reports
+REPORTS_MAX_WAIT_SECONDS = 1980
+
+DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 class AmazonSPStream(HttpStream, ABC):
     data_field = "payload"
 
     def __init__(
-        self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_ids: List[str], *args, **kwargs
+        self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_ids: List[str], period_in_days: Optional[int], *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
 
@@ -137,6 +142,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         aws_signature: AWSSignature,
         replication_start_date: str,
         marketplace_ids: List[str],
+        period_in_days: Optional[int],
         authenticator: HttpAuthenticator = NoAuth(),
     ):
         self._authenticator = authenticator
@@ -145,6 +151,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self._session.auth = aws_signature
         self._replication_start_date = replication_start_date
         self.marketplace_ids = marketplace_ids
+        self.period_in_days = period_in_days
 
     @property
     def url_base(self) -> str:
@@ -194,14 +201,30 @@ class ReportsAmazonSPStream(Stream, ABC):
 
         return self._session.prepare_request(requests.Request(**args))
 
-    def _create_report(self) -> Mapping[str, Any]:
-        request_headers = self.request_headers()
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
         replication_start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
-        report_data = {
+
+        return {
             "reportType": self.name,
             "marketplaceIds": self.marketplace_ids,
-            "createdSince": replication_start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "createdSince": replication_start_date.strftime(DATE_TIME_FORMAT),
         }
+
+    def _create_report(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        request_headers = self.request_headers()
+        report_data = self._report_data(sync_mode, cursor_field, stream_slice, stream_state)
         create_report_request = self._create_prepared_request(
             http_method="POST",
             path=f"{self.path_prefix}/reports",
@@ -254,7 +277,13 @@ class ReportsAmazonSPStream(Stream, ABC):
         document_records = csv.DictReader(StringIO(document), delimiter="\t")
         yield from document_records
 
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         """
         Create and retrieve the report.
         Decrypt and parse the report is its fully proceed, then yield the report document records.
@@ -264,7 +293,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         is_done = False
         start_time = pendulum.now("utc")
         seconds_waited = 0
-        report_id = self._create_report()["reportId"]
+        report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
 
         # create and retrieve the report
         while not is_processed and seconds_waited < REPORTS_MAX_WAIT_SECONDS:
@@ -339,6 +368,86 @@ class FbaShipmentsReports(ReportsAmazonSPStream):
 
 class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
+
+
+class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
+    @property
+    @abstractmethod
+    def cursor_field(self) -> Union[str, List[str]]:
+        pass
+
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
+        if stream_slice:
+            data_times = {}
+            if stream_slice.get("dataStartTime"):
+                data_times["dataStartTime"] = stream_slice["dataStartTime"]
+            if stream_slice.get("dataEndTime"):
+                data_times["dataEndTime"] = stream_slice["dataEndTime"]
+            data.update(data_times)
+
+        return data
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        latest_benchmark = latest_record[self.cursor_field]
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+        return {self.cursor_field: latest_benchmark}
+
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+
+        start_date = pendulum.parse(self._replication_start_date)
+        end_date = pendulum.now()
+
+        if stream_state:
+            state = stream_state.get(self.cursor_field)
+            start_date = pendulum.parse(state)
+
+        start_date = min(start_date, end_date)
+        slices = []
+
+        while start_date < end_date:
+            end_date_slice = start_date.add(days=self.period_in_days)
+            slices.append({
+                "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
+                "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT)
+            })
+            start_date = end_date_slice
+
+        return slices
+
+
+class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202125660
+    """
+
+    name = "GET_SELLER_FEEDBACK_DATA"
+    cursor_field = 'Date'
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
+    @transformer.registerCustomTransform
+    def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+        if original_value and "format" in field_schema and field_schema["format"] == "date":
+            transformed_value = pendulum.from_format(original_value, "M/D/YY").to_date_string()
+            return transformed_value
+
+        return original_value
 
 
 class Orders(IncrementalAmazonSPStream):
