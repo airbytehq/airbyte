@@ -1,0 +1,26 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "account_linking_url": {
+      "type": ["string", "null"]
+    },
+    "get_started": {
+      "type": ["string", "null"]
+    },
+    "payment_settings": {
+      "type": ["string", "null"]
+    },
+    "subject_to_new_eu_privacy_rules": {
+      "type": ["boolean", "null"]
+    },
+    "target_audience": {
+      "type": ["string", "null"]
+    },
+    "whitelisted_domains": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    }
+  }
+}
