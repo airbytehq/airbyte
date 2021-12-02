@@ -8,7 +8,8 @@
       "type": ["string", "null"]
     },
     "time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "value": {
       "type": ["string", "null"]

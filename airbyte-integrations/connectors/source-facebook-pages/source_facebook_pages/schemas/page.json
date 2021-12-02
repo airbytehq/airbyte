@@ -155,7 +155,9 @@
     "general_info": {
       "type": ["string", "null"]
     },
-
+    "general_manager": {
+      "type": ["string", "null"]
+    },
     "genre": {
       "type": ["string", "null"]
     },
@@ -238,7 +240,8 @@
       "type": ["string", "null"]
     },
     "leadgen_tos_acceptance_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "leadgen_tos_accepted": {
       "type": ["boolean", "null"]
@@ -307,7 +310,7 @@
       "type": ["boolean", "null"]
     },
     "overall_star_rating": {
-      "type": ["integer", "null"]
+      "type": ["number", "null"]
     },
     "page_token": {
       "type": ["string", "null"]

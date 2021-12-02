@@ -23,7 +23,8 @@
       "type": ["integer", "null"]
     },
     "created_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "from": {
       "type": ["string", "null"]

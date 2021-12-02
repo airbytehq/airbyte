@@ -2,7 +2,8 @@
   "type": ["object", "null"],
   "properties": {
     "created": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "description": {
       "type": ["string", "null"]

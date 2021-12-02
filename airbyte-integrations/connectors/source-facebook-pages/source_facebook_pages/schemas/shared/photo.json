@@ -8,7 +8,8 @@
       "type": ["string", "null"]
     },
     "backdated_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "backdated_time_granularity": {
       "type": ["string", "null"]
@@ -23,7 +24,8 @@
       "type": ["boolean", "null"]
     },
     "created_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "from": {
       "type": ["string", "null"]
@@ -56,7 +58,8 @@
       "type": ["string", "null"]
     },
     "updated_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "width": {
       "type": ["integer", "null"]

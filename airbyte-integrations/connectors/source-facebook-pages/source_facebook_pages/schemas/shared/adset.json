@@ -29,7 +29,8 @@
       "type": ["string", "null"]
     },
     "created_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "creative_sequence": {
       "type": ["array", "null"],
@@ -53,7 +54,8 @@
       "type": ["string", "null"]
     },
     "end_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "existing_customer_budget_percentage": {
       "type": ["integer", "null"]
@@ -113,7 +115,8 @@
       "type": ["string", "null"]
     },
     "start_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "status": {
       "type": ["string", "null"]
@@ -137,7 +140,8 @@
       }
     },
     "updated_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "use_new_app_click": {
       "type": ["boolean", "null"]

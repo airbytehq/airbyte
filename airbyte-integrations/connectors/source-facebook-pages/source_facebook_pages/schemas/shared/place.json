@@ -8,7 +8,7 @@
       "type": ["string", "null"]
     },
     "overall_rating": {
-      "type": ["integer", "null"]
+      "type": ["number", "null"]
     }
   }
 }

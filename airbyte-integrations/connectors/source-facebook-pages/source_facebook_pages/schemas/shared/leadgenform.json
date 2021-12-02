@@ -11,7 +11,8 @@
       "type": ["string", "null"]
     },
     "created_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "expired_leads_count": {
       "type": ["integer", "null"]

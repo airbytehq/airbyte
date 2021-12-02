@@ -2,7 +2,7 @@
   "type": ["object", "null"],
   "properties": {
     "duration_in_sec": {
-      "type": ["integer", "null"]
+      "type": ["number", "null"]
     },
     "fingerprint_content_type": {
       "type": ["string", "null"]

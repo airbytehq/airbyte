@@ -2,7 +2,8 @@
   "type": ["object", "null"],
   "properties": {
     "creation_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "description": {
       "type": ["string", "null"]
@@ -11,7 +12,8 @@
       "type": ["string", "null"]
     },
     "last_modified": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "owner": {
       "type": ["string", "null"]

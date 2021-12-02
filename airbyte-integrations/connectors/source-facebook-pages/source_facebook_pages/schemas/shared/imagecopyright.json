@@ -8,7 +8,8 @@
       "type": ["string", "null"]
     },
     "creation_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "creator": {
       "type": ["string", "null"]
@@ -29,7 +30,8 @@
       "type": ["integer", "null"]
     },
     "original_content_creation_date": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "tags": {
       "type": ["array", "null"],
@@ -41,7 +43,8 @@
       "type": ["string", "null"]
     },
     "update_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     }
   }
 }

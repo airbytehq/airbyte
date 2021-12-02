@@ -8,7 +8,8 @@
       }
     },
     "created_date": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "id": {
       "type": ["string", "null"]

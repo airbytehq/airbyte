@@ -14,10 +14,12 @@
       "type": ["string", "null"]
     },
     "time_created": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "time_last_used": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     }
   }
 }

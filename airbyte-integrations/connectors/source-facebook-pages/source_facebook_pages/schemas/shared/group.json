@@ -5,7 +5,8 @@
       "type": ["boolean", "null"]
     },
     "created_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "description": {
       "type": ["string", "null"]
@@ -50,7 +51,8 @@
       "type": ["string", "null"]
     },
     "updated_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     }
   }
 }

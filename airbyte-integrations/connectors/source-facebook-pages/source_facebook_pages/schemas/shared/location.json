@@ -14,13 +14,13 @@
       "type": ["string", "null"]
     },
     "latitude": {
-      "type": ["integer", "null"]
+      "type": ["number", "null"]
     },
     "located_in": {
       "type": ["string", "null"]
     },
     "longitude": {
-      "type": ["integer", "null"]
+      "type": ["number", "null"]
     },
     "name": {
       "type": ["string", "null"]

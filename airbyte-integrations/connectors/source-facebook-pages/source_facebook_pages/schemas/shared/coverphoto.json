@@ -8,10 +8,10 @@
       "type": ["string", "null"]
     },
     "offset_x": {
-      "type": ["integer", "null"]
+      "type": ["number", "null"]
     },
     "offset_y": {
-      "type": ["integer", "null"]
+      "type": ["number", "null"]
     },
     "source": {
       "type": ["string", "null"]

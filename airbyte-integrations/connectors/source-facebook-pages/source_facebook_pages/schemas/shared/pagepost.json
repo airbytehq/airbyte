@@ -17,7 +17,8 @@
       }
     },
     "backdated_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "call_to_action": {
       "type": ["string", "null"]
@@ -38,7 +39,8 @@
       "type": ["string", "null"]
     },
     "created_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "expanded_height": {
       "type": ["integer", "null"]
@@ -131,7 +133,7 @@
       }
     },
     "scheduled_publish_time": {
-      "type": ["integer", "null"]
+      "type": ["number", "null"]
     },
     "shares": {
       "type": ["string", "null"]
@@ -158,7 +160,8 @@
       "type": ["string", "null"]
     },
     "updated_time": {
-      "type": ["string", "null"]
+      "type": ["string", "null"],
+      "format": "datetime"
     },
     "via": {
       "type": ["string", "null"]
