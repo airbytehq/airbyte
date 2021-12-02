@@ -1,0 +1,391 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "user_location_view.resource_name": {
+      "type": ["null", "string"]
+    },
+    "segments.ad_network_type": {
+      "type": ["null", "string"],
+      "enum": ["CONTENT",
+                "MIXED",
+                "SEARCH",
+                "SEARCH_PARTNERS",
+                "UNKNOWN",
+                "UNSPECIFIED",
+                "YOUTUBE_SEARCH",
+                "YOUTUBE_WATCH"]
+    },
+    "segments.click_type": {
+        "type": ["null", "string"],
+        "enum": ["APP_DEEPLINK","BREADCRUMBS","BROADBAND_PLAN","CALLS","CALL_TRACKING","CLICK_ON_ENGAGEMENT_AD","GET_DIRECTIONS","HOTEL_BOOK_ON_GOOGLE_ROOM_SELECTION","HOTEL_PRICE","LOCATION_EXPANSION","LOCATION_FORMAT_CALL","LOCATION_FORMAT_DIRECTIONS","LOCATION_FORMAT_IMAGE","LOCATION_FORMAT_LANDING_PAGE","LOCATION_FORMAT_MAP","LOCATION_FORMAT_STORE_INFO","LOCATION_FORMAT_TEXT","MOBILE_CALL_TRACKING","OFFER_PRINTS","OTHER","PRICE_EXTENSION","PRODUCT_AD_APP_DEEPLINK","PRODUCT_EXTENSION_CLICKS","PRODUCT_LISTING_ADS_COUPON","PRODUCT_LISTING_AD_CLICKS","PRODUCT_LISTING_AD_LOCAL","PRODUCT_LISTING_AD_MULTICHANNEL_LOCAL","PRODUCT_LISTING_AD_MULTICHANNEL_ONLINE","PRODUCT_LISTING_AD_TRANSACTABLE","PROMOTION_EXTENSION","SHOPPING_COMPARISON_LISTING","SHOWCASE_AD_CATEGORY_LINK","SHOWCASE_AD_LOCAL_PRODUCT_LINK","SHOWCASE_AD_LOCAL_STOREFRONT_LINK","SHOWCASE_AD_ONLINE_PRODUCT_LINK","SITELINKS","STORE_LOCATOR","SWIPEABLE_GALLERY_AD_HEADLINE","SWIPEABLE_GALLERY_AD_SEE_MORE","SWIPEABLE_GALLERY_AD_SITELINK_FIVE","SWIPEABLE_GALLERY_AD_SITELINK_FOUR","SWIPEABLE_GALLERY_AD_SITELINK_ONE","SWIPEABLE_GALLERY_AD_SITELINK_THREE","SWIPEABLE_GALLERY_AD_SITELINK_TWO","SWIPEABLE_GALLERY_AD_SWIPES","UNKNOWN","UNSPECIFIED","URL_CLICKS","VIDEO_APP_STORE_CLICKS","VIDEO_CALL_TO_ACTION_CLICKS","VIDEO_CARD_ACTION_HEADLINE_CLICKS","VIDEO_END_CAP_CLICKS","VIDEO_WEBSITE_CLICKS","VISUAL_SITELINKS","WIRELESS_PLAN"]
+    },
+    "segments.conversion_action": {
+      "type": ["null", "string"]
+    },
+    "segments.conversion_action_category": {
+      "type": ["null", "string"],
+      "enum": [
+        "ADD_TO_CART",
+        "BEGIN_CHECKOUT",
+        "BOOK_APPOINTMENT",
+        "CONTACT",
+        "DEFAULT",
+        "DOWNLOAD",
+        "ENGAGEMENT",
+        "GET_DIRECTIONS",
+        "IMPORTED_LEAD",
+        "LEAD",
+        "OUTBOUND_CLICK",
+        "PAGE_VIEW",
+        "PHONE_CALL_LEAD",
+        "PURCHASE",
+        "REQUEST_QUOTE",
+        "SIGNUP",
+        "STORE_SALE",
+        "STORE_VISIT",
+        "SUBMIT_LEAD_FORM",
+        "SUBSCRIBE_PAID",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
+    },
+    "segments.conversion_action_name": {
+      "type": ["null", "string"]
+    },
+    "segments.conversion_adjustment": {
+      "type": ["null", "boolean"]
+    },
+    "segments.conversion_attribution_event_type": {
+        "type": ["null", "string"],
+        "enum": ["IMPRESSION","INTERACTION","UNKNOWN","UNSPECIFIED"]
+    },
+    "segments.conversion_lag_bucket": {
+        "type": ["null", "string"],
+        "enum": ["EIGHT_TO_NINE_DAYS","ELEVEN_TO_TWELVE_DAYS","FIVE_TO_SIX_DAYS","FORTY_FIVE_TO_SIXTY_DAYS","FOURTEEN_TO_TWENTY_ONE_DAYS","FOUR_TO_FIVE_DAYS","LESS_THAN_ONE_DAY","NINE_TO_TEN_DAYS","ONE_TO_TWO_DAYS","SEVEN_TO_EIGHT_DAYS","SIXTY_TO_NINETY_DAYS","SIX_TO_SEVEN_DAYS","TEN_TO_ELEVEN_DAYS","THIRTEEN_TO_FOURTEEN_DAYS","THIRTY_TO_FORTY_FIVE_DAYS","THREE_TO_FOUR_DAYS","TWELVE_TO_THIRTEEN_DAYS","TWENTY_ONE_TO_THIRTY_DAYS","TWO_TO_THREE_DAYS","UNKNOWN","UNSPECIFIED"]
+    },
+    "segments.conversion_lag_bucket": {
+        "type": ["null", "string"],
+        "enum": ["ADJUSTMENT_EIGHT_TO_NINE_DAYS","ADJUSTMENT_ELEVEN_TO_TWELVE_DAYS","ADJUSTMENT_FIVE_TO_SIX_DAYS","ADJUSTMENT_FORTY_FIVE_TO_SIXTY_DAYS","ADJUSTMENT_FOURTEEN_TO_TWENTY_ONE_DAYS","ADJUSTMENT_FOUR_TO_FIVE_DAYS","ADJUSTMENT_LESS_THAN_ONE_DAY","ADJUSTMENT_NINETY_TO_ONE_HUNDRED_AND_FORTY_FIVE_DAYS","ADJUSTMENT_NINE_TO_TEN_DAYS","ADJUSTMENT_ONE_TO_TWO_DAYS","ADJUSTMENT_SEVEN_TO_EIGHT_DAYS","ADJUSTMENT_SIXTY_TO_NINETY_DAYS","ADJUSTMENT_SIX_TO_SEVEN_DAYS","ADJUSTMENT_TEN_TO_ELEVEN_DAYS","ADJUSTMENT_THIRTEEN_TO_FOURTEEN_DAYS","ADJUSTMENT_THIRTY_TO_FORTY_FIVE_DAYS","ADJUSTMENT_THREE_TO_FOUR_DAYS","ADJUSTMENT_TWELVE_TO_THIRTEEN_DAYS","ADJUSTMENT_TWENTY_ONE_TO_THIRTY_DAYS","ADJUSTMENT_TWO_TO_THREE_DAYS","ADJUSTMENT_UNKNOWN","CONVERSION_EIGHT_TO_NINE_DAYS","CONVERSION_ELEVEN_TO_TWELVE_DAYS","CONVERSION_FIVE_TO_SIX_DAYS","CONVERSION_FORTY_FIVE_TO_SIXTY_DAYS","CONVERSION_FOURTEEN_TO_TWENTY_ONE_DAYS","CONVERSION_FOUR_TO_FIVE_DAYS","CONVERSION_LESS_THAN_ONE_DAY","CONVERSION_NINE_TO_TEN_DAYS","CONVERSION_ONE_TO_TWO_DAYS","CONVERSION_SEVEN_TO_EIGHT_DAYS","CONVERSION_SIXTY_TO_NINETY_DAYS","CONVERSION_SIX_TO_SEVEN_DAYS","CONVERSION_TEN_TO_ELEVEN_DAYS","CONVERSION_THIRTEEN_TO_FOURTEEN_DAYS","CONVERSION_THIRTY_TO_FORTY_FIVE_DAYS","CONVERSION_THREE_TO_FOUR_DAYS","CONVERSION_TWELVE_TO_THIRTEEN_DAYS","CONVERSION_TWENTY_ONE_TO_THIRTY_DAYS","CONVERSION_TWO_TO_THREE_DAYS","CONVERSION_UNKNOWN","UNKNOWN","UNSPECIFIED"]
+    },
+    "segments.date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "segments.day_of_week": {
+      "type": ["null", "string"],
+      "enum": ["FRIDAY",
+          "MONDAY",
+          "SATURDAY",
+          "SUNDAY",
+          "THURSDAY",
+          "TUESDAY",
+          "UNKNOWN",
+          "UNSPECIFIED",
+          "WEDNESDAY"
+      ]
+    },
+    "segments.device": {
+      "type": ["null", "string"],
+      "enum": ["CONNECTED_TV",
+          "DESKTOP",
+          "MOBILE",
+          "OTHER",
+          "TABLET",
+          "UNKNOWN",
+          "UNSPECIFIED"
+      ]
+    },
+    "segments.external_conversion_source": {
+      "type": ["null", "string"],
+      "enum": ["AD_CALL_METRICS","ANALYTICS","ANALYTICS_SEARCH_ADS_360","ANDROID_FIRST_OPEN","ANDROID_IN_APP","APP_UNSPECIFIED","CLICK_TO_CALL","FIREBASE","FIREBASE_SEARCH_ADS_360","FLOODLIGHT","GOOGLE_ATTRIBUTION","GOOGLE_HOSTED","GOOGLE_PLAY","IOS_FIRST_OPEN","IOS_IN_APP","SALESFORCE","SEARCH_ADS_360","STORE_SALES","STORE_SALES_CRM","STORE_SALES_DIRECT_UPLOAD","STORE_SALES_PAYMENT_NETWORK","STORE_VISITS","THIRD_PARTY_APP_ANALYTICS","UNKNOWN","UNSPECIFIED","UPLOAD","UPLOAD_CALLS","WEBPAGE","WEBSITE_CALL_METRICS"]
+    },
+    "segments.month": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "segments.month_of_year": {
+      "type": ["null", "string"],
+      "enum": ["APRIL","AUGUST","DECEMBER","FEBRUARY","JANUARY","JULY","JUNE","MARCH","MAY","NOVEMBER","OCTOBER","SEPTEMBER","UNKNOWN","UNSPECIFIED"]
+    },
+    "segments.week": {
+      "type": ["null", "string"]
+    },
+    "segments.quarter": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "segments.slot": {
+      "type": ["null", "string"],
+      "enum": ["CONTENT","MIXED","SEARCH_OTHER","SEARCH_PARTNER_OTHER","SEARCH_PARTNER_TOP","SEARCH_SIDE","SEARCH_TOP","UNKNOWN","UNSPECIFIED"]
+    },
+    "segments.week": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "segments.year": {
+      "type": ["null", "integer"]
+    },
+    "metrics.absolute_top_impression_percentage": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_cpm": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_ctr": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_impressions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.active_view_measurability": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_measurable_cost_micros": {
+      "type": ["null", "integer"]
+    },
+    "metrics.active_view_measurable_impressions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.active_view_viewability": {
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions_by_conversion_date": {
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions_from_interactions_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions_from_interactions_value_per_interaction": {
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions_value": {
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions_value_by_conversion_date": {
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions_value_per_cost": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cost": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpc": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpe": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpm": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpv": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_page_views": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_time_on_site": {
+      "type": ["null", "number"]
+    },
+    "metrics.bounce_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.clicks": {
+      "type": ["null", "integer"]
+    },
+    "metrics.conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_by_conversion_date": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_from_interactions_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_value": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_value_by_conversion_date": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_value_per_cost": {
+      "type": ["null", "number"]
+    },
+    "metrics.cost_micros": {
+      "type": ["null", "integer"]
+    },
+    "metrics.cost_per_all_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.cost_per_conversion": {
+      "type": ["null", "number"]
+    },
+    "metrics.cost_per_current_model_attributed_conversion": {
+      "type": ["null", "number"]
+    },
+    "metrics.cross_device_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.ctr": {
+      "type": ["null", "number"]
+    },
+    "metrics.current_model_attributed_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.current_model_attributed_conversions_from_interactions_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.current_model_attributed_conversions_from_interactions_value_per_interaction": {
+      "type": ["null", "number"]
+    },
+    "metrics.current_model_attributed_conversions_value": {
+      "type": ["null", "number"]
+    },
+    "metrics.current_model_attributed_conversions_value_per_cost": {
+      "type": ["null", "number"]
+    },
+    "metrics.engagement_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.engagements": {
+      "type": ["null", "integer"]
+    },
+    "metrics.gmail_forwards": {
+      "type": ["null", "integer"]
+    },
+    "metrics.gmail_saves": {
+      "type": ["null", "integer"]
+    },
+    "metrics.gmail_secondary_clicks": {
+      "type": ["null", "integer"]
+    },
+    "metrics.historical_creative_quality_score": {
+      "type": ["null", "string"]
+    },
+    "metrics.historical_landing_page_quality_score": {
+      "type": ["null", "string"]
+    },
+    "metrics.historical_quality_score": {
+      "type": ["null", "integer"]
+    },
+    "metrics.historical_search_predicted_ctr": {
+      "type": ["null", "string"]
+    },
+    "metrics.impressions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.interaction_event_types": {
+      "type": ["null", "number"]
+    },
+    "metrics.interaction_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.interactions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.percent_new_visitors": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_absolute_top_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_budget_lost_absolute_top_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_budget_lost_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_budget_lost_top_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_click_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_exact_match_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_rank_lost_absolute_top_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_rank_lost_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_rank_lost_top_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_top_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.top_impression_percentage": {
+      "type": ["null", "number"]
+    },
+    "metrics.value_per_all_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.value_per_all_conversions_by_conversion_date": {
+      "type": ["null", "number"]
+    },
+    "metrics.value_per_conversion": {
+      "type": ["null", "number"]
+    },
+    "metrics.value_per_conversions_by_conversion_date": {
+      "type": ["null", "number"]
+    },
+    "metrics.value_per_current_model_attributed_conversion": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_quartile_p100_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_quartile_p25_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_quartile_p50_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_quartile_p75_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_view_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_views": {
+      "type": ["null", "integer"]
+    },
+    "metrics.view_through_conversions": {
+      "type": ["null", "integer"]
+    },
+    "campaign.id": {
+      "type": ["null", "integer"]
+    },
+    "campaign.name": {
+      "type": ["null", "string"]
+    },
+    "campaign.status": {
+      "type": ["null", "string"]
+    },
+    "ad_group.id": {
+      "type": ["null", "integer"]
+    },
+    "ad_group.name": {
+      "type": ["null", "string"]
+    },
+    "ad_group.status": {
+      "type": ["null", "string"]
+    },
+    "customer.id": {
+      "type": ["null", "integer"]
+    },
+    "customer.descriptive_name": {
+      "type": ["null", "string"]
+    }
+  }
+}
