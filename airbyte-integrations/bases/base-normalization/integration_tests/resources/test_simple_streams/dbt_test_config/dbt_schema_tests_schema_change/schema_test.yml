@@ -23,6 +23,7 @@ models:
             - NZD
 
   - name: renamed_dedup_cdc_excluded
+# TODO: create/fix github issue in dbt-core/adapters repository to handle schema changes (outside airbyte's control)
 # Disabling because incremental dbt is not handling quotes well atm (dbt 0.21.0)
 #    tests:
 #      - dbt_utils.expression_is_true:
