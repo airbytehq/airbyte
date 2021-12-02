@@ -23,9 +23,9 @@ from source_amazon_seller_partner.streams import (
     FulfilledShipmentsReports,
     MerchantListingsReports,
     Orders,
+    SellerFeedbackReports,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
-    SellerFeedbackReports,
 )
 
 
@@ -41,7 +41,7 @@ class ConnectorConfig(BaseModel):
     period_in_days: int = Field(
         30,
         description="Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
-        examples=["30", "365"]
+        examples=["30", "365"],
     )
     refresh_token: str = Field(
         description="The refresh token used obtained via authorization (can be passed to the client instead)", airbyte_secret=True
@@ -84,7 +84,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "aws_signature": aws_signature,
             "replication_start_date": config.replication_start_date,
             "marketplace_ids": [marketplace_id],
-            "period_in_days": config.period_in_days
+            "period_in_days": config.period_in_days,
         }
         return stream_kwargs
 
