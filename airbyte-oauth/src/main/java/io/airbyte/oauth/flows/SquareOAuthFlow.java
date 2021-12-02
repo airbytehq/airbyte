@@ -6,7 +6,6 @@ package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
@@ -16,7 +15,6 @@ import java.net.URLDecoder;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
