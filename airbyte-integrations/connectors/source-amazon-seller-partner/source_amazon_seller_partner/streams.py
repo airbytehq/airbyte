@@ -39,7 +39,14 @@ class AmazonSPStream(HttpStream, ABC):
     data_field = "payload"
 
     def __init__(
-        self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_ids: List[str], period_in_days: Optional[int], *args, **kwargs
+        self,
+        url_base: str,
+        aws_signature: AWSSignature,
+        replication_start_date: str,
+        marketplace_ids: List[str],
+        period_in_days: Optional[int],
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
@@ -405,10 +412,7 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
         return {self.cursor_field: latest_benchmark}
 
     def stream_slices(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         start_date = pendulum.parse(self._replication_start_date)
@@ -423,10 +427,12 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
 
         while start_date < end_date:
             end_date_slice = start_date.add(days=self.period_in_days)
-            slices.append({
-                "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
-                "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT)
-            })
+            slices.append(
+                {
+                    "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
+                    "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
+                }
+            )
             start_date = end_date_slice
 
         return slices
@@ -438,7 +444,7 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
     """
 
     name = "GET_SELLER_FEEDBACK_DATA"
-    cursor_field = 'Date'
+    cursor_field = "Date"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     @transformer.registerCustomTransform
