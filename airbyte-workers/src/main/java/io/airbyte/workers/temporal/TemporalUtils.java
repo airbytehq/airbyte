@@ -59,6 +59,9 @@ public class TemporalUtils {
   }
 
   public static WorkflowOptions getWorkflowOptionsWithName(final TemporalJobType jobType, final String name) {
+    RetryOptions.newBuilder()
+        .setDoNotRetry()
+
     return WorkflowOptions.newBuilder()
         .setWorkflowId(name)
         .setRetryOptions(NO_RETRY)
@@ -92,21 +95,19 @@ public class TemporalUtils {
   }
 
   /**
-   * Allows running a given temporal workflow stub asynchronously. This method only works for
-   * workflows that take one argument. Because of the iface that Temporal supplies, in order to handle
-   * other method signatures, if we need to support them, we will need to add another helper with that
-   * number of args. For a reference on how Temporal recommends to do this see their docs:
-   * https://docs.temporal.io/docs/java/workflows#asynchronous-start
+   * Allows running a given temporal workflow stub asynchronously. This method only works for workflows that take one argument. Because of the iface
+   * that Temporal supplies, in order to handle other method signatures, if we need to support them, we will need to add another helper with that
+   * number of args. For a reference on how Temporal recommends to do this see their docs: https://docs.temporal.io/docs/java/workflows#asynchronous-start
    *
    * @param workflowStub - workflow stub to be executed
-   * @param function - function on the workflow stub to be executed
-   * @param arg1 - argument to be supplied to the workflow function
-   * @param outputType - class of the output type of the workflow function
-   * @param <STUB> - type of the workflow stub
-   * @param <A1> - type of the argument of the workflow stub
-   * @param <R> - type of the return of the workflow stub
-   * @return pair of the workflow execution (contains metadata on the asynchronously running job) and
-   *         future that can be used to await the result of the workflow stub's function
+   * @param function     - function on the workflow stub to be executed
+   * @param arg1         - argument to be supplied to the workflow function
+   * @param outputType   - class of the output type of the workflow function
+   * @param <STUB>       - type of the workflow stub
+   * @param <A1>         - type of the argument of the workflow stub
+   * @param <R>          - type of the return of the workflow stub
+   * @return pair of the workflow execution (contains metadata on the asynchronously running job) and future that can be used to await the result of
+   * the workflow stub's function
    */
   public static <STUB, A1, R> ImmutablePair<WorkflowExecution, CompletableFuture<R>> asyncExecute(final STUB workflowStub,
                                                                                                   final Functions.Func1<A1, R> function,
