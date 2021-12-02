@@ -154,7 +154,7 @@ export function useRunOauthFlow(
 
       return !!oauthStartedPayload;
     },
-    [connector]
+    [connector, onDone]
   );
 
   const onOathGranted = useCallback(
