@@ -30,7 +30,7 @@ class AsyncJob:
     """AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job"""
 
     MAX_WAIT_TO_START = pendulum.duration(minutes=5)
-    MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
+    MAX_WAIT_TO_FINISH = pendulum.duration(hours=24)
 
     def __init__(self, api: API, params: Mapping[str, Any]):
         """Initialize
