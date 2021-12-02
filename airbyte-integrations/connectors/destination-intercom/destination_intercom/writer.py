@@ -32,45 +32,85 @@ class IntercomWriter:
 
     def write_queue(self):
         for stream_name, record in self.queue:
-            user = record[self.user_key]
-            try:
-                user_response = self.client._request(
-                    http_method='post',
-                    endpoint='contacts',
-                    json={
-                        "role": "user",
-                        "email": user
-                    }
-                )
-                user_id = user_response.json()["id"]
-            except requests.exceptions.HTTPError:
-                user_response = self.client._request(
-                    http_method='post',
-                    endpoint='contacts/search',
-                    json={
-                        "query":  {
-                            "field": "email",
-                            "operator": "=",
-                            "value": user
-                        }
-                    }
-                )
-                user_id = user_response.json()["data"][0]["id"]
-            
+            user_exists = True
+            user = record.get(self.user_key)
+            if user:
+                # if user_email is present, remove surrounding whitespaces and change to lowercase
+                user = user.strip().lower()
+            else:
+                # if user_email is blank, skip company
+                continue
 
+            # create company on Intercom
             airbyte_json = self.format_json_data(record)
             company_response = self.client._request(
                 http_method='post',
                 endpoint='companies',
                 json=airbyte_json
             )
-            company_id = company_response.json()["id"]
+            print(company_response.json())
 
-            response = self.client._request(
-                http_method='post',
-                endpoint=f'contacts/{user_id}/companies',
-                json={"id": company_id}
-            )
+            if company_response.json()["user_count"] == 0:
+                # go through user attachment process if no users associated with company
+                company_id = company_response.json()["id"]
+                try:
+                    # try to search for existing user on intercom
+                    print(user)
+                    user_response = self.client._request(
+                        http_method='post',
+                        endpoint='contacts/search',
+                        json={
+                            "query":  {
+                                "field": "email",
+                                "operator": "=",
+                                "value": user
+                            }
+                        }
+                    )
+                except requests.exceptions.HTTPError:
+                    print("HTTP Error, creating user")
+                    user_exists = False
+                    try:
+                        user_response = self.client._request(
+                            http_method='post',
+                            endpoint='contacts',
+                            json={
+                                "role": "user",
+                                "email": user
+                            }
+                        )
+                    except requests.exceptions.HTTPError:
+                        print("HTTP ERROR; CONTINUE")
+                        continue
+                    
+                
+                if user_response.json()["total_count"] == 0:
+                    print("Searched with total_count = 0, creating user")
+                    user_exists = False
+                    try:
+                        user_response = self.client._request(
+                            http_method='post',
+                            endpoint='contacts',
+                            json={
+                                "role": "user",
+                                "email": user
+                            }
+                        )
+                    except requests.exceptions.HTTPError:
+                        print("HTTP ERROR; CONTINUE")
+                        continue
+
+                if user_exists:
+                    user_id = user_response.json()["data"][0]["id"]
+                else:
+                    user_id = user_response.json()["id"]
+
+                # attach company to user
+                response = self.client._request(
+                    http_method='post',
+                    endpoint=f'contacts/{user_id}/companies',
+                    json={"id": company_id}
+                )
         
         self.queue.clear()
 

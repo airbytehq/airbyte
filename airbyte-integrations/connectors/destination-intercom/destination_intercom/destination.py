@@ -73,9 +73,9 @@ class DestinationIntercom(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # check Intercom API access by trying to list all contacts
+            # check Intercom API access using the App Total Count model
             writer = create_writer(**config)
-            writer.client._request("get", endpoint="companies")
+            writer.client._request("get", endpoint="counts")
         except requests.exceptions.HTTPError as err:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Intercom error - {err}")
         except Exception as e:

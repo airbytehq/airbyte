@@ -26,7 +26,7 @@ class BaseIntercomModel(ABC):
     #     pass
 
 
-class ContactModel(BaseIntercomModel):
+class Contacts(BaseIntercomModel):
     @property
     def path(self) -> str:
         return 'contacts'
@@ -78,7 +78,7 @@ class ContactModel(BaseIntercomModel):
             )
 
 
-class CompanyModel(BaseIntercomModel):
+class Companies(BaseIntercomModel):
     @property
     def path(self) -> str:
         return 'companies'
@@ -114,6 +114,12 @@ class CompanyModel(BaseIntercomModel):
             endpoint='companies',
             json=airbyte_json
         )
+
+    def has_attached_users(
+        self,
+        company_data
+    ):
+        pass
 
     def attach_company_to_user(
         self
