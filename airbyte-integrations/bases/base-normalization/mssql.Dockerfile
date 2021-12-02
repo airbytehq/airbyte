@@ -1,5 +1,7 @@
-FROM fishtownanalytics/dbt:0.19.0
+FROM fishtownanalytics/dbt:0.21.1
+COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
+# Install curl & gnupg dependencies
 USER root
 WORKDIR /tmp
 RUN apt-get update && apt-get install -y \
@@ -10,11 +12,18 @@ RUN apt-get update && apt-get install -y \
     libaio1 \
     gnupg \
     gnupg1 \
-    gnupg2
+    gnupg2 \
+    equivs
 
-# Install MS SQL Server dependencies
+# Remove multiarch-support package to use Debian 10 packages
+# see https://causlayer.orgs.hk/mlocati/docker-php-extension-installer/issues/432#issuecomment-921341138
+RUN echo 'Package: multiarch-support-dummy\nProvides: multiarch-support\nDescription: Fake multiarch-support' > multiarch-support-dummy.ctl \
+    && equivs-build multiarch-support-dummy.ctl && dpkg -i multiarch-support-dummy*.deb && rm multiarch-support-dummy*.* \
+    && apt-get -y purge equivs
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list
+
+# Install MS SQL Server dependencies
 RUN apt-get update && ACCEPT_EULA=Y apt-get install -y \
     libgssapi-krb5-2 \
     unixodbc-dev \
@@ -22,10 +31,12 @@ RUN apt-get update && ACCEPT_EULA=Y apt-get install -y \
     mssql-tools
 ENV PATH=$PATH:/opt/mssql-tools/bin
 
-COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
-
 # Install SSH Tunneling dependencies
-RUN apt-get update && apt-get install -y jq sshpass
+RUN apt-get install -y jq sshpass
+
+# clean up
+RUN apt-get -y autoremove && apt-get clean
+
 WORKDIR /airbyte
 COPY entrypoint.sh .
 COPY build/sshtunneling.sh .
@@ -42,8 +53,8 @@ RUN pip install .
 
 WORKDIR /airbyte/normalization_code
 RUN pip install .
-RUN pip install dbt-sqlserver==0.19.3
-
+# Based of https://github.com/dbt-msft/dbt-sqlserver/tree/v0.21.1
+RUN pip install dbt-sqlserver==0.21.1
 
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
