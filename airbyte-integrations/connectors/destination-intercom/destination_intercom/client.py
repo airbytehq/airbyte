@@ -1,13 +1,11 @@
 import requests
+import time
 
 from typing import Any, Iterable, List, Mapping, Tuple, Union
 
 class IntercomClient:
-    base_url = "https://api.intercom.io/"
 
-    supported_resources = [
-        "companies",
-    ]
+    base_url = "https://api.intercom.io/"
 
     def __init__(self, access_token: str = None):
         self.access_token = access_token

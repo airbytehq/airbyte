@@ -13,7 +13,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-from destination_intercom.writers import create_writer
+from destination_intercom.writer import create_writer
 
 
 class DestinationIntercom(Destination):
@@ -25,7 +25,6 @@ class DestinationIntercom(Destination):
     ) -> Iterable[AirbyteMessage]:
 
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
@@ -74,9 +73,9 @@ class DestinationIntercom(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # check Intercom API access by trying to list all contacts
+            # check Intercom API access using the App Total Count model
             writer = create_writer(**config)
-            writer.client._request("get", endpoint="companies")
+            writer.client._request("get", endpoint="counts")
         except requests.exceptions.HTTPError as err:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Intercom error - {err}")
         except Exception as e:
