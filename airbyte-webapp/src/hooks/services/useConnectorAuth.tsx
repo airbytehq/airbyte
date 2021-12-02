@@ -16,7 +16,6 @@ import { useGetService } from "core/servicesProvider";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import useRouter from "../useRouter";
-import { ConnectionConfiguration } from "core/domain/connection";
 
 let windowObjectReference: Window | null = null; // global variable
 
@@ -39,13 +38,26 @@ function openWindow(url: string): void {
   }
 }
 
-export function useConnectorAuth() {
+export function useConnectorAuth(): {
+  getConsentUrl: (
+    connector: ConnectorDefinitionSpecification,
+    oAuthInputConfiguration: Record<string, unknown>
+  ) => Promise<{
+    payload: SourceGetConsentPayload | DestinationGetConsentPayload;
+    consentUrl: string;
+  }>;
+  completeOauthRequest: (
+    params: SourceGetConsentPayload | DestinationGetConsentPayload,
+    queryParams: Record<string, unknown>
+  ) => Promise<Record<string, unknown>>;
+} {
   const { workspaceId } = useCurrentWorkspace();
   const { apiUrl, oauthRedirectUrl } = useConfig();
   const middlewares = useGetService<RequestMiddleware[]>(
     "DefaultRequestMiddlewares"
   );
 
+  // TODO: move to separate initFacade and use refs instead
   const sourceAuthService = useMemo(
     () => new SourceAuthService(apiUrl, middlewares),
     [apiUrl, middlewares]
@@ -102,9 +114,7 @@ export function useConnectorAuth() {
 
 export function useRunOauthFlow(
   connector: ConnectorDefinitionSpecification,
-  onDone?: (values: {
-    connectionConfiguration: ConnectionConfiguration;
-  }) => void
+  onDone?: (values: Record<string, unknown>) => void
 ): {
   loading: boolean;
   done?: boolean;
@@ -133,12 +143,12 @@ export function useRunOauthFlow(
       const oauthStartedPayload = param.current;
 
       if (oauthStartedPayload) {
-        const connectionConfiguration = await completeOauthRequest(
+        const completeOauthResponse = await completeOauthRequest(
           oauthStartedPayload,
           queryParams
         );
 
-        onDone?.({ connectionConfiguration });
+        onDone?.(completeOauthResponse);
         return true;
       }
 

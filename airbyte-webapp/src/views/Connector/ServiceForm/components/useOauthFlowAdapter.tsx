@@ -1,10 +1,14 @@
-import { useFormikContext } from "formik";
+import { setIn, useFormikContext } from "formik";
 import merge from "lodash.merge";
 import pick from "lodash.pick";
 
 import { ServiceFormValues } from "../types";
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
+import {
+  makeConnectionConfigurationPath,
+  serverProvidedOauthPaths,
+} from "../utils";
 
 function useFormikOauthAdapter(
   connector: ConnectorDefinitionSpecification
@@ -20,8 +24,29 @@ function useFormikOauthAdapter(
     setFieldTouched,
   } = useFormikContext<ServiceFormValues>();
 
-  const onDone = (v: Pick<ServiceFormValues, "connectionConfiguration">) =>
-    setValues(merge(values, v));
+  const onDone = (completeOauthResponse: Record<string, unknown>) => {
+    let newValues: ServiceFormValues;
+
+    if (connector.advancedAuth) {
+      const oauthPaths = serverProvidedOauthPaths(connector);
+
+      newValues = Object.entries(oauthPaths).reduce(
+        (acc, [key, { path_in_connector_config }]) =>
+          setIn(
+            acc,
+            makeConnectionConfigurationPath(path_in_connector_config),
+            completeOauthResponse[key]
+          ),
+        values
+      );
+    } else {
+      newValues = merge(values, {
+        connectionConfiguration: completeOauthResponse,
+      });
+    }
+
+    setValues(newValues);
+  };
 
   const { run, loading, done } = useRunOauthFlow(connector, onDone);
 
@@ -31,29 +56,23 @@ function useFormikOauthAdapter(
     run: async () => {
       const oauthInputFields =
         Object.values(
-          connector?.advancedAuth?.oauth_config_specification
+          connector?.advancedAuth?.oauthConfigSpecification
             ?.oauthUserInputFromConnectorConfigSpecification?.properties ?? {}
-        )?.map((property) => property.path_in_connector_config.join(".")) ?? [];
+        )?.map((property) =>
+          makeConnectionConfigurationPath(property.path_in_connector_config)
+        ) ?? [];
 
       if (oauthInputFields.length) {
-        oauthInputFields.forEach((path) =>
-          setFieldTouched(`connectionConfiguration.${path}`, true, true)
-        );
+        oauthInputFields.forEach((path) => setFieldTouched(path, true, true));
 
-        const oAuthErrors = pick(
-          errors.connectionConfiguration,
-          oauthInputFields
-        );
+        const oAuthErrors = pick(errors, oauthInputFields);
 
         if (Object.keys(oAuthErrors).length) {
           return;
         }
       }
 
-      const oauthInputParams = pick(
-        values.connectionConfiguration,
-        oauthInputFields
-      );
+      const oauthInputParams = pick(values, oauthInputFields);
 
       await run(oauthInputParams);
     },

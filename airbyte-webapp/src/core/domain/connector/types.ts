@@ -5,8 +5,10 @@ import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
 export type ConnectorDefinition = SourceDefinition | DestinationDefinition;
 
+type AuthFlowTypes = "oauth2.0";
+
 interface AuthSpecification {
-  type: "oauth2.0";
+  type: AuthFlowTypes;
   oauth2Specification: {
     rootObject?: string[];
     oauthFlowInitParameters?: string[][];
@@ -21,13 +23,13 @@ type AdvancedAuthInput = {
 };
 
 interface AdvancedAuth {
-  auth_flow_type: "oauth2.0";
-  predicate_key: string[];
-  predicate_value: string;
-  oauth_config_specification: {
-    complete_oauth_output_specification?: AdvancedAuthInput;
-    complete_oauth_server_input_specification?: AdvancedAuthInput;
-    complete_oauth_server_output_specification?: AdvancedAuthInput;
+  authFlowType: AuthFlowTypes;
+  predicateKey: string[];
+  predicateValue: string;
+  oauthConfigSpecification: {
+    completeOAuthOutputSpecification?: AdvancedAuthInput;
+    completeOAuthServerInputSpecification?: AdvancedAuthInput;
+    completeOAuthServerOutputSpecification?: AdvancedAuthInput;
     oauthUserInputFromConnectorConfigSpecification?: AdvancedAuthInput;
   };
 }

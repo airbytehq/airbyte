@@ -8,6 +8,7 @@ import { ConditionSection } from "./ConditionSection";
 import { ArraySection } from "./ArraySection";
 import { SectionContainer } from "./common";
 import { LegacyAuthSection } from "./LegacyAuthSection";
+import { makeConnectionConfigurationPath } from "../../utils";
 
 const FormNode: React.FC<{
   sectionPath: string;
@@ -62,12 +63,13 @@ const FormSection: React.FC<{
     <>
       {hasOauth && <LegacyAuthSection key="authSection" />}
       {sections
-        .filter((formField) => !formField.airbyte_hidden)
-        // TODO: check that it is a good idea to add authFieldsToHide
         .filter(
           (formField) =>
-            !isAuthFlowSelected ||
-            (isAuthFlowSelected && !authFieldsToHide.includes(formField.path))
+            !formField.airbyte_hidden &&
+            // TODO: check that it is a good idea to add authFieldsToHide
+            (!isAuthFlowSelected ||
+              (isAuthFlowSelected &&
+                !authFieldsToHide.includes(formField.path)))
         )
         .map((formField) => {
           const sectionPath = path
@@ -77,15 +79,16 @@ const FormSection: React.FC<{
             : formField.fieldKey;
 
           const isAuthSection =
+            isAuthFlowSelected &&
+            selectedConnector?.advancedAuth?.predicateKey &&
             sectionPath ===
-            [
-              "connectionConfiguration",
-              ...(selectedConnector?.advancedAuth?.predicate_key ?? []),
-            ].join(".");
+              makeConnectionConfigurationPath(
+                selectedConnector?.advancedAuth?.predicateKey
+              );
 
           return (
             <>
-              {isAuthSection && isAuthFlowSelected && <LegacyAuthSection />}
+              {isAuthSection && <LegacyAuthSection />}
               <FormNode
                 key={sectionPath}
                 formField={formField}

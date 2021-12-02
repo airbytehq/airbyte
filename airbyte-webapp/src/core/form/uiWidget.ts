@@ -16,7 +16,9 @@ export const buildPathInitialState = (
           widgetStateBuilder
         );
       case "formItem": {
-        widgetStateBuilder[formItem.path] = {};
+        widgetStateBuilder[formItem.path] = {
+          const: formItem.const,
+        };
         return widgetStateBuilder;
       }
       case "formCondition": {

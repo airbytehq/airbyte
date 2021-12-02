@@ -8,10 +8,13 @@ import {
   ConnectorDefinitionSpecification,
 } from "core/domain/connector";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import {
+  makeConnectionConfigurationPath,
+  serverProvidedOauthPaths,
+} from "./utils";
 
 type Context = {
   formType: "source" | "destination";
-  authFieldsToHide: string[];
   selectedService?: ConnectorDefinition;
   selectedConnector?: ConnectorDefinitionSpecification;
   isLoadingSchema?: boolean;
@@ -24,6 +27,7 @@ type Context = {
   addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
   removeUnfinishedFlow: (key: string) => void;
   resetUiFormProgress: () => void;
+  authFieldsToHide: string[];
 };
 
 const context: Context = {
@@ -64,28 +68,22 @@ const ServiceFormContextProvider: React.FC<{
     (s) => Connector.id(s) === serviceType
   );
   const { values } = useFormikContext();
+
   const { hasFeature } = useFeatureService();
   const isAuthFlowSelected =
     hasFeature(FeatureItem.AllowOAuthConnector) &&
-    selectedConnector?.advancedAuth
-      ? getIn(
-          values,
-          [
-            "connectionConfiguration",
-            ...(selectedConnector?.advancedAuth.predicate_key ?? []),
-          ].join(".")
-        ) === selectedConnector?.advancedAuth.predicate_value
-      : false;
-
+    selectedConnector?.advancedAuth &&
+    selectedConnector?.advancedAuth.predicateValue ===
+      getIn(
+        values,
+        makeConnectionConfigurationPath(
+          selectedConnector?.advancedAuth.predicateKey
+        )
+      );
   const authFieldsToHide = useMemo(
     () =>
-      Object.values({
-        ...(selectedConnector?.advancedAuth?.oauth_config_specification
-          .complete_oauth_output_specification?.properties ?? {}),
-        ...(selectedConnector?.advancedAuth?.oauth_config_specification
-          .complete_oauth_server_output_specification?.properties ?? {}),
-      }).map(
-        (f) => `connectionConfiguration.${f.path_in_connector_config.join(".")}`
+      Object.values(serverProvidedOauthPaths(selectedConnector)).map((f) =>
+        makeConnectionConfigurationPath(f.path_in_connector_config)
       ),
     [selectedConnector]
   );
