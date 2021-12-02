@@ -154,6 +154,8 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("true", "true", "true", "false", "false", "false", null)
             .build());
 
+    // BUG: The represented value is encoded by Base64
+    // https://github.com/airbytehq/airbyte/issues/7905
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bytea")
@@ -177,6 +179,15 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'{asb123}'", "'{asb12}'")
             .addExpectedValues("{asb123}", "{asb12} ")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("character_varying")
+            .fullSourceDataType("character varying(8)")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'{asb123}'", "'{asb12}'")
+            .addExpectedValues("{asb123}", "{asb12}")
             .build());
 
     addDataTypeTestData(
@@ -223,6 +234,7 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
     // JdbcUtils -> setJsonField contains:
     // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
+    // https://github.com/airbytehq/airbyte/issues/7871
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float8")
@@ -231,9 +243,19 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("123.0", "1.2345678901234567E9", null)
             .build());
 
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("double_precision")
+            .fullSourceDataType("double precision")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("'123'", "'1234567890.1234567'", "null")
+            .addExpectedValues("123.0", "1.2345678901234567E9", null)
+            .build());
+
     // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
     // JdbcUtils -> setJsonField contains:
     // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
+    // https://github.com/airbytehq/airbyte/issues/7871
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float")
@@ -253,6 +275,14 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("null", "-2147483648", "2147483647")
+            .addExpectedValues(null, "-2147483648", "2147483647")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("integer")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "-2147483648", "2147483647")
             .addExpectedValues(null, "-2147483648", "2147483647")
@@ -323,17 +353,35 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
     // we try to map it like this, so it fails
     // case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
+    // https://github.com/airbytehq/airbyte/issues/7871
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("numeric")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("'99999'", "null")
-            .addExpectedValues("99999", null)
+            .addInsertValues("'99999'", "999999999999.9999999999", "10000000000000000000000000000000000000", "null")
+            .addExpectedValues("99999", "1.0E12", "1.0E37", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("real")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'123'", "'1234567890.1234567'", "null")
+            .addExpectedValues("123.0", "1.23456794E9", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("pg_lsn")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'7/A25801C8'::pg_lsn", "'0/0'::pg_lsn", "null")
+            .addExpectedValues("7/A25801C8", "0/0",null)
             .build());
 
     // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
     // we try to map it like this, so it fails
     // case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
+    // https://github.com/airbytehq/airbyte/issues/7871
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
@@ -402,6 +450,14 @@ public class PostresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
             .addExpectedValues("'brown':3 'dog':9 'fox':4 'jump':5 'lazi':8 'quick':2")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("tsquery")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("to_tsquery('fat & rat')", "to_tsquery('Fat:ab & Cats')", "null")
+            .addExpectedValues("'fat' & 'rat'", "'fat':AB & 'cat'", null)
             .build());
 
     addDataTypeTestData(
