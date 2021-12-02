@@ -57,7 +57,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_SOCAT_IMAGE = "JOB_SOCAT_IMAGE";
   public static final String JOB_BUSYBOX_IMAGE = "JOB_BUSYBOX_IMAGE";
   public static final String JOB_CURL_IMAGE = "JOB_CURL_IMAGE";
-  public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
+  public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
   public static final String MAX_SYNC_TIMEOUT_DAYS = "MAX_SYNC_TIMEOUT_DAYS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
@@ -268,8 +268,8 @@ public class EnvConfigs implements Configs {
 
   // Jobs
   @Override
-  public int getMaxSyncJobAttempts() {
-    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_JOB_ATTEMPTS, "3"));
+  public int getSyncJobMaxAttempts() {
+    return Integer.parseInt(getEnvOrDefault(SYNC_JOB_MAX_ATTEMPTS, "3"));
   }
 
   @Override

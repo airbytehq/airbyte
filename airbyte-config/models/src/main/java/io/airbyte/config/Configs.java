@@ -72,7 +72,7 @@ public interface Configs {
   String getWebappUrl();
 
   // Jobs
-  int getMaxSyncJobAttempts();
+  int getSyncJobMaxAttempts();
 
   int getMaxSyncTimeoutDays();
 
