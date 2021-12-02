@@ -34,9 +34,6 @@ const Features: Feature[] = [
     id: FeatureItem.AllowCustomDBT,
   },
   {
-    id: FeatureItem.AllowOAuthConnector,
-  },
-  {
     id: FeatureItem.AllowUpdateConnectors,
   },
 ];
