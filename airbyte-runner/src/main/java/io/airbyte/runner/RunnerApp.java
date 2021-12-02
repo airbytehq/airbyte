@@ -158,7 +158,7 @@ public class RunnerApp {
       }
     }
 
-    // required to kill s3 logger
+    // required to kill kube client
     LOGGER.info("Runner closing...");
     System.exit(0);
   }
