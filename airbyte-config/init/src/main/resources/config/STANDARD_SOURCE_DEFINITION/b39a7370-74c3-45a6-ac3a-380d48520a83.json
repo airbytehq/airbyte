@@ -3,5 +3,6 @@
   "name": "Oracle DB",
   "dockerRepository": "airbyte/source-oracle",
   "dockerImageTag": "0.3.8",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/oracle"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/oracle",
+  "icon": "oracle.svg"
 }

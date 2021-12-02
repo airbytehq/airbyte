@@ -77,6 +77,10 @@ class BasicReadTestConfig(BaseConfig):
     empty_streams: Set[str] = Field(default_factory=set, description="We validate that all streams has records. These are exceptions")
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
+    # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
+    validate_data_points: bool = Field(
+        False, description="Set whether we need to validate that all fields in all streams contained at least one data point"
+    )
     timeout_seconds: int = timeout_seconds
 
 
